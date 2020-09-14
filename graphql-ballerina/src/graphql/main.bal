@@ -18,15 +18,18 @@ service gqlService on gqlListener {
         
     }
 
-    resource function name() returns string {
-        return "Thisaru";
+    resource function name(Caller caller) {
+        string name = "Thisaru";
+        var result = caller->respond(name);
     }
 
-    resource function id() returns int {
-        return 1;
+    resource function id(Caller caller) {
+        int id = 1;
+        var result = caller->respond(id);
     }
 
-    resource function birthDate() returns string {
-        return "1990-05-15";
+    resource function birthDate(Caller caller) {
+        string birthDate = "1990-05-15";
+        var result = caller->respond(birthDate);
     }
 }

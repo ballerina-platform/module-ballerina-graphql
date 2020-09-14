@@ -5,7 +5,25 @@ version= "@project.version@"
 [dependencies]
 "ballerina/auth" = "@stdlib.auth.version@"
 "ballerina/cache" = "@stdlib.cache.version@"
+"ballerina/config" = "@stdlib.config.version@"
+"ballerina/crypto" = "@stdlib.crypto.version@"
+"ballerina/file" = "@stdlib.file.version@"
 "ballerina/http" = "@stdlib.http.version@"
 "ballerina/io" = "@stdlib.io.version@"
 "ballerina/log" = "@stdlib.log.version@"
+"ballerina/mime" = "@stdlib.mime.version@"
+"ballerina/runtime" = "@stdlib.runtime.version@"
+"ballerina/reflect" = "@stdlib.reflect.version@"
 "ballerina/stringutils" = "@stdlib.stringutils.version@"
+"ballerina/system" = "@stdlib.system.version@"
+"ballerina/time" = "@stdlib.time.version@"
+"ballerina/task" = "@stdlib.task.version@"
+
+[platform]
+target = "java8"
+
+    [[platform.libraries]]
+    artifactId = "mimepull"
+    version = "@mimepull.version@"
+    path = "./lib/mimepull-@mimepull.version@.jar"
+    groupId = "org.jvnet.mimepull"

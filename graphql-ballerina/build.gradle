@@ -29,6 +29,9 @@ dependencies {
         transitive = false
     }
     compile project(':graphql-native')
+    packingJars(group: 'org.jvnet.mimepull', name: 'mimepull', version: "${mimepullVersion}") {
+        transitive = false
+    }
 }
 
 clean {
@@ -111,20 +114,42 @@ def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extr
 task updateTomlFile {
     doLast {
         def projectVersion = project.version.split("-")[0]
+
         def stdlibDependentAuthVersion = project.stdlibAuthVersion.split("-")[0]
         def stdlibDependentCacheVersion = project.stdlibCacheVersion.split("-")[0]
+        def stdlibDependentConfigVersion = project.stdlibConfigVersion.split("-")[0]
+        def stdlibDependentCryptoVersion = project.stdlibCryptoVersion.split("-")[0]
+        def stdlibDependentFileVersion = project.stdlibFileVersion.split("-")[0]
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
         def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
+        def stdlibDependentMimeVersion = project.stdlibMimeVersion.split("-")[0]
+        def stdlibDependentReflectVersion = project.stdlibReflectVersion.split("-")[0]
+        def stdlibDependentRuntimeVersion = project.stdlibRuntimeVersion.split("-")[0]
         def stdlibDependentStringutilsVersion = project.stdlibStringutilsVersion.split("-")[0]
+        def stdlibDependentSystemVersion = project.stdlibSystemVersion.split("-")[0]
+        def stdlibDependentTaskVersion = project.stdlibTaskVersion.split("-")[0]
+        def stdlibDependentTimeVersion = project.stdlibTimeVersion.split("-")[0]
+
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", projectVersion)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
         newConfig = newConfig.replace("@stdlib.auth.version@", stdlibDependentAuthVersion)
         newConfig = newConfig.replace("@stdlib.cache.version@", stdlibDependentCacheVersion)
+        newConfig = newConfig.replace("@stdlib.config.version@", stdlibDependentConfigVersion)
+        newConfig = newConfig.replace("@stdlib.crypto.version@", stdlibDependentCryptoVersion)
+        newConfig = newConfig.replace("@stdlib.file.version@", stdlibDependentFileVersion)
         newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
         newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
+        newConfig = newConfig.replace("@stdlib.mime.version@", stdlibDependentMimeVersion)
+        newConfig = newConfig.replace("@stdlib.runtime.version@", stdlibDependentRuntimeVersion)
+        newConfig = newConfig.replace("@stdlib.reflect.version@", stdlibDependentReflectVersion)
         newConfig = newConfig.replace("@stdlib.stringutils.version@", stdlibDependentStringutilsVersion)
+        newConfig = newConfig.replace("@stdlib.system.version@", stdlibDependentSystemVersion)
+        newConfig = newConfig.replace("@stdlib.task.version@", stdlibDependentTaskVersion)
+        newConfig = newConfig.replace("@stdlib.time.version@", stdlibDependentTimeVersion)
+
+        newConfig = newConfig.replace("@mimepull.version@", project.mimepullVersion)
         ballerinaConfigFile.text = newConfig
     }
 }
@@ -179,9 +204,11 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat --skip-tests -c ${moduleName}"
+                // TODO: Add -c flag after skip-tests
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat --skip-tests ${moduleName}"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c ${moduleName}"
+                // TODO: Add -c flag after skip-tests
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests ${moduleName}"
             }
         }
         copy {
@@ -280,9 +307,10 @@ publishing {
     }
 }
 
-ballerinaBuild.dependsOn ":graphql-native:build"
+unpackJballerinaTools.dependsOn copyPackingJarsToLib
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
 ballerinaBuild.dependsOn updateTomlFile
+ballerinaBuild.dependsOn ":graphql-native:build"
 build.dependsOn ballerinaBuild
