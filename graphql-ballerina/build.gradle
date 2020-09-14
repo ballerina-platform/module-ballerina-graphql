@@ -106,15 +106,25 @@ def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN'
 def targetBallerinaJar = file("$project.projectDir/target/caches/jar_cache/${moduleOrg}/${moduleName}/${tomlVersion}/${moduleOrg}-${moduleName}-${tomlVersion}.jar")
 def targetNativeJar = file("$project.rootDir/${moduleName}-native/build/libs/${moduleName}-native-${project.version}.jar")
 def originalConfig = ballerinaConfigFile.text
+def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
-task updateTomlVerions {
+task updateTomlFile {
     doLast {
+        def projectVersion = project.version.split("-")[0]
+        def stdlibDependentAuthVersion = project.stdlibAuthVersion.split("-")[0]
+        def stdlibDependentCacheVersion = project.stdlibCacheVersion.split("-")[0]
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
-        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
+        def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
+        def stdlibDependentStringutilsVersion = project.stdlibStringutilsVersion.split("-")[0]
+        def newConfig = ballerinaConfigFile.text.replace("@project.version@", projectVersion)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
-        newConfig = newConfig.replace("@stdlib.config.version@", stdlibDependentHttpVersion)
-        newConfig = newConfig.replace("@stdlib.file.version@", stdlibDependentIoVersion)
+        newConfig = newConfig.replace("@stdlib.auth.version@", stdlibDependentAuthVersion)
+        newConfig = newConfig.replace("@stdlib.cache.version@", stdlibDependentCacheVersion)
+        newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
+        newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
+        newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
+        newConfig = newConfig.replace("@stdlib.stringutils.version@", stdlibDependentStringutilsVersion)
         ballerinaConfigFile.text = newConfig
     }
 }
@@ -125,31 +135,53 @@ task revertTomlFile {
     }
 }
 
+task ballerinaTest {
+    dependsOn(updateTomlFile)
+    finalizedBy(revertTomlFile)
+
+    def groupParams = ""
+    if (project.hasProperty("groups")) {
+        groupParams = "--groups ${project.findProperty("groups")}"
+    }
+
+    def debugParams = ""
+    if (project.hasProperty("debug")) {
+        debugParams = "--debug ${project.findProperty("debug")}"
+    }
+
+    doLast {
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test --code-coverage ${groupParams} --all ${debugParams}"
+            } else {
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina test --code-coverage ${groupParams} --all ${debugParams}"
+            }
+        }
+    }
+}
+
+test {
+    dependsOn(ballerinaTest)
+}
+
 task ballerinaBuild {
+    dependsOn(test)
+    dependsOn(updateTomlFile)
     inputs.dir file(project.projectDir)
     finalizedBy(revertTomlFile)
 
     doLast {
-        def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
-        def additionalBuildParams = ""
-
-        if (project.hasProperty("skipBallerinaTests")) {
-            additionalBuildParams += "--skip-tests"
-        }
-
-        if (project.hasProperty("debugBallerina")) {
-            def port = project.getProperty("debugBallerina").toString();
-            additionalBuildParams += "--debug ${port}"
-        }
 
         // Build and populate caches
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build ${additionalBuildParams} -c ${moduleName}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat --skip-tests -c ${moduleName}"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina build ${additionalBuildParams} -c ${moduleName}"
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c ${moduleName}"
             }
         }
         copy {
@@ -251,6 +283,6 @@ publishing {
 ballerinaBuild.dependsOn ":graphql-native:build"
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
-updateTomlVerions.dependsOn copyStdlibs
-ballerinaBuild.dependsOn updateTomlVerions
+updateTomlFile.dependsOn copyStdlibs
+ballerinaBuild.dependsOn updateTomlFile
 build.dependsOn ballerinaBuild

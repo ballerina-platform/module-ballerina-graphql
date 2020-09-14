@@ -1,5 +1,11 @@
 [project]
-org-name= "thisaru"
+org-name= "ballerina"
 version= "@project.version@"
 
 [dependencies]
+"ballerina/auth" = "@stdlib.auth.version@"
+"ballerina/cache" = "@stdlib.cache.version@"
+"ballerina/http" = "@stdlib.http.version@"
+"ballerina/io" = "@stdlib.io.version@"
+"ballerina/log" = "@stdlib.log.version@"
+"ballerina/stringutils" = "@stdlib.stringutils.version@"

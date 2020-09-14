@@ -57,6 +57,22 @@ allprojects {
         }
 
         maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-auth'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-cache'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-http'
             credentials {
                 username System.getenv("packageUser")
@@ -66,6 +82,22 @@ allprojects {
 
         maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-io'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-log'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-stringutils'
             credentials {
                 username System.getenv("packageUser")
                 password System.getenv("packagePAT")
@@ -83,8 +115,12 @@ subprojects {
 
     dependencies {
         /* Standard libraries */
-        ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
+        ballerinaStdLibs "org.ballerinalang:auth-ballerina:${stdlibAuthVersion}"
+        ballerinaStdLibs "org.ballerinalang:cache-ballerina:${stdlibCacheVersion}"
         ballerinaStdLibs "org.ballerinalang:http-ballerina:${stdlibHttpVersion}"
+        ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
+        ballerinaStdLibs "org.ballerinalang:log-ballerina:${stdlibLogVersion}"
+        ballerinaStdLibs "org.ballerinalang:stringutils-ballerina:${stdlibStringutilsVersion}"
     }
 
     release {
