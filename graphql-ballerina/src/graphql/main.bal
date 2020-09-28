@@ -1,7 +1,7 @@
 import ballerina/io;
 import ballerina/http;
 
-listener Listener gqlListener = new();
+listener Listener gqlListener = new("url");
 
 public function main() {
     http:Client httpClient = new("http://localhost:9090/graphQL");
@@ -18,18 +18,15 @@ service gqlService on gqlListener {
         
     }
 
-    resource function name(Caller caller) {
-        string name = "Thisaru";
-        var result = caller->respond(name);
+    resource function name(Caller caller) returns string {
+        return "John Doe";
     }
 
-    resource function id(Caller caller) {
-        int id = 1;
-        var result = caller->respond(id);
+    resource function id(Caller caller) returns int {
+        return 1;
     }
 
-    resource function birthDate(Caller caller) {
-        string birthDate = "1990-05-15";
-        var result = caller->respond(birthDate);
+    resource function birthDate(Caller caller) returns string {
+        return "01-01-1980";
     }
 }

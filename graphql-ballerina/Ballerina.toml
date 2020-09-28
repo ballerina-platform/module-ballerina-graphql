@@ -1,6 +1,6 @@
 [project]
 org-name= "ballerina"
-version= "@project.version@"
+version= "@toml.version@"
 
 [dependencies]
 "ballerina/auth" = "@stdlib.auth.version@"
@@ -21,6 +21,13 @@ version= "@project.version@"
 
 [platform]
 target = "java8"
+
+    [[platform.libraries]]
+    artifactId = "graphql"
+    version = "@project.version@"
+    path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
+    groupId = "org.ballerinalang.stdlib.graphql"
+    modules = ["graphql"]
 
     [[platform.libraries]]
     artifactId = "mimepull"

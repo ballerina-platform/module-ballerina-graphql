@@ -113,8 +113,6 @@ def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extr
 
 task updateTomlFile {
     doLast {
-        def projectVersion = project.version.split("-")[0]
-
         def stdlibDependentAuthVersion = project.stdlibAuthVersion.split("-")[0]
         def stdlibDependentCacheVersion = project.stdlibCacheVersion.split("-")[0]
         def stdlibDependentConfigVersion = project.stdlibConfigVersion.split("-")[0]
@@ -131,7 +129,7 @@ task updateTomlFile {
         def stdlibDependentTaskVersion = project.stdlibTaskVersion.split("-")[0]
         def stdlibDependentTimeVersion = project.stdlibTimeVersion.split("-")[0]
 
-        def newConfig = ballerinaConfigFile.text.replace("@project.version@", projectVersion)
+        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
         newConfig = newConfig.replace("@stdlib.auth.version@", stdlibDependentAuthVersion)
         newConfig = newConfig.replace("@stdlib.cache.version@", stdlibDependentCacheVersion)
@@ -207,8 +205,8 @@ task ballerinaBuild {
                 // TODO: Add -c flag after skip-tests
                 commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat --skip-tests ${moduleName}"
             } else {
-                // TODO: Add -c flag after skip-tests
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests ${moduleName}"
+                // TODO: Add -c flag after skip-tests and replace `run` with `build` add --skip-tests flag too.
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina run ${moduleName}"
             }
         }
         copy {
