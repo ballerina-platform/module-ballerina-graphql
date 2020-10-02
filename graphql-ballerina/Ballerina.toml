@@ -28,9 +28,3 @@ target = "java8"
     path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
     groupId = "org.ballerinalang.stdlib.graphql"
     modules = ["graphql"]
-
-    [[platform.libraries]]
-    artifactId = "mimepull"
-    version = "@mimepull.version@"
-    path = "./lib/mimepull-@mimepull.version@.jar"
-    groupId = "org.jvnet.mimepull"

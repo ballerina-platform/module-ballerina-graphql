@@ -21,7 +21,6 @@ description = 'Ballerina - GraphQl Ballerina'
 
 configurations {
     jbalTools
-    packingJars
 }
 
 dependencies {
@@ -29,9 +28,6 @@ dependencies {
         transitive = false
     }
     compile project(':graphql-native')
-    packingJars(group: 'org.jvnet.mimepull', name: 'mimepull', version: "${mimepullVersion}") {
-        transitive = false
-    }
 }
 
 clean {
@@ -93,11 +89,6 @@ task copyStdlibs(type: Copy) {
     }
 }
 
-task copyPackingJarsToLib(type: Copy) {
-    into "$project.projectDir/lib"
-    from configurations.packingJars
-}
-
 def moduleName = "graphql"
 def moduleOrg = "ballerina"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
@@ -147,7 +138,6 @@ task updateTomlFile {
         newConfig = newConfig.replace("@stdlib.task.version@", stdlibDependentTaskVersion)
         newConfig = newConfig.replace("@stdlib.time.version@", stdlibDependentTimeVersion)
 
-        newConfig = newConfig.replace("@mimepull.version@", project.mimepullVersion)
         ballerinaConfigFile.text = newConfig
     }
 }
@@ -241,10 +231,6 @@ task ballerinaBuild {
             from targetNativeJar
             into file("$artifactLibParent/libs")
         }
-        copy {
-            from configurations.packingJars
-            into file("$artifactLibParent/libs")
-        }
 
         // Publish to central
         if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
@@ -305,7 +291,6 @@ publishing {
     }
 }
 
-unpackJballerinaTools.dependsOn copyPackingJarsToLib
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs

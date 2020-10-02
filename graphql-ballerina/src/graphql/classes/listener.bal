@@ -4,7 +4,7 @@ import ballerina/lang.'object;
 public class Listener {
     *'object:Listener;
 
-    public function init(string url, Configurations? configs = ()) {
+    public function init(int port, string url = "graphql", Configurations? configs = ()) {
         io:println("init");
     }
 

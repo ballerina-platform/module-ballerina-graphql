@@ -24,7 +24,6 @@ plugins {
 
 ext.ballerinaLangVersion = project.ballerinaLangVersion
 ext.puppycrawlCheckstyleVersion = "8.18"
-ext.mimepullVersion = project.mimepullVersion
 
 ext.stdlibAuthVersion = project.stdlibAuthVersion
 ext.stdlibCacheVersion = project.stdlibCacheVersion
