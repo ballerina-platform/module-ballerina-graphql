@@ -18,6 +18,7 @@
 plugins {
     id 'java'
     id 'checkstyle'
+    id 'com.github.spotbugs'
 }
 
 description = 'Ballerina - GraphQL Native'
@@ -37,3 +38,21 @@ checkstyle {
 }
 
 checkstyleMain.dependsOn(":build-config:checkstyle:downloadMultipleFiles")
+
+spotbugsMain {
+    effort "max"
+    reportLevel "low"
+    reportsDir = file("$project.buildDir/reports/spotbugs")
+    reports {
+        html.enabled true
+        text.enabled = true
+    }
+    def excludeFile = file("${rootDir}/spotbugs-exclude.xml")
+    if(excludeFile.exists()) {
+        excludeFilter = excludeFile
+    }
+}
+
+spotbugsTest {
+    enabled = false
+}
