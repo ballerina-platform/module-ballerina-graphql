@@ -9,7 +9,7 @@ function readFileAndGetDocument(string path) returns string|error {
     return result;
 }
 
-function logAndPanicError(string message, error e) {
+isolated function logAndPanicError(string message, error e) {
     log:printError(message, e);
     panic e;
 }
