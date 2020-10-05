@@ -1,9 +1,10 @@
 package org.ballerinalang.stdlib.graphql.service;
 
-import org.ballerinalang.jvm.types.AttachedFunction;
-import org.ballerinalang.jvm.values.ObjectValue;
+import org.ballerinalang.jvm.api.values.BObject;
 
 import java.io.PrintStream;
+
+import static org.ballerinalang.stdlib.graphql.utils.Constants.NATIVE_SERVICE_OBJECT;
 
 /**
  * Handles the service objects related to Ballerina GraphQL implementation.
@@ -19,11 +20,8 @@ public class ServiceHandler {
      * @param name     - Name of the service
      * @return - {@code ErrorValue} if the attaching is failed, null otherwise
      */
-    public static Object attach(ObjectValue listener, ObjectValue service, Object name) {
-        AttachedFunction[] resourceFunctions = service.getType().getAttachedFunctions();
-        for (AttachedFunction resource : resourceFunctions) {
-            console.println("Tag: " + resource.getReturnParameterType());
-        }
+    public static Object attach(BObject listener, BObject service, Object name) {
+        listener.addNativeData(NATIVE_SERVICE_OBJECT, service);
         return null;
     }
 }

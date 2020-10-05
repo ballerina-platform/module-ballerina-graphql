@@ -1,13 +1,12 @@
-import ballerina/http;
 import ballerina/io;
 import ballerina/lang.'object;
 
 public class Listener {
     *'object:Listener;
-    http:Listner httpListener;
+    int port;
 
     public isolated function init(int port, string url = "graphql", Configurations? configs = ()) {
-        self.httpListener = new (port);
+        self.port = port;
         io:println("init");
     }
 
