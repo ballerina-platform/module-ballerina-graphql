@@ -1,39 +1,30 @@
-// import ballerina/io;
-// import ballerina/test;
+import ballerina/io;
+import ballerina/http;
+import ballerina/test;
 
-// # Before Suite Function
+listener Listener gqlListener = new(9091);
 
-// @test:BeforeSuite
-// function beforeSuiteFunc() {
-//     io:println("I'm the before suite function!");
-// }
+@test:Config{}
+function testAttach() {
+    http:Client httpClient = new("http://localhost:9090/graphQL");
+    var document = readFileAndGetDocument("src/graphql/resources/document.txt");
+    if (document is error) {
+        logAndPanicError("Error occurred while reading the document", document);
+    }
+    string payload = <string>document;
+    io:print(payload);
+}
 
-// # Before test function
+service gqlService on gqlListener {
+    isolated resource function name() returns string {
+        return "John Doe";
+    }
 
-// function beforeFunc() {
-//     io:println("I'm the before function!");
-// }
+    isolated resource function id() returns int {
+        return 1;
+    }
 
-// # Test function
-
-// @test:Config {
-//     before: "beforeFunc",
-//     after: "afterFunc"
-// }
-// function testFunction() {
-//     io:println("I'm in test function!");
-//     test:assertTrue(true, msg = "Failed!");
-// }
-
-// # After test function
-
-// function afterFunc() {
-//     io:println("I'm the after function!");
-// }
-
-// # After Suite Function
-
-// @test:AfterSuite
-// function afterSuiteFunc() {
-//     io:println("I'm the after suite function!");
-// }
+    isolated resource function birthDate() returns string {
+        return "01-01-1980";
+    }
+}
