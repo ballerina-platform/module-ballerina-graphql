@@ -38,6 +38,3 @@ build
 # Ballerina
 velocity.log*
 *Ballerina.lock
-
-
-misc
