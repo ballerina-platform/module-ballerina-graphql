@@ -149,6 +149,8 @@ task revertTomlFile {
 }
 
 task ballerinaTest {
+    dependsOn(":graphql-native:build")
+    dependsOn(unpackJballerinaTools)
     dependsOn(updateTomlFile)
     finalizedBy(revertTomlFile)
 
@@ -162,14 +164,19 @@ task ballerinaTest {
         debugParams = "--debug ${project.findProperty("debug")}"
     }
 
+    def balJavaDebugParam = ""
+    if (project.hasProperty("balJavaDebug")) {
+        balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
+    }
+
     doLast {
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test --code-coverage ${groupParams} --all ${debugParams}"
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/ballerina.bat test --code-coverage ${groupParams} --all ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina test --code-coverage ${groupParams} --all ${debugParams}"
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/ballerina test --code-coverage ${groupParams} --all ${debugParams}"
             }
         }
     }
@@ -180,23 +187,22 @@ test {
 }
 
 task ballerinaBuild {
-    dependsOn(test)
-    dependsOn(updateTomlFile)
     inputs.dir file(project.projectDir)
+    dependsOn(":graphql-native:build")
+    dependsOn(test)
+    dependsOn(unpackJballerinaTools)
+    dependsOn(updateTomlFile)
     finalizedBy(revertTomlFile)
 
     doLast {
-
         // Build and populate caches
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                // TODO: Add -c flag after skip-tests
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat --skip-tests ${moduleName}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build --skip-tests -c ${moduleName}"
             } else {
-                // TODO: Add -c flag after skip-tests and replace `run` with `build` add --skip-tests flag too.
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina run ${moduleName}"
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c ${moduleName}"
             }
         }
         copy {
@@ -239,7 +245,7 @@ task ballerinaBuild {
                 workingDir project.projectDir
                 environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${moduleName}"
+                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${moduleName} && exit %%ERRORLEVEL%%"
                 } else {
                     commandLine 'sh', '-c', "$distributionBinPath/ballerina push ${moduleName}"
                 }
@@ -251,7 +257,7 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc ${moduleName}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc ${moduleName} && exit %%ERRORLEVEL%%"
             } else {
                 commandLine 'sh', '-c', "$distributionBinPath/ballerina doc ${moduleName}"
             }
@@ -284,8 +290,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-graphql")
             credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+                username = System.getenv("packageUser")
+                password = System.getenv("packagePAT")
             }
         }
     }
