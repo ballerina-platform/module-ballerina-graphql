@@ -52,15 +52,7 @@ allprojects {
         }
 
         maven {
-            url = 'https://maven.wso2.org/nexus/content/repositories/snapshots/'
-        }
-
-        maven {
             url = 'https://maven.wso2.org/nexus/content/groups/wso2-public/'
-        }
-
-        maven {
-            url = 'https://maven.wso2.org/nexus/content/repositories/orgballerinalang-1614'
         }
 
         maven {
