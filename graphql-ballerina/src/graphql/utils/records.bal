@@ -24,7 +24,7 @@ public type Location record {
 public type ErrorRecord record {
     string message;
     Location[] locations?;
-    string[] path?; // TODO: Ideally this should be (int|string)[] to hold array values
+    (int|string)[] path?;
 };
 
 public type OutputObject record {
