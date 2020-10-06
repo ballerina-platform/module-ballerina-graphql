@@ -1,7 +1,7 @@
 import ballerina/io;
 import ballerina/stringutils;
 
-function parse(string documentString) returns Document {
+isolated function parse(string documentString) returns Document {
     string[] tokens = stringutils:split(documentString, "\\s+");
     string[] fields = [];
     string operationType = OPERATION_QUERY; // Default value
@@ -28,7 +28,7 @@ function parse(string documentString) returns Document {
     return document;
 }
 
-function getFields(string[] tokens, int startingCount) returns string[] {
+isolated function getFields(string[] tokens, int startingCount) returns string[] {
     int count = startingCount;
     string[] fields = [];
     while (count < tokens.length()) {
@@ -40,7 +40,7 @@ function getFields(string[] tokens, int startingCount) returns string[] {
     return fields;
 }
 
-function printArray(string[] array) {
+isolated function printArray(string[] array) {
     foreach string s in array {
         io:println("    " + s);
     }
