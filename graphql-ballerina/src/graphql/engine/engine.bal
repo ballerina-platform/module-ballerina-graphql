@@ -2,6 +2,6 @@ isolated function getOperation(string document, string opeartionName) returns st
     return error("not implemented");
 }
 
-function getStoredResource(Listener 'listener, string name) returns Scalar {
+isolated function getStoredResource(Listener 'listener, string name) returns Scalar {
     return getStoredResourceExt('listener, name);
 }
