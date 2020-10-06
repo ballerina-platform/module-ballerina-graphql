@@ -26,5 +26,5 @@ target = "java8"
     artifactId = "graphql"
     version = "0.1.0-SNAPSHOT"
     path = "../graphql-native/build/libs/graphql-native-0.1.0-SNAPSHOT.jar"
-    groupId = "org.ballerinalang.stdlib.graphql"
+    groupId = "io.ballerina.stdlib.graphql"
     modules = ["graphql"]

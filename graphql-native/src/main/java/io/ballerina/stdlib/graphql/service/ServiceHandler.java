@@ -1,10 +1,10 @@
-package org.ballerinalang.stdlib.graphql.service;
+package io.ballerina.stdlib.graphql.service;
 
 import org.ballerinalang.jvm.api.values.BObject;
 
 import java.io.PrintStream;
 
-import static org.ballerinalang.stdlib.graphql.utils.Constants.NATIVE_SERVICE_OBJECT;
+import static io.ballerina.stdlib.graphql.utils.Constants.NATIVE_SERVICE_OBJECT;
 
 /**
  * Handles the service objects related to Ballerina GraphQL implementation.
