@@ -1,4 +1,4 @@
-package org.ballerinalang.stdlib.graphql.runtime.wrapper;
+package io.ballerina.stdlib.graphql.runtime.wrapper;
 
 import org.ballerinalang.jvm.api.BStringUtils;
 import org.ballerinalang.jvm.types.AttachedFunction;

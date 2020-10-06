@@ -1,13 +1,12 @@
-package org.ballerinalang.stdlib.graphql.engine;
+package io.ballerina.stdlib.graphql.engine;
 
+import io.ballerina.stdlib.graphql.runtime.wrapper.Wrapper;
+import io.ballerina.stdlib.graphql.utils.Constants;
 import org.ballerinalang.jvm.api.values.BObject;
 import org.ballerinalang.jvm.api.values.BString;
 import org.ballerinalang.jvm.types.AttachedFunction;
-import org.ballerinalang.stdlib.graphql.runtime.wrapper.Wrapper;
 
 import java.io.PrintStream;
-
-import static org.ballerinalang.stdlib.graphql.utils.Constants.NATIVE_SERVICE_OBJECT;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -23,7 +22,7 @@ public class Engine {
      * @return - Resource value
      */
     public static Object getResource(BObject listener, BString name) {
-        BObject attachedService = (BObject) listener.getNativeData(NATIVE_SERVICE_OBJECT);
+        BObject attachedService = (BObject) listener.getNativeData(Constants.NATIVE_SERVICE_OBJECT);
         AttachedFunction[] attachedFunctions = attachedService.getType().getAttachedFunctions();
         for (AttachedFunction attachedFunction:attachedFunctions) {
             if (attachedFunction.funcName.equals(name.toString())) {

@@ -1,4 +1,4 @@
-package org.ballerinalang.stdlib.graphql.utils;
+package io.ballerina.stdlib.graphql.utils;
 
 /**
  * Constants used in Ballerina GraphQL native library.
