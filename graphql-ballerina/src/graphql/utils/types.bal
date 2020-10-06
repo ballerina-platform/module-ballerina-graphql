@@ -1,3 +1,5 @@
 type Error distinct error;
 
-type Scalar int|string|float|boolean;
+type Id int|string;
+
+type Scalar int|string|float|boolean|Id;

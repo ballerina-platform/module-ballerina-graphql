@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id "com.github.spotbugs" version "4.0.5"
+    id "com.github.spotbugs-base" version "4.5.1"
     id "com.github.johnrengelman.shadow" version "5.2.0"
     id "de.undercouch.download" version "4.0.4"
     id "net.researchgate.release" version "2.6.0"

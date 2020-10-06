@@ -2,7 +2,7 @@ import ballerina/test;
 
 @test:Config{}
 function testParseDocument() {
-    var fileText = readFileAndGetDocument("src/graphql/resources/document.txt", 34);
+    var fileText = readFileAndGetDocument(RESOURCE_PATH + "document.txt", 34);
     if (fileText is error) {
         logAndPanicError("Error occurred while reading the document", fileText);
     }
@@ -17,7 +17,7 @@ function testParseDocument() {
 
 @test:Config{}
 function testParseDocumentWithOperation() {
-    var fileText = readFileAndGetDocument("src/graphql/resources/document_with_operation.txt", 47);
+    var fileText = readFileAndGetDocument(RESOURCE_PATH + "document_with_operation.txt", 47);
     if (fileText is error) {
         logAndPanicError("Error occurred while reading the document", fileText);
     }
