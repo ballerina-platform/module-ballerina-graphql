@@ -11,10 +11,10 @@ public class Wrapper {
         String name = attachedFunction.funcName;
         if ("name".equals(name)) {
             return BStringUtils.fromString("John Doe");
-        } else if ("age".equals(name)) {
+        } else if ("id".equals(name)) {
             return 1;
         } else if ("birthDate".equals(name)) {
-            return "01-01-1980";
+            return BStringUtils.fromString("01-01-1980");
         }
         return null;
     }

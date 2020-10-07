@@ -1,13 +1,9 @@
 import ballerina/test;
 
 @test:Config{}
-function testParseDocument() {
-    var fileText = readFileAndGetDocument(RESOURCE_PATH + "document.txt", 34);
-    if (fileText is error) {
-        logAndPanicError("Error occurred while reading the document", fileText);
-    }
-    string document = <string>fileText;
-    Document parsedDocument = parse(document);
+function testParseDocument() returns error? {
+    string document = readFileAndGetString(DOCUMENT_SHORTHAND, 34);
+    Document parsedDocument = check parse(document);
     Document expectedDocument = {
         operation: "query",
         fields: ["name", "id", "birthDate"]
@@ -16,13 +12,9 @@ function testParseDocument() {
 }
 
 @test:Config{}
-function testParseDocumentWithOperation() {
-    var fileText = readFileAndGetDocument(RESOURCE_PATH + "document_with_operation.txt", 47);
-    if (fileText is error) {
-        logAndPanicError("Error occurred while reading the document", fileText);
-    }
-    string document = <string>fileText;
-    Document parsedDocument = parse(document);
+function testParseDocumentWithOperation() returns error? {
+    string document = readFileAndGetString(DOCUMENT_FULL, 47);
+    Document parsedDocument = check parse(document);
     Document expectedDocument = {
         operation: "query",
         operationName: "getData",

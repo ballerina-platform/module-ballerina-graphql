@@ -6,13 +6,10 @@ import org.ballerinalang.jvm.api.values.BObject;
 import org.ballerinalang.jvm.api.values.BString;
 import org.ballerinalang.jvm.types.AttachedFunction;
 
-import java.io.PrintStream;
-
 /**
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
-    private static PrintStream console = System.out;
 
     /**
      * Returns a stored resource value of a Ballerina service.
@@ -26,7 +23,6 @@ public class Engine {
         AttachedFunction[] attachedFunctions = attachedService.getType().getAttachedFunctions();
         for (AttachedFunction attachedFunction:attachedFunctions) {
             if (attachedFunction.funcName.equals(name.toString())) {
-                console.println("Required Resource: " + name);
                 return Wrapper.invokeResource(attachedFunction);
             }
         }
