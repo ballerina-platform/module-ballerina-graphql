@@ -1,4 +1,6 @@
-type Error distinct error;
+public type InvalidDocumentError distinct error;
+
+type Error InvalidDocumentError;
 
 type Id int|string;
 
