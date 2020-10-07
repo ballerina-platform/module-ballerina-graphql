@@ -31,3 +31,10 @@ public type OutputObject record {
     Data data?;
     ErrorRecord[] errors?;
 };
+
+# Contains the configurations for a GraphQL service.
+#
+# + basePath - Service base path
+public type GraphQlServiceConfiguration record {
+    string basePath = "graphql";
+};
