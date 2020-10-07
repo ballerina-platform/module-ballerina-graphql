@@ -1,30 +1,30 @@
 [project]
 org-name= "ballerina"
-version= "0.1.0"
+version= "@toml.version@"
 
 [dependencies]
-"ballerina/auth" = "1.0.1"
-"ballerina/cache" = "2.0.1"
-"ballerina/config" = "1.0.1"
-"ballerina/crypto" = "1.0.1"
-"ballerina/file" = "0.5.2"
-"ballerina/http" = "1.0.0"
-"ballerina/io" = "0.5.1"
-"ballerina/log" = "1.0.1"
-"ballerina/mime" = "1.0.1"
-"ballerina/runtime" = "0.5.1"
-"ballerina/reflect" = "0.5.1"
-"ballerina/stringutils" = "0.5.1"
-"ballerina/system" = "0.6.1"
-"ballerina/time" = "1.0.2"
-"ballerina/task" = "1.1.1"
+"ballerina/auth" = "@stdlib.auth.version@"
+"ballerina/cache" = "@stdlib.cache.version@"
+"ballerina/config" = "@stdlib.config.version@"
+"ballerina/crypto" = "@stdlib.crypto.version@"
+"ballerina/file" = "@stdlib.file.version@"
+"ballerina/http" = "@stdlib.http.version@"
+"ballerina/io" = "@stdlib.io.version@"
+"ballerina/log" = "@stdlib.log.version@"
+"ballerina/mime" = "@stdlib.mime.version@"
+"ballerina/runtime" = "@stdlib.runtime.version@"
+"ballerina/reflect" = "@stdlib.reflect.version@"
+"ballerina/stringutils" = "@stdlib.stringutils.version@"
+"ballerina/system" = "@stdlib.system.version@"
+"ballerina/time" = "@stdlib.time.version@"
+"ballerina/task" = "@stdlib.task.version@"
 
 [platform]
 target = "java8"
 
     [[platform.libraries]]
     artifactId = "graphql"
-    version = "0.1.0-SNAPSHOT"
-    path = "../graphql-native/build/libs/graphql-native-0.1.0-SNAPSHOT.jar"
+    version = "@project.version@"
+    path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
     groupId = "io.ballerina.stdlib.graphql"
     modules = ["graphql"]
