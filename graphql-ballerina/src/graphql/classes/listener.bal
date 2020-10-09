@@ -26,9 +26,7 @@ public class Listener {
             basePath = serviceConfig.basePath;
         }
         checkpanic self.httpListener.__attach(httpService);
-        checkpanic self.httpListener.__start();
         check attach(self, s, name);
-        log:printInfo("started GraphQL listener " + self.port.toString());
     }
 
     public isolated function __detach(service s) returns error? {
@@ -36,6 +34,8 @@ public class Listener {
     }
 
     public isolated function __start() returns error? {
+        checkpanic self.httpListener.__start();
+        log:printInfo("started GraphQL listener " + self.port.toString());
     }
 
     public isolated function __gracefulStop() returns error? {
