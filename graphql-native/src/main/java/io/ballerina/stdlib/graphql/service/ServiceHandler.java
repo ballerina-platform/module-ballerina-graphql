@@ -24,4 +24,16 @@ public class ServiceHandler {
         listener.addNativeData(NATIVE_SERVICE_OBJECT, service);
         return null;
     }
+
+    /**
+     * Detaches a service from the Ballerina GraphQL listener.
+     *
+     * @param listener - The listener from which the service should be detached
+     * @param service  - The service to be detached
+     * @return - An {@code ErrorValue} if the detaching is failed, null otherwise
+     */
+    public static Object detach(BObject listener, BObject service) {
+        listener.addNativeData(NATIVE_SERVICE_OBJECT, null);
+        return null;
+    }
 }

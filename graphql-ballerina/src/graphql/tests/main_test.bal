@@ -9,7 +9,11 @@ function testAttach() {
     test:assertEquals(resourceValue, "John Doe");
 }
 
-service gqlService = service {
+service gqlService =
+@ServiceConfiguration {
+    basePath: "customURL"
+}
+service {
     isolated resource function name() returns string {
         return "John Doe";
     }

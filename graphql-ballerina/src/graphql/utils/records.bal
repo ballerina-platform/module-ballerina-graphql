@@ -1,5 +1,8 @@
-public type Configurations record {|
-    string sample;
+# Defines the configurations related to Ballerina GraphQL listener
+#
+# + host - The host name/IP of the GraphQL endpoint
+public type ListenerConfiguration record {|
+    string host = "0.0.0.0";
 |};
 
 public type Data record {
@@ -36,5 +39,5 @@ public type OutputObject record {
 #
 # + basePath - Service base path
 public type GraphQlServiceConfiguration record {
-    string basePath = "graphql";
+    string basePath;
 };
