@@ -1,28 +1,43 @@
+import ballerina/http;
+import ballerina/io;
 import ballerina/test;
 
 listener Listener gqlListener = new(9091);
 
 @test:Config{}
 function testAttach() {
+    string document = readFileAndGetString(DOCUMENT_SHORTHAND, 34);
     var result = gqlListener.__attach(gqlService);
-    var resourceValue = getStoredResource(gqlListener, "name");
-    test:assertEquals(resourceValue, "John Doe");
+    json payload = {
+        query: document
+    };
+
+    http:Client httpClient = new("http://localhost:9091/bakerstreet");
+    http:Request request = new;
+    request.setPayload(payload);
+
+    var sendResult = httpClient->post("/", request);
+    if (sendResult is error) {
+        test:assertFail("Error response received for the HTTP call");
+    } else {
+        var responsePayload = sendResult.getJsonPayload();
+        if (responsePayload is json) {
+            io:println(responsePayload.toString());
+        }
+    }
+    var stopResult = gqlListener.__immediateStop();
 }
 
 service gqlService =
 @ServiceConfiguration {
-    basePath: "customURL"
+    basePath: "bakerstreet"
 }
 service {
     isolated resource function name() returns string {
-        return "John Doe";
-    }
-
-    isolated resource function id() returns int {
-        return 1;
+        return "Prof. James Moriarty";
     }
 
     isolated resource function birthDate() returns string {
-        return "01-01-1980";
+        return "01-01-1880";
     }
 };
