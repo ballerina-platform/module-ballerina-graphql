@@ -6,6 +6,9 @@ import org.ballerinalang.jvm.api.values.BObject;
 import org.ballerinalang.jvm.api.values.BString;
 import org.ballerinalang.jvm.types.AttachedFunction;
 
+import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
+import static io.ballerina.stdlib.graphql.utils.Utils.createFieldNotFoundError;
+
 /**
  * This handles Ballerina GraphQL Engine.
  */
@@ -26,7 +29,6 @@ public class Engine {
                 return Wrapper.invokeResource(attachedFunction);
             }
         }
-        // Return error
-        return null;
+        return createFieldNotFoundError(name, OPERATION_QUERY);
     }
 }
