@@ -46,3 +46,11 @@ public type OutputObject record {
 public type GraphQlServiceConfiguration record {
     string basePath;
 };
+
+type ParsedField record {
+    string name;
+    Scalar value;
+    int line;
+    int column;
+    (int|string)[] path;
+};

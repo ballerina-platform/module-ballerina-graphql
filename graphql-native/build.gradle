@@ -31,6 +31,11 @@ dependencies {
     compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
 }
 
+def excludePattern = '**/module-info.java'
+tasks.withType(Checkstyle) {
+    exclude excludePattern
+}
+
 checkstyle {
     toolVersion '7.8.2'
     configFile rootProject.file("build-config/checkstyle/build/checkstyle.xml")
@@ -55,4 +60,13 @@ spotbugsMain {
 
 spotbugsTest {
     enabled = false
+}
+
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
 }
