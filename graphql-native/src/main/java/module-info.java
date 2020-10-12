@@ -18,6 +18,4 @@
 
 module io.ballerina.stdlib.graphql {
     requires io.ballerina.jvm;
-    exports io.ballerina.stdlib.graphql.engine;
-    exports io.ballerina.stdlib.graphql.service;
 }
