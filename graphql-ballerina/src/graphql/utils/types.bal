@@ -1,11 +1,14 @@
 # Represents an error occurred when validating a GraphQL document
 public type InvalidDocumentError distinct error;
 
+# Represents an error occurred when a required field not found in graphql service resources
+public type FieldNotFoundError distinct error;
+
 # Represents an error occurred while a listener operation
 public type ListenerError distinct error;
 
 # Represents any error related to the Ballerina GraphQL module
-type Error InvalidDocumentError|ListenerError;
+type Error InvalidDocumentError|ListenerError|FieldNotFoundError;
 
 # Represents a GraphQL ID field
 type Id int|string;
