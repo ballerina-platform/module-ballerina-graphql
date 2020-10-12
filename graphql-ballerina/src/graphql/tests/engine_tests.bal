@@ -9,8 +9,7 @@ function testInvokeResource() {
     if (attachResult is error) {
         test:assertFail("Attaching the service resulted in an error." + attachResult.toString());
     }
-    Engine engine = new('listener);
-    var result = engine.getOutputForDocument(document);
+    var result = getOutputForDocument('listener, document);
 }
 
 
