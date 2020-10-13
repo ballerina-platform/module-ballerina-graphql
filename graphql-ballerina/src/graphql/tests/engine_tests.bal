@@ -4,7 +4,7 @@ listener Listener 'listener = new(9090);
 
 @test:Config {}
 function testInvokeResource() {
-    string document = readFileAndGetString(DOCUMENT_SHORTHAND, 34);
+    string document = getShorthandNotationDocument();
     var attachResult = 'listener.__attach(invokeResourceTestService);
     if (attachResult is error) {
         test:assertFail("Attaching the service resulted in an error." + attachResult.toString());

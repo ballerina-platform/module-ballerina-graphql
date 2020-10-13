@@ -1,6 +1,22 @@
 import ballerina/io;
 import ballerina/log;
 
+function getGeneralNotationDocument() returns string {
+    return readFileAndGetString(DOCUMENT_GENERAL, 47);
+}
+
+function getShorthandNotationDocument() returns string {
+    return readFileAndGetString(DOCUMENT_SHORTHAND, 34);
+}
+
+function getAnonymousOperationDocument() returns string {
+    return readFileAndGetString(DOCUMENT_ANONYMOUS, 39);
+}
+
+function getNoCloseBraceDocument() returns string {
+    return readFileAndGetString(DOCUMENT_NO_CLOSE_BRACE, 38);
+}
+
 function readFileAndGetString(string fileName, int length) returns string {
     var fileText = readFile(RESOURCE_PATH + fileName, length);
     if (fileText is error) {
@@ -23,3 +39,4 @@ function closeReadChannel(io:ReadableCharacterChannel rc) {
         log:printError("Error occurred while closing character stream", result);
     }
 }
+
