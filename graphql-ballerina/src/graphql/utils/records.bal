@@ -20,14 +20,12 @@ public type Location record {
 
 # Represents an error occurred while executing a GraphQL operation.
 #
-# + message - The message related to the error
 # + locations - Locations of the GraphQL document where the error occurred
 # + path - The complete path for the error in the GraphQL document
-public type ErrorRecord record {
-    string message;
+public type ErrorRecord record {|
     Location[] locations?;
     (int|string)[] path?;
-};
+|};
 
 public type OutputObject record {
     Data data?;

@@ -26,7 +26,7 @@ isolated function getOutputForDocument(Listener 'listener, string documentString
             var resourceValue = getStoredResource('listener, 'field);
             if (resourceValue is error) {
                 string message = resourceValue.message();
-                ErrorRecord errorRecord = getErrorRecordFromToken(token, message);
+                ErrorRecord errorRecord = getErrorRecordFromToken(token);
                 InvalidDocumentError err = InvalidDocumentError(message, errorRecord = errorRecord);
                 errors[errorCount] = getErrorJsonFromError(err);
                 errorCount += 1;
