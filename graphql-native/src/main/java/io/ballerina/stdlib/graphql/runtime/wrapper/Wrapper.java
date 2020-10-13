@@ -7,7 +7,7 @@ import org.ballerinalang.jvm.types.AttachedFunction;
  * Wrapper class for Ballerina Compiler Utils.
  */
 public class Wrapper {
-    public static Object invokeResource(AttachedFunction attachedFunction) {
+    public static Object invokeResource(AttachedFunction attachedFunction, Object[] inputs) {
         String name = attachedFunction.funcName;
         if ("name".equals(name)) {
             return BStringUtils.fromString("John Doe");
