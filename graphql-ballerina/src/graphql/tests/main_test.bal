@@ -6,7 +6,7 @@ listener Listener gqlListener = new(9091);
 
 @test:Config{}
 function testAttach() {
-    string document = readFileAndGetString(DOCUMENT_SHORTHAND, 34);
+    string document = getShorthandNotationDocument();
     var result = gqlListener.__attach(gqlService);
     json payload = {
         query: document
