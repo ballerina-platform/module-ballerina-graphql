@@ -2,7 +2,7 @@ import ballerina/io;
 import ballerina/stringutils;
 
 isolated function parse(string documentString) returns Document|Error {
-    Token[] tokens = tokenize(documentString);
+    Token[] tokens = check tokenize(documentString);
 
     if (tokens[0].value == "{") {
         Token openBraceToken = tokens.remove(0);
@@ -18,18 +18,23 @@ isolated function parse(string documentString) returns Document|Error {
     }
 }
 
-isolated function tokenize(string document) returns Token[] {
+isolated function tokenize(string document) returns Token[]|InvalidDocumentError {
+    string documentWithEof = document + " " + EOF;
     Token[] tokens = [];
-    string[] lines = stringutils:split(document, "\n");
+    string[] lines = stringutils:split(documentWithEof, "\n");
     int lineNumber = 0;
     foreach string line in lines {
         lineNumber += 1;
-        parseByColumns(line, lineNumber, tokens);
+        string trimmedLine = 'string:trim(line);
+        if (!'string:startsWith(trimmedLine, COMMENT_BLOCK)) {
+            check parseByColumns(line, lineNumber, tokens);
+        }
     }
+
     return tokens;
 }
 
-isolated function parseByColumns(string line, int lineNumber, Token[] tokens) {
+isolated function parseByColumns(string line, int lineNumber, Token[] tokens) returns InvalidDocumentError? {
     string[] words = stringutils:split(line, "\\s+");
     foreach string word in words {
         if (word == "") {
@@ -41,7 +46,13 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) {
             line: lineNumber,
             column: columnNumber
         };
-        tokens.push(token);
+        if (isValid(word)) {
+            tokens.push(token);
+        } else {
+            string message = "Invalid token: " + word;
+            ErrorRecord errorRecord = getErrorRecordFromToken(token);
+            return InvalidDocumentError(message, errorRecord = errorRecord);
+        }
     }
 }
 
@@ -102,7 +113,9 @@ isolated function getFields(Token[] tokens) returns Token[]|InvalidDocumentError
             count += 1;
         }
     }
-    return getExpectedSyntaxError(fields[count-1], VALIDATION_TYPE_NAME, "<EOF>");
+    string message = "Syntax Error: Expected Name, found " + fields[count - 1].value + ".";
+    ErrorRecord errorRecord = getErrorRecordFromToken(fields[count - 1]);
+    return InvalidDocumentError(message, errorRecord = errorRecord);
 }
 
 isolated function getOperationType(Token[] tokens) returns OperationType|InvalidDocumentError {
@@ -119,4 +132,12 @@ isolated function printArray(string[] array) {
     foreach string s in array {
         io:println("    " + s);
     }
+}
+
+// TODO: Validate character by character
+isolated function isValid(string word) returns boolean {
+    if (word == OPEN_BRACE || word == CLOSE_BRACE || word == EOF) {
+        return true;
+    }
+    return stringutils:matches(word, WORD_VALIDATOR);
 }

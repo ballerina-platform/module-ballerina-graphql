@@ -1,4 +1,5 @@
 import ballerina/test;
+import ballerina/io;
 
 Token[] fields = [
     {
@@ -52,10 +53,12 @@ function testParseGeneralNotationDocument() returns error? {
 function testParseAnonymousOperation() returns error? {
     string document = getAnonymousOperationDocument();
     var result = parse(document);
+    io:println(result);
 }
 
 @test:Config{}
 function testParseDocumentWithNoCloseBrace() returns error? {
     string document = getNoCloseBraceDocument();
     var result = parse(document);
+    io:println(result);
 }

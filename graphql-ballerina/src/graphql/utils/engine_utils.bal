@@ -17,7 +17,7 @@ isolated function getResultJson(map<json> data, json[] errors) returns map<json>
 }
 
 isolated function getErrorJsonFromError(Error err) returns json {
-    var errorRecord = err.detail()["errorRecord"];
+    var errorRecord = err.detail()[FIELD_ERROR_RECORD];
     if (errorRecord is ErrorRecord) {
         var jsonError = errorRecord.cloneWithType(json);
         if (jsonError is error) {
@@ -26,6 +26,8 @@ isolated function getErrorJsonFromError(Error err) returns json {
             };
             return result;
         } else {
+            map<json> result = <map<json>>jsonError;
+            result["message"] = err.message();
             return jsonError;
         }
     }
