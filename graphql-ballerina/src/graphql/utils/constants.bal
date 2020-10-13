@@ -15,6 +15,8 @@
 // under the License.
 
 const OPERATION_QUERY = "query";
+const OPERATION_MUTATION = "mutation";
+const OPERATION_SUBSCRIPTION = "subscription";
 
 const OPEN_BRACE = "{";
 const CLOSE_BRACE = "}";

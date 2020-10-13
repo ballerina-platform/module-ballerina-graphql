@@ -64,7 +64,6 @@ public class Listener {
                 http:Response response = new;
 
                 string contentType = request.getContentType();
-                log:printInfo(contentType);
                 if (contentType == CONTENT_TYPE_JSON) {
                     var payload = request.getJsonPayload();
                     if (payload is json) {

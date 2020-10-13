@@ -39,4 +39,4 @@ type Scalar int|string|float|boolean|Id;
 public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
 
 # Represents the types of operations valid for Ballerina GraphQL.
-public type OperationType OPERATION_QUERY;
+public type OperationType OPERATION_QUERY|OPERATION_MUTATION|OPERATION_SUBSCRIPTION;
