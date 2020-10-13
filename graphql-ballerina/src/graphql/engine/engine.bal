@@ -54,7 +54,7 @@ isolated function getOutputForDocument(Listener 'listener, string documentString
         }
     } else {
         NotImplementedError err =
-            NotImplementedError("Ballerina GraphQL does not support " + 'type.toString() + " operations yet.");
+            NotImplementedError("Ballerina GraphQL does not support " + 'type.toString() + " operation yet.");
         errors[errorCount] = getErrorJsonFromError(err);
         return getResultJson(data, errors);
     }

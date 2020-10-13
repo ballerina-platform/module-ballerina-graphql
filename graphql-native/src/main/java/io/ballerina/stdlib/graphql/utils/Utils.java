@@ -39,11 +39,11 @@ public class Utils {
 
     public static BError createFieldNotFoundError(BString fieldName, String operationName) {
         StringBuilder stringBuilder = new StringBuilder()
-                .append("Cannot query field \\\"")
+                .append("Cannot query field \"")
                 .append(fieldName.getValue())
-                .append("\\\" on type \\\"")
+                .append("\" on type \"")
                 .append(operationName)
-                .append("\\\".");
+                .append("\".");
         BString message = BStringUtils.fromString(stringBuilder.toString());
         return createError(ERROR_FIELD_NOT_FOUND, message);
     }

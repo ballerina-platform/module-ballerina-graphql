@@ -33,7 +33,7 @@ function testSimpleGraphqlQuery() {
         },
         errors: [
             {
-                message: "Cannot query field \\\"id\\\" on type \\\"QUERY\\\".",
+                message: "Cannot query field \"id\" on type \"QUERY\".",
                 locations: [
                     {
                         line: 3,
