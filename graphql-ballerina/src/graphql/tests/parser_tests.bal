@@ -20,17 +20,17 @@ Token[] fields = [
     {
         value: "name",
         line: 2,
-        column: 4
+        column: 5
     },
     {
         value: "id",
         line: 3,
-        column: 4
+        column: 5
     },
     {
         value: "birthDate",
         line: 4,
-        column: 4
+        column: 5
     }
 ];
 

@@ -36,7 +36,7 @@ public class Constants {
     public static final String ERROR_FIELD_NOT_FOUND = "FieldNotFoundError";
 
     // Operations
-    public static final String OPERATION_QUERY = "QUERY";
+    public static final String OPERATION_QUERY = "query";
 
     public static final String NATIVE_SERVICE_OBJECT = "graphql.service";
 }

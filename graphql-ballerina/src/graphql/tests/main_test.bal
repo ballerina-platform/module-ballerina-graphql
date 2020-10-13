@@ -37,7 +37,7 @@ function testSimpleGraphqlQuery() {
                 locations: [
                     {
                         line: 3,
-                        column: 4
+                        column: 5
                     }
                 ]
             }
