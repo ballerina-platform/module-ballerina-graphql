@@ -1,5 +1,4 @@
 import ballerina/http;
-import ballerina/io;
 import ballerina/test;
 
 listener Listener gqlListener = new(9091);
@@ -12,6 +11,24 @@ function testAttach() {
         query: document
     };
 
+    json expectedJson = {
+        data: {
+            name: "John Doe",
+            birthDate: "01-01-1980"
+        },
+        errors: [
+            {
+                message: "Cannot query field \\\"id\\\" on type \\\"QUERY\\\".",
+                locations: [
+                    {
+                        line: 3,
+                        column: 4
+                    }
+                ]
+            }
+        ]
+    };
+
     http:Client httpClient = new("http://localhost:9091/bakerstreet");
     http:Request request = new;
     request.setPayload(payload);
@@ -22,7 +39,7 @@ function testAttach() {
     } else {
         var responsePayload = sendResult.getJsonPayload();
         if (responsePayload is json) {
-            io:println(responsePayload.toString());
+            test:assertEquals(responsePayload, expectedJson);
         }
     }
     var stopResult = gqlListener.__immediateStop();

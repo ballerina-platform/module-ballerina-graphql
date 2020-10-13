@@ -1,5 +1,4 @@
 import ballerina/test;
-import ballerina/io;
 
 Token[] fields = [
     {
@@ -52,13 +51,25 @@ function testParseGeneralNotationDocument() returns error? {
 @test:Config{}
 function testParseAnonymousOperation() returns error? {
     string document = getAnonymousOperationDocument();
-    var result = parse(document);
-    io:println(result);
+    Document result = check parse(document);
+    Document expected = {
+        operations: [
+            {
+                'type: "query",
+                fields: fields
+            }
+        ]
+    };
+    test:assertEquals(result, expected);
 }
 
 @test:Config{}
 function testParseDocumentWithNoCloseBrace() returns error? {
     string document = getNoCloseBraceDocument();
-    var result = parse(document);
-    io:println(result);
+    Document|Error result = parse(document);
+    if (result is Document) {
+        test:assertFail("Expected error, received document");
+    } else {
+        test:assertEquals(result.message(), "Syntax Error: Expected Name, found \\\"<EOF>\\\".");
+    }
 }

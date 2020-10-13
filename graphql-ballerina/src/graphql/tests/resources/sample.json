@@ -1,0 +1,24 @@
+{
+    "operations": [
+        {
+            "type": "query",
+            "fields": [
+                {
+                    "value": "name",
+                    "line": 2,
+                    "column": 4
+                },
+                {
+                    "value": "id",
+                    "line": 3,
+                    "column": 4
+                },
+                {
+                    "value": "birthDate",
+                    "line": 4,
+                    "column": 4
+                }
+            ]
+        }
+    ]
+}
