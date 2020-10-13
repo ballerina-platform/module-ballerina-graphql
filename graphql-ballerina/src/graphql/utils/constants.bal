@@ -30,6 +30,8 @@ const RESULT_FIELD_ERRORS = "errors";
 const RESULT_FIELD_DATA = "data";
 
 const FIELD_ERROR_RECORD = "errorRecord";
+const FIELD_LOCATIONS = "locations";
+const FIELD_MESSAGE = "message";
 
 // Parser
 const COMMENT_BLOCK = "#";

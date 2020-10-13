@@ -23,23 +23,23 @@ isolated function getStoredResource(Listener 'listener, string name) returns Sca
 
 isolated function getResultJson(map<json> data, json[] errors) returns map<json> {
     map<json> result = {};
-    if (data.length() > 0) {
-        result[RESULT_FIELD_DATA] = data;
-    }
     if (errors.length() > 0) {
         result[RESULT_FIELD_ERRORS] = errors;
+    }
+    if (data.length() > 0) {
+        result[RESULT_FIELD_DATA] = data;
     }
     return result;
 }
 
 isolated function getErrorJsonFromError(Error err) returns json {
     map<json> result = {};
-    result["message"] = err.message();
+    result[FIELD_MESSAGE] = err.message();
     var errorRecord = err.detail()[FIELD_ERROR_RECORD];
     if (errorRecord is ErrorRecord) {
         json[] jsonLocations = getLocationsJsonArray(errorRecord?.locations);
         if (jsonLocations.length() > 0) {
-            result["locations"] = jsonLocations;
+            result[FIELD_LOCATIONS] = jsonLocations;
         }
     }
     return result;
