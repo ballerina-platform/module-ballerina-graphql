@@ -14,12 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
 import ballerina/stringutils;
 
 isolated function parse(string documentString) returns Document|Error {
     Token[] tokens = check tokenize(documentString);
-
     if (tokens[0].value == "{") {
         Token openBraceToken = tokens.remove(0);
         Operation operation = check parseShortHandNotation(tokens);
@@ -46,7 +44,6 @@ isolated function tokenize(string document) returns Token[]|InvalidDocumentError
             check parseByColumns(line, lineNumber, tokens);
         }
     }
-
     return tokens;
 }
 
@@ -141,12 +138,6 @@ isolated function getOperationType(Token[] tokens) returns OperationType|Invalid
         return operationType;
     } else {
         return getUnexpectedSyntaxError(token, VALIDATION_TYPE_NAME);
-    }
-}
-
-isolated function printArray(string[] array) {
-    foreach string s in array {
-        io:println("    " + s);
     }
 }
 
