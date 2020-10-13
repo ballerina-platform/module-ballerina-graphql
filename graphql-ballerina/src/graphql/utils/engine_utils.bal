@@ -17,18 +17,25 @@ isolated function getResultJson(map<json> data, json[] errors) returns map<json>
 }
 
 isolated function getErrorJsonFromError(Error err) returns json {
+    map<json> result = {};
+    result["message"] = err.message();
     var errorRecord = err.detail()[FIELD_ERROR_RECORD];
     if (errorRecord is ErrorRecord) {
-        var jsonError = errorRecord.cloneWithType(json);
-        if (jsonError is error) {
-            json result = {
-                message: jsonError.message()
-            };
-            return result;
-        } else {
-            map<json> result = <map<json>>jsonError;
-            result["message"] = err.message();
-            return jsonError;
+        json[] jsonLocations = getLocationsJsonArray(errorRecord?.locations);
+        if (jsonLocations.length() > 0) {
+            result["locations"] = jsonLocations;
         }
     }
+    return result;
+}
+
+isolated function getLocationsJsonArray(Location[]? locations) returns json[] {
+    json[] jsonLocations = [];
+    if (locations is Location[]) {
+        foreach Location location in locations {
+            json jsonLocation = <json>location.cloneWithType(json);
+            jsonLocations.push(jsonLocation);
+        }
+    }
+    return jsonLocations;
 }
