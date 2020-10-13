@@ -26,7 +26,7 @@ public class Engine {
         AttachedFunction[] attachedFunctions = attachedService.getType().getAttachedFunctions();
         for (AttachedFunction attachedFunction:attachedFunctions) {
             if (attachedFunction.funcName.equals(name.toString())) {
-                return Wrapper.invokeResource(attachedFunction);
+                return Wrapper.invokeResource(attachedFunction, null);
             }
         }
         return createFieldNotFoundError(name, OPERATION_QUERY);
