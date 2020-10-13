@@ -20,11 +20,15 @@ isolated function getOutputForDocument(Listener 'listener, string documentString
     Operation operation = document.operations[0];
     OperationType 'type = operation.'type;
     if ('type == OPERATION_QUERY) {
-        string[] fields = operation.fields;
-        foreach string 'field in fields {
+        Token[] fields = operation.fields;
+        foreach Token token in fields {
+            string 'field = token.value;
             var resourceValue = getStoredResource('listener, 'field);
             if (resourceValue is error) {
-                errors[errorCount] = resourceValue.message();
+                string message = resourceValue.message();
+                ErrorRecord errorRecord = getErrorRecordFromToken(token, message);
+                InvalidDocumentError err = InvalidDocumentError(message, errorRecord = errorRecord);
+                errors[errorCount] = getErrorJsonFromError(err);
                 errorCount += 1;
             } else if (resourceValue is ()) {
                 data['field] = null;

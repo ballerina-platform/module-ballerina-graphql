@@ -5,14 +5,17 @@ isolated function parse(string documentString) returns Document|Error {
     Token[] tokens = tokenize(documentString);
 
     if (tokens[0].value == "{") {
-        parseShortHandNotation(tokens);
+        Token openBraceToken = tokens.remove(0);
+        Operation operation = check parseShortHandNotation(tokens);
+        return {
+            operations: [operation]
+        };
     } else {
         Operation operation = check parseGeneralNotation(tokens);
         return {
             operations: [operation]
         };
     }
-    return NotImplementedError("Not Implemented");
 }
 
 isolated function tokenize(string document) returns Token[] {
@@ -42,8 +45,9 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) {
     }
 }
 
-isolated function parseShortHandNotation(Token[] tokens) {
-    io:println("Shorthand Notation");
+isolated function parseShortHandNotation(Token[] tokens) returns Operation|InvalidDocumentError {
+    OperationType 'type = OPERATION_QUERY;
+    return getOperationRecord('type, tokens);
 }
 
 isolated function parseGeneralNotation(Token[] tokens) returns Operation|InvalidDocumentError {
@@ -51,38 +55,38 @@ isolated function parseGeneralNotation(Token[] tokens) returns Operation|Invalid
     Token operationToken = tokens.remove(0);
     string operationName = operationToken.value;
     if (operationName == OPEN_BRACE) {
-        return getOperation(tokens);
+        return getOperationRecord(operationType, tokens);
     } else {
         Token openBraceToken = tokens.remove(0);
         string openBraceTokenValue = openBraceToken.value;
         if (openBraceTokenValue == OPEN_BRACE) {
-            return getOperation(tokens, operationName);
+            return getOperationRecord(operationType, tokens, operationName);
         } else {
             return getExpectedSyntaxError(openBraceToken, OPEN_BRACE, VALIDATION_TYPE_NAME);
         }
     }
 }
 
-isolated function getOperation(Token[] tokens, string name = "") returns Operation|InvalidDocumentError {
-    string[] fields = check getFields(tokens);
+isolated function getOperationRecord(OperationType 'type, Token[] tokens, string name = "") returns
+Operation|InvalidDocumentError {
+    Token[] fields = check getFields(tokens);
     if (name == "") {
         return {
-            'type: OPERATION_QUERY,
+            'type: 'type,
             fields: fields
         };
     } else {
         return {
-            'type: OPERATION_QUERY,
+            'type: 'type,
             fields: fields,
             name: name
         };
     }
 }
 
-isolated function getFields(Token[] tokens) returns string[]|InvalidDocumentError {
-    string[] fields = [];
+isolated function getFields(Token[] tokens) returns Token[]|InvalidDocumentError {
+    Token[] fields = [];
     int count = 0;
-    Token lastToken = tokens[0];
     foreach Token token in tokens {
         string value = token.value;
         if (value == OPEN_BRACE) {
@@ -94,12 +98,11 @@ isolated function getFields(Token[] tokens) returns string[]|InvalidDocumentErro
             }
             return fields;
         } else {
-            fields[count] = value;
-            lastToken = token;
+            fields[count] = token;
             count += 1;
         }
     }
-    return getExpectedSyntaxError(lastToken, VALIDATION_TYPE_NAME, "<EOF>");
+    return getExpectedSyntaxError(fields[count-1], VALIDATION_TYPE_NAME, "<EOF>");
 }
 
 isolated function getOperationType(Token[] tokens) returns OperationType|InvalidDocumentError {
