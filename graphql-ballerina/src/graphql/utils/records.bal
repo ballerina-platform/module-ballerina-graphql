@@ -44,14 +44,14 @@ public type GraphQlServiceConfiguration record {
 public type Operation record {|
     OperationType 'type;
     string name?;
-    string[] fields;
+    Token[] fields;
 |};
 
 public type Document record {|
     Operation[] operations;
 |};
 
-type Token record {|
+public type Token record {|
     string value;
     int line;
     int column = 0;
