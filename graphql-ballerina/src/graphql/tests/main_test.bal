@@ -4,13 +4,12 @@ import ballerina/test;
 listener Listener gqlListener = new(9091);
 
 @test:Config{}
-function testAttach() {
+function testSimpleGraphqlQuery() {
     string document = getShorthandNotationDocument();
     var result = gqlListener.__attach(gqlService);
     json payload = {
         query: document
     };
-
     json expectedJson = {
         data: {
             name: "John Doe",
@@ -28,7 +27,6 @@ function testAttach() {
             }
         ]
     };
-
     http:Client httpClient = new("http://localhost:9091/bakerstreet");
     http:Request request = new;
     request.setPayload(payload);
@@ -51,10 +49,10 @@ service gqlService =
 }
 service {
     isolated resource function name() returns string {
-        return "Prof. James Moriarty";
+        return "John Doe";
     }
 
     isolated resource function birthDate() returns string {
-        return "01-01-1880";
+        return "01-01-1980";
     }
 };
