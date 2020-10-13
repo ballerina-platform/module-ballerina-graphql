@@ -113,7 +113,7 @@ isolated function getFields(Token[] tokens) returns Token[]|InvalidDocumentError
             count += 1;
         }
     }
-    string message = "Syntax Error: Expected Name, found " + fields[count - 1].value + ".";
+    string message = "Syntax Error: Expected Name, found \\\"" + fields[count - 1].value + "\\\".";
     ErrorRecord errorRecord = getErrorRecordFromToken(fields[count - 1]);
     return InvalidDocumentError(message, errorRecord = errorRecord);
 }
