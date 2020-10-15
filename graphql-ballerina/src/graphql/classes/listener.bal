@@ -19,26 +19,29 @@ import ballerina/lang.'object;
 import ballerina/log;
 
 string basePath = "graphql";
-Listener? selfListener = ();
+Engine? globalEngine = ();
 
 public class Listener {
     *'object:Listener;
-    int port;
-    http:Listener httpListener;
+    private int port;
+    private http:Listener httpListener;
+    private Engine engine;
 
-    public isolated function init(int port, ListenerConfiguration? configs = ()) {
+    public function init(int port, ListenerConfiguration? configs = ()) {
         http:ListenerConfiguration? httpListenerConfigs = ();
         if (configs is ListenerConfiguration) {
             httpListenerConfigs = getHttpListenerConfigs(configs);
         }
         self.httpListener = new(port, httpListenerConfigs);
         self.port = port;
+        self.engine = new(self);
+        globalEngine = self.engine;
     }
 
     // Cannot mark as isolated due to global variable usage. Discussion:
     // (https://ballerina-platform.slack.com/archives/C47EAELR1/p1602066015052000)
     public function __attach(service s, string? name = ()) returns error? {
-        selfListener = <@untainted>self;
+        self.engine.addService(s);
         GraphQlServiceConfiguration? serviceConfig = getServiceAnnotations(s);
         if (serviceConfig is GraphQlServiceConfiguration) {
             basePath = serviceConfig.basePath;
@@ -72,10 +75,9 @@ public class Listener {
                         var document = payload.query;
                         if (document is string) {
                             json? outputObject = ();
-                            if (selfListener is Listener) {
-                                Listener gqlListener = <Listener>selfListener;
-                                Engine engine = new(gqlListener);
-                                outputObject = engine.getOutputForDocument(document);
+                            if (globalEngine is Engine) {
+                                Engine selfEngine = <Engine>globalEngine;
+                                outputObject = selfEngine.getOutputForDocument(document);
                             }
                             response.setJsonPayload(outputObject);
                         }

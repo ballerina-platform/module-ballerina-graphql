@@ -21,6 +21,10 @@ isolated function getStoredResource(Listener 'listener, string name) returns Sca
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 
+isolated function getFieldNames(service s) returns string[] = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+} external;
+
 isolated function getResultJson(map<json> data, json[] errors) returns map<json> {
     map<json> result = {};
     if (errors.length() > 0) {

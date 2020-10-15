@@ -62,7 +62,7 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) re
             line: lineNumber,
             column: columnNumber
         };
-        check validate(token);
+        check validateToken(token);
         tokens.push(token);
     }
 }
@@ -140,12 +140,12 @@ isolated function getOperationType(Token[] tokens) returns OperationType|SyntaxE
 }
 
 // TODO: Validate character by character
-isolated function validate(Token token) returns InvalidCharacterError? {
+isolated function validateToken(Token token) returns InvalidCharacterError? {
     string word = token.value;
     if (word == OPEN_BRACE || word == CLOSE_BRACE || word == EOF) {
         return;
     }
-    if (stringutils:matches(word, WORD_VALIDATOR)) {
+    if (stringutils:matches(word, FIELD_VALIDATOR)) {
         return;
     }
     string message = "Invalid token: " + word;
