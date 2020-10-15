@@ -53,7 +53,10 @@ public class Listener {
                 methods: ["GET"]
             }
             resource isolated function get(http:Caller caller, http:Request request) {
-                log:printInfo("HTTP service - GET request");
+                json payload = getErrorJson("HTTP GET requests are not yet supported");
+                http:Response response = new;
+                response.setPayload(payload);
+                var result = caller->respond(response);
             }
 
             @http:ResourceConfig {
@@ -62,7 +65,6 @@ public class Listener {
             }
             resource function post(http:Caller caller, http:Request request) {
                 http:Response response = new;
-
                 string contentType = request.getContentType();
                 if (contentType == CONTENT_TYPE_JSON) {
                     var payload = request.getJsonPayload();
@@ -72,7 +74,8 @@ public class Listener {
                             InvalidDocumentError|json outputObject = ();
                             if (selfListener is Listener) {
                                 Listener gqlListener = <Listener>selfListener;
-                                outputObject = getOutputForDocument(gqlListener, document);
+                                Engine engine = new(gqlListener);
+                                outputObject = engine.getOutputForDocument(document);
                             }
                             if (outputObject is json) {
                                 response.setJsonPayload(outputObject);
@@ -80,7 +83,11 @@ public class Listener {
                         }
                     }
                 } else if (contentType == CONTENT_TYPE_GQL) {
-                    log:printInfo("GQL");
+                    json payload = getErrorJson("Content-Type 'application/graphql' is not yet supported");
+                    response.setPayload(payload);
+                } else {
+                    json payload = getErrorJson("Invalid 'Content-type' received");
+                    response.setPayload(payload);
                 }
                 var sendResult = caller->respond(response);
             }

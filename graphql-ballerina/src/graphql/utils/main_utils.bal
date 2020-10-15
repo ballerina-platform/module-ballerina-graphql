@@ -43,3 +43,13 @@ isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
         locations: [location]
     };
 }
+
+isolated function getErrorJson(string message) returns json {
+    return {
+        errors: [
+            {
+                massage: message
+            }
+        ]
+    };
+}

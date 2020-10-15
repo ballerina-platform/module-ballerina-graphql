@@ -86,6 +86,6 @@ function testParseDocumentWithNoCloseBrace() returns error? {
     if (result is Document) {
         test:assertFail("Expected error, received document");
     } else {
-        test:assertEquals(result.message(), "Syntax Error: Expected Name, found \\\"<EOF>\\\".");
+        test:assertEquals(result.message(), "Syntax Error: Expected Name, found <EOF>.");
     }
 }
