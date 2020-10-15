@@ -67,20 +67,7 @@ public class Listener {
                 methods: ["POST"]
             }
             resource function post(http:Caller caller, http:Request request) {
-                http:Response response = new;
-                string contentType = request.getContentType();
-                if (contentType == CONTENT_TYPE_JSON) {
-                    var payload = request.getJsonPayload();
-                    if (payload is json) {
-                        processJsonPayload(globalEngine, payload, response);
-                    }
-                } else if (contentType == CONTENT_TYPE_GQL) {
-                    json payload = getErrorJson("Content-Type 'application/graphql' is not yet supported");
-                    response.setPayload(payload);
-                } else {
-                    json payload = getErrorJson("Invalid 'Content-type' received");
-                    response.setPayload(payload);
-                }
+                http:Response response = handlePostRequests(globalEngine, request);
                 var sendResult = caller->respond(response);
             }
         };
