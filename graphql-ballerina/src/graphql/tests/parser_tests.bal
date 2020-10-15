@@ -28,7 +28,7 @@ Token[] fields = [
         column: 5
     },
     {
-        value: "birthDate",
+        value: "birthdate",
         line: 4,
         column: 5
     }
@@ -41,7 +41,7 @@ function testParseShorthandDocument() returns error? {
     Document expectedDocument = {
         operations: [
             {
-                'type: "query",
+                'type: OPERATION_QUERY,
                 fields: fields
             }
         ]
@@ -54,7 +54,7 @@ function testParseGeneralNotationDocument() returns error? {
     string document = getGeneralNotationDocument();
     Document parsedDocument = check parse(document);
     Operation expectedOperation = {
-        'type: "query",
+        'type: OPERATION_QUERY,
         name: "getData",
         fields: fields
     };
@@ -71,7 +71,7 @@ function testParseAnonymousOperation() returns error? {
     Document expected = {
         operations: [
             {
-                'type: "query",
+                'type: OPERATION_QUERY,
                 fields: fields
             }
         ]

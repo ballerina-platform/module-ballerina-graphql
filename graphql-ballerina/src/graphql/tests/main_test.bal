@@ -29,7 +29,7 @@ function testSimpleGraphqlQuery() {
     json expectedJson = {
         errors: [
             {
-                message: "Cannot query field \"id\" on type \"query\".",
+                message: "Cannot query field \"id\" on type \"Query\".",
                 locations: [
                     {
                         line: 3,
@@ -40,7 +40,7 @@ function testSimpleGraphqlQuery() {
         ],
         data: {
             name: "John Doe",
-            birthDate: "01-01-1980"
+            birthdate: "01-01-1980"
         }
     };
     http:Client httpClient = new("http://localhost:9091/bakerstreet");
@@ -68,7 +68,7 @@ service {
         return "John Doe";
     }
 
-    isolated resource function birthDate() returns string {
+    isolated resource function birthdate() returns string {
         return "01-01-1980";
     }
 };

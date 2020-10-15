@@ -53,11 +53,9 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) re
         if (word == "") {
             continue;
         }
-        int columnNumber = 0;
+        int columnNumber = <int>'string:indexOf(line, word) + 1;
         if (word == EOF) {
-            columnNumber = <int>'string:indexOf(line, word);
-        } else {
-            columnNumber = <int>'string:indexOf(line, word) + 1;
+            columnNumber = columnNumber - 2;
         }
         Token token = {
             value: word,

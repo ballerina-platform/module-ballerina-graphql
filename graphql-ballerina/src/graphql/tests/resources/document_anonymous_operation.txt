@@ -1,5 +1,5 @@
 query {
     name
     id
-    birthDate
+    birthdate
 }
