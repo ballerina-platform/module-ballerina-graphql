@@ -39,4 +39,8 @@ type Scalar int|string|float|boolean|Id;
 public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
 
 # Represents the types of operations valid for Ballerina GraphQL.
-public type OperationType OPERATION_QUERY|OPERATION_MUTATION|OPERATION_SUBSCRIPTION;
+public enum OperationType {
+    Query = "query",
+    Mutation = "mutation",
+    Subscription = "subscription"
+}

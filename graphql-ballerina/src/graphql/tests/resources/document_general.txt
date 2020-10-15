@@ -1,5 +1,5 @@
 query getData {
     name
     id
-    birthDate
+    birthdate
 }

@@ -31,7 +31,7 @@ public class Wrapper {
             return BStringUtils.fromString("John Doe");
         } else if ("id".equals(name)) {
             return 1;
-        } else if ("birthDate".equals(name)) {
+        } else if ("birthdate".equals(name)) {
             return BStringUtils.fromString("01-01-1980");
         }
         return null;

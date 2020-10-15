@@ -39,7 +39,7 @@ service invokeResourceTestService = service {
         return 1;
     }
 
-    isolated resource function birthDate() returns string {
+    isolated resource function birthdate() returns string {
         return "01-01-1980";
     }
 };
