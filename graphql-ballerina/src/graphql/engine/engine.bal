@@ -25,8 +25,8 @@ public class Engine {
         map<json> data = {};
         json[] errors = [];
         int errorCount = 0;
-        Document|Error parseResult = parse(documentString);
-        if (parseResult is Error) {
+        Document|ParsingError parseResult = parse(documentString);
+        if (parseResult is ParsingError) {
             errors[errorCount] = getErrorJsonFromError(parseResult);
             return getResultJson(data, errors);
         }
@@ -50,7 +50,7 @@ public class Engine {
                 if (resourceValue is error) {
                     string message = resourceValue.message();
                     ErrorRecord errorRecord = getErrorRecordFromToken(token);
-                    InvalidDocumentError err = InvalidDocumentError(message, errorRecord = errorRecord);
+                    ExecutionError err = ExecutionError(message, errorRecord = errorRecord);
                     errors[errorCount] = getErrorJsonFromError(err);
                     errorCount += 1;
                 } else if (resourceValue is ()) {
@@ -66,5 +66,21 @@ public class Engine {
             return getResultJson(data, errors);
         }
         return getResultJson(data, errors);
+    }
+
+    isolated function validate(Document document) returns ValidationError? {
+        Operation[] operations = document.operations;
+        if (operations.length() > 1) {
+            return NotImplementedError("Ballerina GraphQL does not support multiple operations yet.");
+        }
+    }
+
+    isolated function process(string documentString) {
+        //Document|Error parseResult = parse(documentString);
+        //if (parseResult is Error) {
+        //    errors[errorCount] = getErrorJsonFromError(parseResult);
+        //    return getResultJson(data, errors);
+        //}
+        //Document document = <Document>parseResult;
     }
 }

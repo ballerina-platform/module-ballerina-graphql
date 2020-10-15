@@ -16,7 +16,7 @@
 
 import ballerina/stringutils;
 
-isolated function parse(string documentString) returns Document|Error {
+isolated function parse(string documentString) returns Document|ParsingError {
     Token[] tokens = check tokenize(documentString);
     if (tokens[0].value == "{") {
         Token openBraceToken = tokens.remove(0);
@@ -32,7 +32,7 @@ isolated function parse(string documentString) returns Document|Error {
     }
 }
 
-isolated function tokenize(string document) returns Token[]|InvalidDocumentError {
+isolated function tokenize(string document) returns Token[]|ParsingError {
     string documentWithEof = document + " " + EOF;
     Token[] tokens = [];
     string[] lines = stringutils:split(documentWithEof, "\n");
@@ -47,7 +47,7 @@ isolated function tokenize(string document) returns Token[]|InvalidDocumentError
     return tokens;
 }
 
-isolated function parseByColumns(string line, int lineNumber, Token[] tokens) returns InvalidDocumentError? {
+isolated function parseByColumns(string line, int lineNumber, Token[] tokens) returns InvalidCharacterError? {
     string[] words = stringutils:split(line, "\\s+");
     foreach string word in words {
         if (word == "") {
@@ -62,22 +62,17 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) re
             line: lineNumber,
             column: columnNumber
         };
-        if (isValid(word)) {
-            tokens.push(token);
-        } else {
-            string message = "Invalid token: " + word;
-            ErrorRecord errorRecord = getErrorRecordFromToken(token);
-            return InvalidDocumentError(message, errorRecord = errorRecord);
-        }
+        check validate(token);
+        tokens.push(token);
     }
 }
 
-isolated function parseShortHandNotation(Token[] tokens) returns Operation|InvalidDocumentError {
+isolated function parseShortHandNotation(Token[] tokens) returns Operation|ParsingError {
     OperationType 'type = OPERATION_QUERY;
     return getOperationRecord('type, tokens);
 }
 
-isolated function parseGeneralNotation(Token[] tokens) returns Operation|InvalidDocumentError {
+isolated function parseGeneralNotation(Token[] tokens) returns Operation|ParsingError {
     OperationType operationType = check getOperationType(tokens);
     Token operationToken = tokens.remove(0);
     string operationName = operationToken.value;
@@ -95,7 +90,7 @@ isolated function parseGeneralNotation(Token[] tokens) returns Operation|Invalid
 }
 
 isolated function getOperationRecord(OperationType 'type, Token[] tokens, string name = "") returns
-Operation|InvalidDocumentError {
+Operation|ParsingError {
     Token[] fields = check getFields(tokens);
     if (name == "") {
         return {
@@ -111,14 +106,14 @@ Operation|InvalidDocumentError {
     }
 }
 
-isolated function getFields(Token[] tokens) returns Token[]|InvalidDocumentError {
+isolated function getFields(Token[] tokens) returns Token[]|ParsingError {
     Token[] fields = [];
     int count = 0;
     foreach Token token in tokens {
         string value = token.value;
         if (value == OPEN_BRACE) {
             string message = "Ballerina GraphQL does not support multi-level queries yet.";
-            return InvalidDocumentError(message);
+            return NotSupportedError(message);
         } else if (value == CLOSE_BRACE) {
             if (fields.length() == 0) {
                 return getExpectedSyntaxError(token, VALIDATION_TYPE_NAME, CLOSE_BRACE);
@@ -131,10 +126,10 @@ isolated function getFields(Token[] tokens) returns Token[]|InvalidDocumentError
     }
     string message = "Syntax Error: Expected Name, found <EOF>.";
     ErrorRecord errorRecord = getErrorRecordFromToken(fields[count - 1]);
-    return InvalidDocumentError(message, errorRecord = errorRecord);
+    return InvalidTokenError(message, errorRecord = errorRecord);
 }
 
-isolated function getOperationType(Token[] tokens) returns OperationType|InvalidDocumentError {
+isolated function getOperationType(Token[] tokens) returns OperationType|SyntaxError {
     Token token = tokens.remove(0);
     var operationType = token.value;
     if (operationType is OperationType) {
@@ -145,9 +140,15 @@ isolated function getOperationType(Token[] tokens) returns OperationType|Invalid
 }
 
 // TODO: Validate character by character
-isolated function isValid(string word) returns boolean {
+isolated function validate(Token token) returns InvalidCharacterError? {
+    string word = token.value;
     if (word == OPEN_BRACE || word == CLOSE_BRACE || word == EOF) {
-        return true;
+        return;
     }
-    return stringutils:matches(word, WORD_VALIDATOR);
+    if (stringutils:matches(word, WORD_VALIDATOR)) {
+        return;
+    }
+    string message = "Invalid token: " + word;
+    ErrorRecord errorRecord = getErrorRecordFromToken(token);
+    return InvalidCharacterError(message, errorRecord = errorRecord);
 }
