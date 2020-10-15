@@ -72,15 +72,7 @@ public class Listener {
                 if (contentType == CONTENT_TYPE_JSON) {
                     var payload = request.getJsonPayload();
                     if (payload is json) {
-                        var document = payload.query;
-                        if (document is string) {
-                            json? outputObject = ();
-                            if (globalEngine is Engine) {
-                                Engine selfEngine = <Engine>globalEngine;
-                                outputObject = selfEngine.getOutputForDocument(document);
-                            }
-                            response.setJsonPayload(outputObject);
-                        }
+                        processJsonPayload(globalEngine, payload, response);
                     }
                 } else if (contentType == CONTENT_TYPE_GQL) {
                     json payload = getErrorJson("Content-Type 'application/graphql' is not yet supported");

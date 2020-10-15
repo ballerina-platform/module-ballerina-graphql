@@ -21,6 +21,18 @@ isolated function logAndPanicError(string message, error e) {
     panic e;
 }
 
+isolated function getOperationName(OperationType operationType) returns string {
+    match operationType {
+        Mutation => {
+            return "Mutation";
+        }
+        Subscription => {
+            return "Subscription";
+        }
+    }
+    return "Query";
+}
+
 isolated function getExpectedSyntaxError(Token token, string expected, string foundType = "") returns SyntaxError {
     string message = "Syntax Error: Expected \"" + expected + "\", found " + foundType + " \"" + token.value + "\".";
     ErrorRecord errorRecord = getErrorRecordFromToken(token);

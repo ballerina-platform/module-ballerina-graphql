@@ -25,6 +25,18 @@ isolated function getHttpListenerConfigs(ListenerConfiguration configs) returns 
     return httpConfigs;
 }
 
+isolated function processJsonPayload(Engine? engine, json payload, http:Response response) {
+    var document = payload.query;
+    var operationName = payload.operationName;
+    if (document is string) {
+        json? outputObject = ();
+        if (engine is Engine) {
+            outputObject = engine.validate(document);
+        }
+        response.setJsonPayload(outputObject);
+    }
+}
+
 isolated function attach(Listener 'listener, service s, string? name) returns error? = @java:Method
 {
     'class: "io.ballerina.stdlib.graphql.service.ServiceHandler"
