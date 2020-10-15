@@ -71,15 +71,13 @@ public class Listener {
                     if (payload is json) {
                         var document = payload.query;
                         if (document is string) {
-                            InvalidDocumentError|json outputObject = ();
+                            json? outputObject = ();
                             if (selfListener is Listener) {
                                 Listener gqlListener = <Listener>selfListener;
                                 Engine engine = new(gqlListener);
                                 outputObject = engine.getOutputForDocument(document);
                             }
-                            if (outputObject is json) {
-                                response.setJsonPayload(outputObject);
-                            }
+                            response.setJsonPayload(outputObject);
                         }
                     }
                 } else if (contentType == CONTENT_TYPE_GQL) {
