@@ -37,11 +37,7 @@ function testSimpleGraphqlQuery() {
                     }
                 ]
             }
-        ],
-        data: {
-            name: "John Doe",
-            birthdate: "01-01-1980"
-        }
+        ]
     };
     http:Client httpClient = new("http://localhost:9091/bakerstreet");
     http:Request request = new;

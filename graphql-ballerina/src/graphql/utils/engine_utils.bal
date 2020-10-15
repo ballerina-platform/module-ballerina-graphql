@@ -16,14 +16,46 @@
 
 import ballerina/java;
 
-isolated function getStoredResource(Listener 'listener, string name) returns Scalar|error? = @java:Method {
-    name: "getResource",
-    'class: "io.ballerina.stdlib.graphql.engine.Engine"
-} external;
+isolated function validateDocument(Engine engine, Document document) returns ValidationError? {
+    Operation[] operations = document.operations;
+    if (operations.length() > 1) {
+        return NotImplementedError("Ballerina GraphQL does not support multiple operations yet.");
+    } else if (operations.length() == 0) {
+        return InvalidDocumentError("Document does not contain any operation.");
+    }
+    Operation operation = operations[0];
+    check validateOperation(engine, operation);
+}
 
-isolated function getFieldNames(service s) returns string[] = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.engine.Engine"
-} external;
+isolated function validateOperation(Engine engine, Operation operation) returns ValidationError? {
+    OperationType 'type = operation.'type;
+    if ('type != Query) {
+        string message = "Ballerina GraphQL does not support " + getOperationName('type) + " operation yet.";
+        return NotImplementedError(message);
+    }
+
+    Token[] tokens = operation.fields;
+    foreach Token token in tokens {
+        check validateField(engine, token, 'type);
+    }
+}
+
+isolated function validateField(Engine engine, Token token, OperationType 'type) returns ValidationError? {
+    string value = token.value;
+    int? index = engine.getFields().indexOf(value);
+    if (index is ()) {
+        string message = "Cannot query field \"" + value + "\" on type \"" + getOperationName('type) + "\".";
+        ErrorRecord errorRecord = getErrorRecordFromToken(token);
+        return FieldNotFoundError(message, errorRecord = errorRecord);
+    }
+}
+
+isolated function getResultJsonForError(Error err) returns map<json> {
+    map<json> result = {};
+    json[] jsonErrors = [getErrorJsonFromError(err)];
+    result[RESULT_FIELD_ERRORS] = jsonErrors;
+    return result;
+}
 
 isolated function getResultJson(map<json> data, json[] errors) returns map<json> {
     map<json> result = {};
@@ -59,3 +91,12 @@ isolated function getLocationsJsonArray(Location[]? locations) returns json[] {
     }
     return jsonLocations;
 }
+
+isolated function executeResource(Listener 'listener, string name) returns Scalar|error? = @java:Method {
+    name: "getResource",
+    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+} external;
+
+isolated function getFieldNames(service s) returns string[] = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+} external;
