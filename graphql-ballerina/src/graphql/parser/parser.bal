@@ -53,7 +53,12 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) re
         if (word == "") {
             continue;
         }
-        int columnNumber = <int>'string:indexOf(line, word) + 1;
+        int columnNumber = 0;
+        if (word == EOF) {
+            columnNumber = <int>'string:indexOf(line, word);
+        } else {
+            columnNumber = <int>'string:indexOf(line, word) + 1;
+        }
         Token token = {
             value: word,
             line: lineNumber,
@@ -126,7 +131,7 @@ isolated function getFields(Token[] tokens) returns Token[]|InvalidDocumentError
             count += 1;
         }
     }
-    string message = "Syntax Error: Expected Name, found \\\"" + fields[count - 1].value + "\\\".";
+    string message = "Syntax Error: Expected Name, found <EOF>.";
     ErrorRecord errorRecord = getErrorRecordFromToken(fields[count - 1]);
     return InvalidDocumentError(message, errorRecord = errorRecord);
 }
