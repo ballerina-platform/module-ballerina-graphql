@@ -20,6 +20,9 @@ package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.stdlib.graphql.runtime.wrapper.Wrapper;
 import io.ballerina.stdlib.graphql.utils.Constants;
+import org.ballerinalang.jvm.api.BStringUtils;
+import org.ballerinalang.jvm.api.BValueCreator;
+import org.ballerinalang.jvm.api.values.BArray;
 import org.ballerinalang.jvm.api.values.BObject;
 import org.ballerinalang.jvm.api.values.BString;
 import org.ballerinalang.jvm.types.AttachedFunction;
@@ -48,5 +51,19 @@ public class Engine {
             }
         }
         return createFieldNotFoundError(name, OPERATION_QUERY);
+    }
+
+    /**
+     * Returns an array of field names for the attached service for a Ballerina GraphQL listener.
+     *
+     * @return - A {@code BArray} consisting field names for the given service
+     */
+    public static BArray getFieldNames(BObject service) {
+        AttachedFunction[] attachedFunctions = service.getType().getAttachedFunctions();
+        String[] result = new String[attachedFunctions.length];
+        for (int i = 0; i < attachedFunctions.length; i++) {
+            result[i] = attachedFunctions[i].funcName;
+        }
+        return BValueCreator.createArrayValue(BStringUtils.fromStringArray(result));
     }
 }

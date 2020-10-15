@@ -36,4 +36,4 @@ const FIELD_MESSAGE = "message";
 // Parser
 const COMMENT_BLOCK = "#";
 const EOF = "<EOF>";
-const WORD_VALIDATOR = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+const FIELD_VALIDATOR = "^[_a-zA-Z][a-zA-Z0-9_]*$";
