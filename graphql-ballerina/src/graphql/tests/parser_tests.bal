@@ -34,7 +34,9 @@ Token[] fields = [
     }
 ];
 
-@test:Config{}
+@test:Config{
+    groups: ["parser", "unit"]
+}
 function testParseShorthandDocument() returns error? {
     string document = getShorthandNotationDocument();
     Document parsedDocument = check parse(document);
@@ -49,7 +51,9 @@ function testParseShorthandDocument() returns error? {
     test:assertEquals(parsedDocument, expectedDocument);
 }
 
-@test:Config{}
+@test:Config{
+    groups: ["parser", "unit"]
+}
 function testParseGeneralNotationDocument() returns error? {
     string document = getGeneralNotationDocument();
     Document parsedDocument = check parse(document);
@@ -64,7 +68,9 @@ function testParseGeneralNotationDocument() returns error? {
     test:assertEquals(parsedDocument, expectedDocument);
 }
 
-@test:Config{}
+@test:Config{
+    groups: ["parser", "unit"]
+}
 function testParseAnonymousOperation() returns error? {
     string document = getAnonymousOperationDocument();
     Document result = check parse(document);
@@ -79,7 +85,9 @@ function testParseAnonymousOperation() returns error? {
     test:assertEquals(result, expected);
 }
 
-@test:Config{}
+@test:Config{
+    groups: ["parser", "unit"]
+}
 function testParseDocumentWithNoCloseBrace() returns error? {
     string document = getNoCloseBraceDocument();
     Document|Error result = parse(document);

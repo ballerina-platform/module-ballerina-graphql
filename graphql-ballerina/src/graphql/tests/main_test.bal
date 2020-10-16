@@ -19,7 +19,9 @@ import ballerina/test;
 
 listener Listener gqlListener = new(9091);
 
-@test:Config{}
+@test:Config{
+    groups: ["listener", "unit"]
+}
 function testSimpleGraphqlQuery() {
     string document = getShorthandNotationDocument();
     var result = gqlListener.__attach(gqlService);
