@@ -60,10 +60,13 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) re
         if (word == EOF) {
             columnNumber = columnNumber - 2;
         }
-        Token token = {
-            value: word,
+        Location location = {
             line: lineNumber,
             column: columnNumber
+        };
+        Token token = {
+            value: word,
+            location: location
         };
         check validateToken(token);
         tokens.push(token);

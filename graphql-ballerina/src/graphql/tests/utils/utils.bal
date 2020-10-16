@@ -17,12 +17,16 @@
 import ballerina/io;
 import ballerina/log;
 
+function getShorthandNotationDocument() returns string {
+    return readFileAndGetString(DOCUMENT_SHORTHAND, 27);
+}
+
 function getGeneralNotationDocument() returns string {
     return readFileAndGetString(DOCUMENT_GENERAL, 47);
 }
 
-function getShorthandNotationDocument() returns string {
-    return readFileAndGetString(DOCUMENT_SHORTHAND, 34);
+function getInvalidShorthandNotationDocument() returns string {
+    return readFileAndGetString(DOCUMENT_SHORTHAND_INVALID, 34);
 }
 
 function getAnonymousOperationDocument() returns string {

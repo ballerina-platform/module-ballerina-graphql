@@ -46,10 +46,7 @@ isolated function getUnexpectedSyntaxError(Token token, string unexpectedType) r
 }
 
 isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
-    Location location = {
-        line: token.line,
-        column: token.column
-    };
+    Location location = token.location;
     return {
         locations: [location]
     };
