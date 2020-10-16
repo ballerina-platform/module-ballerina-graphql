@@ -21,6 +21,9 @@ const OPERATION_SUBSCRIPTION = "subscription";
 const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
 
+const PARAM_QUERY = "query";
+const PARAM_OPERATION_NAME = "operationName";
+
 const VALIDATION_TYPE_NAME = "Name";
 
 const RESULT_FIELD_ERRORS = "errors";

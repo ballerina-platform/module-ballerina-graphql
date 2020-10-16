@@ -25,7 +25,7 @@ public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
 
 # Represents the types of operations valid for Ballerina GraphQL.
 public enum OperationType {
-    Query = "query",
-    Mutation = "mutation",
-    Subscription = "subscription"
+    QUERY = "query",
+    MUTATION = "mutation",
+    SUBSCRIPTION = "subscription"
 }
