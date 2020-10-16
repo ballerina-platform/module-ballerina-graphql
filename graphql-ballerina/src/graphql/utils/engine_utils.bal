@@ -30,7 +30,7 @@ isolated function validateDocument(Engine engine, Document document) returns Val
 
 isolated function validateOperation(Engine engine, Operation operation) returns ValidationError? {
     OperationType 'type = operation.'type;
-    if ('type != Query) {
+    if ('type != QUERY) {
         string message = "Ballerina GraphQL does not support " + getOperationName('type) + " operation yet.";
         return NotImplementedError(message);
     }

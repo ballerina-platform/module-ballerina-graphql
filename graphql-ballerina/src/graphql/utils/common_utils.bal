@@ -23,10 +23,10 @@ isolated function logAndPanicError(string message, error e) {
 
 isolated function getOperationName(OperationType operationType) returns string {
     match operationType {
-        Mutation => {
+        MUTATION => {
             return "Mutation";
         }
-        Subscription => {
+        SUBSCRIPTION => {
             return "Subscription";
         }
     }
