@@ -23,7 +23,7 @@ listener Listener 'listener = new(9090);
     enable: false
 }
 function testInvokeResource() {
-    string document = getShorthandNotationDocument();
+    string document = getInvalidShorthandNotationDocument();
     var attachResult = 'listener.__attach(invokeResourceTestService);
     if (attachResult is error) {
         test:assertFail("Attaching the service resulted in an error." + attachResult.toString());

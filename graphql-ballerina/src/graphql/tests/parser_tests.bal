@@ -19,18 +19,24 @@ import ballerina/test;
 Token[] fields = [
     {
         value: "name",
-        line: 2,
-        column: 5
+        location: {
+            line: 2,
+            column: 5
+        }
     },
     {
         value: "id",
-        line: 3,
-        column: 5
+        location: {
+            line: 3,
+            column: 5
+        }
     },
     {
         value: "birthdate",
-        line: 4,
-        column: 5
+        location: {
+            line: 4,
+            column: 5
+        }
     }
 ];
 
@@ -38,7 +44,7 @@ Token[] fields = [
     groups: ["parser", "unit"]
 }
 function testParseShorthandDocument() returns error? {
-    string document = getShorthandNotationDocument();
+    string document = getInvalidShorthandNotationDocument();
     Document parsedDocument = check parse(document);
     Operation expectedOperation = {
         name: ANONYMOUS_OPERATION,

@@ -67,6 +67,5 @@ public type Document record {|
 
 public type Token record {|
     string value;
-    int line;
-    int column = 0;
+    Location location;
 |};

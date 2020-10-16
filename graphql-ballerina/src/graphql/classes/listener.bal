@@ -73,6 +73,7 @@ public class Listener {
         check attach(self, s, name);
     }
 
+    // TODO: Detach http service
     public isolated function __detach(service s) returns error? {
         return detach(self, s);
     }

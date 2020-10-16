@@ -19,12 +19,43 @@ import ballerina/test;
 
 listener Listener gqlListener = new(9091);
 
+@test:Config {
+    groups: ["listener", "unit"]
+}
+function testShortHandQueryResult() {
+    string document = getShorthandNotationDocument();
+    var result = gqlListener.__attach(gqlService1);
+    json payload = {
+        query: document
+    };
+    json expectedJson = {
+        data: {
+            name: "John Doe",
+            birthdate: "01-01-1980"
+        }
+    };
+    http:Client httpClient = new("http://localhost:9091/bakerstreet");
+    http:Request request = new;
+    request.setPayload(payload);
+
+    var sendResult = httpClient->post("/", request);
+    if (sendResult is error) {
+        test:assertFail("Error response received for the HTTP call");
+    } else {
+        var responsePayload = sendResult.getJsonPayload();
+        if (responsePayload is json) {
+            test:assertEquals(responsePayload, expectedJson);
+        }
+    }
+    var stopResult = gqlListener.__immediateStop();
+}
+
 @test:Config{
     groups: ["listener", "unit"]
 }
-function testSimpleGraphqlQuery() {
-    string document = getShorthandNotationDocument();
-    var result = gqlListener.__attach(gqlService);
+function testInvalidShorthandQuery() {
+    string document = getInvalidShorthandNotationDocument();
+    var result = gqlListener.__attach(gqlService2);
     json payload = {
         query: document
     };
@@ -57,9 +88,23 @@ function testSimpleGraphqlQuery() {
     var stopResult = gqlListener.__immediateStop();
 }
 
-service gqlService =
+service gqlService1 =
 @ServiceConfiguration {
     basePath: "bakerstreet"
+}
+service {
+    isolated resource function name() returns string {
+        return "John Doe";
+    }
+
+    isolated resource function birthdate() returns string {
+        return "01-01-1980";
+    }
+};
+
+service gqlService2 =
+@ServiceConfiguration {
+    basePath: "graphql"
 }
 service {
     isolated resource function name() returns string {
