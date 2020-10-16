@@ -40,13 +40,15 @@ Token[] fields = [
 function testParseShorthandDocument() returns error? {
     string document = getShorthandNotationDocument();
     Document parsedDocument = check parse(document);
+    Operation expectedOperation = {
+        name: ANONYMOUS_OPERATION,
+        'type: OPERATION_QUERY,
+        fields: fields
+    };
+    map<Operation> operations = {};
+    operations[ANONYMOUS_OPERATION] = expectedOperation;
     Document expectedDocument = {
-        operations: [
-            {
-                'type: OPERATION_QUERY,
-                fields: fields
-            }
-        ]
+        operations: operations
     };
     test:assertEquals(parsedDocument, expectedDocument);
 }
@@ -57,13 +59,16 @@ function testParseShorthandDocument() returns error? {
 function testParseGeneralNotationDocument() returns error? {
     string document = getGeneralNotationDocument();
     Document parsedDocument = check parse(document);
+    string expectedOperationName = "getData";
     Operation expectedOperation = {
         'type: OPERATION_QUERY,
-        name: "getData",
+        name: expectedOperationName,
         fields: fields
     };
+    map<Operation> operations = {};
+    operations[expectedOperationName] = expectedOperation;
     Document expectedDocument = {
-        operations: [expectedOperation]
+        operations: operations
     };
     test:assertEquals(parsedDocument, expectedDocument);
 }
@@ -74,13 +79,15 @@ function testParseGeneralNotationDocument() returns error? {
 function testParseAnonymousOperation() returns error? {
     string document = getAnonymousOperationDocument();
     Document result = check parse(document);
+    Operation expectedOperation = {
+        name: ANONYMOUS_OPERATION,
+        'type: OPERATION_QUERY,
+        fields: fields
+    };
+    map<Operation> operations = {};
+    operations[ANONYMOUS_OPERATION] = expectedOperation;
     Document expected = {
-        operations: [
-            {
-                'type: OPERATION_QUERY,
-                fields: fields
-            }
-        ]
+        operations: operations
     };
     test:assertEquals(result, expected);
 }

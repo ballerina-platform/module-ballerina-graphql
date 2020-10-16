@@ -17,14 +17,15 @@
 import ballerina/java;
 
 isolated function validateDocument(Engine engine, Document document) returns ValidationError? {
-    Operation[] operations = document.operations;
+    map<Operation> operations = document.operations;
     if (operations.length() > 1) {
         return NotImplementedError("Ballerina GraphQL does not support multiple operations yet.");
     } else if (operations.length() == 0) {
         return InvalidDocumentError("Document does not contain any operation.");
     }
-    Operation operation = operations[0];
-    check validateOperation(engine, operation);
+    foreach Operation operation in operations {
+        check validateOperation(engine, operation);
+    }
 }
 
 isolated function validateOperation(Engine engine, Operation operation) returns ValidationError? {

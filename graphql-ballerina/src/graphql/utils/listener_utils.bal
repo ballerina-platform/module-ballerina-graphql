@@ -51,14 +51,28 @@ isolated function processRequestWithJsonPayload(Engine? engine, http:Request req
 }
 
 isolated function processJsonPayload(Engine? engine, json payload, http:Response response) {
-    var document = payload.query;
-    var operationName = payload.operationName;
-    if (document is string) {
+    var documentString = payload.query;
+    string operationName = getOperationNameFromPayload(<@untainted>payload);
+    if (documentString is string) {
         json? outputObject = ();
         if (engine is Engine) {
-            outputObject = engine.validate(document);
+            Document|Error document = engine.validate(documentString);
+            if (document is Error) {
+                outputObject = getResultJsonForError(document);
+            } else {
+                outputObject = engine.execute(document, operationName);
+            }
         }
         response.setJsonPayload(outputObject);
+    }
+}
+
+isolated function getOperationNameFromPayload(json payload) returns string {
+    var operationName = payload.operationName;
+    if (operationName is string) {
+        return operationName;
+    } else {
+        return ANONYMOUS_OPERATION;
     }
 }
 

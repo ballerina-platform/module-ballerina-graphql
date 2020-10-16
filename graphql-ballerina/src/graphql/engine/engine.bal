@@ -34,22 +34,24 @@ public class Engine {
         return self.fields;
     }
 
-    isolated function validate(string documentString) returns Document|json {
+    isolated function validate(string documentString) returns Document|Error {
         Document|Error parseResult = parse(documentString);
         if (parseResult is Error) {
-            return getResultJsonForError(parseResult);
+            return parseResult;
         }
         Document document = <Document>parseResult;
         var validationResult = validateDocument(self, document);
         if (validationResult is ValidationError) {
-            return getResultJsonForError(validationResult);
+            return validationResult;
         }
+        return document;
     }
 
-    isolated function execute(Operation operation) returns json {
+    isolated function execute(Document document, string operationName) returns json {
         map<json> data = {};
         json[] errors = [];
         int errorCount = 0;
+        Operation operation = document.operations.get(operationName);
         Token[] fields = operation.fields;
         foreach Token token in fields {
             string 'field = token.value;
