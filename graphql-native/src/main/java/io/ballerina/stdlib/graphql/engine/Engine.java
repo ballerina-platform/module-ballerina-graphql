@@ -28,7 +28,7 @@ import org.ballerinalang.jvm.api.values.BString;
 import org.ballerinalang.jvm.types.AttachedFunction;
 
 import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
-import static io.ballerina.stdlib.graphql.utils.Utils.createFieldNotFoundError;
+import static io.ballerina.stdlib.graphql.utils.Utils.createResourceExecutionFailedError;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -42,7 +42,7 @@ public class Engine {
      * @param name - Resource name to be retrieved
      * @return - Resource value
      */
-    public static Object getResource(BObject listener, BString name) {
+    public static Object executeResource(BObject listener, BString name) {
         BObject attachedService = (BObject) listener.getNativeData(Constants.NATIVE_SERVICE_OBJECT);
         AttachedFunction[] attachedFunctions = attachedService.getType().getAttachedFunctions();
         for (AttachedFunction attachedFunction:attachedFunctions) {
@@ -50,7 +50,7 @@ public class Engine {
                 return Wrapper.invokeResource(attachedFunction, null);
             }
         }
-        return createFieldNotFoundError(name, OPERATION_QUERY);
+        return createResourceExecutionFailedError(name, OPERATION_QUERY);
     }
 
     /**

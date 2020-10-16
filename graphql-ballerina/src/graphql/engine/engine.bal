@@ -51,6 +51,13 @@ public class Engine {
         map<json> data = {};
         json[] errors = [];
         int errorCount = 0;
+        map<Operation> operations = document.operations;
+        if (!operations.hasKey(operationName)) {
+            string message = "Unknown operation named \"" + operationName + "\".";
+            OperationNotFoundError err = OperationNotFoundError(message);
+            errors[errorCount] = getErrorJsonFromError(err);
+            return getResultJson(data, errors);
+        }
         Operation operation = document.operations.get(operationName);
         Token[] fields = operation.fields;
         foreach Token token in fields {

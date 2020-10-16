@@ -23,8 +23,8 @@ import org.ballerinalang.jvm.api.BStringUtils;
 import org.ballerinalang.jvm.api.values.BError;
 import org.ballerinalang.jvm.api.values.BString;
 
-import static io.ballerina.stdlib.graphql.utils.Constants.ERROR_FIELD_NOT_FOUND;
 import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
+import static io.ballerina.stdlib.graphql.utils.Constants.RESOURCE_EXECUTION_ERROR;
 
 /**
  * Utility class for Ballerina GraphQL module.
@@ -37,14 +37,10 @@ public class Utils {
         return BErrorCreator.createDistinctError(type, PACKAGE_ID, message);
     }
 
-    public static BError createFieldNotFoundError(BString fieldName, String operationName) {
-        StringBuilder stringBuilder = new StringBuilder()
-                .append("Cannot query field \"")
-                .append(fieldName.getValue())
-                .append("\" on type \"")
-                .append(operationName)
-                .append("\".");
-        BString message = BStringUtils.fromString(stringBuilder.toString());
-        return createError(ERROR_FIELD_NOT_FOUND, message);
+    // TODO: This should be handled better
+    public static BError createResourceExecutionFailedError(BString fieldName, String operationName) {
+        String message = "Cannot query field \"" + fieldName.getValue() + "\" on type \"" + operationName + "\".";
+        BString bErrorMessage = BStringUtils.fromString(message);
+        return createError(RESOURCE_EXECUTION_ERROR, bErrorMessage);
     }
 }
