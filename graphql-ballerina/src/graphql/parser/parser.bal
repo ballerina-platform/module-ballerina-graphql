@@ -18,16 +18,19 @@ import ballerina/stringutils;
 
 isolated function parse(string documentString) returns Document|ParsingError {
     Token[] tokens = check tokenize(documentString);
+    map<Operation> operations = {};
     if (tokens[0].value == "{") {
         Token openBraceToken = tokens.remove(0);
         Operation operation = check parseShortHandNotation(tokens);
+        operations[operation.name] = operation;
         return {
-            operations: [operation]
+            operations: operations
         };
     } else {
         Operation operation = check parseGeneralNotation(tokens);
+        operations[operation.name] = operation;
         return {
-            operations: [operation]
+            operations: operations
         };
     }
 }
@@ -69,7 +72,7 @@ isolated function parseByColumns(string line, int lineNumber, Token[] tokens) re
 
 isolated function parseShortHandNotation(Token[] tokens) returns Operation|ParsingError {
     OperationType 'type = OPERATION_QUERY;
-    return getOperationRecord('type, tokens);
+    return getOperationRecord('type, tokens, ANONYMOUS_OPERATION);
 }
 
 isolated function parseGeneralNotation(Token[] tokens) returns Operation|ParsingError {
@@ -77,7 +80,7 @@ isolated function parseGeneralNotation(Token[] tokens) returns Operation|Parsing
     Token operationToken = tokens.remove(0);
     string operationName = operationToken.value;
     if (operationName == OPEN_BRACE) {
-        return getOperationRecord(operationType, tokens);
+        return getOperationRecord(operationType, tokens, ANONYMOUS_OPERATION);
     } else {
         Token openBraceToken = tokens.remove(0);
         string openBraceTokenValue = openBraceToken.value;
@@ -89,21 +92,14 @@ isolated function parseGeneralNotation(Token[] tokens) returns Operation|Parsing
     }
 }
 
-isolated function getOperationRecord(OperationType 'type, Token[] tokens, string name = "") returns
+isolated function getOperationRecord(OperationType 'type, Token[] tokens, string name) returns
 Operation|ParsingError {
     Token[] fields = check getFields(tokens);
-    if (name == "") {
-        return {
-            'type: 'type,
-            fields: fields
-        };
-    } else {
-        return {
-            'type: 'type,
-            fields: fields,
-            name: name
-        };
-    }
+    return {
+        'type: 'type,
+        fields: fields,
+        name: name
+    };
 }
 
 isolated function getFields(Token[] tokens) returns Token[]|ParsingError {

@@ -18,9 +18,6 @@ const OPERATION_QUERY = "query";
 const OPERATION_MUTATION = "mutation";
 const OPERATION_SUBSCRIPTION = "subscription";
 
-const OPEN_BRACE = "{";
-const CLOSE_BRACE = "}";
-
 const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
 
@@ -33,7 +30,11 @@ const FIELD_ERROR_RECORD = "errorRecord";
 const FIELD_LOCATIONS = "locations";
 const FIELD_MESSAGE = "message";
 
-// Parser
+//// Parser
+//const OPEN_BRACE = "{";
+//const CLOSE_BRACE = "}";
+
+const ANONYMOUS_OPERATION = "<anonymous>";
 const COMMENT_BLOCK = "#";
 const EOF = "<EOF>";
 const FIELD_VALIDATOR = "^[_a-zA-Z][a-zA-Z0-9_]*$";

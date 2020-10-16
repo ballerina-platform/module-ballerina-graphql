@@ -19,7 +19,8 @@ import ballerina/test;
 listener Listener 'listener = new(9090);
 
 @test:Config{
-    groups: ["engine", "unit"]
+    groups: ["engine", "unit"],
+    enable: false
 }
 function testInvokeResource() {
     string document = getShorthandNotationDocument();
@@ -28,7 +29,7 @@ function testInvokeResource() {
         test:assertFail("Attaching the service resulted in an error." + attachResult.toString());
     }
     Engine engine = new('listener);
-    var result = engine.getOutputForDocument(document);
+    var result = engine.validate(document);
 }
 
 

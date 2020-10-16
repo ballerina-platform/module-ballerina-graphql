@@ -56,13 +56,13 @@ public type GraphQlServiceConfiguration record {
 };
 
 public type Operation record {|
+    string name;
     OperationType 'type;
-    string name?;
     Token[] fields;
 |};
 
 public type Document record {|
-    Operation[] operations;
+    map<Operation> operations;
 |};
 
 public type Token record {|
