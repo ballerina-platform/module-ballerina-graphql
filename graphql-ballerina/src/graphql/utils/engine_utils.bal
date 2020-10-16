@@ -94,7 +94,6 @@ isolated function getLocationsJsonArray(Location[]? locations) returns json[] {
 }
 
 isolated function executeResource(Listener 'listener, string name) returns Scalar|error? = @java:Method {
-    name: "getResource",
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 

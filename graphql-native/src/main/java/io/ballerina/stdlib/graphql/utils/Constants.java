@@ -33,7 +33,7 @@ public class Constants {
     static final BPackage PACKAGE_ID = new BPackage(ORG_NAME, MODULE_NAME, VERSION);
 
     // Type names
-    public static final String ERROR_FIELD_NOT_FOUND = "FieldNotFoundError";
+    public static final String RESOURCE_EXECUTION_ERROR = "ResourceExecutionFailed";
 
     // Operations
     public static final String OPERATION_QUERY = "Query";

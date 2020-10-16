@@ -48,8 +48,11 @@ public type InvalidDocumentError distinct error;
 public type ValidationError FieldNotFoundError|InvalidDocumentError|NotImplementedError;
 
 // Execution errors
+# Represents an error where the provided operation is not found in a document
+public type OperationNotFoundError distinct error;
+
 # Represents the errors occurred while executing a GraphQL document
-public type ExecutionError distinct error;
+public type ExecutionError OperationNotFoundError;
 
 # Represents any error related to the Ballerina GraphQL module
 public type Error ParsingError|ValidationError|ExecutionError|ListenerError;
