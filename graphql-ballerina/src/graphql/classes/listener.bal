@@ -55,10 +55,8 @@ public class Listener {
                 path: "/",
                 methods: ["GET"]
             }
-            resource isolated function get(http:Caller caller, http:Request request) {
-                json payload = getErrorJson("HTTP GET requests are not yet supported");
-                http:Response response = new;
-                response.setPayload(payload);
+            resource function get(http:Caller caller, http:Request request) {
+                http:Response response = handleGetRequests(globalEngine, request);
                 var result = caller->respond(response);
             }
 
