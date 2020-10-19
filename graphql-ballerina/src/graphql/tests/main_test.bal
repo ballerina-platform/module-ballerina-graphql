@@ -22,13 +22,13 @@ listener Listener gqlListener = new(9091);
 @test:Config {
     groups: ["listener", "unit"]
 }
-function testShortHandQueryResult() {
+function testShortHandQueryResult() returns @tainted error? {
     string document = getShorthandNotationDocument();
     var result = gqlListener.__attach(gqlService1);
     json payload = {
         query: document
     };
-    json expectedJson = {
+    json expectedPayload = {
         data: {
             name: "John Doe",
             birthdate: "01-01-1980"
@@ -38,28 +38,21 @@ function testShortHandQueryResult() {
     http:Request request = new;
     request.setPayload(payload);
 
-    var sendResult = httpClient->post("/", request);
-    if (sendResult is error) {
-        test:assertFail("Error response received for the HTTP call");
-    } else {
-        var responsePayload = sendResult.getJsonPayload();
-        if (responsePayload is json) {
-            test:assertEquals(responsePayload, expectedJson);
-        }
-    }
+    json actualPayload = <json> check httpClient->post("/", request, json);
+    test:assertEquals(actualPayload, expectedPayload);
     var stopResult = gqlListener.__immediateStop();
 }
 
 @test:Config{
     groups: ["listener", "unit"]
 }
-function testInvalidShorthandQuery() {
+function testInvalidShorthandQuery() returns @tainted error? {
     string document = getInvalidShorthandNotationDocument();
     var result = gqlListener.__attach(gqlService2);
     json payload = {
         query: document
     };
-    json expectedJson = {
+    json expectedPayload = {
         errors: [
             {
                 message: "Cannot query field \"id\" on type \"Query\".",
@@ -76,15 +69,8 @@ function testInvalidShorthandQuery() {
     http:Request request = new;
     request.setPayload(payload);
 
-    var sendResult = httpClient->post("/", request);
-    if (sendResult is error) {
-        test:assertFail("Error response received for the HTTP call");
-    } else {
-        var responsePayload = sendResult.getJsonPayload();
-        if (responsePayload is json) {
-            test:assertEquals(responsePayload, expectedJson);
-        }
-    }
+    json actualPayload = <json> check httpClient->post("/", request, json);
+    test:assertEquals(actualPayload, expectedPayload);
     var stopResult = gqlListener.__immediateStop();
 }
 
