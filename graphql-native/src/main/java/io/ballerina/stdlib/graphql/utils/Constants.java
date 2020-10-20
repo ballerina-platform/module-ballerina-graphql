@@ -18,8 +18,9 @@
 
 package io.ballerina.stdlib.graphql.utils;
 
-import org.ballerinalang.jvm.types.BPackage;
+import io.ballerina.runtime.api.Module;
 
+import static io.ballerina.runtime.util.BLangConstants.BALLERINA_BUILTIN_PKG_PREFIX;
 /**
  * Constants used in Ballerina GraphQL native library.
  */
@@ -30,7 +31,7 @@ public class Constants {
     private static final String MODULE_NAME = "graphql";
     private static final String VERSION = "0.1.0";
 
-    static final BPackage PACKAGE_ID = new BPackage(ORG_NAME, MODULE_NAME, VERSION);
+    static final Module PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, VERSION);
 
     // Type names
     public static final String RESOURCE_EXECUTION_ERROR = "ResourceExecutionFailed";

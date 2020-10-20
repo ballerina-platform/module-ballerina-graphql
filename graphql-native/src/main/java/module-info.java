@@ -17,5 +17,5 @@
  */
 
 module io.ballerina.stdlib.graphql {
-    requires io.ballerina.jvm;
+    requires io.ballerina.runtime;
 }

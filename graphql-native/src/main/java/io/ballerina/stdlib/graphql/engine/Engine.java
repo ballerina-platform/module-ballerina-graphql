@@ -18,14 +18,14 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
+import io.ballerina.runtime.api.StringUtils;
+import io.ballerina.runtime.api.ValueCreator;
+import io.ballerina.runtime.api.types.AttachedFunctionType;
+import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BObject;
+import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.runtime.wrapper.Wrapper;
 import io.ballerina.stdlib.graphql.utils.Constants;
-import org.ballerinalang.jvm.api.BStringUtils;
-import org.ballerinalang.jvm.api.BValueCreator;
-import org.ballerinalang.jvm.api.values.BArray;
-import org.ballerinalang.jvm.api.values.BObject;
-import org.ballerinalang.jvm.api.values.BString;
-import org.ballerinalang.jvm.types.AttachedFunction;
 
 import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
 import static io.ballerina.stdlib.graphql.utils.Utils.createResourceExecutionFailedError;
@@ -44,9 +44,9 @@ public class Engine {
      */
     public static Object executeResource(BObject listener, BString name) {
         BObject attachedService = (BObject) listener.getNativeData(Constants.NATIVE_SERVICE_OBJECT);
-        AttachedFunction[] attachedFunctions = attachedService.getType().getAttachedFunctions();
-        for (AttachedFunction attachedFunction:attachedFunctions) {
-            if (attachedFunction.funcName.equals(name.toString())) {
+        AttachedFunctionType[] attachedFunctions = attachedService.getType().getAttachedFunctions();
+        for (AttachedFunctionType attachedFunction:attachedFunctions) {
+            if (attachedFunction.getName().equals(name.toString())) {
                 return Wrapper.invokeResource(attachedFunction, null);
             }
         }
@@ -59,11 +59,11 @@ public class Engine {
      * @return - A {@code BArray} consisting field names for the given service
      */
     public static BArray getFieldNames(BObject service) {
-        AttachedFunction[] attachedFunctions = service.getType().getAttachedFunctions();
+        AttachedFunctionType[] attachedFunctions = service.getType().getAttachedFunctions();
         String[] result = new String[attachedFunctions.length];
         for (int i = 0; i < attachedFunctions.length; i++) {
-            result[i] = attachedFunctions[i].funcName;
+            result[i] = attachedFunctions[i].getName();
         }
-        return BValueCreator.createArrayValue(BStringUtils.fromStringArray(result));
+        return ValueCreator.createArrayValue(StringUtils.fromStringArray(result));
     }
 }

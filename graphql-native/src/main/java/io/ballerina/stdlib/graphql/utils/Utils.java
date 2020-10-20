@@ -18,10 +18,10 @@
 
 package io.ballerina.stdlib.graphql.utils;
 
-import org.ballerinalang.jvm.api.BErrorCreator;
-import org.ballerinalang.jvm.api.BStringUtils;
-import org.ballerinalang.jvm.api.values.BError;
-import org.ballerinalang.jvm.api.values.BString;
+import io.ballerina.runtime.api.ErrorCreator;
+import io.ballerina.runtime.api.StringUtils;
+import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
 import static io.ballerina.stdlib.graphql.utils.Constants.RESOURCE_EXECUTION_ERROR;
@@ -34,13 +34,13 @@ public class Utils {
     }
 
     public static BError createError(String type, BString message) {
-        return BErrorCreator.createDistinctError(type, PACKAGE_ID, message);
+        return ErrorCreator.createDistinctError(type, PACKAGE_ID, message);
     }
 
     // TODO: This should be handled better
     public static BError createResourceExecutionFailedError(BString fieldName, String operationName) {
         String message = "Cannot query field \"" + fieldName.getValue() + "\" on type \"" + operationName + "\".";
-        BString bErrorMessage = BStringUtils.fromString(message);
+        BString bErrorMessage = StringUtils.fromString(message);
         return createError(RESOURCE_EXECUTION_ERROR, bErrorMessage);
     }
 }
