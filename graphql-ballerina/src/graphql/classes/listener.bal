@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/lang.'object;
 import ballerina/log;
 
-string basePath = "graphql";
+string basePath = DEFAULT_PATH;
 Engine? globalEngine = ();
 
 public class Listener {
@@ -27,6 +27,7 @@ public class Listener {
     private http:Listener httpListener;
     private Engine engine;
 
+    // TODO: Make the path an init variable, when we can assign local variable to the HTTP service path.
     public function init(int port, ListenerConfiguration? configs = ()) {
         http:ListenerConfiguration? httpListenerConfigs = ();
         if (configs is ListenerConfiguration) {

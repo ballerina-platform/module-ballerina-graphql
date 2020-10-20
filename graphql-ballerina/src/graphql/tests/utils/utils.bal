@@ -16,6 +16,11 @@
 
 import ballerina/io;
 import ballerina/log;
+import ballerina/test;
+
+function getDocumentWithParameters() returns string {
+    return readFileAndGetString(DOCUMENT_WITH_PARAMTER, 66);
+}
 
 function getShorthandNotationDocument() returns string {
     return readFileAndGetString(DOCUMENT_SHORTHAND, 27);
@@ -58,5 +63,18 @@ function closeReadChannel(io:ReadableCharacterChannel rc) {
     if (result is error) {
         log:printError("Error occurred while closing character stream", result);
     }
+}
+
+function checkErrorRecord(Error err, int line, int column) {
+    ErrorRecord expectedErrorRecord = {
+        locations: [
+            {
+                line: line,
+                column: column
+            }
+        ]
+        };
+    ErrorRecord errorRecord = <ErrorRecord>err.detail()[FIELD_ERROR_RECORD];
+    test:assertEquals(errorRecord, expectedErrorRecord);
 }
 

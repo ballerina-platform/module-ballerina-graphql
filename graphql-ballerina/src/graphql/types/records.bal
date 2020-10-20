@@ -66,6 +66,7 @@ public type Document record {|
 |};
 
 public type Token record {|
+    TokenType 'type = CHAR;
     string value;
     Location location;
 |};
