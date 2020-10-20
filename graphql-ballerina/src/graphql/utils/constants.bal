@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+const DEFAULT_PATH = "/graphql";
+
 const OPERATION_QUERY = "query";
 const OPERATION_MUTATION = "mutation";
 const OPERATION_SUBSCRIPTION = "subscription";

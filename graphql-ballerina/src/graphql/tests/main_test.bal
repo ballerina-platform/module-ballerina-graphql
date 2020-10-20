@@ -34,7 +34,7 @@ function testShortHandQueryResult() returns @tainted error? {
             birthdate: "01-01-1980"
         }
     };
-    http:Client httpClient = new("http://localhost:9091/bakerstreet");
+    http:Client httpClient = new("http://localhost:9091/customPath");
     http:Request request = new;
     request.setPayload(payload);
 
@@ -65,7 +65,7 @@ function testInvalidShorthandQuery() returns @tainted error? {
             }
         ]
     };
-    http:Client httpClient = new("http://localhost:9091/bakerstreet");
+    http:Client httpClient = new("http://localhost:9091/graphql");
     http:Request request = new;
     request.setPayload(payload);
 
@@ -76,7 +76,7 @@ function testInvalidShorthandQuery() returns @tainted error? {
 
 service gqlService1 =
 @ServiceConfiguration {
-    basePath: "bakerstreet"
+    basePath: "customPath"
 }
 service {
     isolated resource function name() returns string {
