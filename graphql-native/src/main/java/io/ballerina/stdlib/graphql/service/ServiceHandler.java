@@ -18,7 +18,7 @@
 
 package io.ballerina.stdlib.graphql.service;
 
-import org.ballerinalang.jvm.api.values.BObject;
+import io.ballerina.runtime.api.values.BObject;
 
 import java.io.PrintStream;
 
