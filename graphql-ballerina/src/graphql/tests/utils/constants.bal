@@ -22,3 +22,4 @@ const DOCUMENT_SHORTHAND_INVALID = "document_shorthand_invalid_query.txt";
 const DOCUMENT_ANONYMOUS = "document_anonymous_operation.txt";
 const DOCUMENT_NO_CLOSE_BRACE = "invalid_document_no_close_brace.txt";
 const DOCUMENT_WITH_PARAMTER = "document_with_parameters.txt";
+const DOCUMENT_WITH_COMMENTS = "document_with_comments.txt";

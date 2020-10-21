@@ -18,6 +18,10 @@ import ballerina/io;
 import ballerina/log;
 import ballerina/test;
 
+function getDocumentWithComments() returns string {
+    return readFileAndGetString(DOCUMENT_WITH_COMMENTS, 98);
+}
+
 function getDocumentWithParameters() returns string {
     return readFileAndGetString(DOCUMENT_WITH_PARAMTER, 66);
 }
@@ -77,4 +81,3 @@ function checkErrorRecord(Error err, int line, int column) {
     ErrorRecord errorRecord = <ErrorRecord>err.detail()[FIELD_ERROR_RECORD];
     test:assertEquals(errorRecord, expectedErrorRecord);
 }
-
