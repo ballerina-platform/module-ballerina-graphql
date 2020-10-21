@@ -49,6 +49,7 @@ public type GraphQlServiceConfiguration record {
 public type Argument record {
     string name;
     Scalar value;
+    ArgumentType 'type;
 };
 
 public type Field record {
@@ -60,7 +61,7 @@ public type Field record {
 public type Operation record {
     string name;
     OperationType 'type;
-    Field[] selections;
+    Field[] selections?;
 };
 
 public type Document record {

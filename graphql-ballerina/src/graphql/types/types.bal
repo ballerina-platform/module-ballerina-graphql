@@ -29,3 +29,8 @@ public enum OperationType {
     MUTATION = "mutation",
     SUBSCRIPTION = "subscription"
 }
+
+public enum ArgumentType {
+    INLINE,
+    VARIABLE
+}
