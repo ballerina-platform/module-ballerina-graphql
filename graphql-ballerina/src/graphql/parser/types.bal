@@ -14,10 +14,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
+// Chars
+type WhiteSpace SPACE|TAB;
+type LineTerminator NEW_LINE|LINE_RETURN;
+type TerminalCharacter WhiteSpace|LineTerminator;
+
+// Internal types
+type Char CHAR;
+type Word WORD;
+type Eof EOF;
+type Quote QUOTE;
+type BackSlash BACK_SLASH;
+type Comment COMMENT;
+
 type Brace OPEN_BRACE|CLOSE_BRACE;
 type Parentheses OPEN_PARENTHESES|CLOSE_PARENTHESES;
 
-type SpecialCharacter Brace|Parentheses|COLON|COMMA;
+type SpecialCharacter TerminalCharacter|Brace|Parentheses|Quote|Eof;
+
+type BlockOpenChar OPEN_BRACE|OPEN_PARENTHESES|COMMENT|QUOTE;
+type BlockCloseChar CLOSE_BRACE|CLOSE_PARENTHESES|NEW_LINE|LINE_RETURN|QUOTE;
+
+type TokenType Word|Comment|SpecialCharacter|Eof;
+type CharTokenType Char|SpecialCharacter|Eof;
 
 type IteratorNode record {
     string value;
@@ -47,9 +66,3 @@ public type Location record {
     int line;
     int column;
 };
-
-type WhiteSpace SPACE|TAB;
-
-type LineTerminator NEW_LINE|LINE_RETURN;
-
-type TerminalCharacter WhiteSpace|LineTerminator;

@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/stringutils;
+//import ballerina/stringutils;
 
-isolated function getLexicalTokens(string document) returns Token[]|InvalidTokenError? {
+isolated function getLexicalTokens(string document) returns Token[]|InvalidTokenError {
     CharToken[] tokens = check tokenizeCharacters(document);
-    //return getTokensForWords(tokens);
+    return getWordTokens(tokens);
 }
 
 isolated function tokenizeCharacters(string document) returns CharToken[]|InvalidTokenError {
@@ -41,7 +41,7 @@ isolated function tokenizeCharacters(string document) returns CharToken[]|Invali
         charTokens.push(token);
     }
     CharToken eofToken = {
-        'type: EOF_TOKEN,
+        'type: EOF,
         value: EOF,
         location: currentLocation
     };
@@ -51,85 +51,58 @@ isolated function tokenizeCharacters(string document) returns CharToken[]|Invali
 
 isolated function getCharToken(string value, Location location) returns CharToken|InvalidTokenError {
     Location localLocation = location.clone();
-    if (stringutils:matches(value, VALID_CHAR_REGEX)) {
+    if (value is SpecialCharacter) {
         return {
-            'type: CHAR,
-            value: value,
-            location: localLocation
-        };
-    } else if (value is WhiteSpace) {
-        return {
-            'type: WHITE_SPACE,
-            value: value,
-            location: localLocation
-        };
-    } else if (value is LineTerminator) {
-        return {
-            'type: LINE_TERMINATOR,
+            'type: value,
             value: value,
             location: localLocation
         };
     }
-    string message = "Syntax Error: Cannot parse the unexpected character \"" + value + "\".";
-    ErrorRecord errorRecord = {
-        locations: [localLocation]
+    return {
+        'type: CHAR,
+        value: value,
+        location: localLocation
     };
-    return InvalidTokenError(message, errorRecord = errorRecord);
 }
 
-//isolated function getTokensForWords(CharToken[] tokens) returns Token[]|InvalidTokenError {
-//    check validateCharTokens(tokens);
-//    Token[] wordTokens = [];
-//    string word = "";
-//    Location location = {
-//        line: 1,
-//        column: 1
-//    };
-//    foreach CharToken charToken in tokens {
-//        CharTokenType tokenType = charToken.'type;
-//        string value = charToken.value;
-//        if (word == "") {
-//            location = charToken.location.clone();
-//        }
-//        if (tokenType == CHAR) {
-//            word += value;
-//        } else if (tokenType == LINE_TERMINATOR || tokenType == WHITE_SPACE) {
-//             addWord(word, location, wordTokens);
-//             word = "";
-//        } else if (tokenType is EOF_TOKEN) {
-//            wordTokens.push({
-//                value: charToken.value,
-//                location: charToken.location
-//            });
-//            word = "";
-//        }
-//    }
-//    return wordTokens;
-//}
+isolated function getWordTokens(CharToken[] charTokens) returns Token[]|InvalidTokenError {
+    Token[] wordTokens = [];
+    string word = "";
+    Location location = {
+        line: 1,
+        column: 1
+    };
+    foreach CharToken charToken in charTokens {
+        CharTokenType tokenType = charToken.'type;
+        string value = charToken.value;
+        if (word == "") {
+            location = charToken.location.clone();
+        }
+        if (tokenType == CHAR) {
+            word += value;
+        } else if (tokenType is SpecialCharacter) {
+            addWord(word, location, wordTokens);
+            wordTokens.push({
+                'type: tokenType,
+                value: charToken.value,
+                location: charToken.location
+            });
+            word = "";
+        }
+    }
+    return wordTokens;
+}
 
-//isolated function addWord(string value, Location location, Token[] tokens) {
-//    if (value != "") {
-//        Token token = {
-//            'type: WORD,
-//            value: value,
-//            location: location
-//        };
-//        tokens.push(token);
-//    }
-//}
-
-//isolated function checkForComments(Token token, int currentLine, boolean isComment) returns [int, boolean] {
-//    int nextLine = token.location.line;
-//    boolean comment = isComment;
-//    if (nextLine > currentLine) {
-//        nextLine = nextLine;
-//        comment = false;
-//    }
-//    if (token.value == COMMENT) {
-//        comment = true;
-//    }
-//    return [nextLine, comment];
-//}
+isolated function addWord(string value, Location location, Token[] tokens) {
+    if (value != "") {
+        Token token = {
+            'type: WORD,
+            value: value,
+            location: location
+        };
+        tokens.push(token);
+    }
+}
 
 isolated function updateLocation(string char, Location location) {
     if (char is LineTerminator) {
@@ -137,17 +110,6 @@ isolated function updateLocation(string char, Location location) {
         location.line += 1;
     } else {
         location.column += 1;
-    }
-}
-
-isolated function validateCharTokens(CharToken[] tokens) returns InvalidTokenError? {
-    if (tokens.length() == 1) {
-        string message = "Syntax Error: Unexpected <EOF>.";
-        ErrorRecord errorRecord = getErrorRecordFromToken({
-            value: tokens[0].value,
-            location: tokens[0].location
-        });
-        return InvalidTokenError(message, errorRecord = errorRecord);
     }
 }
 

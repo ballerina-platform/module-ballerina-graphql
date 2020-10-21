@@ -15,11 +15,10 @@
 // under the License.
 
 import ballerina/test;
-//import ballerina/time;
-//import ballerina/io;
 
 @test:Config {
-    groups: ["lexer", "parser", "unit"]
+    groups: ["lexer", "parser", "unit"],
+    enable: false
 }
 function testInvalidCharacter() {
     string name = "John Doe<";
@@ -35,54 +34,16 @@ function testInvalidCharacter() {
 }
 function testGetCharTokens() returns error? {
     string document = "{ name }";
-    CharToken[] tokens = check tokenizeCharacters(document);
-    CharToken[] expectedTokens = [
-        {
-            'type: CHAR,
-            value: "{",
-            location: { line: 1, column: 1 }
-        },
-        {
-            'type: WHITE_SPACE,
-            value: " ",
-            location: { line: 1, column: 2 }
-        },
-        {
-            'type: CHAR,
-            value: "n",
-            location: { line: 1, column: 3 }
-        },
-        {
-            'type: CHAR,
-            value: "a",
-            location: { line: 1, column: 4 }
-        },
-        {
-            'type: CHAR,
-            value: "m",
-            location: { line: 1, column: 5 }
-        },
-        {
-            'type: CHAR,
-            value: "e",
-            location: { line: 1, column: 6 }
-        },
-        {
-            'type: WHITE_SPACE,
-            value: " ",
-            location: { line: 1, column: 7 }
-        },
-        {
-            'type: CHAR,
-            value: "}",
-            location: { line: 1, column: 8 }
-        },
-        {
-            'type: EOF_TOKEN,
-            value: "<EOF>",
-            location: { line: 1, column: 9 }
-        }
-    ];
+    CharToken[] charTokens = check tokenizeCharacters(document);
     // Caution: Might give type cast error ,when assert fails.
-    test:assertEquals(tokens, expectedTokens);
+    test:assertEquals(charTokens, expectedCharTokens);
+}
+
+@test:Config {
+    groups: ["lexer", "parser", "unit"]
+}
+function testGetWordTokens() returns error? {
+    Token[] tokens = check getWordTokens(expectedCharTokens);
+    // Caution: Might give type cast error ,when assert fails.
+    test:assertEquals(tokens, expectedWordTokens);
 }

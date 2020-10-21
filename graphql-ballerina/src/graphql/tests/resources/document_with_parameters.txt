@@ -1,6 +1,6 @@
 query getData {
     # Line comment
-    name(id: 1, name: sam) # Inline Comment 
+    name(id: 1, name: "Prof. Moriarty") # Inline Comment
     id
     birthdate
 }

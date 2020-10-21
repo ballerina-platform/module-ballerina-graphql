@@ -14,27 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const SPACE = " ";
-const TAB = "\t";
-
-const NEW_LINE = "\n";
-const LINE_RETURN = "\r";
-
-const QUOTE = "\"";
-const BACK_SLASH = "\\";
-
-const COMMENT = "#";
-
-const OPEN_BRACE = "{";
-const CLOSE_BRACE = "}";
-const OPEN_PARENTHESES = "(";
-const CLOSE_PARENTHESES = ")";
-
-const COLON = ":";
-const COMMA = ",";
-
-// Token Types
-const CHAR = "<char>";
-const WORD = "<word>";
-
-const VALID_CHAR_REGEX = "^[a-zA-Z0-9_]$";
+isolated function getBlockEndChar(BlockOpenChar char) returns BlockCloseChar {
+    match char {
+        OPEN_BRACE => {
+            return CLOSE_BRACE;
+        }
+        OPEN_PARENTHESES => {
+            return CLOSE_PARENTHESES;
+        }
+        QUOTE => {
+            return QUOTE;
+        }
+    }
+    return NEW_LINE;
+}

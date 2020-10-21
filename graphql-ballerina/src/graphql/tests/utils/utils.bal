@@ -23,7 +23,7 @@ function getDocumentWithComments() returns string {
 }
 
 function getDocumentWithParameters() returns string {
-    return readFileAndGetString(DOCUMENT_WITH_PARAMTER, 66);
+    return readFileAndGetString(DOCUMENT_WITH_PARAMTER, 115);
 }
 
 function getShorthandNotationDocument() returns string {
@@ -80,4 +80,10 @@ function checkErrorRecord(Error err, int line, int column) {
         };
     ErrorRecord errorRecord = <ErrorRecord>err.detail()[FIELD_ERROR_RECORD];
     test:assertEquals(errorRecord, expectedErrorRecord);
+}
+
+function printTokens(Token[] tokens) {
+    foreach Token token in tokens {
+        io:println(token);
+    }
 }

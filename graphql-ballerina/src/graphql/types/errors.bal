@@ -25,6 +25,9 @@ public type NotImplementedError distinct error;
 public type NotSupportedError distinct error;
 
 // Parsing Errors
+# Represents an error due to unterminated string in the GraphQL document
+public type UnterminatedStringError distinct error;
+
 # Represents an error due to invalid token in the GraphQL document
 public type InvalidTokenError distinct error;
 
@@ -32,7 +35,7 @@ public type InvalidTokenError distinct error;
 public type InvalidCharacterError distinct error;
 
 # Represents a syntax error in a GraphQL document
-public type SyntaxError InvalidTokenError|InvalidCharacterError;
+public type SyntaxError InvalidTokenError|InvalidCharacterError|UnterminatedStringError;
 
 # Represents the errors occurred while parsing a GraphQL document
 public type ParsingError SyntaxError|NotSupportedError;
