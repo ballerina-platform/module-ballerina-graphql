@@ -25,15 +25,6 @@ public type Data record {
     // Intentionally kept empty
 };
 
-# Stores a location for an error in a GraphQL operation.
-#
-# + line - The line of the document where error occured
-# + column - The column of the document where error occurred
-public type Location record {
-    int line;
-    int column;
-};
-
 # Represents an error occurred while executing a GraphQL operation.
 #
 # + locations - Locations of the GraphQL document where the error occurred
@@ -55,18 +46,23 @@ public type GraphQlServiceConfiguration record {
     string basePath;
 };
 
-public type Operation record {|
+public type Argument record {
+    string name;
+    Scalar value;
+};
+
+public type Field record {
+    string name;
+    Argument[] arguments?;
+    Field[] selections?;
+};
+
+public type Operation record {
     string name;
     OperationType 'type;
-    Token[] fields;
-|};
+    Field[] selections;
+};
 
-public type Document record {|
+public type Document record {
     map<Operation> operations;
-|};
-
-public type Token record {|
-    TokenType 'type = CHAR;
-    string value;
-    Location location;
-|};
+};

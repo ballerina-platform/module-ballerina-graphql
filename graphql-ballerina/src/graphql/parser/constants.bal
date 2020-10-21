@@ -14,18 +14,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents a GraphQL ID field
-public type Id int|string;
+const SPACE = " ";
+const TAB = "\t";
+const NEW_LINE = "\n";
+const LINE_RETURN = "\r";
 
-# Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar int|string|float|boolean|Id;
+const COMMENT = "#";
 
-# The annotation which is used to configure a GraphQL service.
-public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
+const VALID_CHAR_REGEX = "^[a-zA-Z0-9_#{}()]$";
 
-# Represents the types of operations valid for Ballerina GraphQL.
-public enum OperationType {
-    QUERY = "query",
-    MUTATION = "mutation",
-    SUBSCRIPTION = "subscription"
+public enum TokenType {
+    OPEN_BRACE = "{",
+    CLOSE_BRACE = "}",
+    OPEN_PARENTHESES = "(",
+    CLOSE_PARENTHESES = ")",
+    COLON = ":",
+    COMMA = ",",
+    TERMINAL,
+    WORD
+}
+
+enum CharTokenType {
+    WHITE_SPACE,
+    LINE_TERMINATOR,
+    CHAR,
+    EOF_TOKEN
 }
