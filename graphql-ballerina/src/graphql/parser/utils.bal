@@ -16,28 +16,44 @@
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = "Syntax Error: Unexpected " + getScalarTypeNameForError(value);
+    string message = "Syntax Error: Unexpected " + getErrorMessageTypeNameForError(token);
     ErrorRecord errorRecord = getErrorRecordFromToken(token);
     return InvalidTokenError(message, errorRecord = errorRecord);
 }
 
 isolated function getExpectedNameError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = "Syntax Error: Expected Name, found " + getScalarTypeNameForError(value);
+    string message = "Syntax Error: Expected Name, found " + getErrorMessageTypeNameForError(token);
+    ErrorRecord errorRecord = getErrorRecordFromToken(token);
+    return InvalidTokenError(message, errorRecord = errorRecord);
+}
+
+isolated function getExpectedCharError(Token token, string char) returns InvalidTokenError {
+    Scalar value = token.value;
+    string message = "Syntax Error: Expected \"" + char + "\", found " + getErrorMessageTypeNameForError(token);
     ErrorRecord errorRecord = getErrorRecordFromToken(token);
     return InvalidTokenError(message, errorRecord = errorRecord);
 }
 
 isolated function getScalarTypeNameForError(Scalar value) returns string {
-    if (value is Eof) {
-        return "<EOF>.";
-    } else if (value is string) {
-        return "Name \"" + value + "\".";
-    } else if (value is int) {
+    if (value is int) {
         return "Int \"" + value.toString() + "\".";
     } else if (value is float) {
         return "Float \"" + value.toString() + "\".";
+    } else if (value is boolean) {
+        return "Boolean \"" + value.toString() + "\".";
     } else {
-        return "\"" + value.toString() + "\".";
+        return "Name \"" + value + "\".";
+    }
+}
+
+isolated function getErrorMessageTypeNameForError(Token token) returns string {
+    TokenType 'type = token.'type;
+    if ('type == T_EOF) {
+        return "<EOF>.";
+    } else if ('type == T_WORD) {
+        return getScalarTypeNameForError(token.value);
+    } else {
+        return "\"" + token.value.toString() + "\".";
     }
 }

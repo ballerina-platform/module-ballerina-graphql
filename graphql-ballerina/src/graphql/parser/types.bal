@@ -48,10 +48,13 @@ type CloseParentheses CLOSE_PARENTHESES;
 
 // Others
 type BackSlash BACK_SLASH;
+type Boolean TRUE|FALSE;
 
 type TerminalCharacter T_EOF|T_WHITE_SPACE|T_NEW_LINE;
 type SpecialCharacter T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_COMMENT;
-type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_COMMENT;
+type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN|T_COMMENT;
+
+type ArgumentValue T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN;
 
 type CharToken record {
     string value;
