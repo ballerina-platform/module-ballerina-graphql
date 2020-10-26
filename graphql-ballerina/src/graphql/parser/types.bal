@@ -14,47 +14,60 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// Chars
-type WhiteSpace SPACE|TAB;
-type LineTerminator NEW_LINE|LINE_RETURN;
-type TerminalCharacter WhiteSpace|LineTerminator;
+enum Numeral {
+    ZERO = "0",
+    ONE = "1",
+    TWO = "2",
+    THREE = "3",
+    FOUR = "4",
+    FIVE = "5",
+    SIX = "6",
+    SEVEN = "7",
+    EIGHT = "8",
+    NINE = "9",
+    DECIMAL = "."
+}
 
-// Internal types
-type Char CHAR;
-type Word WORD;
+// Special Characters
+// Terminal chars
+type WhiteSpace SPACE|TAB;
+type LineTerminator NEW_LINE|LINE_RETURN|EOF;
+type Terminal WhiteSpace|LineTerminator;
+
+// Separators
 type Eof EOF;
 type Quote QUOTE;
+type Hash HASH;
+type Colon COLON;
+type Comma COMMA;
+type OpenBrace OPEN_BRACE;
+type CloseBrace CLOSE_BRACE;
+type OpenParentheses OPEN_PARENTHESES;
+type CloseParentheses CLOSE_PARENTHESES;
+
+// Others
 type BackSlash BACK_SLASH;
-type Comment COMMENT;
 
-type Brace OPEN_BRACE|CLOSE_BRACE;
-type Parentheses OPEN_PARENTHESES|CLOSE_PARENTHESES;
+type TerminalCharacter T_EOF|T_WHITE_SPACE|T_NEW_LINE;
+type SpecialCharacter T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_COMMENT;
+type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_COMMENT;
 
-type SpecialCharacter TerminalCharacter|Brace|Parentheses|Quote|Eof;
-
-type BlockOpenChar OPEN_BRACE|OPEN_PARENTHESES|COMMENT|QUOTE;
-type BlockCloseChar CLOSE_BRACE|CLOSE_PARENTHESES|NEW_LINE|LINE_RETURN|QUOTE;
-
-type TokenType Word|Comment|SpecialCharacter|Eof;
-type CharTokenType Char|SpecialCharacter|Eof;
-
-type IteratorNode record {
-    string value;
+type TokenIteratorNode record {
+    Token value;
 };
 
-type Iterator object {
-    public isolated function next() returns IteratorNode?;
+type TokenIterator object {
+    public isolated function next() returns TokenIteratorNode?;
 };
 
 type CharToken record {
-    CharTokenType 'type;
     string value;
     Location location;
 };
 
 type Token record {
-    TokenType 'type = WORD;
-    string value;
+    TokenType 'type;
+    Scalar value;
     Location location;
 };
 
