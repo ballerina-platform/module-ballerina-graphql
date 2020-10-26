@@ -53,14 +53,6 @@ type TerminalCharacter T_EOF|T_WHITE_SPACE|T_NEW_LINE;
 type SpecialCharacter T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_COMMENT;
 type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_COMMENT;
 
-type TokenIteratorNode record {
-    Token value;
-};
-
-type TokenIterator object {
-    public isolated function next() returns TokenIteratorNode?;
-};
-
 type CharToken record {
     string value;
     Location location;

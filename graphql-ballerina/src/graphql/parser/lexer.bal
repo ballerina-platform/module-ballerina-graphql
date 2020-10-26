@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/stringutils;
+
 class Lexer {
     private CharReader charReader;
     private Token? buffer;
@@ -52,7 +54,7 @@ class Lexer {
             } else if (tokenType is SpecialCharacter) {
                 return self.getSpecialCharacterToken(char, tokenType);
             } else {
-                return self.getWordToken(char.location, value);
+                return self.getWordToken(char);
             }
         }
     }
@@ -70,11 +72,7 @@ class Lexer {
             CharToken charToken = <CharToken>next;
             string value = charToken.value;
             if (value is Eof) {
-                string message = "Syntax Error: Unexpected <EOF>.";
-                ErrorRecord errorRecord = {
-                    locations: [charToken.location.clone()]
-                };
-                return InvalidTokenError(message, errorRecord = errorRecord);
+                return getUnexpectedTokenError(token);
             }
             if (value is LineTerminator) {
                 string message = "Syntax Error: Unterminated string.";
@@ -150,9 +148,11 @@ class Lexer {
         return terminalToken;
     }
 
-    isolated function getWordToken(Location location, string firstChar) returns Token|ParsingError {
+    isolated function getWordToken(CharToken firstCharToken) returns Token|ParsingError {
         CharToken? next = check self.charReader.getNext();
-        string word = firstChar;
+        check validateChar(firstCharToken);
+        Location location = firstCharToken.location;
+        string word = firstCharToken.value;
         while (next != ()) {
             CharToken token = <CharToken>next;
             TokenType tokenType = getTokenType(token);
@@ -163,7 +163,7 @@ class Lexer {
                 self.buffer = <Token>check self.getTerminalToken(token, tokenType);
                 break;
             } else {
-                // TODO: Validate char here
+                check validateChar(token);
                 word += token.value;
             }
             next = check self.charReader.getNext();
@@ -237,6 +237,16 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
         } else {
             return number;
         }
+    }
+}
+
+isolated function validateChar(CharToken token) returns SyntaxError? {
+    if (!stringutils:matches(token.value, VALID_CHAR_REGEX)) {
+        string message = "Syntax Error: Cannot parse the unexpected character \"" + token.value + "\".";
+        ErrorRecord errorRecord = {
+            locations: [token.location]
+        };
+        return InvalidTokenError(message, errorRecord = errorRecord);
     }
 }
 
