@@ -30,32 +30,56 @@ class Parser {
         TokenType tokenType = token.'type;
 
         if (tokenType == T_OPEN_BRACE) {
-            OperationType operationType = QUERY;
-            string operationName = ANONYMOUS_OPERATION;
-            Field[] fields = check self.getFieldsForOperation();
-            Operation operation = {
-                name: operationName,
-                'type: operationType,
-                selections: fields
-            };
+            Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY);
             map<Operation> operations = {operation};
             return {
                 operations: operations
             };
         } else if (tokenType == T_WORD) {
             OperationType operationType = check getOperationType(token);
+            token = check self.getNextNonWhiteSpaceToken();
+            tokenType = token.'type;
+            if (tokenType == T_OPEN_BRACE) {
+                Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, operationType);
+                map<Operation> operations = {operation};
+                return {
+                    operations: operations
+                };
+            } else if (tokenType == T_WORD) {
+                string operationName = <string>token.value;
+                token = check self.getNextNonWhiteSpaceToken();
+                tokenType = token.'type;
+                if (tokenType == T_OPEN_BRACE) {
+                    Operation operation = check self.createOperationRecord(operationName, operationType);
+                    map<Operation> operations = {operation};
+                    return {
+                        operations: operations
+                    };
+                } else {
+                    return getExpectedCharError(token, OPEN_BRACE);
+                }
+            }
         } else {
             return getUnexpectedTokenError(token);
         }
+    }
+
+    isolated function createOperationRecord(string operationName, OperationType 'type) returns Operation|ParsingError {
+        Field[] fields = check self.getFieldsForOperation();
+        return {
+            name: operationName,
+            'type: 'type,
+            selections: fields
+        };
     }
 
     isolated function getFieldsForOperation() returns Field[]|ParsingError {
         Token token = check self.getNextNonWhiteSpaceToken();
         Field[] fields = [];
         while (token.'type != T_CLOSE_BRACE) {
-            println(token);
             Field 'field = {
-                name: ""
+                name: "",
+                location: token.location.clone()
             };
             if (token.'type == T_WORD) {
                 'field.name = <string>token.value;
@@ -67,7 +91,8 @@ class Parser {
                 fields.push('field);
                 continue;
             } else if (token.'type == T_OPEN_PARENTHESES) {
-                // Arguments
+                Argument[] arguments = check self.getArgumentsForField();
+                token = check self.getNextNonWhiteSpaceToken();
             } else if (token.'type == T_OPEN_BRACE) {
                 // Selections
             } else if (token.'type == T_CLOSE_BRACE) {
@@ -95,6 +120,51 @@ class Parser {
             next = check self.lexer.getNext();
         }
         return <Token>result;
+    }
+
+    isolated function getArgumentsForField() returns Argument[]|ParsingError {
+        Argument[] arguments = [];
+        Token token = check self.getNextNonWhiteSpaceToken();
+        println(token);
+        while (token.'type != T_CLOSE_PARENTHESES) {
+            string argumentName = "";
+            Scalar argumentValue = "";
+            Location nameLocation = token.location;
+            Location valueLocation = token.location;
+            if (token.'type is T_WORD) {
+                argumentName = <string>token.value;
+            } else {
+                return getExpectedNameError(token);
+            }
+            token = check self.getNextNonWhiteSpaceToken();
+            println(token);
+            if (token.'type != T_COLON) {
+                return getExpectedCharError(token, COLON);
+            }
+            token = check self.getNextNonWhiteSpaceToken();
+            println(token);
+            if (token.'type is ArgumentValue) {
+                argumentValue = token.value;
+                valueLocation = token.location;
+            } else {
+                return getUnexpectedTokenError(token);
+            }
+            Argument argument = {
+                name: argumentName,
+                value: argumentValue,
+                nameLocation: nameLocation,
+                valueLocation: valueLocation
+            };
+            arguments.push(argument);
+            token = check self.getNextNonWhiteSpaceToken();
+            println(token);
+            if (token.'type == T_COMMA) {
+                token = check self.getNextNonWhiteSpaceToken();
+                println(token);
+                continue;
+            }
+        }
+        return arguments;
     }
 }
 

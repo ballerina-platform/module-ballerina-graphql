@@ -105,6 +105,7 @@ class Lexer {
                 break;
             } else if (tokenType is SpecialCharacter) {
                 self.buffer = self.getSpecialCharacterToken(token, tokenType);
+                break;
             } else if (value == DECIMAL) {
                 numeral += value;
                 isFloat = true;
@@ -168,9 +169,14 @@ class Lexer {
             }
             next = check self.charReader.getNext();
         }
+        TokenType 'type = getWordTokenType(word);
+        Scalar value = word;
+        if ('type is T_BOOLEAN) {
+            value = <boolean>'boolean:fromString(word);
+        }
         return {
-            value: word,
-            'type: T_WORD,
+            value: value,
+            'type: 'type,
             location: location
         };
     }
@@ -218,6 +224,13 @@ isolated function getTokenType(CharToken token) returns TokenType {
         return T_NUMERIC;
     } else if (value is Hash) {
         return T_COMMENT;
+    }
+    return T_WORD;
+}
+
+isolated function getWordTokenType(string value) returns TokenType {
+    if (value is Boolean) {
+        return T_BOOLEAN;
     }
     return T_WORD;
 }

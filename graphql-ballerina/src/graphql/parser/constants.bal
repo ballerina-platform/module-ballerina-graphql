@@ -37,19 +37,23 @@ const CLOSE_PARENTHESES = ")";
 const COLON = ":";
 const COMMA = ",";
 
+const TRUE = "true";
+const FALSE = "false";
+
 // Token Types
 const T_EOF = 0;
 const T_WORD = 1;
 const T_STRING = 2;
 const T_NUMERIC = 3;
-const T_COMMENT = 4;
-const T_OPEN_BRACE = 5;
-const T_CLOSE_BRACE = 6;
-const T_OPEN_PARENTHESES = 7;
-const T_CLOSE_PARENTHESES = 8;
-const T_COLON = 9;
-const T_COMMA = 10;
-const T_NEW_LINE = 11;
-const T_WHITE_SPACE = 12;
+const T_BOOLEAN = 4;
+const T_COMMENT = 5;
+const T_OPEN_BRACE = 6;
+const T_CLOSE_BRACE = 7;
+const T_OPEN_PARENTHESES = 8;
+const T_CLOSE_PARENTHESES = 9;
+const T_COLON = 10;
+const T_COMMA = 11;
+const T_NEW_LINE = 12;
+const T_WHITE_SPACE = 13;
 
 const VALID_CHAR_REGEX = "^[a-zA-Z0-9_]$";
