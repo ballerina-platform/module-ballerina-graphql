@@ -25,7 +25,8 @@ enum Numeral {
     SEVEN = "7",
     EIGHT = "8",
     NINE = "9",
-    DECIMAL = "."
+    DECIMAL = ".",
+    NEGATIVE = "-"
 }
 
 // Special Characters
