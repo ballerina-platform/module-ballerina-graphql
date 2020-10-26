@@ -16,43 +16,105 @@
 
 class Parser {
     private Lexer lexer;
-    private Token[] tokens;
 
-    public isolated function init(string text) {
+    public isolated function init(string text) returns ParsingError? {
         self.lexer = new(text);
-        self.tokens = [];
     }
 
-    public isolated function parse() returns Token[]|ParsingError {
-        self.tokens = check removeWhiteSpaces(self.lexer);
-        self.generateDocument();
-        return self.tokens;
+    public isolated function parse() returns Document|ParsingError? {
+        return self.generateDocument();
     }
 
-    isolated function generateDocument() {
+    isolated function generateDocument() returns Document|ParsingError? {
+        Token token = check self.getNextNonWhiteSpaceToken();
+        TokenType tokenType = token.'type;
 
+        if (tokenType == T_OPEN_BRACE) {
+            OperationType operationType = QUERY;
+            string operationName = ANONYMOUS_OPERATION;
+            Field[] fields = check self.getFieldsForOperation();
+            Operation operation = {
+                name: operationName,
+                'type: operationType,
+                selections: fields
+            };
+            map<Operation> operations = {operation};
+            return {
+                operations: operations
+            };
+        } else if (tokenType == T_WORD) {
+            OperationType operationType = check getOperationType(token);
+        } else {
+            return getUnexpectedTokenError(token);
+        }
+    }
+
+    isolated function getFieldsForOperation() returns Field[]|ParsingError {
+        Token token = check self.getNextNonWhiteSpaceToken();
+        Field[] fields = [];
+        while (token.'type != T_CLOSE_BRACE) {
+            println(token);
+            Field 'field = {
+                name: ""
+            };
+            if (token.'type == T_WORD) {
+                'field.name = <string>token.value;
+            } else {
+                return getExpectedNameError(token);
+            }
+            token = check self.getNextNonWhiteSpaceToken();
+            if (token.'type == T_WORD) {
+                fields.push('field);
+                continue;
+            } else if (token.'type == T_OPEN_PARENTHESES) {
+                // Arguments
+            } else if (token.'type == T_OPEN_BRACE) {
+                // Selections
+            } else if (token.'type == T_CLOSE_BRACE) {
+                fields.push('field);
+                break;
+            } else {
+                return getExpectedNameError(token);
+            }
+        }
+        return fields;
+    }
+
+    isolated function getNextNonWhiteSpaceToken() returns Token|ParsingError {
+        Token? next = check self.lexer.getNext();
+        Token? result = ();
+        while (next != ()) {
+            Token token = <Token>next;
+            TokenType tokenType = token.'type;
+            if (tokenType == T_WHITE_SPACE || tokenType == T_NEW_LINE) {
+                // Do nothing
+            } else {
+                result = token;
+                break;
+            }
+            next = check self.lexer.getNext();
+        }
+        return <Token>result;
     }
 }
 
-isolated function removeWhiteSpaces(Lexer lexer) returns Token[]|ParsingError {
-    Token[] tokens = [];
-    boolean stripFront = true;
 
-    Token? next = check lexer.getNext();
-    while (next != ()) {
-        Token token = <Token>next;
-        TokenType tokenType = token.'type;
-        if (tokenType == T_WHITE_SPACE) {
-            // Do nothing
-        } else if (stripFront && tokenType == T_NEW_LINE) {
-            // Do nothing
-        } else {
-            stripFront = false;
-            tokens.push(token);
-        }
-        next = check lexer.getNext();
+
+isolated function getBraceCount(TokenType tokenType, int braceCount) returns int {
+    if (tokenType == T_OPEN_BRACE) {
+        return braceCount + 1;
+    } else if (tokenType == T_CLOSE_BRACE) {
+        return braceCount - 1;
     }
-    return tokens;
+    return braceCount;
+}
+
+isolated function getOperationType(Token token) returns OperationType|ParsingError {
+    string value = <string>token.value;
+    if (value is OperationType) {
+        return value;
+    }
+    return getUnexpectedTokenError(token);
 }
 
 //isolated function getNonTerminalTokensArray(Token[] tokens) returns Token[] {
