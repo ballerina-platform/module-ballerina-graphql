@@ -14,16 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
+// Special Characters
 const SPACE = " ";
 const TAB = "\t";
 
 const NEW_LINE = "\n";
 const LINE_RETURN = "\r";
 
+const EOF = "<E>";
+const TERMINAL = "<T>";
+
 const QUOTE = "\"";
 const BACK_SLASH = "\\";
 
-const COMMENT = "#";
+const HASH = "#";
 
 const OPEN_BRACE = "{";
 const CLOSE_BRACE = "}";
@@ -34,7 +38,16 @@ const COLON = ":";
 const COMMA = ",";
 
 // Token Types
-const CHAR = "<char>";
-const WORD = "<word>";
-
-const VALID_CHAR_REGEX = "^[a-zA-Z0-9_]$";
+const T_EOF = 0;
+const T_WORD = 1;
+const T_STRING = 2;
+const T_NUMERIC = 3;
+const T_COMMENT = 4;
+const T_OPEN_BRACE = 5;
+const T_CLOSE_BRACE = 6;
+const T_OPEN_PARENTHESES = 7;
+const T_CLOSE_PARENTHESES = 8;
+const T_COLON = 9;
+const T_COMMA = 10;
+const T_NEW_LINE = 11;
+const T_WHITE_SPACE = 12;
