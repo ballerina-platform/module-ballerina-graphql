@@ -51,3 +51,5 @@ const T_COLON = 9;
 const T_COMMA = 10;
 const T_NEW_LINE = 11;
 const T_WHITE_SPACE = 12;
+
+const VALID_CHAR_REGEX = "$[a-zA-Z0-9_]$";
