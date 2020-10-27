@@ -1,6 +1,0 @@
-query getData {
-    # Line comment
-    name(id: 1, name: "Prof. Moriarty") # Inline Comment
-    id
-    birthdate
-}
