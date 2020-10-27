@@ -49,14 +49,6 @@ class CharReader {
     }
 }
 
-type CharIteratorNode record {
-    string value;
-};
-
-type CharIterator object {
-    public isolated function next() returns CharIteratorNode?;
-};
-
 isolated function updateLocation(string char, Location location) {
     if (char is LineTerminator) {
         location.column = 1;
