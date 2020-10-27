@@ -19,10 +19,54 @@ import ballerina/stringutils;
 class Lexer {
     private CharReader charReader;
     private Token? buffer;
+    private Token? previous;
+    private string document;
 
     public isolated function init(string document) {
         self.charReader = new(document);
         self.buffer = ();
+        self.previous = ();
+        self.document = document;
+    }
+
+    public isolated function reset() {
+        self.charReader = new(self.document);
+    }
+
+    public isolated function getPrevious() returns Token? {
+        return self.previous;
+    }
+
+    isolated function getNextNonWhiteSpaceToken() returns Token|ParsingError {
+        Token? next = check self.getNext();
+        Token? result = ();
+        while (next != ()) {
+            Token token = <Token>next;
+            TokenType tokenType = token.'type;
+            if (tokenType == T_WHITE_SPACE || tokenType == T_NEW_LINE) {
+                // Do nothing
+            } else {
+                result = token;
+                break;
+            }
+            next = check self.getNext();
+        }
+        return <Token>result;
+    }
+
+    isolated function getNextSpecialCharaterToken() returns Token|ParsingError? {
+        Token? next = check self.getNext();
+        Token? result = ();
+        while (next != ()) {
+            Token token = <Token>next;
+            TokenType tokenType = token.'type;
+            if (tokenType is SpecialCharacter) {
+                result = token;
+                break;
+            }
+            next = check self.getNext();
+        }
+        return result;
     }
 
     public isolated function getNext() returns Token|ParsingError? {
@@ -32,9 +76,12 @@ class Lexer {
             if (token.'type == T_COMMENT) {
                 return self.getTokenSkippingComment(token.location);
             }
+            self.previous = token;
             return token;
         }
-        return self.getNextToken();
+        Token? token = check self.getNextToken();
+        self.previous = token;
+        return token;
     }
 
     isolated function getNextToken() returns Token|ParsingError? {
@@ -254,6 +301,16 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
 }
 
 isolated function validateChar(CharToken token) returns SyntaxError? {
+    if (!stringutils:matches(token.value, VALID_CHAR_REGEX)) {
+        string message = "Syntax Error: Cannot parse the unexpected character \"" + token.value + "\".";
+        ErrorRecord errorRecord = {
+            locations: [token.location]
+        };
+        return InvalidTokenError(message, errorRecord = errorRecord);
+    }
+}
+
+isolated function validateFirstChar(CharToken token) returns SyntaxError? {
     if (!stringutils:matches(token.value, VALID_CHAR_REGEX)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + token.value + "\".";
         ErrorRecord errorRecord = {

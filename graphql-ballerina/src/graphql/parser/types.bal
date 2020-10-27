@@ -56,22 +56,22 @@ type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_BO
 
 type ArgumentValue T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN;
 
-type CharToken record {
+type CharToken record {|
     string value;
     Location location;
-};
+|};
 
-type Token record {
+type Token record {|
     TokenType 'type;
     Scalar value;
     Location location;
-};
+|};
 
 # Stores a location for an error in a GraphQL operation.
 #
 # + line - The line of the document where error occured
 # + column - The column of the document where error occurred
-public type Location record {
+public type Location record {|
     int line;
     int column;
-};
+|};

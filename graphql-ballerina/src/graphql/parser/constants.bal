@@ -57,3 +57,4 @@ const T_NEW_LINE = 12;
 const T_WHITE_SPACE = 13;
 
 const VALID_CHAR_REGEX = "^[a-zA-Z0-9_]$";
+const VALID_FIRST_CHAR_REGEX = "^[a-zA-Z_]$";
