@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["char_reader", "unit"]
+    groups: ["char_reader", "parser", "unit"]
 }
 isolated function testCharReaderForSimpleString() returns error? {
     string s = "Hello";
@@ -85,7 +85,7 @@ isolated function testCharReaderForSimpleString() returns error? {
 }
 
 @test:Config {
-    groups: ["char_reader", "unit"]
+    groups: ["char_reader", "parser", "unit"]
 }
 isolated function testCharReaderForEof() returns error? {
     string s = "";
@@ -103,7 +103,7 @@ isolated function testCharReaderForEof() returns error? {
 }
 
 @test:Config {
-    groups: ["char_reader", "unit"]
+    groups: ["char_reader", "parser", "unit"]
 }
 isolated function testCharReaderForAfterEof() returns error? {
     string s = "";
@@ -114,7 +114,7 @@ isolated function testCharReaderForAfterEof() returns error? {
 }
 
 @test:Config {
-    groups: ["char_reader", "unit"]
+    groups: ["char_reader", "parser", "unit"]
 }
 isolated function testCharReaderForNewLine() returns error? {
     string s = "\n\n\n";
