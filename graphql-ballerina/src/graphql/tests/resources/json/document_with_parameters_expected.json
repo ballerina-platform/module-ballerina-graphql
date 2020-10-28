@@ -1,6 +1,6 @@
 {
     "operations": {
-        "operation": {
+        "getData": {
             "name": "getData",
             "type": "query",
             "fields": [
@@ -67,6 +67,13 @@
                                 "line": 9,
                                 "column": 9
                             }
+                        },
+                        {
+                            "name": "last",
+                            "location": {
+                                "line": 10,
+                                "column": 9
+                            }
                         }
                     ],
                     "location": {
@@ -128,7 +135,11 @@
                         "column": 5
                     }
                 }
-            ]
+            ],
+            "location": {
+                "line": 6,
+                "column": 15
+            }
         }
     }
 }
