@@ -52,17 +52,8 @@ isolated function testInvalidCharacter() returns error? {
     InvalidTokenError err = <InvalidTokenError>next;
     string message = err.message();
     string expectedMessage = "Syntax Error: Cannot parse the unexpected character \"<\".";
-    ErrorRecord errorRecord = <ErrorRecord>err.detail()[FIELD_ERROR_RECORD];
-    ErrorRecord expectedErrorRecord = {
-        locations: [
-            {
-                line: 1,
-                column: 7
-            }
-        ]
-    };
     test:assertEquals(message, expectedMessage);
-    test:assertEquals(errorRecord, expectedErrorRecord);
+    checkErrorRecord(err, 1, 7);
 }
 
 @test:Config {
@@ -111,7 +102,7 @@ isolated function testNegativeIntInput() returns error? {
     Lexer lexer = new(s);
     Token? token = check lexer.getNextNonWhiteSpaceToken(); // test
     token = check lexer.getNextNonWhiteSpaceToken(); // integer
-    token = check lexer.getNextNonWhiteSpaceToken(); // -273
+    token = check lexer.getNextNonWhiteSpaceToken();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: -273,
@@ -242,15 +233,5 @@ function testUnterminatedString() returns error? {
     string expectedMessage = "Syntax Error: Unterminated string.";
     string message = err.message();
     test:assertEquals(message, expectedMessage);
-
-    ErrorRecord errorRecord = <ErrorRecord>err.detail()[FIELD_ERROR_RECORD];
-    ErrorRecord expectedErrorRecord = {
-        locations: [
-            {
-                line: 1,
-                column: 6
-            }
-        ]
-    };
-    test:assertEquals(errorRecord, expectedErrorRecord);
+    checkErrorRecord(err, 1, 6);
 }
