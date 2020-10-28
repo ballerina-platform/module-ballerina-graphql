@@ -14,83 +14,59 @@
 // specific language governing permissions and limitations
 // under the License.
 
-CharToken[] expectedCharTokens = [
-    {
-        'type: OPEN_BRACE,
-        value: "{",
-        location: { line: 1, column: 1 }
-    },
-    {
-        'type: SPACE,
-        value: " ",
-        location: { line: 1, column: 2 }
-    },
-    {
-        'type: CHAR,
-        value: "n",
-        location: { line: 1, column: 3 }
-    },
-    {
-        'type: CHAR,
-        value: "a",
-        location: { line: 1, column: 4 }
-    },
-    {
-        'type: CHAR,
-        value: "m",
-        location: { line: 1, column: 5 }
-    },
-    {
-        'type: CHAR,
-        value: "e",
-        location: { line: 1, column: 6 }
-    },
-    {
-        'type: SPACE,
-        value: " ",
-        location: { line: 1, column: 7 }
-    },
-    {
-        'type: CLOSE_BRACE,
-        value: "}",
-        location: { line: 1, column: 8 }
-    },
-    {
-        'type: EOF,
-        value: EOF,
-        location: { line: 1, column: 9 }
+Operation shorthandOperation = {
+    name: ANONYMOUS_OPERATION,
+    'type: QUERY,
+    fields: [
+        {
+            name: "name",
+            location: {
+                line: 2,
+                column: 5
+            }
+        },
+        {
+            name: "birthdate",
+            location: {
+                line: 3,
+                column: 5
+            }
+        }
+    ],
+    location: {
+        line: 1,
+        column: 1
     }
-];
+};
 
-Token[] expectedWordTokens = [
-    {
-        'type: OPEN_BRACE,
-        value: "{",
-        location: { line: 1, column: 1 }
-    },
-    {
-        'type: SPACE,
-        value: " ",
-        location: { line: 1, column: 2 }
-    },
-    {
-        'type: WORD,
-        value: "name",
-        location: { line: 1, column: 3 }
-    },
-    {
-        'type: SPACE,
-        value: " ",
-        location: { line: 1, column: 7 }
-    },
-    {
-        'type: CLOSE_BRACE,
-        value: "}",
-        location: { line: 1, column: 8 }
-    },
-    {
-        'type: EOF,
-        value: EOF,
-        location: { line: 1, column: 9 }
+Operation namedOperation = {
+    name: "getData",
+    'type: QUERY,
+    fields: [
+        {
+            name: "name",
+            location: {
+                line: 2,
+                column: 5
+            }
+        },
+        {
+            name: "id",
+            location: {
+                line: 3,
+                column: 5
+            }
+        },
+        {
+            name: "birthdate",
+            location: {
+                line: 4,
+                column: 5
+            }
+        }
+    ],
+    location: {
+        line: 1,
+        column: 7
     }
-];
+};

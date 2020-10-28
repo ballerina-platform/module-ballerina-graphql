@@ -17,46 +17,47 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["parser", "unit"]
+    groups: ["parse", "parser", "unit"],
+    // Issue with cloneWithType() function: https://github.com/ballerina-platform/ballerina-lang/issues/26632
+    enable: false
 }
-function testCommentRemoval1() returns error? {
-    string document = getDocumentWithParameters();
-    Token[] tokens = check parse(document);
-    //printTokens(tokens);
-}
-
-@test:Config {
-    groups: ["parser", "unit"]
-}
-function testCommentRemoval2() returns error? {
-    string document = getDocumentWithComments();
-    Token[] tokens = check parse(document);
-    //printTokens(tokens);
+function testComplexDocument() returns error? {
+    string documentString = getDocumentWithParameters();
+    Parser parser = check new(documentString);
+    Document document = check parser.parse();
+    json expectedJson = getParsedJsonForDocumentWithParameters();
+    Document expectedDocument = check expectedJson.fromJsonWithType(Document);
+    test:assertEquals(document, expectedDocument);
 }
 
 @test:Config {
-    groups: ["parser", "unit"]
+    groups: ["parse", "parser", "unit"]
 }
-function testCommentRemoval3() returns error? {
-    string document = getShorthandNotationDocument();
-    Token[] tokens = check parse(document);
-    //printTokens(tokens);
+function testShorthandDocument() returns error? {
+    string documentString = getShorthandNotationDocument();
+    Parser parser = check new(documentString);
+    Document document = check parser.parse();
+
+    map<Operation> operations = {};
+    operations[ANONYMOUS_OPERATION] = shorthandOperation;
+    Document shorthandDocument = {
+        operations: operations
+    };
+    test:assertEquals(document, shorthandDocument);
 }
 
 @test:Config {
-    groups: ["parser", "unit"]
+    groups: ["parse", "parser", "unit"]
 }
-function testCommentRemoval4() returns error? {
-    string document = getGeneralNotationDocument();
-    Token[] tokens = check parse(document);
-    //printTokens(tokens);
-}
+function testDocumentWithNamedOperations() returns error? {
+    string documentString = getGeneralNotationDocument();
+    Parser parser = check new(documentString);
+    Document document = check parser.parse();
 
-@test:Config {
-    groups: ["parser", "unit"]
-}
-function testCommentRemoval5() returns error? {
-    string document = getNoCloseBraceDocument();
-    Token[] tokens = check parse(document);
-    //printTokens(tokens);
+    map<Operation> operations = {};
+    operations[namedOperation.name] = namedOperation;
+    Document shorthandDocument = {
+        operations: operations
+    };
+    test:assertEquals(document, shorthandDocument);
 }

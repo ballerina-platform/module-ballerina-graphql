@@ -61,31 +61,31 @@ class Parser {
         TokenType tokenType = token.'type;
 
         if (tokenType == T_OPEN_BRACE) {
-            Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY);
-            map<Operation> operations = {operation};
-            return {
-                operations: operations
-            };
+            Location location = token.location.clone();
+            Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY, location);
+            Document document = createDocument();
+            check addOperationToDocument(document, operation);
+            return document;
         } else if (tokenType == T_WORD) {
             OperationType operationType = check getOperationType(token);
             token = check self.lexer.getNextNonWhiteSpaceToken();
             tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
-                Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, operationType);
-                map<Operation> operations = {operation};
-                return {
-                    operations: operations
-                };
-            } else if (tokenType == T_WORD) {
+                Location location = token.location.clone();
+                Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, operationType, location);
+                Document document = createDocument();
+                check addOperationToDocument(document, operation);
+                return document;
+            } else if (tokenType == T_WORD) { // TODO: Handle multiple operations
                 string operationName = <string>token.value;
+                Location location = token.location.clone();
                 token = check self.lexer.getNextNonWhiteSpaceToken();
                 tokenType = token.'type;
                 if (tokenType == T_OPEN_BRACE) {
-                    Operation operation = check self.createOperationRecord(operationName, operationType);
-                    map<Operation> operations = {operation};
-                    return {
-                        operations: operations
-                    };
+                    Operation operation = check self.createOperationRecord(operationName, operationType, location);
+                    Document document = createDocument();
+                    check addOperationToDocument(document, operation);
+                    return document;
                 } else {
                     return getExpectedCharError(token, OPEN_BRACE);
                 }
@@ -97,12 +97,13 @@ class Parser {
         }
     }
 
-    isolated function createOperationRecord(string operationName, OperationType 'type) returns Operation|ParsingError {
+    isolated function createOperationRecord(string operationName, OperationType 'type, Location location) returns Operation|ParsingError {
         Field[] fields = check getFieldsForOperation(self.lexer);
         return {
             name: operationName,
             'type: 'type,
-            fields: fields
+            fields: fields,
+            location: location
         };
     }
 }
@@ -131,7 +132,6 @@ isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingErro
         token = check lexer.getNextNonWhiteSpaceToken();
         if (token.'type == T_WORD) {
             fields.push('field);
-            token = check lexer.getNextNonWhiteSpaceToken();
             continue;
         }
 
@@ -192,4 +192,32 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
         }
     }
     return arguments;
+}
+
+isolated function createDocument() returns Document {
+    map<Operation> operations = {};
+    return {
+        operations: operations
+    };
+}
+
+isolated function addOperationToDocument(Document document, Operation operation) returns DuplicateOperationError? {
+    string operationName = operation.name;
+    map<Operation> operations = document.operations;
+    if (operations.hasKey(operationName)) {
+        Operation existingOperation = <Operation>operations[operationName];
+        Location l1 = existingOperation.location;
+        Location l2 = operation.location;
+        string message = "";
+        if (operationName == ANONYMOUS_OPERATION) {
+            message = "This anonymous operation must be the only defined operation.";
+        } else {
+            message = "There can be only operation named \"" + operationName + "\"";
+        }
+        ErrorRecord errorRecord = {
+            locations: [l1, l2]
+        };
+        return DuplicateOperationError(message, errorRecord = errorRecord);
+    }
+    document.operations[operation.name] = operation;
 }
