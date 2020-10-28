@@ -14,12 +14,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const RESOURCE_PATH = "src/graphql/tests/resources/";
+const DIR_SRC = "src";
+const DIR_GRAPHQL = "graphql";
+const DIR_TESTS = "tests";
+const DIR_RESOURCES = "resources";
+const DIR_JSON = "json";
+const DIR_DOCUMENTS = "documents";
+const DIR_TEXTS = "texts";
 
 const DOCUMENT_GENERAL = "document_general.txt";
 const DOCUMENT_SHORTHAND = "document_shorthand.txt";
+const DOCUMENT_TWO_ANONYMOUS_OPERATIONS = "two_anonymous_operations.txt";
 const DOCUMENT_SHORTHAND_INVALID = "document_shorthand_invalid_query.txt";
 const DOCUMENT_ANONYMOUS = "document_anonymous_operation.txt";
 const DOCUMENT_NO_CLOSE_BRACE = "invalid_document_no_close_brace.txt";
 const DOCUMENT_WITH_PARAMTER = "document_with_parameters.txt";
 const DOCUMENT_WITH_COMMENTS = "document_with_comments.txt";
+
+const JSON_WITH_PARAMETERS = "document_with_parameters_expected.json";
+
+const TEXT_WITH_STRING = "string_test.txt";
+const TEXT_WITH_UNTERMINATED_STRING = "unterminated_string.txt";
