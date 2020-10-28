@@ -70,3 +70,150 @@ Operation namedOperation = {
         column: 7
     }
 };
+
+Document expectedDocumentWithParameters =
+{
+    operations: {
+        "getData": {
+        name: "getData",
+        'type: "query",
+        fields: [
+            {
+                name: "name",
+                arguments: [
+                    {
+                        name: "id",
+                        value: 132,
+                        'type: "INLINE",
+                        nameLocation: {
+                            line: 8,
+                            column: 10
+                        },
+                        valueLocation: {
+                            line: 8,
+                            column: 14
+                        }
+                    },
+                    {
+                        name: "name",
+                        value: "Prof. Moriarty",
+                        'type: "INLINE",
+                        nameLocation: {
+                            line: 8,
+                            column: 19
+                        },
+                        valueLocation: {
+                            line: 8,
+                            column: 25
+                        }
+                    },
+                    {
+                        name: "negative",
+                        value: -123,
+                        'type: "INLINE",
+                        nameLocation: {
+                            line: 8,
+                            column: 43
+                        },
+                        valueLocation: {
+                            line: 8,
+                            column: 53
+                        }
+                    },
+                    {
+                        name: "weight",
+                        value: 75.4,
+                        'type: "INLINE",
+                        nameLocation: {
+                            line: 8,
+                            column: 59
+                        },
+                        valueLocation: {
+                            line: 8,
+                            column: 67
+                        }
+                    }
+                ],
+                selections: [
+                    {
+                        name: "first",
+                        location: {
+                            line: 9,
+                            column: 9
+                        }
+                    },
+                    {
+                        name: "last",
+                        location: {
+                            line: 10,
+                            column: 9
+                        }
+                    }
+                ],
+                location: {
+                    line: 8,
+                    column: 5
+                }
+            },
+            {
+                name: "id",
+                selections: [
+                    {
+                        name: "prefix",
+                        selections: [
+                            {
+                                name: "sample",
+                                location: {
+                                    line: 14,
+                                    column: 13
+                                }
+                            }
+                        ],
+                        location: {
+                            line: 13,
+                            column: 9
+                        }
+                    },
+                    {
+                        name: "suffix",
+                        location: {
+                            line: 16,
+                            column: 9
+                        }
+                    }
+                ],
+                location: {
+                    line: 12,
+                    column: 5
+                }
+            },
+            {
+                name: "birthdate",
+                arguments: [
+                    {
+                        name: "format",
+                        value: "DD/MM/YYYY",
+                        'type: "INLINE",
+                        nameLocation: {
+                            line: 18,
+                            column: 16
+                        },
+                        valueLocation: {
+                            line: 18,
+                            column: 24
+                        }
+                    }
+                ],
+                location: {
+                    line: 18,
+                    column: 5
+                }
+            }
+            ],
+            location: {
+                line: 6,
+                column: 7
+            }
+        }
+    }
+};

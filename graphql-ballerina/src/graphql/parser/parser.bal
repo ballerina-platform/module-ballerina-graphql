@@ -61,34 +61,15 @@ class Parser {
         TokenType tokenType = token.'type;
 
         if (tokenType == T_OPEN_BRACE) {
-            Location location = token.location.clone();
-            Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY, location);
-            Document document = createDocument();
-            check addOperationToDocument(document, operation);
-            return document;
+            return self.getDocumentForShortHandDocument(token);
         } else if (tokenType == T_WORD) {
             OperationType operationType = check getOperationType(token);
             token = check self.lexer.getNextNonWhiteSpaceToken();
             tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
-                Location location = token.location.clone();
-                Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, operationType, location);
-                Document document = createDocument();
-                check addOperationToDocument(document, operation);
-                return document;
+                return self.getDocumentForShortHandDocument(token, operationType);
             } else if (tokenType == T_WORD) { // TODO: Handle multiple operations
-                string operationName = <string>token.value;
-                Location location = token.location.clone();
-                token = check self.lexer.getNextNonWhiteSpaceToken();
-                tokenType = token.'type;
-                if (tokenType == T_OPEN_BRACE) {
-                    Operation operation = check self.createOperationRecord(operationName, operationType, location);
-                    Document document = createDocument();
-                    check addOperationToDocument(document, operation);
-                    return document;
-                } else {
-                    return getExpectedCharError(token, OPEN_BRACE);
-                }
+                return self.getDocumentForGeneralNotation(token, operationType);
             } else {
                 return getUnexpectedTokenError(token);
             }
@@ -97,7 +78,44 @@ class Parser {
         }
     }
 
-    isolated function createOperationRecord(string operationName, OperationType 'type, Location location) returns Operation|ParsingError {
+    isolated function getDocumentForShortHandDocument(Token token, OperationType 'type = QUERY)
+    returns Document|ParsingError {
+        Location location = token.location.clone();
+        Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, 'type, location);
+        Token endToken = check self.lexer.getNextNonWhiteSpaceToken();
+        // TODO: Handle this in document generation to catch both operations
+        if (endToken.'type != T_EOF) {
+            string message = "This anonymous operation must be the only defined operation.";
+            ErrorRecord errorRecord = getErrorRecordFromToken(token);
+            return DuplicateOperationError(message, errorRecord = errorRecord);
+        }
+        Document document = createDocument();
+        check addOperationToDocument(document, operation);
+        return document;
+    }
+
+    isolated function getDocumentForGeneralNotation(Token firstToken, OperationType operationType)
+    returns Document|ParsingError {
+        Document document = createDocument();
+        Token token = firstToken;
+        while (token.'type != T_EOF) {
+            string operationName = <string>token.value;
+            Location location = token.location.clone();
+            token = check self.lexer.getNextNonWhiteSpaceToken();
+            TokenType tokenType = token.'type;
+            if (tokenType == T_OPEN_BRACE) {
+                Operation operation = check self.createOperationRecord(operationName, operationType, location);
+                check addOperationToDocument(document, operation);
+            } else {
+                return getExpectedCharError(token, OPEN_BRACE);
+            }
+            token = check self.lexer.getNextNonWhiteSpaceToken();
+        }
+        return document;
+    }
+
+    isolated function createOperationRecord(string operationName, OperationType 'type, Location location)
+    returns Operation|ParsingError {
         Field[] fields = check getFieldsForOperation(self.lexer);
         return {
             name: operationName,

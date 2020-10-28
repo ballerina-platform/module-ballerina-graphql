@@ -14,24 +14,38 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/filepath;
 import ballerina/io;
 import ballerina/log;
 import ballerina/test;
 
 function getDocumentWithComments() returns string {
+    string resourcePath = checkpanic getResourcePath();
     return readFileAndGetString(DOCUMENT_WITH_COMMENTS, 98);
 }
 
 function getDocumentWithParameters() returns string {
-    return readFileAndGetString(DOCUMENT_WITH_PARAMTER, 115);
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_WITH_PARAMTER);
+    return readFileAndGetString(path, 290);
+}
+
+function getDocumentWithTwoAnonymousOperations() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);
+    return readFileAndGetString(path, 37);
 }
 
 function getShorthandNotationDocument() returns string {
-    return readFileAndGetString(DOCUMENT_SHORTHAND, 27);
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_SHORTHAND);
+    return readFileAndGetString(path, 27);
 }
 
 function getGeneralNotationDocument() returns string {
-    return readFileAndGetString(DOCUMENT_GENERAL, 47);
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_GENERAL);
+    return readFileAndGetString(path, 47);
 }
 
 function getInvalidShorthandNotationDocument() returns string {
@@ -46,8 +60,53 @@ function getNoCloseBraceDocument() returns string {
     return readFileAndGetString(DOCUMENT_NO_CLOSE_BRACE, 38);
 }
 
-function readFileAndGetString(string fileName, int length) returns string {
-    var fileText = readFile(RESOURCE_PATH + fileName, length);
+function getTextWithQuoteFile() returns string {
+    string textDirPath = checkpanic getTextPath();
+    string path = checkpanic filepath:build(textDirPath, TEXT_WITH_STRING);
+    return readFileAndGetString(path, 48);
+}
+
+function getTextWithUnterminatedStringFile() returns string {
+    string textDirPath = checkpanic getTextPath();
+    string path = checkpanic filepath:build(textDirPath, TEXT_WITH_UNTERMINATED_STRING);
+    return readFileAndGetString(path, 32);
+}
+
+function getParsedJsonForDocumentWithParameters() returns json {
+    string jsonDirPath = checkpanic getJsonPath();
+    string path = checkpanic filepath:build(jsonDirPath, JSON_WITH_PARAMETERS);
+    return checkpanic <@untainted>readJson(path);
+}
+
+isolated function getDocumentsPath() returns string|error {
+    string resourcePath = check getResourcePath();
+    return filepath:build(resourcePath, DIR_DOCUMENTS);
+}
+
+isolated function getJsonPath() returns string|error {
+    string resourcePath = check getResourcePath();
+    return filepath:build(resourcePath, DIR_JSON);
+}
+
+isolated function getTextPath() returns string|error {
+    string resourcePath = check getResourcePath();
+    return filepath:build(resourcePath, DIR_TEXTS);
+}
+
+isolated function getResourcePath() returns string|error {
+    return filepath:build("src", "graphql", "tests", "resources");
+}
+
+function readJson(string path) returns @tainted json|error {
+    io:ReadableByteChannel rbc = check io:openReadableFile(path);
+    io:ReadableCharacterChannel rch = new (rbc, "UTF8");
+    var result = rch.readJson();
+    closeReadChannel(rch);
+    return result;
+}
+
+function readFileAndGetString(string filePath, int length) returns string {
+    var fileText = readFile(filePath, length);
     if (fileText is error) {
         logAndPanicError("Error occurred while reading the document", fileText);
     }
@@ -69,7 +128,7 @@ function closeReadChannel(io:ReadableCharacterChannel rc) {
     }
 }
 
-function checkErrorRecord(Error err, int line, int column) {
+isolated function checkErrorRecord(Error err, int line, int column) {
     ErrorRecord expectedErrorRecord = {
         locations: [
             {
@@ -80,10 +139,4 @@ function checkErrorRecord(Error err, int line, int column) {
         };
     ErrorRecord errorRecord = <ErrorRecord>err.detail()[FIELD_ERROR_RECORD];
     test:assertEquals(errorRecord, expectedErrorRecord);
-}
-
-function printTokens(Token[] tokens) {
-    foreach Token token in tokens {
-        io:println(token);
-    }
 }

@@ -17,17 +17,13 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["parse", "parser", "unit"],
-    // Issue with cloneWithType() function: https://github.com/ballerina-platform/ballerina-lang/issues/26632
-    enable: false
+    groups: ["parse", "parser", "unit"]
 }
 function testComplexDocument() returns error? {
     string documentString = getDocumentWithParameters();
     Parser parser = check new(documentString);
     Document document = check parser.parse();
-    json expectedJson = getParsedJsonForDocumentWithParameters();
-    Document expectedDocument = check expectedJson.fromJsonWithType(Document);
-    test:assertEquals(document, expectedDocument);
+    test:assertEquals(document, expectedDocumentWithParameters);
 }
 
 @test:Config {
@@ -60,4 +56,19 @@ function testDocumentWithNamedOperations() returns error? {
         operations: operations
     };
     test:assertEquals(document, shorthandDocument);
+}
+
+@test:Config {
+    groups: ["parse", "parser", "unit"]
+}
+function testDocumentWithTwoAnonymousOperations() returns error? {
+    string documentString = getDocumentWithTwoAnonymousOperations();
+    Parser parser = check new(documentString);
+    var result = parser.parse();
+    test:assertTrue(result is DuplicateOperationError);
+    DuplicateOperationError err = <DuplicateOperationError>result;
+    string expectedMessage = "This anonymous operation must be the only defined operation.";
+    string message = err.message();
+    test:assertEquals(message, expectedMessage);
+    checkErrorRecord(err, 1, 1);
 }
