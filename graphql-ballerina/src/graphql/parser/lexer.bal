@@ -20,95 +20,80 @@ class Lexer {
     private CharReader charReader;
     private Token? buffer;
     private string document;
+    private boolean inProgress;
 
     public isolated function init(string document) {
         self.charReader = new(document);
         self.buffer = ();
         self.document = document;
+        self.inProgress = true;
     }
 
     public isolated function reset() {
         self.charReader = new(self.document);
     }
 
-    isolated function getNextNonWhiteSpaceToken() returns Token|ParsingError {
-        Token? next = check self.getNext();
-        Token? result = ();
-        while (next != ()) {
-            Token token = <Token>next;
-            TokenType tokenType = token.'type;
-            if (tokenType == T_WHITE_SPACE || tokenType == T_NEW_LINE) {
-                // Do nothing
-            } else {
-                result = token;
-                break;
-            }
-            next = check self.getNext();
-        }
-        return <Token>result;
+    public isolated function hasNext() returns boolean {
+        return self.inProgress;
     }
 
-    isolated function getNextSpecialCharaterToken() returns Token|ParsingError? {
-        Token? next = check self.getNext();
-        Token? result = ();
-        while (next != ()) {
-            Token token = <Token>next;
-            TokenType tokenType = token.'type;
-            if (tokenType is SpecialCharacter) {
-                result = token;
-                break;
-            }
-            next = check self.getNext();
-        }
-        return result;
-    }
-
-    public isolated function getNext() returns Token|ParsingError? {
+    public isolated function next() returns Token|ParsingError {
         if (self.buffer is Token) {
             Token token = <Token>self.buffer.clone();
             self.buffer = ();
-            if (token.'type == T_COMMENT) {
-                return self.getTokenSkippingComment(token.location);
-            }
             return token;
         }
-        return self.getNextToken();
+        return self.readNextToken();
     }
 
-    isolated function getNextToken() returns Token|ParsingError? {
-        while (!self.charReader.isEof()) {
-            CharToken char = self.charReader.next();
-            string value = char.value;
-            TokenType tokenType = getTokenType(char);
-            if (tokenType == T_STRING) {
-                return self.getStringToken(char.location);
-            } else if (tokenType == T_NUMERIC) {
-                return self.getNumeralToken(char.location, value);
-            } else if (tokenType is TerminalCharacter) {
-                return self.getTerminalToken(char, tokenType);
-            } else if (tokenType == T_COMMENT) {
-                return self.getTokenSkippingComment(char.location);
-            } else if (tokenType is SpecialCharacter) {
-                return self.getSpecialCharacterToken(char, tokenType);
-            } else {
-                return self.getWordToken(char);
-            }
+    isolated function readNextToken() returns Token|ParsingError {
+        CharToken char = self.charReader.next();
+        TokenType tokenType = getTokenType(char);
+        if (tokenType == T_EOF) {
+            self.inProgress = false;
+            return getTokenFromChar(char);
+        } else if (tokenType == T_STRING) {
+            return self.readStringToken(char.location);
+        } else if (tokenType == T_NUMERIC) {
+            return self.readNumeralToken(char.location, char.value);
+        } else if (tokenType is TerminalCharacter) {
+            return getTokenFromChar(char);
+        } else if (tokenType == T_COMMENT) {
+            return self.readCommentToken(char.location);
+        } else if (tokenType is SpecialCharacter) {
+            return getTokenFromChar(char);
+        } else {
+            return self.getWordToken(char);
         }
     }
 
-    isolated function getStringToken(Location location) returns Token|SyntaxError {
+    isolated function nextLexicalToken() returns Token|ParsingError {
+        Token token = check self.next();
+        TokenType tokenType = token.'type;
+        if (tokenType is T_WHITE_SPACE || tokenType is T_NEW_LINE || tokenType is T_COMMENT) {
+            return self.nextLexicalToken();
+        } else {
+            return token;
+        }
+    }
+
+    isolated function getNextSpecialCharaterToken() returns Token|ParsingError {
+        Token token = check self.next();
+        if (token.'type is SpecialCharacter) {
+            return self.getNextSpecialCharaterToken();
+        } else {
+            return token;
+        }
+    }
+
+    isolated function readStringToken(Location location) returns Token|SyntaxError {
         string previousChar = "";
         string word = "";
-        Token token = {
-            'type: T_STRING,
-            value: word,
-            location: location.clone()
-        };
         while (!self.charReader.isEof()) {
             CharToken charToken = self.charReader.next();
             string value = charToken.value;
             if (value is EOF) {
-                return getUnexpectedTokenError(token);
+                return getUnexpectedTokenError(getTokenFromChar(charToken));
             }
             if (value is LineTerminator) {
                 string message = "Syntax Error: Unterminated string.";
@@ -117,17 +102,16 @@ class Lexer {
                 };
                 return UnterminatedStringError(message, errorRecord = errorRecord);
             } else if (value is QUOTE && previousChar != BACK_SLASH) {
-                token.value = word;
                 break;
             } else {
                 word += value;
             }
             previousChar = value;
         }
-        return token;
+        return getToken(word, T_STRING, location);
     }
 
-    isolated function getNumeralToken(Location location, string fisrtChar) returns Token|ParsingError {
+    isolated function readNumeralToken(Location location, string fisrtChar) returns Token|ParsingError {
         string numeral = fisrtChar;
         boolean isFloat = false;
         while (!self.charReader.isEof()) {
@@ -135,10 +119,10 @@ class Lexer {
             TokenType tokenType = getTokenType(token);
             string value = token.value;
             if (tokenType is TerminalCharacter) {
-                self.buffer = check self.getTerminalToken(token, tokenType);
+                self.buffer = getTokenFromChar(token);
                 break;
             } else if (tokenType is SpecialCharacter) {
-                self.buffer = self.getSpecialCharacterToken(token, tokenType);
+                self.buffer = getTokenFromChar(token);
                 break;
             } else if (value == DECIMAL) {
                 numeral += value;
@@ -154,11 +138,22 @@ class Lexer {
             }
         }
         int|float number = check getNumber(numeral, isFloat, location);
-        return {
-            value: number,
-            'type: T_NUMERIC,
-            location: location
-        };
+        return getToken(number, T_NUMERIC, location);
+    }
+
+    isolated function readCommentToken(Location location) returns Token|ParsingError {
+        string word = HASH;
+        while (!self.charReader.isEof()) {
+            CharToken token = self.charReader.next();
+            TokenType tokenType = getTokenType(token);
+            if (token.value is LineTerminator) {
+                self.buffer = getTokenFromChar(token);
+                break;
+            } else {
+                word += token.value;
+            }
+        }
+        return getToken(word, T_COMMENT, location);
     }
 
     isolated function getTokenSkippingComment(Location location) returns Token|ParsingError {
@@ -171,7 +166,7 @@ class Lexer {
             CharToken token = self.charReader.next();
             TokenType tokenType = getTokenType(token);
             if (token.value is LineTerminator) {
-                terminalToken = <Token>check self.getTerminalToken(token, tokenType);
+                terminalToken = getTokenFromChar(token);
                 break;
             }
         }
@@ -186,10 +181,10 @@ class Lexer {
             CharToken token = self.charReader.next();
             TokenType tokenType = getTokenType(token);
             if (tokenType is SpecialCharacter) {
-                self.buffer = self.getSpecialCharacterToken(token, tokenType);
+                self.buffer = getTokenFromChar(token);
                 break;
             } else if (tokenType is TerminalCharacter) {
-                self.buffer = <Token>check self.getTerminalToken(token, tokenType);
+                self.buffer = getTokenFromChar(token);
                 break;
             } else {
                 check validateChar(token);
@@ -205,22 +200,6 @@ class Lexer {
             value: value,
             'type: 'type,
             location: location
-        };
-    }
-
-    isolated function getTerminalToken(CharToken charToken, TokenType tokenType) returns Token|ParsingError? {
-        return {
-            'type: tokenType,
-            value: charToken.value,
-            location: charToken.location
-        };
-    }
-
-    isolated function getSpecialCharacterToken(CharToken charToken, TokenType tokenType) returns Token {
-        return {
-            'type: tokenType,
-            value: charToken.value,
-            location: charToken.location
         };
     }
 }
@@ -253,6 +232,23 @@ isolated function getTokenType(CharToken token) returns TokenType {
         return T_COMMENT;
     }
     return T_WORD;
+}
+
+isolated function getToken(Scalar value, TokenType 'type, Location location) returns Token {
+    return {
+        'type: 'type,
+        value: value,
+        location: location
+    };
+}
+
+isolated function getTokenFromChar(CharToken charToken) returns Token {
+    TokenType tokenType = getTokenType(charToken);
+    return {
+        'type: tokenType,
+        value: charToken.value,
+        location: charToken.location
+    };
 }
 
 isolated function getWordTokenType(string value) returns TokenType {

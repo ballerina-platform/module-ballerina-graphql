@@ -21,13 +21,23 @@ const DECIMAL = ".";
 
 const HASH = "#";
 
-const OPEN_BRACE = "{";
-const CLOSE_BRACE = "}";
+const COMMA = ",";
+
+// Punctuators
+const EXCLAMATION = "!";
+const DOLLAR = "$";
 const OPEN_PARENTHESES = "(";
 const CLOSE_PARENTHESES = ")";
-
+const TRIPLE_DOT = "...";
 const COLON = ":";
-const COMMA = ",";
+const EQUAL = "=";
+const AT = "@";
+const OPEN_SQUARE_BRACKET = "[";
+const CLOSE_SQUARE_BRACKET = "]";
+const OPEN_BRACE = "{";
+const PIPE = "|";
+const CLOSE_BRACE = "}";
+
 
 const TRUE = "true";
 const FALSE = "false";

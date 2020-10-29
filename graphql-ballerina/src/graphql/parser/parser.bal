@@ -27,11 +27,10 @@ class Parser {
     }
 
     public isolated function blockAnalysis() returns ParsingError? {
-        Token? next = check self.lexer.getNextSpecialCharaterToken();
         int braceCount = 0;
         int parenthesesCount = 0;
-        while (next != ()) {
-            Token token = <Token>next;
+        while (self.lexer.hasNext()) {
+            Token token = check self.lexer.getNextSpecialCharaterToken();
             if (token.'type == T_EOF) {
                 break;
             }
@@ -48,23 +47,23 @@ class Parser {
             if (braceCount < 0 || parenthesesCount < 0) {
                 return getUnexpectedTokenError(token);
             }
-            next = check self.lexer.getNextSpecialCharaterToken();
         }
         if (braceCount > 0 || parenthesesCount > 0) {
-            return getExpectedNameError(<Token>next);
+            Token token = check self.lexer.getNextSpecialCharaterToken();
+            return getExpectedNameError(token);
         }
         self.lexer.reset();
     }
 
     isolated function generateDocument() returns Document|ParsingError {
-        Token token = check self.lexer.getNextNonWhiteSpaceToken();
+        Token token = check self.lexer.nextLexicalToken();
         TokenType tokenType = token.'type;
 
         if (tokenType == T_OPEN_BRACE) {
             return self.getDocumentForShortHandDocument(token);
         } else if (tokenType == T_WORD) {
             OperationType operationType = check getOperationType(token);
-            token = check self.lexer.getNextNonWhiteSpaceToken();
+            token = check self.lexer.nextLexicalToken();
             tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
                 return self.getDocumentForShortHandDocument(token, operationType);
@@ -82,7 +81,7 @@ class Parser {
     returns Document|ParsingError {
         Location location = token.location.clone();
         Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, 'type, location);
-        Token endToken = check self.lexer.getNextNonWhiteSpaceToken();
+        Token endToken = check self.lexer.nextLexicalToken();
         // TODO: Handle this in document generation to catch both operations
         if (endToken.'type != T_EOF) {
             string message = "This anonymous operation must be the only defined operation.";
@@ -101,7 +100,7 @@ class Parser {
         while (token.'type != T_EOF) {
             string operationName = <string>token.value;
             Location location = token.location.clone();
-            token = check self.lexer.getNextNonWhiteSpaceToken();
+            token = check self.lexer.nextLexicalToken();
             TokenType tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
                 Operation operation = check self.createOperationRecord(operationName, operationType, location);
@@ -109,7 +108,7 @@ class Parser {
             } else {
                 return getExpectedCharError(token, OPEN_BRACE);
             }
-            token = check self.lexer.getNextNonWhiteSpaceToken();
+            token = check self.lexer.nextLexicalToken();
         }
         return document;
     }
@@ -135,7 +134,7 @@ isolated function getOperationType(Token token) returns OperationType|ParsingErr
 }
 
 isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingError {
-    Token token = check lexer.getNextNonWhiteSpaceToken();
+    Token token = check lexer.nextLexicalToken();
     Field[] fields = [];
     while (token.'type != T_CLOSE_BRACE) {
         Field 'field = {
@@ -147,7 +146,7 @@ isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingErro
         } else {
             return getExpectedNameError(token);
         }
-        token = check lexer.getNextNonWhiteSpaceToken();
+        token = check lexer.nextLexicalToken();
         if (token.'type == T_WORD) {
             fields.push('field);
             continue;
@@ -156,7 +155,7 @@ isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingErro
         if (token.'type == T_OPEN_PARENTHESES) {
             Argument[] arguments = check getArgumentsForField(lexer);
             'field.arguments = arguments;
-            token = check lexer.getNextNonWhiteSpaceToken();
+            token = check lexer.nextLexicalToken();
         }
 
         if (token.'type == T_OPEN_BRACE) {
@@ -167,14 +166,14 @@ isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingErro
         if (token.'type == T_CLOSE_BRACE) {
             break;
         }
-        token = check lexer.getNextNonWhiteSpaceToken();
+        token = check lexer.nextLexicalToken();
     }
     return fields;
 }
 
 isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingError {
     Argument[] arguments = [];
-    Token token = check lexer.getNextNonWhiteSpaceToken();
+    Token token = check lexer.nextLexicalToken();
     while (token.'type != T_CLOSE_PARENTHESES) {
         string argumentName = "";
         Scalar argumentValue = "";
@@ -185,11 +184,11 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
         } else {
             return getExpectedNameError(token);
         }
-        token = check lexer.getNextNonWhiteSpaceToken();
+        token = check lexer.nextLexicalToken();
         if (token.'type != T_COLON) {
             return getExpectedCharError(token, COLON);
         }
-        token = check lexer.getNextNonWhiteSpaceToken();
+        token = check lexer.nextLexicalToken();
         if (token.'type is ArgumentValue) {
             argumentValue = token.value;
             valueLocation = token.location;
@@ -203,9 +202,9 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
             valueLocation: valueLocation
         };
         arguments.push(argument);
-        token = check lexer.getNextNonWhiteSpaceToken();
+        token = check lexer.nextLexicalToken();
         if (token.'type == T_COMMA) {
-            token = check lexer.getNextNonWhiteSpaceToken();
+            token = check lexer.nextLexicalToken();
             continue;
         }
     }
