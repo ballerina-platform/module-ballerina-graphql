@@ -77,7 +77,7 @@ class Lexer {
 
     isolated function getNextToken() returns Token|ParsingError? {
         while (!self.charReader.isEof()) {
-            CharToken char = check self.charReader.next();
+            CharToken char = self.charReader.next();
             string value = char.value;
             TokenType tokenType = getTokenType(char);
             if (tokenType == T_STRING) {
@@ -105,9 +105,9 @@ class Lexer {
             location: location.clone()
         };
         while (!self.charReader.isEof()) {
-            CharToken charToken = check self.charReader.next();
+            CharToken charToken = self.charReader.next();
             string value = charToken.value;
-            if (value is Eof) {
+            if (value is EOF) {
                 return getUnexpectedTokenError(token);
             }
             if (value is LineTerminator) {
@@ -116,7 +116,7 @@ class Lexer {
                     locations: [location.clone()]
                 };
                 return UnterminatedStringError(message, errorRecord = errorRecord);
-            } else if (value is Quote && previousChar != BACK_SLASH) {
+            } else if (value is QUOTE && previousChar != BACK_SLASH) {
                 token.value = word;
                 break;
             } else {
@@ -131,7 +131,7 @@ class Lexer {
         string numeral = fisrtChar;
         boolean isFloat = false;
         while (!self.charReader.isEof()) {
-            CharToken token = check self.charReader.next();
+            CharToken token = self.charReader.next();
             TokenType tokenType = getTokenType(token);
             string value = token.value;
             if (tokenType is TerminalCharacter) {
@@ -168,7 +168,7 @@ class Lexer {
             location: location
         };
         while (!self.charReader.isEof()) {
-            CharToken token = check self.charReader.next();
+            CharToken token = self.charReader.next();
             TokenType tokenType = getTokenType(token);
             if (token.value is LineTerminator) {
                 terminalToken = <Token>check self.getTerminalToken(token, tokenType);
@@ -183,7 +183,7 @@ class Lexer {
         Location location = firstCharToken.location;
         string word = firstCharToken.value;
         while (!self.charReader.isEof()) {
-            CharToken token = check self.charReader.next();
+            CharToken token = self.charReader.next();
             TokenType tokenType = getTokenType(token);
             if (tokenType is SpecialCharacter) {
                 self.buffer = self.getSpecialCharacterToken(token, tokenType);
@@ -211,7 +211,7 @@ class Lexer {
     isolated function getTerminalToken(CharToken charToken, TokenType tokenType) returns Token|ParsingError? {
         return {
             'type: tokenType,
-            value: TERMINAL,
+            value: charToken.value,
             location: charToken.location
         };
     }
@@ -227,29 +227,29 @@ class Lexer {
 
 isolated function getTokenType(CharToken token) returns TokenType {
     string value = token.value;
-    if (value is OpenBrace) {
+    if (value is OPEN_BRACE) {
         return T_OPEN_BRACE;
-    } else if (value is CloseBrace) {
+    } else if (value is CLOSE_BRACE) {
         return T_CLOSE_BRACE;
-    } else if (value is OpenParentheses) {
+    } else if (value is OPEN_PARENTHESES) {
         return T_OPEN_PARENTHESES;
-    } else if (value is CloseParentheses) {
+    } else if (value is CLOSE_PARENTHESES) {
         return T_CLOSE_PARENTHESES;
-    } else if (value is Colon) {
+    } else if (value is COLON) {
         return T_COLON;
-    } else if (value is Comma) {
+    } else if (value is COMMA) {
         return T_COMMA;
     } else if (value is WhiteSpace) {
         return T_WHITE_SPACE;
-    } else if (value is Eof) {
+    } else if (value is EOF) {
         return T_EOF;
     } else if (value is LineTerminator) {
         return T_NEW_LINE;
-    } else if (value is Quote) {
+    } else if (value is QUOTE) {
         return T_STRING;
     } else if (value is Numeral) {
         return T_NUMERIC;
-    } else if (value is Hash) {
+    } else if (value is HASH) {
         return T_COMMENT;
     }
     return T_WORD;

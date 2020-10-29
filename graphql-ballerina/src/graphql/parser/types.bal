@@ -25,29 +25,21 @@ enum Numeral {
     SEVEN = "7",
     EIGHT = "8",
     NINE = "9",
-    DECIMAL = ".",
     NEGATIVE = "-"
 }
 
-// Special Characters
-// Terminal chars
-type WhiteSpace SPACE|TAB;
-type LineTerminator NEW_LINE|LINE_RETURN|EOF;
+enum WhiteSpace {
+    SPACE = " ",
+    TAB = "\t"
+}
+
+enum LineTerminator {
+    NEW_LINE = "\n",
+    LINE_RETURN = "\r",
+    EOF = ""
+}
+
 type Terminal WhiteSpace|LineTerminator;
-
-// Separators
-type Eof EOF;
-type Quote QUOTE;
-type Hash HASH;
-type Colon COLON;
-type Comma COMMA;
-type OpenBrace OPEN_BRACE;
-type CloseBrace CLOSE_BRACE;
-type OpenParentheses OPEN_PARENTHESES;
-type CloseParentheses CLOSE_PARENTHESES;
-
-// Others
-type BackSlash BACK_SLASH;
 type Boolean TRUE|FALSE;
 
 type TerminalCharacter T_EOF|T_WHITE_SPACE|T_NEW_LINE;
@@ -56,7 +48,11 @@ type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_BO
 
 type ArgumentValue T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN;
 
-type CharToken record {|
+# Represents a character in a string.
+#
+# + value - The value of the character
+# + location - The location of the character in the given document
+public type CharToken record {|
     string value;
     Location location;
 |};

@@ -30,6 +30,12 @@ function getDocumentWithParameters() returns string {
     return readFileAndGetString(path, 290);
 }
 
+function getDocumentForResourcesWithRecord() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_QUERY_FOR_RESOURCES_WITH_RECORD);
+    return readFileAndGetString(path, 87);
+}
+
 function getDocumentWithTwoAnonymousOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);

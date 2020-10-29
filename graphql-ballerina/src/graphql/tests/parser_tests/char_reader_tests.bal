@@ -19,10 +19,10 @@ import ballerina/test;
 @test:Config {
     groups: ["char_reader", "parser", "unit"]
 }
-isolated function testCharReaderForSimpleString() returns error? {
+isolated function testCharReaderForSimpleString() {
     string s = "Hello";
     CharReader reader = new(s);
-    CharToken? c = check reader.next();
+    CharToken? c = reader.next();
     test:assertTrue(c is CharToken);
     CharToken expectedToken = {
         value: "H",
@@ -33,7 +33,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.next();
+    c = reader.next();
     expectedToken = {
         value: "e",
         location: {
@@ -43,7 +43,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.next();
+    c = reader.next();
     expectedToken = {
         value: "l",
         location: {
@@ -53,7 +53,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.next();
+    c = reader.next();
     expectedToken = {
         value: "l",
         location: {
@@ -63,7 +63,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.next();
+    c = reader.next();
     expectedToken = {
         value: "o",
         location: {
@@ -73,9 +73,9 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.next();
+    c = reader.next();
     expectedToken = {
-        value: "<E>",
+        value: "",
         location: {
             line: 1,
             column: 6
@@ -87,10 +87,10 @@ isolated function testCharReaderForSimpleString() returns error? {
 @test:Config {
     groups: ["char_reader", "parser", "unit"]
 }
-isolated function testCharReaderForEof() returns error? {
+isolated function testCharReaderForEof() {
     string s = "";
     CharReader reader = new(s);
-    CharToken? c = check reader.next();
+    CharToken? c = reader.next();
     test:assertTrue(c is CharToken);
     CharToken expectedToken = {
         value: EOF,
@@ -105,23 +105,23 @@ isolated function testCharReaderForEof() returns error? {
 @test:Config {
     groups: ["char_reader", "parser", "unit"]
 }
-isolated function testCharReaderForAfterEof() returns error? {
+isolated function testCharReaderForAfterEof() {
     string s = "";
     CharReader reader = new(s);
     test:assertFalse(reader.isEof());
-    CharToken? c = check reader.next();
+    CharToken? c = reader.next();
     test:assertTrue(reader.isEof());
 }
 
 @test:Config {
     groups: ["char_reader", "parser", "unit"]
 }
-isolated function testCharReaderForNewLine() returns error? {
+isolated function testCharReaderForNewLine() {
     string s = "\n\n\n";
     CharReader reader = new(s);
-    CharToken? c = check reader.next();
-    c = check reader.next();
-    c = check reader.next();
+    CharToken? c = reader.next();
+    c = reader.next();
+    c = reader.next();
     test:assertTrue(c is CharToken);
     CharToken expectedToken = {
         value: "\n",
