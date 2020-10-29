@@ -38,7 +38,7 @@ isolated function testInvalidCharacter() returns error? {
     token = check lexer.getNext();
     test:assertTrue(token is Token);
     expectedToken = {
-        value: "<T>",
+        value: " ",
         'type: T_WHITE_SPACE,
         location: {
             line: 1,

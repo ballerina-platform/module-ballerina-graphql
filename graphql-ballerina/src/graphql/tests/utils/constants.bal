@@ -30,6 +30,7 @@ const DOCUMENT_ANONYMOUS = "document_anonymous_operation.txt";
 const DOCUMENT_NO_CLOSE_BRACE = "invalid_document_no_close_brace.txt";
 const DOCUMENT_WITH_PARAMTER = "document_with_parameters.txt";
 const DOCUMENT_WITH_COMMENTS = "document_with_comments.txt";
+const DOCUMENT_QUERY_FOR_RESOURCES_WITH_RECORD = "record_resource_query.txt";
 
 const JSON_WITH_PARAMETERS = "document_with_parameters_expected.json";
 

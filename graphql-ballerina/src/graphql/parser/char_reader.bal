@@ -32,7 +32,7 @@ class CharReader {
         return self.eof;
     }
 
-    isolated function next() returns CharToken|InvalidTokenError {
+    public isolated function next() returns CharToken {
         CharIteratorNode? next = self.iterator.next();
         if (next is ()) {
             CharToken eofToken = {
@@ -44,25 +44,24 @@ class CharReader {
         }
         CharIteratorNode nextNode = <CharIteratorNode>next;
         string nextChar = nextNode.value;
-        CharToken token = getCharToken(nextChar, self.currentLocation);
-        updateLocation(nextChar, self.currentLocation);
+        CharToken token = self.getCharToken(nextChar);
+        self.updateLocation(nextChar);
         return token;
     }
-}
 
-isolated function updateLocation(string char, Location location) {
-    if (char is LineTerminator) {
-        location.column = 1;
-        location.line += 1;
-    } else {
-        location.column += 1;
+    isolated function updateLocation(string char) {
+        if (char is LineTerminator) {
+            self.currentLocation.column = 1;
+            self.currentLocation.line += 1;
+        } else {
+            self.currentLocation.column += 1;
+        }
     }
-}
 
-isolated function getCharToken(string value, Location location) returns CharToken {
-    Location localLocation = location.clone();
-    return {
-        value: value,
-        location: localLocation
-    };
+    isolated function getCharToken(string value) returns CharToken {
+        return {
+            value: value,
+            location: self.currentLocation.clone()
+        };
+    }
 }

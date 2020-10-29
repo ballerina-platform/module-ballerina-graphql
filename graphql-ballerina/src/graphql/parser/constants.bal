@@ -15,17 +15,9 @@
 // under the License.
 
 // Special Characters
-const SPACE = " ";
-const TAB = "\t";
-
-const NEW_LINE = "\n";
-const LINE_RETURN = "\r";
-
-const EOF = "<E>";
-const TERMINAL = "<T>";
-
 const QUOTE = "\"";
 const BACK_SLASH = "\\";
+const DECIMAL = ".";
 
 const HASH = "#";
 
@@ -56,5 +48,5 @@ const T_COMMA = 11;
 const T_NEW_LINE = 12;
 const T_WHITE_SPACE = 13;
 
-const VALID_CHAR_REGEX = "^[a-zA-Z0-9_]$";
-const VALID_FIRST_CHAR_REGEX = "^[a-zA-Z_]$";
+const VALID_CHAR_REGEX = "^[_0-9a-zA-Z]$";
+const VALID_FIRST_CHAR_REGEX = "^[_a-zA-Z]$";

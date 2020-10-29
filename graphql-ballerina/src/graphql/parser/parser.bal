@@ -180,7 +180,7 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
         Scalar argumentValue = "";
         Location nameLocation = token.location;
         Location valueLocation = token.location;
-        if (token.'type is T_WORD) {
+        if (token.'type == T_WORD) {
             argumentName = <string>token.value;
         } else {
             return getExpectedNameError(token);
