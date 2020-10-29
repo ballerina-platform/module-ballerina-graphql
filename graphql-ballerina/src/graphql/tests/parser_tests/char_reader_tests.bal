@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testCharReaderForSimpleString() returns error? {
     string s = "Hello";
     CharReader reader = new(s);
-    CharToken? c = check reader.getNext();
+    CharToken? c = check reader.next();
     test:assertTrue(c is CharToken);
     CharToken expectedToken = {
         value: "H",
@@ -33,7 +33,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.getNext();
+    c = check reader.next();
     expectedToken = {
         value: "e",
         location: {
@@ -43,7 +43,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.getNext();
+    c = check reader.next();
     expectedToken = {
         value: "l",
         location: {
@@ -53,7 +53,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.getNext();
+    c = check reader.next();
     expectedToken = {
         value: "l",
         location: {
@@ -63,7 +63,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.getNext();
+    c = check reader.next();
     expectedToken = {
         value: "o",
         location: {
@@ -73,7 +73,7 @@ isolated function testCharReaderForSimpleString() returns error? {
     };
     test:assertEquals(c, expectedToken);
 
-    c = check reader.getNext();
+    c = check reader.next();
     expectedToken = {
         value: "<E>",
         location: {
@@ -90,7 +90,7 @@ isolated function testCharReaderForSimpleString() returns error? {
 isolated function testCharReaderForEof() returns error? {
     string s = "";
     CharReader reader = new(s);
-    CharToken? c = check reader.getNext();
+    CharToken? c = check reader.next();
     test:assertTrue(c is CharToken);
     CharToken expectedToken = {
         value: EOF,
@@ -108,9 +108,9 @@ isolated function testCharReaderForEof() returns error? {
 isolated function testCharReaderForAfterEof() returns error? {
     string s = "";
     CharReader reader = new(s);
-    CharToken? c = check reader.getNext();
-    c = check reader.getNext();
-    test:assertTrue(c is ());
+    test:assertFalse(reader.isEof());
+    CharToken? c = check reader.next();
+    test:assertTrue(reader.isEof());
 }
 
 @test:Config {
@@ -119,9 +119,9 @@ isolated function testCharReaderForAfterEof() returns error? {
 isolated function testCharReaderForNewLine() returns error? {
     string s = "\n\n\n";
     CharReader reader = new(s);
-    CharToken? c = check reader.getNext();
-    c = check reader.getNext();
-    c = check reader.getNext();
+    CharToken? c = check reader.next();
+    c = check reader.next();
+    c = check reader.next();
     test:assertTrue(c is CharToken);
     CharToken expectedToken = {
         value: "\n",
