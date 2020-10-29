@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testInvalidCharacter() returns error? {
     string name = "John D<oe";
     Lexer lexer = new(name);
-    Token? token = check lexer.getNext();
+    Token? token = check lexer.next();
     test:assertTrue(token is Token);
 
     Token expectedToken = {
@@ -35,7 +35,7 @@ isolated function testInvalidCharacter() returns error? {
     };
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.getNext();
+    token = check lexer.next();
     test:assertTrue(token is Token);
     expectedToken = {
         value: " ",
@@ -47,7 +47,7 @@ isolated function testInvalidCharacter() returns error? {
     };
     test:assertEquals(token, expectedToken);
 
-    var next = lexer.getNext();
+    var next = lexer.next();
     test:assertTrue(next is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>next;
     string message = err.message();
@@ -62,7 +62,7 @@ isolated function testInvalidCharacter() returns error? {
 isolated function testIntInput() returns error? {
     string s = "42";
     Lexer lexer = new(s);
-    Token? token = check lexer.getNext();
+    Token? token = check lexer.next();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: 42,
@@ -81,7 +81,7 @@ isolated function testIntInput() returns error? {
 isolated function testFloatInput() returns error? {
     string s = "3.14159";
     Lexer lexer = new(s);
-    Token? token = check lexer.getNext();
+    Token? token = check lexer.next();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: 3.14159,
@@ -100,9 +100,9 @@ isolated function testFloatInput() returns error? {
 isolated function testNegativeIntInput() returns error? {
     string s = "test integer -273";
     Lexer lexer = new(s);
-    Token? token = check lexer.getNextNonWhiteSpaceToken(); // test
-    token = check lexer.getNextNonWhiteSpaceToken(); // integer
-    token = check lexer.getNextNonWhiteSpaceToken();
+    Token? token = check lexer.nextLexicalToken(); // test
+    token = check lexer.nextLexicalToken(); // integer
+    token = check lexer.nextLexicalToken();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: -273,
@@ -121,7 +121,7 @@ isolated function testNegativeIntInput() returns error? {
 isolated function testBooleanInput() returns error? {
     string s = "test false";
     Lexer lexer = new(s);
-    Token? token = check lexer.getNext();
+    Token? token = check lexer.next();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: "test",
@@ -133,8 +133,8 @@ isolated function testBooleanInput() returns error? {
     };
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.getNext(); // Space
-    token = check lexer.getNext();
+    token = check lexer.next(); // Space
+    token = check lexer.next();
     test:assertTrue(token is Token);
     expectedToken = {
         value: false,
@@ -150,10 +150,10 @@ isolated function testBooleanInput() returns error? {
 @test:Config {
     groups: ["lexer", "parser", "unit"]
 }
-isolated function testStringInputWithNonWhiteSpaceTokenRetrieval() returns error? {
+isolated function testStringInputWithLexicalTokenRetrieval() returns error? {
     string s = "test \"This is a test string\"";
     Lexer lexer = new(s);
-    Token? token = check lexer.getNextNonWhiteSpaceToken();
+    Token? token = check lexer.nextLexicalToken();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: "test",
@@ -165,7 +165,7 @@ isolated function testStringInputWithNonWhiteSpaceTokenRetrieval() returns error
     };
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.getNextNonWhiteSpaceToken();
+    token = check lexer.nextLexicalToken();
     test:assertTrue(token is Token);
     expectedToken = {
         value: "This is a test string",
@@ -184,7 +184,7 @@ isolated function testStringInputWithNonWhiteSpaceTokenRetrieval() returns error
 function testStringWithQuote() returns error? {
     string s = getTextWithQuoteFile();
     Lexer lexer = new(s);
-    Token? token = check lexer.getNextNonWhiteSpaceToken();
+    Token? token = check lexer.nextLexicalToken();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: "test",
@@ -196,7 +196,7 @@ function testStringWithQuote() returns error? {
     };
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.getNextNonWhiteSpaceToken();
+    token = check lexer.nextLexicalToken();
     test:assertTrue(token is Token);
     expectedToken = {
         value: "This is a \\\"test\\\" string",
@@ -215,7 +215,7 @@ function testStringWithQuote() returns error? {
 function testUnterminatedString() returns error? {
     string s = getTextWithUnterminatedStringFile();
     Lexer lexer = new(s);
-    Token? token = check lexer.getNextNonWhiteSpaceToken();
+    Token? token = check lexer.nextLexicalToken();
     test:assertTrue(token is Token);
     Token expectedToken = {
         value: "test",
@@ -227,7 +227,7 @@ function testUnterminatedString() returns error? {
     };
     test:assertEquals(token, expectedToken);
 
-    var result = lexer.getNextNonWhiteSpaceToken();
+    var result = lexer.nextLexicalToken();
     test:assertTrue(result is UnterminatedStringError);
     UnterminatedStringError err = <UnterminatedStringError>result;
     string expectedMessage = "Syntax Error: Unterminated string.";

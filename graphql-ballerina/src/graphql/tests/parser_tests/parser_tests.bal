@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/time;
 
 @test:Config {
     groups: ["parse", "parser", "unit"]
@@ -22,7 +23,13 @@ import ballerina/test;
 function testComplexDocument() returns error? {
     string documentString = getDocumentWithParameters();
     Parser parser = check new(documentString);
+    time:Time t1 = time:currentTime();
     Document document = check parser.parse();
+    time:Time t2 = time:currentTime();
+    int t1Millis = t1.time;
+    int t2Millis = t2.time;
+    int t = t2Millis - t1Millis;
+    println("Complex Time: " + t.toString());
     test:assertEquals(document, expectedDocumentWithParameters);
 }
 
@@ -32,7 +39,13 @@ function testComplexDocument() returns error? {
 function testShorthandDocument() returns error? {
     string documentString = getShorthandNotationDocument();
     Parser parser = check new(documentString);
+    time:Time t1 = time:currentTime();
     Document document = check parser.parse();
+    time:Time t2 = time:currentTime();
+    int t1Millis = t1.time;
+    int t2Millis = t2.time;
+    int t = t2Millis - t1Millis;
+    println("Shorthand Time: " + t.toString());
 
     map<Operation> operations = {};
     operations[ANONYMOUS_OPERATION] = shorthandOperation;
@@ -48,7 +61,13 @@ function testShorthandDocument() returns error? {
 function testDocumentWithNamedOperations() returns error? {
     string documentString = getGeneralNotationDocument();
     Parser parser = check new(documentString);
+    time:Time t1 = time:currentTime();
     Document document = check parser.parse();
+    time:Time t2 = time:currentTime();
+    int t1Millis = t1.time;
+    int t2Millis = t2.time;
+    int t = t2Millis - t1Millis;
+    println("Named Operations Time: " + t.toString());
 
     map<Operation> operations = {};
     operations[namedOperation.name] = namedOperation;
