@@ -16,29 +16,30 @@
 
 class CharReader {
     private CharIterator iterator;
-    private boolean isEof;
+    private boolean eof;
     private Location currentLocation;
 
     public isolated function init(string document) {
         self.iterator = document.iterator();
-        self.isEof = false;
+        self.eof = false;
         self.currentLocation = {
             line: 1,
             column: 1
         };
     }
 
-    isolated function getNext() returns CharToken|InvalidTokenError? {
-        if (self.isEof) {
-            return;
-        }
+    public isolated function isEof() returns boolean {
+        return self.eof;
+    }
+
+    isolated function next() returns CharToken|InvalidTokenError {
         CharIteratorNode? next = self.iterator.next();
         if (next is ()) {
             CharToken eofToken = {
                 value: EOF,
                 location: self.currentLocation
             };
-            self.isEof = true;
+            self.eof = true;
             return eofToken;
         }
         CharIteratorNode nextNode = <CharIteratorNode>next;

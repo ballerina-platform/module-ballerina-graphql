@@ -76,9 +76,8 @@ class Lexer {
     }
 
     isolated function getNextToken() returns Token|ParsingError? {
-        CharToken? next = check self.charReader.getNext();
-        while (next != ()) {
-            CharToken char = <CharToken>next;
+        while (!self.charReader.isEof()) {
+            CharToken char = check self.charReader.next();
             string value = char.value;
             TokenType tokenType = getTokenType(char);
             if (tokenType == T_STRING) {
@@ -100,14 +99,13 @@ class Lexer {
     isolated function getStringToken(Location location) returns Token|SyntaxError {
         string previousChar = "";
         string word = "";
-        CharToken? next = check self.charReader.getNext();
         Token token = {
             'type: T_STRING,
             value: word,
             location: location.clone()
         };
-        while (next != ()) {
-            CharToken charToken = <CharToken>next;
+        while (!self.charReader.isEof()) {
+            CharToken charToken = check self.charReader.next();
             string value = charToken.value;
             if (value is Eof) {
                 return getUnexpectedTokenError(token);
@@ -125,7 +123,6 @@ class Lexer {
                 word += value;
             }
             previousChar = value;
-            next = check self.charReader.getNext();
         }
         return token;
     }
@@ -133,9 +130,8 @@ class Lexer {
     isolated function getNumeralToken(Location location, string fisrtChar) returns Token|ParsingError {
         string numeral = fisrtChar;
         boolean isFloat = false;
-        CharToken? next = check self.charReader.getNext();
-        while (next != ()) {
-            CharToken token = <CharToken>next;
+        while (!self.charReader.isEof()) {
+            CharToken token = check self.charReader.next();
             TokenType tokenType = getTokenType(token);
             string value = token.value;
             if (tokenType is TerminalCharacter) {
@@ -156,7 +152,6 @@ class Lexer {
                 };
                 return InvalidTokenError(message, errorRecord = errorRecord);
             }
-            next = check self.charReader.getNext();
         }
         int|float number = check getNumber(numeral, isFloat, location);
         return {
@@ -167,33 +162,28 @@ class Lexer {
     }
 
     isolated function getTokenSkippingComment(Location location) returns Token|ParsingError {
-        CharToken? next = check self.charReader.getNext();
         Token terminalToken = {
             value: EOF,
             'type: T_EOF,
             location: location
         };
-        while (next != ()) {
-            CharToken token = <CharToken>next;
+        while (!self.charReader.isEof()) {
+            CharToken token = check self.charReader.next();
             TokenType tokenType = getTokenType(token);
             if (token.value is LineTerminator) {
                 terminalToken = <Token>check self.getTerminalToken(token, tokenType);
                 break;
-            } else {
-                next = check self.charReader.getNext();
-                continue;
             }
         }
         return terminalToken;
     }
 
     isolated function getWordToken(CharToken firstCharToken) returns Token|ParsingError {
-        CharToken? next = check self.charReader.getNext();
         check validateChar(firstCharToken);
         Location location = firstCharToken.location;
         string word = firstCharToken.value;
-        while (next != ()) {
-            CharToken token = <CharToken>next;
+        while (!self.charReader.isEof()) {
+            CharToken token = check self.charReader.next();
             TokenType tokenType = getTokenType(token);
             if (tokenType is SpecialCharacter) {
                 self.buffer = self.getSpecialCharacterToken(token, tokenType);
@@ -205,7 +195,6 @@ class Lexer {
                 check validateChar(token);
                 word += token.value;
             }
-            next = check self.charReader.getNext();
         }
         TokenType 'type = getWordTokenType(word);
         Scalar value = word;
