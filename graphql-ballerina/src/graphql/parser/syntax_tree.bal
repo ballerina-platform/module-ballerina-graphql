@@ -14,4 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+type DocumentNode record {|
+    Token token;
+    OperationNode operations;
+|};
 
+type OperationNode record {|
+    Token token;
+    OperationType operationType;
+
+|};
