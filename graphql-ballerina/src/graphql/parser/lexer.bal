@@ -18,30 +18,38 @@ import ballerina/stringutils;
 
 class Lexer {
     private CharReader charReader;
-    private Token? buffer;
     private string document;
     private boolean inProgress;
+    private Token[] buffer;
 
     public isolated function init(string document) {
         self.charReader = new(document);
-        self.buffer = ();
         self.document = document;
         self.inProgress = true;
+        self.buffer = [];
     }
 
     public isolated function reset() {
         self.charReader = new(self.document);
+        self.buffer = [];
     }
 
     public isolated function hasNext() returns boolean {
         return self.inProgress;
     }
 
+    public isolated function peek() returns Token|ParsingError {
+        if (self.buffer.length() > 0) {
+            return self.buffer[0];
+        }
+        Token token = check self.readNextToken();
+        self.buffer.push(token);
+        return token;
+    }
+
     public isolated function next() returns Token|ParsingError {
-        if (self.buffer is Token) {
-            Token token = <Token>self.buffer.clone();
-            self.buffer = ();
-            return token;
+        if (self.buffer.length() > 0) {
+            return self.buffer.shift();
         }
         return self.readNextToken();
     }
@@ -115,14 +123,14 @@ class Lexer {
         string numeral = fisrtChar;
         boolean isFloat = false;
         while (!self.charReader.isEof()) {
-            CharToken token = self.charReader.next();
-            TokenType tokenType = getTokenType(token);
-            string value = token.value;
+            CharToken char = self.charReader.next();
+            TokenType tokenType = getTokenType(char);
+            string value = char.value;
             if (tokenType is TerminalCharacter) {
-                self.buffer = getTokenFromChar(token);
+                self.buffer.push(getTokenFromChar(char));
                 break;
             } else if (tokenType is SpecialCharacter) {
-                self.buffer = getTokenFromChar(token);
+                self.buffer.push(getTokenFromChar(char));
                 break;
             } else if (value == DECIMAL) {
                 numeral += value;
@@ -132,7 +140,7 @@ class Lexer {
             } else {
                 string message = "Syntax Error: Invalid number, expected digit but got: \"" + value + "\".";
                 ErrorRecord errorRecord = {
-                    locations: [token.location.clone()]
+                    locations: [char.location.clone()]
                 };
                 return InvalidTokenError(message, errorRecord = errorRecord);
             }
@@ -144,13 +152,13 @@ class Lexer {
     isolated function readCommentToken(Location location) returns Token|ParsingError {
         string word = HASH;
         while (!self.charReader.isEof()) {
-            CharToken token = self.charReader.next();
-            TokenType tokenType = getTokenType(token);
-            if (token.value is LineTerminator) {
-                self.buffer = getTokenFromChar(token);
+            CharToken char = self.charReader.next();
+            TokenType tokenType = getTokenType(char);
+            if (char.value is LineTerminator) {
+                self.buffer.push(getTokenFromChar(char));
                 break;
             } else {
-                word += token.value;
+                word += char.value;
             }
         }
         return getToken(word, T_COMMENT, location);
@@ -163,10 +171,10 @@ class Lexer {
             location: location
         };
         while (!self.charReader.isEof()) {
-            CharToken token = self.charReader.next();
-            TokenType tokenType = getTokenType(token);
-            if (token.value is LineTerminator) {
-                terminalToken = getTokenFromChar(token);
+            CharToken char = self.charReader.next();
+            TokenType tokenType = getTokenType(char);
+            if (char.value is LineTerminator) {
+                terminalToken = getTokenFromChar(char);
                 break;
             }
         }
@@ -178,17 +186,17 @@ class Lexer {
         Location location = firstCharToken.location;
         string word = firstCharToken.value;
         while (!self.charReader.isEof()) {
-            CharToken token = self.charReader.next();
-            TokenType tokenType = getTokenType(token);
+            CharToken char = self.charReader.next();
+            TokenType tokenType = getTokenType(char);
             if (tokenType is SpecialCharacter) {
-                self.buffer = getTokenFromChar(token);
+                self.buffer.push(getTokenFromChar(char));
                 break;
             } else if (tokenType is TerminalCharacter) {
-                self.buffer = getTokenFromChar(token);
+                self.buffer.push(getTokenFromChar(char));
                 break;
             } else {
-                check validateChar(token);
-                word += token.value;
+                check validateChar(char);
+                word += char.value;
             }
         }
         TokenType 'type = getWordTokenType(word);
@@ -204,8 +212,8 @@ class Lexer {
     }
 }
 
-isolated function getTokenType(CharToken token) returns TokenType {
-    string value = token.value;
+isolated function getTokenType(CharToken char) returns TokenType {
+    string value = char.value;
     if (value is OPEN_BRACE) {
         return T_OPEN_BRACE;
     } else if (value is CLOSE_BRACE) {
@@ -276,21 +284,21 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
     }
 }
 
-isolated function validateChar(CharToken token) returns InvalidTokenError? {
-    if (!stringutils:matches(token.value, VALID_CHAR_REGEX)) {
-        string message = "Syntax Error: Cannot parse the unexpected character \"" + token.value + "\".";
+isolated function validateChar(CharToken char) returns InvalidTokenError? {
+    if (!stringutils:matches(char.value, VALID_CHAR_REGEX)) {
+        string message = "Syntax Error: Cannot parse the unexpected character \"" + char.value + "\".";
         ErrorRecord errorRecord = {
-            locations: [token.location]
+            locations: [char.location]
         };
         return InvalidTokenError(message, errorRecord = errorRecord);
     }
 }
 
-isolated function validateFirstChar(CharToken token) returns InvalidTokenError? {
-    if (!stringutils:matches(token.value, VALID_FIRST_CHAR_REGEX)) {
-        string message = "Syntax Error: Cannot parse the unexpected character \"" + token.value + "\".";
+isolated function validateFirstChar(CharToken char) returns InvalidTokenError? {
+    if (!stringutils:matches(char.value, VALID_FIRST_CHAR_REGEX)) {
+        string message = "Syntax Error: Cannot parse the unexpected character \"" + char.value + "\".";
         ErrorRecord errorRecord = {
-            locations: [token.location]
+            locations: [char.location]
         };
         return InvalidTokenError(message, errorRecord = errorRecord);
     }
