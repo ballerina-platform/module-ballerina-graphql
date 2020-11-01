@@ -46,13 +46,18 @@ type TerminalCharacter T_EOF|T_WHITE_SPACE|T_NEW_LINE;
 type SpecialCharacter T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_COMMENT;
 type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN|T_COMMENT;
 
+type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_WORD|
+                 T_STRING|T_NUMERIC|T_BOOLEAN;
+
+type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT;
+
 type ArgumentValue T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN;
 
 # Represents a character in a string.
 #
 # + value - The value of the character
 # + location - The location of the character in the given document
-public type CharToken record {|
+public type Char record {|
     string value;
     Location location;
 |};

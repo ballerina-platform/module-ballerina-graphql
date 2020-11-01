@@ -18,6 +18,7 @@ class CharReader {
     private CharIterator iterator;
     private boolean eof;
     private Location currentLocation;
+    private Char[] buffer;
 
     public isolated function init(string document) {
         self.iterator = document.iterator();
@@ -26,16 +27,29 @@ class CharReader {
             line: 1,
             column: 1
         };
+        self.buffer = [];
     }
 
     public isolated function isEof() returns boolean {
         return self.eof;
     }
 
-    public isolated function next() returns CharToken {
+    public isolated function peek() returns Char {
+        if (self.buffer.length() > 0) {
+            return self.buffer[0];
+        }
+        Char char = self.next();
+        self.buffer.push(char);
+        return char;
+    }
+
+    public isolated function next() returns Char {
+        if (self.buffer.length() > 0) {
+            return self.buffer.shift();
+        }
         CharIteratorNode? next = self.iterator.next();
         if (next is ()) {
-            CharToken eofToken = {
+            Char eofToken = {
                 value: EOF,
                 location: self.currentLocation
             };
@@ -44,7 +58,7 @@ class CharReader {
         }
         CharIteratorNode nextNode = <CharIteratorNode>next;
         string nextChar = nextNode.value;
-        CharToken token = self.getCharToken(nextChar);
+        Char token = self.getChar(nextChar);
         self.updateLocation(nextChar);
         return token;
     }
@@ -58,7 +72,7 @@ class CharReader {
         }
     }
 
-    isolated function getCharToken(string value) returns CharToken {
+    isolated function getChar(string value) returns Char {
         return {
             value: value,
             location: self.currentLocation.clone()

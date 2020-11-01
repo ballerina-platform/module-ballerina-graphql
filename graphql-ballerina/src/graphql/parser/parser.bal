@@ -16,14 +16,17 @@
 
 class Parser {
     private Lexer lexer;
+    private Document document;
 
     public isolated function init(string text) returns ParsingError? {
         self.lexer = new(text);
+        self.document = createDocument();
     }
 
     public isolated function parse() returns Document|ParsingError {
         check self.blockAnalysis();
-        return self.generateDocument();
+        check self.populateDocument();
+        return self.document;
     }
 
     public isolated function blockAnalysis() returns ParsingError? {
@@ -55,20 +58,20 @@ class Parser {
         self.lexer.reset();
     }
 
-    isolated function generateDocument() returns Document|ParsingError {
+    isolated function populateDocument() returns ParsingError? {
         Token token = check self.lexer.nextLexicalToken();
         TokenType tokenType = token.'type;
 
         if (tokenType == T_OPEN_BRACE) {
-            return self.getDocumentForShortHandDocument(token);
+            check self.parseOperation(token);
         } else if (tokenType == T_WORD) {
             OperationType operationType = check getOperationType(token);
             token = check self.lexer.nextLexicalToken();
             tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
-                return self.getDocumentForShortHandDocument(token, operationType);
+                check self.parseOperation(token, operationType);
             } else if (tokenType == T_WORD) { // TODO: Handle multiple operations
-                return self.getDocumentForGeneralNotation(token, operationType);
+                check self.parseOperationWithType(token, operationType);
             } else {
                 return getUnexpectedTokenError(token);
             }
@@ -77,25 +80,13 @@ class Parser {
         }
     }
 
-    isolated function getDocumentForShortHandDocument(Token token, OperationType 'type = QUERY)
-    returns Document|ParsingError {
+    isolated function parseOperation(Token token, OperationType 'type = QUERY) returns ParsingError? {
         Location location = token.location.clone();
         Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, 'type, location);
-        Token endToken = check self.lexer.nextLexicalToken();
-        // TODO: Handle this in document generation to catch both operations
-        if (endToken.'type != T_EOF) {
-            string message = "This anonymous operation must be the only defined operation.";
-            ErrorRecord errorRecord = getErrorRecordFromToken(token);
-            return DuplicateOperationError(message, errorRecord = errorRecord);
-        }
-        Document document = createDocument();
-        check addOperationToDocument(document, operation);
-        return document;
+        self.addOperationToDocument(operation);
     }
 
-    isolated function getDocumentForGeneralNotation(Token firstToken, OperationType operationType)
-    returns Document|ParsingError {
-        Document document = createDocument();
+    isolated function parseOperationWithType(Token firstToken, OperationType operationType) returns ParsingError? {
         Token token = firstToken;
         while (token.'type != T_EOF) {
             string operationName = <string>token.value;
@@ -104,13 +95,16 @@ class Parser {
             TokenType tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
                 Operation operation = check self.createOperationRecord(operationName, operationType, location);
-                check addOperationToDocument(document, operation);
+                self.addOperationToDocument(operation);
+                Token next = check self.lexer.peekLexical();
+                if (next.'type != T_EOF) {
+                    check self.populateDocument();
+                }
             } else {
                 return getExpectedCharError(token, OPEN_BRACE);
             }
             token = check self.lexer.nextLexicalToken();
         }
-        return document;
     }
 
     isolated function createOperationRecord(string operationName, OperationType 'type, Location location)
@@ -122,6 +116,10 @@ class Parser {
             fields: fields,
             location: location
         };
+    }
+
+    isolated function addOperationToDocument(Operation operation) {
+        self.document.operations.push(operation);
     }
 }
 
@@ -212,29 +210,8 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
 }
 
 isolated function createDocument() returns Document {
-    map<Operation> operations = {};
+    Operation[] operations = [];
     return {
         operations: operations
     };
-}
-
-isolated function addOperationToDocument(Document document, Operation operation) returns DuplicateOperationError? {
-    string operationName = operation.name;
-    map<Operation> operations = document.operations;
-    if (operations.hasKey(operationName)) {
-        Operation existingOperation = <Operation>operations[operationName];
-        Location l1 = existingOperation.location;
-        Location l2 = operation.location;
-        string message = "";
-        if (operationName == ANONYMOUS_OPERATION) {
-            message = "This anonymous operation must be the only defined operation.";
-        } else {
-            message = "There can be only operation named \"" + operationName + "\"";
-        }
-        ErrorRecord errorRecord = {
-            locations: [l1, l2]
-        };
-        return DuplicateOperationError(message, errorRecord = errorRecord);
-    }
-    document.operations[operation.name] = operation;
 }
