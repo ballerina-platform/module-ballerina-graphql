@@ -22,9 +22,9 @@ import ballerina/test;
 isolated function testCharReaderForSimpleString() {
     string s = "Hello";
     CharReader reader = new(s);
-    CharToken? c = reader.next();
-    test:assertTrue(c is CharToken);
-    CharToken expectedToken = {
+    Char? c = reader.next();
+    test:assertTrue(c is Char);
+    Char expectedToken = {
         value: "H",
         location: {
             line: 1,
@@ -90,9 +90,9 @@ isolated function testCharReaderForSimpleString() {
 isolated function testCharReaderForEof() {
     string s = "";
     CharReader reader = new(s);
-    CharToken? c = reader.next();
-    test:assertTrue(c is CharToken);
-    CharToken expectedToken = {
+    Char? c = reader.next();
+    test:assertTrue(c is Char);
+    Char expectedToken = {
         value: EOF,
         location: {
             line: 1,
@@ -109,7 +109,7 @@ isolated function testCharReaderForAfterEof() {
     string s = "";
     CharReader reader = new(s);
     test:assertFalse(reader.isEof());
-    CharToken? c = reader.next();
+    Char? c = reader.next();
     test:assertTrue(reader.isEof());
 }
 
@@ -119,11 +119,11 @@ isolated function testCharReaderForAfterEof() {
 isolated function testCharReaderForNewLine() {
     string s = "\n\n\n";
     CharReader reader = new(s);
-    CharToken? c = reader.next();
+    Char? c = reader.next();
     c = reader.next();
     c = reader.next();
-    test:assertTrue(c is CharToken);
-    CharToken expectedToken = {
+    test:assertTrue(c is Char);
+    Char expectedToken = {
         value: "\n",
         location: {
             line: 3,

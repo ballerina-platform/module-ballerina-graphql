@@ -22,29 +22,13 @@ import ballerina/test;
 isolated function testInvalidCharacter() returns error? {
     string name = "John D<oe";
     Lexer lexer = new(name);
-    Token? token = check lexer.next();
-    test:assertTrue(token is Token);
+    Token token = check lexer.next();
 
-    Token expectedToken = {
-        value: "John",
-        'type: T_WORD,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token expectedToken = getExpectedToken("John", T_WORD, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.next();
-    test:assertTrue(token is Token);
-    expectedToken = {
-        value: " ",
-        'type: T_WHITE_SPACE,
-        location: {
-            line: 1,
-            column: 5
-        }
-    };
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 1, 5);
     test:assertEquals(token, expectedToken);
 
     var next = lexer.next();
@@ -62,16 +46,8 @@ isolated function testInvalidCharacter() returns error? {
 isolated function testIntInput() returns error? {
     string s = "42";
     Lexer lexer = new(s);
-    Token? token = check lexer.next();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: 42,
-        'type: T_NUMERIC,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token token = check lexer.next();
+    Token expectedToken = getExpectedToken(42, T_NUMERIC, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -81,16 +57,8 @@ isolated function testIntInput() returns error? {
 isolated function testFloatInput() returns error? {
     string s = "3.14159";
     Lexer lexer = new(s);
-    Token? token = check lexer.next();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: 3.14159,
-        'type: T_NUMERIC,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token token = check lexer.next();
+    Token expectedToken = getExpectedToken(3.14159, T_NUMERIC, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -100,18 +68,52 @@ isolated function testFloatInput() returns error? {
 isolated function testNegativeIntInput() returns error? {
     string s = "test integer -273";
     Lexer lexer = new(s);
-    Token? token = check lexer.nextLexicalToken(); // test
+    Token token = check lexer.nextLexicalToken(); // test
     token = check lexer.nextLexicalToken(); // integer
     token = check lexer.nextLexicalToken();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: -273,
-        'type: T_NUMERIC,
-        location: {
-            line: 1,
-            column: 14
-        }
-    };
+    Token expectedToken = getExpectedToken(-273, T_NUMERIC, 1, 14);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["lexer", "parser", "unit"]
+}
+isolated function testPeek() returns error? {
+    string s = "test integer -273";
+    Lexer lexer = new(s);
+    Token token = check lexer.peek(3); // test
+    Token expectedToken = getExpectedToken("integer", T_WORD, 1, 6);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.peek(5); // test
+    expectedToken = getExpectedToken(-273, T_NUMERIC, 1, 14);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.peek(2); // test
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 1, 5);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.next(); // test
+    expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["lexer", "parser", "unit"]
+}
+isolated function testPeekLexical() returns error? {
+    string s = "test integer -273";
+    Lexer lexer = new(s);
+    Token token = check lexer.peekLexical(); // test
+    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.peekLexical(); // test
+    expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken(); // test
+    expectedToken = getExpectedToken("test", T_WORD, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -121,29 +123,13 @@ isolated function testNegativeIntInput() returns error? {
 isolated function testBooleanInput() returns error? {
     string s = "test false";
     Lexer lexer = new(s);
-    Token? token = check lexer.next();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: "test",
-        'type: T_WORD,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token token = check lexer.next();
+    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.next(); // Space
     token = check lexer.next();
-    test:assertTrue(token is Token);
-    expectedToken = {
-        value: false,
-        'type: T_BOOLEAN,
-        location: {
-            line: 1,
-            column: 6
-        }
-    };
+    expectedToken = getExpectedToken(false, T_BOOLEAN, 1, 6);
     test:assertEquals(token, expectedToken);
 }
 
@@ -153,28 +139,12 @@ isolated function testBooleanInput() returns error? {
 isolated function testStringInputWithLexicalTokenRetrieval() returns error? {
     string s = "test \"This is a test string\"";
     Lexer lexer = new(s);
-    Token? token = check lexer.nextLexicalToken();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: "test",
-        'type: T_WORD,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token token = check lexer.nextLexicalToken();
+    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
-    test:assertTrue(token is Token);
-    expectedToken = {
-        value: "This is a test string",
-        'type: T_STRING,
-        location: {
-            line: 1,
-            column: 6
-        }
-    };
+    expectedToken = getExpectedToken("This is a test string", T_STRING, 1, 6);
     test:assertEquals(token, expectedToken);
 }
 
@@ -184,28 +154,12 @@ isolated function testStringInputWithLexicalTokenRetrieval() returns error? {
 function testStringWithQuote() returns error? {
     string s = getTextWithQuoteFile();
     Lexer lexer = new(s);
-    Token? token = check lexer.nextLexicalToken();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: "test",
-        'type: T_WORD,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token token = check lexer.nextLexicalToken();
+    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
-    test:assertTrue(token is Token);
-    expectedToken = {
-        value: "This is a \\\"test\\\" string",
-        'type: T_STRING,
-        location: {
-            line: 1,
-            column: 6
-        }
-    };
+    expectedToken = getExpectedToken("This is a \\\"test\\\" string",T_STRING, 1, 6);
     test:assertEquals(token, expectedToken);
 }
 
@@ -215,16 +169,8 @@ function testStringWithQuote() returns error? {
 function testUnterminatedString() returns error? {
     string s = getTextWithUnterminatedStringFile();
     Lexer lexer = new(s);
-    Token? token = check lexer.nextLexicalToken();
-    test:assertTrue(token is Token);
-    Token expectedToken = {
-        value: "test",
-        'type: T_WORD,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
+    Token token = check lexer.nextLexicalToken();
+    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
     test:assertEquals(token, expectedToken);
 
     var result = lexer.nextLexicalToken();
@@ -234,4 +180,59 @@ function testUnterminatedString() returns error? {
     string message = err.message();
     test:assertEquals(message, expectedMessage);
     checkErrorRecord(err, 1, 6);
+}
+
+@test:Config {
+    groups: ["lexer", "parser", "unit"]
+}
+isolated function testLexicalTokenRetrieval() returns error? {
+    string document = "\n\n\nquery getData {\n    picture(h: 128, w: 128)\n}";
+    Lexer lexer = new(document);
+
+    Token token = check lexer.nextLexicalToken();
+    Token expectedToken = getExpectedToken("query", T_WORD, 4, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken("getData", T_WORD, 4, 7);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken("{", T_OPEN_BRACE, 4, 15);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken("picture", T_WORD, 5, 5);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken("(", T_OPEN_PARENTHESES, 5, 12);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken("h", T_WORD, 5, 13);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken(":", T_COLON, 5, 14);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken(128, T_NUMERIC, 5, 16);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.nextLexicalToken();
+    expectedToken = getExpectedToken(",", T_COMMA, 5, 19);
+    test:assertEquals(token, expectedToken);
+}
+
+isolated function getExpectedToken(Scalar value, TokenType 'type, int line, int column) returns Token {
+    return {
+        value: value,
+        'type: 'type,
+        location: {
+            line: line,
+            column: column
+        }
+    };
 }

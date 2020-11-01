@@ -47,8 +47,8 @@ function testShorthandDocument() returns error? {
     int t = t2Millis - t1Millis;
     println("Shorthand Time: " + t.toString());
 
-    map<Operation> operations = {};
-    operations[ANONYMOUS_OPERATION] = shorthandOperation;
+    Operation[] operations = [];
+    operations.push(shorthandOperation);
     Document shorthandDocument = {
         operations: operations
     };
@@ -69,8 +69,8 @@ function testDocumentWithNamedOperations() returns error? {
     int t = t2Millis - t1Millis;
     println("Named Operations Time: " + t.toString());
 
-    map<Operation> operations = {};
-    operations[namedOperation.name] = namedOperation;
+    Operation[] operations = [];
+    operations.push(namedOperation);
     Document shorthandDocument = {
         operations: operations
     };
@@ -78,7 +78,8 @@ function testDocumentWithNamedOperations() returns error? {
 }
 
 @test:Config {
-    groups: ["parse", "parser", "unit"]
+    groups: ["parse", "parser", "unit"],
+    enable: false // This should be done at the validation phase in the engine
 }
 function testDocumentWithTwoAnonymousOperations() returns error? {
     string documentString = getDocumentWithTwoAnonymousOperations();
@@ -90,4 +91,20 @@ function testDocumentWithTwoAnonymousOperations() returns error? {
     string message = err.message();
     test:assertEquals(message, expectedMessage);
     checkErrorRecord(err, 1, 1);
+}
+
+@test:Config {
+    groups: ["parse", "parser", "unit"]
+}
+function testDocumentWithTwoNamedOperations() returns error? {
+    string documentString = getDocumentWithTwoNamedOperations();
+    Parser parser = check new(documentString);
+    time:Time t1 = time:currentTime();
+    Document document = check parser.parse();
+    time:Time t2 = time:currentTime();
+    int t1Millis = t1.time;
+    int t2Millis = t2.time;
+    int t = t2Millis - t1Millis;
+    println("Two Named Operations Time: " + t.toString());
+    test:assertEquals(document, documentWithTwoNamedOperations);
 }
