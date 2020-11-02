@@ -42,7 +42,6 @@ public class Listener {
     // Cannot mark as isolated due to global variable usage. Discussion:
     // (https://ballerina-platform.slack.com/archives/C47EAELR1/p1602066015052000)
     public function __attach(service s, string? name = ()) returns error? {
-        self.engine.addService(s);
         GraphQlServiceConfiguration? serviceConfig = getServiceAnnotations(s);
         if (serviceConfig is GraphQlServiceConfiguration) {
             basePath = serviceConfig.basePath;
