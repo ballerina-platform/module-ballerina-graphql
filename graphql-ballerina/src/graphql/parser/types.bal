@@ -44,14 +44,14 @@ type Boolean TRUE|FALSE;
 
 type TerminalCharacter T_EOF|T_WHITE_SPACE|T_NEW_LINE;
 type SpecialCharacter T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_COMMENT;
-type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN|T_COMMENT;
+type TokenType TerminalCharacter|SpecialCharacter|T_WORD|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT;
 
 type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMA|T_WORD|
-                 T_STRING|T_NUMERIC|T_BOOLEAN;
+                 T_STRING|T_INT|T_FLOAT|T_BOOLEAN;
 
 type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT;
 
-type ArgumentValue T_WORD|T_STRING|T_NUMERIC|T_BOOLEAN;
+public type ArgumentType T_WORD|T_STRING|T_INT|T_FLOAT|T_BOOLEAN;
 
 # Represents a character in a string.
 #

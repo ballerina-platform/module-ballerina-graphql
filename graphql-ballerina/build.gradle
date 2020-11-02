@@ -161,6 +161,11 @@ task ballerinaTest {
         groupParams = "--groups ${project.findProperty("groups")}"
     }
 
+    def disableGroups = ""
+    if (project.hasProperty("disable")) {
+        disableGroups = "--disable-groups ${project.findProperty("disable")}"
+    }
+
     def debugParams = ""
     if (project.hasProperty("debug")) {
         debugParams = "--debug ${project.findProperty("debug")}"
@@ -176,9 +181,9 @@ task ballerinaTest {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/ballerina.bat test --code-coverage ${groupParams} --all ${debugParams} && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/ballerina.bat test --code-coverage ${groupParams} ${disableGroups} --all ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/ballerina test --code-coverage ${groupParams} --all ${debugParams}"
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/ballerina test --code-coverage ${groupParams} ${disableGroups} --all ${debugParams}"
             }
         }
     }

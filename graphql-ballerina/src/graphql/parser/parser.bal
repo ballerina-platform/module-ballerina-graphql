@@ -187,7 +187,7 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
             return getExpectedCharError(token, COLON);
         }
         token = check lexer.nextLexicalToken();
-        if (token.'type is ArgumentValue) {
+        if (token.'type is ArgumentType) {
             argumentValue = token.value;
             valueLocation = token.location;
         } else {
@@ -197,7 +197,8 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
             name: argumentName,
             value: argumentValue,
             nameLocation: nameLocation,
-            valueLocation: valueLocation
+            valueLocation: valueLocation,
+            'type: <ArgumentType>token.'type
         };
         arguments.push(argument);
         token = check lexer.nextLexicalToken();

@@ -15,13 +15,14 @@
 // under the License.
 
 import ballerina/log;
+import ballerina/io;
 
 isolated function logAndPanicError(string message, error e) {
     log:printError(message, e);
     panic e;
 }
 
-isolated function getOperationName(OperationType operationType) returns string {
+isolated function getOperationTypeName(OperationType operationType) returns string {
     match operationType {
         MUTATION => {
             return "Mutation";
@@ -33,22 +34,22 @@ isolated function getOperationName(OperationType operationType) returns string {
     return "Query";
 }
 
-isolated function getExpectedSyntaxError(Token token, string expected, string foundType = "") returns SyntaxError {
-    string message = "Syntax Error: Expected \"" + expected + "\", found " + foundType + " \"" + token.value + "\".";
-    ErrorRecord errorRecord = getErrorRecordFromToken(token);
-    return InvalidTokenError(message, errorRecord = errorRecord);
-}
-
-isolated function getUnexpectedSyntaxError(Token token, string unexpectedType) returns SyntaxError {
-    string message = "Syntax Error: Unexpected " + unexpectedType + " \"" + token.value + "\".";
-    ErrorRecord errorRecord = getErrorRecordFromToken(token);
-    return InvalidTokenError(message, errorRecord = errorRecord);
-}
-
 isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
     Location location = token.location;
     return {
         locations: [location]
+    };
+}
+
+isolated function getErrorRecordFromField(Field 'field, (string|int)[] path = []) returns ErrorRecord {
+    if (path.length() == 0) {
+        return {
+            locations: ['field.location]
+        };
+    }
+    return {
+        locations: ['field.location],
+        path: path
     };
 }
 
@@ -60,4 +61,12 @@ isolated function getErrorJson(string message) returns json {
             }
         ]
     };
+}
+
+isolated function println(anydata value) {
+    io:println(value.toString());
+}
+
+isolated function print(anydata value) {
+    io:print(value.toString());
 }
