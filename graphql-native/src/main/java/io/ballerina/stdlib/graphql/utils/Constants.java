@@ -19,6 +19,8 @@
 package io.ballerina.stdlib.graphql.utils;
 
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.StringUtils;
+import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.runtime.util.BLangConstants.BALLERINA_BUILTIN_PKG_PREFIX;
 /**
@@ -27,11 +29,10 @@ import static io.ballerina.runtime.util.BLangConstants.BALLERINA_BUILTIN_PKG_PRE
 public class Constants {
     private Constants() {}
 
-    private static final String ORG_NAME = "ballerina";
     private static final String MODULE_NAME = "graphql";
     private static final String VERSION = "0.1.0";
 
-    static final Module PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, VERSION);
+    public static final Module PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, VERSION);
 
     // Type names
     public static final String RESOURCE_EXECUTION_ERROR = "ResourceExecutionFailed";
@@ -40,4 +41,24 @@ public class Constants {
     public static final String OPERATION_QUERY = "Query";
 
     public static final String NATIVE_SERVICE_OBJECT = "graphql.service";
+
+    // Record types
+    public static final String RECORD_ERROR_RECORD = "ErrorRecord";
+    public static final String RECORD_LOCATION = "Location";
+
+    // Error types
+    public static final String ERROR = "Error";
+    public static final String ERROR_INVALID_ARGUMENT_TYPE = "InvalidArgumentTypeError";
+    public static final String ERROR_INVALID_SELECTION = "InvalidSelectionError";
+    public static final String ERROR_MISSING_REQUIRED_ARGUMENT = "MissingRequiredArgumentError";
+
+    // Record fields
+    public static final BString FIELD_NAME = StringUtils.fromString("name");
+    public static final BString FIELD_LOCATION = StringUtils.fromString("location");
+    public static final BString FIELD_ARGUMENTS = StringUtils.fromString("arguments");
+    public static final BString FIELD_SELECTIONS = StringUtils.fromString("selections");
+    public static final BString FIELD_VALUE = StringUtils.fromString("value");
+    public static final BString FIELD_LOCATIONS = StringUtils.fromString("locations");
+    public static final BString FIELD_TYPE = StringUtils.fromString("type");
+
 }

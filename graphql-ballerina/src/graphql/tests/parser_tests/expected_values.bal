@@ -84,7 +84,7 @@ Document expectedDocumentWithParameters =
                         {
                             name: "id",
                             value: 132,
-                            'type: "INLINE",
+                            'type: T_INT,
                             nameLocation: {
                                 line: 8,
                                 column: 10
@@ -97,7 +97,7 @@ Document expectedDocumentWithParameters =
                         {
                             name: "name",
                             value: "Prof. Moriarty",
-                            'type: "INLINE",
+                            'type: T_STRING,
                             nameLocation: {
                                 line: 8,
                                 column: 19
@@ -110,7 +110,7 @@ Document expectedDocumentWithParameters =
                         {
                             name: "negative",
                             value: -123,
-                            'type: "INLINE",
+                            'type: T_INT,
                             nameLocation: {
                                 line: 8,
                                 column: 43
@@ -123,7 +123,7 @@ Document expectedDocumentWithParameters =
                         {
                             name: "weight",
                             value: 75.4,
-                            'type: "INLINE",
+                            'type: T_FLOAT,
                             nameLocation: {
                                 line: 8,
                                 column: 59
@@ -193,7 +193,7 @@ Document expectedDocumentWithParameters =
                         {
                             name: "format",
                             value: "DD/MM/YYYY",
-                            'type: "INLINE",
+                            'type: T_STRING,
                             nameLocation: {
                                 line: 18,
                                 column: 16

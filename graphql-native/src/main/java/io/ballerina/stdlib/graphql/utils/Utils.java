@@ -20,10 +20,22 @@ package io.ballerina.stdlib.graphql.utils;
 
 import io.ballerina.runtime.api.ErrorCreator;
 import io.ballerina.runtime.api.StringUtils;
+import io.ballerina.runtime.api.TypeCreator;
+import io.ballerina.runtime.api.ValueCreator;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
+import static io.ballerina.stdlib.graphql.utils.Constants.ERROR;
+import static io.ballerina.stdlib.graphql.utils.Constants.FIELD_LOCATION;
+import static io.ballerina.stdlib.graphql.utils.Constants.FIELD_LOCATIONS;
+import static io.ballerina.stdlib.graphql.utils.Constants.FIELD_NAME;
 import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
+import static io.ballerina.stdlib.graphql.utils.Constants.RECORD_ERROR_RECORD;
+import static io.ballerina.stdlib.graphql.utils.Constants.RECORD_LOCATION;
 import static io.ballerina.stdlib.graphql.utils.Constants.RESOURCE_EXECUTION_ERROR;
 
 /**
@@ -33,14 +45,55 @@ public class Utils {
     private Utils() {
     }
 
+    public static BArray createErrorArray() {
+        Type errorType = TypeCreator.createErrorType(ERROR, PACKAGE_ID);
+        ArrayType errorArrayType = TypeCreator.createArrayType(errorType);
+        return ValueCreator.createArrayValue(errorArrayType);
+    }
+
     public static BError createError(String type, BString message) {
         return ErrorCreator.createDistinctError(type, PACKAGE_ID, message);
     }
 
-    // TODO: This should be handled better
-    public static BError createResourceExecutionFailedError(BString fieldName, String operationName) {
-        String message = "Cannot query field \"" + fieldName.getValue() + "\" on type \"" + operationName + "\".";
+    public static BError createError(String type, String message, BMap<BString, Object> record) {
+        BMap<BString, Object> errorRecord = createErrorRecord(record);
+        BString bMessage = StringUtils.fromString(message);
+        return ErrorCreator.createDistinctError(type, PACKAGE_ID, bMessage, errorRecord);
+    }
+
+    public static BError createResourceExecutionFailedError(String fieldName, String operationName) {
+        String message = "Cannot query field \"" + fieldName + "\" on type \"" + operationName + "\".";
         BString bErrorMessage = StringUtils.fromString(message);
         return createError(RESOURCE_EXECUTION_ERROR, bErrorMessage);
+    }
+
+    public static BError createFieldNotFoundError(BMap<BString, Object> field, BString parentType) {
+        BMap<BString, Object> location = (BMap<BString, Object>) field.get(FIELD_LOCATION);
+        BString fieldName = (BString) field.get(FIELD_NAME);
+        String message =
+                "Cannot query field \"" + fieldName.getValue() + "\" on type \"" + parentType.getValue() + "\".";
+        BMap<BString, Object> errorRecord = createErrorRecord(location);
+        return createError(RESOURCE_EXECUTION_ERROR, message, errorRecord);
+    }
+
+    public static BMap<BString, Object> createErrorRecord(BMap<BString, Object> record) {
+        BMap<BString, Object> location = getLocation(record);
+        BArray locations = getLocationsArray(location);
+        BMap<BString, Object> errorRecord = ValueCreator.createRecordValue(PACKAGE_ID, RECORD_ERROR_RECORD);
+        errorRecord.put(FIELD_LOCATIONS, locations);
+        return errorRecord;
+    }
+
+    public static BArray getLocationsArray(BMap... locations) {
+        Type locationType = ValueCreator.createRecordValue(PACKAGE_ID, RECORD_LOCATION).getType();
+        BArray locationsArrayValue = ValueCreator.createArrayValue(TypeCreator.createArrayType(locationType));
+        for (BMap location : locations) {
+            locationsArrayValue.append(location);
+        }
+        return locationsArrayValue;
+    }
+
+    public static BMap<BString, Object> getLocation(BMap<BString, Object> recordType) {
+        return (BMap<BString, Object>) recordType.get(FIELD_LOCATION);
     }
 }

@@ -21,6 +21,20 @@ package io.ballerina.stdlib.graphql.runtime.wrapper;
 import io.ballerina.runtime.api.StringUtils;
 import io.ballerina.runtime.api.types.AttachedFunctionType;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.AGE;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.GREET;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.ID;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.INT_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.NAME;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.NAME_WITH_ID;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.PERSON;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.RECORD_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.SERVICE_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.wrapper.Constants.STRING_TYPE;
+
 /**
  * Wrapper class for Ballerina Compiler Utils.
  */
@@ -35,5 +49,36 @@ public class Wrapper {
             return StringUtils.fromString("01-01-1980");
         }
         return null;
+    }
+
+    public static int getReturnType(AttachedFunctionType attachedFunction) {
+        String name = attachedFunction.getName();
+        switch (name) {
+            case PERSON:
+                return RECORD_TYPE;
+            case GREET:
+            case NAME_WITH_ID:
+                return STRING_TYPE;
+            case AGE:
+                return INT_TYPE;
+            default:
+                return SERVICE_TYPE;
+        }
+    }
+
+    public static List<Input> populateInputs(AttachedFunctionType attachedFunction) {
+        String name = attachedFunction.getName();
+        ArrayList<Input> inputs = new ArrayList<>();
+        switch (name) {
+            case PERSON:
+                inputs.add(new Input(ID, INT_TYPE, false));
+                return inputs;
+            case NAME_WITH_ID:
+                inputs.add(new Input(ID, INT_TYPE, true));
+                inputs.add(new Input(NAME, STRING_TYPE, true));
+                return inputs;
+            default:
+                return null;
+        }
     }
 }

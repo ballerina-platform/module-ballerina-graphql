@@ -35,11 +35,5 @@ const FIELD_ERROR_RECORD = "errorRecord";
 const FIELD_LOCATIONS = "locations";
 const FIELD_MESSAGE = "message";
 
-//// Parser
-//const OPEN_BRACE = "{";
-//const CLOSE_BRACE = "}";
-
 const ANONYMOUS_OPERATION = "<anonymous>";
-const COMMENT_BLOCK = "#";
-const EOF = "<EOF>";
 const FIELD_VALIDATOR = "^[_a-zA-Z][a-zA-Z0-9_]*$";

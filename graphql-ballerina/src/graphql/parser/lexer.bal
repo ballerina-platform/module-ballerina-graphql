@@ -96,7 +96,7 @@ class Lexer {
             return getTokenFromChar(char);
         } else if (tokenType == T_STRING) {
             return self.readStringToken(char.location);
-        } else if (tokenType == T_NUMERIC) {
+        } else if (tokenType == T_INT) {
             return self.readNumeralToken(char.location, char.value);
         } else if (tokenType is TerminalCharacter) {
             return getTokenFromChar(char);
@@ -171,7 +171,8 @@ class Lexer {
             }
         }
         int|float number = check getNumber(numeral, isFloat, location);
-        return getToken(number, T_NUMERIC, location);
+        TokenType 'type = isFloat? T_FLOAT:T_INT;
+        return getToken(number, 'type, location);
     }
 
     isolated function readCommentToken(Location location) returns Token|ParsingError {
@@ -246,7 +247,7 @@ isolated function getTokenType(Char char) returns TokenType {
     } else if (value is QUOTE) {
         return T_STRING;
     } else if (value is Numeral) {
-        return T_NUMERIC;
+        return T_INT;
     } else if (value is HASH) {
         return T_COMMENT;
     }

@@ -47,7 +47,7 @@ isolated function testIntInput() returns error? {
     string s = "42";
     Lexer lexer = new(s);
     Token token = check lexer.next();
-    Token expectedToken = getExpectedToken(42, T_NUMERIC, 1, 1);
+    Token expectedToken = getExpectedToken(42, T_INT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -58,7 +58,7 @@ isolated function testFloatInput() returns error? {
     string s = "3.14159";
     Lexer lexer = new(s);
     Token token = check lexer.next();
-    Token expectedToken = getExpectedToken(3.14159, T_NUMERIC, 1, 1);
+    Token expectedToken = getExpectedToken(3.14159, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -71,7 +71,7 @@ isolated function testNegativeIntInput() returns error? {
     Token token = check lexer.nextLexicalToken(); // test
     token = check lexer.nextLexicalToken(); // integer
     token = check lexer.nextLexicalToken();
-    Token expectedToken = getExpectedToken(-273, T_NUMERIC, 1, 14);
+    Token expectedToken = getExpectedToken(-273, T_INT, 1, 14);
     test:assertEquals(token, expectedToken);
 }
 
@@ -86,7 +86,7 @@ isolated function testPeek() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.peek(5); // test
-    expectedToken = getExpectedToken(-273, T_NUMERIC, 1, 14);
+    expectedToken = getExpectedToken(-273, T_INT, 1, 14);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.peek(2); // test
@@ -218,7 +218,7 @@ isolated function testLexicalTokenRetrieval() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
-    expectedToken = getExpectedToken(128, T_NUMERIC, 5, 16);
+    expectedToken = getExpectedToken(128, T_INT, 5, 16);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
