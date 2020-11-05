@@ -251,7 +251,7 @@ isolated function getTokenType(Char char) returns TokenType {
     } else if (value is HASH) {
         return T_COMMENT;
     }
-    return T_WORD;
+    return T_TEXT;
 }
 
 isolated function getToken(Scalar value, TokenType 'type, Location location) returns Token {
@@ -275,7 +275,7 @@ isolated function getWordTokenType(string value) returns TokenType {
     if (value is Boolean) {
         return T_BOOLEAN;
     }
-    return T_WORD;
+    return T_TEXT;
 }
 
 isolated function getNumber(string value, boolean isFloat, Location location) returns int|float|InternalError {
