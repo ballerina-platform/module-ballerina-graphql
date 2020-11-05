@@ -64,13 +64,13 @@ class Parser {
 
         if (tokenType == T_OPEN_BRACE) {
             check self.parseOperation(token);
-        } else if (tokenType == T_WORD) {
+        } else if (tokenType == T_TEXT) {
             OperationType operationType = check getOperationType(token);
             token = check self.lexer.nextLexicalToken();
             tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
                 check self.parseOperation(token, operationType);
-            } else if (tokenType == T_WORD) { // TODO: Handle multiple operations
+            } else if (tokenType == T_TEXT) { // TODO: Handle multiple operations
                 check self.parseOperationWithType(token, operationType);
             } else {
                 return getUnexpectedTokenError(token);
@@ -139,13 +139,13 @@ isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingErro
             name: "",
             location: token.location.clone()
         };
-        if (token.'type == T_WORD) {
+        if (token.'type == T_TEXT) {
             'field.name = <string>token.value;
         } else {
             return getExpectedNameError(token);
         }
         token = check lexer.nextLexicalToken();
-        if (token.'type == T_WORD) {
+        if (token.'type == T_TEXT) {
             fields.push('field);
             continue;
         }
@@ -177,7 +177,7 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
         Scalar argumentValue = "";
         Location nameLocation = token.location;
         Location valueLocation = token.location;
-        if (token.'type == T_WORD) {
+        if (token.'type == T_TEXT) {
             argumentName = <string>token.value;
         } else {
             return getExpectedNameError(token);

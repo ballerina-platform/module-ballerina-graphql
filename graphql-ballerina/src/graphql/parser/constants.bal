@@ -44,7 +44,7 @@ const FALSE = "false";
 
 // Token Types
 const T_EOF = 0;
-const T_WORD = 1;
+const T_TEXT = 1;
 const T_STRING = 2;
 const T_INT = 3;
 const T_FLOAT = 4;
