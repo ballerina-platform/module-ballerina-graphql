@@ -221,8 +221,9 @@ isolated function testLexicalTokenRetrieval() returns error? {
     expectedToken = getExpectedToken(128, T_INT, 5, 16);
     test:assertEquals(token, expectedToken);
 
+    // Check ignoring insignificant comma
     token = check lexer.nextLexicalToken();
-    expectedToken = getExpectedToken(",", T_COMMA, 5, 19);
+    expectedToken = getExpectedToken("w", T_WORD, 5, 21);
     test:assertEquals(token, expectedToken);
 }
 
