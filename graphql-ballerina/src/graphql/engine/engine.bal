@@ -27,18 +27,21 @@ public class Engine {
         return self.'listener;
     }
 
+    // TODO: Use visitor pattern?
     isolated function validate(string documentString) returns Document|Error {
         Parser parser = check new(documentString);
         Document|Error parseResult = parser.parse();
         if (parseResult is Error) {
             return parseResult;
         }
-        Document document = <Document>parseResult;
+        return <Document>parseResult;
+    }
+
+    isolated function validate(Document document) returns ValidationError? {
         var validationResult = self.validateDocument(document);
         if (validationResult is ValidationError) {
             return validationResult;
         }
-        return document;
     }
 
     isolated function validateDocument(Document document) returns ValidationError? {
