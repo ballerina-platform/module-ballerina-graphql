@@ -100,11 +100,11 @@ Document expectedDocumentWithParameters =
                             'type: T_STRING,
                             nameLocation: {
                                 line: 8,
-                                column: 19
+                                column: 21
                             },
                             valueLocation: {
                                 line: 8,
-                                column: 25
+                                column: 27
                             }
                         },
                         {
@@ -113,11 +113,11 @@ Document expectedDocumentWithParameters =
                             'type: T_INT,
                             nameLocation: {
                                 line: 8,
-                                column: 43
+                                column: 45
                             },
                             valueLocation: {
                                 line: 8,
-                                column: 53
+                                column: 55
                             }
                         },
                         {
@@ -126,11 +126,11 @@ Document expectedDocumentWithParameters =
                             'type: T_FLOAT,
                             nameLocation: {
                                 line: 8,
-                                column: 59
+                                column: 61
                             },
                             valueLocation: {
                                 line: 8,
-                                column: 67
+                                column: 69
                             }
                         }
                     ],

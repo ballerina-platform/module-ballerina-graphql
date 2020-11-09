@@ -27,7 +27,7 @@ function getDocumentWithComments() returns string {
 function getDocumentWithParameters() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_WITH_PARAMTER);
-    return readFileAndGetString(path, 290);
+    return readFileAndGetString(path, 310);
 }
 
 function getDocumentWithTwoNamedOperations() returns string {
