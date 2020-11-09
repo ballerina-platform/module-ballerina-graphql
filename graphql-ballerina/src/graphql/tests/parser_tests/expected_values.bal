@@ -1,278 +1,278 @@
-// Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//// Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+////
+//// WSO2 Inc. licenses this file to you under the Apache License,
+//// Version 2.0 (the "License"); you may not use this file except
+//// in compliance with the License.
+//// You may obtain a copy of the License at
+////
+//// http://www.apache.org/licenses/LICENSE-2.0
+////
+//// Unless required by applicable law or agreed to in writing,
+//// software distributed under the License is distributed on an
+//// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//// KIND, either express or implied.  See the License for the
+//// specific language governing permissions and limitations
+//// under the License.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
-// Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License.
-// You may obtain a copy of the License at
+//Operation shorthandOperation = {
+//    name: ANONYMOUS_OPERATION,
+//    'type: QUERY,
+//    fields: [
+//        {
+//            name: "name",
+//            location: {
+//                line: 2,
+//                column: 5
+//            }
+//        },
+//        {
+//            name: "birthdate",
+//            location: {
+//                line: 3,
+//                column: 5
+//            }
+//        }
+//    ],
+//    location: {
+//        line: 1,
+//        column: 1
+//    }
+//};
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+//Operation namedOperation = {
+//    name: "getData",
+//    'type: QUERY,
+//    fields: [
+//        {
+//            name: "name",
+//            location: {
+//                line: 2,
+//                column: 5
+//            }
+//        },
+//        {
+//            name: "id",
+//            location: {
+//                line: 3,
+//                column: 5
+//            }
+//        },
+//        {
+//            name: "birthdate",
+//            location: {
+//                line: 4,
+//                column: 5
+//            }
+//        }
+//    ],
+//    location: {
+//        line: 1,
+//        column: 7
+//    }
+//};
 //
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-
-Operation shorthandOperation = {
-    name: ANONYMOUS_OPERATION,
-    'type: QUERY,
-    fields: [
-        {
-            name: "name",
-            location: {
-                line: 2,
-                column: 5
-            }
-        },
-        {
-            name: "birthdate",
-            location: {
-                line: 3,
-                column: 5
-            }
-        }
-    ],
-    location: {
-        line: 1,
-        column: 1
-    }
-};
-
-Operation namedOperation = {
-    name: "getData",
-    'type: QUERY,
-    fields: [
-        {
-            name: "name",
-            location: {
-                line: 2,
-                column: 5
-            }
-        },
-        {
-            name: "id",
-            location: {
-                line: 3,
-                column: 5
-            }
-        },
-        {
-            name: "birthdate",
-            location: {
-                line: 4,
-                column: 5
-            }
-        }
-    ],
-    location: {
-        line: 1,
-        column: 7
-    }
-};
-
-Document expectedDocumentWithParameters =
-{
-    operations: [
-        {
-            name: "getData",
-            'type: "query",
-            fields: [
-                {
-                    name: "name",
-                    arguments: [
-                        {
-                            name: {
-                                name: "id",
-                                location: {
-                                    line: 8,
-                                    column: 10
-                                }
-                            },
-                            value: {
-                                value: 132,
-                                location: {
-                                    line: 8,
-                                    column: 14
-                                }
-                            },
-                            'type: T_INT
-                        },
-                        {
-                            name: {
-                                name: "name",
-                                location: {
-                                    line: 8,
-                                    column: 21
-                                }
-                            },
-                            value: {
-                                value: "Prof. Moriarty",
-                                location: {
-                                    line: 8,
-                                    column: 27
-                                }
-                            },
-                            'type: T_STRING
-                        },
-                        {
-                            name: {
-                                name: "negative",
-                                location: {
-                                    line: 8,
-                                    column: 45
-                                }
-                            },
-                            value: {
-                                value: -123,
-                                location: {
-                                    line: 8,
-                                    column: 55
-                                }
-                            },
-                            'type: T_INT
-                        },
-                        {
-                            name: {
-                                name: "weight",
-                                location: {
-                                    line: 8,
-                                    column: 61
-                                }
-                            },
-                            value: {
-                                value: 75.4,
-                                location: {
-                                    line: 8,
-                                    column: 69
-                                }
-                            },
-                            'type: T_FLOAT
-                        }
-                    ],
-                    selections: [
-                        {
-                            name: "first",
-                            location: {
-                                line: 9,
-                                column: 9
-                            }
-                        },
-                        {
-                            name: "last",
-                            location: {
-                                line: 10,
-                                column: 9
-                            }
-                        }
-                    ],
-                    location: {
-                        line: 8,
-                        column: 5
-                    }
-                },
-                {
-                    name: "id",
-                    selections: [
-                        {
-                            name: "prefix",
-                            selections: [
-                                {
-                                    name: "sample",
-                                    location: {
-                                        line: 14,
-                                        column: 13
-                                    }
-                                }
-                            ],
-                            location: {
-                                line: 13,
-                                column: 9
-                            }
-                        },
-                        {
-                            name: "suffix",
-                            location: {
-                                line: 16,
-                                column: 9
-                            }
-                        }
-                    ],
-                    location: {
-                        line: 12,
-                        column: 5
-                    }
-                },
-                {
-                    name: "birthdate",
-                    arguments: [
-                        {
-                            name: {
-                                name: "format",
-                                location: {
-                                    line: 18,
-                                    column: 16
-                                }
-                            },
-                            value: {
-                                value: "DD/MM/YYYY",
-                                location: {
-                                    line: 18,
-                                    column: 24
-                                }
-                            },
-                            'type: T_STRING
-                        }
-                    ],
-                    location: {
-                        line: 18,
-                        column: 5
-                    }
-                }
-            ],
-            location: {
-                line: 6,
-                column: 7
-            }
-        }
-    ]
-};
-
-Document documentWithTwoNamedOperations = {
-    operations: [
-        {
-            name: "getName",
-            'type: "query",
-            fields: [
-                {
-                    name: "name",
-                    location: {
-                        line: 2,
-                        column: 5
-                    }
-                }
-            ],
-            location: {
-                line: 1,
-                column: 7
-            }
-        },
-        {
-            name: "getBirthDate",
-            'type: "query",
-            fields: [
-                {
-                    name: "birthdate",
-                    location: {
-                        line: 6,
-                        column: 5
-                    }
-                }
-            ],
-            location: {
-                line: 5,
-                column: 7
-            }
-        }
-    ]
-};
+//Document expectedDocumentWithParameters =
+//{
+//    operations: [
+//        {
+//            name: "getData",
+//            'type: "query",
+//            fields: [
+//                {
+//                    name: "name",
+//                    arguments: [
+//                        {
+//                            name: {
+//                                name: "id",
+//                                location: {
+//                                    line: 8,
+//                                    column: 10
+//                                }
+//                            },
+//                            value: {
+//                                value: 132,
+//                                location: {
+//                                    line: 8,
+//                                    column: 14
+//                                }
+//                            },
+//                            'type: T_INT
+//                        },
+//                        {
+//                            name: {
+//                                name: "name",
+//                                location: {
+//                                    line: 8,
+//                                    column: 21
+//                                }
+//                            },
+//                            value: {
+//                                value: "Prof. Moriarty",
+//                                location: {
+//                                    line: 8,
+//                                    column: 27
+//                                }
+//                            },
+//                            'type: T_STRING
+//                        },
+//                        {
+//                            name: {
+//                                name: "negative",
+//                                location: {
+//                                    line: 8,
+//                                    column: 45
+//                                }
+//                            },
+//                            value: {
+//                                value: -123,
+//                                location: {
+//                                    line: 8,
+//                                    column: 55
+//                                }
+//                            },
+//                            'type: T_INT
+//                        },
+//                        {
+//                            name: {
+//                                name: "weight",
+//                                location: {
+//                                    line: 8,
+//                                    column: 61
+//                                }
+//                            },
+//                            value: {
+//                                value: 75.4,
+//                                location: {
+//                                    line: 8,
+//                                    column: 69
+//                                }
+//                            },
+//                            'type: T_FLOAT
+//                        }
+//                    ],
+//                    selections: [
+//                        {
+//                            name: "first",
+//                            location: {
+//                                line: 9,
+//                                column: 9
+//                            }
+//                        },
+//                        {
+//                            name: "last",
+//                            location: {
+//                                line: 10,
+//                                column: 9
+//                            }
+//                        }
+//                    ],
+//                    location: {
+//                        line: 8,
+//                        column: 5
+//                    }
+//                },
+//                {
+//                    name: "id",
+//                    selections: [
+//                        {
+//                            name: "prefix",
+//                            selections: [
+//                                {
+//                                    name: "sample",
+//                                    location: {
+//                                        line: 14,
+//                                        column: 13
+//                                    }
+//                                }
+//                            ],
+//                            location: {
+//                                line: 13,
+//                                column: 9
+//                            }
+//                        },
+//                        {
+//                            name: "suffix",
+//                            location: {
+//                                line: 16,
+//                                column: 9
+//                            }
+//                        }
+//                    ],
+//                    location: {
+//                        line: 12,
+//                        column: 5
+//                    }
+//                },
+//                {
+//                    name: "birthdate",
+//                    arguments: [
+//                        {
+//                            name: {
+//                                name: "format",
+//                                location: {
+//                                    line: 18,
+//                                    column: 16
+//                                }
+//                            },
+//                            value: {
+//                                value: "DD/MM/YYYY",
+//                                location: {
+//                                    line: 18,
+//                                    column: 24
+//                                }
+//                            },
+//                            'type: T_STRING
+//                        }
+//                    ],
+//                    location: {
+//                        line: 18,
+//                        column: 5
+//                    }
+//                }
+//            ],
+//            location: {
+//                line: 6,
+//                column: 7
+//            }
+//        }
+//    ]
+//};
+//
+//Document documentWithTwoNamedOperations = {
+//    operations: [
+//        {
+//            name: "getName",
+//            'type: "query",
+//            fields: [
+//                {
+//                    name: "name",
+//                    location: {
+//                        line: 2,
+//                        column: 5
+//                    }
+//                }
+//            ],
+//            location: {
+//                line: 1,
+//                column: 7
+//            }
+//        },
+//        {
+//            name: "getBirthDate",
+//            'type: "query",
+//            fields: [
+//                {
+//                    name: "birthdate",
+//                    location: {
+//                        line: 6,
+//                        column: 5
+//                    }
+//                }
+//            ],
+//            location: {
+//                line: 5,
+//                column: 7
+//            }
+//        }
+//    ]
+//};

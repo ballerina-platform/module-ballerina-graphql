@@ -16,17 +16,19 @@
 
 class Parser {
     private Lexer lexer;
-    private Document document;
+    private DocumentNode? document;
+    private OperationNode? operation;
 
     public isolated function init(string text) returns ParsingError? {
         self.lexer = new(text);
-        self.document = createDocument();
+        self.document = ();
+        self.operation = ();
     }
 
-    public isolated function parse() returns Document|ParsingError {
+    public isolated function parse() returns DocumentNode|ParsingError {
         check self.blockAnalysis();
         check self.populateDocument();
-        return self.document;
+        return <DocumentNode>self.document;
     }
 
     public isolated function blockAnalysis() returns ParsingError? {
@@ -82,7 +84,7 @@ class Parser {
 
     isolated function parseOperation(Token token, OperationType 'type = QUERY) returns ParsingError? {
         Location location = token.location.clone();
-        Operation operation = check self.createOperationRecord(ANONYMOUS_OPERATION, 'type, location);
+        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, 'type, location);
         self.addOperationToDocument(operation);
     }
 
@@ -94,7 +96,7 @@ class Parser {
             token = check self.lexer.nextLexicalToken();
             TokenType tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
-                Operation operation = check self.createOperationRecord(operationName, operationType, location);
+                OperationNode operation = check self.createOperationRecord(operationName, operationType, location);
                 self.addOperationToDocument(operation);
                 Token next = check self.lexer.peekLexical();
                 if (next.'type != T_EOF) {
@@ -108,18 +110,29 @@ class Parser {
     }
 
     isolated function createOperationRecord(string operationName, OperationType 'type, Location location)
-    returns Operation|ParsingError {
-        Field[] fields = check getFieldsForOperation(self.lexer);
+    returns OperationNode|ParsingError {
+        FieldNode 'field = check getFieldNode(self.lexer);
+
         return {
             name: operationName,
             'type: 'type,
-            fields: fields,
+            firstField: 'field,
             location: location
         };
     }
 
-    isolated function addOperationToDocument(Operation operation) {
-        self.document.operations.push(operation);
+    isolated function addOperationToDocument(OperationNode operation) {
+        OperationNode? operationNode = self.operation;
+        if (operationNode is OperationNode) {
+            operationNode.nextOperation = operation;
+            self.operation = operation;
+        } else {
+            DocumentNode document = {
+                firstOperation: operation
+            };
+            self.document = document;
+            self.operation = operation;
+        }
     }
 }
 
@@ -131,97 +144,117 @@ isolated function getOperationType(Token token) returns OperationType|ParsingErr
     return getUnexpectedTokenError(token);
 }
 
-isolated function getFieldsForOperation(Lexer lexer) returns Field[]|ParsingError {
+isolated function getFieldNode(Lexer lexer) returns FieldNode|ParsingError {
     Token token = check lexer.nextLexicalToken();
-    Field[] fields = [];
+    FieldNode? 'field = ();
+    FieldNode? firstField = ();
     while (token.'type != T_CLOSE_BRACE) {
-        Field 'field = {
-            name: "",
-            location: token.location.clone()
-        };
-        if (token.'type == T_TEXT) {
-            'field.name = <string>token.value;
-        } else {
-            return getExpectedNameError(token);
-        }
+        string name = check getFieldName(token);
+        Location location = token.location;
+
         token = check lexer.nextLexicalToken();
-        if (token.'type == T_TEXT) {
-            fields.push('field);
-            continue;
+
+        ArgumentNode? firstArgument = ();
+        FieldNode? firstSelection = ();
+        if (token.'type != T_TEXT) {
+            if (token.'type == T_OPEN_PARENTHESES) {
+                firstArgument = check getArgumentNodeForField(lexer);
+                token = check lexer.nextLexicalToken();
+            }
+            if (token.'type == T_OPEN_BRACE) {
+                firstSelection = check getFieldNode(lexer);
+            }
         }
 
-        if (token.'type == T_OPEN_PARENTHESES) {
-            Argument[] arguments = check getArgumentsForField(lexer);
-            'field.arguments = arguments;
-            token = check lexer.nextLexicalToken();
+        FieldNode fieldNode = {
+            name: name,
+            location: location,
+            firstArgument: firstArgument,
+            firstSelection: firstSelection
+        };
+
+        if ('field is ()) {
+            firstField = fieldNode;
+            'field = fieldNode;
+        } else {
+            'field.nextField = fieldNode;
+            'field = fieldNode;
         }
 
-        if (token.'type == T_OPEN_BRACE) {
-            Field[] selections = check getFieldsForOperation(lexer);
-            'field.selections = selections;
-        }
-        fields.push('field);
         if (token.'type == T_CLOSE_BRACE) {
             break;
         }
         token = check lexer.nextLexicalToken();
     }
-    return fields;
+    return <FieldNode>firstField;
 }
 
-isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingError {
-    Argument[] arguments = [];
+isolated function getArgumentNodeForField(Lexer lexer) returns ArgumentNode|ParsingError {
     Token token = check lexer.nextLexicalToken();
+    ArgumentNode? argument = ();
+    ArgumentNode? firstArgument = ();
     while (token.'type != T_CLOSE_PARENTHESES) {
-        string argumentName = "";
-        Scalar argumentValue = "";
-        Location nameLocation = token.location;
-        Location valueLocation = token.location;
-        if (token.'type == T_TEXT) {
-            argumentName = <string>token.value;
-        } else {
-            return getExpectedNameError(token);
-        }
+        ArgumentName argumentName = check getArgumentName(token);
+
         token = check lexer.nextLexicalToken();
         if (token.'type != T_COLON) {
             return getExpectedCharError(token, COLON);
         }
+
         token = check lexer.nextLexicalToken();
-        if (token.'type is ArgumentType) {
-            argumentValue = token.value;
-            valueLocation = token.location;
+        ArgumentValue argumentValue = check getArgumentValue(token);
+
+        if (argument is ()) {
+            argument = getArgumentNode(argumentName, argumentValue, <ArgumentType>token.'type);
+            firstArgument = argument;
         } else {
-            return getUnexpectedTokenError(token);
+            ArgumentNode nextArgument = getArgumentNode(argumentName, argumentValue, <ArgumentType>token.'type);
+            argument.nextArgument = nextArgument;
+            argument = nextArgument;
         }
-
-        ArgumentName argumentNameField = {
-            name: argumentName,
-            location: nameLocation
-        };
-
-        ArgumentValue argumentValueField = {
-            value: argumentValue,
-            location: valueLocation
-        };
-
-        Argument argument = {
-            name: argumentNameField,
-            value: argumentValueField,
-            'type: <ArgumentType>token.'type
-        };
-        arguments.push(argument);
         token = check lexer.nextLexicalToken();
         if (token.'type == T_COMMA) {
             token = check lexer.nextLexicalToken();
             continue;
         }
     }
-    return arguments;
+    return <ArgumentNode>firstArgument;
 }
 
-isolated function createDocument() returns Document {
-    Operation[] operations = [];
+isolated function getArgumentName(Token token) returns ArgumentName|ParsingError {
+    if (token.'type == T_TEXT) {
+        return {
+            value: <string>token.value,
+            location: token.location
+        };
+    } else {
+        return getExpectedNameError(token);
+    }
+}
+
+isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingError {
+    if (token.'type is ArgumentType) {
+        return {
+            value: token.value,
+            location: token.location
+        };
+    } else {
+        return getUnexpectedTokenError(token);
+    }
+}
+
+isolated function getArgumentNode(ArgumentName name, ArgumentValue value, ArgumentType 'type) returns ArgumentNode {
     return {
-        operations: operations
+        name: name,
+        value: value,
+        'type: 'type
     };
+}
+
+isolated function getFieldName(Token token) returns string|ParsingError {
+    if (token.'type == T_TEXT) {
+        return <string>token.value;
+    } else {
+        return getExpectedNameError(token);
+    }
 }

@@ -28,83 +28,78 @@ public class Engine {
     }
 
     // TODO: Use visitor pattern?
-    isolated function parse(string documentString) returns Document|Error {
+    isolated function parse(string documentString) returns DocumentNode|Error {
         Parser parser = check new(documentString);
-        Document|Error parseResult = parser.parse();
+        DocumentNode|Error parseResult = parser.parse();
         if (parseResult is Error) {
             return parseResult;
         }
-        return <Document>parseResult;
+        return <DocumentNode>parseResult;
     }
 
-    isolated function validate(Document document) returns ValidationError? {
+    isolated function validate(DocumentNode document) returns ValidationError? {
         var validationResult = self.validateDocument(document);
         if (validationResult is ValidationError) {
             return validationResult;
         }
     }
 
-    isolated function validateDocument(Document document) returns ValidationError? {
-        self.validateOperations(document.operations);
-    }
-
-    isolated function validateOperations(Operation[] operations) {
-        boolean multipleOperations = operations.length() > 1;
-
-        foreach Operation operation in operations {
-            if (multipleOperations && operation.name is ANONYMOUS_OPERATION) {
-                DuplicateOperationError err = getMultipleAnonymousOperationsError(operation);
-                self.errors.push(err);
-            }
-            self.validateOperation(operation);
+    isolated function validateDocument(DocumentNode document) returns ValidationError? {
+        OperationNode? operationNode = document.firstOperation;
+        OperationNode[] anonymousOperations = [];
+        while (operationNode is OperationNode) {
+            string operationName = operationNode.name;
+            self.validateOperation(operationNode);
+            operationNode = operationNode.nextOperation;
         }
     }
 
-    isolated function validateOperation(Operation operation) {
-        Field[] fields = operation.fields;
-        foreach Field 'field in fields {
-            var validateResult = validateField(self.'listener, 'field, operation.'type);
+    isolated function validateOperation(OperationNode operation) {
+        FieldNode? fieldNode = operation.firstField;
+        while (fieldNode is FieldNode) {
+            var validateResult = validateField(self.'listener, fieldNode, operation.'type);
             if (validateResult is Error[]) {
                 self.errors = validateResult;
             }
+            fieldNode = fieldNode.nextField;
         }
     }
 
-    isolated function execute(Document document, string operationName) returns json {
-        map<json> data = {};
-        json[] errors = [];
-        int errorCount = 0;
-        Operation[] operations = document.operations;
-        Operation? operationToExecute = ();
-        foreach Operation operation in operations {
-            if (operationName == operation.name) {
-                operationToExecute = operation;
-                break;
-            }
-        }
-        if (operationToExecute is ()) {
-            string message = "Unknown operation named \"" + operationName + "\".";
-            OperationNotFoundError err = OperationNotFoundError(message);
-            errors[errorCount] = getErrorJsonFromError(err);
-            return getResultJson(data, errors);
-        }
-
-        Operation operation = <Operation>operationToExecute;
-        Field[] fields = operation.fields;
-        foreach Field 'field in fields {
-            var resourceValue = executeResource(self.'listener, 'field);
-            if (resourceValue is error) {
-                string message = resourceValue.message();
-                ErrorRecord errorRecord = getErrorRecordFromField('field);
-                ExecutionError err = ExecutionError(message, errorRecord = errorRecord);
-                errors[errorCount] = getErrorJsonFromError(err);
-                errorCount += 1;
-            } else if (resourceValue is ()) {
-                data['field.name] = null;
-            } else {
-                data['field.name] = resourceValue;
-            }
-        }
-        return getResultJson(data, errors);
+    isolated function execute(DocumentNode document, string operationName) returns json {
+        //map<json> data = {};
+        //json[] errors = [];
+        //int errorCount = 0;
+        //Operation[] operations = document.operations;
+        //Operation? operationToExecute = ();
+        //foreach Operation operation in operations {
+        //    if (operationName == operation.name) {
+        //        operationToExecute = operation;
+        //        break;
+        //    }
+        //}
+        //if (operationToExecute is ()) {
+        //    string message = "Unknown operation named \"" + operationName + "\".";
+        //    OperationNotFoundError err = OperationNotFoundError(message);
+        //    errors[errorCount] = getErrorJsonFromError(err);
+        //    return getResultJson(data, errors);
+        //}
+        //
+        //Operation operation = <Operation>operationToExecute;
+        //Field[] fields = operation.fields;
+        //foreach Field 'field in fields {
+        //    var resourceValue = executeResource(self.'listener, 'field);
+        //    if (resourceValue is error) {
+        //        string message = resourceValue.message();
+        //        ErrorRecord errorRecord = getErrorRecordFromField('field);
+        //        ExecutionError err = ExecutionError(message, errorRecord = errorRecord);
+        //        errors[errorCount] = getErrorJsonFromError(err);
+        //        errorCount += 1;
+        //    } else if (resourceValue is ()) {
+        //        data['field.name] = null;
+        //    } else {
+        //        data['field.name] = resourceValue;
+        //    }
+        //}
+        //return getResultJson(data, errors);
     }
 }
