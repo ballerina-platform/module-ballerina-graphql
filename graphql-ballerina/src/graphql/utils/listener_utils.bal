@@ -88,11 +88,16 @@ isolated function setResponseForBadRequest(http:Response response) {
 isolated function getOutputObjectForQuery(Engine? engine, string documentString, string operationName) returns json {
     json? outputObject = ();
     if (engine is Engine) {
-        Document|Error document = engine.validate(documentString);
+        Document|Error document = engine.parse(documentString);
         if (document is Error) {
             outputObject = getResultJsonForError(document);
         } else {
-            outputObject = engine.execute(document, operationName);
+            var validationResult = engine.validate(document);
+            if (validationResult is Error) {
+                outputObject = getResultJsonForError(document);
+            } else {
+                outputObject = engine.execute(document, operationName);
+            }
         }
     }
     return outputObject;
