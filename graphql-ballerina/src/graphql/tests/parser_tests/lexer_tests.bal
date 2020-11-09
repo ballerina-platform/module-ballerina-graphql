@@ -24,7 +24,7 @@ isolated function testInvalidCharacter() returns error? {
     Lexer lexer = new(name);
     Token token = check lexer.next();
 
-    Token expectedToken = getExpectedToken("John", T_WORD, 1, 1);
+    Token expectedToken = getExpectedToken("John", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.next();
@@ -82,7 +82,7 @@ isolated function testPeek() returns error? {
     string s = "test integer -273";
     Lexer lexer = new(s);
     Token token = check lexer.peek(3); // test
-    Token expectedToken = getExpectedToken("integer", T_WORD, 1, 6);
+    Token expectedToken = getExpectedToken("integer", T_TEXT, 1, 6);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.peek(5); // test
@@ -94,7 +94,7 @@ isolated function testPeek() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.next(); // test
-    expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -105,15 +105,15 @@ isolated function testPeekLexical() returns error? {
     string s = "test integer -273";
     Lexer lexer = new(s);
     Token token = check lexer.peekLexical(); // test
-    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.peekLexical(); // test
-    expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken(); // test
-    expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -124,7 +124,7 @@ isolated function testBooleanInput() returns error? {
     string s = "test false";
     Lexer lexer = new(s);
     Token token = check lexer.next();
-    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.next(); // Space
@@ -140,7 +140,7 @@ isolated function testStringInputWithLexicalTokenRetrieval() returns error? {
     string s = "test \"This is a test string\"";
     Lexer lexer = new(s);
     Token token = check lexer.nextLexicalToken();
-    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
@@ -155,7 +155,7 @@ function testStringWithQuote() returns error? {
     string s = getTextWithQuoteFile();
     Lexer lexer = new(s);
     Token token = check lexer.nextLexicalToken();
-    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
@@ -170,7 +170,7 @@ function testUnterminatedString() returns error? {
     string s = getTextWithUnterminatedStringFile();
     Lexer lexer = new(s);
     Token token = check lexer.nextLexicalToken();
-    Token expectedToken = getExpectedToken("test", T_WORD, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
     var result = lexer.nextLexicalToken();
@@ -186,15 +186,15 @@ function testUnterminatedString() returns error? {
     groups: ["lexer", "parser", "unit"]
 }
 isolated function testLexicalTokenRetrieval() returns error? {
-    string document = "\n\n\nquery getData {\n    picture(h: 128, w: 128)\n}";
+    string document = "\n\n\nquery getData {\n    picture(h: 128,,, w: 128)\n}";
     Lexer lexer = new(document);
 
     Token token = check lexer.nextLexicalToken();
-    Token expectedToken = getExpectedToken("query", T_WORD, 4, 1);
+    Token expectedToken = getExpectedToken("query", T_TEXT, 4, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
-    expectedToken = getExpectedToken("getData", T_WORD, 4, 7);
+    expectedToken = getExpectedToken("getData", T_TEXT, 4, 7);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
@@ -202,7 +202,7 @@ isolated function testLexicalTokenRetrieval() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
-    expectedToken = getExpectedToken("picture", T_WORD, 5, 5);
+    expectedToken = getExpectedToken("picture", T_TEXT, 5, 5);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
@@ -210,7 +210,7 @@ isolated function testLexicalTokenRetrieval() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
-    expectedToken = getExpectedToken("h", T_WORD, 5, 13);
+    expectedToken = getExpectedToken("h", T_TEXT, 5, 13);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.nextLexicalToken();
@@ -223,7 +223,7 @@ isolated function testLexicalTokenRetrieval() returns error? {
 
     // Check ignoring insignificant comma
     token = check lexer.nextLexicalToken();
-    expectedToken = getExpectedToken("w", T_WORD, 5, 21);
+    expectedToken = getExpectedToken("w", T_TEXT, 5, 23);
     test:assertEquals(token, expectedToken);
 }
 
