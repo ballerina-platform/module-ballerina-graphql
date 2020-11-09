@@ -46,12 +46,20 @@ public type GraphQlServiceConfiguration record {
     string basePath;
 };
 
-public type Argument record {|
+public type ArgumentName record {|
     string name;
+    Location location;
+|};
+
+public type ArgumentValue record {|
     Scalar value;
+    Location location;
+|};
+
+public type Argument record {|
+    ArgumentName name;
+    ArgumentValue value;
     ArgumentType 'type;
-    Location nameLocation;
-    Location valueLocation;
 |};
 
 public type Field record {|

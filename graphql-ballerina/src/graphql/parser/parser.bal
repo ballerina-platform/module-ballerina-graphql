@@ -193,11 +193,20 @@ isolated function getArgumentsForField(Lexer lexer) returns Argument[]|ParsingEr
         } else {
             return getUnexpectedTokenError(token);
         }
-        Argument argument = {
+
+        ArgumentName argumentNameField = {
             name: argumentName,
+            location: nameLocation
+        };
+
+        ArgumentValue argumentValueField = {
             value: argumentValue,
-            nameLocation: nameLocation,
-            valueLocation: valueLocation,
+            location: valueLocation
+        };
+
+        Argument argument = {
+            name: argumentNameField,
+            value: argumentValueField,
             'type: <ArgumentType>token.'type
         };
         arguments.push(argument);

@@ -28,7 +28,7 @@ public class Engine {
     }
 
     // TODO: Use visitor pattern?
-    isolated function validate(string documentString) returns Document|Error {
+    isolated function parse(string documentString) returns Document|Error {
         Parser parser = check new(documentString);
         Document|Error parseResult = parser.parse();
         if (parseResult is Error) {

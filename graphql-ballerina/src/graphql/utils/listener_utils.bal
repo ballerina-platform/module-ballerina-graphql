@@ -94,7 +94,7 @@ isolated function getOutputObjectForQuery(Engine? engine, string documentString,
         } else {
             var validationResult = engine.validate(document);
             if (validationResult is Error) {
-                outputObject = getResultJsonForError(document);
+                outputObject = getResultJsonForError(validationResult);
             } else {
                 outputObject = engine.execute(document, operationName);
             }
