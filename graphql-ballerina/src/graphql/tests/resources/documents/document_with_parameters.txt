@@ -1,11 +1,11 @@
+,,,
 
 
 
 
-
-query getData {
+query getData, {
     # Line comment
-    name(id: 132, name: "Prof. Moriarty", negative: -123, weight: 75.4) { # Inline Comment {
+    name(id: 132,,, name: "Prof. Moriarty", negative: -123, weight: 75.4) { # Inline Comment {
         first
         last
     }
@@ -16,7 +16,7 @@ query getData {
         suffix
     }
     birthdate (format: "DD/MM/YYYY")
-}
+},
 
 
 
