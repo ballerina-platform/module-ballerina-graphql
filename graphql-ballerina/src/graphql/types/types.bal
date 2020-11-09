@@ -18,7 +18,7 @@
 public type Id int|string;
 
 # Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar boolean|int|float|string|Id;
+public type Scalar boolean|int|float|string|Id; // TODO: remove int and string from union
 
 # The annotation which is used to configure a GraphQL service.
 public annotation GraphQlServiceConfiguration ServiceConfiguration on service;

@@ -82,56 +82,72 @@ Document expectedDocumentWithParameters =
                     name: "name",
                     arguments: [
                         {
-                            name: "id",
-                            value: 132,
-                            'type: T_INT,
-                            nameLocation: {
-                                line: 8,
-                                column: 10
+                            name: {
+                                name: "id",
+                                location: {
+                                    line: 8,
+                                    column: 10
+                                }
                             },
-                            valueLocation: {
-                                line: 8,
-                                column: 14
-                            }
+                            value: {
+                                value: 132,
+                                location: {
+                                    line: 8,
+                                    column: 14
+                                }
+                            },
+                            'type: T_INT
                         },
                         {
-                            name: "name",
-                            value: "Prof. Moriarty",
-                            'type: T_STRING,
-                            nameLocation: {
-                                line: 8,
-                                column: 21
+                            name: {
+                                name: "name",
+                                location: {
+                                    line: 8,
+                                    column: 21
+                                }
                             },
-                            valueLocation: {
-                                line: 8,
-                                column: 27
-                            }
+                            value: {
+                                value: "Prof. Moriarty",
+                                location: {
+                                    line: 8,
+                                    column: 27
+                                }
+                            },
+                            'type: T_STRING
                         },
                         {
-                            name: "negative",
-                            value: -123,
-                            'type: T_INT,
-                            nameLocation: {
-                                line: 8,
-                                column: 45
+                            name: {
+                                name: "negative",
+                                location: {
+                                    line: 8,
+                                    column: 45
+                                }
                             },
-                            valueLocation: {
-                                line: 8,
-                                column: 55
-                            }
+                            value: {
+                                value: -123,
+                                location: {
+                                    line: 8,
+                                    column: 55
+                                }
+                            },
+                            'type: T_INT
                         },
                         {
-                            name: "weight",
-                            value: 75.4,
-                            'type: T_FLOAT,
-                            nameLocation: {
-                                line: 8,
-                                column: 61
+                            name: {
+                                name: "weight",
+                                location: {
+                                    line: 8,
+                                    column: 61
+                                }
                             },
-                            valueLocation: {
-                                line: 8,
-                                column: 69
-                            }
+                            value: {
+                                value: 75.4,
+                                location: {
+                                    line: 8,
+                                    column: 69
+                                }
+                            },
+                            'type: T_FLOAT
                         }
                     ],
                     selections: [
@@ -191,17 +207,21 @@ Document expectedDocumentWithParameters =
                     name: "birthdate",
                     arguments: [
                         {
-                            name: "format",
-                            value: "DD/MM/YYYY",
-                            'type: T_STRING,
-                            nameLocation: {
-                                line: 18,
-                                column: 16
+                            name: {
+                                name: "format",
+                                location: {
+                                    line: 18,
+                                    column: 16
+                                }
                             },
-                            valueLocation: {
-                                line: 18,
-                                column: 24
-                            }
+                            value: {
+                                value: "DD/MM/YYYY",
+                                location: {
+                                    line: 18,
+                                    column: 24
+                                }
+                            },
+                            'type: T_STRING
                         }
                     ],
                     location: {
