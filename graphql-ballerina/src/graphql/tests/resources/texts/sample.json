@@ -1,0 +1,113 @@
+{
+    "name": "name",
+    "location": {
+        "line": 8,
+        "column": 5
+    },
+    "firstArgument": {
+        "name": {
+            "value": "id",
+            "location": {
+                "line": 8,
+                "column": 10
+            }
+        },
+        "value": {
+            "value": 132,
+            "location": {
+                "line": 8,
+                "column": 14
+            }
+        },
+        "type": 3,
+        "nextArgument": {
+            "name": {
+                "value": "name",
+                "location": {
+                    "line": 8,
+                    "column": 21
+                }
+            },
+            "value": {
+                "value": "Prof. Moriarty",
+                "location": {
+                    "line": 8,
+                    "column": 27
+                }
+            },
+            "type": 2,
+            "nextArgument": {
+                "name": {
+                    "value": "negative",
+                    "location": {
+                        "line": 8,
+                        "column": 45
+                    }
+                },
+                "value": {
+                    "value": -123,
+                    "location": {
+                        "line": 8,
+                        "column": 55
+                    }
+                },
+                "type": 3,
+                "nextArgument": {
+                    "name": {
+                        "value": "weight",
+                        "location": {
+                            "line": 8,
+                            "column": 61
+                        }
+                    },
+                    "value": {
+                        "value": 75.4,
+                        "location": {
+                            "line": 8,
+                            "column": 69
+                        }
+                    },
+                    "type": 4,
+                    "nextArgument": null
+                }
+            }
+        }
+    },
+    "firstSelection": {
+        "name": "first",
+        "location": {
+            "line": 9,
+            "column": 9
+        },
+        "firstArgument": null,
+        "firstSelection": null,
+        "nextField": null
+    },
+    "nextField": {
+        "name": "birthdate",
+        "location": {
+            "line": 18,
+            "column": 5
+        },
+        "firstArgument": {
+            "name": {
+                "value": "format",
+                "location": {
+                    "line": 18,
+                    "column": 16
+                }
+            },
+            "value": {
+                "value": "DD/MM/YYYY",
+                "location": {
+                    "line": 18,
+                    "column": 24
+                }
+            },
+            "type": 2,
+            "nextArgument": null
+        },
+        "firstSelection": null,
+        "nextField": null
+    }
+}
