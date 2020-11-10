@@ -45,27 +45,3 @@ public type OutputObject record {
 public type GraphQlServiceConfiguration record {
     string basePath;
 };
-
-public type Argument record {|
-    ArgumentName name;
-    ArgumentValue value;
-    ArgumentType 'type;
-|};
-
-public type Field record {|
-    string name;
-    Argument[] arguments?;
-    Field[] selections?;
-    Location location;
-|};
-
-public type Operation record {|
-    string name;
-    OperationType 'type;
-    Field[] fields;
-    Location location;
-|};
-
-public type Document record {|
-    Operation[] operations;
-|};

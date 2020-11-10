@@ -58,18 +58,6 @@ isolated function getLocationsJsonArray(Location[]? locations) returns json[] {
     return jsonLocations;
 }
 
-isolated function getMultipleAnonymousOperationsError(Operation operation) returns DuplicateOperationError {
-    string message = "This anonymous operation must be the only defined operation.";
-    ErrorRecord errorRecord = {
-        locations: [operation.location]
-    };
-    return DuplicateOperationError(message, errorRecord = errorRecord);
-}
-
-isolated function executeResource(Listener 'listener, Field 'field) returns Scalar|error? = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.engine.Engine"
-} external;
-
 isolated function getFieldNames(service s) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
