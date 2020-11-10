@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type NodeVisitor object {
+public type Visitor object {
     public isolated function visitDocument(DocumentNode document);
     public isolated function visitOperation(OperationNode operation);
     public isolated function visitField(FieldNode 'field);

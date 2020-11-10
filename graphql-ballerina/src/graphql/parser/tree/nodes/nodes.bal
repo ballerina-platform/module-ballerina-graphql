@@ -14,6 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+public type AbstractNode object {
+    public isolated function accept(Visitor v);
+};
+
 public type ArgumentName record {|
     string value;
     Location location;
@@ -22,31 +26,4 @@ public type ArgumentName record {|
 public type ArgumentValue record {|
     Scalar value;
     Location location;
-|};
-
-public type ArgumentNode record {|
-    ArgumentName name;
-    ArgumentValue value;
-    ArgumentType 'type;
-    ArgumentNode? nextArgument = ();
-|};
-
-public type FieldNode record {|
-    string name;
-    Location location;
-    ArgumentNode? firstArgument = ();
-    FieldNode? firstSelection = ();
-    FieldNode? nextField = ();
-|};
-
-public type OperationNode record {|
-    string name;
-    OperationType 'type;
-    FieldNode firstField;
-    Location location;
-    OperationNode? nextOperation = ();
-|};
-
-public type DocumentNode record {|
-    OperationNode firstOperation;
 |};

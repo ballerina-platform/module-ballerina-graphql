@@ -16,19 +16,17 @@
 
 class Parser {
     private Lexer lexer;
-    private DocumentNode? document;
-    private OperationNode? operation;
+    private DocumentNode document;
 
     public isolated function init(string text) returns ParsingError? {
         self.lexer = new(text);
-        self.document = ();
-        self.operation = ();
+        self.document = new;
     }
 
     public isolated function parse() returns DocumentNode|ParsingError {
         check self.blockAnalysis();
         check self.populateDocument();
-        return <DocumentNode>self.document;
+        return self.document;
     }
 
     public isolated function blockAnalysis() returns ParsingError? {
@@ -111,28 +109,13 @@ class Parser {
 
     isolated function createOperationRecord(string operationName, OperationType 'type, Location location)
     returns OperationNode|ParsingError {
-        FieldNode 'field = check getFieldNode(self.lexer);
-
-        return {
-            name: operationName,
-            'type: 'type,
-            firstField: 'field,
-            location: location
-        };
+        OperationNode operation = new(operationName, 'type, location);
+        check getFieldNode(self.lexer, operation);
+        return operation;
     }
 
     isolated function addOperationToDocument(OperationNode operation) {
-        OperationNode? operationNode = self.operation;
-        if (operationNode is OperationNode) {
-            operationNode.nextOperation = operation;
-            self.operation = operation;
-        } else {
-            DocumentNode document = {
-                firstOperation: operation
-            };
-            self.document = document;
-            self.operation = operation;
-        }
+        self.document.addOperation(operation);
     }
 }
 
@@ -144,55 +127,36 @@ isolated function getOperationType(Token token) returns OperationType|ParsingErr
     return getUnexpectedTokenError(token);
 }
 
-isolated function getFieldNode(Lexer lexer) returns FieldNode|ParsingError {
+isolated function getFieldNode(Lexer lexer, SelectionParent parent) returns ParsingError? {
     Token token = check lexer.nextLexicalToken();
-    FieldNode? 'field = ();
-    FieldNode? firstField = ();
     while (token.'type != T_CLOSE_BRACE) {
         string name = check getFieldName(token);
         Location location = token.location;
+        FieldNode fieldNode = new (name, location);
 
         token = check lexer.nextLexicalToken();
 
-        ArgumentNode? firstArgument = ();
-        FieldNode? firstSelection = ();
         if (token.'type != T_TEXT) {
             if (token.'type == T_OPEN_PARENTHESES) {
-                firstArgument = check getArgumentNodeForField(lexer);
+                check getArgumentNodeForField(lexer, fieldNode);
                 token = check lexer.nextLexicalToken();
             }
             if (token.'type == T_OPEN_BRACE) {
-                firstSelection = check getFieldNode(lexer);
+                check getFieldNode(lexer, fieldNode);
             }
         }
 
-        FieldNode fieldNode = {
-            name: name,
-            location: location,
-            firstArgument: firstArgument,
-            firstSelection: firstSelection
-        };
-
-        if ('field is ()) {
-            firstField = fieldNode;
-            'field = fieldNode;
-        } else {
-            'field.nextField = fieldNode;
-            'field = fieldNode;
-        }
+        parent.addSelection(fieldNode);
 
         if (token.'type == T_CLOSE_BRACE) {
             break;
         }
         token = check lexer.nextLexicalToken();
     }
-    return <FieldNode>firstField;
 }
 
-isolated function getArgumentNodeForField(Lexer lexer) returns ArgumentNode|ParsingError {
+isolated function getArgumentNodeForField(Lexer lexer, FieldNode fieldNode) returns ParsingError? {
     Token token = check lexer.nextLexicalToken();
-    ArgumentNode? argument = ();
-    ArgumentNode? firstArgument = ();
     while (token.'type != T_CLOSE_PARENTHESES) {
         ArgumentName argumentName = check getArgumentName(token);
 
@@ -203,22 +167,14 @@ isolated function getArgumentNodeForField(Lexer lexer) returns ArgumentNode|Pars
 
         token = check lexer.nextLexicalToken();
         ArgumentValue argumentValue = check getArgumentValue(token);
-
-        if (argument is ()) {
-            argument = getArgumentNode(argumentName, argumentValue, <ArgumentType>token.'type);
-            firstArgument = argument;
-        } else {
-            ArgumentNode nextArgument = getArgumentNode(argumentName, argumentValue, <ArgumentType>token.'type);
-            argument.nextArgument = nextArgument;
-            argument = nextArgument;
-        }
+        ArgumentNode argument = new(argumentName, argumentValue, <ArgumentType>token.'type);
+        fieldNode.addArgument(argument);
         token = check lexer.nextLexicalToken();
         if (token.'type == T_COMMA) {
             token = check lexer.nextLexicalToken();
             continue;
         }
     }
-    return <ArgumentNode>firstArgument;
 }
 
 isolated function getArgumentName(Token token) returns ArgumentName|ParsingError {
@@ -241,14 +197,6 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingErr
     } else {
         return getUnexpectedTokenError(token);
     }
-}
-
-isolated function getArgumentNode(ArgumentName name, ArgumentValue value, ArgumentType 'type) returns ArgumentNode {
-    return {
-        name: name,
-        value: value,
-        'type: 'type
-    };
 }
 
 isolated function getFieldName(Token token) returns string|ParsingError {
