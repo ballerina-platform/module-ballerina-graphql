@@ -41,18 +41,6 @@ isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
     };
 }
 
-isolated function getErrorRecordFromField(Field 'field, (string|int)[] path = []) returns ErrorRecord {
-    if (path.length() == 0) {
-        return {
-            locations: ['field.location]
-        };
-    }
-    return {
-        locations: ['field.location],
-        path: path
-    };
-}
-
 isolated function getErrorJson(string message) returns json {
     return {
         errors: [

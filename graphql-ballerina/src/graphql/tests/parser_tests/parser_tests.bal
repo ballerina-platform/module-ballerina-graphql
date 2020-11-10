@@ -30,8 +30,7 @@ function testComplexDocument() returns error? {
     int t2Millis = t2.time;
     int t = t2Millis - t1Millis;
     println("Complex Time: " + t.toString());
-    println(document);
-    //test:assertEquals(document, expectedDocumentWithParameters);
+    test:assertEquals(document, expectedDocumentWithParameters);
 }
 
 @test:Config {
@@ -47,14 +46,7 @@ function testShorthandDocument() returns error? {
     int t2Millis = t2.time;
     int t = t2Millis - t1Millis;
     println("Shorthand Time: " + t.toString());
-    println(document);
-
-    Operation[] operations = [];
-    //operations.push(shorthandOperation);
-    Document shorthandDocument = {
-        operations: operations
-    };
-    //test:assertEquals(document, shorthandDocument);
+    test:assertEquals(document, shorthandDocument);
 }
 
 @test:Config {
@@ -70,30 +62,7 @@ function testDocumentWithNamedOperations() returns error? {
     int t2Millis = t2.time;
     int t = t2Millis - t1Millis;
     println("Named Operations Time: " + t.toString());
-    println(document);
-
-    Operation[] operations = [];
-    //operations.push(namedOperation);
-    Document shorthandDocument = {
-        operations: operations
-    };
-    //test:assertEquals(document, shorthandDocument);
-}
-
-@test:Config {
-    groups: ["parse", "parser", "unit"],
-    enable: false // This should be done at the validation phase in the engine
-}
-function testDocumentWithTwoAnonymousOperations() returns error? {
-    string documentString = getDocumentWithTwoAnonymousOperations();
-    Parser parser = check new(documentString);
-    var result = parser.parse();
-    test:assertTrue(result is DuplicateOperationError);
-    DuplicateOperationError err = <DuplicateOperationError>result;
-    string expectedMessage = "This anonymous operation must be the only defined operation.";
-    string message = err.message();
-    test:assertEquals(message, expectedMessage);
-    checkErrorRecord(err, 1, 1);
+    test:assertEquals(document, namedOperation);
 }
 
 @test:Config {
@@ -109,6 +78,5 @@ function testDocumentWithTwoNamedOperations() returns error? {
     int t2Millis = t2.time;
     int t = t2Millis - t1Millis;
     println("Two Named Operations Time: " + t.toString());
-    println(document);
-    //test:assertEquals(document, documentWithTwoNamedOperations);
+    test:assertEquals(document, documentWithTwoNamedOperations);
 }
