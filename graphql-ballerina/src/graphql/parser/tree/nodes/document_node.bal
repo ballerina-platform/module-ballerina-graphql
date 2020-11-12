@@ -24,5 +24,12 @@ public class DocumentNode {
 
     public isolated function accept(Visitor v) {
         v.visitDocument(self);
+        foreach OperationNode operation in self.operations {
+            operation.accept(v);
+        }
+    }
+
+    public isolated function getOperations() returns OperationNode[] {
+        return self.operations;
     }
 }

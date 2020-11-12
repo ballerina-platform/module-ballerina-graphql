@@ -29,6 +29,9 @@ public class OperationNode {
 
     public isolated function accept(Visitor v) {
         v.visitOperation(self);
+        foreach FieldNode fieldNode in self.selections {
+            fieldNode.accept(v);
+        }
     }
 
     public isolated function addSelection(FieldNode selection) {
