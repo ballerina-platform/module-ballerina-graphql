@@ -22,16 +22,16 @@ import ballerina/test;
 isolated function testInvalidCharacter() returns error? {
     string name = "John D<oe";
     Lexer lexer = new(name);
-    Token token = check lexer.next();
+    Token token = check lexer.read();
 
     Token expectedToken = getExpectedToken("John", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.next();
+    token = check lexer.read();
     expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 1, 5);
     test:assertEquals(token, expectedToken);
 
-    var next = lexer.next();
+    var next = lexer.read();
     test:assertTrue(next is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>next;
     string message = err.message();
@@ -46,7 +46,7 @@ isolated function testInvalidCharacter() returns error? {
 isolated function testIntInput() returns error? {
     string s = "42";
     Lexer lexer = new(s);
-    Token token = check lexer.next();
+    Token token = check lexer.read();
     Token expectedToken = getExpectedToken(42, T_INT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
@@ -57,7 +57,7 @@ isolated function testIntInput() returns error? {
 isolated function testFloatInput() returns error? {
     string s = "3.14159";
     Lexer lexer = new(s);
-    Token token = check lexer.next();
+    Token token = check lexer.read();
     Token expectedToken = getExpectedToken(3.14159, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
@@ -93,7 +93,7 @@ isolated function testPeek() returns error? {
     expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 1, 5);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.next(); // test
+    token = check lexer.read(); // test
     expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
@@ -123,12 +123,12 @@ isolated function testPeekLexical() returns error? {
 isolated function testBooleanInput() returns error? {
     string s = "test false";
     Lexer lexer = new(s);
-    Token token = check lexer.next();
+    Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.next(); // Space
-    token = check lexer.next();
+    token = check lexer.read(); // Space
+    token = check lexer.read();
     expectedToken = getExpectedToken(false, T_BOOLEAN, 1, 6);
     test:assertEquals(token, expectedToken);
 }

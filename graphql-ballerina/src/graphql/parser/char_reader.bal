@@ -38,12 +38,12 @@ class CharReader {
         if (self.buffer.length() > 0) {
             return self.buffer[0];
         }
-        Char char = self.next();
+        Char char = self.read();
         self.buffer.push(char);
         return char;
     }
 
-    public isolated function next() returns Char {
+    public isolated function read() returns Char {
         if (self.buffer.length() > 0) {
             return self.buffer.shift();
         }
