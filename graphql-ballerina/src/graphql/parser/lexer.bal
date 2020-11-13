@@ -72,7 +72,7 @@ class Lexer {
     isolated function nextLexicalToken() returns Token|ParsingError {
         Token? token = ();
         while (true) {
-            Token nextToken = check self.next();
+            Token nextToken = check self.read();
             if (nextToken.'type is LexicalType) {
                 token = nextToken;
                 break;
@@ -81,7 +81,7 @@ class Lexer {
         return <Token>token;
     }
 
-    public isolated function next() returns Token|ParsingError {
+    public isolated function read() returns Token|ParsingError {
         if (self.buffer.length() > 0) {
             return self.buffer.shift();
         }
@@ -89,7 +89,7 @@ class Lexer {
     }
 
     isolated function readNextToken() returns Token|ParsingError {
-        Char char = self.charReader.next();
+        Char char = self.charReader.read();
         TokenType tokenType = getTokenType(char);
         if (tokenType == T_EOF) {
             self.inProgress = false;
@@ -110,7 +110,7 @@ class Lexer {
     }
 
     isolated function getNextSpecialCharaterToken() returns Token|ParsingError {
-        Token token = check self.next();
+        Token token = check self.read();
         if (token.'type is SpecialCharacter) {
             return self.getNextSpecialCharaterToken();
         } else {
@@ -122,7 +122,7 @@ class Lexer {
         string previousChar = "";
         string word = "";
         while (!self.charReader.isEof()) {
-            Char charToken = self.charReader.next();
+            Char charToken = self.charReader.read();
             string value = charToken.value;
             if (value is EOF) {
                 return getUnexpectedTokenError(getTokenFromChar(charToken));
@@ -155,14 +155,14 @@ class Lexer {
             } else if (tokenType is SpecialCharacter) {
                 break;
             } else if (value == DECIMAL) {
-                char = self.charReader.next();
+                char = self.charReader.read();
                 numeral += value;
                 isFloat = true;
             } else if (value is Numeral) {
-                char = self.charReader.next();
+                char = self.charReader.read();
                 numeral += value.toString();
             } else {
-                char = self.charReader.next();
+                char = self.charReader.read();
                 string message = "Syntax Error: Invalid number, expected digit but got: \"" + value + "\".";
                 ErrorRecord errorRecord = {
                     locations: [char.location.clone()]
@@ -183,7 +183,7 @@ class Lexer {
             if (char.value is LineTerminator) {
                 break;
             } else {
-                char = self.charReader.next();
+                char = self.charReader.read();
                 word += char.value;
             }
         }
@@ -202,7 +202,7 @@ class Lexer {
             } else if (tokenType is TerminalCharacter) {
                 break;
             } else {
-                char = self.charReader.next();
+                char = self.charReader.read();
                 check validateChar(char);
                 word += char.value;
             }

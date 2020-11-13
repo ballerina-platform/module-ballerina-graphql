@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testCharReaderForSimpleString() {
     string s = "Hello";
     CharReader reader = new(s);
-    Char? c = reader.next();
+    Char? c = reader.read();
     test:assertTrue(c is Char);
     Char expectedToken = {
         value: "H",
@@ -33,7 +33,7 @@ isolated function testCharReaderForSimpleString() {
     };
     test:assertEquals(c, expectedToken);
 
-    c = reader.next();
+    c = reader.read();
     expectedToken = {
         value: "e",
         location: {
@@ -43,7 +43,7 @@ isolated function testCharReaderForSimpleString() {
     };
     test:assertEquals(c, expectedToken);
 
-    c = reader.next();
+    c = reader.read();
     expectedToken = {
         value: "l",
         location: {
@@ -53,7 +53,7 @@ isolated function testCharReaderForSimpleString() {
     };
     test:assertEquals(c, expectedToken);
 
-    c = reader.next();
+    c = reader.read();
     expectedToken = {
         value: "l",
         location: {
@@ -63,7 +63,7 @@ isolated function testCharReaderForSimpleString() {
     };
     test:assertEquals(c, expectedToken);
 
-    c = reader.next();
+    c = reader.read();
     expectedToken = {
         value: "o",
         location: {
@@ -73,7 +73,7 @@ isolated function testCharReaderForSimpleString() {
     };
     test:assertEquals(c, expectedToken);
 
-    c = reader.next();
+    c = reader.read();
     expectedToken = {
         value: "",
         location: {
@@ -90,7 +90,7 @@ isolated function testCharReaderForSimpleString() {
 isolated function testCharReaderForEof() {
     string s = "";
     CharReader reader = new(s);
-    Char? c = reader.next();
+    Char? c = reader.read();
     test:assertTrue(c is Char);
     Char expectedToken = {
         value: EOF,
@@ -109,7 +109,7 @@ isolated function testCharReaderForAfterEof() {
     string s = "";
     CharReader reader = new(s);
     test:assertFalse(reader.isEof());
-    Char? c = reader.next();
+    Char? c = reader.read();
     test:assertTrue(reader.isEof());
 }
 
@@ -119,9 +119,9 @@ isolated function testCharReaderForAfterEof() {
 isolated function testCharReaderForNewLine() {
     string s = "\n\n\n";
     CharReader reader = new(s);
-    Char? c = reader.next();
-    c = reader.next();
-    c = reader.next();
+    Char? c = reader.read();
+    c = reader.read();
+    c = reader.read();
     test:assertTrue(c is Char);
     Char expectedToken = {
         value: "\n",
