@@ -21,12 +21,17 @@ class Lexer {
     private string document;
     private boolean inProgress;
     private Token[] buffer;
+    private Location location;
 
     public isolated function init(string document) {
         self.charReader = new(document);
         self.document = document;
         self.inProgress = true;
         self.buffer = [];
+        self.location = {
+            line: 1,
+            column: 1
+        };
     }
 
     public isolated function reset() {
@@ -95,7 +100,7 @@ class Lexer {
             self.inProgress = false;
             return getTokenFromChar(char);
         } else if (tokenType == T_STRING) {
-            return self.readStringToken(char.location);
+            return self.readStringLiteral(char.location);
         } else if (tokenType == T_INT) {
             return self.readNumeralToken(char.location, char.value);
         } else if (tokenType is TerminalCharacter) {
@@ -118,7 +123,7 @@ class Lexer {
         }
     }
 
-    isolated function readStringToken(Location location) returns Token|SyntaxError {
+    isolated function readStringLiteral(Location location) returns Token|SyntaxError {
         string previousChar = "";
         string word = "";
         while (!self.charReader.isEof()) {
