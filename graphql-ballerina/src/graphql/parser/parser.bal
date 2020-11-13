@@ -34,10 +34,10 @@ class Parser {
         int parenthesesCount = 0;
         while (self.lexer.hasNext()) {
             Token token = check self.lexer.getNextSpecialCharaterToken();
-            if (token.'type == T_EOF) {
+            if (token.kind == T_EOF) {
                 break;
             }
-            TokenType tokenType = token.'type;
+            TokenType tokenType = token.kind;
             if (tokenType == T_OPEN_BRACE) {
                 braceCount += 1;
             } else if (tokenType == T_CLOSE_BRACE) {
@@ -60,14 +60,14 @@ class Parser {
 
     isolated function populateDocument() returns ParsingError? {
         Token token = check self.lexer.nextLexicalToken();
-        TokenType tokenType = token.'type;
+        TokenType tokenType = token.kind;
 
         if (tokenType == T_OPEN_BRACE) {
             check self.parseOperation(token);
         } else if (tokenType == T_TEXT) {
             OperationType operationType = check getOperationType(token);
             token = check self.lexer.nextLexicalToken();
-            tokenType = token.'type;
+            tokenType = token.kind;
             if (tokenType == T_OPEN_BRACE) {
                 check self.parseOperation(token, operationType);
             } else if (tokenType == T_TEXT) {
@@ -80,24 +80,24 @@ class Parser {
         }
     }
 
-    isolated function parseOperation(Token token, OperationType 'type = QUERY) returns ParsingError? {
+    isolated function parseOperation(Token token, OperationType kind = QUERY) returns ParsingError? {
         Location location = token.location.clone();
-        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, 'type, location);
+        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, kind, location);
         self.addOperationToDocument(operation);
     }
 
     isolated function parseOperationWithType(Token firstToken, OperationType operationType) returns ParsingError? {
         Token token = firstToken;
-        while (token.'type != T_EOF) {
+        while (token.kind != T_EOF) {
             string operationName = <string>token.value;
             Location location = token.location.clone();
             token = check self.lexer.nextLexicalToken();
-            TokenType tokenType = token.'type;
+            TokenType tokenType = token.kind;
             if (tokenType == T_OPEN_BRACE) {
                 OperationNode operation = check self.createOperationRecord(operationName, operationType, location);
                 self.addOperationToDocument(operation);
                 Token next = check self.lexer.peekLexical();
-                if (next.'type != T_EOF) {
+                if (next.kind != T_EOF) {
                     check self.populateDocument();
                 }
             } else {
@@ -107,9 +107,9 @@ class Parser {
         }
     }
 
-    isolated function createOperationRecord(string operationName, OperationType 'type, Location location)
+    isolated function createOperationRecord(string operationName, OperationType kind, Location location)
     returns OperationNode|ParsingError {
-        OperationNode operation = new(operationName, 'type, location);
+        OperationNode operation = new(operationName, kind, location);
         check getFieldNode(self.lexer, operation);
         return operation;
     }
@@ -129,26 +129,26 @@ isolated function getOperationType(Token token) returns OperationType|ParsingErr
 
 isolated function getFieldNode(Lexer lexer, ParentType parent) returns ParsingError? {
     Token token = check lexer.nextLexicalToken();
-    while (token.'type != T_CLOSE_BRACE) {
+    while (token.kind != T_CLOSE_BRACE) {
         string name = check getFieldName(token);
         Location location = token.location;
         FieldNode fieldNode = new (name, location);
 
         token = check lexer.nextLexicalToken();
 
-        if (token.'type != T_TEXT) {
-            if (token.'type == T_OPEN_PARENTHESES) {
+        if (token.kind != T_TEXT) {
+            if (token.kind == T_OPEN_PARENTHESES) {
                 check getArgumentNodeForField(lexer, fieldNode);
                 token = check lexer.nextLexicalToken();
             }
-            if (token.'type == T_OPEN_BRACE) {
+            if (token.kind == T_OPEN_BRACE) {
                 check getFieldNode(lexer, fieldNode);
             }
         }
 
         parent.addSelection(fieldNode);
 
-        if (token.'type == T_CLOSE_BRACE) {
+        if (token.kind == T_CLOSE_BRACE) {
             break;
         }
         token = check lexer.nextLexicalToken();
@@ -157,20 +157,20 @@ isolated function getFieldNode(Lexer lexer, ParentType parent) returns ParsingEr
 
 isolated function getArgumentNodeForField(Lexer lexer, FieldNode fieldNode) returns ParsingError? {
     Token token = check lexer.nextLexicalToken();
-    while (token.'type != T_CLOSE_PARENTHESES) {
+    while (token.kind != T_CLOSE_PARENTHESES) {
         ArgumentName argumentName = check getArgumentName(token);
 
         token = check lexer.nextLexicalToken();
-        if (token.'type != T_COLON) {
+        if (token.kind != T_COLON) {
             return getExpectedCharError(token, COLON);
         }
 
         token = check lexer.nextLexicalToken();
         ArgumentValue argumentValue = check getArgumentValue(token);
-        ArgumentNode argument = new(argumentName, argumentValue, <ArgumentType>token.'type);
+        ArgumentNode argument = new(argumentName, argumentValue, <ArgumentType>token.kind);
         fieldNode.addArgument(argument);
         token = check lexer.nextLexicalToken();
-        if (token.'type == T_COMMA) {
+        if (token.kind == T_COMMA) {
             token = check lexer.nextLexicalToken();
             continue;
         }
@@ -178,7 +178,7 @@ isolated function getArgumentNodeForField(Lexer lexer, FieldNode fieldNode) retu
 }
 
 isolated function getArgumentName(Token token) returns ArgumentName|ParsingError {
-    if (token.'type == T_TEXT) {
+    if (token.kind == T_TEXT) {
         return {
             value: <string>token.value,
             location: token.location
@@ -189,7 +189,7 @@ isolated function getArgumentName(Token token) returns ArgumentName|ParsingError
 }
 
 isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingError {
-    if (token.'type is ArgumentType) {
+    if (token.kind is ArgumentType) {
         return {
             value: token.value,
             location: token.location
@@ -200,7 +200,7 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingErr
 }
 
 isolated function getFieldName(Token token) returns string|ParsingError {
-    if (token.'type == T_TEXT) {
+    if (token.kind == T_TEXT) {
         return <string>token.value;
     } else {
         return getExpectedNameError(token);

@@ -19,12 +19,12 @@ public class ArgumentNode {
 
     public ArgumentName name;
     public ArgumentValue value;
-    public ArgumentType 'type;
+    public ArgumentType kind;
 
-    public isolated function init(ArgumentName name, ArgumentValue value, ArgumentType 'type) {
+    public isolated function init(ArgumentName name, ArgumentValue value, ArgumentType kind) {
         self.name = name;
         self.value = value;
-        self.'type = 'type;
+        self.kind = kind;
     }
 
     public isolated function accept(Visitor v) {

@@ -227,10 +227,10 @@ isolated function testLexicalTokenRetrieval() returns error? {
     test:assertEquals(token, expectedToken);
 }
 
-isolated function getExpectedToken(Scalar value, TokenType 'type, int line, int column) returns Token {
+isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {
     return {
         value: value,
-        'type: 'type,
+        kind: kind,
         location: {
             line: line,
             column: column
