@@ -102,7 +102,7 @@ class Lexer {
         } else if (tokenType == T_STRING) {
             return self.readStringLiteral(char.location);
         } else if (tokenType == T_INT) {
-            return self.readNumeralToken(char.location, char.value);
+            return self.readNumericLiteral(char.location, char.value);
         } else if (tokenType is TerminalCharacter) {
             return getTokenFromChar(char);
         } else if (tokenType == T_COMMENT) {
@@ -110,7 +110,7 @@ class Lexer {
         } else if (tokenType is SpecialCharacter) {
             return getTokenFromChar(char);
         } else {
-            return self.readWordToken(char);
+            return self.readIdentifierToken(char);
         }
     }
 
@@ -138,7 +138,7 @@ class Lexer {
                     locations: [location.clone()]
                 };
                 return UnterminatedStringError(message, errorRecord = errorRecord);
-            } else if (value is QUOTE && previousChar != BACK_SLASH) {
+            } else if (value is DOUBLE_QUOTE && previousChar != BACK_SLASH) {
                 break;
             } else {
                 word += value;
@@ -148,7 +148,7 @@ class Lexer {
         return getToken(word, T_STRING, location);
     }
 
-    isolated function readNumeralToken(Location location, string fisrtChar) returns Token|ParsingError {
+    isolated function readNumericLiteral(Location location, string fisrtChar) returns Token|ParsingError {
         string numeral = fisrtChar;
         boolean isFloat = false;
         while (!self.charReader.isEof()) {
@@ -195,7 +195,7 @@ class Lexer {
         return getToken(word, T_COMMENT, location);
     }
 
-    isolated function readWordToken(Char firstChar) returns Token|ParsingError {
+    isolated function readIdentifierToken(Char firstChar) returns Token|ParsingError {
         check validateChar(firstChar);
         Location location = firstChar.location;
         string word = firstChar.value;
@@ -249,7 +249,7 @@ isolated function getTokenType(Char char) returns TokenType {
         return T_EOF;
     } else if (value is LineTerminator) {
         return T_NEW_LINE;
-    } else if (value is QUOTE) {
+    } else if (value is DOUBLE_QUOTE) {
         return T_STRING;
     } else if (value is Numeral) {
         return T_INT;
