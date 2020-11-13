@@ -70,7 +70,7 @@ class Parser {
             tokenType = token.'type;
             if (tokenType == T_OPEN_BRACE) {
                 check self.parseOperation(token, operationType);
-            } else if (tokenType == T_TEXT) { // TODO: Handle multiple operations
+            } else if (tokenType == T_TEXT) {
                 check self.parseOperationWithType(token, operationType);
             } else {
                 return getUnexpectedTokenError(token);
@@ -127,7 +127,7 @@ isolated function getOperationType(Token token) returns OperationType|ParsingErr
     return getUnexpectedTokenError(token);
 }
 
-isolated function getFieldNode(Lexer lexer, SelectionParent parent) returns ParsingError? {
+isolated function getFieldNode(Lexer lexer, ParentType parent) returns ParsingError? {
     Token token = check lexer.nextLexicalToken();
     while (token.'type != T_CLOSE_BRACE) {
         string name = check getFieldName(token);

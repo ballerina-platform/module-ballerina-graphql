@@ -13,7 +13,7 @@
 
 public class FieldNode {
     *AbstractNode;
-    *SelectionParent;
+    *ParentType;
 
     public string name;
     public Location location;
@@ -29,12 +29,6 @@ public class FieldNode {
 
     public isolated function accept(Visitor v) {
         v.visitField(self);
-        foreach ArgumentNode argument in self.arguments {
-            argument.accept(v);
-        }
-        foreach FieldNode fieldNode in self.selections {
-            fieldNode.accept(v);
-        }
     }
 
     public isolated function addArgument(ArgumentNode argument) {

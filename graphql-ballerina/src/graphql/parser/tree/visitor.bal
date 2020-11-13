@@ -15,8 +15,8 @@
 // under the License.
 
 public type Visitor object {
-    public isolated function visitDocument(DocumentNode document);
-    public isolated function visitOperation(OperationNode operation);
-    public isolated function visitField(FieldNode 'field);
-    public isolated function visitArgument(ArgumentNode argument);
+    public isolated function visitDocument(DocumentNode documentNode);
+    public isolated function visitOperation(OperationNode operationNode);
+    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ());
+    public isolated function visitArgument(ArgumentNode argumentNode);
 };

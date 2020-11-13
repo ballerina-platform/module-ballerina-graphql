@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type SelectionParent object {
+public type ParentType object {
     public isolated function addSelection(FieldNode selection);
     public isolated function getSelections() returns FieldNode[];
 };
