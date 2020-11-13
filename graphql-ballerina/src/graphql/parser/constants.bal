@@ -15,7 +15,7 @@
 // under the License.
 
 // Special Characters
-const QUOTE = "\"";
+const DOUBLE_QUOTE = "\"";
 const BACK_SLASH = "\\";
 const DOT = ".";
 
@@ -28,12 +28,12 @@ const EXCLAMATION = "!";
 const DOLLAR = "$";
 const OPEN_PARENTHESES = "(";
 const CLOSE_PARENTHESES = ")";
-const TRIPLE_DOT = "...";
+const ELLIPSIS = "...";
 const COLON = ":";
 const EQUAL = "=";
 const AT = "@";
-const OPEN_SQUARE_BRACKET = "[";
-const CLOSE_SQUARE_BRACKET = "]";
+const OPEN_BRACKET = "[";
+const CLOSE_BRACKET = "]";
 const OPEN_BRACE = "{";
 const PIPE = "|";
 const CLOSE_BRACE = "}";
