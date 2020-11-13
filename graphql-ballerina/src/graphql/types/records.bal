@@ -34,6 +34,12 @@ public type ErrorRecord record {|
     (int|string)[] path?;
 |};
 
+public type ErrorDetail record {|
+    string message;
+    Location[] locations;
+    (int|string)[] path?;
+|};
+
 public type OutputObject record {
     Data data?;
     ErrorRecord[] errors?;

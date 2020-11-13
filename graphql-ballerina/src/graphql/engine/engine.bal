@@ -27,7 +27,6 @@ public class Engine {
         return self.'listener;
     }
 
-    // TODO: Use visitor pattern?
     isolated function parse(string documentString) returns DocumentNode|Error {
         Parser parser = check new(documentString);
         DocumentNode|Error parseResult = parser.parse();
@@ -45,24 +44,8 @@ public class Engine {
     }
 
     isolated function validateDocument(DocumentNode document) returns ValidationError? {
-        OperationNode? operationNode = document.firstOperation;
-        OperationNode[] anonymousOperations = [];
-        while (operationNode is OperationNode) {
-            string operationName = operationNode.name;
-            self.validateOperation(operationNode);
-            operationNode = operationNode.nextOperation;
-        }
-    }
-
-    isolated function validateOperation(OperationNode operation) {
-        FieldNode? fieldNode = operation.firstField;
-        while (fieldNode is FieldNode) {
-            var validateResult = validateField(self.'listener, fieldNode, operation.'type);
-            if (validateResult is Error[]) {
-                self.errors = validateResult;
-            }
-            fieldNode = fieldNode.nextField;
-        }
+        ValidatorVisitor validator = new;
+        validator.validate(document);
     }
 
     isolated function execute(DocumentNode document, string operationName) returns json {

@@ -15,68 +15,79 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/time;
-
-@test:Config {
-    groups: ["parse", "parser", "unit"]
-}
-function testComplexDocument() returns error? {
-    string documentString = getDocumentWithParameters();
-    Parser parser = check new(documentString);
-    time:Time t1 = time:currentTime();
-    DocumentNode document = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    println("Complex Time: " + t.toString());
-    test:assertEquals(document, expectedDocumentWithParameters);
-}
-
-@test:Config {
-    groups: ["parse", "parser", "unit"]
-}
-function testShorthandDocument() returns error? {
-    string documentString = getShorthandNotationDocument();
-    Parser parser = check new(documentString);
-    time:Time t1 = time:currentTime();
-    DocumentNode document = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    println("Shorthand Time: " + t.toString());
-    test:assertEquals(document, shorthandDocument);
-}
-
-@test:Config {
-    groups: ["parse", "parser", "unit"]
-}
-function testDocumentWithNamedOperations() returns error? {
-    string documentString = getGeneralNotationDocument();
-    Parser parser = check new(documentString);
-    time:Time t1 = time:currentTime();
-    DocumentNode document = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    println("Named Operations Time: " + t.toString());
-    test:assertEquals(document, namedOperation);
-}
+//import ballerina/time;
+//
+//@test:Config {
+//    groups: ["parse", "parser", "unit"]
+//}
+//function testComplexDocument() returns error? {
+//    string documentString = getDocumentWithParameters();
+//    Parser parser = check new(documentString);
+//    time:Time t1 = time:currentTime();
+//    DocumentNode document = check parser.parse();
+//    time:Time t2 = time:currentTime();
+//    int t1Millis = t1.time;
+//    int t2Millis = t2.time;
+//    int t = t2Millis - t1Millis;
+//    println("Complex Time: " + t.toString());
+//    test:assertEquals(document, expectedDocumentWithParameters);
+//}
+//
+//@test:Config {
+//    groups: ["parse", "parser", "unit"]
+//}
+//function testShorthandDocument() returns error? {
+//    string documentString = getShorthandNotationDocument();
+//    Parser parser = check new(documentString);
+//    time:Time t1 = time:currentTime();
+//    DocumentNode document = check parser.parse();
+//    time:Time t2 = time:currentTime();
+//    int t1Millis = t1.time;
+//    int t2Millis = t2.time;
+//    int t = t2Millis - t1Millis;
+//    println("Shorthand Time: " + t.toString());
+//    test:assertEquals(document, shorthandDocument);
+//}
+//
+//@test:Config {
+//    groups: ["parse", "parser", "unit"]
+//}
+//function testDocumentWithNamedOperations() returns error? {
+//    string documentString = getGeneralNotationDocument();
+//    Parser parser = check new(documentString);
+//    time:Time t1 = time:currentTime();
+//    DocumentNode document = check parser.parse();
+//    time:Time t2 = time:currentTime();
+//    int t1Millis = t1.time;
+//    int t2Millis = t2.time;
+//    int t = t2Millis - t1Millis;
+//    println("Named Operations Time: " + t.toString());
+//    test:assertEquals(document, namedOperation);
+//}
+//
+//@test:Config {
+//    groups: ["parse", "parser", "unit"]
+//}
+//function testDocumentWithTwoNamedOperations() returns error? {
+//    string documentString = getDocumentWithTwoNamedOperations();
+//    Parser parser = check new(documentString);
+//    time:Time t1 = time:currentTime();
+//    DocumentNode document = check parser.parse();
+//    time:Time t2 = time:currentTime();
+//    int t1Millis = t1.time;
+//    int t2Millis = t2.time;
+//    int t = t2Millis - t1Millis;
+//    println("Two Named Operations Time: " + t.toString());
+//    test:assertEquals(document, documentWithTwoNamedOperations);
+//}
 
 @test:Config {
     groups: ["parse", "parser", "unit"]
 }
 function testDocumentWithTwoNamedOperations() returns error? {
-    string documentString = getDocumentWithTwoNamedOperations();
+    string documentString = getDocumentWithParameters();
     Parser parser = check new(documentString);
-    time:Time t1 = time:currentTime();
     DocumentNode document = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    println("Two Named Operations Time: " + t.toString());
-    test:assertEquals(document, documentWithTwoNamedOperations);
+    PrintVisitor visitor = new;
+    document.accept(visitor);
 }
