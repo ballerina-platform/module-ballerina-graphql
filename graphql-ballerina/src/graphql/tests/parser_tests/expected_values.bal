@@ -17,7 +17,7 @@
 //DocumentNode shorthandDocument = {
 //    firstOperation: {
 //        name: "<anonymous>",
-//        'type: "query",
+//        kind: "query",
 //        firstField: {
 //            name: "name",
 //            location: {
@@ -39,7 +39,7 @@
 //DocumentNode namedOperation = {
 //    firstOperation: {
 //        name: "getData",
-//        'type: "query",
+//        kind: "query",
 //        firstField: {
 //            name: "name",
 //            location: {
@@ -70,7 +70,7 @@
 //DocumentNode expectedDocumentWithParameters = {
 //    firstOperation: {
 //        name: "getData",
-//        'type: "query",
+//        kind: "query",
 //        firstField: {
 //            name: "name",
 //            location: {
@@ -92,7 +92,7 @@
 //                        column: 14
 //                    }
 //                },
-//                'type: 3,
+//                kind: 3,
 //                nextArgument: {
 //                    name: {
 //                        value: "name",
@@ -108,7 +108,7 @@
 //                            column: 27
 //                        }
 //                    },
-//                    'type: 2,
+//                    kind: 2,
 //                    nextArgument: {
 //                        name: {
 //                            value: "negative",
@@ -124,7 +124,7 @@
 //                                column: 55
 //                            }
 //                        },
-//                        'type: 3,
+//                        kind: 3,
 //                        nextArgument: {
 //                            name: {
 //                                value: "weight",
@@ -140,7 +140,7 @@
 //                                    column: 69
 //                                }
 //                            },
-//                            'type: 4,
+//                            kind: 4,
 //                            nextArgument: ()
 //                        }
 //                    }
@@ -212,7 +212,7 @@
 //                                column: 24
 //                            }
 //                        },
-//                        'type: 2,
+//                        kind: 2,
 //                        nextArgument: ()
 //                    },
 //                    firstSelection: (),
@@ -231,7 +231,7 @@
 //DocumentNode documentWithTwoNamedOperations = {
 //    firstOperation: {
 //        name: "getName",
-//        'type: "query",
+//        kind: "query",
 //        firstField: {
 //            name: "name",
 //            location: {
@@ -248,7 +248,7 @@
 //        },
 //        nextOperation: {
 //            name: "getBirthDate",
-//            'type: "query",
+//            kind: "query",
 //            firstField: {
 //                name: "birthdate",
 //                location: {

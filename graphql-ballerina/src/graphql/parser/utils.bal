@@ -48,10 +48,10 @@ isolated function getScalarTypeNameForError(Scalar value) returns string {
 }
 
 isolated function getErrorMessageTypeNameForError(Token token) returns string {
-    TokenType 'type = token.'type;
-    if ('type == T_EOF) {
+    TokenType kind = token.kind;
+    if (kind == T_EOF) {
         return "<EOF>.";
-    } else if ('type == T_TEXT) {
+    } else if (kind == T_TEXT) {
         return getScalarTypeNameForError(token.value);
     } else {
         return "\"" + token.value.toString() + "\".";

@@ -63,7 +63,7 @@ public type Char record {|
 |};
 
 type Token record {|
-    TokenType 'type;
+    TokenType kind;
     Scalar value;
     Location location;
 |};

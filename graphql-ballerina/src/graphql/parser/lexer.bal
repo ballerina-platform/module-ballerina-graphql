@@ -44,7 +44,7 @@ class Lexer {
         int i = 1;
         while (true) {
             Token nextToken = check self.peek(i);
-            if (nextToken.'type is LexicalType) {
+            if (nextToken.kind is LexicalType) {
                 token = nextToken;
                 break;
             }
@@ -78,7 +78,7 @@ class Lexer {
         Token? token = ();
         while (true) {
             Token nextToken = check self.read();
-            if (nextToken.'type is LexicalType) {
+            if (nextToken.kind is LexicalType) {
                 token = nextToken;
                 break;
             }
@@ -116,7 +116,7 @@ class Lexer {
 
     isolated function getNextSpecialCharaterToken() returns Token|ParsingError {
         Token token = check self.read();
-        if (token.'type is SpecialCharacter) {
+        if (token.kind is SpecialCharacter) {
             return self.getNextSpecialCharaterToken();
         } else {
             return token;
@@ -176,8 +176,8 @@ class Lexer {
             }
         }
         int|float number = check getNumber(numeral, isFloat, location);
-        TokenType 'type = isFloat? T_FLOAT:T_INT;
-        return getToken(number, 'type, location);
+        TokenType kind = isFloat? T_FLOAT:T_INT;
+        return getToken(number, kind, location);
     }
 
     isolated function readCommentToken(Location location) returns Token|ParsingError {
@@ -212,14 +212,14 @@ class Lexer {
                 word += char.value;
             }
         }
-        TokenType 'type = getWordTokenType(word);
+        TokenType kind = getWordTokenType(word);
         Scalar value = word;
-        if ('type is T_BOOLEAN) {
+        if (kind is T_BOOLEAN) {
             value = <boolean>'boolean:fromString(word);
         }
         return {
             value: value,
-            'type: 'type,
+            kind: kind,
             location: location
         };
     }
@@ -259,9 +259,9 @@ isolated function getTokenType(Char char) returns TokenType {
     return T_TEXT;
 }
 
-isolated function getToken(Scalar value, TokenType 'type, Location location) returns Token {
+isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
     return {
-        'type: 'type,
+        kind: kind,
         value: value,
         location: location
     };
@@ -270,7 +270,7 @@ isolated function getToken(Scalar value, TokenType 'type, Location location) ret
 isolated function getTokenFromChar(Char charToken) returns Token {
     TokenType tokenType = getTokenType(charToken);
     return {
-        'type: tokenType,
+        kind: tokenType,
         value: charToken.value,
         location: charToken.location
     };
@@ -321,8 +321,8 @@ isolated function validateFirstChar(Char char) returns InvalidTokenError? {
     }
 }
 
-isolated function getInternalError(string value, string 'type, Location location) returns InternalError {
-    string message = "Internal Error: Failed to convert the \"" + value + "\" to \"" + 'type + "\".";
+isolated function getInternalError(string value, string kind, Location location) returns InternalError {
+    string message = "Internal Error: Failed to convert the \"" + value + "\" to \"" + kind + "\".";
     ErrorRecord errorRecord = {
         locations: [location]
     };

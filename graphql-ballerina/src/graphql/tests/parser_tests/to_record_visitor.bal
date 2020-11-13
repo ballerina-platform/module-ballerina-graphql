@@ -29,7 +29,7 @@ type ArgValue record {
 type Argument record {
     ArgName name;
     ArgValue value;
-    ArgumentType 'type;
+    ArgumentType kind;
 };
 
 type Field record {
@@ -41,7 +41,7 @@ type Field record {
 
 type Operation record {
     string name;
-    OperationType 'type;
+    OperationType kind;
     Field[] selections;
     Location location;
 };
