@@ -159,7 +159,7 @@ class Lexer {
                 break;
             } else if (tokenType is SpecialCharacter) {
                 break;
-            } else if (value == DECIMAL) {
+            } else if (value == DOT) {
                 char = self.charReader.read();
                 numeral += value;
                 isFloat = true;

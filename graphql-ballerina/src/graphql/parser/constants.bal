@@ -17,7 +17,7 @@
 // Special Characters
 const QUOTE = "\"";
 const BACK_SLASH = "\\";
-const DECIMAL = ".";
+const DOT = ".";
 
 const HASH = "#";
 
