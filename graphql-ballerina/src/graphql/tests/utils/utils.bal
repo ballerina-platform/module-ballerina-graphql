@@ -16,72 +16,71 @@
 
 import ballerina/filepath;
 import ballerina/io;
-import ballerina/log;
 import ballerina/test;
 
 function getDocumentWithComments() returns string {
     string resourcePath = checkpanic getResourcePath();
-    return readFileAndGetString(DOCUMENT_WITH_COMMENTS, 98);
+    return readFileAndGetString(DOCUMENT_WITH_COMMENTS);
 }
 
 function getDocumentWithParameters() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_WITH_PARAMTER);
-    return readFileAndGetString(path, 310);
+    return readFileAndGetString(path);
 }
 
 function getDocumentWithTwoNamedOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_TWO_NAMED_OPERATIONS);
-    return readFileAndGetString(path, 65);
+    return readFileAndGetString(path);
 }
 
 function getDocumentForResourcesWithRecord() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_QUERY_FOR_RESOURCES_WITH_RECORD);
-    return readFileAndGetString(path, 87);
+    return readFileAndGetString(path);
 }
 
 function getDocumentWithTwoAnonymousOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);
-    return readFileAndGetString(path, 37);
+    return readFileAndGetString(path);
 }
 
 function getShorthandNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_SHORTHAND);
-    return readFileAndGetString(path, 27);
+    return readFileAndGetString(path);
 }
 
 function getGeneralNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_GENERAL);
-    return readFileAndGetString(path, 47);
+    return readFileAndGetString(path);
 }
 
 function getInvalidShorthandNotationDocument() returns string {
-    return readFileAndGetString(DOCUMENT_SHORTHAND_INVALID, 34);
+    return readFileAndGetString(DOCUMENT_SHORTHAND_INVALID);
 }
 
 function getAnonymousOperationDocument() returns string {
-    return readFileAndGetString(DOCUMENT_ANONYMOUS, 39);
+    return readFileAndGetString(DOCUMENT_ANONYMOUS);
 }
 
 function getNoCloseBraceDocument() returns string {
-    return readFileAndGetString(DOCUMENT_NO_CLOSE_BRACE, 38);
+    return readFileAndGetString(DOCUMENT_NO_CLOSE_BRACE);
 }
 
 function getTextWithQuoteFile() returns string {
     string textDirPath = checkpanic getTextPath();
     string path = checkpanic filepath:build(textDirPath, TEXT_WITH_STRING);
-    return readFileAndGetString(path, 48);
+    return readFileAndGetString(path);
 }
 
 function getTextWithUnterminatedStringFile() returns string {
     string textDirPath = checkpanic getTextPath();
     string path = checkpanic filepath:build(textDirPath, TEXT_WITH_UNTERMINATED_STRING);
-    return readFileAndGetString(path, 32);
+    return readFileAndGetString(path);
 }
 
 function getParsedJsonForDocumentWithParameters() returns json {
@@ -109,35 +108,17 @@ isolated function getResourcePath() returns string|error {
     return filepath:build("src", "graphql", "tests", "resources");
 }
 
-function readJson(string path) returns @tainted json|error {
-    io:ReadableByteChannel rbc = check io:openReadableFile(path);
-    io:ReadableCharacterChannel rch = new (rbc, "UTF8");
-    var result = rch.readJson();
-    closeReadChannel(rch);
-    return result;
+function readJson(string path) returns json|error {
+    var result = io:fileReadJson(path);
+    return <@untainted>result;
 }
 
-function readFileAndGetString(string filePath, int length) returns string {
-    var fileText = readFile(filePath, length);
+function readFileAndGetString(string filePath) returns string {
+    var fileText = io:fileReadString(filePath);
     if (fileText is error) {
         logAndPanicError("Error occurred while reading the document", fileText);
     }
-    return <string>fileText;
-}
-
-function readFile(string path, int count) returns string|error {
-    io:ReadableByteChannel rbc = check <@untainted>io:openReadableFile(path);
-    io:ReadableCharacterChannel rch = new (rbc, "UTF8");
-    var result = <@untainted>rch.read(count);
-    closeReadChannel(rch);
-    return result;
-}
-
-function closeReadChannel(io:ReadableCharacterChannel rc) {
-    var result = rc.close();
-    if (result is error) {
-        log:printError("Error occurred while closing character stream", result);
-    }
+    return <@untainted string>fileText;
 }
 
 isolated function checkErrorRecord(Error err, int line, int column) {

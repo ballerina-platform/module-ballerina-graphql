@@ -16,57 +16,108 @@
 
 import ballerina/io;
 
-type ArgName record {
+public type ArgName record {
     string value;
     Location location;
 };
 
-type ArgValue record {
+public type ArgValue record {
     Scalar value;
     Location location;
 };
 
-type Argument record {
+public type Argument record {
     ArgName name;
     ArgValue value;
     ArgumentType kind;
 };
 
-type Field record {
+public type Field record {
     string name;
     Argument[] arguments;
     Field[] selections;
     Location location;
 };
 
-type Operation record {
+public type Operation record {
     string name;
     OperationType kind;
     Field[] selections;
     Location location;
 };
 
-type Document record {
+public type Document record {
     Operation[] operations;
 };
 
 public class PrintVisitor {
     *Visitor;
 
-    public isolated function visitDocument(DocumentNode documentNode) {
+    public isolated function visitDocument(DocumentNode documentNode) returns Document {
         io:println("Document");
+        Operation[] operations = [];
+        OperationNode[] operationNodes = documentNode.getOperations();
+        foreach OperationNode operationNode in operationNodes {
+            operations.push(self.visitOperation(operationNode));
+        }
+
+        return {
+            operations: operations
+        };
     }
 
-    public isolated function visitOperation(OperationNode operationNode) {
+    public isolated function visitOperation(OperationNode operationNode) returns Operation {
         io:println("Operation Name: " + operationNode.name);
+        Field[] selections = [];
+        FieldNode[] fieldNodes = operationNode.getSelections();
+        foreach FieldNode selection in fieldNodes {
+            selections.push(self.visitField(selection));
+        }
+
+        return {
+            name: operationNode.name,
+            kind: operationNode.kind,
+            selections: selections,
+            location: operationNode.location
+        };
     }
 
-    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) {
+    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) returns Field {
         io:println("\tField Name: " + fieldNode.name);
+        Argument[] arguments = [];
+        ArgumentNode[] argumensNodes = fieldNode.getArguments();
+        foreach ArgumentNode argumentNode in argumensNodes {
+            arguments.push(<Argument>self.visitArgument(argumentNode));
+        }
+
+        Field[] fields = [];
+        FieldNode[] fieldNodes = fieldNode.getSelections();
+        foreach FieldNode selection in fieldNodes {
+            fields.push(self.visitField(selection));
+        }
+
+        return {
+            name: fieldNode.name,
+            arguments: arguments,
+            selections: fields,
+            location: fieldNode.location
+        };
     }
 
-    public isolated function visitArgument(ArgumentNode argumentNode) {
-        io:println("\t\tArgument Name: " + argumentNode.name.value + " | Argument Value: " + argumentNode.value.value
-        .toString());
+    public isolated function visitArgument(ArgumentNode argumentNode) returns Argument {
+        ArgName name = {
+            value: argumentNode.name.value,
+            location: argumentNode.name.location
+        };
+        ArgValue value = {
+            value: argumentNode.value.value,
+            location: argumentNode.value.location
+        };
+
+        return {
+            name: name,
+            value: value,
+            kind: argumentNode.kind
+        };
     }
 }

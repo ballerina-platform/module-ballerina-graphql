@@ -24,38 +24,8 @@ class Parser {
     }
 
     public isolated function parse() returns DocumentNode|ParsingError {
-        check self.blockAnalysis();
         check self.populateDocument();
         return self.document;
-    }
-
-    public isolated function blockAnalysis() returns ParsingError? {
-        int braceCount = 0;
-        int parenthesesCount = 0;
-        while (self.lexer.hasNext()) {
-            Token token = check self.lexer.getNextSpecialCharaterToken();
-            if (token.kind == T_EOF) {
-                break;
-            }
-            TokenType tokenType = token.kind;
-            if (tokenType == T_OPEN_BRACE) {
-                braceCount += 1;
-            } else if (tokenType == T_CLOSE_BRACE) {
-                braceCount -= 1;
-            } else if (tokenType == T_OPEN_PARENTHESES) {
-                parenthesesCount += 1;
-            } else if (tokenType == T_CLOSE_PARENTHESES) {
-                parenthesesCount -= 1;
-            }
-            if (braceCount < 0 || parenthesesCount < 0) {
-                return getUnexpectedTokenError(token);
-            }
-        }
-        if (braceCount > 0 || parenthesesCount > 0) {
-            Token token = check self.lexer.getNextSpecialCharaterToken();
-            return getExpectedNameError(token);
-        }
-        self.lexer.reset();
     }
 
     isolated function populateDocument() returns ParsingError? {
@@ -66,7 +36,7 @@ class Parser {
             check self.parseOperation(token);
         } else if (tokenType == T_TEXT) {
             OperationType operationType = check getOperationType(token);
-            token = check self.lexer.nextLexicalToken();
+            token = check self.readNextNonSeparatorToken();
             tokenType = token.kind;
             if (tokenType == T_OPEN_BRACE) {
                 check self.parseOperation(token, operationType);
@@ -88,34 +58,58 @@ class Parser {
 
     isolated function parseOperationWithType(Token firstToken, OperationType operationType) returns ParsingError? {
         Token token = firstToken;
-        while (token.kind != T_EOF) {
+        while (token.kind != T_CLOSE_BRACE) {
             string operationName = <string>token.value;
             Location location = token.location.clone();
-            token = check self.lexer.nextLexicalToken();
+            token = check self.readNextNonSeparatorToken();
             TokenType tokenType = token.kind;
             if (tokenType == T_OPEN_BRACE) {
                 OperationNode operation = check self.createOperationRecord(operationName, operationType, location);
                 self.addOperationToDocument(operation);
-                Token next = check self.lexer.peekLexical();
+                Token next = check self.peekNextNonSeparatorToken();
                 if (next.kind != T_EOF) {
                     check self.populateDocument();
                 }
             } else {
                 return getExpectedCharError(token, OPEN_BRACE);
             }
-            token = check self.lexer.nextLexicalToken();
+            token = check self.readNextNonSeparatorToken();
         }
     }
 
     isolated function createOperationRecord(string operationName, OperationType kind, Location location)
     returns OperationNode|ParsingError {
         OperationNode operation = new(operationName, kind, location);
-        check getFieldNode(self.lexer, operation);
+        check getFieldNode(self, operation);
         return operation;
     }
 
     isolated function addOperationToDocument(OperationNode operation) {
         self.document.addOperation(operation);
+    }
+
+    isolated function readNextNonSeparatorToken() returns Token|ParsingError {
+        Token token = check self.lexer.read();
+        if (token.kind is SeparatorType) {
+            return self.readNextNonSeparatorToken();
+        }
+        return token;
+    }
+
+    isolated function peekNextNonSeparatorToken() returns Token|ParsingError {
+        int i = 1;
+        Token token = check self.lexer.peek(i);
+        while (true) {
+            if (token.kind is SeparatorType) {
+
+            } else {
+                break;
+            }
+            i += 1;
+            token = check self.lexer.peek(i);
+        }
+
+        return token;
     }
 }
 
@@ -127,22 +121,22 @@ isolated function getOperationType(Token token) returns OperationType|ParsingErr
     return getUnexpectedTokenError(token);
 }
 
-isolated function getFieldNode(Lexer lexer, ParentType parent) returns ParsingError? {
-    Token token = check lexer.nextLexicalToken();
+isolated function getFieldNode(Parser parser, ParentType parent) returns ParsingError? {
+    Token token = check parser.readNextNonSeparatorToken();
     while (token.kind != T_CLOSE_BRACE) {
         string name = check getFieldName(token);
         Location location = token.location;
         FieldNode fieldNode = new (name, location);
 
-        token = check lexer.nextLexicalToken();
+        token = check parser.readNextNonSeparatorToken();
 
         if (token.kind != T_TEXT) {
             if (token.kind == T_OPEN_PARENTHESES) {
-                check getArgumentNodeForField(lexer, fieldNode);
-                token = check lexer.nextLexicalToken();
+                check getArgumentNodeForField(parser, fieldNode);
+                token = check parser.readNextNonSeparatorToken();
             }
             if (token.kind == T_OPEN_BRACE) {
-                check getFieldNode(lexer, fieldNode);
+                check getFieldNode(parser, fieldNode);
             }
         }
 
@@ -151,27 +145,27 @@ isolated function getFieldNode(Lexer lexer, ParentType parent) returns ParsingEr
         if (token.kind == T_CLOSE_BRACE) {
             break;
         }
-        token = check lexer.nextLexicalToken();
+        token = check parser.readNextNonSeparatorToken();
     }
 }
 
-isolated function getArgumentNodeForField(Lexer lexer, FieldNode fieldNode) returns ParsingError? {
-    Token token = check lexer.nextLexicalToken();
+isolated function getArgumentNodeForField(Parser parser, FieldNode fieldNode) returns ParsingError? {
+    Token token = check parser.readNextNonSeparatorToken();
     while (token.kind != T_CLOSE_PARENTHESES) {
         ArgumentName argumentName = check getArgumentName(token);
 
-        token = check lexer.nextLexicalToken();
+        token = check parser.readNextNonSeparatorToken();
         if (token.kind != T_COLON) {
             return getExpectedCharError(token, COLON);
         }
 
-        token = check lexer.nextLexicalToken();
+        token = check parser.readNextNonSeparatorToken();
         ArgumentValue argumentValue = check getArgumentValue(token);
         ArgumentNode argument = new(argumentName, argumentValue, <ArgumentType>token.kind);
         fieldNode.addArgument(argument);
-        token = check lexer.nextLexicalToken();
+        token = check parser.readNextNonSeparatorToken();
         if (token.kind == T_COMMA) {
-            token = check lexer.nextLexicalToken();
+            token = check parser.readNextNonSeparatorToken();
             continue;
         }
     }

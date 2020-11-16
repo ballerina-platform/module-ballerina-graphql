@@ -23,7 +23,7 @@ public class DocumentNode {
     }
 
     public isolated function accept(Visitor v) {
-        v.visitDocument(self);
+        var result = v.visitDocument(self);
     }
 
     public isolated function getOperations() returns OperationNode[] {
