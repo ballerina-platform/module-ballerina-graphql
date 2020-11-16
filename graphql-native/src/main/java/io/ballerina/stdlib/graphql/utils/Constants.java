@@ -19,10 +19,11 @@
 package io.ballerina.stdlib.graphql.utils;
 
 import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.StringUtils;
+import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
-import static io.ballerina.runtime.util.BLangConstants.BALLERINA_BUILTIN_PKG_PREFIX;
+import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUILTIN_PKG_PREFIX;
+
 /**
  * Constants used in Ballerina GraphQL native library.
  */
