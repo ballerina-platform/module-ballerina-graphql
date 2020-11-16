@@ -28,6 +28,6 @@ public class ArgumentNode {
     }
 
     public isolated function accept(Visitor v) {
-        v.visitArgument(self);
+        var result = v.visitArgument(self);
     }
 }

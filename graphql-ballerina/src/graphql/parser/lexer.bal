@@ -39,20 +39,6 @@ class Lexer {
         self.buffer = [];
     }
 
-    isolated function peekLexical() returns Token|ParsingError {
-        Token? token = ();
-        int i = 1;
-        while (true) {
-            Token nextToken = check self.peek(i);
-            if (nextToken.kind is LexicalType) {
-                token = nextToken;
-                break;
-            }
-            i += 1;
-        }
-        return <Token>token;
-    }
-
     public isolated function peek(int n = 1) returns Token|ParsingError {
         int index = n - 1;
         int difference = n - self.buffer.length();
@@ -70,18 +56,6 @@ class Lexer {
             return true;
         }
         return self.inProgress;
-    }
-
-    isolated function nextLexicalToken() returns Token|ParsingError {
-        Token? token = ();
-        while (true) {
-            Token nextToken = check self.read();
-            if (nextToken.kind is LexicalType) {
-                token = nextToken;
-                break;
-            }
-        }
-        return <Token>token;
     }
 
     public isolated function read() returns Token|ParsingError {

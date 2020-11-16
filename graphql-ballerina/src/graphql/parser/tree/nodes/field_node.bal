@@ -28,7 +28,7 @@ public class FieldNode {
     }
 
     public isolated function accept(Visitor v) {
-        v.visitField(self);
+        var result = v.visitField(self);
     }
 
     public isolated function addArgument(ArgumentNode argument) {

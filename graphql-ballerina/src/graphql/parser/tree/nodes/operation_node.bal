@@ -28,7 +28,7 @@ public class OperationNode {
     }
 
     public isolated function accept(Visitor v) {
-        v.visitOperation(self);
+        var result = v.visitOperation(self);
     }
 
     public isolated function addSelection(FieldNode selection) {
