@@ -21,14 +21,14 @@ class Lexer {
     private string document;
     private boolean inProgress;
     private Token[] buffer;
-    private Location location;
+    private Location currentLocation;
 
     public isolated function init(string document) {
         self.charReader = new(document);
         self.document = document;
         self.inProgress = true;
         self.buffer = [];
-        self.location = {
+        self.currentLocation = {
             line: 1,
             column: 1
         };
@@ -55,14 +55,12 @@ class Lexer {
 
     public isolated function peek(int n = 1) returns Token|ParsingError {
         int index = n - 1;
-        if (self.buffer.length() < n) {
-            int difference = n - self.buffer.length();
-            int i = 0;
-            while (i <= difference) {
-                Token token = check self.readNextToken();
-                self.pushToBuffer(token);
-                i += 1;
-            }
+        int difference = n - self.buffer.length();
+        int i = 0;
+        while (i <= difference) {
+            Token token = check self.readNextToken();
+            self.pushToBuffer(token);
+            i += 1;
         }
         return self.buffer[index];
     }
@@ -94,51 +92,64 @@ class Lexer {
     }
 
     isolated function readNextToken() returns Token|ParsingError {
-        Char char = self.charReader.read();
-        TokenType tokenType = getTokenType(char);
-        if (tokenType == T_EOF) {
+        string char = self.charReader.peek();
+        Location location = self.currentLocation.clone();
+        if (char == EOF) {
             self.inProgress = false;
-            return getTokenFromChar(char);
-        } else if (tokenType == T_STRING) {
-            return self.readStringLiteral(char.location);
-        } else if (tokenType == T_INT) {
-            return self.readNumericLiteral(char.location, char.value);
-        } else if (tokenType is TerminalCharacter) {
-            return getTokenFromChar(char);
-        } else if (tokenType == T_COMMENT) {
-            return self.readCommentToken(char.location);
-        } else if (tokenType is SpecialCharacter) {
-            return getTokenFromChar(char);
+            return self.getTokenFromChar(char);
+        } else if (char == DOUBLE_QUOTE) {
+            return self.readStringLiteral();
+        } else if (char == DASH || char is Digit) {
+            return self.readNumericLiteral(char);
+        } else if (char is Separator || char is SpecialCharacter) {
+            // TODO: Check this functions correctly when OR is present
+            return self.readSpecialCharacterToken();
+        } else if (char == HASH) {
+            return self.readCommentToken();
         } else {
             return self.readIdentifierToken(char);
         }
     }
 
+    isolated function readSeparatorToken() returns Token {
+        Location location = self.currentLocation.clone();
+        string char = self.readNextChar();
+        TokenType kind = getTokenType(char);
+        return getToken(char, kind, location);
+    }
+
+    isolated function readSpecialCharacterToken() returns Token {
+        Location location = self.currentLocation.clone();
+        string char = self.readNextChar();
+        TokenType kind = getTokenType(char);
+        return getToken(char, kind, location);
+    }
+
     isolated function getNextSpecialCharaterToken() returns Token|ParsingError {
         Token token = check self.read();
-        if (token.kind is SpecialCharacter) {
+        if (token.kind is SpecialCharacterType) {
             return self.getNextSpecialCharaterToken();
         } else {
             return token;
         }
     }
 
-    isolated function readStringLiteral(Location location) returns Token|SyntaxError {
+    isolated function readStringLiteral() returns Token|SyntaxError {
         string previousChar = "";
         string word = "";
-        while (!self.charReader.isEof()) {
-            Char charToken = self.charReader.read();
-            string value = charToken.value;
-            if (value is EOF) {
-                return getUnexpectedTokenError(getTokenFromChar(charToken));
-            }
-            if (value is LineTerminator) {
+        Location location = self.currentLocation.clone();
+        _ = self.readNextChar(); // Ignore first double quote character
+        while (true) {
+            string value = self.readNextChar();
+            if (value == EOF) {
+                return getUnexpectedTokenError(self.getTokenFromChar(value));
+            } else if (value is LineTerminator) {
                 string message = "Syntax Error: Unterminated string.";
                 ErrorRecord errorRecord = {
-                    locations: [location.clone()]
+                    locations: [location]
                 };
                 return UnterminatedStringError(message, errorRecord = errorRecord);
-            } else if (value is DOUBLE_QUOTE && previousChar != BACK_SLASH) {
+            } else if (value == DOUBLE_QUOTE && previousChar != BACK_SLASH) {
                 break;
             } else {
                 word += value;
@@ -148,29 +159,25 @@ class Lexer {
         return getToken(word, T_STRING, location);
     }
 
-    isolated function readNumericLiteral(Location location, string fisrtChar) returns Token|ParsingError {
-        string numeral = fisrtChar;
+    isolated function readNumericLiteral(string fisrtChar) returns Token|ParsingError {
         boolean isFloat = false;
+        Location location = self.currentLocation.clone();
+        string numeral = self.readNextChar();
         while (!self.charReader.isEof()) {
-            Char char = self.charReader.peek();
-            TokenType tokenType = getTokenType(char);
-            string value = char.value;
-            if (tokenType is TerminalCharacter) {
-                break;
-            } else if (tokenType is SpecialCharacter) {
-                break;
-            } else if (value == DOT) {
-                char = self.charReader.read();
+            string value = self.charReader.peek();
+            if (value is Digit) {
+                value = self.readNextChar();
+                numeral += value.toString();
+            } else if (value == DOT && !isFloat) {
+                value = self.readNextChar();
                 numeral += value;
                 isFloat = true;
-            } else if (value is Numeral) {
-                char = self.charReader.read();
-                numeral += value.toString();
+            } else if (value is Separator || value is SpecialCharacter) {
+                break;
             } else {
-                char = self.charReader.read();
                 string message = "Syntax Error: Invalid number, expected digit but got: \"" + value + "\".";
                 ErrorRecord errorRecord = {
-                    locations: [char.location.clone()]
+                    locations: [self.currentLocation.clone()]
                 };
                 return InvalidTokenError(message, errorRecord = errorRecord);
             }
@@ -180,36 +187,36 @@ class Lexer {
         return getToken(number, kind, location);
     }
 
-    isolated function readCommentToken(Location location) returns Token|ParsingError {
+    isolated function readCommentToken() returns Token|ParsingError {
         string word = HASH;
+        Location location = self.currentLocation.clone();
         while (!self.charReader.isEof()) {
-            Char char = self.charReader.peek();
-            TokenType tokenType = getTokenType(char);
-            if (char.value is LineTerminator) {
+            string char = self.readNextChar();
+            if (char is LineTerminator) {
                 break;
             } else {
-                char = self.charReader.read();
-                word += char.value;
+                char = self.readNextChar();
+                word += char;
             }
         }
         return getToken(word, T_COMMENT, location);
     }
 
-    isolated function readIdentifierToken(Char firstChar) returns Token|ParsingError {
-        check validateChar(firstChar);
-        Location location = firstChar.location;
-        string word = firstChar.value;
+    isolated function readIdentifierToken(string firstChar) returns Token|ParsingError {
+        check validateFirstChar(firstChar, self.currentLocation);
+        Location location = self.currentLocation.clone();
+        string word = self.readNextChar();
         while (!self.charReader.isEof()) {
-            Char char = self.charReader.peek();
-            TokenType tokenType = getTokenType(char);
-            if (tokenType is SpecialCharacter) {
+            string char = self.charReader.peek();
+            if (char is SpecialCharacter) {
                 break;
-            } else if (tokenType is TerminalCharacter) {
+            } else if (char is Separator) {
                 break;
             } else {
-                char = self.charReader.read();
-                check validateChar(char);
-                word += char.value;
+                Location charLocation = self.currentLocation.clone();
+                char = self.readNextChar();
+                check validateChar(char, charLocation);
+                word += char;
             }
         }
         TokenType kind = getWordTokenType(word);
@@ -227,21 +234,44 @@ class Lexer {
     isolated function pushToBuffer(Token token) {
         self.buffer.push(token);
     }
+
+    isolated function updateLocation(string char) {
+        if (char is LineTerminator) {
+            self.currentLocation.line += 1;
+            self.currentLocation.column = 1;
+        } else {
+            self.currentLocation.column += 1;
+        }
+    }
+
+    isolated function readNextChar() returns string {
+         string char = self.charReader.read();
+         self.updateLocation(char);
+         return char;
+    }
+
+    isolated function getTokenFromChar(string value) returns Token {
+        TokenType tokenType = getTokenType(value);
+        return {
+            kind: tokenType,
+            value: value,
+            location: self.currentLocation.clone()
+        };
+    }
 }
 
-isolated function getTokenType(Char char) returns TokenType {
-    string value = char.value;
-    if (value is OPEN_BRACE) {
+isolated function getTokenType(string value) returns TokenType {
+    if (value == OPEN_BRACE) {
         return T_OPEN_BRACE;
-    } else if (value is CLOSE_BRACE) {
+    } else if (value == CLOSE_BRACE) {
         return T_CLOSE_BRACE;
-    } else if (value is OPEN_PARENTHESES) {
+    } else if (value == OPEN_PARENTHESES) {
         return T_OPEN_PARENTHESES;
-    } else if (value is CLOSE_PARENTHESES) {
+    } else if (value == CLOSE_PARENTHESES) {
         return T_CLOSE_PARENTHESES;
-    } else if (value is COLON) {
+    } else if (value == COLON) {
         return T_COLON;
-    } else if (value is COMMA) {
+    } else if (value == COMMA) {
         return T_COMMA;
     } else if (value is WhiteSpace) {
         return T_WHITE_SPACE;
@@ -249,11 +279,11 @@ isolated function getTokenType(Char char) returns TokenType {
         return T_EOF;
     } else if (value is LineTerminator) {
         return T_NEW_LINE;
-    } else if (value is DOUBLE_QUOTE) {
+    } else if (value == DOUBLE_QUOTE) {
         return T_STRING;
-    } else if (value is Numeral) {
+    } else if (value is Digit) {
         return T_INT;
-    } else if (value is HASH) {
+    } else if (value == HASH) {
         return T_COMMENT;
     }
     return T_TEXT;
@@ -264,15 +294,6 @@ isolated function getToken(Scalar value, TokenType kind, Location location) retu
         kind: kind,
         value: value,
         location: location
-    };
-}
-
-isolated function getTokenFromChar(Char charToken) returns Token {
-    TokenType tokenType = getTokenType(charToken);
-    return {
-        kind: tokenType,
-        value: charToken.value,
-        location: charToken.location
     };
 }
 
@@ -301,21 +322,21 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
     }
 }
 
-isolated function validateChar(Char char) returns InvalidTokenError? {
-    if (!stringutils:matches(char.value, VALID_CHAR_REGEX)) {
-        string message = "Syntax Error: Cannot parse the unexpected character \"" + char.value + "\".";
+isolated function validateChar(string char, Location location) returns InvalidTokenError? {
+    if (!stringutils:matches(char, VALID_CHAR_REGEX)) {
+        string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
         ErrorRecord errorRecord = {
-            locations: [char.location]
+            locations: [location.clone()]
         };
         return InvalidTokenError(message, errorRecord = errorRecord);
     }
 }
 
-isolated function validateFirstChar(Char char) returns InvalidTokenError? {
-    if (!stringutils:matches(char.value, VALID_FIRST_CHAR_REGEX)) {
-        string message = "Syntax Error: Cannot parse the unexpected character \"" + char.value + "\".";
+isolated function validateFirstChar(string char, Location location) returns InvalidTokenError? {
+    if (!stringutils:matches(char, VALID_FIRST_CHAR_REGEX)) {
+        string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
         ErrorRecord errorRecord = {
-            locations: [char.location]
+            locations: [location.clone()]
         };
         return InvalidTokenError(message, errorRecord = errorRecord);
     }

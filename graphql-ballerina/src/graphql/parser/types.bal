@@ -14,37 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-enum Numeral {
-    ZERO = "0",
-    ONE = "1",
-    TWO = "2",
-    THREE = "3",
-    FOUR = "4",
-    FIVE = "5",
-    SIX = "6",
-    SEVEN = "7",
-    EIGHT = "8",
-    NINE = "9",
-    NEGATIVE = "-"
-}
-
-enum WhiteSpace {
-    SPACE = " ",
-    TAB = "\t"
-}
-
-enum LineTerminator {
-    NEW_LINE = "\n",
-    LINE_RETURN = "\r",
-    EOF = ""
-}
-
 type Terminal WhiteSpace|LineTerminator;
 type Boolean TRUE|FALSE;
 
-type TerminalCharacter T_EOF|T_WHITE_SPACE|T_COMMA|T_NEW_LINE;
-type SpecialCharacter T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMENT;
-type TokenType TerminalCharacter|SpecialCharacter|T_TEXT|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT;
+type SeparatorType T_EOF|T_WHITE_SPACE|T_COMMA|T_NEW_LINE;
+type SpecialCharacterType T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMENT;
+
+type Separator WhiteSpace|LineTerminator|COMMA;
+type SpecialCharacter EXCLAMATION|DOLLAR|OPEN_PARENTHESES|CLOSE_PARENTHESES|ELLIPSIS|COLON|EQUAL|AT|OPEN_BRACKET|
+                      CLOSE_BRACKET|OPEN_BRACE|PIPE|CLOSE_BRACE;
+
+type TokenType SeparatorType|SpecialCharacterType|T_TEXT|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT;
 
 type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_TEXT|T_STRING|
                  T_INT|T_FLOAT|T_BOOLEAN;

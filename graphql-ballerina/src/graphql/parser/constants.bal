@@ -18,6 +18,7 @@
 const DOUBLE_QUOTE = "\"";
 const BACK_SLASH = "\\";
 const DOT = ".";
+const DASH = "-";
 
 const HASH = "#";
 
@@ -37,6 +38,30 @@ const CLOSE_BRACKET = "]";
 const OPEN_BRACE = "{";
 const PIPE = "|";
 const CLOSE_BRACE = "}";
+
+enum Digit {
+    ZERO = "0",
+    ONE = "1",
+    TWO = "2",
+    THREE = "3",
+    FOUR = "4",
+    FIVE = "5",
+    SIX = "6",
+    SEVEN = "7",
+    EIGHT = "8",
+    NINE = "9"
+}
+
+enum WhiteSpace {
+    SPACE = " ",
+    TAB = "\t"
+}
+
+enum LineTerminator {
+    NEW_LINE = "\n",
+    LINE_RETURN = "\r",
+    EOF = ""
+}
 
 
 const TRUE = "true";

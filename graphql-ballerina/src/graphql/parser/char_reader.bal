@@ -17,16 +17,11 @@
 class CharReader {
     private CharIterator iterator;
     private boolean eof;
-    private Location currentLocation;
-    private Char[] buffer;
+    private string[] buffer;
 
     public isolated function init(string document) {
         self.iterator = document.iterator();
         self.eof = false;
-        self.currentLocation = {
-            line: 1,
-            column: 1
-        };
         self.buffer = [];
     }
 
@@ -34,48 +29,25 @@ class CharReader {
         return self.eof;
     }
 
-    public isolated function peek() returns Char {
+    public isolated function peek() returns string {
         if (self.buffer.length() > 0) {
             return self.buffer[0];
         }
-        Char char = self.read();
+        string char = self.read();
         self.buffer.push(char);
         return char;
     }
 
-    public isolated function read() returns Char {
+    public isolated function read() returns string {
         if (self.buffer.length() > 0) {
             return self.buffer.shift();
         }
         CharIteratorNode? next = self.iterator.next();
         if (next is ()) {
-            Char eofToken = {
-                value: EOF,
-                location: self.currentLocation
-            };
             self.eof = true;
-            return eofToken;
+            return EOF;
         }
         CharIteratorNode nextNode = <CharIteratorNode>next;
-        string nextChar = nextNode.value;
-        Char token = self.getChar(nextChar);
-        self.updateLocation(nextChar);
-        return token;
-    }
-
-    isolated function updateLocation(string char) {
-        if (char is LineTerminator) {
-            self.currentLocation.column = 1;
-            self.currentLocation.line += 1;
-        } else {
-            self.currentLocation.column += 1;
-        }
-    }
-
-    isolated function getChar(string value) returns Char {
-        return {
-            value: value,
-            location: self.currentLocation.clone()
-        };
+        return nextNode.value;
     }
 }
