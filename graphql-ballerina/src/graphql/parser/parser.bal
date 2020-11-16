@@ -59,7 +59,7 @@ class Parser {
     }
 
     isolated function populateDocument() returns ParsingError? {
-        Token token = check self.lexer.nextLexicalToken();
+        Token token = check self.lexer.read();
         TokenType tokenType = token.kind;
 
         if (tokenType == T_OPEN_BRACE) {

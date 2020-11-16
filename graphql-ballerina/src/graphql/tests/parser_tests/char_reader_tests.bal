@@ -22,66 +22,29 @@ import ballerina/test;
 isolated function testCharReaderForSimpleString() {
     string s = "Hello";
     CharReader reader = new(s);
-    Char? c = reader.read();
-    test:assertTrue(c is Char);
-    Char expectedToken = {
-        value: "H",
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    string c = reader.read();
+    string expectedChar = "H";
+    test:assertEquals(c, expectedChar);
 
     c = reader.read();
-    expectedToken = {
-        value: "e",
-        location: {
-            line: 1,
-            column: 2
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    expectedChar = "e";
+    test:assertEquals(c, expectedChar);
 
     c = reader.read();
-    expectedToken = {
-        value: "l",
-        location: {
-            line: 1,
-            column: 3
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    expectedChar = "l";
+    test:assertEquals(c, expectedChar);
 
     c = reader.read();
-    expectedToken = {
-        value: "l",
-        location: {
-            line: 1,
-            column: 4
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    expectedChar = "l";
+    test:assertEquals(c, expectedChar);
 
     c = reader.read();
-    expectedToken = {
-        value: "o",
-        location: {
-            line: 1,
-            column: 5
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    expectedChar = "o";
+    test:assertEquals(c, expectedChar);
 
     c = reader.read();
-    expectedToken = {
-        value: "",
-        location: {
-            line: 1,
-            column: 6
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    expectedChar = EOF;
+    test:assertEquals(c, expectedChar);
 }
 
 @test:Config {
@@ -90,16 +53,9 @@ isolated function testCharReaderForSimpleString() {
 isolated function testCharReaderForEof() {
     string s = "";
     CharReader reader = new(s);
-    Char? c = reader.read();
-    test:assertTrue(c is Char);
-    Char expectedToken = {
-        value: EOF,
-        location: {
-            line: 1,
-            column: 1
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    string c = reader.read();
+    string expectedChar = EOF;
+    test:assertEquals(c, expectedChar);
 }
 
 @test:Config {
@@ -109,7 +65,7 @@ isolated function testCharReaderForAfterEof() {
     string s = "";
     CharReader reader = new(s);
     test:assertFalse(reader.isEof());
-    Char? c = reader.read();
+    string c = reader.read();
     test:assertTrue(reader.isEof());
 }
 
@@ -119,16 +75,8 @@ isolated function testCharReaderForAfterEof() {
 isolated function testCharReaderForNewLine() {
     string s = "\n\n\n";
     CharReader reader = new(s);
-    Char? c = reader.read();
+    string c = reader.read();
     c = reader.read();
-    c = reader.read();
-    test:assertTrue(c is Char);
-    Char expectedToken = {
-        value: "\n",
-        location: {
-            line: 3,
-            column: 1
-        }
-    };
-    test:assertEquals(c, expectedToken);
+    string expectedChar = "\n";
+    test:assertEquals(c, expectedChar);
 }
