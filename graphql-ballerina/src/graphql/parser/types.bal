@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-type Terminal WhiteSpace|LineTerminator;
 type Boolean TRUE|FALSE;
 
 type SeparatorType T_EOF|T_WHITE_SPACE|T_COMMA|T_NEW_LINE;
