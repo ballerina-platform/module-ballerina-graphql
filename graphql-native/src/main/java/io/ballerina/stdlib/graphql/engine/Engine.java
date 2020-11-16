@@ -18,20 +18,19 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
-import io.ballerina.runtime.api.StringUtils;
-import io.ballerina.runtime.api.ValueCreator;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.AttachedFunctionType;
+import io.ballerina.runtime.api.types.BooleanType;
+import io.ballerina.runtime.api.types.FloatType;
+import io.ballerina.runtime.api.types.IntegerType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.types.BBooleanType;
-import io.ballerina.runtime.types.BFloatType;
-import io.ballerina.runtime.types.BIntegerType;
-import io.ballerina.runtime.values.ArrayValue;
 import io.ballerina.stdlib.graphql.runtime.wrapper.Input;
 import io.ballerina.stdlib.graphql.runtime.wrapper.Resource;
 import io.ballerina.stdlib.graphql.runtime.wrapper.Wrapper;
@@ -92,7 +91,7 @@ public class Engine {
         for (int i = 0; i < attachedFunctions.length; i++) {
             result[i] = attachedFunctions[i].getName();
         }
-        return ValueCreator.createArrayValue(StringUtils.fromStringArray(result));
+        return StringUtils.fromStringArray(result);
     }
 
     /**
@@ -165,7 +164,7 @@ public class Engine {
         } else if (resourceType instanceof ServiceType) {
             validateSelectionFromService(resource, field, errors, type);
         } else {
-            ArrayValue selections = (ArrayValue) field.get(FIELD_SELECTIONS);
+            ArrayType selections = (ArrayType) field.get(FIELD_SELECTIONS);
             if (Objects.nonNull(selections)) {
                 BString fieldName = (BString) field.get(FIELD_NAME);
                 String fieldType = getResourceReturnTypeName(resourceType);
@@ -239,11 +238,11 @@ public class Engine {
 
     private static String getResourceReturnTypeName(Type resourceType) {
         // Mock
-        if (resourceType instanceof BIntegerType) {
+        if (resourceType instanceof IntegerType) {
             return "Int";
-        } else if (resourceType instanceof BBooleanType) {
+        } else if (resourceType instanceof BooleanType) {
             return "Boolean";
-        } else if (resourceType instanceof BFloatType) {
+        } else if (resourceType instanceof FloatType) {
             return "Float";
         }
         return "String";

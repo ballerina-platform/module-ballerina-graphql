@@ -18,8 +18,8 @@
 
 package io.ballerina.stdlib.graphql.runtime.wrapper;
 
-import io.ballerina.runtime.api.StringUtils;
 import io.ballerina.runtime.api.types.AttachedFunctionType;
+import io.ballerina.runtime.api.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
