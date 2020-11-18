@@ -15,7 +15,7 @@
 // under the License.
 
 public class ArgumentNode {
-    *AbstractNode;
+    *Node;
 
     public ArgumentName name;
     public ArgumentValue value;

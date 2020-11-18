@@ -12,7 +12,7 @@
 // under the License.
 
 public class OperationNode {
-    *AbstractNode;
+    *Node;
     *ParentType;
 
     public string name;
