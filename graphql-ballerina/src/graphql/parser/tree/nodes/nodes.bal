@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type AbstractNode object {
+public type Node object {
     public isolated function accept(Visitor v);
 };
 
