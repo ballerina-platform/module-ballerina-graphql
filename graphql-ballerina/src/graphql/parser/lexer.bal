@@ -99,15 +99,6 @@ class Lexer {
         return getToken(char, kind, location);
     }
 
-    isolated function getNextSpecialCharaterToken() returns Token|ParsingError {
-        Token token = check self.read();
-        if (token.kind is SpecialCharacterType) {
-            return self.getNextSpecialCharaterToken();
-        } else {
-            return token;
-        }
-    }
-
     isolated function readStringLiteral() returns Token|SyntaxError {
         string previousChar = "";
         string word = "";
