@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/stringutils;
-
 class Lexer {
     private CharReader charReader;
     private string document;
@@ -286,7 +284,7 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
 }
 
 isolated function validateChar(string char, Location location) returns InvalidTokenError? {
-    if (!stringutils:matches(char, VALID_CHAR_REGEX)) {
+    if (!isValidChar(char)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
         ErrorRecord errorRecord = {
             locations: [location.clone()]
@@ -296,7 +294,7 @@ isolated function validateChar(string char, Location location) returns InvalidTo
 }
 
 isolated function validateFirstChar(string char, Location location) returns InvalidTokenError? {
-    if (!stringutils:matches(char, VALID_FIRST_CHAR_REGEX)) {
+    if (!isValidFirstChar(char)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
         ErrorRecord errorRecord = {
             locations: [location.clone()]

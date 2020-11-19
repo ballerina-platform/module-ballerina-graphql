@@ -83,6 +83,3 @@ const T_COLON = 11;
 const T_COMMA = 12;
 const T_NEW_LINE = 13;
 const T_WHITE_SPACE = 14;
-
-const VALID_CHAR_REGEX = "^[_0-9a-zA-Z]$";
-const VALID_FIRST_CHAR_REGEX = "^[_a-zA-Z]$";
