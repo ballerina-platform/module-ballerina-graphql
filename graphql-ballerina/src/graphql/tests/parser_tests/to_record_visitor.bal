@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
-
 public type ArgName record {
     string value;
     Location location;
@@ -41,7 +39,7 @@ public type Field record {
 
 public type Operation record {
     string name;
-    OperationType kind;
+    RootOperationType kind;
     Field[] selections;
     Location location;
 };
@@ -50,11 +48,10 @@ public type Document record {
     Operation[] operations;
 };
 
-public class PrintVisitor {
+public class RecordCreatorVisitor {
     *Visitor;
 
     public isolated function visitDocument(DocumentNode documentNode) returns Document {
-        io:println("Document");
         Operation[] operations = [];
         OperationNode[] operationNodes = documentNode.getOperations();
         foreach OperationNode operationNode in operationNodes {
@@ -67,7 +64,6 @@ public class PrintVisitor {
     }
 
     public isolated function visitOperation(OperationNode operationNode) returns Operation {
-        io:println("Operation Name: " + operationNode.name);
         Field[] selections = [];
         FieldNode[] fieldNodes = operationNode.getSelections();
         foreach FieldNode selection in fieldNodes {
@@ -83,7 +79,6 @@ public class PrintVisitor {
     }
 
     public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) returns Field {
-        io:println("\tField Name: " + fieldNode.name);
         Argument[] arguments = [];
         ArgumentNode[] argumensNodes = fieldNode.getArguments();
         foreach ArgumentNode argumentNode in argumensNodes {

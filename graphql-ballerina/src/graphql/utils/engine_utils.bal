@@ -62,7 +62,7 @@ isolated function getFieldNames(service s) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 
-//isolated function validateField(Listener 'listener, FieldNode fieldNode, OperationType kind) returns Error[]? =
+//isolated function validateField(Listener 'listener, FieldNode fieldNode, RootOperationType kind) returns Error[]? =
 //@java:Method {
 //    'class: "io.ballerina.stdlib.graphql.engine.Engine"
 //} external;

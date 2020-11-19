@@ -24,7 +24,7 @@ public type Scalar boolean|int|float|string|Id; // TODO: remove int and string f
 public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
 
 # Represents the types of operations valid for Ballerina GraphQL.
-public enum OperationType {
+public enum RootOperationType {
     QUERY = "query",
     MUTATION = "mutation",
     SUBSCRIPTION = "subscription"

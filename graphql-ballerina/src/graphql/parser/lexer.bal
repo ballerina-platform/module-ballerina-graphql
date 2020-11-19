@@ -106,9 +106,7 @@ class Lexer {
         _ = self.readNextChar(); // Ignore first double quote character
         while (true) {
             string value = self.readNextChar();
-            if (value == EOF) {
-                return getUnexpectedTokenError(self.getTokenFromChar(value));
-            } else if (value is LineTerminator) {
+            if (value is LineTerminator) {
                 string message = "Syntax Error: Unterminated string.";
                 ErrorRecord errorRecord = {
                     locations: [location]
