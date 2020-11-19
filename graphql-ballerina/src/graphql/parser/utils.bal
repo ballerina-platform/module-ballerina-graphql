@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/java;
+
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
     string message = "Syntax Error: Unexpected " + getErrorMessageTypeNameForError(token);
@@ -57,3 +59,11 @@ isolated function getErrorMessageTypeNameForError(Token token) returns string {
         return "\"" + token.value.toString() + "\".";
     }
 }
+
+isolated function isValidFirstChar(string char) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.parser.ParserUtils"
+} external;
+
+isolated function isValidChar(string char) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.parser.ParserUtils"
+} external;
