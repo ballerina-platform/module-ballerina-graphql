@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/filepath;
+import ballerina/file;
 import ballerina/io;
 import ballerina/test;
 
@@ -25,37 +25,37 @@ function getDocumentWithComments() returns string {
 
 function getDocumentWithParameters() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
-    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_WITH_PARAMTER);
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_WITH_PARAMTER);
     return readFileAndGetString(path);
 }
 
 function getDocumentWithTwoNamedOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
-    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_TWO_NAMED_OPERATIONS);
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_TWO_NAMED_OPERATIONS);
     return readFileAndGetString(path);
 }
 
 function getDocumentForResourcesWithRecord() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
-    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_QUERY_FOR_RESOURCES_WITH_RECORD);
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_QUERY_FOR_RESOURCES_WITH_RECORD);
     return readFileAndGetString(path);
 }
 
 function getDocumentWithTwoAnonymousOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
-    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);
     return readFileAndGetString(path);
 }
 
 function getShorthandNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
-    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_SHORTHAND);
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_SHORTHAND);
     return readFileAndGetString(path);
 }
 
 function getGeneralNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
-    string path = checkpanic filepath:build(documentsDirPath, DOCUMENT_GENERAL);
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_GENERAL);
     return readFileAndGetString(path);
 }
 
@@ -73,39 +73,39 @@ function getNoCloseBraceDocument() returns string {
 
 function getTextWithQuoteFile() returns string {
     string textDirPath = checkpanic getTextPath();
-    string path = checkpanic filepath:build(textDirPath, TEXT_WITH_STRING);
+    string path = checkpanic file:joinPath(textDirPath, TEXT_WITH_STRING);
     return readFileAndGetString(path);
 }
 
 function getTextWithUnterminatedStringFile() returns string {
     string textDirPath = checkpanic getTextPath();
-    string path = checkpanic filepath:build(textDirPath, TEXT_WITH_UNTERMINATED_STRING);
+    string path = checkpanic file:joinPath(textDirPath, TEXT_WITH_UNTERMINATED_STRING);
     return readFileAndGetString(path);
 }
 
 function getParsedJsonForDocumentWithParameters() returns json {
     string jsonDirPath = checkpanic getJsonPath();
-    string path = checkpanic filepath:build(jsonDirPath, JSON_WITH_PARAMETERS);
+    string path = checkpanic file:joinPath(jsonDirPath, JSON_WITH_PARAMETERS);
     return checkpanic <@untainted>readJson(path);
 }
 
-isolated function getDocumentsPath() returns string|error {
+function getDocumentsPath() returns string|error {
     string resourcePath = check getResourcePath();
-    return filepath:build(resourcePath, DIR_DOCUMENTS);
+    return file:joinPath(resourcePath, DIR_DOCUMENTS);
 }
 
-isolated function getJsonPath() returns string|error {
+function getJsonPath() returns string|error {
     string resourcePath = check getResourcePath();
-    return filepath:build(resourcePath, DIR_JSON);
+    return file:joinPath(resourcePath, DIR_JSON);
 }
 
-isolated function getTextPath() returns string|error {
+function getTextPath() returns string|error {
     string resourcePath = check getResourcePath();
-    return filepath:build(resourcePath, DIR_TEXTS);
+    return file:joinPath(resourcePath, DIR_TEXTS);
 }
 
-isolated function getResourcePath() returns string|error {
-    return filepath:build("src", "graphql", "tests", "resources");
+function getResourcePath() returns string|error {
+    return file:joinPath("src", "graphql", "tests", "resources");
 }
 
 function readJson(string path) returns json|error {
