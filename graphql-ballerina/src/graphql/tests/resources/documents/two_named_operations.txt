@@ -1,3 +1,7 @@
 query getName {
     name
 }
+
+query getBirthDate {
+    birthdate
+}
