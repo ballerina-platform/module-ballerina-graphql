@@ -16,11 +16,11 @@ public class OperationNode {
     *ParentType;
 
     public string name;
-    public OperationType kind;
+    public RootOperationType kind;
     public Location location;
     private FieldNode[] selections;
 
-    public isolated function init(string name, OperationType kind, Location location) {
+    public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
         self.kind = kind;
         self.location = location;

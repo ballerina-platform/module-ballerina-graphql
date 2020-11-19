@@ -29,59 +29,97 @@ class Parser {
     }
 
     isolated function populateDocument() returns ParsingError? {
-        Token token = check self.lexer.read();
-        TokenType tokenType = token.kind;
+        Token token = check self.peekNextNonSeparatorToken();
 
-        if (tokenType == T_OPEN_BRACE) {
-            check self.parseOperation(token);
-        } else if (tokenType == T_TEXT) {
-            OperationType operationType = check getOperationType(token);
-            token = check self.readNextNonSeparatorToken();
-            tokenType = token.kind;
-            if (tokenType == T_OPEN_BRACE) {
-                check self.parseOperation(token, operationType);
-            } else if (tokenType == T_TEXT) {
-                check self.parseOperationWithType(token, operationType);
-            } else {
-                return getUnexpectedTokenError(token);
-            }
-        } else {
-            return getUnexpectedTokenError(token);
+        while (token.kind != T_EOF) {
+            check self.parseRootOperation(token);
+            token = check self.peekNextNonSeparatorToken();
         }
     }
 
-    isolated function parseOperation(Token token, OperationType kind = QUERY) returns ParsingError? {
-        Location location = token.location.clone();
-        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, kind, location);
+    isolated function parseRootOperation(Token token) returns ParsingError? {
+        if (token.kind == T_OPEN_BRACE) {
+            return self.parseAnonymousOperation();
+        } else if (token.kind == T_TEXT) {
+            Scalar value = token.value;
+            if (value is RootOperationType) {
+                return self.parseOperationWithType(value);
+            }
+        }
+        return getUnexpectedTokenError(token);
+    }
+
+    isolated function parseAnonymousOperation() returns ParsingError? {
+        Token token = check self.peekNextNonSeparatorToken();
+        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY, token.location);
         self.addOperationToDocument(operation);
     }
 
-    isolated function parseOperationWithType(Token firstToken, OperationType operationType) returns ParsingError? {
-        Token token = firstToken;
-        while (token.kind != T_CLOSE_BRACE) {
-            string operationName = <string>token.value;
-            Location location = token.location.clone();
-            token = check self.readNextNonSeparatorToken();
-            TokenType tokenType = token.kind;
-            if (tokenType == T_OPEN_BRACE) {
-                OperationNode operation = check self.createOperationRecord(operationName, operationType, location);
-                self.addOperationToDocument(operation);
-                Token next = check self.peekNextNonSeparatorToken();
-                if (next.kind != T_EOF) {
-                    check self.populateDocument();
-                }
-            } else {
-                return getExpectedCharError(token, OPEN_BRACE);
-            }
-            token = check self.readNextNonSeparatorToken();
+    isolated function parseOperationWithType(RootOperationType operationType) returns ParsingError? {
+        Token token = check self.readNextNonSeparatorToken();
+        Location location = token.location.clone();
+        token = check self.peekNextNonSeparatorToken();
+        string operationName = check getOperationNameFromToken(self);
+
+        token = check self.peekNextNonSeparatorToken();
+        TokenType tokenType = token.kind;
+        if (tokenType == T_OPEN_BRACE) {
+            OperationNode operation = check self.createOperationRecord(operationName, operationType, location);
+            self.addOperationToDocument(operation);
+        } else {
+            return getExpectedCharError(token, OPEN_BRACE);
         }
     }
 
-    isolated function createOperationRecord(string operationName, OperationType kind, Location location)
+    isolated function createOperationRecord(string name, RootOperationType kind, Location location)
     returns OperationNode|ParsingError {
-        OperationNode operation = new(operationName, kind, location);
-        check getFieldNode(self, operation);
+        OperationNode operation = new(name, kind, location);
+        check self.addSelections(operation);
         return operation;
+    }
+
+    isolated function addSelections(ParentType parentNode) returns ParsingError? {
+        Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
+        while (token.kind != T_CLOSE_BRACE) {
+            token = check self.readNextNonSeparatorToken();
+            string name = check getStringTokenvalue(token);
+            FieldNode fieldNode = new(name, token.location);
+            token = check self.peekNextNonSeparatorToken();
+            if (token.kind == T_OPEN_PARENTHESES) {
+                check self.addArgumentsToSelection(fieldNode);
+            }
+
+            token = check self.peekNextNonSeparatorToken();
+            if (token.kind == T_OPEN_BRACE) {
+                check self.addSelections(fieldNode);
+            }
+            parentNode.addSelection(fieldNode);
+            token = check self.peekNextNonSeparatorToken();
+        }
+        // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
+        token = check self.readNextNonSeparatorToken();
+    }
+
+    isolated function addArgumentsToSelection(FieldNode fieldNode) returns ParsingError? {
+        Token token = check self.readNextNonSeparatorToken(); // Reading the open parentheses
+        while (token.kind != T_CLOSE_PARENTHESES) {
+            token = check self.readNextNonSeparatorToken();
+            ArgumentName name = check getArgumentName(token);
+
+            token = check self.readNextNonSeparatorToken();
+            if (token.kind != T_COLON) {
+                return getExpectedCharError(token, COLON);
+            }
+
+            token = check self.readNextNonSeparatorToken();
+            ArgumentValue value = check getArgumentValue(token);
+
+            ArgumentNode argument = new(name, value, <ArgumentType>token.kind);
+            fieldNode.addArgument(argument);
+            token = check self.peekNextNonSeparatorToken();
+        }
+        // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
+        token = check self.readNextNonSeparatorToken();
     }
 
     isolated function addOperationToDocument(OperationNode operation) {
@@ -90,7 +128,7 @@ class Parser {
 
     isolated function readNextNonSeparatorToken() returns Token|ParsingError {
         Token token = check self.lexer.read();
-        if (token.kind is SeparatorType) {
+        if (token.kind is IgnoreType) {
             return self.readNextNonSeparatorToken();
         }
         return token;
@@ -100,9 +138,7 @@ class Parser {
         int i = 1;
         Token token = check self.lexer.peek(i);
         while (true) {
-            if (token.kind is SeparatorType) {
-
-            } else {
+            if (token.kind is LexicalType) {
                 break;
             }
             i += 1;
@@ -113,62 +149,12 @@ class Parser {
     }
 }
 
-isolated function getOperationType(Token token) returns OperationType|ParsingError {
+isolated function getRootOperationType(Token token) returns RootOperationType|ParsingError {
     string value = <string>token.value;
-    if (value is OperationType) {
+    if (value is RootOperationType) {
         return value;
     }
     return getUnexpectedTokenError(token);
-}
-
-isolated function getFieldNode(Parser parser, ParentType parent) returns ParsingError? {
-    Token token = check parser.readNextNonSeparatorToken();
-    while (token.kind != T_CLOSE_BRACE) {
-        string name = check getFieldName(token);
-        Location location = token.location;
-        FieldNode fieldNode = new (name, location);
-
-        token = check parser.readNextNonSeparatorToken();
-
-        if (token.kind != T_TEXT) {
-            if (token.kind == T_OPEN_PARENTHESES) {
-                check getArgumentNodeForField(parser, fieldNode);
-                token = check parser.readNextNonSeparatorToken();
-            }
-            if (token.kind == T_OPEN_BRACE) {
-                check getFieldNode(parser, fieldNode);
-            }
-        }
-
-        parent.addSelection(fieldNode);
-
-        if (token.kind == T_CLOSE_BRACE) {
-            break;
-        }
-        token = check parser.readNextNonSeparatorToken();
-    }
-}
-
-isolated function getArgumentNodeForField(Parser parser, FieldNode fieldNode) returns ParsingError? {
-    Token token = check parser.readNextNonSeparatorToken();
-    while (token.kind != T_CLOSE_PARENTHESES) {
-        ArgumentName argumentName = check getArgumentName(token);
-
-        token = check parser.readNextNonSeparatorToken();
-        if (token.kind != T_COLON) {
-            return getExpectedCharError(token, COLON);
-        }
-
-        token = check parser.readNextNonSeparatorToken();
-        ArgumentValue argumentValue = check getArgumentValue(token);
-        ArgumentNode argument = new(argumentName, argumentValue, <ArgumentType>token.kind);
-        fieldNode.addArgument(argument);
-        token = check parser.readNextNonSeparatorToken();
-        if (token.kind == T_COMMA) {
-            token = check parser.readNextNonSeparatorToken();
-            continue;
-        }
-    }
 }
 
 isolated function getArgumentName(Token token) returns ArgumentName|ParsingError {
@@ -193,7 +179,19 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingErr
     }
 }
 
-isolated function getFieldName(Token token) returns string|ParsingError {
+isolated function getOperationNameFromToken(Parser parser) returns string|ParsingError {
+    Token token = check parser.peekNextNonSeparatorToken();
+    if (token.kind == T_TEXT) {
+        // If this is a named operation, we should consume name token
+        token = check parser.readNextNonSeparatorToken();
+        return <string>token.value;
+    } else if (token.kind == T_OPEN_BRACE) {
+        return ANONYMOUS_OPERATION;
+    }
+    return getUnexpectedTokenError(token);
+}
+
+isolated function getStringTokenvalue(Token token) returns string|ParsingError {
     if (token.kind == T_TEXT) {
         return <string>token.value;
     } else {

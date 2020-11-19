@@ -22,7 +22,7 @@ isolated function logAndPanicError(string message, error e) {
     panic e;
 }
 
-isolated function getOperationTypeName(OperationType operationType) returns string {
+isolated function getRootOperationTypeName(RootOperationType operationType) returns string {
     match operationType {
         MUTATION => {
             return "Mutation";
