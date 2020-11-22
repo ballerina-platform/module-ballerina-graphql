@@ -105,7 +105,7 @@ function getTextPath() returns string|error {
 }
 
 function getResourcePath() returns string|error {
-    return file:joinPath("src", "graphql", "tests", "resources");
+    return file:joinPath("tests", "resources");
 }
 
 function readJson(string path) returns json|error {
