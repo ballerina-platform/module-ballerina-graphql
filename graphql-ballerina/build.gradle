@@ -69,10 +69,9 @@ task copyStdlibs(type: Copy) {
         into("repo/balo") {
             from "${artifactExtractedPath}/balo"
         }
-//        TODO: enable once the fix is available for loading from cache
-//        into("repo/cache") {
-//            from "${artifactExtractedPath}/cache"
-//        }
+        into("repo/cache") {
+            from "${artifactExtractedPath}/cache"
+        }
     }
 }
 
@@ -202,20 +201,19 @@ task ballerinaBuild {
 
         }
         // Doc creation and packing
-//        exec {
-//            workingDir project.projectDir
-//            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-//            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-//                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc ${packageName} && exit %%ERRORLEVEL%%"
-//            } else {
-//                commandLine 'sh', '-c', "$distributionBinPath/ballerina doc ${packageName}"
-//            }
-//        }
-//        copy {
-//            from file("$project.projectDir/target/apidocs/${packageName}")
-//            into file("$project.projectDir/build/docs_parent/docs/${packageName}")
-//        }
-        ballerinaConfigFile.text = originalConfig
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina doc"
+            }
+        }
+        copy {
+            from file("$project.projectDir/target/apidocs/${packageName}")
+            into file("$project.projectDir/build/docs_parent/docs/${packageName}")
+        }
     }
 
     outputs.dir artifactCacheParent
