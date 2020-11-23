@@ -36,19 +36,32 @@ public class Engine {
         return <DocumentNode>parseResult;
     }
 
-    isolated function validate(DocumentNode document) returns ValidationError? {
+    isolated function validate(DocumentNode document) returns json[]? {
         var validationResult = self.validateDocument(document);
-        if (validationResult is ValidationError) {
-            return validationResult;
+        if (validationResult is ErrorDetail[]) {
+            json[] errors = [];
+
+            foreach ErrorDetail err in validationResult {
+                var errorDetailJson = err.cloneWithType(json);
+                if (errorDetailJson is map<json>) {
+                    errors.push(errorDetailJson);
+                }
+            }
+            return errors;
         }
     }
 
-    isolated function validateDocument(DocumentNode document) returns ValidationError? {
+    isolated function validateDocument(DocumentNode document) returns ErrorDetail[]? {
         ValidatorVisitor validator = new;
         validator.validate(document);
+        ErrorDetail[] errors = validator.getErrors();
+        if (errors.length() > 0) {
+            return errors;
+        }
     }
 
-    isolated function execute(DocumentNode document, string operationName) returns json {
+    isolated function execute(DocumentNode document, string operationName) returns map<json> {
+        return {};
         //map<json> data = {};
         //json[] errors = [];
         //int errorCount = 0;
