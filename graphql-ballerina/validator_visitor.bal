@@ -31,10 +31,15 @@ public class ValidatorVisitor {
     // Parser doesn't support it yet.
     public isolated function visitDocument(DocumentNode documentNode) {
         OperationNode[] operations = documentNode.getOperations();
-        if (operations.length() == 1) {
-            return;
+        OperationNode[] anonymousOperations = [];
+
+        foreach OperationNode operationNode in operations {
+            if (operationNode.name == ANONYMOUS_OPERATION) {
+                anonymousOperations.push(operationNode);
+            }
+            self.visitOperation(operationNode);
         }
-        self.checkAnonymousOperations(operations);
+        self.checkAnonymousOperations(anonymousOperations);
     }
 
     public isolated function visitOperation(OperationNode operationNode) {
@@ -51,17 +56,14 @@ public class ValidatorVisitor {
 
     public isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
+        //return self.errors.sort(key = isolated function (Error err) returns int {
+        //    ErrorRecord errorRecord = <ErrorRecord>err.detail()["errorRecord"];
+        //    return errorRecord.locations[0].line;
+        //});
     }
 
-    isolated function checkAnonymousOperations(OperationNode[] operations) {
-        OperationNode[] anonymousOperations = [];
-        foreach OperationNode operation in operations {
-            if (operation.name == ANONYMOUS_OPERATION) {
-                anonymousOperations.push(operation);
-            }
-        }
-
-        if (anonymousOperations.length() > 1 || (anonymousOperations.length() > 0 && operations.length() > 1)) {
+    isolated function checkAnonymousOperations(OperationNode[] anonymousOperations) {
+        if (anonymousOperations.length() > 1) {
             string message = "This anonymous operation must be the only defined operation.";
             foreach OperationNode operation in anonymousOperations {
                 ErrorDetail err = {
