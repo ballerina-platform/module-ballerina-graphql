@@ -14,8 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.parser.reader;
+
 class Lexer {
-    private CharReader charReader;
+    private reader:CharReader charReader;
     private string document;
     private boolean inProgress;
     private Token[] buffer;

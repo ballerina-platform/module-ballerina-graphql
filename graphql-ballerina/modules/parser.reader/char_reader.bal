@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-class CharReader {
+public class CharReader {
     private CharIterator iterator;
     private boolean eof;
     private string[] buffer;
