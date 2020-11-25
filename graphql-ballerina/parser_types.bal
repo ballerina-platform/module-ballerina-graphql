@@ -47,14 +47,6 @@ type Token record {|
     Location location;
 |};
 
-type CharIteratorNode record {
-    string value;
-};
-
-type CharIterator object {
-    public isolated function next() returns CharIteratorNode?;
-};
-
 # Stores a location for an error in a GraphQL operation.
 #
 # + line - The line of the document where error occured
