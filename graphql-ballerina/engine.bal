@@ -14,6 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//import graphql.commons;
+import graphql.parser;
+
 public class Engine {
     private Listener 'listener;
     private Error[] errors;
@@ -27,16 +30,17 @@ public class Engine {
         return self.'listener;
     }
 
-    isolated function parse(string documentString) returns DocumentNode|Error {
-        Parser parser = check new(documentString);
-        DocumentNode|Error parseResult = parser.parse();
-        if (parseResult is Error) {
-            return parseResult;
+    isolated function parse(string documentString) returns parser:DocumentNode|Error {
+        parser:Parser parser = new (documentString);
+        parser:DocumentNode|parser:Error parseResult = parser.parse();
+        if (parseResult is parser:Error) {
+            parser:Location l = <parser:Location>parseResult.detail()["location"];
+            return ParsingError(parseResult.message(), line = l.line, column = l.column);
         }
-        return <DocumentNode>parseResult;
+        return <parser:DocumentNode>parseResult;
     }
 
-    isolated function validate(DocumentNode document) returns json[]? {
+    isolated function validate(parser:DocumentNode document) returns json[]? {
         var validationResult = self.validateDocument(document);
         if (validationResult is ErrorDetail[]) {
             json[] errors = [];
@@ -51,7 +55,7 @@ public class Engine {
         }
     }
 
-    isolated function validateDocument(DocumentNode document) returns ErrorDetail[]? {
+    isolated function validateDocument(parser:DocumentNode document) returns ErrorDetail[]? {
         ValidatorVisitor validator = new;
         validator.validate(document);
         ErrorDetail[] errors = validator.getErrors();
@@ -60,7 +64,7 @@ public class Engine {
         }
     }
 
-    isolated function execute(DocumentNode document, string operationName) returns map<json> {
+    isolated function execute(parser:DocumentNode document, string operationName) returns map<json> {
         return {};
         //map<json> data = {};
         //json[] errors = [];

@@ -14,15 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
-# Represents a GraphQL ID field
-public type Id int|string;
-
-# Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar boolean|int|float|string|Id; // TODO: remove int and string from union
-
-# The annotation which is used to configure a GraphQL service.
-public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
-
-type UnsupportedOperation commons:MUTATION|commons:SUBSCRIPTION;
+public type Visitor object {
+    public isolated function visitDocument(DocumentNode documentNode) returns anydata;
+    public isolated function visitOperation(OperationNode operationNode) returns anydata;
+    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) returns anydata;
+    public isolated function visitArgument(ArgumentNode argumentNode) returns anydata;
+};

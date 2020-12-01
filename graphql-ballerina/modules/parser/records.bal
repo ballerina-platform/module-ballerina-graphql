@@ -16,13 +16,21 @@
 
 import graphql.commons;
 
-# Represents a GraphQL ID field
-public type Id int|string;
+type Token record {|
+    TokenType kind;
+    commons:Scalar value;
+    Location location;
+|};
 
-# Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar boolean|int|float|string|Id; // TODO: remove int and string from union
+# Stores a location for an error in a GraphQL operation.
+#
+# + line - The line of the document where error occured
+# + column - The column of the document where error occurred
+public type Location record {
+    int line;
+    int column;
+};
 
-# The annotation which is used to configure a GraphQL service.
-public annotation GraphQlServiceConfiguration ServiceConfiguration on service;
-
-type UnsupportedOperation commons:MUTATION|commons:SUBSCRIPTION;
+public type ErrorRecord record {
+    Location[] locations;
+};

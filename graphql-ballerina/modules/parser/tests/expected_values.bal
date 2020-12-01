@@ -290,7 +290,7 @@ Document documentWithTwoNamedOperations = {
         },
         {
             name: "getBirthDate",
-            kind: QUERY,
+            kind: "query",
             selections: [
                 {
                     name: "birthdate",

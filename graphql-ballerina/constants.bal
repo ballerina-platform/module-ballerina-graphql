@@ -16,10 +16,6 @@
 
 const DEFAULT_PATH = "/graphql";
 
-const OPERATION_QUERY = "query";
-const OPERATION_MUTATION = "mutation";
-const OPERATION_SUBSCRIPTION = "subscription";
-
 const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
 
@@ -34,6 +30,3 @@ const RESULT_FIELD_DATA = "data";
 const FIELD_ERROR_RECORD = "errorRecord";
 const FIELD_LOCATIONS = "locations";
 const FIELD_MESSAGE = "message";
-
-const ANONYMOUS_OPERATION = "<anonymous>";
-const FIELD_VALIDATOR = "^[_a-zA-Z][a-zA-Z0-9_]*$";

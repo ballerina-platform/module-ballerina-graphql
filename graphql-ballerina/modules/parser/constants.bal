@@ -83,3 +83,5 @@ const T_COLON = 11;
 const T_COMMA = 12;
 const T_NEW_LINE = 13;
 const T_WHITE_SPACE = 14;
+
+public const ANONYMOUS_OPERATION = "<anonymous>";

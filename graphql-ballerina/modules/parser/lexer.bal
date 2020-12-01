@@ -14,10 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.parser.reader;
+import graphql.commons;
 
-class Lexer {
-    private reader:CharReader charReader;
+public class Lexer {
+    private CharReader charReader;
     private string document;
     private boolean inProgress;
     private Token[] buffer;
@@ -39,7 +39,7 @@ class Lexer {
         self.buffer = [];
     }
 
-    public isolated function peek(int n = 1) returns Token|ParsingError {
+    public isolated function peek(int n = 1) returns Token|SyntaxError {
         int index = n - 1;
         int difference = n - self.buffer.length();
         int i = 0;
@@ -58,14 +58,14 @@ class Lexer {
         return self.inProgress;
     }
 
-    public isolated function read() returns Token|ParsingError {
+    public isolated function read() returns Token|SyntaxError {
         if (self.buffer.length() > 0) {
             return self.buffer.shift();
         }
         return self.readNextToken();
     }
 
-    isolated function readNextToken() returns Token|ParsingError {
+    isolated function readNextToken() returns Token|SyntaxError {
         string char = self.charReader.peek();
         Location location = self.currentLocation.clone();
         if (char == EOF) {
@@ -105,16 +105,16 @@ class Lexer {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore first double quote character
         while (true) {
-            string value = self.readNextChar();
+            string value = self.charReader.peek();
             if (value is LineTerminator) {
                 string message = "Syntax Error: Unterminated string.";
-                ErrorRecord errorRecord = {
-                    locations: [location]
-                };
-                return UnterminatedStringError(message, errorRecord = errorRecord);
+                return UnterminatedStringError(message, line = self.currentLocation.line,
+                                               column = self.currentLocation.column);
             } else if (value == DOUBLE_QUOTE && previousChar != BACK_SLASH) {
+                value = self.readNextChar();
                 break;
             } else {
+                value = self.readNextChar();
                 word += value;
             }
             previousChar = value;
@@ -122,7 +122,7 @@ class Lexer {
         return getToken(word, T_STRING, location);
     }
 
-    isolated function readNumericLiteral(string fisrtChar) returns Token|ParsingError {
+    isolated function readNumericLiteral(string fisrtChar) returns Token|SyntaxError {
         boolean isFloat = false;
         Location location = self.currentLocation.clone();
         string numeral = self.readNextChar();
@@ -139,10 +139,8 @@ class Lexer {
                 break;
             } else {
                 string message = "Syntax Error: Invalid number, expected digit but got: \"" + value + "\".";
-                ErrorRecord errorRecord = {
-                    locations: [self.currentLocation.clone()]
-                };
-                return InvalidTokenError(message, errorRecord = errorRecord);
+                return InvalidTokenError(message, line = self.currentLocation.line,
+                                         column = self.currentLocation.column);
             }
         }
         int|float number = check getNumber(numeral, isFloat, location);
@@ -150,7 +148,7 @@ class Lexer {
         return getToken(number, kind, location);
     }
 
-    isolated function readCommentToken() returns Token|ParsingError {
+    isolated function readCommentToken() returns Token|SyntaxError {
         string word = HASH;
         Location location = self.currentLocation.clone();
         while (!self.charReader.isEof()) {
@@ -165,7 +163,7 @@ class Lexer {
         return getToken(word, T_COMMENT, location);
     }
 
-    isolated function readIdentifierToken(string firstChar) returns Token|ParsingError {
+    isolated function readIdentifierToken(string firstChar) returns Token|SyntaxError {
         check validateFirstChar(firstChar, self.currentLocation);
         Location location = self.currentLocation.clone();
         string word = self.readNextChar();
@@ -183,7 +181,7 @@ class Lexer {
             }
         }
         TokenType kind = getWordTokenType(word);
-        Scalar value = word;
+        commons:Scalar value = word;
         if (kind is T_BOOLEAN) {
             value = <boolean>'boolean:fromString(word);
         }
@@ -252,7 +250,7 @@ isolated function getTokenType(string value) returns TokenType {
     return T_TEXT;
 }
 
-isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
+isolated function getToken(commons:Scalar value, TokenType kind, Location location) returns Token {
     return {
         kind: kind,
         value: value,
@@ -288,27 +286,18 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
 isolated function validateChar(string char, Location location) returns InvalidTokenError? {
     if (!isValidChar(char)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
-        ErrorRecord errorRecord = {
-            locations: [location.clone()]
-        };
-        return InvalidTokenError(message, errorRecord = errorRecord);
+        return InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function validateFirstChar(string char, Location location) returns InvalidTokenError? {
     if (!isValidFirstChar(char)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
-        ErrorRecord errorRecord = {
-            locations: [location.clone()]
-        };
-        return InvalidTokenError(message, errorRecord = errorRecord);
+        return InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function getInternalError(string value, string kind, Location location) returns InternalError {
     string message = "Internal Error: Failed to convert the \"" + value + "\" to \"" + kind + "\".";
-    ErrorRecord errorRecord = {
-        locations: [location]
-    };
-    return InternalError(message, errorRecord = errorRecord);
+    return InternalError(message, line = location.line, column = location.column);
 }
