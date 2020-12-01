@@ -14,21 +14,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
-class Parser {
+import graphql.commons;
+
+public class Parser {
     private Lexer lexer;
     private DocumentNode document;
 
-    public isolated function init(string text) returns ParsingError? {
+    public isolated function init(string text) {
         self.lexer = new(text);
         self.document = new;
     }
 
-    public isolated function parse() returns DocumentNode|ParsingError {
+    public isolated function parse() returns DocumentNode|Error {
         check self.populateDocument();
         return self.document;
     }
 
-    isolated function populateDocument() returns ParsingError? {
+    isolated function populateDocument() returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
 
         while (token.kind != T_EOF) {
@@ -37,25 +39,25 @@ class Parser {
         }
     }
 
-    isolated function parseRootOperation(Token token) returns ParsingError? {
+    isolated function parseRootOperation(Token token) returns Error? {
         if (token.kind == T_OPEN_BRACE) {
             return self.parseAnonymousOperation();
         } else if (token.kind == T_TEXT) {
-            Scalar value = token.value;
-            if (value is RootOperationType) {
+            commons:Scalar value = token.value;
+            if (value is commons:RootOperationType) {
                 return self.parseOperationWithType(value);
             }
         }
         return getUnexpectedTokenError(token);
     }
 
-    isolated function parseAnonymousOperation() returns ParsingError? {
+    isolated function parseAnonymousOperation() returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
-        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY, token.location);
+        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, commons:QUERY, token.location);
         self.addOperationToDocument(operation);
     }
 
-    isolated function parseOperationWithType(RootOperationType operationType) returns ParsingError? {
+    isolated function parseOperationWithType(commons:RootOperationType operationType) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
         Location location = token.location.clone();
         token = check self.peekNextNonSeparatorToken();
@@ -71,14 +73,14 @@ class Parser {
         }
     }
 
-    isolated function createOperationRecord(string name, RootOperationType kind, Location location)
-    returns OperationNode|ParsingError {
+    isolated function createOperationRecord(string name, commons:RootOperationType kind, Location location)
+    returns OperationNode|Error {
         OperationNode operation = new(name, kind, location);
         check self.addSelections(operation);
         return operation;
     }
 
-    isolated function addSelections(ParentType parentNode) returns ParsingError? {
+    isolated function addSelections(ParentType parentNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
         while (token.kind != T_CLOSE_BRACE) {
             token = check self.readNextNonSeparatorToken();
@@ -100,7 +102,7 @@ class Parser {
         token = check self.readNextNonSeparatorToken();
     }
 
-    isolated function addArgumentsToSelection(FieldNode fieldNode) returns ParsingError? {
+    isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Reading the open parentheses
         while (token.kind != T_CLOSE_PARENTHESES) {
             token = check self.readNextNonSeparatorToken();
@@ -126,7 +128,7 @@ class Parser {
         self.document.addOperation(operation);
     }
 
-    isolated function readNextNonSeparatorToken() returns Token|ParsingError {
+    isolated function readNextNonSeparatorToken() returns Token|Error {
         Token token = check self.lexer.read();
         if (token.kind is IgnoreType) {
             return self.readNextNonSeparatorToken();
@@ -134,7 +136,7 @@ class Parser {
         return token;
     }
 
-    isolated function peekNextNonSeparatorToken() returns Token|ParsingError {
+    isolated function peekNextNonSeparatorToken() returns Token|Error {
         int i = 1;
         Token token = check self.lexer.peek(i);
         while (true) {
@@ -149,15 +151,15 @@ class Parser {
     }
 }
 
-isolated function getRootOperationType(Token token) returns RootOperationType|ParsingError {
+isolated function getRootOperationType(Token token) returns commons:RootOperationType|Error {
     string value = <string>token.value;
-    if (value is RootOperationType) {
+    if (value is commons:RootOperationType) {
         return value;
     }
     return getUnexpectedTokenError(token);
 }
 
-isolated function getArgumentName(Token token) returns ArgumentName|ParsingError {
+isolated function getArgumentName(Token token) returns ArgumentName|Error {
     if (token.kind == T_TEXT) {
         return {
             value: <string>token.value,
@@ -168,7 +170,7 @@ isolated function getArgumentName(Token token) returns ArgumentName|ParsingError
     }
 }
 
-isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingError {
+isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
     if (token.kind is ArgumentType) {
         return {
             value: token.value,
@@ -179,7 +181,7 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|ParsingErr
     }
 }
 
-isolated function getOperationNameFromToken(Parser parser) returns string|ParsingError {
+isolated function getOperationNameFromToken(Parser parser) returns string|Error {
     Token token = check parser.peekNextNonSeparatorToken();
     if (token.kind == T_TEXT) {
         // If this is a named operation, we should consume name token
@@ -191,7 +193,7 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Parsin
     return getUnexpectedTokenError(token);
 }
 
-isolated function getStringTokenvalue(Token token) returns string|ParsingError {
+isolated function getStringTokenvalue(Token token) returns string|Error {
     if (token.kind == T_TEXT) {
         return <string>token.value;
     } else {

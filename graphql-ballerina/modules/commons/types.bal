@@ -14,16 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Node object {
-    public isolated function accept(Visitor v);
-};
+public type Scalar int|string|float|boolean;
 
-public type ArgumentName record {|
-    string value;
-    Location location;
-|};
-
-public type ArgumentValue record {|
-    Scalar value;
-    Location location;
-|};
+# Represents the types of operations valid in Ballerina GraphQL.
+public enum RootOperationType {
+    QUERY = "query",
+    MUTATION = "mutation",
+    SUBSCRIPTION = "subscription"
+}

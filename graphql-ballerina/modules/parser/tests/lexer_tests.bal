@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import graphql.commons;
 
 @test:Config {
     groups: ["lexer", "parser", "unit"]
@@ -37,7 +38,10 @@ isolated function testInvalidCharacter() returns error? {
     string message = err.message();
     string expectedMessage = "Syntax Error: Cannot parse the unexpected character \"<\".";
     test:assertEquals(message, expectedMessage);
-    checkErrorRecord(err, 1, 7);
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
+    test:assertEquals(line, 1);
+    test:assertEquals(column, 7);
 }
 
 @test:Config {
@@ -165,8 +169,10 @@ function testUnterminatedString() returns error? {
     UnterminatedStringError err = <UnterminatedStringError>result;
     string expectedMessage = "Syntax Error: Unterminated string.";
     string message = err.message();
-    test:assertEquals(message, expectedMessage);
-    checkErrorRecord(err, 1, 6);
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
+    test:assertEquals(line, 1);
+    test:assertEquals(column, 32);
 }
 
 @test:Config {
@@ -256,7 +262,7 @@ isolated function testComplexString() returns error? {
     test:assertEquals(token, expectedToken);
 }
 
-isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {
+isolated function getExpectedToken(commons:Scalar value, TokenType kind, int line, int column) returns Token {
     return {
         value: value,
         kind: kind,

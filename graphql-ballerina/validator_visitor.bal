@@ -14,8 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.parser;
+
 public class ValidatorVisitor {
-    *Visitor;
+    *parser:Visitor;
 
     private ErrorDetail[] errors;
 
@@ -23,18 +25,18 @@ public class ValidatorVisitor {
         self.errors = [];
     }
 
-    public isolated function validate(DocumentNode documentNode) {
+    public isolated function validate(parser:DocumentNode documentNode) {
         self.visitDocument(documentNode);
     }
 
     // TODO: Check for definitions other than Operations and Fragments, and if they exists, invalidate.
     // Parser doesn't support it yet.
-    public isolated function visitDocument(DocumentNode documentNode) {
-        OperationNode[] operations = documentNode.getOperations();
-        OperationNode[] anonymousOperations = [];
+    public isolated function visitDocument(parser:DocumentNode documentNode) {
+        parser:OperationNode[] operations = documentNode.getOperations();
+        parser:OperationNode[] anonymousOperations = [];
 
-        foreach OperationNode operationNode in operations {
-            if (operationNode.name == ANONYMOUS_OPERATION) {
+        foreach parser:OperationNode operationNode in operations {
+            if (operationNode.name == parser:ANONYMOUS_OPERATION) {
                 anonymousOperations.push(operationNode);
             }
             self.visitOperation(operationNode);
@@ -42,15 +44,15 @@ public class ValidatorVisitor {
         self.checkAnonymousOperations(anonymousOperations);
     }
 
-    public isolated function visitOperation(OperationNode operationNode) {
+    public isolated function visitOperation(parser:OperationNode operationNode) {
 
     }
 
-    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) {
+    public isolated function visitField(parser:FieldNode fieldNode, parser:ParentType? parent = ()) {
 
     }
 
-    public isolated function visitArgument(ArgumentNode argumentNode) {
+    public isolated function visitArgument(parser:ArgumentNode argumentNode) {
 
     }
 
@@ -62,10 +64,10 @@ public class ValidatorVisitor {
         //});
     }
 
-    isolated function checkAnonymousOperations(OperationNode[] anonymousOperations) {
+    isolated function checkAnonymousOperations(parser:OperationNode[] anonymousOperations) {
         if (anonymousOperations.length() > 1) {
             string message = "This anonymous operation must be the only defined operation.";
-            foreach OperationNode operation in anonymousOperations {
+            foreach parser:OperationNode operation in anonymousOperations {
                 ErrorDetail err = {
                     message: message,
                     locations: [operation.location]

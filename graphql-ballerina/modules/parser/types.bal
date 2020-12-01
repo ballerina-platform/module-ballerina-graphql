@@ -22,4 +22,20 @@ type CharIterator object {
     public isolated function next() returns CharIteratorNode?;
 };
 
-const EOF = "";
+type Boolean TRUE|FALSE;
+
+type SeparatorType T_EOF|T_WHITE_SPACE|T_COMMA|T_NEW_LINE;
+type SpecialCharacterType T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMENT;
+
+type Separator WhiteSpace|LineTerminator|COMMA;
+type SpecialCharacter EXCLAMATION|DOLLAR|OPEN_PARENTHESES|CLOSE_PARENTHESES|ELLIPSIS|COLON|EQUAL|AT|OPEN_BRACKET|
+                      CLOSE_BRACKET|OPEN_BRACE|PIPE|CLOSE_BRACE;
+
+type TokenType SeparatorType|SpecialCharacterType|T_TEXT|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT;
+
+type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_TEXT|T_STRING|
+                 T_INT|T_FLOAT|T_BOOLEAN;
+
+type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
+
+public type ArgumentType T_INT|T_FLOAT|T_BOOLEAN|T_STRING;

@@ -14,10 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
-import ballerina/test;
+//import ballerina/http;
+//import ballerina/test;
 
-listener Listener gqlListener = new(9091);
+//listener Listener gqlListener = new(9091);
 //
 //@test:Config {
 //    groups: ["listener", "unit"]
@@ -103,55 +103,55 @@ listener Listener gqlListener = new(9091);
 //};
 
 
-@test:Config {
-  groups: ["listener", "unit"]
-}
-function testTwoAnonymousOperationsDocument() returns @tainted error? {
-    string document = getDocumentWithTwoAnonymousOperations();
-    var attachResult = gqlListener.__attach(greetingService);
-    json payload = {
-        query: document
-    };
-    http:Client httpClient = new("http://localhost:9091/greetingService");
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json actualPayload = <json> check httpClient->post("/", request, json);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "This anonymous operation must be the only defined operation.",
-                locations: [
-                    {
-                        line: 1,
-                        column: 1
-                    }
-                ]
-            },
-            {
-                message: "This anonymous operation must be the only defined operation.",
-                locations: [
-                    {
-                        line: 5,
-                        column: 1
-                    }
-                ]
-            }
-        ]
-    };
-    test:assertEquals(actualPayload, expectedPayload);
-    var stopResult = gqlListener.__immediateStop();
-}
-
-service greetingService =
-@ServiceConfiguration {
-   basePath: "greetingService"
-}
-service {
-   isolated resource function greet() returns string {
-       return "Hello";
-   }
-};
+//@test:Config {
+//  groups: ["listener", "unit"]
+//}
+//function testTwoAnonymousOperationsDocument() returns @tainted error? {
+//    string document = getDocumentWithTwoAnonymousOperations();
+//    var attachResult = gqlListener.__attach(greetingService);
+//    json payload = {
+//        query: document
+//    };
+//    http:Client httpClient = new("http://localhost:9091/greetingService");
+//    http:Request request = new;
+//    request.setPayload(payload);
+//
+//    json actualPayload = <json> check httpClient->post("/", request, json);
+//    json expectedPayload = {
+//        errors: [
+//            {
+//                message: "This anonymous operation must be the only defined operation.",
+//                locations: [
+//                    {
+//                        line: 1,
+//                        column: 1
+//                    }
+//                ]
+//            },
+//            {
+//                message: "This anonymous operation must be the only defined operation.",
+//                locations: [
+//                    {
+//                        line: 5,
+//                        column: 1
+//                    }
+//                ]
+//            }
+//        ]
+//    };
+//    test:assertEquals(actualPayload, expectedPayload);
+//    var stopResult = gqlListener.__immediateStop();
+//}
+//
+//service greetingService =
+//@ServiceConfiguration {
+//   basePath: "greetingService"
+//}
+//service {
+//   isolated resource function greet() returns string {
+//       return "Hello";
+//   }
+//};
 
 
 //public type Person record {

@@ -14,9 +14,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Visitor object {
-    public isolated function visitDocument(DocumentNode documentNode) returns anydata|Error;
-    public isolated function visitOperation(OperationNode operationNode) returns anydata|Error;
-    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) returns anydata|Error;
-    public isolated function visitArgument(ArgumentNode argumentNode) returns anydata|Error;
+import graphql.commons;
+
+public type Node object {
+    public isolated function accept(Visitor v);
 };
+
+public type ArgumentName record {|
+    string value;
+    Location location;
+|};
+
+public type ArgumentValue record {|
+    commons:Scalar value;
+    Location location;
+|};

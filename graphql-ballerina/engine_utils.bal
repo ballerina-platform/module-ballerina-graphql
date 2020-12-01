@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/java;
+import graphql.parser;
 
 isolated function getResultJsonForError(Error err) returns map<json> {
     map<json> result = {};
@@ -37,26 +38,22 @@ isolated function getResultJson(map<json> data, json[] errors) returns map<json>
 isolated function getErrorJsonFromError(Error err) returns json {
     map<json> result = {};
     result[FIELD_MESSAGE] = err.message();
-    var errorRecord = err.detail()[FIELD_ERROR_RECORD];
-    if (errorRecord is ErrorRecord) {
-        json[] jsonLocations = getLocationsJsonArray(errorRecord?.locations);
-        if (jsonLocations.length() > 0) {
-            result[FIELD_LOCATIONS] = jsonLocations;
-        }
-    }
+    parser:Location location = <parser:Location>err.detail()["location"];
+    json jsonLocation = <json>location.cloneWithType(json);
+    result[FIELD_LOCATIONS] = [jsonLocation];
     return result;
 }
 
-isolated function getLocationsJsonArray(Location[]? locations) returns json[] {
-    json[] jsonLocations = [];
-    if (locations is Location[]) {
-        foreach Location location in locations {
-            json jsonLocation = <json>location.cloneWithType(json);
-            jsonLocations.push(jsonLocation);
-        }
-    }
-    return jsonLocations;
-}
+// isolated function getLocationsJsonArray(parser:Location[]? locations) returns json[] {
+//     json[] jsonLocations = [];
+//     if (locations is Location[]) {
+//         foreach Location location in locations {
+//             json jsonLocation = <json>location.cloneWithType(json);
+//             jsonLocations.push(jsonLocation);
+//         }
+//     }
+//     return jsonLocations;
+// }
 
 isolated function getFieldNames(service s) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"

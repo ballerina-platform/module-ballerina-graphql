@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.parser;
+
 // General errors
 # Represents an error occurred while a listener operation
 public type ListenerError distinct error;
@@ -24,29 +26,10 @@ public type NotImplementedError distinct error;
 # Represents an unsupported functionality error
 public type NotSupportedError distinct error;
 
-// Parsing Errors
-# Represents an error due to unterminated string in the GraphQL document
-public type UnterminatedStringError distinct error;
-
-# Represents an error due to invalid token in the GraphQL document
-public type InvalidTokenError distinct error;
-
-# Represents an error due to invalid character in the GraphQL document
-public type InvalidCharacterError distinct error;
-
-# Represents an internal error occurred during the document parsing
-public type InternalError distinct error;
-
-# Represents a syntax error in a GraphQL document
-public type SyntaxError InvalidTokenError|InvalidCharacterError|UnterminatedStringError;
-
+// Validation errors
 # Represents an error where multiple operations with the same name exists
 public type DuplicateOperationError distinct error;
 
-# Represents the errors occurred while parsing a GraphQL document
-public type ParsingError SyntaxError|DuplicateOperationError|NotSupportedError|InternalError;
-
-// Validation errors
 # Represents an error occurred when a required field not found in graphql service resources
 public type FieldNotFoundError distinct error;
 
@@ -63,10 +46,14 @@ public type InvalidSelectionError distinct error;
 public type MissingRequiredArgumentError distinct error;
 
 # Represents the errors occurred while validating a GraphQL document
-public type ValidationError FieldNotFoundError|InvalidDocumentError|NotImplementedError|InvalidArgumentTypeError|
-                            InvalidSelectionError|MissingRequiredArgumentError;
+public type ValidationError DuplicateOperationError|FieldNotFoundError|InvalidDocumentError|NotImplementedError|
+                            InvalidArgumentTypeError|InvalidSelectionError|MissingRequiredArgumentError;
 
 // Execution errors
+
+# Represents an error occurred while parsing a document
+public type ParsingError distinct error<parser:Location>;
+
 # Represents an error where the provided operation is not found in a document
 public type OperationNotFoundError distinct error;
 

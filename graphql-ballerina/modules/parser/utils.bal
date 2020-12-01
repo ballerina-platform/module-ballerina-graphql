@@ -15,29 +15,31 @@
 // under the License.
 
 import ballerina/java;
+import ballerina/log;
+import graphql.commons;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
-    Scalar value = token.value;
+    commons:Scalar value = token.value;
     string message = "Syntax Error: Unexpected " + getErrorMessageTypeNameForError(token);
-    ErrorRecord errorRecord = getErrorRecordFromToken(token);
-    return InvalidTokenError(message, errorRecord = errorRecord);
+    Location l = token.location;
+    return InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedNameError(Token token) returns InvalidTokenError {
-    Scalar value = token.value;
+    commons:Scalar value = token.value;
     string message = "Syntax Error: Expected Name, found " + getErrorMessageTypeNameForError(token);
-    ErrorRecord errorRecord = getErrorRecordFromToken(token);
-    return InvalidTokenError(message, errorRecord = errorRecord);
+    Location l = token.location;
+    return InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedCharError(Token token, string char) returns InvalidTokenError {
-    Scalar value = token.value;
+    commons:Scalar value = token.value;
     string message = "Syntax Error: Expected \"" + char + "\", found " + getErrorMessageTypeNameForError(token);
-    ErrorRecord errorRecord = getErrorRecordFromToken(token);
-    return InvalidTokenError(message, errorRecord = errorRecord);
+    Location l = token.location;
+    return InvalidTokenError(message, line = l.line, column = l.column);
 }
 
-isolated function getScalarTypeNameForError(Scalar value) returns string {
+isolated function getScalarTypeNameForError(commons:Scalar value) returns string {
     if (value is int) {
         return "Int \"" + value.toString() + "\".";
     } else if (value is float) {
@@ -58,6 +60,18 @@ isolated function getErrorMessageTypeNameForError(Token token) returns string {
     } else {
         return "\"" + token.value.toString() + "\".";
     }
+}
+
+isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
+    Location location = token.location;
+    return {
+        locations: [location]
+    };
+}
+
+public isolated function logAndPanicError(string message, error e) {
+    log:printError(message, e);
+    panic e;
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {

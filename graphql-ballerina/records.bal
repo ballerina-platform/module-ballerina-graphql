@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.parser;
+
 # Defines the configurations related to Ballerina GraphQL listener
 #
 # + host - The host name/IP of the GraphQL endpoint
@@ -25,24 +27,15 @@ public type Data record {
     // Intentionally kept empty
 };
 
-# Represents an error occurred while executing a GraphQL operation.
-#
-# + locations - Locations of the GraphQL document where the error occurred
-# + path - The complete path for the error in the GraphQL document
-public type ErrorRecord record {|
-    Location[] locations?;
-    (int|string)[] path?;
-|};
-
 public type ErrorDetail record {|
     string message;
-    Location[] locations;
+    parser:Location[] locations;
     (int|string)[] path?;
 |};
 
 public type OutputObject record {
     Data data?;
-    ErrorRecord[] errors?;
+    parser:ErrorRecord[] errors?;
 };
 
 # Contains the configurations for a GraphQL service.

@@ -18,6 +18,8 @@ import ballerina/http;
 import ballerina/java;
 import ballerina/reflect;
 
+import graphql.parser;
+
 isolated function getHttpListenerConfigs(ListenerConfiguration configs) returns http:ListenerConfiguration {
     http:ListenerConfiguration httpConfigs = {
         host: configs.host
@@ -66,7 +68,7 @@ isolated function processRequestWithJsonPayload(Engine? engine, http:Request req
 
 isolated function processJsonPayload(Engine? engine, json payload, http:Response response) {
     var documentString = payload.query;
-    string operationName = ANONYMOUS_OPERATION;
+    string operationName = parser:ANONYMOUS_OPERATION;
     var operationNameInPayload = payload.operationName;
     if (operationNameInPayload is string?) {
         operationName = resolveOperationName(operationNameInPayload);
@@ -88,7 +90,7 @@ isolated function setResponseForBadRequest(http:Response response) {
 isolated function getOutputObjectForQuery(Engine? engine, string documentString, string operationName) returns json {
     map<json> outputObject = {};
     if (engine is Engine) {
-        DocumentNode|Error document = engine.parse(documentString);
+        parser:DocumentNode|Error document = engine.parse(documentString);
         if (document is Error) {
             outputObject = getResultJsonForError(document);
         } else {
@@ -103,11 +105,21 @@ isolated function getOutputObjectForQuery(Engine? engine, string documentString,
     return outputObject;
 }
 
+isolated function getErrorJson(string message) returns json {
+    return {
+        errors: [
+            {
+                massage: message
+            }
+        ]
+    };
+}
+
 isolated function resolveOperationName(string? operationName) returns string {
     if (operationName is string) {
         return operationName;
     } else {
-        return ANONYMOUS_OPERATION;
+        return parser:ANONYMOUS_OPERATION;
     }
 }
 

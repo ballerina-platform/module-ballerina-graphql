@@ -14,13 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
 import ballerina/io;
-
-isolated function logAndPanicError(string message, error e) {
-    log:printError(message, e);
-    panic e;
-}
 
 isolated function getRootOperationTypeName(RootOperationType operationType) returns string {
     match operationType {
@@ -34,24 +28,7 @@ isolated function getRootOperationTypeName(RootOperationType operationType) retu
     return "Query";
 }
 
-isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
-    Location location = token.location;
-    return {
-        locations: [location]
-    };
-}
-
-isolated function getErrorJson(string message) returns json {
-    return {
-        errors: [
-            {
-                massage: message
-            }
-        ]
-    };
-}
-
-isolated function println(anydata value) {
+public isolated function println(anydata value) {
     io:println(value.toString());
 }
 
