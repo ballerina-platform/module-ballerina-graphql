@@ -14,34 +14,36 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//import ballerina/test;
-//
-//listener Listener 'listener = new(9090);
-//
-//@test:Config{
-//    groups: ["engine", "unit"]
-//}
-//function testInvokeResource() {
-//    string document = getInvalidShorthandNotationDocument();
-//    var attachResult = 'listener.__attach(invokeResourceTestService);
-//    if (attachResult is error) {
-//        test:assertFail("Attaching the service resulted in an error." + attachResult.toString());
-//    }
-//    Engine engine = new('listener);
-//    var result = engine.validate(document);
-//}
-//
-//
-//service invokeResourceTestService = service {
-//    isolated resource function name() returns string {
-//        return "John Doe";
-//    }
-//
-//    isolated resource function id() returns int {
-//        return 1;
-//    }
-//
-//    isolated resource function birthdate() returns string {
-//        return "01-01-1980";
-//    }
-//};
+import ballerina/http;
+import ballerina/test;
+
+http:Listener httpListener = new(9090);
+listener Listener 'listener = new(httpListener);
+
+@test:Config{
+    groups: ["engine", "unit"]
+}
+function testInvokeResource() {
+    string document = getInvalidShorthandNotationDocument();
+    var attachResult = 'listener.attach(invokeResourceTestService);
+    if (attachResult is error) {
+        test:assertFail("Attaching the service resulted in an error." + attachResult.toString());
+    }
+    Engine engine = new('listener);
+    var result = engine.parse(document);
+}
+
+
+service object {} invokeResourceTestService = service object {
+    isolated resource function get name() returns string {
+        return "John Doe";
+    }
+
+    isolated resource function get id() returns int {
+        return 1;
+    }
+
+    isolated resource function get birthdate() returns string {
+        return "01-01-1980";
+    }
+};

@@ -14,16 +14,4 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
-# Represents a GraphQL ID field
-public type Id int|string;
-
-# Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar boolean|int|float|string|Id; // TODO: remove int and string from union
-
-type UnsupportedOperation commons:MUTATION|commons:SUBSCRIPTION;
-
-public type Service service object {
-
-};
+const DOCUMENT_SHORTHAND_INVALID = "document_shorthand_invalid_query.txt";

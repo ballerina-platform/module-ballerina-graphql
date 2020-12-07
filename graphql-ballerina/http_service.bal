@@ -14,16 +14,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
+import ballerina/http;
 
-# Represents a GraphQL ID field
-public type Id int|string;
+service class HttpService {
+    private Engine engine;
 
-# Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar boolean|int|float|string|Id; // TODO: remove int and string from union
+    public isolated function init(Engine engine) {
+        self.engine = engine;
+    }
 
-type UnsupportedOperation commons:MUTATION|commons:SUBSCRIPTION;
+    isolated resource function get .(http:Caller caller, http:Request request) {
+        http:Response response = handleGetRequests(self.engine, request);
+        var result = caller->respond(response);
+    }
 
-public type Service service object {
-
-};
+    isolated resource function post .(http:Caller caller, http:Request request) {
+        http:Response response = handlePostRequests(self.engine, request);
+        var sendResult = caller->respond(response);
+    }
+}
