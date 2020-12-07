@@ -52,10 +52,6 @@ function getGeneralNotationDocument() returns string {
     return readFileAndGetString(path);
 }
 
-function getInvalidShorthandNotationDocument() returns string {
-    return readFileAndGetString(DOCUMENT_SHORTHAND_INVALID);
-}
-
 function getAnonymousOperationDocument() returns string {
     return readFileAndGetString(DOCUMENT_ANONYMOUS);
 }

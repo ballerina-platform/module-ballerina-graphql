@@ -1,4 +1,3 @@
-
 // Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -26,6 +25,12 @@ const DIR_DOCUMENTS = "documents";
 function getDocumentWithTwoAnonymousOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);
+    return readFileAndGetString(path);
+}
+
+function getInvalidShorthandNotationDocument() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_SHORTHAND_INVALID);
     return readFileAndGetString(path);
 }
 

@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/java;
+//import ballerina/java;
 import graphql.parser;
 
 isolated function getResultJsonForError(Error err) returns map<json> {
@@ -55,9 +55,9 @@ isolated function getErrorJsonFromError(Error err) returns json {
 //     return jsonLocations;
 // }
 
-isolated function getFieldNames(service s) returns string[] = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.engine.Engine"
-} external;
+//isolated function getFieldNames(service s) returns string[] = @java:Method {
+//    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+//} external;
 
 //isolated function validateField(Listener 'listener, FieldNode fieldNode, RootOperationType kind) returns Error[]? =
 //@java:Method {

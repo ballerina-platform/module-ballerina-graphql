@@ -15,79 +15,46 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/lang.'object;
-import ballerina/log;
-
-string basePath = DEFAULT_PATH;
-Engine? globalEngine = ();
 
 public class Listener {
-    *'object:Listener;
-    private int port;
     private http:Listener httpListener;
     private Engine engine;
+    private HttpService httpService;
 
-    // TODO: Make the path an init variable, when we can assign local variable to the HTTP service path.
-    public function init(int port, ListenerConfiguration? configs = ()) {
-        http:ListenerConfiguration? httpListenerConfigs = ();
-        if (configs is ListenerConfiguration) {
-            httpListenerConfigs = getHttpListenerConfigs(configs);
+    public isolated function init(http:Listener? httpListener = (), int? port = ()) {
+        if (httpListener is ()) {
+            if (port is int) {
+                self.httpListener = new(port);
+            } else {
+                error err = error("An http:Listener or a port number must be provided");
+                panic err;
+            }
+        } else {
+            self.httpListener = httpListener;
         }
-        self.httpListener = new(port, httpListenerConfigs);
-        self.port = port;
         self.engine = new(self);
-        globalEngine = self.engine;
+        self.httpService = new(self.engine);
     }
 
-    // Cannot mark as isolated due to global variable usage. Discussion:
-    // (https://ballerina-platform.slack.com/archives/C47EAELR1/p1602066015052000)
-    public function __attach(service s, string? name = ()) returns error? {
-        GraphQlServiceConfiguration? serviceConfig = getServiceAnnotations(s);
-        if (serviceConfig is GraphQlServiceConfiguration) {
-            basePath = serviceConfig.basePath;
-        }
-        service httpService =
-        @http:ServiceConfig {
-            basePath: basePath
-        }
-        service {
-            @http:ResourceConfig {
-                path: "/",
-                methods: ["GET"]
-            }
-            resource function get(http:Caller caller, http:Request request) {
-                http:Response response = handleGetRequests(globalEngine, request);
-                var result = caller->respond(response);
-            }
-
-            @http:ResourceConfig {
-                path: "/",
-                methods: ["POST"]
-            }
-            resource function post(http:Caller caller, http:Request request) {
-                http:Response response = handlePostRequests(globalEngine, request);
-                var sendResult = caller->respond(response);
-            }
-        };
-        checkpanic self.httpListener.__attach(httpService);
+    public isolated function attach(Service s, string[]|string? name = ()) returns error? {
+        checkpanic self.httpListener.attach(self.httpService, name);
         check attach(self, s, name);
     }
 
-    // TODO: Detach http service
-    public isolated function __detach(service s) returns error? {
+    public isolated function detach(Service s) returns error? {
+        checkpanic self.httpListener.detach(self.httpService);
         return detach(self, s);
     }
 
-    public isolated function __start() returns error? {
-        checkpanic self.httpListener.__start();
-        log:printInfo("started GraphQL listener " + self.port.toString());
+    public isolated function 'start() returns error? {
+        checkpanic self.httpListener.'start();
     }
 
-    public isolated function __gracefulStop() returns error? {
-        return self.httpListener.__gracefulStop();
+    public isolated function gracefulStop() returns error? {
+        return self.httpListener.gracefulStop();
     }
 
-    public isolated function __immediateStop() returns error? {
-        return self.httpListener.__immediateStop();
+    public isolated function immediateStop() returns error? {
+        return self.httpListener.immediateStop();
     }
 }
