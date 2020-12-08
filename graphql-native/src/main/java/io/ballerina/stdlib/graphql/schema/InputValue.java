@@ -24,7 +24,7 @@ package io.ballerina.stdlib.graphql.schema;
 public class InputValue {
     private String name;
     private SchemaType type;
-    private String defaultValue = "";
+    private String defaultValue;
 
     public InputValue(String name, SchemaType type) {
         this(name, type, null);
