@@ -38,18 +38,57 @@ public type OutputObject record {
     parser:ErrorRecord[] errors?;
 };
 
-type Input record {|
-	string name;
-    typedesc kind;
+public type __Schema record {|
+    __Type[] types;
+    __Type queryType;
+
+    // TODO: Add the following
+    //__Type mutationType?;
+    //__Type subscriptionType?;
+    //__Directive[] directives;
 |};
 
-type Field record {|
+public type __Type record {
+    __TypeKind kind;
     string name;
-    typedesc kind;
-	Field[] fields?;
-    Input[] inputs?;
+    __Field[] fields?;
+
+    // TODO: Add following: description, inputFields, interfaces, possibleTypes, enumValues, ofType
+};
+
+public type __Field record {|
+    string name;
+    __Type 'type;
+    __InputValue[] args?;
+    // TODO: Add following
+    //string description?;
+    //boolean isDeprecated = true;
+    //string deprecationReason = "";
 |};
 
-type Schema record {|
-    Field[] fields;
+public type __InputValue record {|
+	string name;
+	__Type 'type;
+	string defaultValue?;
+
+	// TODO:
+	//string description?;
+|};
+
+public enum __TypeKind {
+    SCALAR,
+    OBJECT,
+    ENUM
+    // TODO: Support the following
+    //INTERFACE,
+    //UNION,
+    //INPUT_OBJECT,
+    //LIST,
+    //NON_NULL
+}
+
+type __Directive record {|
+    string name;
+    string description?;
+    // TODO: Add other fields
 |};

@@ -19,7 +19,7 @@ import graphql.commons;
 
 public class Engine {
     private Listener 'listener;
-    private Schema? schema;
+    private __Schema? schema;
 
     public isolated function init(Listener 'listener) {
         self.'listener = 'listener;

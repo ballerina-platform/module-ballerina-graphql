@@ -30,3 +30,5 @@ const RESULT_FIELD_DATA = "data";
 const FIELD_ERROR_RECORD = "errorRecord";
 const FIELD_LOCATIONS = "locations";
 const FIELD_MESSAGE = "message";
+
+const OPERATION_QUERY = "Query";
