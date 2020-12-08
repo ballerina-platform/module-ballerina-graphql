@@ -46,9 +46,6 @@ public final class Constants {
     // Record types
     public static final String RECORD_ERROR_RECORD = "ErrorRecord";
     public static final String RECORD_LOCATION = "Location";
-    public static final String RECORD_SCHEMA = "Schema";
-    public static final String RECORD_FIELD = "Field";
-    public static final String RECORD_INPUT = "Input";
 
     // Error types
     public static final String ERROR = "Error";

@@ -55,12 +55,8 @@ isolated function getErrorJsonFromError(Error err) returns json {
 //     return jsonLocations;
 // }
 
-isolated function createSchema(Service s) returns Schema = @java:Method {
+isolated function createSchema(Service s) returns __Schema = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
-} external;
-
-isolated function compareTypedesc(typedesc t1, typedesc t2) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.utils.Utils"
 } external;
 
 //isolated function getFieldNames(service s) returns string[] = @java:Method {
