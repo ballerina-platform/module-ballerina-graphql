@@ -21,8 +21,6 @@ package io.ballerina.stdlib.graphql.schema;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
-
 /**
  * This class represents a GraphQL schema.
  */
@@ -32,7 +30,6 @@ public class Schema {
 
     public Schema() {
         this.types = new HashMap();
-        this.queryType = new SchemaType(OPERATION_QUERY, TypeKind.OBJECT);
     }
 
     public void addType(SchemaType type) {
@@ -45,6 +42,11 @@ public class Schema {
 
     public SchemaType getType(String name) {
         return this.types.get(name);
+    }
+
+    public void setQueryType(SchemaType queryType) {
+        this.addType(queryType);
+        this.queryType = queryType;
     }
 
     public SchemaType getQueryType() {
