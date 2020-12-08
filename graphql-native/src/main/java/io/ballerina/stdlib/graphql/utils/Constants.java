@@ -27,7 +27,7 @@ import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUIL
 /**
  * Constants used in Ballerina GraphQL native library.
  */
-public class Constants {
+public final class Constants {
     private Constants() {}
 
     private static final String MODULE_NAME = "graphql";
@@ -46,20 +46,21 @@ public class Constants {
     // Record types
     public static final String RECORD_ERROR_RECORD = "ErrorRecord";
     public static final String RECORD_LOCATION = "Location";
+    public static final String RECORD_SCHEMA = "Schema";
+    public static final String RECORD_FIELD = "Field";
+    public static final String RECORD_INPUT = "Input";
 
     // Error types
     public static final String ERROR = "Error";
-    public static final String ERROR_INVALID_ARGUMENT_TYPE = "InvalidArgumentTypeError";
-    public static final String ERROR_INVALID_SELECTION = "InvalidSelectionError";
-    public static final String ERROR_MISSING_REQUIRED_ARGUMENT = "MissingRequiredArgumentError";
 
     // Record fields
     public static final BString FIELD_NAME = StringUtils.fromString("name");
     public static final BString FIELD_LOCATION = StringUtils.fromString("location");
     public static final BString FIELD_ARGUMENTS = StringUtils.fromString("arguments");
     public static final BString FIELD_SELECTIONS = StringUtils.fromString("selections");
+    public static final BString FIELD_FIELDS = StringUtils.fromString("fields");
     public static final BString FIELD_VALUE = StringUtils.fromString("value");
     public static final BString FIELD_LOCATIONS = StringUtils.fromString("locations");
-    public static final BString FIELD_TYPE = StringUtils.fromString("type");
-
+    public static final BString FIELD_KIND = StringUtils.fromString("kind");
+    public static final BString FIELD_INPUTS = StringUtils.fromString("inputs");
 }

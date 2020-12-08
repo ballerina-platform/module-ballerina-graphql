@@ -38,7 +38,7 @@ public class Listener {
 
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         checkpanic self.httpListener.attach(self.httpService, name);
-        check attach(self, s, name);
+        self.engine.registerService(s);
     }
 
     public isolated function detach(Service s) returns error? {

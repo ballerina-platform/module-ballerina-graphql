@@ -14,23 +14,41 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/test;
-
-http:Listener httpListener = new(9090);
-listener Listener 'listener = new(httpListener);
+//import graphql.commons;
 
 @test:Config{
     groups: ["engine", "unit"]
 }
 function testInvokeResource() {
     string document = getInvalidShorthandNotationDocument();
-    var attachResult = 'listener.attach(invokeResourceTestService);
-    if (attachResult is error) {
-        test:assertFail("Attaching the service resulted in an error." + attachResult.toString());
-    }
-    Engine engine = new('listener);
-    var result = engine.parse(document);
+    Schema? result = createSchema(invokeResourceTestService);
+    test:assertTrue(result is Schema);
+    Schema actualSchema = <Schema>result;
+
+    Schema expectedSchema = {
+        fields: [
+            {
+                name: "name",
+                kind: string
+            },
+            {
+                name: "id",
+                kind: int
+            },
+            {
+                name: "birthdate",
+                kind: string,
+                inputs: [
+                    {
+                        name: "format",
+                        kind: string
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertTrue(compareSchema(actualSchema, expectedSchema));
 }
 
 
@@ -43,7 +61,84 @@ service object {} invokeResourceTestService = service object {
         return 1;
     }
 
-    isolated resource function get birthdate() returns string {
+    isolated resource function get birthdate(string format) returns string {
         return "01-01-1980";
     }
 };
+
+isolated function compareSchema(Schema actualSchema, Schema expectedSchema) returns boolean {
+    return isEqualFields(actualSchema.fields, expectedSchema.fields);
+}
+
+isolated function isEqualFields(Field[]? actual, Field[]? expected) returns boolean {
+    // Can't use equality with typedescs
+    if (actual is () && expected is ()) {
+        return true;
+    }
+    if ((actual is () && expected is Field[]) || (actual is Field[] && expected is ())) {
+        return false;
+    }
+
+    Field[] actualFields = <Field[]> actual;
+    Field[] expectedFields = <Field[]> expected;
+
+    if (actualFields.length() != expectedFields.length()) {
+        return false;
+    }
+    int length = actualFields.length() - 1;
+
+    foreach int i in 0 ... length {
+        if (!isEqualField(actualFields[i], expectedFields[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+isolated function isEqualField(Field actualField, Field expectedField) returns boolean {
+    if (actualField.name != expectedField.name) {
+        return false;
+    }
+    if (!isEqualFields(actualField?.fields, expectedField?.fields)) {
+        return false;
+    }
+    if (!isEqualInputs(actualField?.inputs, expectedField?.inputs)) {
+        return false;
+    }
+    if (!compareTypedesc(actualField.kind, expectedField.kind)) {
+        return false;
+    }
+    return true;
+}
+
+isolated function isEqualInputs(Input[]? actual, Input[]? expected) returns boolean {
+    if (actual is () && expected is ()) {
+        return true;
+    }
+    if ((actual is () && expected is Input[]) || (actual is Input[] && expected is ())) {
+        return false;
+    }
+    Input[] actualInputs = <Input[]> actual;
+    Input[] expectedInputs = <Input[]> expected;
+    if (actualInputs.length() != expectedInputs.length()) {
+        return false;
+    }
+
+    int length = actualInputs.length() - 1;
+    foreach int i in 0 ... length {
+        if (!isEqualInput(actualInputs[i], expectedInputs[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+isolated function isEqualInput(Input actualInput, Input expectedInput) returns boolean {
+    if (actualInput.name != expectedInput.name) {
+        return false;
+    }
+    if (!compareTypedesc(actualInput.kind, expectedInput.kind)) {
+        return false;
+    }
+    return true;
+}
