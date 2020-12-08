@@ -17,12 +17,23 @@
 import ballerina/test;
 //import graphql.commons;
 
-@test:Config{
+type Address record {
+    string number;
+    string street;
+    string city;
+};
+
+type Person record {
+    string name;
+    int age;
+    Address address;
+};
+
+@test:Config {
     groups: ["engine", "unit"]
 }
-function testInvokeResource() {
-    string document = getInvalidShorthandNotationDocument();
-    Schema? result = createSchema(invokeResourceTestService);
+function testSchemaGenerationForMultipleResources() {
+    Schema? result = createSchema(serviceWithMultipleResources);
     test:assertTrue(result is Schema);
     Schema actualSchema = <Schema>result;
 
@@ -51,8 +62,68 @@ function testInvokeResource() {
     test:assertTrue(compareSchema(actualSchema, expectedSchema));
 }
 
+@test:Config {
+    groups: ["engine", "unit"]
+}
+function testSchemaGenerationForResourcesReturningRecords() {
+    Schema? result = createSchema(serviceWithResourcesReturningRecords);
+    test:assertTrue(result is Schema);
+    Schema actualSchema = <Schema>result;
 
-service object {} invokeResourceTestService = service object {
+    Schema expectedSchema = {
+        fields: [
+            {
+                name: "person",
+                kind: Person,
+                fields: [
+                    {
+                        name: "name",
+                        kind: string
+                    },
+                    {
+                        name: "age",
+                        kind: int
+                    },
+                    {
+                        name: "address",
+                        kind: Address,
+                        fields: [
+                            {
+                                name: "number",
+                                kind: string
+                            },
+                            {
+                                name: "street",
+                                kind: string
+                            },
+                            {
+                                name: "city",
+                                kind: string
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertTrue(compareSchema(actualSchema, expectedSchema));
+}
+
+service object {} serviceWithResourcesReturningRecords = service object {
+    isolated resource function get person() returns Person {
+        return {
+            name: "John Doe",
+            age: 20,
+            address: {
+                number: "221/B",
+                street: "Baker Street",
+                city: "London"
+            }
+        };
+    }
+};
+
+service object {} serviceWithMultipleResources = service object {
     isolated resource function get name() returns string {
         return "John Doe";
     }
