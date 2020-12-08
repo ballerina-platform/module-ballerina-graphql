@@ -25,11 +25,6 @@ version = "@stdlib.log.version@"
 
 [[dependency]]
 org = "ballerina"
-name = "reflect"
-version = "@stdlib.reflect.version@"
-
-[[dependency]]
-org = "ballerina"
 name = "time"
 version = "@stdlib.time.version@"
 
