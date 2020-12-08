@@ -94,7 +94,7 @@ public class Utils {
         // TODO: Check accessor: Only get allowed
         SchemaField field = new SchemaField(fieldName);
         addArgsToField(field, resourceFunction, schema);
-        field.setType(getSchemaTypeForBalType(resourceFunction.getReturnParameterType(), schema));
+        field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
         return field;
     }
 
@@ -128,7 +128,7 @@ public class Utils {
             return schemaType;
         } else if (tag == RECORD_TYPE_TAG) {
             RecordType record = (RecordType) type;
-            SchemaType fieldType = new SchemaType(record.getName());
+            SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT);
 
             Collection<Field> recordFields = record.getFields().values();
             for (Field recordField : recordFields) {
@@ -140,7 +140,7 @@ public class Utils {
             return fieldType;
         } else if (tag == SERVICE_TAG) {
             ServiceType service = (ServiceType) type;
-            SchemaType fieldType = new SchemaType(service.getName());
+            SchemaType fieldType = new SchemaType(service.getName(), TypeKind.OBJECT);
             addQueryFieldsForServiceType(service, fieldType, schema);
             schema.addType(fieldType);
             return fieldType;
@@ -153,6 +153,10 @@ public class Utils {
     private static void addArgsToField(SchemaField field, ResourceFunctionType resourceFunction, Schema schema) {
         Type[] parameterTypes = resourceFunction.getParameterTypes();
         String[] parameterNames = resourceFunction.getParamNames();
+
+        if (parameterNames.length == 0) {
+            return;
+        }
         // TODO: Handle default values
         for (int i = 0; i < parameterNames.length; i++) {
             field.addArg(getInputValue(parameterNames[i], parameterTypes[i], schema));

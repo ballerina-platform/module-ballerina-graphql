@@ -32,6 +32,7 @@ public class SchemaType {
 
     public SchemaType(String name) {
         this.name = name;
+        this.fields = new ArrayList<>();
     }
 
     public SchemaType(String name, TypeKind kind) {

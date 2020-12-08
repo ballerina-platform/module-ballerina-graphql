@@ -29,14 +29,9 @@ public class SchemaField {
     private List<InputValue> args;
     private SchemaType type;
 
-    public SchemaField(String name, SchemaType type) {
-        this.name = name;
-        this.type = type;
-        this.args = new ArrayList<>();
-    }
-
     public SchemaField(String name) {
         this.name = name;
+        this.args = new ArrayList<>();
     }
 
     public void setType(SchemaType type) {
