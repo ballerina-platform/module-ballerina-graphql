@@ -39,6 +39,7 @@ import io.ballerina.stdlib.graphql.schema.TypeKind;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
@@ -46,9 +47,6 @@ import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.stdlib.graphql.utils.Constants.FIELD_KIND;
-import static io.ballerina.stdlib.graphql.utils.Constants.FIELD_NAME;
-import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
 import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
 
 /**
@@ -230,34 +228,9 @@ public class Utils {
         BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(PACKAGE_ID, INPUT_VALUE_RECORD);
         inputValueRecord.put(NAME_FIELD, StringUtils.fromString(inputValue.getName()));
         inputValueRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(inputValue.getType()));
-        inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
+        if (Objects.nonNull(inputValue.getDefaultValue())) {
+            inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
+        }
         return inputValueRecord;
-    }
-
-
-
-
-
-
-
-
-    public static BMap<BString, Object> getQueryTypeRecord() {
-        BMap<BString, Object> queryTypeRecord = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD);
-        queryTypeRecord.put(FIELD_KIND, VALUE_OBJECT);
-        queryTypeRecord.put(FIELD_NAME, OPERATION_QUERY);
-        return queryTypeRecord;
-    }
-
-    static BMap<BString, Object> getSchemaRecord() {
-        BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(PACKAGE_ID, SCHEMA_RECORD);
-        schemaRecord.put(QUERY_TYPE_FIELD, getQueryTypeRecord());
-        schemaRecord.put(TYPES_FIELD, getTypesArray());
-        return schemaRecord;
-    }
-
-    static BArray getTypesArray() {
-        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD);
-        ArrayType fieldArrayType = TypeCreator.createArrayType(typeRecord.getType());
-        return ValueCreator.createArrayValue(fieldArrayType);
     }
 }
