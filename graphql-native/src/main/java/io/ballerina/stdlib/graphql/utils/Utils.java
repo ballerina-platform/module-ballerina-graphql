@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.values.BTypedesc;
 
 import static io.ballerina.stdlib.graphql.utils.Constants.ERROR;
 import static io.ballerina.stdlib.graphql.utils.Constants.FIELD_LOCATION;
@@ -95,5 +96,9 @@ public class Utils {
 
     public static BMap<BString, Object> getLocation(BMap<BString, Object> recordType) {
         return (BMap<BString, Object>) recordType.get(FIELD_LOCATION);
+    }
+
+    public static boolean compareTypedesc(BTypedesc t1, BTypedesc t2) {
+        return t1.getDescribingType() == t2.getDescribingType();
     }
 }

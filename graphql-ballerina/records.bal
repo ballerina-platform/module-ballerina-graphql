@@ -37,3 +37,19 @@ public type OutputObject record {
     Data data?;
     parser:ErrorRecord[] errors?;
 };
+
+type Input record {|
+	string name;
+    typedesc kind;
+|};
+
+type Field record {|
+    string name;
+    typedesc kind;
+	Field[] fields?;
+    Input[] inputs?;
+|};
+
+type Schema record {|
+    Field[] fields;
+|};

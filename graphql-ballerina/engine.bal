@@ -15,18 +15,20 @@
 // under the License.
 
 import graphql.parser;
+import graphql.commons;
 
 public class Engine {
     private Listener 'listener;
-    private Error[] errors;
+    private Schema? schema;
 
     public isolated function init(Listener 'listener) {
         self.'listener = 'listener;
-        self.errors = [];
+        self.schema = ();
     }
 
-    isolated function getListener() returns Listener {
-        return self.'listener;
+    isolated function registerService(Service s) {
+        self.schema = createSchema(s);
+        commons:println(self.schema.toString());
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|Error {

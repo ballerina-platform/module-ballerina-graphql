@@ -25,5 +25,5 @@ public type Scalar boolean|int|float|string|Id; // TODO: remove int and string f
 type UnsupportedOperation commons:MUTATION|commons:SUBSCRIPTION;
 
 public type Service service object {
-
+    // TODO: Complete the type validation
 };
