@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import graphql.commons;
 
 type Address record {
     string number;
@@ -34,8 +33,7 @@ type Person record {
 }
 function testSchemaGenerationForMultipleResources() {
     __Schema actualSchema = createSchema(serviceWithMultipleResources);
-    commons:println(actualSchema);
-    //test:assertTrue(compareSchema(actualSchema, expectedSchema));
+    test:assertEquals(actualSchema, expectedSchemaForMultipleResources);
 }
 
 @test:Config {
@@ -43,7 +41,7 @@ function testSchemaGenerationForMultipleResources() {
 }
 function testSchemaGenerationForResourcesReturningRecords() {
     __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
-    //test:assertTrue(compareSchema(actualSchema, expectedSchema));
+    test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
 }
 
 service object {} serviceWithResourcesReturningRecords = service object {
