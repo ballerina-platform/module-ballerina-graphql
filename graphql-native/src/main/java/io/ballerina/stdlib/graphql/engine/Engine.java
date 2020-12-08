@@ -18,15 +18,25 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
+import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
+import io.ballerina.stdlib.graphql.schema.TypeKind;
 
+import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
+import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
+import static io.ballerina.stdlib.graphql.engine.Utils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
+import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaTypeForBalType;
+import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
+import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -35,9 +45,25 @@ public class Engine {
 
     public static BMap<BString, Object> createSchema(BObject service) {
         Schema schema = new Schema();
-        SchemaType queryType = schema.getQueryType();
+        initializeIntrospectionTypes(schema);
         ServiceType serviceType = (ServiceType) service.getType();
+        SchemaType queryType = new SchemaType(OPERATION_QUERY, TypeKind.OBJECT);
         addQueryFieldsForServiceType(serviceType, queryType, schema);
+        schema.setQueryType(queryType);
         return getSchemaRecordFromSchema(schema);
+    }
+
+    private static void initializeIntrospectionTypes(Schema schema) {
+        Type schemaBalType = ValueCreator.createRecordValue(PACKAGE_ID, SCHEMA_RECORD).getType();
+        schema.addType(getSchemaTypeForBalType(schemaBalType, schema));
+
+        Type typeBalType = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD).getType();
+        schema.addType(getSchemaTypeForBalType(typeBalType, schema));
+
+        Type fieldBalType = ValueCreator.createRecordValue(PACKAGE_ID, FIELD_RECORD).getType();
+        schema.addType(getSchemaTypeForBalType(fieldBalType, schema));
+
+        Type inputValueBalType = ValueCreator.createRecordValue(PACKAGE_ID, INPUT_VALUE_RECORD).getType();
+        schema.addType(getSchemaTypeForBalType(inputValueBalType, schema));
     }
 }

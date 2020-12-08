@@ -22,9 +22,258 @@ __Schema expectedSchemaForMultipleResources = {
             fields: []
         },
         {
+            kind: "OBJECT",
+            name: "__Field",
+            fields: [
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "type",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "__Type",
+                        fields: [
+                            {
+                                name: "kind",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "fields",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                },
+                {
+                    name: "args",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
+            kind: "OBJECT",
+            name: "__Schema",
+            fields: [
+                {
+                    name: "types",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "queryType",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "__Type",
+                        fields: [
+                            {
+                                name: "kind",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "fields",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
+            kind: "OBJECT",
+            name: "Query",
+            fields: [
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "id",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Integer",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "birthdate",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: [
+                        {
+                            name: "format",
+                            'type: {
+                                kind: "SCALAR",
+                                name: "String",
+                                fields: []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            kind: "OBJECT",
+            name: "__Type",
+            fields: [
+                {
+                    name: "kind",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "fields",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
             kind: "SCALAR",
             name: "String",
             fields: []
+        },
+        {
+            kind: "OBJECT",
+            name: "__InputValue",
+            fields: [
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "type",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "__Type",
+                        fields: [
+                            {
+                                name: "kind",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "fields",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                },
+                {
+                    name: "defaultValue",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                }
+            ]
         }
     ],
     queryType: {
@@ -80,6 +329,119 @@ __Schema expectedSchemaForResourcesReturningRecords = {
         },
         {
             kind: "OBJECT",
+            name: "__Field",
+            fields: [
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "type",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "__Type",
+                        fields: [
+                            {
+                                name: "kind",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "fields",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                },
+                {
+                    name: "args",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
+            kind: "OBJECT",
+            name: "__Schema",
+            fields: [
+                {
+                    name: "types",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "queryType",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "__Type",
+                        fields: [
+                            {
+                                name: "kind",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "fields",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
+            kind: "OBJECT",
             name: "Address",
             fields: [
                 {
@@ -112,9 +474,174 @@ __Schema expectedSchemaForResourcesReturningRecords = {
             ]
         },
         {
+            kind: "OBJECT",
+            name: "Query",
+            fields: [
+                {
+                    name: "person",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "Person",
+                        fields: [
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "age",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Integer",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "address",
+                                'type: {
+                                    kind: "OBJECT",
+                                    name: "Address",
+                                    fields: [
+                                        {
+                                            name: "number",
+                                            'type: {
+                                                kind: "SCALAR",
+                                                name: "String",
+                                                fields: []
+                                            },
+                                            args: []
+                                        },
+                                        {
+                                            name: "street",
+                                            'type: {
+                                                kind: "SCALAR",
+                                                name: "String",
+                                                fields: []
+                                            },
+                                            args: []
+                                        },
+                                        {
+                                            name: "city",
+                                            'type: {
+                                                kind: "SCALAR",
+                                                name: "String",
+                                                fields: []
+                                            },
+                                            args: []
+                                        }
+                                    ]
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
+            kind: "OBJECT",
+            name: "__Type",
+            fields: [
+                {
+                    name: "kind",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "fields",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "Id",
+                        fields: []
+                    },
+                    args: []
+                }
+            ]
+        },
+        {
             kind: "SCALAR",
             name: "String",
             fields: []
+        },
+        {
+            kind: "OBJECT",
+            name: "__InputValue",
+            fields: [
+                {
+                    name: "name",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                },
+                {
+                    name: "type",
+                    'type: {
+                        kind: "OBJECT",
+                        name: "__Type",
+                        fields: [
+                            {
+                                name: "kind",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "name",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "String",
+                                    fields: []
+                                },
+                                args: []
+                            },
+                            {
+                                name: "fields",
+                                'type: {
+                                    kind: "SCALAR",
+                                    name: "Id",
+                                    fields: []
+                                },
+                                args: []
+                            }
+                        ]
+                    },
+                    args: []
+                },
+                {
+                    name: "defaultValue",
+                    'type: {
+                        kind: "SCALAR",
+                        name: "String",
+                        fields: []
+                    },
+                    args: []
+                }
+            ]
         },
         {
             kind: "OBJECT",

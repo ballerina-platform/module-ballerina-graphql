@@ -103,7 +103,7 @@ public class Utils {
     }
 
     // TODO: Simplify
-    private static SchemaType getSchemaTypeForBalType(Type type, Schema schema) {
+    static SchemaType getSchemaTypeForBalType(Type type, Schema schema) {
         int tag = type.getTag();
         if (schema.getType(type.getName()) != null) {
             return schema.getType(type.getName());
@@ -127,7 +127,6 @@ public class Utils {
         } else if (tag == RECORD_TYPE_TAG) {
             RecordType record = (RecordType) type;
             SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT);
-
             Collection<Field> recordFields = record.getFields().values();
             for (Field recordField : recordFields) {
                 SchemaField field = new SchemaField(recordField.getFieldName());
