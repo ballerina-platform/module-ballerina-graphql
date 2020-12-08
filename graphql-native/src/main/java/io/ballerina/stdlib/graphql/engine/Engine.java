@@ -21,6 +21,8 @@ package io.ballerina.stdlib.graphql.engine;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
@@ -30,6 +32,9 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.Collection;
+
+import static io.ballerina.runtime.api.TypeTags.ARRAY_TAG;
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
@@ -62,16 +67,11 @@ public class Engine {
     }
 
     private static BMap<BString, Object> handleResource(ResourceFunctionType resourceFunction) {
-        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(PACKAGE_ID, RECORD_FIELD);
         BString fieldName = getResourceName(resourceFunction);
         BArray arguments = getResourceInputs(resourceFunction);
         BArray fields = getResourceFields(resourceFunction);
         Type returnType = resourceFunction.getType().getReturnType();
-        fieldRecord.put(FIELD_NAME, fieldName);
-        fieldRecord.put(FIELD_KIND, ValueCreator.createTypedescValue(returnType));
-        fieldRecord.put(FIELD_INPUTS, arguments);
-        fieldRecord.put(FIELD_FIELDS, fields);
-        return fieldRecord;
+        return createFieldRecord(fieldName, returnType, fields, arguments);
     }
 
     private static BMap<BString, Object> getSchemaRecord() {
@@ -111,13 +111,14 @@ public class Engine {
     }
 
     private static BArray getResourceFields(ResourceFunctionType resourceFunction) {
-        BArray fields = getFieldArray();
         int resourceReturnTypeTag = resourceFunction.getType().getReturnType().getTag();
         switch (resourceReturnTypeTag) {
             case RECORD_TYPE_TAG:
-                // TODO: get record fields
+                return getRecordFields(((RecordType) resourceFunction.getType().getReturnType()).getFields().values());
             case SERVICE_TAG:
                 // TODO: Get resources
+            case ARRAY_TAG:
+                // TODO: Get Descriptor type
             case INT_TAG:
             case STRING_TAG:
             case BOOLEAN_TAG:
@@ -127,5 +128,32 @@ public class Engine {
                 // TODO: Return error
         }
         return null;
+    }
+
+    private static BArray getRecordFields(Collection<Field> fields) {
+        BArray fieldsArray = getFieldArray();
+        for (Field field : fields) {
+            BString name = StringUtils.fromString(field.getFieldName());
+            Type type = field.getFieldType();
+            BMap<BString, Object> fieldRecord = null;
+            if (type.getTag() == RECORD_TYPE_TAG) {
+                BArray subFields = getRecordFields(((RecordType) field.getFieldType()).getFields().values());
+                fieldRecord = createFieldRecord(name, type, subFields, null);
+            } else {
+                fieldRecord = createFieldRecord(name, type, null, null);
+            }
+            fieldsArray.append(fieldRecord);
+        }
+        return fieldsArray;
+    }
+
+    private static BMap<BString, Object> createFieldRecord(BString fieldName, Type returnType, BArray fields,
+                                                           BArray arguments) {
+        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(PACKAGE_ID, RECORD_FIELD);
+        fieldRecord.put(FIELD_NAME, fieldName);
+        fieldRecord.put(FIELD_KIND, ValueCreator.createTypedescValue(returnType));
+        fieldRecord.put(FIELD_INPUTS, arguments);
+        fieldRecord.put(FIELD_FIELDS, fields);
+        return fieldRecord;
     }
 }
