@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/io;
 
 type Address record {
     string number;
@@ -41,6 +42,7 @@ function testSchemaGenerationForMultipleResources() {
 }
 function testSchemaGenerationForResourcesReturningRecords() {
     __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
+    io:println(actualSchema);
     test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
 }
 

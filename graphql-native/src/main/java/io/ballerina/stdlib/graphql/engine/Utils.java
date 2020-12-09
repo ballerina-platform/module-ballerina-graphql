@@ -20,14 +20,13 @@ package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.InputValue;
@@ -168,62 +167,62 @@ public class Utils {
 
     static BMap<BString, Object> getSchemaRecordFromSchema(Schema schema) {
         BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(PACKAGE_ID, SCHEMA_RECORD);
-        BArray types = getTypeRecordArrayForSchema(schema.getTypes());
+        BMap<BString, Object> types = getTypeRecordMapFromSchema(schema.getTypes());
         schemaRecord.put(TYPES_FIELD, types);
         schemaRecord.put(QUERY_TYPE_FIELD, getTypeRecordFromTypeObject(schema.getQueryType()));
         return schemaRecord;
     }
 
     // TODO: Can we re-use the same type record, when needed?
-    private static BArray getTypeRecordArrayForSchema(Map<String, SchemaType> types) {
+    private static BMap<BString, Object> getTypeRecordMapFromSchema(Map<String, SchemaType> types) {
         BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD);
-        ArrayType typesArrayType = TypeCreator.createArrayType(typeRecord.getType());
-        BArray typesArray = ValueCreator.createArrayValue(typesArrayType);
+        MapType typesMapType = TypeCreator.createMapType(typeRecord.getType());
+        BMap<BString, Object> typesMap = ValueCreator.createMapValue(typesMapType);
         for (SchemaType type : types.values()) {
-            typesArray.append(getTypeRecordFromTypeObject(type));
+            typesMap.put(StringUtils.fromString(type.getName()), getTypeRecordFromTypeObject(type));
         }
-        return typesArray;
+        return typesMap;
     }
 
     static BMap<BString, Object> getTypeRecordFromTypeObject(SchemaType typeObject) {
         BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD);
         typeRecord.put(KIND_FIELD, StringUtils.fromString(typeObject.getKind().toString()));
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
-        typeRecord.put(FIELDS_FIELD, getFieldArrayTypeFromFields(typeObject.getFields()));
+        typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(typeObject.getFields()));
         return typeRecord;
     }
 
-    private static BArray getFieldArrayTypeFromFields(List<SchemaField> fields) {
+    private static BMap<BString, Object> getFieldMapFromFields(List<SchemaField> fields) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(PACKAGE_ID, FIELD_RECORD);
-        ArrayType fieldRecordArrayType = TypeCreator.createArrayType(fieldRecord.getType());
-        BArray fieldRecordArray = ValueCreator.createArrayValue(fieldRecordArrayType);
+        MapType fieldRecordMapType = TypeCreator.createMapType(fieldRecord.getType());
+        BMap<BString, Object> fieldRecordMap = ValueCreator.createMapValue(fieldRecordMapType);
 
         for (SchemaField field : fields) {
-            fieldRecordArray.append(getFieldRecordFromFieldObject(field));
+            fieldRecordMap.put(StringUtils.fromString(field.getName()), getFieldRecordFromObject(field));
         }
-        return fieldRecordArray;
+        return fieldRecordMap;
     }
 
-    private static BMap<BString, Object> getFieldRecordFromFieldObject(SchemaField fieldObject) {
+    private static BMap<BString, Object> getFieldRecordFromObject(SchemaField fieldObject) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(PACKAGE_ID, FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
         fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(fieldObject.getType()));
-        fieldRecord.put(ARGS_FIELD, getInputArgsArrayFromInputValues(fieldObject.getArgs()));
+        fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(fieldObject.getArgs()));
         return fieldRecord;
     }
 
-    private static BArray getInputArgsArrayFromInputValues(List<InputValue> inputValues) {
+    private static BMap<BString, Object> getInputMapFromInputs(List<InputValue> inputValues) {
         BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(PACKAGE_ID, INPUT_VALUE_RECORD);
-        ArrayType inputValueRecordArrayType = TypeCreator.createArrayType(inputValueRecord.getType());
-        BArray inputValueRecordArray = ValueCreator.createArrayValue(inputValueRecordArrayType);
+        MapType inputValueRecordMapType = TypeCreator.createMapType(inputValueRecord.getType());
+        BMap<BString, Object> inputValueRecordMap = ValueCreator.createMapValue(inputValueRecordMapType);
 
         for (InputValue inputValue : inputValues) {
-            inputValueRecordArray.append(getInputValueRecordFromInputValueObject(inputValue));
+            inputValueRecordMap.put(StringUtils.fromString(inputValue.getName()), getInputRecordFromObject(inputValue));
         }
-        return inputValueRecordArray;
+        return inputValueRecordMap;
     }
 
-    private static BMap<BString, Object> getInputValueRecordFromInputValueObject(InputValue inputValue) {
+    private static BMap<BString, Object> getInputRecordFromObject(InputValue inputValue) {
         BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(PACKAGE_ID, INPUT_VALUE_RECORD);
         inputValueRecord.put(NAME_FIELD, StringUtils.fromString(inputValue.getName()));
         inputValueRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(inputValue.getType()));

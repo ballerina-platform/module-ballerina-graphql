@@ -27,19 +27,23 @@ public type Data record {
     // Intentionally kept empty
 };
 
+public type Location record {
+    *parser:Location;
+};
+
 public type ErrorDetail record {|
     string message;
-    parser:Location[] locations;
+    Location[] locations;
     (int|string)[] path?;
 |};
 
 public type OutputObject record {
     Data data?;
-    parser:ErrorRecord[] errors?;
+    ErrorDetail[] errors?;
 };
 
 public type __Schema record {|
-    __Type[] types;
+    map<__Type> types;
     __Type queryType;
 
     // TODO: Add the following
@@ -51,7 +55,7 @@ public type __Schema record {|
 public type __Type record {
     __TypeKind kind;
     string name;
-    __Field[] fields?;
+    map<__Field> fields?;
 
     // TODO: Add following: description, inputFields, interfaces, possibleTypes, enumValues, ofType
 };
@@ -59,7 +63,7 @@ public type __Type record {
 public type __Field record {|
     string name;
     __Type 'type;
-    __InputValue[] args?;
+    map<__InputValue> args?;
     // TODO: Add following
     //string description?;
     //boolean isDeprecated = true;
