@@ -153,7 +153,7 @@ public class Utils {
         if (parameterNames.length == 0) {
             return;
         }
-        // TODO: Handle default values
+        // TODO: Handle default values (https://github.com/ballerina-platform/ballerina-lang/issues/27417)
         for (int i = 0; i < parameterNames.length; i++) {
             field.addArg(getInputValue(parameterNames[i], parameterTypes[i], schema));
         }

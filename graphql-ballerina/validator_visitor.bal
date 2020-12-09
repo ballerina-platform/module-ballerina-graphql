@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-//import ballerina/io;
 
 public class ValidatorVisitor {
     *parser:Visitor;
@@ -61,34 +60,61 @@ public class ValidatorVisitor {
         map<__Field>? result = parentType?.fields;
         if (result == ()) {
             string message = getNoSubFieldsErrorMessage(parentType);
-            ErrorDetail errorDetail = {
-                message: message,
-                locations: [fieldNode.getLocation()]
-            };
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
             self.errors.push(errorDetail);
+            return;
         }
+
         map<__Field> fields = <map<__Field>>result;
-        var schemaField = fields[requiredFieldName];
-        if (schemaField is ()) {
+        var schemaFieldValue = fields[requiredFieldName];
+        if (schemaFieldValue is ()) {
             string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name);
-            ErrorDetail errorDetail = {
-                message: message,
-                locations: [fieldNode.getLocation()]
-            };
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
             self.errors.push(errorDetail);
+            return;
+        }
+        __Field schemaField = <__Field>schemaFieldValue;
+        parser:ArgumentNode[] arguments = fieldNode.getArguments();
+        map<__InputValue>? schemaArgs = schemaField?.args;
+
+        if (arguments.length() == 0 && schemaArgs == ()) {
+            return;
+        }
+
+        if (schemaArgs is map<__InputValue>) {
+            map<__InputValue> foundArgs = {};
+            foreach parser:ArgumentNode argumentNode in arguments {
+                string argName = argumentNode.getName().value;
+                __InputValue? schemaArg = schemaArgs.get(argName);
+                if (schemaArg is __InputValue) {
+                    foundArgs[argName] = schemaArg;
+                    self.visitArgument(argumentNode, schemaArg);
+                } else {
+                    string message = getUnknownArgumentErrorMessage(argName, schemaField, argumentNode);
+                    ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
+                    self.errors.push(errorDetail);
+                }
+            }
         }
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-
+        __InputValue schemaArg = <__InputValue>data;
+        string typeName = schemaArg.'type.name;
+        parser:ArgumentValue value = argumentNode.getValue();
+        string expectedTypeName = getTypeName(value);
+        if (typeName != expectedTypeName) {
+            // TODO: Improve error message
+            string message = typeName + " cannot represent non " + typeName + " value: " + value.value.toString();
+            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+            self.errors.push(errorDetail);
+            return;
+        }
     }
 
     public isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
-        //return self.errors.sort(key = isolated function (Error err) returns int {
-        //    ErrorRecord errorRecord = <ErrorRecord>err.detail()["errorRecord"];
-        //    return errorRecord.locations[0].line;
-        //});
+        // TODO: Sort the error records by line and column
     }
 
     isolated function checkAnonymousOperations(parser:OperationNode[] anonymousOperations) {
