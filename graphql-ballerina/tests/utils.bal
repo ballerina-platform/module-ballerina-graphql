@@ -19,8 +19,22 @@ import ballerina/io;
 
 import graphql.parser;
 
+const SHORTHAND_DOCUMENT = "document_shorthand.txt";
+const INVALID_SHORTHAND_DOCUMENT = "document_shorthand_invalid_query.txt";
 const DOCUMENT_TWO_ANONYMOUS_OPERATIONS = "two_anonymous_operations.txt";
 const DIR_DOCUMENTS = "documents";
+
+function getShorthandDocument() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic file:joinPath(documentsDirPath, SHORTHAND_DOCUMENT);
+    return readFileAndGetString(path);
+}
+
+function getShorthandDocumentWithInvalidQuery() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic file:joinPath(documentsDirPath, INVALID_SHORTHAND_DOCUMENT);
+    return readFileAndGetString(path);
+}
 
 function getDocumentWithTwoAnonymousOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();

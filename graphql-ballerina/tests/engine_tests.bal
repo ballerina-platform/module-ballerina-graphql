@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import ballerina/test;
-import ballerina/io;
 
 type Address record {
     string number;
@@ -42,8 +42,40 @@ function testSchemaGenerationForMultipleResources() {
 }
 function testSchemaGenerationForResourcesReturningRecords() {
     __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
-    io:println(actualSchema);
     test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
+}
+
+http:Listener httpListener = new(9091);
+listener Listener gqlListener = new(httpListener);
+
+@test:Config {
+    groups: ["engine", "unit"]
+}
+function testDocumentValidation() returns @tainted error? {
+    check gqlListener.attach(serviceWithMultipleResources, "graphql");
+    string documentString = getShorthandDocumentWithInvalidQuery();
+    http:Client httpClient = new("http://localhost:9091/graphql");
+    json payload = {
+        query: documentString
+    };
+    http:Request request = new;
+    request.setPayload(payload);
+
+    json expectedPayload = {
+        errors:[
+            {
+                message: "Cannot query field \"Voldemort\" on type \"Query\".",
+                locations:[
+                    {
+                        line:4,
+                        column:5
+                    }
+                ]
+            }
+        ]
+    };
+    json actualPayload = <json> check httpClient->post("/", request, json);
+    test:assertEquals(actualPayload, expectedPayload);
 }
 
 service object {} serviceWithResourcesReturningRecords = service object {

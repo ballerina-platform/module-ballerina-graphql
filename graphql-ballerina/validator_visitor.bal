@@ -15,14 +15,17 @@
 // under the License.
 
 import graphql.parser;
+//import ballerina/io;
 
 public class ValidatorVisitor {
     *parser:Visitor;
 
     private ErrorDetail[] errors;
+    private __Schema schema;
 
-    public isolated function init() {
+    public isolated function init(__Schema schema) {
         self.errors = [];
+        self.schema = schema;
     }
 
     public isolated function validate(parser:DocumentNode documentNode) {
@@ -36,7 +39,7 @@ public class ValidatorVisitor {
         parser:OperationNode[] anonymousOperations = [];
 
         foreach parser:OperationNode operationNode in operations {
-            if (operationNode.name == parser:ANONYMOUS_OPERATION) {
+            if (operationNode.getName() == parser:ANONYMOUS_OPERATION) {
                 anonymousOperations.push(operationNode);
             }
             self.visitOperation(operationNode);
@@ -45,14 +48,38 @@ public class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-
+        __Type queryType = self.schema.queryType;
+        parser:FieldNode[] selections = operationNode.getSelections();
+        foreach parser:FieldNode selection in selections {
+            self.visitField(selection, queryType);
+        }
     }
 
-    public isolated function visitField(parser:FieldNode fieldNode, parser:ParentType? parent = ()) {
-
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
+        string requiredFieldName = fieldNode.getName();
+        __Type parentType = <__Type>data;
+        map<__Field>? result = parentType?.fields;
+        if (result == ()) {
+            string message = getNoSubFieldsErrorMessage(parentType);
+            ErrorDetail errorDetail = {
+                message: message,
+                locations: [fieldNode.getLocation()]
+            };
+            self.errors.push(errorDetail);
+        }
+        map<__Field> fields = <map<__Field>>result;
+        var schemaField = fields[requiredFieldName];
+        if (schemaField is ()) {
+            string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name);
+            ErrorDetail errorDetail = {
+                message: message,
+                locations: [fieldNode.getLocation()]
+            };
+            self.errors.push(errorDetail);
+        }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode) {
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
 
     }
 
@@ -70,7 +97,7 @@ public class ValidatorVisitor {
             foreach parser:OperationNode operation in anonymousOperations {
                 ErrorDetail err = {
                     message: message,
-                    locations: [operation.location]
+                    locations: [operation.getLocation()]
                 };
                 self.errors.push(err);
             }

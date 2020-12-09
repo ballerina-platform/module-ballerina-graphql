@@ -17,6 +17,26 @@
 import ballerina/java;
 import graphql.parser;
 
+isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] errorDetail) returns OutputObject {
+    if (errorDetail is ErrorDetail) {
+        return {
+            errors: [errorDetail]
+        };
+    } else {
+        return {
+            errors: errorDetail
+        };
+    }
+}
+
+isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail {
+    Location location = <Location>err.detail()["location"];
+    return {
+        message: err.message(),
+        locations: [location]
+    };
+}
+
 isolated function getResultJsonForError(Error err) returns map<json> {
     map<json> result = {};
     json[] jsonErrors = [getErrorJsonFromError(err)];

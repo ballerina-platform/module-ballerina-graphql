@@ -14,8 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type ParentType object {
-    public isolated function addSelection(FieldNode selection);
-    public isolated function getSelections() returns FieldNode[];
-    public isolated function getName() returns string;
-};
+isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string rootType) returns string {
+    return "Cannot query field \"" + requiredFieldName + "\" on type \"" + rootType + "\".";
+}
+
+isolated function getNoSubFieldsErrorMessage(__Type 'type) returns string {
+    string typeName = 'type.kind.toString();
+    return "Field \"" + 'type.name + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
+}

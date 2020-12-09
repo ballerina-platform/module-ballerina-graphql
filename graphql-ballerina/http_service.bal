@@ -29,7 +29,7 @@ service class HttpService {
     }
 
     isolated resource function post .(http:Caller caller, http:Request request) {
-        http:Response response = handlePostRequests(self.engine, request);
+        http:Response response = handlePostRequests(<@untainted>self.engine, request);
         var sendResult = caller->respond(response);
     }
 }
