@@ -73,10 +73,10 @@ public class RecordCreatorVisitor {
         }
 
         return {
-            name: operationNode.name,
-            kind: operationNode.kind,
+            name: operationNode.getName(),
+            kind: operationNode.getKind(),
             selections: selections,
-            location: operationNode.location
+            location: operationNode.getLocation()
         };
     }
 
@@ -94,27 +94,27 @@ public class RecordCreatorVisitor {
         }
 
         return {
-            name: fieldNode.name,
+            name: fieldNode.getName(),
             arguments: arguments,
             selections: fields,
-            location: fieldNode.location
+            location: fieldNode.getLocation()
         };
     }
 
     public isolated function visitArgument(ArgumentNode argumentNode) returns Argument {
         ArgName name = {
-            value: argumentNode.name.value,
-            location: argumentNode.name.location
+            value: argumentNode.getName().value,
+            location: argumentNode.getName().location
         };
         ArgValue value = {
-            value: argumentNode.value.value,
-            location: argumentNode.value.location
+            value: argumentNode.getValue().value,
+            location: argumentNode.getValue().location
         };
 
         return {
             name: name,
             value: value,
-            kind: argumentNode.kind
+            kind: argumentNode.getKind()
         };
     }
 }

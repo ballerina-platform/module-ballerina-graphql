@@ -17,9 +17,9 @@ public class OperationNode {
     *Node;
     *ParentType;
 
-    public string name;
-    public commons:RootOperationType kind;
-    public Location location;
+    private string name;
+    private commons:RootOperationType kind;
+    private Location location;
     private FieldNode[] selections;
 
     public isolated function init(string name, commons:RootOperationType kind, Location location) {
@@ -27,6 +27,18 @@ public class OperationNode {
         self.kind = kind;
         self.location = location;
         self.selections = [];
+    }
+
+    public isolated function getName() returns string {
+        return self.name;
+    }
+
+    public isolated function getKind() returns commons:RootOperationType {
+        return self.kind;
+    }
+
+    public isolated function getLocation() returns Location {
+        return self.location;
     }
 
     public isolated function accept(Visitor v) {

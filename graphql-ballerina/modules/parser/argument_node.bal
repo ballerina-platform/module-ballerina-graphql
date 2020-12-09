@@ -17,14 +17,26 @@
 public class ArgumentNode {
     *Node;
 
-    public ArgumentName name;
-    public ArgumentValue value;
-    public ArgumentType kind;
+    private ArgumentName name;
+    private ArgumentValue value;
+    private ArgumentType kind;
 
     public isolated function init(ArgumentName name, ArgumentValue value, ArgumentType kind) {
         self.name = name;
         self.value = value;
         self.kind = kind;
+    }
+
+    public isolated function getName() returns ArgumentName {
+        return self.name;
+    }
+
+    public isolated function getValue() returns ArgumentValue {
+        return self.value;
+    }
+
+    public isolated function getKind() returns ArgumentType {
+        return self.kind;
     }
 
     public isolated function accept(Visitor v) {
