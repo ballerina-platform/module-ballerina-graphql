@@ -80,7 +80,7 @@ public class RecordCreatorVisitor {
         };
     }
 
-    public isolated function visitField(FieldNode fieldNode, ParentType? parent = ()) returns Field {
+    public isolated function visitField(FieldNode fieldNode, anydata data = ()) returns Field {
         Argument[] arguments = [];
         ArgumentNode[] argumensNodes = fieldNode.getArguments();
         foreach ArgumentNode argumentNode in argumensNodes {
@@ -101,7 +101,7 @@ public class RecordCreatorVisitor {
         };
     }
 
-    public isolated function visitArgument(ArgumentNode argumentNode) returns Argument {
+    public isolated function visitArgument(ArgumentNode argumentNode, anydata data = ()) returns Argument {
         ArgName name = {
             value: argumentNode.getName().value,
             location: argumentNode.getName().location

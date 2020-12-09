@@ -32,6 +32,7 @@ public class Listener {
         } else {
             self.httpListener = httpListener;
         }
+        // TODO: Decouple engine and the listener
         self.engine = new(self);
         self.httpService = new(self.engine);
     }

@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-import graphql.commons;
 
 public class Engine {
     private Listener 'listener;
@@ -26,46 +25,51 @@ public class Engine {
         self.schema = ();
     }
 
+    isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
+        parser:DocumentNode|OutputObject result = self.parse(documentString);
+        if (result is OutputObject) {
+            return result;
+        }
+        parser:DocumentNode document = <parser:DocumentNode>result;
+        var validationResult = self.validateDocument(document);
+        if (validationResult is OutputObject) {
+            return validationResult;
+        } else {
+            return self.execute(document, operationName);
+        }
+    }
+
     isolated function registerService(Service s) {
         self.schema = createSchema(s);
-        commons:println(self.schema.toString());
     }
 
-    isolated function parse(string documentString) returns parser:DocumentNode|Error {
+    isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
         parser:Parser parser = new (documentString);
         parser:DocumentNode|parser:Error parseResult = parser.parse();
-        if (parseResult is parser:Error) {
-            parser:Location l = <parser:Location>parseResult.detail()["location"];
-            return ParsingError(parseResult.message(), line = l.line, column = l.column);
+        if (parseResult is parser:DocumentNode) {
+            return parseResult;
         }
-        return <parser:DocumentNode>parseResult;
+        ErrorDetail errorDetail = getErrorDetailFromError(<parser:Error>parseResult);
+        return getOutputObjectFromErrorDetail(errorDetail);
     }
 
-    isolated function validate(parser:DocumentNode document) returns json[]? {
-        var validationResult = self.validateDocument(document);
-        if (validationResult is ErrorDetail[]) {
-            json[] errors = [];
-
-            foreach ErrorDetail err in validationResult {
-                var errorDetailJson = err.cloneWithType(json);
-                if (errorDetailJson is map<json>) {
-                    errors.push(errorDetailJson);
-                }
+    isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
+        if (self.schema is __Schema) {
+            ValidatorVisitor validator = new(<__Schema>self.schema);
+            validator.validate(document);
+            ErrorDetail[] errors = validator.getErrors();
+            if (errors.length() > 0) {
+                return getOutputObjectFromErrorDetail(errors);
             }
-            return errors;
+        } else {
+            ErrorDetail errorDetail = {
+                message: "GraphQL Schema is not present. Make sure to attach the service",
+                locations: []
+            };
         }
     }
 
-    isolated function validateDocument(parser:DocumentNode document) returns ErrorDetail[]? {
-        ValidatorVisitor validator = new;
-        validator.validate(document);
-        ErrorDetail[] errors = validator.getErrors();
-        if (errors.length() > 0) {
-            return errors;
-        }
-    }
-
-    isolated function execute(parser:DocumentNode document, string operationName) returns map<json> {
+    isolated function execute(parser:DocumentNode document, string operationName) returns OutputObject {
         return {};
         //map<json> data = {};
         //json[] errors = [];

@@ -26,20 +26,21 @@ isolated function getHttpListenerConfigs(ListenerConfiguration configs) returns 
     return httpConfigs;
 }
 
-isolated function handleGetRequests(Engine? engine, http:Request request) returns http:Response {
+isolated function handleGetRequests(Engine engine, http:Request request) returns http:Response {
     http:Response response = new;
     var query = request.getQueryParamValue(PARAM_QUERY);
     if (query is ()) {
+        // TODO: More meaningful error
         setResponseForBadRequest(response);
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
-        json payload = <@untainted>getOutputObjectForQuery(engine, query, operationName);
-        response.setPayload(payload);
+        OutputObject outputObject = engine.getOutputObjectForQuery(query, operationName);
+        response.setJsonPayload(<@untainted json>outputObject.cloneWithType(json)); // TODO: Handle error
     }
     return response;
 }
 
-isolated function handlePostRequests(Engine? engine, http:Request request) returns http:Response {
+isolated function handlePostRequests(Engine engine, http:Request request) returns http:Response {
     http:Response response = new;
     string contentType = request.getContentType();
     if (contentType == CONTENT_TYPE_JSON) {
@@ -55,7 +56,7 @@ isolated function handlePostRequests(Engine? engine, http:Request request) retur
     return response;
 }
 
-isolated function processRequestWithJsonPayload(Engine? engine, http:Request request, http:Response response) {
+isolated function processRequestWithJsonPayload(Engine engine, http:Request request, http:Response response) {
     var payload = request.getJsonPayload();
     if (payload is json) {
         return processJsonPayload(engine, <@untainted>payload, response);
@@ -65,7 +66,7 @@ isolated function processRequestWithJsonPayload(Engine? engine, http:Request req
     }
 }
 
-isolated function processJsonPayload(Engine? engine, json payload, http:Response response) {
+isolated function processJsonPayload(Engine engine, json payload, http:Response response) {
     var documentString = payload.query;
     string operationName = parser:ANONYMOUS_OPERATION;
     var operationNameInPayload = payload.operationName;
@@ -73,8 +74,8 @@ isolated function processJsonPayload(Engine? engine, json payload, http:Response
         operationName = resolveOperationName(operationNameInPayload);
     }
     if (documentString is string) {
-        json outputObject = getOutputObjectForQuery(engine, documentString, operationName);
-        response.setJsonPayload(outputObject);
+        OutputObject outputObject = engine.getOutputObjectForQuery(documentString, operationName);
+        response.setJsonPayload(<json>outputObject.cloneWithType(json)); // TODO: Handle error
     } else {
         setResponseForBadRequest(response);
     }
@@ -84,24 +85,6 @@ isolated function setResponseForBadRequest(http:Response response) {
     response.statusCode = 400;
     string message = "Bad request";
     response.setPayload(message);
-}
-
-isolated function getOutputObjectForQuery(Engine? engine, string documentString, string operationName) returns json {
-    map<json> outputObject = {};
-    if (engine is Engine) {
-        parser:DocumentNode|Error document = engine.parse(documentString);
-        if (document is Error) {
-            outputObject = getResultJsonForError(document);
-        } else {
-            var validationResult = engine.validate(document);
-            if (validationResult is json[]) {
-                outputObject["errors"] = validationResult;
-            } else {
-                outputObject = engine.execute(document, operationName);
-            }
-        }
-    }
-    return outputObject;
 }
 
 isolated function getErrorJson(string message) returns json {
