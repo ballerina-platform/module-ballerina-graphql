@@ -15,8 +15,8 @@ public class FieldNode {
     *Node;
     *ParentType;
 
-    public string name;
-    public Location location;
+    private string name;
+    private Location location;
     private ArgumentNode[] arguments;
     private FieldNode[] selections;
 
@@ -25,6 +25,14 @@ public class FieldNode {
         self.location = location;
         self.selections = [];
         self.arguments = [];
+    }
+
+    public isolated function getName() returns string {
+        return self.name;
+    }
+
+    public isolated function getLocation() returns Location {
+        return self.location;
     }
 
     public isolated function accept(Visitor v) {
