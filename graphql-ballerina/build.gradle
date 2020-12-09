@@ -93,6 +93,7 @@ task updateTomlFile {
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
         def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
         def stdlibDependentReflectVersion = project.stdlibReflectVersion.split("-")[0]
+        def stdlibDependentStringUtilsVersion = project.stdlibStringutilsVersion.split("-")[0]
         def stdlibDependentTimeVersion = project.stdlibTimeVersion.split("-")[0]
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
@@ -102,6 +103,7 @@ task updateTomlFile {
         newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
         newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
         newConfig = newConfig.replace("@stdlib.reflect.version@", stdlibDependentReflectVersion)
+        newConfig = newConfig.replace("@stdlib.stringutils.version@", stdlibDependentStringUtilsVersion)
         newConfig = newConfig.replace("@stdlib.time.version@", stdlibDependentTimeVersion)
         ballerinaConfigFile.text = newConfig
     }

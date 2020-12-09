@@ -25,6 +25,11 @@ version = "@stdlib.log.version@"
 
 [[dependency]]
 org = "ballerina"
+name = "stringutils"
+version = "@stdlib.stringutils.version@"
+
+[[dependency]]
+org = "ballerina"
 name = "time"
 version = "@stdlib.time.version@"
 
