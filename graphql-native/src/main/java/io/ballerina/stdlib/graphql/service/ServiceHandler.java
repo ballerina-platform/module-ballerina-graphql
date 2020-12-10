@@ -22,7 +22,7 @@ import io.ballerina.runtime.api.values.BObject;
 
 import java.io.PrintStream;
 
-import static io.ballerina.stdlib.graphql.utils.Constants.NATIVE_SERVICE_OBJECT;
+import static io.ballerina.stdlib.graphql.utils.Utils.NATIVE_SERVICE_OBJECT;
 
 /**
  * Handles the service objects related to Ballerina GraphQL implementation.
