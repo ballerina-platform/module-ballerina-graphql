@@ -31,6 +31,15 @@ returns string {
     return "Unknown argument \"" + argName + "\" on field \"" + parent.name + "." + argument.getName().value + "\".";
 }
 
+isolated function getNoSubfieldsError(string fieldName, __Type 'type) returns string {
+    return "Field \"" + fieldName + "\" must not have a selections since type \"" + 'type.name + "\" has no subfields.";
+}
+
+isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
+    return "Field \"" + fieldName + "\" of type \"" + typeName
+            + "\" must have a selection of subfields. Did you mean \"" + fieldName + " { ... }\"?";
+}
+
 isolated function getTypeName(parser:ArgumentValue value) returns string {
     typedesc kind = typeof value.value;
     return stringutils:split(kind.toString(), " ")[1];

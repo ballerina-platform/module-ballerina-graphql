@@ -19,13 +19,6 @@ import ballerina/java;
 
 import graphql.parser;
 
-isolated function getHttpListenerConfigs(ListenerConfiguration configs) returns http:ListenerConfiguration {
-    http:ListenerConfiguration httpConfigs = {
-        host: configs.host
-    };
-    return httpConfigs;
-}
-
 isolated function handleGetRequests(Engine engine, http:Request request) returns http:Response {
     http:Response response = new;
     var query = request.getQueryParamValue(PARAM_QUERY);
