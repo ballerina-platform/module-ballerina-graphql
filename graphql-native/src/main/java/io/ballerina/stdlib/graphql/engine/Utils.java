@@ -21,7 +21,6 @@ package io.ballerina.stdlib.graphql.engine;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
@@ -31,6 +30,7 @@ import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.InputValue;
 import io.ballerina.stdlib.graphql.schema.Schema;
@@ -67,6 +67,9 @@ public class Utils {
     public static final String OUTPUT_OBJECT_RECORD = "OutputObject";
     public static final String DATA_RECORD = "Data";
     public static final String ERROR_DETAIL_RECORD = "ErrorDetail";
+    public static final String LOCATION_RECORD = "Location";
+
+    public static final String RUNTIME_ERROR = "RuntimeError";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -78,8 +81,11 @@ public class Utils {
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
     private static final BString RETURN_TYPE_FIELD = StringUtils.fromString("returnType");
-    private static final BString DATA_FIELD = StringUtils.fromString("data");
-    private static final BString ERRORS_FIELD = StringUtils.fromString("errors");
+    private static final BString MESSAGE_FIELD = StringUtils.fromString("message");
+    private static final BString LOCATION_FIELD = StringUtils.fromString("location");
+    private static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
+    static final BString DATA_FIELD = StringUtils.fromString("data");
+    static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
     // Schema related constants
     private static final BString VALUE_OBJECT = StringUtils.fromString("OBJECT");
@@ -265,14 +271,33 @@ public class Utils {
 
     static BMap<BString, Object> getOutputObject() {
         BMap<BString, Object> outputObject = ValueCreator.createRecordValue(PACKAGE_ID, OUTPUT_OBJECT_RECORD);
-        BMap<BString, Object> dataRecord = ValueCreator.createRecordValue(PACKAGE_ID, DATA_RECORD);
-        outputObject.put(DATA_FIELD, dataRecord);
-
-        ArrayType errorDetailArrayType =
-                TypeCreator.createArrayType(ValueCreator.createRecordValue(PACKAGE_ID, ERROR_DETAIL_RECORD).getType());
-        BArray errorDetailArray = ValueCreator.createArrayValue(errorDetailArrayType);
-        outputObject.put(ERRORS_FIELD, errorDetailArray);
+        outputObject.put(DATA_FIELD, getDataRecord());
+        outputObject.put(ERRORS_FIELD, getErrorDetailArray());
         return outputObject;
+    }
+
+    static BMap<BString, Object> getDataRecord() {
+        return ValueCreator.createRecordValue(PACKAGE_ID, DATA_RECORD);
+    }
+
+    static BArray getErrorDetailArray() {
+        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(PACKAGE_ID, ERROR_DETAIL_RECORD);
+        return ValueCreator.createArrayValue(TypeCreator.createArrayType(errorDetail.getType()));
+    }
+
+    static BMap<BString, Object> getErrorDetailRecord(BString message, BObject fieldNode) {
+        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(PACKAGE_ID, ERROR_DETAIL_RECORD);
+        errorDetail.put(MESSAGE_FIELD, message);
+        errorDetail.put(LOCATIONS_FIELD, getLocationArrayFromNode(fieldNode));
+        return errorDetail;
+    }
+
+    private static BArray getLocationArrayFromNode(BObject node) {
+        BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
+        BMap<BString, Object> locationRecord = ValueCreator.createRecordValue(PACKAGE_ID, LOCATION_RECORD);
+        BArray locationArray = ValueCreator.createArrayValue(TypeCreator.createArrayType(locationRecord.getType()));
+        locationArray.append(location);
+        return locationArray;
     }
 
     static BString getTypeFromTag(int tag) {

@@ -16,47 +16,45 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.utils;
+package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.async.Callback;
-import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
-import java.io.PrintStream;
-
+import static io.ballerina.stdlib.graphql.engine.Utils.DATA_FIELD;
+import static io.ballerina.stdlib.graphql.engine.Utils.ERRORS_FIELD;
+import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.OUTPUT_OBJECT_FIELD;
+import static io.ballerina.stdlib.graphql.engine.Utils.getErrorDetailRecord;
 
 /**
  * This class handles the notifications from Ballerina resource execution.
  */
 public class CallableUnitCallback implements Callback {
-    PrintStream console = System.out;
 
-    private BMap<BString, Object> outputObject;
-    private BMap<BString, Object> parentField;
-    private BString fieldValue;
     private BObject visitor;
+    private BObject fieldNode;
 
-    public CallableUnitCallback(BMap<BString, Object> outputObject, BMap<BString, Object> parentField,
-                                BString fieldValue, BObject visitor) {
-        this.outputObject = outputObject;
-        this.parentField = parentField;
-        this.fieldValue = fieldValue;
+    public CallableUnitCallback(BObject visitor, BObject fieldNode) {
         this.visitor = visitor;
+        this.fieldNode = fieldNode;
     }
 
     @Override
     public void notifySuccess(Object result) {
-        this.parentField.put(this.fieldValue, result);
-        this.visitor.set(OUTPUT_OBJECT_FIELD, outputObject);
+        BMap<BString, Object> output = visitor.getMapValue(OUTPUT_OBJECT_FIELD);
+        BMap<BString, Object> data = (BMap<BString, Object>) output.getMapValue(DATA_FIELD);
+        data.put(this.fieldNode.getStringValue(NAME_FIELD), result);
     }
 
     @Override
     public void notifyFailure(BError error) {
-        this.outputObject.put(StringUtils.fromString("Error"), error);
-        console.println(error.toString());
+        BMap<BString, Object> output = visitor.getMapValue(OUTPUT_OBJECT_FIELD);
+        BArray errors = output.getArrayValue(ERRORS_FIELD);
+        errors.append(getErrorDetailRecord(error.getErrorMessage(), this.fieldNode));
     }
 }

@@ -24,7 +24,10 @@ public class ExecutorVisitor {
 
     public isolated function init(Service serviceType) {
         self.serviceType = serviceType;
-        self.outputObject = {};
+        self.outputObject = {
+            data: {},
+            errors: []
+        };
     }
 
     public isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
