@@ -16,6 +16,7 @@
 
 import ballerina/http;
 import ballerina/test;
+import ballerina/io;
 
 type Address record {
     string number;
@@ -76,6 +77,27 @@ function testDocumentValidation() returns @tainted error? {
     };
     json actualPayload = <json> check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
+    check gqlListener.detach(serviceWithMultipleResources);
+}
+
+@test:Config {
+    groups: ["engine", "unit"],
+    dependsOn: ["testDocumentValidation"]
+}
+function testQueryResult() returns @tainted error? {
+    check gqlListener.attach(serviceWithMultipleResources, "graphql");
+    string documentString = getShorthandDocument();
+    http:Client httpClient = new("http://localhost:9091/graphql");
+    json payload = {
+        query: documentString
+    };
+    http:Request request = new;
+    request.setPayload(payload);
+
+    json actualPayload = <json> check httpClient->post("/", request, json);
+    io:println(actualPayload);
+    //test:assertEquals(actualPayload, expectedPayload);
+    check gqlListener.detach(serviceWithMultipleResources);
 }
 
 service object {} serviceWithResourcesReturningRecords = service object {

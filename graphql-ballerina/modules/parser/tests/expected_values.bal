@@ -30,7 +30,7 @@ Document shorthandDocument = {
                     }
                 },
                 {
-                    name: "birthdate",
+                    name: "id",
                     arguments: [],
                     selections: [],
                     location: {

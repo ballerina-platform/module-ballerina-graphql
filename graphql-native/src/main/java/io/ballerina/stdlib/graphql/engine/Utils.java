@@ -18,8 +18,10 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
+import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
@@ -27,6 +29,7 @@ import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.InputValue;
@@ -46,6 +49,9 @@ import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
+import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUILTIN_PKG_PREFIX;
+import static io.ballerina.stdlib.graphql.utils.Utils.MODULE_NAME;
+import static io.ballerina.stdlib.graphql.utils.Utils.MODULE_VERSION;
 import static io.ballerina.stdlib.graphql.utils.Utils.PACKAGE_ID;
 
 /**
@@ -58,16 +64,22 @@ public class Utils {
     public static final String FIELD_RECORD = "__Field";
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
+    public static final String OUTPUT_OBJECT_RECORD = "OutputObject";
+    public static final String DATA_RECORD = "Data";
+    public static final String ERROR_DETAIL_RECORD = "ErrorDetail";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
     private static final BString TYPES_FIELD = StringUtils.fromString("types");
     private static final BString TYPE_FIELD = StringUtils.fromString("type");
-    private static final BString NAME_FIELD = StringUtils.fromString("name");
+    static final BString NAME_FIELD = StringUtils.fromString("name");
     private static final BString KIND_FIELD = StringUtils.fromString("kind");
     private static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
+    private static final BString RETURN_TYPE_FIELD = StringUtils.fromString("returnType");
+    private static final BString DATA_FIELD = StringUtils.fromString("data");
+    private static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
     // Schema related constants
     private static final BString VALUE_OBJECT = StringUtils.fromString("OBJECT");
@@ -79,6 +91,24 @@ public class Utils {
     static final String FLOAT = "Float";
     static final String ID = "Id";
 
+    // Field return types
+    static final BString PRIMITIVE = StringUtils.fromString("PRIMITIVE");
+    static final BString RECORD = StringUtils.fromString("RECORD");
+    static final BString SERVICE = StringUtils.fromString("SERVICE");
+
+    // Visitor object fields
+    static final BString SERVICE_TYPE_FIELD = StringUtils.fromString("serviceType");
+    static final BString OUTPUT_OBJECT_FIELD = StringUtils.fromString("outputObject");
+    static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
+    static final BString FIELD_TYPE_FIELD = StringUtils.fromString("fieldType");
+
+    // Inter-op function names
+    static final String EXECUTE_RESOURCE_FUNCTION = "executeResources";
+
+
+    public static final StrandMetadata EXECUTE_RESOURCE_METADATA =
+            new StrandMetadata(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION, EXECUTE_RESOURCE_FUNCTION);
+
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
         ResourceFunctionType[] resourceFunctions = serviceType.getResourceFunctions();
         for (ResourceFunctionType resourceFunction : resourceFunctions) {
@@ -89,13 +119,13 @@ public class Utils {
     private static SchemaField getFieldForResource(ResourceFunctionType resourceFunction, Schema schema) {
         String fieldName = getResourceName(resourceFunction);
         // TODO: Check accessor: Only get allowed
-        SchemaField field = new SchemaField(fieldName);
+        SchemaField field = new SchemaField(fieldName, resourceFunction.getReturnParameterType().getTag());
         addArgsToField(field, resourceFunction, schema);
         field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
         return field;
     }
 
-    private static String getResourceName(ResourceFunctionType resourceFunction) {
+    static String getResourceName(ResourceFunctionType resourceFunction) {
         String[] nameArray = resourceFunction.getResourcePath();
         int nameIndex = nameArray.length;
         return nameArray[nameIndex - 1];
@@ -128,7 +158,7 @@ public class Utils {
             SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT);
             Collection<Field> recordFields = record.getFields().values();
             for (Field recordField : recordFields) {
-                SchemaField field = new SchemaField(recordField.getFieldName());
+                SchemaField field = new SchemaField(recordField.getFieldName(), tag);
                 field.setType(getSchemaTypeForBalType(recordField.getFieldType(), schema));
                 fieldType.addField(field);
             }
@@ -208,6 +238,7 @@ public class Utils {
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
         fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(fieldObject.getType()));
         fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(fieldObject.getArgs()));
+        fieldRecord.put(RETURN_TYPE_FIELD, getTypeFromTag(fieldObject.getTypeTag()));
         return fieldRecord;
     }
 
@@ -230,5 +261,28 @@ public class Utils {
             inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
         }
         return inputValueRecord;
+    }
+
+    static BMap<BString, Object> getOutputObject() {
+        BMap<BString, Object> outputObject = ValueCreator.createRecordValue(PACKAGE_ID, OUTPUT_OBJECT_RECORD);
+        BMap<BString, Object> dataRecord = ValueCreator.createRecordValue(PACKAGE_ID, DATA_RECORD);
+        outputObject.put(DATA_FIELD, dataRecord);
+
+        ArrayType errorDetailArrayType =
+                TypeCreator.createArrayType(ValueCreator.createRecordValue(PACKAGE_ID, ERROR_DETAIL_RECORD).getType());
+        BArray errorDetailArray = ValueCreator.createArrayValue(errorDetailArrayType);
+        outputObject.put(ERRORS_FIELD, errorDetailArray);
+        return outputObject;
+    }
+
+    static BString getTypeFromTag(int tag) {
+        switch (tag) {
+            case RECORD_TYPE_TAG:
+                return RECORD;
+            case SERVICE_TAG:
+                return SERVICE;
+            default:
+                return PRIMITIVE;
+        }
     }
 }

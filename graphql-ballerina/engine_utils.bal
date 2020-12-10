@@ -64,26 +64,10 @@ isolated function getErrorJsonFromError(Error err) returns json {
     return result;
 }
 
-// isolated function getLocationsJsonArray(parser:Location[]? locations) returns json[] {
-//     json[] jsonLocations = [];
-//     if (locations is Location[]) {
-//         foreach Location location in locations {
-//             json jsonLocation = <json>location.cloneWithType(json);
-//             jsonLocations.push(jsonLocation);
-//         }
-//     }
-//     return jsonLocations;
-// }
-
 isolated function createSchema(Service s) returns __Schema = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 
-//isolated function getFieldNames(service s) returns string[] = @java:Method {
-//    'class: "io.ballerina.stdlib.graphql.engine.Engine"
-//} external;
-
-//isolated function validateField(Listener 'listener, FieldNode fieldNode, RootOperationType kind) returns Error[]? =
-//@java:Method {
-//    'class: "io.ballerina.stdlib.graphql.engine.Engine"
-//} external;
+isolated function executeResources(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+} external;

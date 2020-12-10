@@ -29,10 +29,10 @@ public class Utils {
     private Utils() {
     }
 
-    private static final String MODULE_NAME = "graphql";
-    private static final String VERSION = "0.1.0";
+    public static final String MODULE_NAME = "graphql";
+    public static final String MODULE_VERSION = "0.1.0";
 
-    public static final Module PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, VERSION);
+    public static final Module PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION);
 
     // Operations
     public static final String OPERATION_QUERY = "Query";
