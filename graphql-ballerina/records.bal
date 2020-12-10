@@ -16,32 +16,39 @@
 
 import graphql.parser;
 
-# Defines the configurations related to Ballerina GraphQL listener
-#
-# + host - The host name/IP of the GraphQL endpoint
-public type ListenerConfiguration record {|
-    string host = "0.0.0.0";
-|};
-
 public type Data record {
     // Intentionally kept empty
 };
 
+# Represents a location in a GraphQL document.
 public type Location record {
     *parser:Location;
 };
 
+# Represents the details of an error occurred during parsing, validating, or executing a GraphQL document.
+#
+# + message - The details of the error
+# + locations - The locations in the GraphQL document related to the error
+# + path - The GraphQL resource path of the error
 public type ErrorDetail record {|
     string message;
     Location[] locations;
     (int|string)[] path?;
 |};
 
+# Represents a GraphQL output object.
+#
+# + data - The corresponding data for a GraphQL request
+# + errors - The errors occurred while processing a GraphQL request
 public type OutputObject record {
     Data data?;
     ErrorDetail[] errors?;
 };
 
+# Represents a GraphQL schema. This will be auto-generated when a service is attached to the GraphQL listener.
+#
+# + types - The types defined in the GraphQL schema
+# + queryType - The root operation type of the GraphQL service
 public type __Schema record {|
     map<__Type> types;
     __Type queryType;
@@ -52,6 +59,11 @@ public type __Schema record {|
     //__Directive[] directives;
 |};
 
+# Represents a GraphQL type.
+#
+# + kind - The `graphql:__TypeKind` type of the type
+# + name - The name of the type
+# + fields - The fields of the given type
 public type __Type record {
     __TypeKind kind;
     string name;
@@ -60,6 +72,11 @@ public type __Type record {
     // TODO: Add following: description, inputFields, interfaces, possibleTypes, enumValues, ofType
 };
 
+# Represents a GraphQL field.
+#
+# + name - Name of the field
+# + type - The type of the field
+# + args - The arguments needed to query the field
 public type __Field record {|
     string name;
     __Type 'type;
@@ -70,6 +87,11 @@ public type __Field record {|
     //string deprecationReason = "";
 |};
 
+# Represents an input value for a GraphQL field.
+#
+# + name - Name of the input argument
+# + type - The type of the input argument
+# + defaultValue - The string reperesentation of the default value of the input argument
 public type __InputValue record {|
 	string name;
 	__Type 'type;
