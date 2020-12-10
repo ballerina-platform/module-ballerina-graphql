@@ -22,9 +22,12 @@ import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 import java.io.PrintStream;
+
+import static io.ballerina.stdlib.graphql.engine.Utils.OUTPUT_OBJECT_FIELD;
 
 /**
  * This class handles the notifications from Ballerina resource execution.
@@ -35,17 +38,20 @@ public class CallableUnitCallback implements Callback {
     private BMap<BString, Object> outputObject;
     private BMap<BString, Object> parentField;
     private BString fieldValue;
+    private BObject visitor;
 
     public CallableUnitCallback(BMap<BString, Object> outputObject, BMap<BString, Object> parentField,
-                                BString fieldValue) {
+                                BString fieldValue, BObject visitor) {
         this.outputObject = outputObject;
         this.parentField = parentField;
         this.fieldValue = fieldValue;
+        this.visitor = visitor;
     }
 
     @Override
     public void notifySuccess(Object result) {
         this.parentField.put(this.fieldValue, result);
+        this.visitor.set(OUTPUT_OBJECT_FIELD, outputObject);
     }
 
     @Override
