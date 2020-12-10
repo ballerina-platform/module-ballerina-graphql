@@ -38,6 +38,9 @@ public class Engine {
         if (validationResult is OutputObject) {
             return validationResult;
         } else {
+            if (document.getOperations().length() == 1) {
+                return self.execute(document.getOperations()[0]);
+            }
             foreach parser:OperationNode operationNode in document.getOperations() {
                 if (operationName == operationNode.getName()) {
                     return self.execute(operationNode);

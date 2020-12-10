@@ -14,34 +14,44 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//import ballerina/http;
-//import ballerina/test;
+import ballerina/http;
+import ballerina/test;
 
-//listener Listener gqlListener = new(9091);
-//
-//@test:Config {
-//    groups: ["listener", "unit"]
-//}
-//function testShortHandQueryResult() returns @tainted error? {
-//    string document = getShorthandNotationDocument();
-//    var result = gqlListener.__attach(gqlService1);
-//    json payload = {
-//        query: document
-//    };
-//    json expectedPayload = {
-//        data: {
-//            name: "John Doe",
-//            birthdate: "01-01-1980"
-//        }
-//    };
-//    http:Client httpClient = new("http://localhost:9091/customPath");
-//    http:Request request = new;
-//    request.setPayload(payload);
-//
-//    json actualPayload = <json> check httpClient->post("/", request, json);
-//    test:assertEquals(actualPayload, expectedPayload);
-//    var stopResult = gqlListener.__immediateStop();
-//}
+listener Listener graphqlListener = new(port = 9092);
+
+service /graphql on graphqlListener {
+    isolated resource function get name() returns string {
+        return "James Moriarty";
+    }
+
+    isolated resource function get birthdate() returns string {
+        return "15-05-1848";
+    }
+}
+
+
+@test:Config {
+    groups: ["listener", "unit"]
+}
+function testShortHandQueryResult() returns @tainted error? {
+    string document = getGeneralNotationDocument();
+    json payload = {
+        query: document
+    };
+    json expectedPayload = {
+        data: {
+            name: "James Moriarty",
+            birthdate: "15-05-1848"
+        },
+        errors: []
+    };
+    http:Client httpClient = new("http://localhost:9092/graphql");
+    http:Request request = new;
+    request.setPayload(payload);
+
+    json actualPayload = <json> check httpClient->post("/", request, json);
+    test:assertEquals(actualPayload, expectedPayload);
+}
 //
 //@test:Config{
 //    groups: ["listener", "unit"]

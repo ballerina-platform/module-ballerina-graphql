@@ -22,7 +22,14 @@ import graphql.parser;
 const SHORTHAND_DOCUMENT = "document_shorthand.txt";
 const INVALID_SHORTHAND_DOCUMENT = "document_shorthand_invalid_query.txt";
 const DOCUMENT_TWO_ANONYMOUS_OPERATIONS = "two_anonymous_operations.txt";
+const DOCUMENT_GENERAL = "document_general.txt";
 const DIR_DOCUMENTS = "documents";
+
+function getGeneralNotationDocument() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_GENERAL);
+    return readFileAndGetString(path);
+}
 
 function getShorthandDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
