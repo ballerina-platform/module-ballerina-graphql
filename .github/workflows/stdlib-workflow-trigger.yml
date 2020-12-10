@@ -1,0 +1,24 @@
+name: Stdlib Dependency Update
+
+on:
+  push:
+    branches: 
+      - master
+    paths:
+      - 'build.gradle'
+      - 'gradle.properties'
+
+jobs:
+  trigger-workflow:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'ballerina-platform'
+    steps:
+      - name: Initiating repository event
+        run: |
+          curl -u ${{ secrets.BALLERINA_BOT_USERNAME }} -X POST \
+          https://api.github.com/repos/ballerina-platform/ballerina-standard-library/dispatches \
+          -H 'Accept: application/vnd.github.v3+json' \
+          -H 'Authorization: token ${{ secrets.BALLERINA_BOT_TOKEN }}' \
+          --data '{
+            "event_type": "dependency-update"
+          }'
