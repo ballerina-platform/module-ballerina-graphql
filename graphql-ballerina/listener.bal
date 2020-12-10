@@ -16,11 +16,18 @@
 
 import ballerina/http;
 
+# Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
     private Engine engine;
     private HttpService httpService;
 
+    # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
+    # provided to initialize the listener.
+    #
+    # + httpListener - An `http:Listener` instance, on which the GraphQL service will be served. If this is provided
+    #                  with a prot number, the port number will be ignored
+    # + port - The port number to which the GraphQL endpoint should listen to
     public isolated function init(http:Listener? httpListener = (), int? port = ()) {
         if (httpListener is ()) {
             if (port is int) {
@@ -37,24 +44,42 @@ public class Listener {
         self.httpService = new(self.engine);
     }
 
+    # Attaches the provided service to the Listener.
+    #
+    # + s - The `graphql:Service` object to attach
+    # + name - The path of the service to be hosted
+    # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         checkpanic self.httpListener.attach(self.httpService, name);
         self.engine.registerService(s);
     }
 
+    # Detaches the provided service from the Listener.
+    #
+    # + s - The service to be detached
+    # + return - An `error`, if an error occurred during the service detaching process
     public isolated function detach(Service s) returns error? {
         checkpanic self.httpListener.detach(self.httpService);
         return detach(self, s);
     }
 
+    # Starts the attached service.
+    #
+    # + return - An `error`, if an error occurred during the listener starting process
     public isolated function 'start() returns error? {
         checkpanic self.httpListener.'start();
     }
 
+    # Gracefully stops the graphql listener. Already accepted requests will be served before the connection closure.
+    #
+    # + return - An `error`, if an error occurred during the listener stopping process
     public isolated function gracefulStop() returns error? {
         return self.httpListener.gracefulStop();
     }
 
+    # Stops the service listener immediately. It is not implemented yet.
+    #
+    # + return - An `error`, if an error occurred during the listener stopping process
     public isolated function immediateStop() returns error? {
         return self.httpListener.immediateStop();
     }
