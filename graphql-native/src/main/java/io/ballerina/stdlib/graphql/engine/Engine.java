@@ -30,21 +30,17 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
-import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
 
 import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_RESOURCE_METADATA;
 import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.OUTPUT_OBJECT_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.PRIMITIVE;
-import static io.ballerina.stdlib.graphql.engine.Utils.RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.SERVICE_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
-import static io.ballerina.stdlib.graphql.engine.Utils.getOutputObject;
 import static io.ballerina.stdlib.graphql.engine.Utils.getResourceName;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaTypeForBalType;
@@ -70,29 +66,33 @@ public class Engine {
         BObject service = (BObject) visitor.get(SERVICE_TYPE_FIELD);
         ServiceType serviceType = (ServiceType) service.getType();
         BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
-        BMap<BString, Object> outputObject = getOutputObject();
         BString returnType = fieldNode.getStringValue(FIELD_TYPE_FIELD);
 
         for (ResourceFunctionType resourceFunction : serviceType.getResourceFunctions()) {
             String resourceName = getResourceName(resourceFunction);
             if (resourceName.equals(expectedResourceName.getValue())) {
-                if (returnType.getValue().equals(PRIMITIVE.getValue())) {
-                    executeResource(environment, service, resourceFunction.getName(), expectedResourceName,
-                                    outputObject, outputObject);
-                } else if (returnType.getValue().equals(RECORD.getValue())) {
-
-                } else {
-
-                }
+                executeResource(environment, returnType, service, resourceFunction, visitor, fieldNode);
+                break;
             }
         }
-        fieldNode.set(OUTPUT_OBJECT_FIELD, outputObject);
     }
 
-    public static void executeResource(Environment environment, BObject service, String resourceName, BString fieldName,
-                                       BMap<BString, Object> outputObject, BMap<BString, Object> parent) {
-        Callback callback = new CallableUnitCallback(outputObject, parent, fieldName);
-        environment.getRuntime().invokeMethodAsync(service, resourceName, null, EXECUTE_RESOURCE_METADATA, callback);
+    public static void executeResource(Environment environment, BString returnType, BObject service,
+                                       ResourceFunctionType resourceFunction, BObject visitor,
+                                       BObject fieldNode) {
+        if (returnType.getValue().equals(PRIMITIVE.getValue())) {
+            executePrimitiveResource(environment, service, resourceFunction.getName(), resourceFunction, visitor,
+                                     fieldNode);
+        }
+    }
+
+    public static void executePrimitiveResource(Environment environment, BObject service, String resourceName,
+                                                ResourceFunctionType resourceFunction, BObject visitor,
+                                                BObject fieldNode) {
+        Type returnType = resourceFunction.getType().getReturnType();
+        Callback callback = new CallableUnitCallback(visitor, fieldNode);
+        environment.getRuntime().invokeMethodAsync(service, resourceName, null, EXECUTE_RESOURCE_METADATA, callback,
+                                                   null, returnType);
     }
 
     private static void initializeIntrospectionTypes(Schema schema) {
