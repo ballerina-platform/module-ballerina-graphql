@@ -35,8 +35,8 @@ import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaTypeForBalType;
-import static io.ballerina.stdlib.graphql.utils.Constants.OPERATION_QUERY;
-import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
+import static io.ballerina.stdlib.graphql.utils.Utils.OPERATION_QUERY;
+import static io.ballerina.stdlib.graphql.utils.Utils.PACKAGE_ID;
 
 /**
  * This handles Ballerina GraphQL Engine.

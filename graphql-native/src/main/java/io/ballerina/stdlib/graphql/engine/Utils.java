@@ -46,7 +46,7 @@ import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.stdlib.graphql.utils.Constants.PACKAGE_ID;
+import static io.ballerina.stdlib.graphql.utils.Utils.PACKAGE_ID;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
