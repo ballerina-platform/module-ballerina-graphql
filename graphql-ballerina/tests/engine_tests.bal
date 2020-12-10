@@ -16,7 +16,6 @@
 
 import ballerina/http;
 import ballerina/test;
-import ballerina/io;
 
 type Address record {
     string number;
@@ -94,16 +93,23 @@ function testQueryResult() returns @tainted error? {
     http:Request request = new;
     request.setPayload(payload);
 
+    json expectedPayload = {
+        data: {
+            name: "John Doe",
+            id: 1
+        },
+        errors: []
+    };
+
     json actualPayload = <json> check httpClient->post("/", request, json);
-    io:println(actualPayload);
-    //test:assertEquals(actualPayload, expectedPayload);
+    test:assertEquals(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
 
 service object {} serviceWithResourcesReturningRecords = service object {
     isolated resource function get person() returns Person {
         return {
-            name: "John Doe",
+            name: "Sherlock Holmes",
             age: 20,
             address: {
                 number: "221/B",

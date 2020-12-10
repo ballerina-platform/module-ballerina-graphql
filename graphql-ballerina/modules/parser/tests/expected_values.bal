@@ -63,20 +63,11 @@ Document namedOperation = {
                     }
                 },
                 {
-                    name: "id",
-                    arguments: [],
-                    selections: [],
-                    location: {
-                        line: 3,
-                        column: 5
-                    }
-                },
-                {
                     name: "birthdate",
                     arguments: [],
                     selections: [],
                     location: {
-                        line: 4,
+                        line: 3,
                         column: 5
                     }
                 }
