@@ -16,13 +16,16 @@
 
 import graphql.parser;
 
+# Represents the Ballerina GraphQL engine.
 public class Engine {
     private Listener 'listener;
     private __Schema? schema;
+    private Service? graphqlService;
 
     public isolated function init(Listener 'listener) {
         self.'listener = 'listener;
         self.schema = ();
+        self.graphqlService = ();
     }
 
     isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
@@ -35,11 +38,22 @@ public class Engine {
         if (validationResult is OutputObject) {
             return validationResult;
         } else {
-            return self.execute(document, operationName);
+            foreach parser:OperationNode operationNode in document.getOperations() {
+                if (operationName == operationNode.getName()) {
+                    return self.execute(operationNode);
+                }
+            }
+            string message = "Operation \"" + operationName + "\" is not present in the provided GraphQL document.";
+            ErrorDetail errorDetail = {
+                message: message,
+                locations: []
+            };
+            return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
 
     isolated function registerService(Service s) {
+        self.graphqlService = s;
         self.schema = createSchema(s);
     }
 
@@ -63,48 +77,24 @@ public class Engine {
             }
         } else {
             ErrorDetail errorDetail = {
-                message: "GraphQL Schema is not present. Make sure to attach the service",
+                message: "Internal Error: GraphQL Schema is not present.",
                 locations: []
             };
+            return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
 
-    isolated function execute(parser:DocumentNode document, string operationName) returns OutputObject {
-        return {};
-        //map<json> data = {};
-        //json[] errors = [];
-        //int errorCount = 0;
-        //Operation[] operations = document.operations;
-        //Operation? operationToExecute = ();
-        //foreach Operation operation in operations {
-        //    if (operationName == operation.name) {
-        //        operationToExecute = operation;
-        //        break;
-        //    }
-        //}
-        //if (operationToExecute is ()) {
-        //    string message = "Unknown operation named \"" + operationName + "\".";
-        //    OperationNotFoundError err = OperationNotFoundError(message);
-        //    errors[errorCount] = getErrorJsonFromError(err);
-        //    return getResultJson(data, errors);
-        //}
-        //
-        //Operation operation = <Operation>operationToExecute;
-        //Field[] fields = operation.fields;
-        //foreach Field 'field in fields {
-        //    var resourceValue = executeResource(self.'listener, 'field);
-        //    if (resourceValue is error) {
-        //        string message = resourceValue.message();
-        //        ErrorRecord errorRecord = getErrorRecordFromField('field);
-        //        ExecutionError err = ExecutionError(message, errorRecord = errorRecord);
-        //        errors[errorCount] = getErrorJsonFromError(err);
-        //        errorCount += 1;
-        //    } else if (resourceValue is ()) {
-        //        data['field.name] = null;
-        //    } else {
-        //        data['field.name] = resourceValue;
-        //    }
-        //}
-        //return getResultJson(data, errors);
+    isolated function execute(parser:OperationNode operationNode) returns OutputObject {
+        if (self.graphqlService is ()) {
+            ErrorDetail errorDetail = {
+                message: "Internal Error: GraphQL service is not available.",
+                locations: []
+            };
+            return getOutputObjectFromErrorDetail(errorDetail);
+        }
+        Service s = <Service>self.graphqlService;
+        ExecutorVisitor executor = new(s);
+        OutputObject outputObject = executor.getExecutorResult(operationNode);
+        return outputObject;
     }
 }

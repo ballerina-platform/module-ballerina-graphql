@@ -19,12 +19,14 @@ public class FieldNode {
     private Location location;
     private ArgumentNode[] arguments;
     private FieldNode[] selections;
+    private FieldType fieldType;
 
     public isolated function init(string name, Location location) {
         self.name = name;
         self.location = location;
         self.selections = [];
         self.arguments = [];
+        self.fieldType = PRIMITIVE;
     }
 
     public isolated function getName() returns string {
@@ -53,5 +55,9 @@ public class FieldNode {
 
     public isolated function getSelections() returns FieldNode[] {
         return self.selections;
+    }
+
+    public isolated function setFieldType(FieldType fieldType) {
+        self.fieldType = fieldType;
     }
 }

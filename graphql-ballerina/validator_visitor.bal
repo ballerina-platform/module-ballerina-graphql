@@ -75,6 +75,7 @@ public class ValidatorVisitor {
             return;
         }
         __Field schemaField = <__Field>schemaFieldValue;
+        fieldNode.setFieldType(<parser:FieldType>schemaField.returnType);
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
         map<__InputValue>? schemaArgs = schemaField?.args;
 
