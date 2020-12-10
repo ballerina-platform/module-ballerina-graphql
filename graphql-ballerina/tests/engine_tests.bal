@@ -92,7 +92,7 @@ service object {} serviceWithResourcesReturningRecords = service object {
     }
 };
 
-service object {} serviceWithMultipleResources = service object {
+Service serviceWithMultipleResources = service object {
     isolated resource function get name() returns string {
         return "John Doe";
     }

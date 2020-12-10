@@ -54,6 +54,7 @@ public class ValidatorVisitor {
         }
     }
 
+    // TODO: Simplify this function
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         string requiredFieldName = fieldNode.getName();
         __Type parentType = <__Type>data;
@@ -93,6 +94,27 @@ public class ValidatorVisitor {
                     string message = getUnknownArgumentErrorMessage(argName, schemaField, argumentNode);
                     ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
                     self.errors.push(errorDetail);
+                }
+            }
+        }
+
+        __Type fieldType = schemaField.'type;
+        parser:FieldNode[] selections = fieldNode.getSelections();
+
+        if (fieldType.kind == SCALAR) {
+            if (selections.length() > 0) {
+                string message = getNoSubfieldsError(requiredFieldName, fieldType);
+                ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
+                self.errors.push(errorDetail);
+            }
+        } else if (fieldType.kind == OBJECT) {
+            if (selections.length() == 0) {
+                string message = getMissingSubfieldsError(requiredFieldName, fieldType.name);
+                ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
+                self.errors.push(errorDetail);
+            } else {
+                foreach parser:FieldNode subFieldNode in selections {
+                    self.visitField(subFieldNode, fieldType);
                 }
             }
         }
