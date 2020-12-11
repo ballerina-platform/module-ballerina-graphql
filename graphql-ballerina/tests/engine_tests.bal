@@ -97,8 +97,7 @@ function testQueryResult() returns @tainted error? {
         data: {
             name: "John Doe",
             id: 1
-        },
-        errors: []
+        }
     };
 
     json actualPayload = <json> check httpClient->post("/", request, json);

@@ -21,6 +21,8 @@ public class ExecutorVisitor {
 
     private Service serviceType;
     private OutputObject outputObject;
+    private map<anydata> data;
+    private ErrorDetail[] errors;
 
     public isolated function init(Service serviceType) {
         self.serviceType = serviceType;
@@ -28,11 +30,13 @@ public class ExecutorVisitor {
             data: {},
             errors: []
         };
+        self.data = {};
+        self.errors = [];
     }
 
     public isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
         self.visitOperation(operationNode);
-        return self.outputObject;
+        return getOutputObject(self.data, self.errors);
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode) {
@@ -42,15 +46,39 @@ public class ExecutorVisitor {
     public isolated function visitOperation(parser:OperationNode operationNode) {
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode fieldNode in selections {
-            self.visitField(fieldNode);
+            var fieldResult = self.visitField(fieldNode, self.data);
+            if (fieldResult is error) { // TODO: Check proper error
+                self.errors.push(getErrorDetailRecord(fieldResult.message(), fieldNode.getLocation()));
+            } else {
+                self.data[fieldNode.getName()] = fieldResult;
+            }
         }
     }
 
-    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        executeResources(self, fieldNode);
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata|error {
+        map<Scalar> arguments = {};
+        foreach parser:ArgumentNode argument in fieldNode.getArguments() {
+            var argumentValues = self.visitArgument(argument);
+            arguments[argumentValues.name] = argumentValues.value;
+        }
+
+        if (fieldNode.getFieldType() is parser:PRIMITIVE) {
+            return wait executeSingleResource(self, fieldNode, arguments);
+        } else if (fieldNode.getFieldType() is parser:RECORD) {
+
+        } else {
+
+        }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ())
+    returns record { string name; Scalar value; } {
+        Scalar value = argumentNode.getValue().value;
+        string name = argumentNode.getName().value;
+
+        return {
+            name: name,
+            value: value
+        };
     }
 }
