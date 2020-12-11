@@ -39,30 +39,16 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function getResultJsonForError(Error err) returns map<json> {
-    map<json> result = {};
-    json[] jsonErrors = [getErrorJsonFromError(err)];
-    result[RESULT_FIELD_ERRORS] = jsonErrors;
-    return result;
-}
-
-isolated function getResultJson(map<json> data, json[] errors) returns map<json> {
-    map<json> result = {};
-    if (errors.length() > 0) {
-        result[RESULT_FIELD_ERRORS] = errors;
+isolated function getFieldMapForSelection(parser:FieldNode fieldNode, map<anydata> data) returns map<anydata>|error {
+    map<anydata> result = {};
+    foreach parser:FieldNode selection in fieldNode.getSelections() {
+        var fieldValue = data[selection.getName()];
+        if (fieldValue is map<anydata>) {
+            result[selection.getName()] = <anydata> getFieldMapForSelection(selection, fieldValue);
+        } else {
+            result[selection.getName()] = fieldValue;
+        }
     }
-    if (data.length() > 0) {
-        result[RESULT_FIELD_DATA] = data;
-    }
-    return result;
-}
-
-isolated function getErrorJsonFromError(Error err) returns json {
-    map<json> result = {};
-    result[FIELD_MESSAGE] = err.message();
-    parser:Location location = <parser:Location>err.detail()["location"];
-    json jsonLocation = <json>location.cloneWithType(json);
-    result[FIELD_LOCATIONS] = [jsonLocation];
     return result;
 }
 

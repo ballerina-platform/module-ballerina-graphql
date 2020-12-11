@@ -16,18 +16,6 @@
 
 import ballerina/test;
 
-type Address record {
-    string number;
-    string street;
-    string city;
-};
-
-type Person record {
-    string name;
-    int age;
-    Address address;
-};
-
 @test:Config {
     groups: ["engine", "unit"]
 }
@@ -44,20 +32,6 @@ function testSchemaGenerationForResourcesReturningRecords() {
     test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
 }
 
-service object {} serviceWithResourcesReturningRecords = service object {
-    isolated resource function get person() returns Person {
-        return {
-            name: "Sherlock Holmes",
-            age: 20,
-            address: {
-                number: "221/B",
-                street: "Baker Street",
-                city: "London"
-            }
-        };
-    }
-};
-
 Service serviceWithMultipleResources = service object {
     isolated resource function get name() returns string {
         return "John Doe";
@@ -69,5 +43,19 @@ Service serviceWithMultipleResources = service object {
 
     isolated resource function get birthdate(string format) returns string {
         return "01-01-1980";
+    }
+};
+
+service object {} serviceWithResourcesReturningRecords = service object {
+    isolated resource function get person() returns Person {
+        return {
+            name: "Sherlock Holmes",
+            age: 20,
+            address: {
+                number: "221/B",
+                street: "Baker Street",
+                city: "London"
+            }
+        };
     }
 };

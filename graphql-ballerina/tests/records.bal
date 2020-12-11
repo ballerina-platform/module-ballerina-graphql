@@ -14,21 +14,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class ErrorHandler {
-    private Error[] errors;
-    private boolean errorsPresent;
+public type Address record {
+    string number;
+    string street;
+    string city;
+};
 
-    public isolated function init() {
-        self.errors = [];
-        self.errorsPresent = false;
-    }
-
-    public isolated function add(Error err) {
-        self.errorsPresent = true;
-        self.errors.push(err);
-    }
-
-    public isolated function getErrors() returns Error[] {
-        return self.errors;
-    }
-}
+public type Person record {
+    string name;
+    int age;
+    Address address;
+};

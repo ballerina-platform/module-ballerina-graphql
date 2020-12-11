@@ -607,7 +607,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         }
                     },
                     args: {},
-                    returnType: "PRIMITIVE"
+                    returnType: "RECORD"
                 }
             }
         },
@@ -861,7 +861,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     }
                 },
                 args: {},
-                returnType: "PRIMITIVE"
+                returnType: "RECORD"
             }
         }
     }
