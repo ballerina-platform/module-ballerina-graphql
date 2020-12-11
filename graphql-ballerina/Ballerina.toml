@@ -20,11 +20,6 @@ version = "0.5.4"
 
 [[dependency]]
 org = "ballerina"
-name = "log"
-version = "1.0.4"
-
-[[dependency]]
-org = "ballerina"
 name = "stringutils"
 version = "0.5.4"
 
