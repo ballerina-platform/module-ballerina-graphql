@@ -17,15 +17,11 @@
 import ballerina/http;
 import ballerina/test;
 
-listener Listener graphqlListener = new(port = 9092);
+listener Listener functionWithArgumentsListener = new(port = 9093);
 
-service /graphql on graphqlListener {
-    isolated resource function get name() returns string {
-        return "James Moriarty";
-    }
-
-    isolated resource function get birthdate() returns string {
-        return "15-05-1848";
+service /graphql on functionWithArgumentsListener {
+    isolated resource function get greet(string name) returns string {
+        return "Hello, " + name;
     }
 }
 
@@ -33,21 +29,21 @@ service /graphql on graphqlListener {
 @test:Config {
     groups: ["listener", "unit"]
 }
-function testShortHandQueryResult() returns @tainted error? {
-    string document = getGeneralNotationDocument();
+function testFunctionsWithInputParameter() returns @tainted error? {
+    string document = getGreetingQueryDocument();
     json payload = {
         query: document
     };
     json expectedPayload = {
         data: {
-            name: "James Moriarty",
-            birthdate: "15-05-1848"
+            greet: "Hello, Thisaru"
         }
     };
-    http:Client httpClient = new("http://localhost:9092/graphql");
+    http:Client httpClient = new("http://localhost:9093/graphql");
     http:Request request = new;
     request.setPayload(payload);
 
     json actualPayload = <json> check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
+

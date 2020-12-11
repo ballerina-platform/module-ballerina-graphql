@@ -91,11 +91,11 @@ public class Utils {
     private static final BString VALUE_OBJECT = StringUtils.fromString("OBJECT");
 
     // Schema related type names
-    static final String INTEGER = "Integer";
-    static final String STRING = "String";
-    static final String BOOLEAN = "Boolean";
-    static final String FLOAT = "Float";
-    static final String ID = "Id";
+    static final String INTEGER = "int";
+    static final String STRING = "string";
+    static final String BOOLEAN = "boolean";
+    static final String FLOAT = "float";
+    static final String ID = "id";
 
     // Field return types
     static final BString PRIMITIVE = StringUtils.fromString("PRIMITIVE");
