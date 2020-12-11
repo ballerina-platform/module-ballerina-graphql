@@ -1,0 +1,254 @@
+/*
+ * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+description = 'Ballerina - GraphQl Ballerina'
+
+configurations {
+    jbalTools
+}
+
+dependencies {
+    jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
+        transitive = false
+    }
+    compile project(':graphql-native')
+}
+
+clean {
+    delete "$project.projectDir/target"
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
+
+task unpackJballerinaTools(type: Copy) {
+    configurations.jbalTools.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+        from zipTree(artifact.getFile())
+        into new File("${buildDir}/target/extracted-distributions", "jballerina-tools-zip")
+    }
+}
+
+task unpackStdLibs() {
+    doLast {
+        configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            copy {
+                from project.zipTree(artifact.getFile())
+                into new File("${buildDir}/target/extracted-distributions", artifact.name + "-zip")
+            }
+        }
+    }
+}
+
+task copyStdlibs(type: Copy) {
+    def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
+    into ballerinaDist
+
+    /* Standard Libraries */
+    configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+        def artifactExtractedPath = "${buildDir}/target/extracted-distributions/" + artifact.name + "-zip"
+        into("repo/balo") {
+            from "${artifactExtractedPath}/balo"
+        }
+        into("repo/cache") {
+            from "${artifactExtractedPath}/cache"
+        }
+    }
+}
+
+def packageName = "graphql"
+def packageOrg = "ballerina"
+def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
+def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
+def artifactCacheParent = file("$project.projectDir/build/cache_parent/")
+def artifactLibParent = file("$project.projectDir/build/lib_parent/")
+def tomlVersion = project.version.split("-")[0]
+def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
+def originalConfig = ballerinaConfigFile.text
+def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+
+task updateTomlFile {
+    doLast {
+        def stdlibDependentFileVersion = project.stdlibFileVersion.split("-")[0]
+        def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
+        def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
+        def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
+        def stdlibDependentReflectVersion = project.stdlibReflectVersion.split("-")[0]
+        def stdlibDependentStringUtilsVersion = project.stdlibStringutilsVersion.split("-")[0]
+        def stdlibDependentTimeVersion = project.stdlibTimeVersion.split("-")[0]
+
+        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
+        newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        newConfig = newConfig.replace("@stdlib.file.version@", stdlibDependentFileVersion)
+        newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
+        newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
+        newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
+        newConfig = newConfig.replace("@stdlib.reflect.version@", stdlibDependentReflectVersion)
+        newConfig = newConfig.replace("@stdlib.stringutils.version@", stdlibDependentStringUtilsVersion)
+        newConfig = newConfig.replace("@stdlib.time.version@", stdlibDependentTimeVersion)
+        ballerinaConfigFile.text = newConfig
+    }
+}
+
+task revertTomlFile {
+    doLast {
+        ballerinaConfigFile.text = originalConfig
+    }
+}
+
+task ballerinaTest {
+    dependsOn(":graphql-native:build")
+    dependsOn(unpackJballerinaTools)
+    dependsOn(updateTomlFile)
+    finalizedBy(revertTomlFile)
+
+    def groupParams = ""
+    if (project.hasProperty("groups")) {
+        groupParams = "--groups ${project.findProperty("groups")}"
+    }
+
+    def disableGroups = ""
+    if (project.hasProperty("disable")) {
+        disableGroups = "--disable-groups ${project.findProperty("disable")}"
+    }
+
+    def debugParams = ""
+    if (project.hasProperty("debug")) {
+        debugParams = "--debug ${project.findProperty("debug")}"
+    }
+
+    def balJavaDebugParam = ""
+    if (project.hasProperty("balJavaDebug")) {
+        balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
+    }
+
+    doLast {
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/ballerina.bat test ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/ballerina test ${groupParams} ${disableGroups} ${debugParams}"
+            }
+        }
+    }
+}
+
+test {
+    dependsOn(ballerinaTest)
+}
+
+task ballerinaBuild {
+    inputs.dir file(project.projectDir)
+    dependsOn(":graphql-native:build")
+    dependsOn(test)
+    dependsOn(unpackJballerinaTools)
+    dependsOn(updateTomlFile)
+    finalizedBy(revertTomlFile)
+
+    doLast {
+        // Build and populate caches
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build --skip-tests -c"
+            } else {
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c"
+            }
+        }
+        copy {
+            from file("$project.projectDir/target/balo")
+            into file("$artifactCacheParent/balo/${packageOrg}/${packageName}/${tomlVersion}")
+        }
+        copy {
+            from file("${artifactLibParent}/libs")
+            exclude '**/*-testable.jar'
+            exclude '**/tests_cache'
+            into file("${artifactCacheParent}/cache/")
+        }
+
+        // Publish to central
+        if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
+            println("Publishing to the ballerina central...")
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${packageName} && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "$distributionBinPath/ballerina push ${packageName}"
+                }
+            }
+
+        }
+        // Doc creation and packing
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina doc"
+            }
+        }
+        copy {
+            from file("$project.projectDir/target/apidocs/${packageName}")
+            into file("$project.projectDir/build/docs_parent/docs/${packageName}")
+        }
+    }
+
+    outputs.dir artifactCacheParent
+    outputs.dir artifactBallerinaDocs
+    outputs.dir artifactLibParent
+}
+
+task createArtifactZip(type: Zip) {
+    destinationDirectory = file("$buildDir/distributions")
+    from ballerinaBuild
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact source: createArtifactZip, extension: 'zip'
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-graphql")
+            credentials {
+                username = System.getenv("packageUser")
+                password = System.getenv("packagePAT")
+            }
+        }
+    }
+}
+
+unpackStdLibs.dependsOn unpackJballerinaTools
+copyStdlibs.dependsOn unpackStdLibs
+updateTomlFile.dependsOn copyStdlibs
+ballerinaBuild.dependsOn updateTomlFile
+ballerinaBuild.dependsOn ":graphql-native:build"
+build.dependsOn ballerinaBuild

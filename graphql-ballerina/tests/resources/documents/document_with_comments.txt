@@ -1,0 +1,7 @@
+# First line comment
+# Second line comment
+{
+    name # Inline comment
+    age
+}
+# ending comment
