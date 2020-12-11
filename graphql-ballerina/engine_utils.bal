@@ -30,7 +30,9 @@ isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] error
 }
 
 isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail {
-    Location location = <Location>err.detail()["location"];
+    int line = <int>err.detail()["line"];
+    int column = <int>err.detail()["column"];
+    Location location = { line: line, column: column };
     return {
         message: err.message(),
         locations: [location]
