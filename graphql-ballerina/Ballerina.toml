@@ -1,41 +1,36 @@
 [package]
 org = "ballerina"
 name = "graphql"
-version = "0.1.0"
+version = "@toml.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "file"
-version = "0.6.2"
+version = "@stdlib.file.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "http"
-version = "1.0.4"
+version = "@stdlib.http.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "io"
-version = "0.5.4"
-
-[[dependency]]
-org = "ballerina"
-name = "log"
-version = "1.0.4"
+version = "@stdlib.io.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "stringutils"
-version = "0.5.4"
+version = "@stdlib.stringutils.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "time"
-version = "1.0.5"
+version = "@stdlib.time.version@"
 
 [[platform.java11.dependency]]
-path = "../graphql-native/build/libs/graphql-native-0.1.0-SNAPSHOT.jar"
+path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
 groupId = "io.ballerina.stdlib.graphql"
 artifactId = "graphql"
-version = "0.1.0-SNAPSHOT"
+version = "@project.version@"
 modules = ["graphql"]
