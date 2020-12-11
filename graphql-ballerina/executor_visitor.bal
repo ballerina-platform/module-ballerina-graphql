@@ -47,7 +47,7 @@ public class ExecutorVisitor {
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode fieldNode in selections {
             var fieldResult = self.visitField(fieldNode, self.data);
-            if (fieldResult is error) { // TODO: Check proper error
+            if (fieldResult is error) {
                 self.errors.push(getErrorDetailRecord(fieldResult.message(), fieldNode.getLocation()));
             } else {
                 self.data[fieldNode.getName()] = fieldResult;
@@ -65,7 +65,13 @@ public class ExecutorVisitor {
         if (fieldNode.getFieldType() is parser:PRIMITIVE) {
             return wait executeSingleResource(self, fieldNode, arguments);
         } else if (fieldNode.getFieldType() is parser:RECORD) {
-
+            var executionResult = wait executeSingleResource(self, fieldNode, arguments);
+            if (executionResult is error?) {
+                return executionResult;
+            } else {
+                map<anydata> executionData = <map<anydata>>executionResult;
+                return getFieldMapForSelection(fieldNode, executionData);
+            }
         } else {
 
         }

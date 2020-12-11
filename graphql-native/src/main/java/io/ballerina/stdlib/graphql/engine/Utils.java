@@ -69,8 +69,6 @@ public class Utils {
     public static final String ERROR_DETAIL_RECORD = "ErrorDetail";
     public static final String LOCATION_RECORD = "Location";
 
-    public static final String RUNTIME_ERROR = "RuntimeError";
-
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
     private static final BString TYPES_FIELD = StringUtils.fromString("types");
@@ -87,9 +85,6 @@ public class Utils {
     static final BString DATA_FIELD = StringUtils.fromString("data");
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
-    // Schema related constants
-    private static final BString VALUE_OBJECT = StringUtils.fromString("OBJECT");
-
     // Schema related type names
     static final String INTEGER = "int";
     static final String STRING = "string";
@@ -104,17 +99,10 @@ public class Utils {
 
     // Visitor object fields
     static final BString SERVICE_TYPE_FIELD = StringUtils.fromString("serviceType");
-    static final BString OUTPUT_OBJECT_FIELD = StringUtils.fromString("outputObject");
-    static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
-    static final BString FIELD_TYPE_FIELD = StringUtils.fromString("fieldType");
 
     // Inter-op function names
     static final String EXECUTE_RESOURCE_FUNCTION = "executeResources";
-    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
-
-    public static final StrandMetadata EXECUTE_RESOURCE_METADATA =
-            new StrandMetadata(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION, EXECUTE_RESOURCE_FUNCTION);
     public static final StrandMetadata EXECUTE_SINGLE_RESOURCE_METADATA =
             new StrandMetadata(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION, EXECUTE_RESOURCE_FUNCTION);
 
@@ -128,7 +116,7 @@ public class Utils {
     private static SchemaField getFieldForResource(ResourceFunctionType resourceFunction, Schema schema) {
         String fieldName = getResourceName(resourceFunction);
         // TODO: Check accessor: Only get allowed
-        SchemaField field = new SchemaField(fieldName, resourceFunction.getReturnParameterType().getTag());
+        SchemaField field = new SchemaField(fieldName, resourceFunction.getType().getReturnParameterType().getTag());
         addArgsToField(field, resourceFunction, schema);
         field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
         return field;

@@ -60,6 +60,7 @@ public class ValidatorVisitor {
         __Type parentType = <__Type>data;
         map<__Field>? result = parentType?.fields;
         if (result == ()) {
+            // TODO: check this logic
             string message = getNoSubFieldsErrorMessage(parentType);
             ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
             self.errors.push(errorDetail);
