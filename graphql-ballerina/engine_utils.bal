@@ -41,7 +41,6 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
 
 isolated function getFieldMapForSelection(parser:FieldNode fieldNode, map<anydata> data) returns map<anydata>|error {
     map<anydata> result = {};
-    string rootType = getNameFromTypedesc(data);
     foreach parser:FieldNode selection in fieldNode.getSelections() {
         var fieldValue = data[selection.getName()];
         if (fieldValue is map<anydata>) {
