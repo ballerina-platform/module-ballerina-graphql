@@ -23,11 +23,13 @@ service class HttpService {
         self.engine = engine;
     }
 
+    // TODO: Return http:Response directly
     isolated resource function get .(http:Caller caller, http:Request request) {
         http:Response response = handleGetRequests(self.engine, request);
         var result = caller->respond(response);
     }
 
+    // TODO: Return http:Response directly
     isolated resource function post .(http:Caller caller, http:Request request) {
         http:Response response = handlePostRequests(<@untainted>self.engine, request);
         var sendResult = caller->respond(response);

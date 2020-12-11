@@ -19,8 +19,8 @@ import ballerina/http;
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
-    private Engine engine;
     private HttpService httpService;
+    private Engine engine;
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
