@@ -17,8 +17,6 @@
 import ballerina/file;
 import ballerina/io;
 
-import graphql.parser;
-
 const SHORTHAND_DOCUMENT = "document_shorthand.txt";
 const INVALID_SHORTHAND_DOCUMENT = "document_shorthand_invalid_query.txt";
 const DOCUMENT_TWO_ANONYMOUS_OPERATIONS = "two_anonymous_operations.txt";
@@ -74,7 +72,7 @@ function getResourcePath() returns string|error {
 function readFileAndGetString(string filePath) returns string {
     var fileText = io:fileReadString(filePath);
     if (fileText is error) {
-        parser:logAndPanicError("Error occurred while reading the document", fileText);
+        panic fileText;
     }
     return <@untainted string>fileText;
 }

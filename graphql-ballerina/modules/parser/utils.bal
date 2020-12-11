@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/java;
-import ballerina/log;
 import graphql.commons;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
@@ -67,11 +66,6 @@ isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
     return {
         locations: [location]
     };
-}
-
-public isolated function logAndPanicError(string message, error e) {
-    log:printError(message, e);
-    panic e;
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {
