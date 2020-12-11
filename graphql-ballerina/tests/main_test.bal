@@ -42,8 +42,7 @@ function testShortHandQueryResult() returns @tainted error? {
         data: {
             name: "James Moriarty",
             birthdate: "15-05-1848"
-        },
-        errors: []
+        }
     };
     http:Client httpClient = new("http://localhost:9092/graphql");
     http:Request request = new;

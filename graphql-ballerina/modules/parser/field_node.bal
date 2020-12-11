@@ -60,4 +60,8 @@ public class FieldNode {
     public isolated function setFieldType(FieldType fieldType) {
         self.fieldType = fieldType;
     }
+
+    public isolated function getFieldType() returns FieldType {
+        return self.fieldType;
+    }
 }

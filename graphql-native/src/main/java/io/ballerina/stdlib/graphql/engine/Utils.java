@@ -110,9 +110,12 @@ public class Utils {
 
     // Inter-op function names
     static final String EXECUTE_RESOURCE_FUNCTION = "executeResources";
+    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
 
     public static final StrandMetadata EXECUTE_RESOURCE_METADATA =
+            new StrandMetadata(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION, EXECUTE_RESOURCE_FUNCTION);
+    public static final StrandMetadata EXECUTE_SINGLE_RESOURCE_METADATA =
             new StrandMetadata(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION, EXECUTE_RESOURCE_FUNCTION);
 
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {

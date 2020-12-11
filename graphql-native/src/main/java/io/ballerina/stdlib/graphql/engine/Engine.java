@@ -24,6 +24,8 @@ import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BFuture;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
@@ -32,11 +34,10 @@ import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
 
 import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_RESOURCE_METADATA;
+import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_SINGLE_RESOURCE_METADATA;
 import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
-import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.PRIMITIVE;
 import static io.ballerina.stdlib.graphql.engine.Utils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.SERVICE_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
@@ -62,28 +63,33 @@ public class Engine {
         return getSchemaRecordFromSchema(schema);
     }
 
-    public static void executeResources(Environment environment, BObject visitor, BObject fieldNode) {
+    public static BFuture executeSingleResource(Environment environment, BObject visitor, BObject fieldNode,
+                                                BMap<BString, Object> arguments) {
         BObject service = (BObject) visitor.get(SERVICE_TYPE_FIELD);
         ServiceType serviceType = (ServiceType) service.getType();
         BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
-        BString returnType = fieldNode.getStringValue(FIELD_TYPE_FIELD);
 
         for (ResourceFunctionType resourceFunction : serviceType.getResourceFunctions()) {
             String resourceName = getResourceName(resourceFunction);
             if (resourceName.equals(expectedResourceName.getValue())) {
-                executeResource(environment, returnType, service, resourceFunction, visitor, fieldNode);
-                break;
+                Object[] args = getArgsForResource(resourceFunction, arguments);
+                BFuture future = environment.getRuntime().invokeMethodAsync(service, resourceFunction.getName(), null,
+                                                                            EXECUTE_SINGLE_RESOURCE_METADATA, null,
+                                                                            null, null,
+                                                                            args);
+                return future;
             }
         }
+        return null;
     }
 
-    public static void executeResource(Environment environment, BString returnType, BObject service,
-                                       ResourceFunctionType resourceFunction, BObject visitor,
-                                       BObject fieldNode) {
-        if (returnType.getValue().equals(PRIMITIVE.getValue())) {
-            executePrimitiveResource(environment, service, resourceFunction.getName(), resourceFunction, visitor,
-                                     fieldNode);
+    public static Object[] getArgsForResource(ResourceFunctionType resourceFunction, BMap<BString, Object> arguments) {
+        String[] paramNames = resourceFunction.getParamNames();
+        Object[] result = new Object[paramNames.length];
+        for (int i = 0; i < paramNames.length; i++) {
+            result[i] = arguments.get(StringUtils.fromString(paramNames[i]));
         }
+        return result;
     }
 
     public static void executePrimitiveResource(Environment environment, BObject service, String resourceName,
