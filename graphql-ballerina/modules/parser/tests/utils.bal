@@ -105,7 +105,7 @@ function readJson(string path) returns json|error {
 function readFileAndGetString(string filePath) returns string {
     var fileText = io:fileReadString(filePath);
     if (fileText is error) {
-        logAndPanicError("Error occurred while reading the document", fileText);
+        panic fileText;
     }
     return <@untainted string>fileText;
 }
