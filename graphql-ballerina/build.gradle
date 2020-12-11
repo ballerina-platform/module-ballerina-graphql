@@ -165,7 +165,7 @@ task ballerinaBuild {
     dependsOn(unpackStdLibs)
     dependsOn(copyStdlibs)
     dependsOn(updateTomlFile)
-    dependsOn(ballerinaTest)
+    dependsOn(test)
     finalizedBy(revertTomlFile)
 
     doLast {
