@@ -52,7 +52,11 @@ isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) retur
 }
 
 isolated function getTypeName(parser:ArgumentValue value) returns string {
-    typedesc kind = typeof value.value;
+    return getNameFromTypedesc(value.value);
+}
+
+isolated function getNameFromTypedesc(any value) returns string {
+    typedesc kind = typeof value;
     return stringutils:split(kind.toString(), " ")[1];
 }
 

@@ -13,22 +13,3 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
-public class ErrorHandler {
-    private Error[] errors;
-    private boolean errorsPresent;
-
-    public isolated function init() {
-        self.errors = [];
-        self.errorsPresent = false;
-    }
-
-    public isolated function add(Error err) {
-        self.errorsPresent = true;
-        self.errors.push(err);
-    }
-
-    public isolated function getErrors() returns Error[] {
-        return self.errors;
-    }
-}

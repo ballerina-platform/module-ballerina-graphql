@@ -17,37 +17,42 @@
 import ballerina/http;
 import ballerina/test;
 
-listener Listener graphqlListener = new(port = 9092);
-
-service /graphql on graphqlListener {
-    isolated resource function get name() returns string {
-        return "James Moriarty";
-    }
-
-    isolated resource function get birthdate() returns string {
-        return "15-05-1848";
-    }
-}
-
-
 @test:Config {
-    groups: ["listener", "unit"]
+    groups: ["service", "unit"]
 }
-function testShortHandQueryResult() returns @tainted error? {
-    string document = getGeneralNotationDocument();
+function testGetFieldFromRecordResource() returns @tainted error? {
+    string document = "query getPerson { profile { name, address { street } } }";
     json payload = {
         query: document
     };
     json expectedPayload = {
         data: {
-            name: "James Moriarty",
-            birthdate: "15-05-1848"
+            profile: {
+                name: "Sherlock Holmes",
+                address: {
+                    street: "Baker Street"
+                }
+            }
         }
     };
-    http:Client httpClient = new("http://localhost:9092/graphql");
+    http:Client httpClient = new("http://localhost:9094/graphql");
     http:Request request = new;
     request.setPayload(payload);
 
     json actualPayload = <json> check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
+}
+
+service /graphql on new Listener(port = 9094) {
+    isolated resource function get profile() returns Person {
+        return {
+            name: "Sherlock Holmes",
+            age: 40,
+            address: {
+                number: "221/B",
+                street: "Baker Street",
+                city: "London"
+            }
+        };
+    }
 }
