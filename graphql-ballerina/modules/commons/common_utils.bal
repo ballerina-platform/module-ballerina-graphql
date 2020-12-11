@@ -16,18 +16,6 @@
 
 import ballerina/io;
 
-isolated function getRootOperationTypeName(RootOperationType operationType) returns string {
-    match operationType {
-        MUTATION => {
-            return "Mutation";
-        }
-        SUBSCRIPTION => {
-            return "Subscription";
-        }
-    }
-    return "Query";
-}
-
 public isolated function println(anydata value) {
     io:println(value.toString());
 }
