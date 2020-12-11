@@ -16,9 +16,9 @@
 
 __Schema expectedSchemaForMultipleResources = {
     types: {
-        "Integer": {
+        "int": {
             kind: "SCALAR",
-            name: "Integer",
+            name: "int",
             fields: {}
         },
         "__Field": {
@@ -29,7 +29,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -45,7 +45,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "kind",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -55,7 +55,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -65,7 +65,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "fields",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -80,7 +80,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "args",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -90,7 +90,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "returnType",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -106,7 +106,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "types",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -122,7 +122,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "kind",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -132,7 +132,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -142,7 +142,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "fields",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -163,7 +163,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -173,7 +173,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "id",
                     'type: {
                         kind: "SCALAR",
-                        name: "Integer",
+                        name: "int",
                         fields: {}
                     },
                     args: {},
@@ -183,7 +183,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "birthdate",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {
@@ -191,7 +191,7 @@ __Schema expectedSchemaForMultipleResources = {
                             name: "format",
                             'type: {
                                 kind: "SCALAR",
-                                name: "String",
+                                name: "string",
                                 fields: {}
                             }
                         }
@@ -208,7 +208,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "kind",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -218,7 +218,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -228,7 +228,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "fields",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -236,9 +236,9 @@ __Schema expectedSchemaForMultipleResources = {
                 }
             }
         },
-        "String": {
+        "string": {
             kind: "SCALAR",
-            name: "String",
+            name: "string",
             fields: {}
         },
         "__InputValue": {
@@ -249,7 +249,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -265,7 +265,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "kind",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -275,7 +275,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -285,7 +285,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 name: "fields",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -300,7 +300,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "defaultValue",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -317,7 +317,7 @@ __Schema expectedSchemaForMultipleResources = {
                 name: "name",
                 'type: {
                     kind: "SCALAR",
-                    name: "String",
+                    name: "string",
                     fields: {}
                 },
                 args: {},
@@ -327,7 +327,7 @@ __Schema expectedSchemaForMultipleResources = {
                 name: "id",
                 'type: {
                     kind: "SCALAR",
-                    name: "Integer",
+                    name: "int",
                     fields: {}
                 },
                 args: {},
@@ -337,7 +337,7 @@ __Schema expectedSchemaForMultipleResources = {
                 name: "birthdate",
                 'type: {
                     kind: "SCALAR",
-                    name: "String",
+                    name: "string",
                     fields: {}
                 },
                 args: {
@@ -345,7 +345,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "format",
                         'type: {
                             kind: "SCALAR",
-                            name: "String",
+                            name: "string",
                             fields: {}
                         }
                     }
@@ -358,9 +358,9 @@ __Schema expectedSchemaForMultipleResources = {
 
 __Schema expectedSchemaForResourcesReturningRecords = {
     types: {
-        "Integer": {
+        "int": {
             kind: "SCALAR",
-            name: "Integer",
+            name: "int",
             fields: {}
         },
         "__Field": {
@@ -371,7 +371,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -387,7 +387,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "kind",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -397,7 +397,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -407,7 +407,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "fields",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -422,7 +422,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "args",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -432,7 +432,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "returnType",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -448,7 +448,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "types",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -464,7 +464,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "kind",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -474,7 +474,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -484,7 +484,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "fields",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -505,7 +505,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "number",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -515,7 +515,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "street",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -525,7 +525,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "city",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -547,7 +547,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -557,7 +557,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "age",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Integer",
+                                    name: "int",
                                     fields: {}
                                 },
                                 args: {},
@@ -573,7 +573,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "number",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "String",
+                                                name: "string",
                                                 fields: {}
                                             },
                                             args: {},
@@ -583,7 +583,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "street",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "String",
+                                                name: "string",
                                                 fields: {}
                                             },
                                             args: {},
@@ -593,7 +593,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "city",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "String",
+                                                name: "string",
                                                 fields: {}
                                             },
                                             args: {},
@@ -619,7 +619,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "kind",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -629,7 +629,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -639,7 +639,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "fields",
                     'type: {
                         kind: "SCALAR",
-                        name: "Id",
+                        name: "id",
                         fields: {}
                     },
                     args: {},
@@ -647,9 +647,9 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                 }
             }
         },
-        "String": {
+        "string": {
             kind: "SCALAR",
-            name: "String",
+            name: "string",
             fields: {}
         },
         "__InputValue": {
@@ -660,7 +660,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -676,7 +676,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "kind",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -686,7 +686,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -696,7 +696,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "fields",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "Id",
+                                    name: "id",
                                     fields: {}
                                 },
                                 args: {},
@@ -711,7 +711,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "defaultValue",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -727,7 +727,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "String",
+                        name: "string",
                         fields: {}
                     },
                     args: {},
@@ -737,7 +737,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "age",
                     'type: {
                         kind: "SCALAR",
-                        name: "Integer",
+                        name: "int",
                         fields: {}
                     },
                     args: {},
@@ -753,7 +753,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "number",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -763,7 +763,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "street",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -773,7 +773,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "city",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "String",
+                                    name: "string",
                                     fields: {}
                                 },
                                 args: {},
@@ -801,7 +801,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                             name: "name",
                             'type: {
                                 kind: "SCALAR",
-                                name: "String",
+                                name: "string",
                                 fields: {}
                             },
                             args: {},
@@ -811,7 +811,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                             name: "age",
                             'type: {
                                 kind: "SCALAR",
-                                name: "Integer",
+                                name: "int",
                                 fields: {}
                             },
                             args: {},
@@ -827,7 +827,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                         name: "number",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "String",
+                                            name: "string",
                                             fields: {}
                                         },
                                         args: {},
@@ -837,7 +837,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                         name: "street",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "String",
+                                            name: "string",
                                             fields: {}
                                         },
                                         args: {},
@@ -847,7 +847,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                         name: "city",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "String",
+                                            name: "string",
                                             fields: {}
                                         },
                                         args: {},

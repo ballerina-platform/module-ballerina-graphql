@@ -23,7 +23,14 @@ const SHORTHAND_DOCUMENT = "document_shorthand.txt";
 const INVALID_SHORTHAND_DOCUMENT = "document_shorthand_invalid_query.txt";
 const DOCUMENT_TWO_ANONYMOUS_OPERATIONS = "two_anonymous_operations.txt";
 const DOCUMENT_GENERAL = "document_general.txt";
+const GREETING_QUERY_DOCUMENT = "greeting_query.txt";
 const DIR_DOCUMENTS = "documents";
+
+function getGreetingQueryDocument() returns string {
+    string documentsDirPath = checkpanic getDocumentsPath();
+    string path = checkpanic file:joinPath(documentsDirPath, GREETING_QUERY_DOCUMENT);
+    return readFileAndGetString(path);
+}
 
 function getGeneralNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();

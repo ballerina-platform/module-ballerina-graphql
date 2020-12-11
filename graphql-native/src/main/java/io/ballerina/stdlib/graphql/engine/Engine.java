@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -33,7 +32,6 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
 
-import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_RESOURCE_METADATA;
 import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_SINGLE_RESOURCE_METADATA;
 import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
@@ -85,20 +83,12 @@ public class Engine {
 
     public static Object[] getArgsForResource(ResourceFunctionType resourceFunction, BMap<BString, Object> arguments) {
         String[] paramNames = resourceFunction.getParamNames();
-        Object[] result = new Object[paramNames.length];
-        for (int i = 0; i < paramNames.length; i++) {
-            result[i] = arguments.get(StringUtils.fromString(paramNames[i]));
+        Object[] result = new Object[paramNames.length * 2];
+        for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
+            result[j] = arguments.get(StringUtils.fromString(paramNames[i]));;
+            result[j + 1] = true;
         }
         return result;
-    }
-
-    public static void executePrimitiveResource(Environment environment, BObject service, String resourceName,
-                                                ResourceFunctionType resourceFunction, BObject visitor,
-                                                BObject fieldNode) {
-        Type returnType = resourceFunction.getType().getReturnType();
-        Callback callback = new CallableUnitCallback(visitor, fieldNode);
-        environment.getRuntime().invokeMethodAsync(service, resourceName, null, EXECUTE_RESOURCE_METADATA, callback,
-                                                   null, returnType);
     }
 
     private static void initializeIntrospectionTypes(Schema schema) {

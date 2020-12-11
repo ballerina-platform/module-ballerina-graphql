@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/test;
 
 type Address record {
@@ -43,66 +42,6 @@ function testSchemaGenerationForMultipleResources() {
 function testSchemaGenerationForResourcesReturningRecords() {
     __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
     test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
-}
-
-http:Listener httpListener = new(9091);
-listener Listener gqlListener = new(httpListener);
-
-@test:Config {
-    groups: ["engine", "unit"]
-}
-function testDocumentValidation() returns @tainted error? {
-    check gqlListener.attach(serviceWithMultipleResources, "graphql");
-    string documentString = getShorthandDocumentWithInvalidQuery();
-    http:Client httpClient = new("http://localhost:9091/graphql");
-    json payload = {
-        query: documentString
-    };
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json expectedPayload = {
-        errors:[
-            {
-                message: "Cannot query field \"Voldemort\" on type \"Query\".",
-                locations:[
-                    {
-                        line:4,
-                        column:5
-                    }
-                ]
-            }
-        ]
-    };
-    json actualPayload = <json> check httpClient->post("/", request, json);
-    test:assertEquals(actualPayload, expectedPayload);
-    check gqlListener.detach(serviceWithMultipleResources);
-}
-
-@test:Config {
-    groups: ["engine", "unit"],
-    dependsOn: ["testDocumentValidation"]
-}
-function testQueryResult() returns @tainted error? {
-    check gqlListener.attach(serviceWithMultipleResources, "graphql");
-    string documentString = getShorthandDocument();
-    http:Client httpClient = new("http://localhost:9091/graphql");
-    json payload = {
-        query: documentString
-    };
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json expectedPayload = {
-        data: {
-            name: "John Doe",
-            id: 1
-        }
-    };
-
-    json actualPayload = <json> check httpClient->post("/", request, json);
-    test:assertEquals(actualPayload, expectedPayload);
-    check gqlListener.detach(serviceWithMultipleResources);
 }
 
 service object {} serviceWithResourcesReturningRecords = service object {
