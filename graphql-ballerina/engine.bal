@@ -46,7 +46,8 @@ public class Engine {
                     return self.execute(operationNode);
                 }
             }
-            string message = "Operation \"" + operationName + "\" is not present in the provided GraphQL document.";
+            string name = operationName == parser:ANONYMOUS_OPERATION ? "" : operationName;
+            string message = "Operation \"" + name + "\" is not present in the provided GraphQL document.";
             ErrorDetail errorDetail = {
                 message: message,
                 locations: []

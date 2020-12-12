@@ -88,6 +88,7 @@ def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extr
 
 task updateTomlFile {
     doLast {
+        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.split("-")[0]
         def stdlibDependentFileVersion = project.stdlibFileVersion.split("-")[0]
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
@@ -97,6 +98,7 @@ task updateTomlFile {
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        newConfig = newConfig.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
         newConfig = newConfig.replace("@stdlib.file.version@", stdlibDependentFileVersion)
         newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)

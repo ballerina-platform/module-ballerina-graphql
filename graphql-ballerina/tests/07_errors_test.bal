@@ -23,9 +23,9 @@ service /graphql on new Listener(port = 9096) {
 }
 
 @test:Config {
-    groups: ["client", "unit"]
+    groups: ["negative", "listener", "unit"]
 }
-public function testInvalidQuery() returns @tainted error? {
+public function testMissingArgumentValueQuery() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9096/graphql");
     string document = "{ profile(id: ) { name age }";
 
@@ -46,3 +46,103 @@ public function testInvalidQuery() returns @tainted error? {
     test:assertEquals(result, expectedPayload);
 }
 
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testEmptyQuery() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ }";
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Syntax Error: Expected Name, found \"}\".",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testObjectWithNoSelectionQuery() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ profile(id: 4) }";
+
+    string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
+                             " Did you mean \"profile { ... }\"?";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testObjectWithNoSelectionQueryWithArguments() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ profile(id: 4) }";
+
+    string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
+                             " Did you mean \"profile { ... }\"?";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ profile(id: 4) { status } }";
+
+    string expectedMessage = "Cannot query field \"status\" on type \"Person\".";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 20
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
