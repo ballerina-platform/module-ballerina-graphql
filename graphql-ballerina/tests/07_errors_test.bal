@@ -16,7 +16,7 @@
 
 import ballerina/test;
 
-service /graphql on new Listener(port = 9095) {
+service /graphql on new Listener(port = 9096) {
     resource function get profile(int id) returns Person {
         return people[id];
     }
@@ -25,21 +25,24 @@ service /graphql on new Listener(port = 9095) {
 @test:Config {
     groups: ["client", "unit"]
 }
-public function testClient() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9095/graphql");
-    string document = "{ profile(id: 1) { name age address { city } } }";
+public function testInvalidQuery() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ profile(id: ) { name age }";
 
     json expectedPayload = {
-        data: {
-            profile: {
-                name: "Walter White",
-                age: 50,
-                address: {
-                    city: "Albuquerque"
-                }
+        errors: [
+            {
+                message:"Syntax Error: Unexpected \")\".",
+                locations:[
+                    {
+                        line:1,
+                        column:15
+                    }
+                ]
             }
-        }
+        ]
     };
     json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
+
