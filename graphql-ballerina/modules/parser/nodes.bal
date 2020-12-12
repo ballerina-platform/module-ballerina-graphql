@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
 public type Node object {
     public isolated function accept(Visitor v);
 };
@@ -26,6 +24,6 @@ public type ArgumentName record {|
 |};
 
 public type ArgumentValue record {|
-    commons:Scalar value;
+    Scalar value;
     Location location;
 |};

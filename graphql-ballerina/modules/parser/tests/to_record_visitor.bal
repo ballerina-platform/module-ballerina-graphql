@@ -22,7 +22,7 @@ public type ArgName record {
 };
 
 public type ArgValue record {
-    commons:Scalar value;
+    Scalar value;
     Location location;
 };
 
