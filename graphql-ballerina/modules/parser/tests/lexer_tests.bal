@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import graphql.commons;
 
 @test:Config {
     groups: ["lexer", "parser", "unit"]
@@ -262,7 +261,7 @@ isolated function testComplexString() returns error? {
     test:assertEquals(token, expectedToken);
 }
 
-isolated function getExpectedToken(commons:Scalar value, TokenType kind, int line, int column) returns Token {
+isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {
     return {
         value: value,
         kind: kind,

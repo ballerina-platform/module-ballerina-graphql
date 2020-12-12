@@ -43,7 +43,7 @@ public class Parser {
         if (token.kind == T_OPEN_BRACE) {
             return self.parseAnonymousOperation();
         } else if (token.kind == T_TEXT) {
-            commons:Scalar value = token.value;
+            Scalar value = token.value;
             if (value is commons:RootOperationType) {
                 return self.parseOperationWithType(value);
             }

@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Scalar int|string|float|boolean;
-
 # Represents the types of operations valid in Ballerina GraphQL.
 public enum RootOperationType {
     QUERY = "query",

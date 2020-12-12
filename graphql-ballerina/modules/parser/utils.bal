@@ -15,30 +15,29 @@
 // under the License.
 
 import ballerina/java;
-import graphql.commons;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
-    commons:Scalar value = token.value;
+    Scalar value = token.value;
     string message = "Syntax Error: Unexpected " + getErrorMessageTypeNameForError(token);
     Location l = token.location;
     return InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedNameError(Token token) returns InvalidTokenError {
-    commons:Scalar value = token.value;
+    Scalar value = token.value;
     string message = "Syntax Error: Expected Name, found " + getErrorMessageTypeNameForError(token);
     Location l = token.location;
     return InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedCharError(Token token, string char) returns InvalidTokenError {
-    commons:Scalar value = token.value;
+    Scalar value = token.value;
     string message = "Syntax Error: Expected \"" + char + "\", found " + getErrorMessageTypeNameForError(token);
     Location l = token.location;
     return InvalidTokenError(message, line = l.line, column = l.column);
 }
 
-isolated function getScalarTypeNameForError(commons:Scalar value) returns string {
+isolated function getScalarTypeNameForError(Scalar value) returns string {
     if (value is int) {
         return "Int \"" + value.toString() + "\".";
     } else if (value is float) {

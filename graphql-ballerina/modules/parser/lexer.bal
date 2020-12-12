@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
 public class Lexer {
     private CharReader charReader;
     private string document;
@@ -181,7 +179,7 @@ public class Lexer {
             }
         }
         TokenType kind = getWordTokenType(word);
-        commons:Scalar value = word;
+        Scalar value = word;
         if (kind is T_BOOLEAN) {
             value = <boolean>'boolean:fromString(word);
         }
@@ -250,7 +248,7 @@ isolated function getTokenType(string value) returns TokenType {
     return T_TEXT;
 }
 
-isolated function getToken(commons:Scalar value, TokenType kind, Location location) returns Token {
+isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
     return {
         kind: kind,
         value: value,
