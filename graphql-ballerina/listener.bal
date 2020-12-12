@@ -60,7 +60,6 @@ public class Listener {
     # + return - An `error`, if an error occurred during the service detaching process
     public isolated function detach(Service s) returns error? {
         checkpanic self.httpListener.detach(self.httpService);
-        return detach(self, s);
     }
 
     # Starts the attached service.
