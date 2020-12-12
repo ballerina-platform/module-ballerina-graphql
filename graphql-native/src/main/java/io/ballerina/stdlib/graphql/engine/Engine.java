@@ -90,7 +90,6 @@ public class Engine {
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
             result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
-            ;
             result[j + 1] = true;
         }
         return result;
