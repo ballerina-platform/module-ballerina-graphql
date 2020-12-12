@@ -18,7 +18,8 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
-import io.ballerina.runtime.api.async.StrandMetadata;
+import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Module;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.Field;
@@ -28,9 +29,7 @@ import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.InputValue;
 import io.ballerina.stdlib.graphql.schema.Schema;
@@ -49,25 +48,19 @@ import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUILTIN_PKG_PREFIX;
-import static io.ballerina.stdlib.graphql.utils.Utils.MODULE_NAME;
-import static io.ballerina.stdlib.graphql.utils.Utils.MODULE_VERSION;
-import static io.ballerina.stdlib.graphql.utils.Utils.PACKAGE_ID;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
  */
 public class Utils {
 
+    private Utils() {}
+
     // Schema related record types
     public static final String SCHEMA_RECORD = "__Schema";
     public static final String FIELD_RECORD = "__Field";
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
-    public static final String OUTPUT_OBJECT_RECORD = "OutputObject";
-    public static final String DATA_RECORD = "Data";
-    public static final String ERROR_DETAIL_RECORD = "ErrorDetail";
-    public static final String LOCATION_RECORD = "Location";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -79,18 +72,15 @@ public class Utils {
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
     private static final BString RETURN_TYPE_FIELD = StringUtils.fromString("returnType");
-    private static final BString MESSAGE_FIELD = StringUtils.fromString("message");
-    private static final BString LOCATION_FIELD = StringUtils.fromString("location");
-    private static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
-    static final BString DATA_FIELD = StringUtils.fromString("data");
-    static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
     // Schema related type names
+    // TODO: Make these values "graphql-specific" names
     static final String INTEGER = "int";
     static final String STRING = "string";
     static final String BOOLEAN = "boolean";
     static final String FLOAT = "float";
     static final String ID = "id";
+    static final String QUERY = "Query";
 
     // Field return types
     static final BString PRIMITIVE = StringUtils.fromString("PRIMITIVE");
@@ -101,10 +91,8 @@ public class Utils {
     static final BString SERVICE_TYPE_FIELD = StringUtils.fromString("serviceType");
 
     // Inter-op function names
-    static final String EXECUTE_RESOURCE_FUNCTION = "executeResources";
+    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
-    public static final StrandMetadata EXECUTE_SINGLE_RESOURCE_METADATA =
-            new StrandMetadata(BALLERINA_BUILTIN_PKG_PREFIX, MODULE_NAME, MODULE_VERSION, EXECUTE_RESOURCE_FUNCTION);
 
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
         ResourceFunctionType[] resourceFunctions = serviceType.getResourceFunctions();
@@ -192,103 +180,74 @@ public class Utils {
         return new InputValue(name, inputType);
     }
 
-    static BMap<BString, Object> getSchemaRecordFromSchema(Schema schema) {
-        BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(PACKAGE_ID, SCHEMA_RECORD);
-        BMap<BString, Object> types = getTypeRecordMapFromSchema(schema.getTypes());
+    static BMap<BString, Object> getSchemaRecordFromSchema(Environment environment, Schema schema) {
+        Module module = environment.getCurrentModule();
+        BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(module, SCHEMA_RECORD);
+        BMap<BString, Object> types = getTypeRecordMapFromSchema(module, schema.getTypes());
         schemaRecord.put(TYPES_FIELD, types);
-        schemaRecord.put(QUERY_TYPE_FIELD, getTypeRecordFromTypeObject(schema.getQueryType()));
+        schemaRecord.put(QUERY_TYPE_FIELD, getTypeRecordFromTypeObject(module, schema.getQueryType()));
         return schemaRecord;
     }
 
     // TODO: Can we re-use the same type record, when needed?
-    private static BMap<BString, Object> getTypeRecordMapFromSchema(Map<String, SchemaType> types) {
-        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD);
+    private static BMap<BString, Object> getTypeRecordMapFromSchema(Module module, Map<String, SchemaType> types) {
+        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(module, TYPE_RECORD);
         MapType typesMapType = TypeCreator.createMapType(typeRecord.getType());
         BMap<BString, Object> typesMap = ValueCreator.createMapValue(typesMapType);
         for (SchemaType type : types.values()) {
-            typesMap.put(StringUtils.fromString(type.getName()), getTypeRecordFromTypeObject(type));
+            typesMap.put(StringUtils.fromString(type.getName()), getTypeRecordFromTypeObject(module, type));
         }
         return typesMap;
     }
 
-    static BMap<BString, Object> getTypeRecordFromTypeObject(SchemaType typeObject) {
-        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(PACKAGE_ID, TYPE_RECORD);
+    static BMap<BString, Object> getTypeRecordFromTypeObject(Module module, SchemaType typeObject) {
+        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(module, TYPE_RECORD);
         typeRecord.put(KIND_FIELD, StringUtils.fromString(typeObject.getKind().toString()));
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
-        typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(typeObject.getFields()));
+        typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(module, typeObject.getFields()));
         return typeRecord;
     }
 
-    private static BMap<BString, Object> getFieldMapFromFields(List<SchemaField> fields) {
-        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(PACKAGE_ID, FIELD_RECORD);
+    private static BMap<BString, Object> getFieldMapFromFields(Module module, List<SchemaField> fields) {
+        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(module, FIELD_RECORD);
         MapType fieldRecordMapType = TypeCreator.createMapType(fieldRecord.getType());
         BMap<BString, Object> fieldRecordMap = ValueCreator.createMapValue(fieldRecordMapType);
 
         for (SchemaField field : fields) {
-            fieldRecordMap.put(StringUtils.fromString(field.getName()), getFieldRecordFromObject(field));
+            fieldRecordMap.put(StringUtils.fromString(field.getName()), getFieldRecordFromObject(module, field));
         }
         return fieldRecordMap;
     }
 
-    private static BMap<BString, Object> getFieldRecordFromObject(SchemaField fieldObject) {
-        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(PACKAGE_ID, FIELD_RECORD);
+    private static BMap<BString, Object> getFieldRecordFromObject(Module module, SchemaField fieldObject) {
+        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(module, FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
-        fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(fieldObject.getType()));
-        fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(fieldObject.getArgs()));
+        fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(module, fieldObject.getType()));
+        fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(module, fieldObject.getArgs()));
         fieldRecord.put(RETURN_TYPE_FIELD, getTypeFromTag(fieldObject.getTypeTag()));
         return fieldRecord;
     }
 
-    private static BMap<BString, Object> getInputMapFromInputs(List<InputValue> inputValues) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(PACKAGE_ID, INPUT_VALUE_RECORD);
+    private static BMap<BString, Object> getInputMapFromInputs(Module module, List<InputValue> inputValues) {
+        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(module, INPUT_VALUE_RECORD);
         MapType inputValueRecordMapType = TypeCreator.createMapType(inputValueRecord.getType());
         BMap<BString, Object> inputValueRecordMap = ValueCreator.createMapValue(inputValueRecordMapType);
 
         for (InputValue inputValue : inputValues) {
-            inputValueRecordMap.put(StringUtils.fromString(inputValue.getName()), getInputRecordFromObject(inputValue));
+            BMap<BString, Object> inputRecord = getInputRecordFromObject(module, inputValue);
+            inputValueRecordMap.put(StringUtils.fromString(inputValue.getName()), inputRecord);
         }
         return inputValueRecordMap;
     }
 
-    private static BMap<BString, Object> getInputRecordFromObject(InputValue inputValue) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(PACKAGE_ID, INPUT_VALUE_RECORD);
+    private static BMap<BString, Object> getInputRecordFromObject(Module module, InputValue inputValue) {
+        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(module, INPUT_VALUE_RECORD);
         inputValueRecord.put(NAME_FIELD, StringUtils.fromString(inputValue.getName()));
-        inputValueRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(inputValue.getType()));
+        inputValueRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(module, inputValue.getType()));
         if (Objects.nonNull(inputValue.getDefaultValue())) {
             inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
         }
         return inputValueRecord;
-    }
-
-    static BMap<BString, Object> getOutputObject() {
-        BMap<BString, Object> outputObject = ValueCreator.createRecordValue(PACKAGE_ID, OUTPUT_OBJECT_RECORD);
-        outputObject.put(DATA_FIELD, getDataRecord());
-        outputObject.put(ERRORS_FIELD, getErrorDetailArray());
-        return outputObject;
-    }
-
-    static BMap<BString, Object> getDataRecord() {
-        return ValueCreator.createRecordValue(PACKAGE_ID, DATA_RECORD);
-    }
-
-    static BArray getErrorDetailArray() {
-        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(PACKAGE_ID, ERROR_DETAIL_RECORD);
-        return ValueCreator.createArrayValue(TypeCreator.createArrayType(errorDetail.getType()));
-    }
-
-    static BMap<BString, Object> getErrorDetailRecord(BString message, BObject fieldNode) {
-        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(PACKAGE_ID, ERROR_DETAIL_RECORD);
-        errorDetail.put(MESSAGE_FIELD, message);
-        errorDetail.put(LOCATIONS_FIELD, getLocationArrayFromNode(fieldNode));
-        return errorDetail;
-    }
-
-    private static BArray getLocationArrayFromNode(BObject node) {
-        BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
-        BMap<BString, Object> locationRecord = ValueCreator.createRecordValue(PACKAGE_ID, LOCATION_RECORD);
-        BArray locationArray = ValueCreator.createArrayValue(TypeCreator.createArrayType(locationRecord.getType()));
-        locationArray.append(location);
-        return locationArray;
     }
 
     static BString getTypeFromTag(int tag) {
