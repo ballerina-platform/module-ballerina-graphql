@@ -15,9 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/time;
-
-import graphql.commons;
 
 @test:Config {
     groups: ["parse", "parser", "unit"]
@@ -25,14 +22,7 @@ import graphql.commons;
 function testComplexDocument() returns error? {
     string documentString = getDocumentWithParameters();
     Parser parser = new(documentString);
-    time:Time t1 = time:currentTime();
     DocumentNode documentNode = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    commons:println("Complex Time: " + t.toString());
-
     RecordCreatorVisitor v = new;
     var document = v.visitDocument(documentNode);
     test:assertEquals(document, expectedDocumentWithParameters);
@@ -44,14 +34,7 @@ function testComplexDocument() returns error? {
 function testShorthandDocument() returns error? {
     string documentString = getShorthandNotationDocument();
     Parser parser = new(documentString);
-    time:Time t1 = time:currentTime();
     DocumentNode documentNode = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    commons:println("Shorthand Time: " + t.toString());
-
     RecordCreatorVisitor v = new;
     var document = v.visitDocument(documentNode);
     test:assertEquals(document, shorthandDocument);
@@ -63,14 +46,7 @@ function testShorthandDocument() returns error? {
 function testDocumentWithNamedOperations() returns error? {
     string documentString = getGeneralNotationDocument();
     Parser parser = new(documentString);
-    time:Time t1 = time:currentTime();
     DocumentNode documentNode = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    commons:println("Named Operations Time: " + t.toString());
-
     RecordCreatorVisitor v = new;
     var document = v.visitDocument(documentNode);
     test:assertEquals(document, namedOperation);
@@ -82,14 +58,7 @@ function testDocumentWithNamedOperations() returns error? {
 function testDocumentWithTwoNamedOperations() returns error? {
     string documentString = getDocumentWithTwoNamedOperations();
     Parser parser = new(documentString);
-    time:Time t1 = time:currentTime();
     DocumentNode documentNode = check parser.parse();
-    time:Time t2 = time:currentTime();
-    int t1Millis = t1.time;
-    int t2Millis = t2.time;
-    int t = t2Millis - t1Millis;
-    commons:println("Two Named Operations Time: " + t.toString());
-
     RecordCreatorVisitor v = new;
     var document = v.visitDocument(documentNode);
     test:assertEquals(document, documentWithTwoNamedOperations);
