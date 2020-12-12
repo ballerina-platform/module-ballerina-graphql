@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/encoding;
 import ballerina/http;
 import ballerina/test;
 
@@ -38,6 +39,29 @@ function testShortHandQueryResult() returns @tainted error? {
     request.setPayload(payload);
 
     json actualPayload = <json> check httpClient->post("/", request, json);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener", "unit"]
+}
+function testGetRequestResult() returns @tainted error? {
+    string document = "query getPerson { profile(id: 1) { address { city } } }";
+    string encodedDocument = check encoding:encodeUriComponent(document, "UTF-8");
+    json expectedPayload = {
+        data: {
+            profile: {
+                address: {
+                    city: "Albuquerque"
+                }
+            }
+        }
+    };
+    http:Client httpClient = new("http://localhost:9095");
+    http:Request request = new;
+
+    string path = "/graphql?query=" + encodedDocument;
+    json actualPayload = <json> check httpClient->get(path, request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 
