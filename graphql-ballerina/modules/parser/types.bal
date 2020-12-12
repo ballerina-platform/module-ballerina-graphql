@@ -47,3 +47,10 @@ public enum FieldType {
     RECORD,
     SERVICE
 }
+
+# Represents the types of operations valid in Ballerina GraphQL.
+public enum RootOperationType {
+    QUERY = "query",
+    MUTATION = "mutation",
+    SUBSCRIPTION = "subscription"
+}

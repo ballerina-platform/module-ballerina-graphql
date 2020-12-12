@@ -11,18 +11,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
 public class OperationNode {
     *Node;
     *ParentType;
 
     private string name;
-    private commons:RootOperationType kind;
+    private RootOperationType kind;
     private Location location;
     private FieldNode[] selections;
 
-    public isolated function init(string name, commons:RootOperationType kind, Location location) {
+    public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
         self.kind = kind;
         self.location = location;
@@ -33,7 +31,7 @@ public class OperationNode {
         return self.name;
     }
 
-    public isolated function getKind() returns commons:RootOperationType {
+    public isolated function getKind() returns RootOperationType {
         return self.kind;
     }
 
