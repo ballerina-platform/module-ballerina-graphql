@@ -40,6 +40,12 @@ isolated function getMissingSubfieldsError(string fieldName, string typeName) re
             + "\" must have a selection of subfields. Did you mean \"" + fieldName + " { ... }\"?";
 }
 
+isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
+    return "Field \"" + node.getName() + "\" argument \"" + input.name + "\" of type \"" + input.'type.name
+            + "\" is required, but it was not provided.";
+
+}
+
 isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
     if (data.length() > 0) {
