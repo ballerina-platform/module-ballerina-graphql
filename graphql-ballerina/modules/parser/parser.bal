@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
 public class Parser {
     private Lexer lexer;
     private DocumentNode document;
@@ -43,8 +41,8 @@ public class Parser {
         if (token.kind == T_OPEN_BRACE) {
             return self.parseAnonymousOperation();
         } else if (token.kind == T_TEXT) {
-            commons:Scalar value = token.value;
-            if (value is commons:RootOperationType) {
+            Scalar value = token.value;
+            if (value is RootOperationType) {
                 return self.parseOperationWithType(value);
             }
         }
@@ -53,11 +51,11 @@ public class Parser {
 
     isolated function parseAnonymousOperation() returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
-        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, commons:QUERY, token.location);
+        OperationNode operation = check self.createOperationRecord(ANONYMOUS_OPERATION, QUERY, token.location);
         self.addOperationToDocument(operation);
     }
 
-    isolated function parseOperationWithType(commons:RootOperationType operationType) returns Error? {
+    isolated function parseOperationWithType(RootOperationType operationType) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
         Location location = token.location.clone();
         token = check self.peekNextNonSeparatorToken();
@@ -73,7 +71,7 @@ public class Parser {
         }
     }
 
-    isolated function createOperationRecord(string name, commons:RootOperationType kind, Location location)
+    isolated function createOperationRecord(string name, RootOperationType kind, Location location)
     returns OperationNode|Error {
         OperationNode operation = new(name, kind, location);
         check self.addSelections(operation);
@@ -151,9 +149,9 @@ public class Parser {
     }
 }
 
-isolated function getRootOperationType(Token token) returns commons:RootOperationType|Error {
+isolated function getRootOperationType(Token token) returns RootOperationType|Error {
     string value = <string>token.value;
-    if (value is commons:RootOperationType) {
+    if (value is RootOperationType) {
         return value;
     }
     return getUnexpectedTokenError(token);

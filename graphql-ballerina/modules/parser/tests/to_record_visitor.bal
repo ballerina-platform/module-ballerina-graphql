@@ -14,15 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
 public type ArgName record {
     string value;
     Location location;
 };
 
 public type ArgValue record {
-    commons:Scalar value;
+    Scalar value;
     Location location;
 };
 
@@ -41,7 +39,7 @@ public type Field record {
 
 public type Operation record {
     string name;
-    commons:RootOperationType kind;
+    RootOperationType kind;
     Field[] selections;
     Location location;
 };

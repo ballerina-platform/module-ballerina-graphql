@@ -14,11 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.commons;
-
 type Token record {|
     TokenType kind;
-    commons:Scalar value;
+    Scalar value;
     Location location;
 |};
 

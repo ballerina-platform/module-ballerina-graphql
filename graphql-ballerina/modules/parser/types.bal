@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+public type Scalar int|float|boolean|string;
+
 type CharIteratorNode record {
     string value;
 };
@@ -44,4 +46,11 @@ public enum FieldType {
     PRIMITIVE,
     RECORD,
     SERVICE
+}
+
+# Represents the types of operations valid in Ballerina GraphQL.
+public enum RootOperationType {
+    QUERY = "query",
+    MUTATION = "mutation",
+    SUBSCRIPTION = "subscription"
 }
