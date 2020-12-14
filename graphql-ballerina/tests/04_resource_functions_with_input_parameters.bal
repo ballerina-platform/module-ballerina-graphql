@@ -17,7 +17,7 @@
 import ballerina/http;
 import ballerina/test;
 
-listener Listener functionWithArgumentsListener = new(port = 9093);
+listener Listener functionWithArgumentsListener = new(9093);
 
 service /graphql on functionWithArgumentsListener {
     isolated resource function get greet(string name) returns string {

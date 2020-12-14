@@ -18,7 +18,7 @@ import ballerina/encoding;
 import ballerina/http;
 import ballerina/test;
 
-listener Listener simpleResourceListener = new(port = 9092);
+listener Listener simpleResourceListener = new(9092);
 
 @test:Config {
     groups: ["listener", "unit"]
