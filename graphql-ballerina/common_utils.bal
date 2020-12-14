@@ -21,7 +21,7 @@ isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string 
     return "Cannot query field \"" + requiredFieldName + "\" on type \"" + rootType + "\".";
 }
 
-isolated function getNoSubFieldsErrorMessage(__Type 'type) returns string {
+isolated function getNoSubfieldsErrorMessage(__Type 'type) returns string {
     string typeName = 'type.kind.toString();
     return "Field \"" + 'type.name + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
 }
@@ -29,10 +29,6 @@ isolated function getNoSubFieldsErrorMessage(__Type 'type) returns string {
 isolated function getUnknownArgumentErrorMessage(string argName, __Field parent, parser:ArgumentNode argument)
 returns string {
     return "Unknown argument \"" + argName + "\" on field \"" + parent.name + "." + argument.getName().value + "\".";
-}
-
-isolated function getNoSubfieldsError(string fieldName, __Type 'type) returns string {
-    return "Field \"" + fieldName + "\" must not have a selections since type \"" + 'type.name + "\" has no subfields.";
 }
 
 isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
