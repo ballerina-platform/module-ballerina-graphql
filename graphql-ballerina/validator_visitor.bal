@@ -56,18 +56,14 @@ public class ValidatorVisitor {
 
     // TODO: Simplify this function
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        string requiredFieldName = fieldNode.getName();
         __Type parentType = <__Type>data;
-        map<__Field>? result = parentType?.fields;
-        if (result == ()) {
-            // TODO: check this logic
+        map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
+        if (fields.length() == 0) {
             string message = getNoSubFieldsErrorMessage(parentType);
-            ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
-            self.errors.push(errorDetail);
-            return;
+            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
 
-        map<__Field> fields = <map<__Field>>result;
+        string requiredFieldName = fieldNode.getName();
         var schemaFieldValue = fields[requiredFieldName];
         if (schemaFieldValue is ()) {
             string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name);
@@ -75,30 +71,10 @@ public class ValidatorVisitor {
             self.errors.push(errorDetail);
             return;
         }
+
         __Field schemaField = <__Field>schemaFieldValue;
         fieldNode.setFieldType(<parser:FieldType>schemaField.returnType);
-        parser:ArgumentNode[] arguments = fieldNode.getArguments();
-        map<__InputValue>? schemaArgs = schemaField?.args;
-
-        if (arguments.length() == 0 && schemaArgs == ()) {
-            return;
-        }
-
-        if (schemaArgs is map<__InputValue>) {
-            map<__InputValue> foundArgs = {};
-            foreach parser:ArgumentNode argumentNode in arguments {
-                string argName = argumentNode.getName().value;
-                __InputValue? schemaArg = schemaArgs.get(argName);
-                if (schemaArg is __InputValue) {
-                    foundArgs[argName] = schemaArg;
-                    self.visitArgument(argumentNode, schemaArg);
-                } else {
-                    string message = getUnknownArgumentErrorMessage(argName, schemaField, argumentNode);
-                    ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
-                    self.errors.push(errorDetail);
-                }
-            }
-        }
+        self.checkArguments(fieldNode, schemaField);
 
         __Type fieldType = schemaField.'type;
         parser:FieldNode[] selections = fieldNode.getSelections();
@@ -145,11 +121,36 @@ public class ValidatorVisitor {
         if (anonymousOperations.length() > 1) {
             string message = "This anonymous operation must be the only defined operation.";
             foreach parser:OperationNode operation in anonymousOperations {
-                ErrorDetail err = {
-                    message: message,
-                    locations: [operation.getLocation()]
-                };
-                self.errors.push(err);
+                self.errors.push(getErrorDetailRecord(message, operation.getLocation()));
+            }
+        }
+    }
+
+    isolated function checkArguments(parser:FieldNode fieldNode, __Field schemaField) {
+        parser:ArgumentNode[] arguments = fieldNode.getArguments();
+        map<__InputValue>? schemaArgs = schemaField?.args;
+        map<__InputValue> notFoundArgs = {};
+
+        if (schemaArgs is map<__InputValue>) {
+            notFoundArgs = schemaArgs.clone();
+            foreach parser:ArgumentNode argumentNode in arguments {
+                string argName = argumentNode.getName().value;
+                __InputValue? schemaArg = schemaArgs.get(argName);
+                if (schemaArg is __InputValue) {
+                    _ = notFoundArgs.remove(argName);
+                    self.visitArgument(argumentNode, schemaArg);
+                } else {
+                    string message = getUnknownArgumentErrorMessage(argName, schemaField, argumentNode);
+                    self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+                }
+            }
+        }
+
+        if (notFoundArgs.length() > 0) {
+            // TODO: Check dafaultability
+            foreach __InputValue inputValue in notFoundArgs.toArray() {
+                string message = getMissingRequiredArgError(fieldNode, inputValue);
+                self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
         }
     }

@@ -146,3 +146,38 @@ public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
     json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testObjectWithMissingRequiredArgument() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ profile { status } }";
+
+    string expectedMessage1 = "Field \"profile\" argument \"id\" of type \"int\" is required, but it was not provided.";
+    string expectedMessage2 = "Cannot query field \"status\" on type \"Person\".";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage1,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            },
+            {
+                message: expectedMessage2,
+                locations: [
+                    {
+                        line: 1,
+                        column: 13
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
