@@ -25,19 +25,12 @@ public class Listener {
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
     #
-    # + httpListener - An `http:Listener` instance, on which the GraphQL service will be served. If this is provided
-    #                  with a prot number, the port number will be ignored
-    # + port - The port number to which the GraphQL endpoint should listen to
-    public isolated function init(http:Listener? httpListener = (), int? port = ()) {
-        if (httpListener is ()) {
-            if (port is int) {
-                self.httpListener = new(port);
-            } else {
-                error err = error("An http:Listener or a port number must be provided");
-                panic err;
-            }
+    # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service
+    public isolated function init(int|http:Listener listenTo) {
+        if (listenTo is int) {
+            self.httpListener = new(listenTo);
         } else {
-            self.httpListener = httpListener;
+            self.httpListener = listenTo;
         }
         // TODO: Decouple engine and the listener
         self.engine = new(self);
