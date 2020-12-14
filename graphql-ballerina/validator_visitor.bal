@@ -59,7 +59,7 @@ public class ValidatorVisitor {
         __Type parentType = <__Type>data;
         map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
         if (fields.length() == 0) {
-            string message = getNoSubFieldsErrorMessage(parentType);
+            string message = getNoSubfieldsErrorMessage(parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
 
@@ -67,8 +67,7 @@ public class ValidatorVisitor {
         var schemaFieldValue = fields[requiredFieldName];
         if (schemaFieldValue is ()) {
             string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name);
-            ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
-            self.errors.push(errorDetail);
+            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
 
@@ -79,22 +78,13 @@ public class ValidatorVisitor {
         __Type fieldType = schemaField.'type;
         parser:FieldNode[] selections = fieldNode.getSelections();
 
-        if (fieldType.kind == SCALAR) {
-            if (selections.length() > 0) {
-                string message = getNoSubfieldsError(requiredFieldName, fieldType);
-                ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
-                self.errors.push(errorDetail);
-            }
-        } else if (fieldType.kind == OBJECT) {
-            if (selections.length() == 0) {
-                string message = getMissingSubfieldsError(requiredFieldName, fieldType.name);
-                ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
-                self.errors.push(errorDetail);
-            } else {
-                foreach parser:FieldNode subFieldNode in selections {
-                    self.visitField(subFieldNode, fieldType);
-                }
-            }
+        if (fieldType.kind != SCALAR && selections.length() == 0) {
+            string message = getMissingSubfieldsError(requiredFieldName, fieldType.name);
+            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+        }
+
+        foreach parser:FieldNode subFieldNode in selections {
+            self.visitField(subFieldNode, fieldType);
         }
     }
 
