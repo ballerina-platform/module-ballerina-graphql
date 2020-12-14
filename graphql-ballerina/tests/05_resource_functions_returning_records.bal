@@ -43,7 +43,7 @@ function testGetFieldFromRecordResource() returns @tainted error? {
     test:assertEquals(actualPayload, expectedPayload);
 }
 
-service /graphql on new Listener(port = 9094) {
+service /graphql on new Listener(9094) {
     isolated resource function get profile() returns Person {
         return {
             name: "Sherlock Holmes",
