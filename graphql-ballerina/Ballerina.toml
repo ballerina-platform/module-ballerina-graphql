@@ -5,6 +5,11 @@ version = "@toml.version@"
 
 [[dependency]]
 org = "ballerina"
+name = "encoding"
+version = "@stdlib.encoding.version@"
+
+[[dependency]]
+org = "ballerina"
 name = "file"
 version = "@stdlib.file.version@"
 
