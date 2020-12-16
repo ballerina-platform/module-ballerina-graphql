@@ -102,7 +102,8 @@ public class Utils {
     static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
     static final BString MESSAGE_FIELD = StringUtils.fromString("message");
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
-
+    static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
+    static final BString VALUE_FIELD = StringUtils.fromString("value");
 
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
         ResourceFunctionType[] resourceFunctions = serviceType.getResourceFunctions();

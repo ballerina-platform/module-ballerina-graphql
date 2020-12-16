@@ -27,8 +27,7 @@ service /graphql on new Listener(9097) {
 }
 
 @test:Config {
-    groups: ["service", "unit"],
-    enable: false
+    groups: ["service", "unit"]
 }
 public function testResourceReturningServiceObject() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9097/graphql");

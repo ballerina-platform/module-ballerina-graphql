@@ -59,7 +59,7 @@ public class ExecutorVisitor {
             var argumentValues = self.visitArgument(argument);
             arguments[argumentValues.name] = argumentValues.value;
         }
-        return executeSingleResource(self, fieldNode, arguments);
+        return executeSingleResource(self.serviceType, self, fieldNode, arguments);
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ())
