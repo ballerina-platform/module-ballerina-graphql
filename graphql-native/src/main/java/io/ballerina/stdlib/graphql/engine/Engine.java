@@ -38,6 +38,7 @@ import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
 
 import java.util.concurrent.CountDownLatch;
 
+import static io.ballerina.stdlib.graphql.engine.Utils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.DATA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_SINGLE_RESOURCE_FUNCTION;
@@ -47,8 +48,8 @@ import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.QUERY;
 import static io.ballerina.stdlib.graphql.engine.Utils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.SELECTIONS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.SERVICE_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
+import static io.ballerina.stdlib.graphql.engine.Utils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
 import static io.ballerina.stdlib.graphql.engine.Utils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.engine.Utils.getResourceName;
@@ -70,9 +71,8 @@ public class Engine {
         return getSchemaRecordFromSchema(environment, schema);
     }
 
-    public static Object executeSingleResource(Environment environment, BObject visitor, BObject fieldNode,
-                                               BMap<BString, Object> arguments) {
-        BObject service = (BObject) visitor.get(SERVICE_TYPE_FIELD);
+    public static Object executeSingleResource(Environment environment, BObject service, BObject visitor,
+                                               BObject fieldNode, BMap<BString, Object> arguments) {
         ServiceType serviceType = (ServiceType) service.getType();
         BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
 
@@ -101,13 +101,37 @@ public class Engine {
                     BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
                     return getSelectionsFromRecord(fieldNode, resultRecord, module);
                 } else if (result instanceof BObject) {
-
+                    BObject subService = (BObject) result;
+                    BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
+                    BMap<BString, Object> data = ValueCreator.createRecordValue(module, DATA_RECORD);
+                    for (int i = 0; i < selections.size(); i++) {
+                        BObject subField = (BObject) selections.get(i);
+                        BMap<BString, Object> subfieldArgs = getArgumentsFromField(subField);
+                        Object subFieldValue = executeSingleResource(environment, subService, visitor, subField,
+                                                                     subfieldArgs);
+                        data.put(subField.getStringValue(NAME_FIELD), subFieldValue);
+                    }
+                    return data;
                 } else {
                     return result;
                 }
             }
         }
         return null;
+    }
+
+    public static BMap<BString, Object> getArgumentsFromField(BObject fieldNode) {
+        BArray argumentArray = fieldNode.getArrayValue(ARGUMENTS_FIELD);
+        BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
+        for (int i = 0; i < argumentArray.size(); i++) {
+            BObject argumentNode = (BObject) argumentArray.get(i);
+            BMap<BString, Object> argNameRecord = (BMap<BString, Object>) argumentNode.getMapValue(NAME_FIELD);
+            BMap<BString, Object> argValueRecord = (BMap<BString, Object>) argumentNode.getMapValue(VALUE_FIELD);
+            BString argName = argNameRecord.getStringValue(VALUE_FIELD);
+            Object argValue = argValueRecord.get(VALUE_FIELD);
+            argumentsMap.put(argName, argValue);
+        }
+        return argumentsMap;
     }
 
     public static Object[] getArgsForResource(ResourceFunctionType resourceFunction, BMap<BString, Object> arguments) {
