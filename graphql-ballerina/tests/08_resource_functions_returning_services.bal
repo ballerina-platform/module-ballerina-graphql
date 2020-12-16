@@ -24,6 +24,21 @@ service /graphql on new Listener(9097) {
             }
         };
     }
+
+    isolated resource function get profile() returns service object {} {
+        return service object {
+            isolated resource function get name() returns service object {} {
+                return service object {
+                    isolated resource function get first() returns string {
+                        return "Sherlock";
+                    }
+                    isolated resource function get last() returns string {
+                        return "Holmes";
+                    }
+                };
+            }
+        };
+    }
 }
 
 @test:Config {
@@ -37,6 +52,27 @@ public function testResourceReturningServiceObject() returns @tainted error? {
         data: {
             greet: {
                 generalGreeting: "Hello, world"
+            }
+        }
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "unit"]
+}
+public function testComplexService() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9097/graphql");
+    string document = "{ profile { name { first, last } } }";
+
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: {
+                    first: "Sherlock",
+                    last: "Holmes"
+                }
             }
         }
     };
