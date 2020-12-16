@@ -50,17 +50,23 @@ public class ValidatorVisitor {
         __Type queryType = self.schema.queryType;
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode selection in selections {
-            self.visitField(selection, queryType);
+            Parent parent = {
+                parentType: queryType,
+                name: "Query"
+            };
+            self.visitField(selection, parent);
         }
     }
 
     // TODO: Simplify this function
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        __Type parentType = <__Type>data;
+        Parent parent = <Parent>data;
+        __Type parentType = parent.parentType;
         map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
         if (fields.length() == 0) {
-            string message = getNoSubfieldsErrorMessage(parentType);
+            string message = getNoSubfieldsErrorMessage(parent.name, parentType.name);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+            return;
         }
 
         string requiredFieldName = fieldNode.getName();
@@ -72,7 +78,6 @@ public class ValidatorVisitor {
         }
 
         __Field schemaField = <__Field>schemaFieldValue;
-        fieldNode.setFieldType(<parser:FieldType>schemaField.returnType);
         self.checkArguments(fieldNode, schemaField);
 
         __Type fieldType = schemaField.'type;
@@ -84,7 +89,11 @@ public class ValidatorVisitor {
         }
 
         foreach parser:FieldNode subFieldNode in selections {
-            self.visitField(subFieldNode, fieldType);
+            Parent subParent = {
+                parentType: fieldType,
+                name: fieldNode.getName()
+            };
+            self.visitField(subFieldNode, subParent);
         }
     }
 
@@ -145,3 +154,8 @@ public class ValidatorVisitor {
         }
     }
 }
+
+type Parent record {
+    __Type parentType;
+    string name;
+};

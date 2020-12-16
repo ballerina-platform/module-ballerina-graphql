@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
@@ -29,7 +30,10 @@ import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.InputValue;
 import io.ballerina.stdlib.graphql.schema.Schema;
@@ -71,7 +75,6 @@ public class Utils {
     private static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
-    private static final BString RETURN_TYPE_FIELD = StringUtils.fromString("returnType");
 
     // Schema related type names
     // TODO: Make these values "graphql-specific" names
@@ -82,16 +85,23 @@ public class Utils {
     static final String ID = "id";
     static final String QUERY = "Query";
 
-    // Field return types
-    static final BString PRIMITIVE = StringUtils.fromString("PRIMITIVE");
-    static final BString RECORD = StringUtils.fromString("RECORD");
-    static final BString SERVICE = StringUtils.fromString("SERVICE");
-
     // Visitor object fields
     static final BString SERVICE_TYPE_FIELD = StringUtils.fromString("serviceType");
+    static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
     // Inter-op function names
     static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
+
+    // Record Types
+    static final String LOCATION_RECORD = "Location";
+    static final String ERROR_DETAIL_RECORD = "ErrorDetail";
+    static final String DATA_RECORD = "Data";
+
+    // Record fields
+    static final BString LOCATION_FIELD = StringUtils.fromString("location");
+    static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
+    static final BString MESSAGE_FIELD = StringUtils.fromString("message");
+    static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
 
 
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
@@ -224,7 +234,6 @@ public class Utils {
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
         fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(module, fieldObject.getType()));
         fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(module, fieldObject.getArgs()));
-        fieldRecord.put(RETURN_TYPE_FIELD, getTypeFromTag(fieldObject.getTypeTag()));
         return fieldRecord;
     }
 
@@ -250,14 +259,14 @@ public class Utils {
         return inputValueRecord;
     }
 
-    static BString getTypeFromTag(int tag) {
-        switch (tag) {
-            case RECORD_TYPE_TAG:
-                return RECORD;
-            case SERVICE_TAG:
-                return SERVICE;
-            default:
-                return PRIMITIVE;
-        }
+    static BMap<BString, Object> getErrorDetailRecord(Module module, BError error, BObject fieldNode) {
+        BMap<BString, Object> location = fieldNode.getMapValue(LOCATION_FIELD);
+        ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
+        BArray locations = ValueCreator.createArrayValue(locationsArrayType);
+        locations.append(location);
+        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(module, ERROR_DETAIL_RECORD);
+        errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
+        errorDetail.put(LOCATIONS_FIELD, locations);
+        return errorDetail;
     }
 }

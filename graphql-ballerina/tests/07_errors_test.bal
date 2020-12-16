@@ -181,3 +181,28 @@ public function testObjectWithMissingRequiredArgument() returns @tainted error? 
     json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9096/graphql");
+    string document = "{ profile (id: 2) { age { name } } }";
+
+    string expectedMessage = "Field \"age\" must not have a selection since type \"int\" has no subfields.";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 27
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
