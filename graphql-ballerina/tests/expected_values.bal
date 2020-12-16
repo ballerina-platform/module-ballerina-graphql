@@ -32,8 +32,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "type": {
                     name: "type",
@@ -48,8 +47,7 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "name": {
                                 name: "name",
@@ -58,8 +56,7 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             fields: {
                                 name: "fields",
@@ -68,13 +65,11 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "args": {
                     name: "args",
@@ -83,18 +78,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
-                },
-                "returnType": {
-                    name: "returnType",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -109,8 +93,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "queryType": {
                     name: "queryType",
@@ -125,8 +108,7 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "name": {
                                 name: "name",
@@ -135,8 +117,7 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             fields: {
                                 name: "fields",
@@ -145,13 +126,11 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -166,8 +145,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "PRIMITIVE"
+                    args: {}
                 },
                 "id": {
                     name: "id",
@@ -176,8 +154,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "int",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "PRIMITIVE"
+                    args: {}
                 },
                 "birthdate": {
                     name: "birthdate",
@@ -195,8 +172,7 @@ __Schema expectedSchemaForMultipleResources = {
                                 fields: {}
                             }
                         }
-                    },
-                    returnType: "PRIMITIVE"
+                    }
                 }
             }
         },
@@ -211,8 +187,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "name": {
                     name: "name",
@@ -221,8 +196,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 fields: {
                     name: "fields",
@@ -231,8 +205,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -252,8 +225,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "type": {
                     name: "type",
@@ -268,8 +240,7 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "name": {
                                 name: "name",
@@ -278,8 +249,7 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             fields: {
                                 name: "fields",
@@ -288,13 +258,11 @@ __Schema expectedSchemaForMultipleResources = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "defaultValue": {
                     name: "defaultValue",
@@ -303,8 +271,7 @@ __Schema expectedSchemaForMultipleResources = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         }
@@ -320,8 +287,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "string",
                     fields: {}
                 },
-                args: {},
-                returnType: "PRIMITIVE"
+                args: {}
             },
             "id": {
                 name: "id",
@@ -330,8 +296,7 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "int",
                     fields: {}
                 },
-                args: {},
-                returnType: "PRIMITIVE"
+                args: {}
             },
             "birthdate": {
                 name: "birthdate",
@@ -349,8 +314,7 @@ __Schema expectedSchemaForMultipleResources = {
                             fields: {}
                         }
                     }
-                },
-                returnType: "PRIMITIVE"
+                }
             }
         }
     }
@@ -374,8 +338,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "type": {
                     name: "type",
@@ -390,8 +353,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "name": {
                                 name: "name",
@@ -400,8 +362,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             fields: {
                                 name: "fields",
@@ -410,13 +371,11 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "args": {
                     name: "args",
@@ -425,18 +384,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
-                },
-                "returnType": {
-                    name: "returnType",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -451,8 +399,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "queryType": {
                     name: "queryType",
@@ -467,8 +414,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "name": {
                                 name: "name",
@@ -477,8 +423,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             fields: {
                                 name: "fields",
@@ -487,13 +432,11 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -508,8 +451,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "street": {
                     name: "street",
@@ -518,8 +460,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "city": {
                     name: "city",
@@ -528,8 +469,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -550,8 +490,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "age": {
                                 name: "age",
@@ -560,8 +499,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "int",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "address": {
                                 name: "address",
@@ -576,8 +514,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                                 name: "string",
                                                 fields: {}
                                             },
-                                            args: {},
-                                            returnType: "RECORD"
+                                            args: {}
                                         },
                                         "street": {
                                             name: "street",
@@ -586,8 +523,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                                 name: "string",
                                                 fields: {}
                                             },
-                                            args: {},
-                                            returnType: "RECORD"
+                                            args: {}
                                         },
                                         "city": {
                                             name: "city",
@@ -596,18 +532,15 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                                 name: "string",
                                                 fields: {}
                                             },
-                                            args: {},
-                                            returnType: "RECORD"
+                                            args: {}
                                         }
                                     }
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -622,8 +555,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "name": {
                     name: "name",
@@ -632,8 +564,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 fields: {
                     name: "fields",
@@ -642,8 +573,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "id",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -663,8 +593,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "type": {
                     name: "type",
@@ -679,8 +608,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "name": {
                                 name: "name",
@@ -689,8 +617,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             fields: {
                                 name: "fields",
@@ -699,13 +626,11 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "id",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "defaultValue": {
                     name: "defaultValue",
@@ -714,8 +639,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         },
@@ -730,8 +654,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "string",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "age": {
                     name: "age",
@@ -740,8 +663,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                         name: "int",
                         fields: {}
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 },
                 "address": {
                     name: "address",
@@ -756,8 +678,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "street": {
                                 name: "street",
@@ -766,8 +687,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             },
                             "city": {
                                 name: "city",
@@ -776,13 +696,11 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                     name: "string",
                                     fields: {}
                                 },
-                                args: {},
-                                returnType: "RECORD"
+                                args: {}
                             }
                         }
                     },
-                    args: {},
-                    returnType: "RECORD"
+                    args: {}
                 }
             }
         }
@@ -804,8 +722,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "string",
                                 fields: {}
                             },
-                            args: {},
-                            returnType: "RECORD"
+                            args: {}
                         },
                         "age": {
                             name: "age",
@@ -814,8 +731,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "int",
                                 fields: {}
                             },
-                            args: {},
-                            returnType: "RECORD"
+                            args: {}
                         },
                         "address": {
                             name: "address",
@@ -830,8 +746,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "string",
                                             fields: {}
                                         },
-                                        args: {},
-                                        returnType: "RECORD"
+                                        args: {}
                                     },
                                     "street": {
                                         name: "street",
@@ -840,8 +755,7 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "string",
                                             fields: {}
                                         },
-                                        args: {},
-                                        returnType: "RECORD"
+                                        args: {}
                                     },
                                     "city": {
                                         name: "city",
@@ -850,18 +764,15 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "string",
                                             fields: {}
                                         },
-                                        args: {},
-                                        returnType: "RECORD"
+                                        args: {}
                                     }
                                 }
                             },
-                            args: {},
-                            returnType: "RECORD"
+                            args: {}
                         }
                     }
                 },
-                args: {},
-                returnType: "RECORD"
+                args: {}
             }
         }
     }

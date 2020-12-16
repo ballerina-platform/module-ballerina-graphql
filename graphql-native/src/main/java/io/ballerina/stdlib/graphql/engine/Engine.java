@@ -26,23 +26,31 @@ import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BFuture;
+import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
+import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
 
+import java.util.concurrent.CountDownLatch;
+
+import static io.ballerina.stdlib.graphql.engine.Utils.DATA_RECORD;
+import static io.ballerina.stdlib.graphql.engine.Utils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_SINGLE_RESOURCE_FUNCTION;
 import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.QUERY;
 import static io.ballerina.stdlib.graphql.engine.Utils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.engine.Utils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.SERVICE_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
+import static io.ballerina.stdlib.graphql.engine.Utils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.engine.Utils.getResourceName;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaTypeForBalType;
@@ -62,8 +70,8 @@ public class Engine {
         return getSchemaRecordFromSchema(environment, schema);
     }
 
-    public static BFuture executeSingleResource(Environment environment, BObject visitor, BObject fieldNode,
-                                                BMap<BString, Object> arguments) {
+    public static Object executeSingleResource(Environment environment, BObject visitor, BObject fieldNode,
+                                               BMap<BString, Object> arguments) {
         BObject service = (BObject) visitor.get(SERVICE_TYPE_FIELD);
         ServiceType serviceType = (ServiceType) service.getType();
         BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
@@ -76,10 +84,27 @@ public class Engine {
             String resourceName = getResourceName(resourceFunction);
             if (resourceName.equals(expectedResourceName.getValue())) {
                 Object[] args = getArgsForResource(resourceFunction, arguments);
-                return environment.getRuntime().invokeMethodAsync(service, resourceFunction.getName(), null,
-                                                                  metadata, null,
-                                                                  null, resourceFunction.getType().getReturnType(),
-                                                                  args);
+                CountDownLatch latch = new CountDownLatch(1);
+                CallableUnitCallback callback = new CallableUnitCallback(latch);
+                environment.getRuntime().invokeMethodAsync(service, resourceFunction.getName(), null, metadata,
+                                                           callback, args);
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                Object result = callback.getResult();
+                if (result instanceof BError) {
+                    BArray errors = visitor.getArrayValue(ERRORS_FIELD);
+                    errors.append(getErrorDetailRecord(environment.getCurrentModule(), (BError) result, fieldNode));
+                } else if (result instanceof BMap) {
+                    BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
+                    return getSelectionsFromRecord(fieldNode, resultRecord, module);
+                } else if (result instanceof BObject) {
+
+                } else {
+                    return result;
+                }
             }
         }
         return null;
@@ -108,5 +133,22 @@ public class Engine {
         Type inputValueBalType = ValueCreator.createRecordValue(environment.getCurrentModule(), INPUT_VALUE_RECORD)
                 .getType();
         schema.addType(getSchemaTypeForBalType(inputValueBalType, schema));
+    }
+
+    private static BMap<BString, Object> getSelectionsFromRecord(BObject fieldNode, BMap<BString, Object> record,
+                                                                 Module module) {
+        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
+        BMap<BString, Object> data = ValueCreator.createRecordValue(module, DATA_RECORD);
+        for (int i = 0; i < selections.size(); i++) {
+            BObject subfieldNode = (BObject) selections.get(i);
+            BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
+            Object fieldValue = record.get(fieldName);
+            if (fieldValue instanceof BMap) {
+                data.put(fieldName, getSelectionsFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue, module));
+            } else {
+                data.put(fieldName, fieldValue);
+            }
+        }
+        return data;
     }
 }

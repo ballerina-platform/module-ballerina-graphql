@@ -21,9 +21,8 @@ isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string 
     return "Cannot query field \"" + requiredFieldName + "\" on type \"" + rootType + "\".";
 }
 
-isolated function getNoSubfieldsErrorMessage(__Type 'type) returns string {
-    string typeName = 'type.kind.toString();
-    return "Field \"" + 'type.name + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
+isolated function getNoSubfieldsErrorMessage(string fieldName, string typeName) returns string {
+    return "Field \"" + fieldName + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
 }
 
 isolated function getUnknownArgumentErrorMessage(string argName, __Field parent, parser:ArgumentNode argument)

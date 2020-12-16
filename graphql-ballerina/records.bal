@@ -77,12 +77,10 @@ public type __Type record {
 # + name - Name of the field
 # + type - The type of the field
 # + args - The arguments needed to query the field
-# + returnType - The return type of the field
 public type __Field record {|
     string name;
     __Type 'type;
     map<__InputValue> args?;
-    FieldType returnType;
     // TODO: Add following
     //string description?;
     //boolean isDeprecated = true;
@@ -120,9 +118,3 @@ type __Directive record {|
     string description?;
     // TODO: Add other fields
 |};
-
-public enum FieldType {
-    PRIMITIVE,
-    RECORD,
-    SERVICE
-}
