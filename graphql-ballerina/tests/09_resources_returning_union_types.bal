@@ -16,6 +16,24 @@
 
 import ballerina/test;
 
+@test:Config {
+    groups: ["service", "unit"]
+}
+public function testResourcesReturningInvalidUnionType() {
+    Listener graphqlListener = new (9099);
+    var result = trap graphqlListener.attach(serviceWithInvalidUnionTypes);
+    test:assertTrue(result is error);
+    error err = <error> result;
+    string expectedErrorMessage = "Unsupported union: Ballerina GraphQL does not allow unions other that <T>|error";
+    test:assertEquals(err.message(), expectedErrorMessage);
+}
+
+Service serviceWithInvalidUnionTypes = service object {
+    isolated resource function get name() returns int|string {
+        return "John Doe";
+    }
+};
+
 service /graphql on new Listener(9098) {
     resource function get profile(int id) returns Person|error {
         if (id < people.length()) {
