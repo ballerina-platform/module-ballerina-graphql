@@ -28,20 +28,14 @@ public class SchemaField {
     private String name;
     private List<InputValue> args;
     private SchemaType type;
-    private int typeTag;
 
-    public SchemaField(String name, int typeTag) {
+    public SchemaField(String name) {
         this.name = name;
-        this.typeTag = typeTag;
         this.args = new ArrayList<>();
     }
 
     public void setType(SchemaType type) {
         this.type = type;
-    }
-
-    public int getTypeTag() {
-        return this.typeTag;
     }
 
     public void addArg(InputValue arg) {

@@ -15,11 +15,15 @@
 // under the License.
 
 __Schema expectedSchemaForMultipleResources = {
-    types: {
-        "int": {
-            kind: "SCALAR",
-            name: "int",
-            fields: {}
+    "types": {
+        "__TypeKind": {
+            kind: "ENUM",
+            name: "__TypeKind",
+            "enumValues": {
+                "SCALAR": "SCALAR",
+                "OBJECT": "OBJECT",
+                "ENUM": "ENUM"
+            }
         },
         "__Field": {
             kind: "OBJECT",
@@ -28,111 +32,29 @@ __Schema expectedSchemaForMultipleResources = {
                 "name": {
                     name: "name",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "type": {
                     name: "type",
                     'type: {
-                        kind: "OBJECT",
-                        name: "__Type",
-                        fields: {
-                            "kind": {
-                                name: "kind",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            fields: {
-                                name: "fields",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            }
-                        }
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "args": {
                     name: "args",
                     'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 }
             }
         },
-        "__Schema": {
-            kind: "OBJECT",
-            name: "__Schema",
-            fields: {
-                "types": {
-                    name: "types",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
-                },
-                "queryType": {
-                    name: "queryType",
-                    'type: {
-                        kind: "OBJECT",
-                        name: "__Type",
-                        fields: {
-                            "kind": {
-                                name: "kind",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            fields: {
-                                name: "fields",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            }
-                        }
-                    },
-                    args: {}
-                }
-            }
+        "string": {
+            kind: "SCALAR",
+            name: "string"
         },
         "Query": {
             kind: "OBJECT",
@@ -142,34 +64,28 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "string"
+                    }
                 },
                 "id": {
                     name: "id",
                     'type: {
                         kind: "SCALAR",
-                        name: "int",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "int"
+                    }
                 },
                 "birthdate": {
                     name: "birthdate",
                     'type: {
                         kind: "SCALAR",
-                        name: "string",
-                        fields: {}
+                        name: "string"
                     },
-                    args: {
+                    "args": {
                         "format": {
                             name: "format",
                             'type: {
                                 kind: "SCALAR",
-                                name: "string",
-                                fields: {}
+                                name: "string"
                             }
                         }
                     }
@@ -180,39 +96,35 @@ __Schema expectedSchemaForMultipleResources = {
             kind: "OBJECT",
             name: "__Type",
             fields: {
-                "kind": {
-                    name: "kind",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
-                },
                 "name": {
                     name: "name",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
+                },
+                kind: {
+                    name: "kind",
+                    'type: {
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 fields: {
                     name: "fields",
                     'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
+                },
+                "enumValues": {
+                    name: "enumValues",
+                    'type: {
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 }
             }
-        },
-        "string": {
-            kind: "SCALAR",
-            name: "string",
-            fields: {}
         },
         "__InputValue": {
             kind: "OBJECT",
@@ -221,62 +133,32 @@ __Schema expectedSchemaForMultipleResources = {
                 "name": {
                     name: "name",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "type": {
                     name: "type",
                     'type: {
-                        kind: "OBJECT",
-                        name: "__Type",
-                        fields: {
-                            "kind": {
-                                name: "kind",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            fields: {
-                                name: "fields",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            }
-                        }
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "defaultValue": {
                     name: "defaultValue",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 }
             }
+        },
+        "int": {
+            kind: "SCALAR",
+            name: "int"
         }
     },
-    "queryType": {
+    queryType: {
         kind: "OBJECT",
         name: "Query",
         fields: {
@@ -284,34 +166,28 @@ __Schema expectedSchemaForMultipleResources = {
                 name: "name",
                 'type: {
                     kind: "SCALAR",
-                    name: "string",
-                    fields: {}
-                },
-                args: {}
+                    name: "string"
+                }
             },
             "id": {
                 name: "id",
                 'type: {
                     kind: "SCALAR",
-                    name: "int",
-                    fields: {}
-                },
-                args: {}
+                    name: "int"
+                }
             },
             "birthdate": {
                 name: "birthdate",
                 'type: {
                     kind: "SCALAR",
-                    name: "string",
-                    fields: {}
+                    name: "string"
                 },
-                args: {
+                "args": {
                     "format": {
                         name: "format",
                         'type: {
                             kind: "SCALAR",
-                            name: "string",
-                            fields: {}
+                            name: "string"
                         }
                     }
                 }
@@ -321,11 +197,15 @@ __Schema expectedSchemaForMultipleResources = {
 };
 
 __Schema expectedSchemaForResourcesReturningRecords = {
-    types: {
-        "int": {
-            kind: "SCALAR",
-            name: "int",
-            fields: {}
+    "types": {
+        "__TypeKind": {
+            kind: "ENUM",
+            name: "__TypeKind",
+            "enumValues": {
+                "SCALAR": "SCALAR",
+                "OBJECT": "OBJECT",
+                "ENUM": "ENUM"
+            }
         },
         "__Field": {
             kind: "OBJECT",
@@ -334,111 +214,29 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                 "name": {
                     name: "name",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "type": {
                     name: "type",
                     'type: {
-                        kind: "OBJECT",
-                        name: "__Type",
-                        fields: {
-                            "kind": {
-                                name: "kind",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            fields: {
-                                name: "fields",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            }
-                        }
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "args": {
                     name: "args",
                     'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 }
             }
         },
-        "__Schema": {
-            kind: "OBJECT",
-            name: "__Schema",
-            fields: {
-                "types": {
-                    name: "types",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
-                },
-                "queryType": {
-                    name: "queryType",
-                    'type: {
-                        kind: "OBJECT",
-                        name: "__Type",
-                        fields: {
-                            "kind": {
-                                name: "kind",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            fields: {
-                                name: "fields",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            }
-                        }
-                    },
-                    args: {}
-                }
-            }
+        "string": {
+            kind: "SCALAR",
+            name: "string"
         },
         "Address": {
             kind: "OBJECT",
@@ -448,28 +246,22 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "number",
                     'type: {
                         kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "string"
+                    }
                 },
                 "street": {
                     name: "street",
                     'type: {
                         kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "string"
+                    }
                 },
                 "city": {
                     name: "city",
                     'type: {
                         kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "string"
+                    }
                 }
             }
         },
@@ -487,19 +279,15 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
+                                    name: "string"
+                                }
                             },
                             "age": {
                                 name: "age",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "int",
-                                    fields: {}
-                                },
-                                args: {}
+                                    name: "int"
+                                }
                             },
                             "address": {
                                 name: "address",
@@ -511,36 +299,28 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "number",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "string",
-                                                fields: {}
-                                            },
-                                            args: {}
+                                                name: "string"
+                                            }
                                         },
                                         "street": {
                                             name: "street",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "string",
-                                                fields: {}
-                                            },
-                                            args: {}
+                                                name: "string"
+                                            }
                                         },
                                         "city": {
                                             name: "city",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "string",
-                                                fields: {}
-                                            },
-                                            args: {}
+                                                name: "string"
+                                            }
                                         }
                                     }
-                                },
-                                args: {}
+                                }
                             }
                         }
-                    },
-                    args: {}
+                    }
                 }
             }
         },
@@ -548,39 +328,35 @@ __Schema expectedSchemaForResourcesReturningRecords = {
             kind: "OBJECT",
             name: "__Type",
             fields: {
-                "kind": {
-                    name: "kind",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
-                },
                 "name": {
                     name: "name",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
+                },
+                kind: {
+                    name: "kind",
+                    'type: {
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 fields: {
                     name: "fields",
                     'type: {
-                        kind: "SCALAR",
-                        name: "id",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
+                },
+                enumValues: {
+                    name: "enumValues",
+                    'type: {
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 }
             }
-        },
-        "string": {
-            kind: "SCALAR",
-            name: "string",
-            fields: {}
         },
         "__InputValue": {
             kind: "OBJECT",
@@ -589,57 +365,23 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                 "name": {
                     name: "name",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "type": {
                     name: "type",
                     'type: {
-                        kind: "OBJECT",
-                        name: "__Type",
-                        fields: {
-                            "kind": {
-                                name: "kind",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
-                            },
-                            fields: {
-                                name: "fields",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "id",
-                                    fields: {}
-                                },
-                                args: {}
-                            }
-                        }
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 },
                 "defaultValue": {
                     name: "defaultValue",
                     'type: {
-                        kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        kind: "NON_NULL",
+                        name: ()
+                    }
                 }
             }
         },
@@ -651,19 +393,15 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "string",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "string"
+                    }
                 },
                 "age": {
                     name: "age",
                     'type: {
                         kind: "SCALAR",
-                        name: "int",
-                        fields: {}
-                    },
-                    args: {}
+                        name: "int"
+                    }
                 },
                 "address": {
                     name: "address",
@@ -675,37 +413,34 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "number",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
+                                    name: "string"
+                                }
                             },
                             "street": {
                                 name: "street",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
+                                    name: "string"
+                                }
                             },
                             "city": {
                                 name: "city",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string",
-                                    fields: {}
-                                },
-                                args: {}
+                                    name: "string"
+                                }
                             }
                         }
-                    },
-                    args: {}
+                    }
                 }
             }
+        },
+        "int": {
+            kind: "SCALAR",
+            name: "int"
         }
     },
-    "queryType": {
+    queryType: {
         kind: "OBJECT",
         name: "Query",
         fields: {
@@ -719,19 +454,15 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                             name: "name",
                             'type: {
                                 kind: "SCALAR",
-                                name: "string",
-                                fields: {}
-                            },
-                            args: {}
+                                name: "string"
+                            }
                         },
                         "age": {
                             name: "age",
                             'type: {
                                 kind: "SCALAR",
-                                name: "int",
-                                fields: {}
-                            },
-                            args: {}
+                                name: "int"
+                            }
                         },
                         "address": {
                             name: "address",
@@ -743,36 +474,28 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                         name: "number",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "string",
-                                            fields: {}
-                                        },
-                                        args: {}
+                                            name: "string"
+                                        }
                                     },
                                     "street": {
                                         name: "street",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "string",
-                                            fields: {}
-                                        },
-                                        args: {}
+                                            name: "string"
+                                        }
                                     },
                                     "city": {
                                         name: "city",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "string",
-                                            fields: {}
-                                        },
-                                        args: {}
+                                            name: "string"
+                                        }
                                     }
                                 }
-                            },
-                            args: {}
+                            }
                         }
                     }
-                },
-                args: {}
+                }
             }
         }
     }
