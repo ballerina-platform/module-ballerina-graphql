@@ -24,5 +24,6 @@ package io.ballerina.stdlib.graphql.schema;
 public enum TypeKind {
     SCALAR,
     OBJECT,
-    ENUM
+    ENUM,
+    NON_NULL
 }

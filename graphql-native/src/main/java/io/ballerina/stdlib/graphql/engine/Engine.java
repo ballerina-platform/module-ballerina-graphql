@@ -24,7 +24,6 @@ import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
-import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -38,23 +37,19 @@ import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
 
 import java.util.concurrent.CountDownLatch;
 
+import static io.ballerina.stdlib.graphql.engine.IntrospectionUtils.initializeIntrospectionTypes;
 import static io.ballerina.stdlib.graphql.engine.Utils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.DATA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_SINGLE_RESOURCE_FUNCTION;
-import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
-import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.QUERY;
-import static io.ballerina.stdlib.graphql.engine.Utils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.SELECTIONS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.engine.Utils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
 import static io.ballerina.stdlib.graphql.engine.Utils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.engine.Utils.getResourceName;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
-import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaTypeForBalType;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -63,7 +58,7 @@ public class Engine {
 
     public static BMap<BString, Object> createSchema(Environment environment, BObject service) {
         Schema schema = new Schema();
-        initializeIntrospectionTypes(environment, schema);
+        initializeIntrospectionTypes(schema);
         ServiceType serviceType = (ServiceType) service.getType();
         SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT);
         addQueryFieldsForServiceType(serviceType, queryType, schema);
@@ -142,21 +137,6 @@ public class Engine {
             result[j + 1] = true;
         }
         return result;
-    }
-
-    private static void initializeIntrospectionTypes(Environment environment, Schema schema) {
-        Type schemaBalType = ValueCreator.createRecordValue(environment.getCurrentModule(), SCHEMA_RECORD).getType();
-        schema.addType(getSchemaTypeForBalType(schemaBalType, schema));
-
-        Type typeBalType = ValueCreator.createRecordValue(environment.getCurrentModule(), TYPE_RECORD).getType();
-        schema.addType(getSchemaTypeForBalType(typeBalType, schema));
-
-        Type fieldBalType = ValueCreator.createRecordValue(environment.getCurrentModule(), FIELD_RECORD).getType();
-        schema.addType(getSchemaTypeForBalType(fieldBalType, schema));
-
-        Type inputValueBalType = ValueCreator.createRecordValue(environment.getCurrentModule(), INPUT_VALUE_RECORD)
-                .getType();
-        schema.addType(getSchemaTypeForBalType(inputValueBalType, schema));
     }
 
     private static BMap<BString, Object> getSelectionsFromRecord(BObject fieldNode, BMap<BString, Object> record,
