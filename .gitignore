@@ -38,3 +38,4 @@ build
 # Ballerina
 velocity.log*
 *Ballerina.lock
+graphql-ballerina/modules/graphql/

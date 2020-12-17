@@ -32,3 +32,5 @@ const FIELD_LOCATIONS = "locations";
 const FIELD_MESSAGE = "message";
 
 const OPERATION_QUERY = "Query";
+
+const SCALAR = "SCALAR";
