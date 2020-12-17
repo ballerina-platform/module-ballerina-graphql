@@ -1,1 +1,0 @@
-{"ballerina/graphql:0.1.0" : [{"function":{"name":"query","requiredParams":[{"document":"string"},{"operationName":"string?"}],"returnType":"json"}}]}
