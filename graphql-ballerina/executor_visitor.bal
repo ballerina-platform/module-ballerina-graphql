@@ -47,34 +47,19 @@ public class ExecutorVisitor {
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode fieldNode in selections {
             var fieldResult = self.visitField(fieldNode, self.data);
-            if (fieldResult is error) {
-                self.errors.push(getErrorDetailRecord(fieldResult.message(), fieldNode.getLocation()));
-            } else {
+            if (fieldResult != ()) {
                 self.data[fieldNode.getName()] = fieldResult;
             }
         }
     }
 
-    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata|error {
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata {
         map<Scalar> arguments = {};
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
             var argumentValues = self.visitArgument(argument);
             arguments[argumentValues.name] = argumentValues.value;
         }
-
-        if (fieldNode.getFieldType() is parser:PRIMITIVE) {
-            return wait executeSingleResource(self, fieldNode, arguments);
-        } else if (fieldNode.getFieldType() is parser:RECORD) {
-            var executionResult = wait executeSingleResource(self, fieldNode, arguments);
-            if (executionResult is error?) {
-                return executionResult;
-            } else {
-                map<anydata> executionData = <map<anydata>>executionResult;
-                return getFieldMapForSelection(fieldNode, executionData);
-            }
-        } else {
-
-        }
+        return executeSingleResource(self.serviceType, self, fieldNode, arguments);
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ())
