@@ -20,15 +20,18 @@ package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -47,24 +50,30 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
+import static io.ballerina.runtime.api.TypeTags.ERROR_TAG;
+import static io.ballerina.runtime.api.TypeTags.FINITE_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
+import static io.ballerina.runtime.api.TypeTags.MAP_TAG;
 import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
+import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
  */
 public class Utils {
 
-    private Utils() {}
+    private Utils() {
+    }
 
     // Schema related record types
     public static final String SCHEMA_RECORD = "__Schema";
     public static final String FIELD_RECORD = "__Field";
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
+    public static final String TYPE_KIND_ENUM = "__TypeKind";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -75,6 +84,7 @@ public class Utils {
     private static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
+    private static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
 
     // Schema related type names
     // TODO: Make these values "graphql-specific" names
@@ -115,7 +125,7 @@ public class Utils {
     private static SchemaField getFieldForResource(ResourceFunctionType resourceFunction, Schema schema) {
         String fieldName = getResourceName(resourceFunction);
         // TODO: Check accessor: Only get allowed
-        SchemaField field = new SchemaField(fieldName, resourceFunction.getType().getReturnParameterType().getTag());
+        SchemaField field = new SchemaField(fieldName);
         addArgsToField(field, resourceFunction, schema);
         field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
         return field;
@@ -127,7 +137,6 @@ public class Utils {
         return nameArray[nameIndex - 1];
     }
 
-    // TODO: Simplify
     static SchemaType getSchemaTypeForBalType(Type type, Schema schema) {
         int tag = type.getTag();
         if (schema.getType(type.getName()) != null) {
@@ -154,7 +163,7 @@ public class Utils {
             SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT);
             Collection<Field> recordFields = record.getFields().values();
             for (Field recordField : recordFields) {
-                SchemaField field = new SchemaField(recordField.getFieldName(), tag);
+                SchemaField field = new SchemaField(recordField.getFieldName());
                 field.setType(getSchemaTypeForBalType(recordField.getFieldType(), schema));
                 fieldType.addField(field);
             }
@@ -166,9 +175,26 @@ public class Utils {
             addQueryFieldsForServiceType(service, fieldType, schema);
             schema.addType(fieldType);
             return fieldType;
+        } else if (tag == MAP_TAG) {
+            MapType mapType = (MapType) type;
+            Type constrainedType = mapType.getConstrainedType();
+            SchemaType schemaType = getSchemaTypeForBalType(constrainedType, schema);
+            schema.addType(schemaType);
+            return schemaType;
+        } else if (tag == FINITE_TYPE_TAG) {
+            FiniteType finiteType = (FiniteType) type;
+            SchemaType schemaType = new SchemaType(type.getName(), TypeKind.ENUM);
+            for (Object value : finiteType.getValueSpace()) {
+                schemaType.addEnumValue(value);
+            }
+            schema.addType(schemaType);
+            return schemaType;
+        } else if (tag == UNION_TAG) {
+            Type mainType = getMainTypeForUnionTypes((UnionType) type);
+            return getSchemaTypeForBalType(mainType, schema);
         } else {
-            // TODO: Fix this to return an error
-            return new SchemaType(ID, TypeKind.SCALAR);
+            String message = "Unsupported return type: " + type.getName();
+            throw ErrorCreator.createError(StringUtils.fromString(message));
         }
     }
 
@@ -212,10 +238,20 @@ public class Utils {
     }
 
     static BMap<BString, Object> getTypeRecordFromTypeObject(Module module, SchemaType typeObject) {
+        if (typeObject == null) {
+            return null;
+        }
         BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(module, TYPE_RECORD);
         typeRecord.put(KIND_FIELD, StringUtils.fromString(typeObject.getKind().toString()));
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
-        typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(module, typeObject.getFields()));
+        List<SchemaField> fields = typeObject.getFields();
+        if (fields != null && fields.size() > 0) {
+            typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(module, fields));
+        }
+        List<Object> enumValues = typeObject.getEnumValues();
+        if (enumValues != null && enumValues.size() > 0) {
+            typeRecord.put(ENUM_VALUES_FIELD, getEnumValuesMapFromEnumValues(enumValues));
+        }
         return typeRecord;
     }
 
@@ -230,11 +266,27 @@ public class Utils {
         return fieldRecordMap;
     }
 
+    private static BMap<BString, Object> getEnumValuesMapFromEnumValues(List<Object> enumValues) {
+        BMap<BString, Object> result = ValueCreator.createMapValue();
+        for (Object value : enumValues) {
+            result.put(StringUtils.fromString(value.toString()), value);
+        }
+        return result;
+    }
+
     private static BMap<BString, Object> getFieldRecordFromObject(Module module, SchemaField fieldObject) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(module, FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
-        fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(module, fieldObject.getType()));
-        fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(module, fieldObject.getArgs()));
+        SchemaType type = fieldObject.getType();
+        if (type != null) {
+            fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(module, type));
+        } else {
+            fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(module, createNonNullType()));
+        }
+        List<InputValue> args = fieldObject.getArgs();
+        if (args != null && args.size() > 0) {
+            fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(module, args));
+        }
         return fieldRecord;
     }
 
@@ -269,5 +321,48 @@ public class Utils {
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);
         return errorDetail;
+    }
+
+    private static Type getMainTypeForUnionTypes(UnionType type) {
+        List<Type> memberTypes = type.getMemberTypes();
+        if (isFinite(memberTypes)) {
+            return memberTypes.get(0);
+        }
+        if (memberTypes.size() != 2) {
+            String message = "GraphQL resources does not allow to return union of more than two types.";
+            throw ErrorCreator.createError(StringUtils.fromString(message));
+        }
+        if (memberTypes.get(0).getTag() == ERROR_TAG) {
+            return getMainTypeFromErrorUnion(memberTypes.get(1));
+        } else if (memberTypes.get(1).getTag() == ERROR_TAG) {
+            return getMainTypeFromErrorUnion(memberTypes.get(0));
+        } else {
+            String message = "Unsupported union: Ballerina GraphQL does not allow unions other that <T>|error";
+            throw ErrorCreator.createError(StringUtils.fromString(message));
+        }
+    }
+
+    private static Type getMainTypeFromErrorUnion(Type mainType) {
+        int mainTypeTag = mainType.getTag();
+        if (mainTypeTag == INT_TAG || mainTypeTag == FLOAT_TAG || mainTypeTag == BOOLEAN_TAG ||
+                mainTypeTag == STRING_TAG || mainTypeTag == RECORD_TYPE_TAG || mainTypeTag == SERVICE_TAG) {
+            return mainType;
+        } else {
+            String message = "Unsupported union with error: " + mainType.getName();
+            throw ErrorCreator.createError(StringUtils.fromString(message));
+        }
+    }
+
+    private static boolean isFinite(List<Type> memberTypes) {
+        for (Type type : memberTypes) {
+            if (type.getTag() != FINITE_TYPE_TAG) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static SchemaType createNonNullType() {
+        return new SchemaType(null, TypeKind.NON_NULL);
     }
 }

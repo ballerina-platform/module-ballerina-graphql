@@ -29,11 +29,13 @@ public class SchemaType {
     private TypeKind kind;
     private String name;
     private List<SchemaField> fields;
+    private List<Object> enumValues;
 
     public SchemaType(String name, TypeKind kind) {
         this.name = name;
         this.kind = kind;
         this.fields = new ArrayList<>();
+        this.enumValues = new ArrayList<>();
     }
 
     public String getName() {
@@ -48,8 +50,16 @@ public class SchemaType {
         return this.fields;
     }
 
+    public List<Object> getEnumValues() {
+        return this.enumValues;
+    }
+
     public void addField(SchemaField field) {
         this.fields.add(field);
+    }
+
+    public void addEnumValue(Object o) {
+        this.enumValues.add(o);
     }
 
     @Override

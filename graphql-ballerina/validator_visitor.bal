@@ -64,13 +64,13 @@ public class ValidatorVisitor {
         __Type parentType = parent.parentType;
 
         // Skip service types validation
-        if (parentType.name.startsWith("$")) {
+        if (parentType.name.toString().startsWith("$")) {
             return;
         }
 
         map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
         if (fields.length() == 0) {
-            string message = getNoSubfieldsErrorMessage(parent.name, parentType.name);
+            string message = getNoSubfieldsErrorMessage(parent.name, parentType.name.toString());
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
@@ -78,7 +78,7 @@ public class ValidatorVisitor {
         string requiredFieldName = fieldNode.getName();
         var schemaFieldValue = fields[requiredFieldName];
         if (schemaFieldValue is ()) {
-            string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name);
+            string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name.toString());
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
@@ -90,7 +90,7 @@ public class ValidatorVisitor {
         parser:FieldNode[] selections = fieldNode.getSelections();
 
         if (fieldType.kind != SCALAR && selections.length() == 0) {
-            string message = getMissingSubfieldsError(requiredFieldName, fieldType.name);
+            string message = getMissingSubfieldsError(requiredFieldName, fieldType.name.toString());
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
 
@@ -105,7 +105,7 @@ public class ValidatorVisitor {
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>data;
-        string typeName = schemaArg.'type.name;
+        string typeName = schemaArg.'type.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
         string expectedTypeName = getTypeName(value);
         if (typeName != expectedTypeName) {
