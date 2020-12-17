@@ -17,7 +17,7 @@
 import ballerina/test;
 
 service /graphql on new Listener(9095) {
-    resource function get profile(int id) returns Person {
+    resource function query profile(int id) returns Person {
         return people[id];
     }
 }

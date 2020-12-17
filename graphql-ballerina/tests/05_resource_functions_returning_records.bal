@@ -44,7 +44,7 @@ function testGetFieldFromRecordResource() returns @tainted error? {
 }
 
 service /graphql on new Listener(9094) {
-    isolated resource function get profile() returns Person {
+    isolated resource function query profile() returns Person {
         return {
             name: "Sherlock Holmes",
             age: 40,

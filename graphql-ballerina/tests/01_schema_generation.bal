@@ -19,35 +19,35 @@ import ballerina/test;
 @test:Config {
     groups: ["schema_generation", "engine", "unit"]
 }
-function testSchemaGenerationForMultipleResources() {
-    __Schema actualSchema = createSchema(serviceWithMultipleResources);
+function testSchemaGenerationForMultipleResources() returns error? {
+    __Schema actualSchema = check createSchema(serviceWithMultipleResources);
     test:assertEquals(actualSchema, expectedSchemaForMultipleResources);
 }
 
 @test:Config {
     groups: ["schema_generation", "engine", "unit"]
 }
-function testSchemaGenerationForResourcesReturningRecords() {
-    __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
+function testSchemaGenerationForResourcesReturningRecords() returns error? {
+    __Schema actualSchema = check createSchema(serviceWithResourcesReturningRecords);
     test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
 }
 
 Service serviceWithMultipleResources = service object {
-    isolated resource function get name() returns string {
+    isolated resource function query name() returns string {
         return "John Doe";
     }
 
-    isolated resource function get id() returns int {
+    isolated resource function query id() returns int {
         return 1;
     }
 
-    isolated resource function get birthdate(string format) returns string {
+    isolated resource function query birthdate(string format) returns string {
         return "01-01-1980";
     }
 };
 
 service object {} serviceWithResourcesReturningRecords = service object {
-    isolated resource function get person() returns Person {
+    isolated resource function query person() returns Person {
         return {
             name: "Sherlock Holmes",
             age: 20,

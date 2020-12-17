@@ -17,22 +17,22 @@
 import ballerina/test;
 
 service /graphql on new Listener(9097) {
-    isolated resource function get greet() returns service object {} {
+    isolated resource function query greet() returns service object {} {
         return service object {
-            isolated resource function get generalGreeting() returns string {
+            isolated resource function query generalGreeting() returns string {
                 return "Hello, world";
             }
         };
     }
 
-    isolated resource function get profile() returns service object {} {
+    isolated resource function query profile() returns service object {} {
         return service object {
-            isolated resource function get name() returns service object {} {
+            isolated resource function query name() returns service object {} {
                 return service object {
-                    isolated resource function get first() returns string {
+                    isolated resource function query first() returns string {
                         return "Sherlock";
                     }
-                    isolated resource function get last() returns string {
+                    isolated resource function query last() returns string {
                         return "Holmes";
                     }
                 };

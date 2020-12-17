@@ -20,7 +20,7 @@ import ballerina/test;
 listener Listener functionWithArgumentsListener = new(9093);
 
 service /graphql on functionWithArgumentsListener {
-    isolated resource function get greet(string name) returns string {
+    isolated resource function query greet(string name) returns string {
         return "Hello, " + name;
     }
 }

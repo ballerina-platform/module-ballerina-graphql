@@ -66,11 +66,11 @@ function testGetRequestResult() returns @tainted error? {
 }
 
 service /graphql on simpleResourceListener {
-    isolated resource function get name() returns string {
+    isolated resource function query name() returns string {
         return "James Moriarty";
     }
 
-    isolated resource function get birthdate() returns string {
+    isolated resource function query birthdate() returns string {
         return "15-05-1848";
     }
 }

@@ -52,7 +52,7 @@ isolated function getFieldMapForSelection(parser:FieldNode fieldNode, map<anydat
     return result;
 }
 
-isolated function createSchema(Service s) returns __Schema = @java:Method {
+isolated function createSchema(Service s) returns __Schema|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 

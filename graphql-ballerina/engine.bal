@@ -56,9 +56,9 @@ public class Engine {
         }
     }
 
-    isolated function registerService(Service s) {
+    isolated function registerService(Service s) returns error? {
         self.graphqlService = s;
-        self.schema = createSchema(s);
+        self.schema = check createSchema(s);
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {

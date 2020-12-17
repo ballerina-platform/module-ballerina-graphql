@@ -44,7 +44,7 @@ public class Listener {
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         checkpanic self.httpListener.attach(self.httpService, name);
-        self.engine.registerService(s);
+        return self.engine.registerService(s);
     }
 
     # Detaches the provided service from the Listener.

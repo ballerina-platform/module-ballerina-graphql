@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -58,7 +59,8 @@ import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
  */
 public class Utils {
 
-    private Utils() {}
+    private Utils() {
+    }
 
     // Schema related record types
     public static final String SCHEMA_RECORD = "__Schema";
@@ -105,6 +107,10 @@ public class Utils {
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
 
+    // Accessors
+    private static final String QUERY_ACCESSOR = "query";
+    private static final String MUTATION_ACCESSOR = "mutation";
+
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
         ResourceFunctionType[] resourceFunctions = serviceType.getResourceFunctions();
         for (ResourceFunctionType resourceFunction : resourceFunctions) {
@@ -115,10 +121,19 @@ public class Utils {
     private static SchemaField getFieldForResource(ResourceFunctionType resourceFunction, Schema schema) {
         String fieldName = getResourceName(resourceFunction);
         // TODO: Check accessor: Only get allowed
-        SchemaField field = new SchemaField(fieldName, resourceFunction.getType().getReturnParameterType().getTag());
-        addArgsToField(field, resourceFunction, schema);
-        field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
-        return field;
+        if (QUERY_ACCESSOR.equals(resourceFunction.getAccessor())) {
+            SchemaField field = new SchemaField(fieldName,
+                                                resourceFunction.getType().getReturnParameterType().getTag());
+            addArgsToField(field, resourceFunction, schema);
+            field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
+            return field;
+        } else if (MUTATION_ACCESSOR.equals(resourceFunction.getAccessor())) {
+            BString message = StringUtils.fromString("GraphQL mutations are not yet supported in Ballerina.");
+            throw ErrorCreator.createError(message);
+        } else {
+            BString message = StringUtils.fromString("Accessor \"" + resourceFunction.getAccessor() + "\" not allowed");
+            throw ErrorCreator.createError(message);
+        }
     }
 
     static String getResourceName(ResourceFunctionType resourceFunction) {
