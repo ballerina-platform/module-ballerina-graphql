@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["engine", "unit"]
+    groups: ["schema_generation", "engine", "unit"]
 }
 function testSchemaGenerationForMultipleResources() {
     __Schema actualSchema = createSchema(serviceWithMultipleResources);
@@ -25,7 +25,7 @@ function testSchemaGenerationForMultipleResources() {
 }
 
 @test:Config {
-    groups: ["engine", "unit"]
+    groups: ["schema_generation", "engine", "unit"]
 }
 function testSchemaGenerationForResourcesReturningRecords() {
     __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
