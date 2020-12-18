@@ -1,6 +1,6 @@
 # Package Overview
 
-This package provides an implementation for connecting and interacting with GraphQL endpoints.
+This module provides an implementation for connecting and interacting with GraphQL endpoints.
 
  
 ## Listener
@@ -35,11 +35,11 @@ import ballerina/graphql;
 listener graphql:Listener graphqlListener = new(<port number>);
 
 graphql:Service graphql on graphqlListener {
-    resource function name() returns string {
+    resource function get name() returns string {
         return "James Moriarty";
     }
 
-    resource function age() returns int {
+    resource function get age() returns int {
         return 40;
     }
 }
