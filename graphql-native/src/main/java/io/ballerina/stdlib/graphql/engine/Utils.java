@@ -88,15 +88,13 @@ public class Utils {
 
     // Schema related type names
     // TODO: Make these values "graphql-specific" names
-    static final String INTEGER = "int";
-    static final String STRING = "string";
-    static final String BOOLEAN = "boolean";
-    static final String FLOAT = "float";
-    static final String ID = "id";
+    static final String INTEGER = "Int";
+    static final String STRING = "String";
+    static final String BOOLEAN = "Boolean";
+    static final String FLOAT = "Float";
     static final String QUERY = "Query";
 
     // Visitor object fields
-    static final BString SERVICE_TYPE_FIELD = StringUtils.fromString("serviceType");
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
     // Inter-op function names

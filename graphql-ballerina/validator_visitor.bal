@@ -107,7 +107,7 @@ public class ValidatorVisitor {
         __InputValue schemaArg = <__InputValue>data;
         string typeName = schemaArg.'type.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
-        string expectedTypeName = getTypeName(value);
+        string expectedTypeName = getTypeName(argumentNode);
         if (typeName != expectedTypeName) {
             // TODO: Improve error message
             string message = typeName + " cannot represent non " + typeName + " value: " + value.value.toString();
