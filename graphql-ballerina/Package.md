@@ -1,6 +1,6 @@
 # Package Overview
 
-This package provides an implementation for connecting and interacting with GraphQL endpoints.
+This module provides an implementation for connecting and interacting with GraphQL endpoints.
 
  
 ## Listener
