@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/stringutils;
 import graphql.parser;
 
 isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string rootType) returns string {
@@ -52,13 +51,17 @@ isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) retur
     return outputObject;
 }
 
-isolated function getTypeName(parser:ArgumentValue value) returns string {
-    return getNameFromTypedesc(value.value);
-}
-
-isolated function getNameFromTypedesc(any value) returns string {
-    typedesc kind = typeof value;
-    return stringutils:split(kind.toString(), " ")[1];
+isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
+    parser:ArgumentType kind = argumentNode.getKind();
+    if (kind == parser:T_INT) {
+        return "Int";
+    } else if (kind == parser:T_FLOAT) {
+        return "Float";
+    } else if (kind == parser:T_BOOLEAN) {
+        return "Boolean";
+    } else {
+        return "String";
+    }
 }
 
 isolated function getErrorDetailRecord(string message, Location|Location[] location) returns ErrorDetail {

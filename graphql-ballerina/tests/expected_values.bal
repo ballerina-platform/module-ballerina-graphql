@@ -52,9 +52,9 @@ __Schema expectedSchemaForMultipleResources = {
                 }
             }
         },
-        "string": {
+        "String": {
             kind: "SCALAR",
-            name: "string"
+            name: "String"
         },
         "Query": {
             kind: "OBJECT",
@@ -64,28 +64,28 @@ __Schema expectedSchemaForMultipleResources = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "string"
+                        name: "String"
                     }
                 },
                 "id": {
                     name: "id",
                     'type: {
                         kind: "SCALAR",
-                        name: "int"
+                        name: "Int"
                     }
                 },
                 "birthdate": {
                     name: "birthdate",
                     'type: {
                         kind: "SCALAR",
-                        name: "string"
+                        name: "String"
                     },
                     "args": {
                         "format": {
                             name: "format",
                             'type: {
                                 kind: "SCALAR",
-                                name: "string"
+                                name: "String"
                             }
                         }
                     }
@@ -153,9 +153,9 @@ __Schema expectedSchemaForMultipleResources = {
                 }
             }
         },
-        "int": {
+        "Int": {
             kind: "SCALAR",
-            name: "int"
+            name: "Int"
         }
     },
     queryType: {
@@ -166,28 +166,28 @@ __Schema expectedSchemaForMultipleResources = {
                 name: "name",
                 'type: {
                     kind: "SCALAR",
-                    name: "string"
+                    name: "String"
                 }
             },
             "id": {
                 name: "id",
                 'type: {
                     kind: "SCALAR",
-                    name: "int"
+                    name: "Int"
                 }
             },
             "birthdate": {
                 name: "birthdate",
                 'type: {
                     kind: "SCALAR",
-                    name: "string"
+                    name: "String"
                 },
                 "args": {
                     "format": {
                         name: "format",
                         'type: {
                             kind: "SCALAR",
-                            name: "string"
+                            name: "String"
                         }
                     }
                 }
@@ -234,9 +234,9 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                 }
             }
         },
-        "string": {
+        "String": {
             kind: "SCALAR",
-            name: "string"
+            name: "String"
         },
         "Address": {
             kind: "OBJECT",
@@ -246,21 +246,21 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "number",
                     'type: {
                         kind: "SCALAR",
-                        name: "string"
+                        name: "String"
                     }
                 },
                 "street": {
                     name: "street",
                     'type: {
                         kind: "SCALAR",
-                        name: "string"
+                        name: "String"
                     }
                 },
                 "city": {
                     name: "city",
                     'type: {
                         kind: "SCALAR",
-                        name: "string"
+                        name: "String"
                     }
                 }
             }
@@ -279,14 +279,14 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "name",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string"
+                                    name: "String"
                                 }
                             },
                             "age": {
                                 name: "age",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "int"
+                                    name: "Int"
                                 }
                             },
                             "address": {
@@ -299,21 +299,21 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                             name: "number",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "string"
+                                                name: "String"
                                             }
                                         },
                                         "street": {
                                             name: "street",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "string"
+                                                name: "String"
                                             }
                                         },
                                         "city": {
                                             name: "city",
                                             'type: {
                                                 kind: "SCALAR",
-                                                name: "string"
+                                                name: "String"
                                             }
                                         }
                                     }
@@ -393,14 +393,14 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                     name: "name",
                     'type: {
                         kind: "SCALAR",
-                        name: "string"
+                        name: "String"
                     }
                 },
                 "age": {
                     name: "age",
                     'type: {
                         kind: "SCALAR",
-                        name: "int"
+                        name: "Int"
                     }
                 },
                 "address": {
@@ -413,21 +413,21 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                 name: "number",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string"
+                                    name: "String"
                                 }
                             },
                             "street": {
                                 name: "street",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string"
+                                    name: "String"
                                 }
                             },
                             "city": {
                                 name: "city",
                                 'type: {
                                     kind: "SCALAR",
-                                    name: "string"
+                                    name: "String"
                                 }
                             }
                         }
@@ -435,9 +435,9 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                 }
             }
         },
-        "int": {
+        "Int": {
             kind: "SCALAR",
-            name: "int"
+            name: "Int"
         }
     },
     queryType: {
@@ -454,14 +454,14 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                             name: "name",
                             'type: {
                                 kind: "SCALAR",
-                                name: "string"
+                                name: "String"
                             }
                         },
                         "age": {
                             name: "age",
                             'type: {
                                 kind: "SCALAR",
-                                name: "int"
+                                name: "Int"
                             }
                         },
                         "address": {
@@ -474,21 +474,21 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                                         name: "number",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "string"
+                                            name: "String"
                                         }
                                     },
                                     "street": {
                                         name: "street",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "string"
+                                            name: "String"
                                         }
                                     },
                                     "city": {
                                         name: "city",
                                         'type: {
                                             kind: "SCALAR",
-                                            name: "string"
+                                            name: "String"
                                         }
                                     }
                                 }
