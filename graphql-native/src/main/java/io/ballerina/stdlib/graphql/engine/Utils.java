@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.ballerina.runtime.api.TypeTags.ARRAY_TAG;
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.ERROR_TAG;
 import static io.ballerina.runtime.api.TypeTags.FINITE_TYPE_TAG;
@@ -85,6 +86,7 @@ public class Utils {
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
     private static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
+    private static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
 
     // Schema related type names
     // TODO: Make these values "graphql-specific" names
@@ -190,6 +192,13 @@ public class Utils {
         } else if (tag == UNION_TAG) {
             Type mainType = getMainTypeForUnionTypes((UnionType) type);
             return getSchemaTypeForBalType(mainType, schema);
+        } else if (tag == ARRAY_TAG) {
+            ArrayType arrayType = (ArrayType) type;
+            SchemaType ofType = getSchemaTypeForBalType(arrayType.getElementType(), schema);
+            String typeName = "[" + ofType.getName() + "]";
+            SchemaType schemaType = new SchemaType(typeName, TypeKind.LIST);
+            schemaType.setOfType(ofType);
+            return schemaType;
         } else {
             String message = "Unsupported return type: " + type.getName();
             throw ErrorCreator.createError(StringUtils.fromString(message));
@@ -249,6 +258,10 @@ public class Utils {
         List<Object> enumValues = typeObject.getEnumValues();
         if (enumValues != null && enumValues.size() > 0) {
             typeRecord.put(ENUM_VALUES_FIELD, getEnumValuesMapFromEnumValues(enumValues));
+        }
+        SchemaType ofType = typeObject.getOfType();
+        if (ofType != null) {
+            typeRecord.put(OF_TYPE_FIELD, getTypeRecordFromTypeObject(module, ofType));
         }
         return typeRecord;
     }
@@ -362,5 +375,10 @@ public class Utils {
 
     private static SchemaType createNonNullType() {
         return new SchemaType(null, TypeKind.NON_NULL);
+    }
+
+    static boolean isScalarType(Type type) {
+        int tag = type.getTag();
+        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
     }
 }

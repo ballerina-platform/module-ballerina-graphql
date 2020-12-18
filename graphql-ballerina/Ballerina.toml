@@ -1,31 +1,31 @@
 [package]
 org = "ballerina"
 name = "graphql"
-version = "@toml.version@"
+version = "0.1.0"
 
 [[dependency]]
 org = "ballerina"
 name = "encoding"
-version = "@stdlib.encoding.version@"
+version = "1.0.6"
 
 [[dependency]]
 org = "ballerina"
 name = "file"
-version = "@stdlib.file.version@"
+version = "0.6.2"
 
 [[dependency]]
 org = "ballerina"
 name = "http"
-version = "@stdlib.http.version@"
+version = "1.0.4"
 
 [[dependency]]
 org = "ballerina"
 name = "io"
-version = "@stdlib.io.version@"
+version = "0.5.4"
 
 [[platform.java11.dependency]]
-path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
+path = "../graphql-native/build/libs/graphql-native-0.1.0-SNAPSHOT.jar"
 groupId = "io.ballerina.stdlib.graphql"
 artifactId = "graphql"
-version = "@project.version@"
+version = "0.1.0-SNAPSHOT"
 modules = ["graphql"]
