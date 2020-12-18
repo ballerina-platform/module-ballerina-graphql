@@ -20,8 +20,11 @@ package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.ResourceFunctionType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -50,6 +53,7 @@ import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceT
 import static io.ballerina.stdlib.graphql.engine.Utils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.engine.Utils.getResourceName;
 import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
+import static io.ballerina.stdlib.graphql.engine.Utils.isScalarType;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -95,6 +99,19 @@ public class Engine {
                 } else if (result instanceof BMap) {
                     BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
                     return getSelectionsFromRecord(fieldNode, resultRecord, module);
+                } else if (result instanceof BArray) {
+                    BArray dataArray = (BArray) result;
+                    if (isScalarType(dataArray.getElementType())) {
+                        return result;
+                    } else if (dataArray.getElementType().getTag() == TypeTags.RECORD_TYPE_TAG) {
+                        BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType(module));
+                        for (int i = 0; i < dataArray.size(); i++) {
+                            BMap<BString, Object> resultRecord = (BMap<BString, Object>) dataArray.get(i);
+                            BMap<BString, Object> arrayField = getSelectionsFromRecord(fieldNode, resultRecord, module);
+                            resultArray.append(arrayField);
+                        }
+                        return resultArray;
+                    }
                 } else if (result instanceof BObject) {
                     BObject subService = (BObject) result;
                     BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
@@ -154,5 +171,10 @@ public class Engine {
             }
         }
         return data;
+    }
+
+    private static ArrayType getDataRecordArrayType(Module module) {
+        BMap<BString, Object> data = ValueCreator.createRecordValue(module, DATA_RECORD);
+        return TypeCreator.createArrayType(data.getType());
     }
 }

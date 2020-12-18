@@ -154,7 +154,7 @@ public function testObjectWithMissingRequiredArgument() returns @tainted error? 
     Client graphqlClient = new("http://localhost:9096/graphql");
     string document = "{ profile { status } }";
 
-    string expectedMessage1 = "Field \"profile\" argument \"id\" of type \"int\" is required, but it was not provided.";
+    string expectedMessage1 = "Field \"profile\" argument \"id\" of type \"Int\" is required, but it was not provided.";
     string expectedMessage2 = "Cannot query field \"status\" on type \"Person\".";
     json expectedPayload = {
         errors: [
@@ -189,7 +189,7 @@ public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9096/graphql");
     string document = "{ profile (id: 2) { age { name } } }";
 
-    string expectedMessage = "Field \"age\" must not have a selection since type \"int\" has no subfields.";
+    string expectedMessage = "Field \"age\" must not have a selection since type \"Int\" has no subfields.";
     json expectedPayload = {
         errors: [
             {
