@@ -34,3 +34,5 @@ const FIELD_MESSAGE = "message";
 const OPERATION_QUERY = "Query";
 
 const SCALAR = "SCALAR";
+const OBJECT = "OBJECT";
+const LIST = "LIST";

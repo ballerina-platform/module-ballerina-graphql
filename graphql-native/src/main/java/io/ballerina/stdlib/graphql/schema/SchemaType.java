@@ -30,6 +30,7 @@ public class SchemaType {
     private String name;
     private List<SchemaField> fields;
     private List<Object> enumValues;
+    SchemaType ofType;
 
     public SchemaType(String name, TypeKind kind) {
         this.name = name;
@@ -54,12 +55,20 @@ public class SchemaType {
         return this.enumValues;
     }
 
+    public SchemaType getOfType() {
+        return this.ofType;
+    }
+
     public void addField(SchemaField field) {
         this.fields.add(field);
     }
 
     public void addEnumValue(Object o) {
         this.enumValues.add(o);
+    }
+
+    public void setOfType(SchemaType ofType) {
+        this.ofType = ofType;
     }
 
     @Override

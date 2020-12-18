@@ -89,17 +89,25 @@ public class ValidatorVisitor {
         __Type fieldType = schemaField.'type;
         parser:FieldNode[] selections = fieldNode.getSelections();
 
-        if (fieldType.kind != SCALAR && selections.length() == 0) {
+        if (hasFields(fieldType) && selections.length() == 0) {
             string message = getMissingSubfieldsError(requiredFieldName, fieldType.name.toString());
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
 
         foreach parser:FieldNode subFieldNode in selections {
-            Parent subParent = {
-                parentType: fieldType,
-                name: fieldNode.getName()
-            };
-            self.visitField(subFieldNode, subParent);
+            if (fieldType.kind == LIST) {
+                Parent subParent = {
+                    parentType: <__Type>fieldType?.ofType,
+                    name: fieldNode.getName()
+                };
+                self.visitField(subFieldNode, subParent);
+            } else {
+                Parent subParent = {
+                    parentType: fieldType,
+                    name: fieldNode.getName()
+                };
+                self.visitField(subFieldNode, subParent);
+            }
         }
     }
 
@@ -159,6 +167,17 @@ public class ValidatorVisitor {
             }
         }
     }
+}
+
+isolated function hasFields(__Type fieldType) returns boolean {
+    if (fieldType.kind == OBJECT) {
+        return true;
+    }
+    if (fieldType.kind == LIST) {
+        __Type ofType = <__Type>fieldType?.ofType;
+        return ofType.kind == OBJECT;
+    }
+    return false;
 }
 
 type Parent record {
