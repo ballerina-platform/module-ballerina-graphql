@@ -57,8 +57,6 @@ public type ParsingError distinct error<parser:Location>;
 # Represents an error where the provided operation is not found in a document
 public type OperationNotFoundError distinct error;
 
-public type RuntimeError distinct error;
-
 # Represents the errors occurred while executing a GraphQL document
 public type ExecutionError OperationNotFoundError;
 
@@ -66,6 +64,8 @@ public type ExecutionError OperationNotFoundError;
 public type Error ParsingError|ValidationError|ExecutionError|ListenerError;
 
 // Client Errors
+# Represents an error occurred in client while connecting with the GraphQL server.
 public type ConnectionError distinct error;
 
+# Represents all the errors related to the GraphQL client.
 public type ClientError ConnectionError;
