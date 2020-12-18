@@ -25,5 +25,6 @@ public enum TypeKind {
     SCALAR,
     OBJECT,
     ENUM,
-    NON_NULL
+    NON_NULL,
+    LIST
 }

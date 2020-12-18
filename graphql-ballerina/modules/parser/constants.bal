@@ -70,10 +70,10 @@ const FALSE = "false";
 // Token Types
 const T_EOF = 0;
 const T_TEXT = 1;
-const T_STRING = 2;
-const T_INT = 3;
-const T_FLOAT = 4;
-const T_BOOLEAN = 5;
+public const T_STRING = 2;
+public const T_INT = 3;
+public const T_FLOAT = 4;
+public const T_BOOLEAN = 5;
 const T_COMMENT = 6;
 const T_OPEN_BRACE = 7;
 const T_CLOSE_BRACE = 8;

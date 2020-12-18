@@ -65,11 +65,13 @@ public type __Schema record {|
 # + name - The name of the type
 # + fields - The fields of the given type, if the type qaulifies to have fields
 # + enumValues - The possible set of values, if the type is an enum
+# + ofType - If the type is a `NON_NULL` or a `LIST`, the `__Type` of the wrapped type
 public type __Type record {
     __TypeKind kind;
     string? name;
     map<__Field> fields?;
     map<anydata> enumValues?;
+    __Type ofType?;
 
     // TODO: Add following: description, inputFields, interfaces, possibleTypes, ofType
 };
@@ -113,7 +115,7 @@ public type __InputValue record {|
 
 
 # Represents the type kind of a GraphQL type.
-public type __TypeKind "SCALAR"|"OBJECT"|"ENUM"|"NON_NULL";
+public type __TypeKind "SCALAR"|"OBJECT"|"ENUM"|"NON_NULL"|"LIST";
 
 type __Directive record {|
     string name;
