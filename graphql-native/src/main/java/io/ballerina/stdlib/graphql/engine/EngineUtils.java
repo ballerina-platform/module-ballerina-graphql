@@ -59,6 +59,7 @@ import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
 import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
+import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
@@ -224,7 +225,7 @@ public class EngineUtils {
     }
 
     static BMap<BString, Object> getSchemaRecordFromSchema(Schema schema) {
-        BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(), SCHEMA_RECORD);
+        BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD);
         BMap<BString, Object> types = getTypeRecordMapFromSchema(schema.getTypes());
         schemaRecord.put(TYPES_FIELD, types);
         schemaRecord.put(QUERY_TYPE_FIELD, getTypeRecordFromTypeObject(schema.getQueryType()));
@@ -233,7 +234,7 @@ public class EngineUtils {
 
     // TODO: Can we re-use the same type record, when needed?
     private static BMap<BString, Object> getTypeRecordMapFromSchema(Map<String, SchemaType> types) {
-        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(), TYPE_RECORD);
+        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
         MapType typesMapType = TypeCreator.createMapType(typeRecord.getType());
         BMap<BString, Object> typesMap = ValueCreator.createMapValue(typesMapType);
         for (SchemaType type : types.values()) {
@@ -246,7 +247,7 @@ public class EngineUtils {
         if (typeObject == null) {
             return null;
         }
-        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(), TYPE_RECORD);
+        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
         typeRecord.put(KIND_FIELD, StringUtils.fromString(typeObject.getKind().toString()));
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
         List<SchemaField> fields = typeObject.getFields();
@@ -265,7 +266,7 @@ public class EngineUtils {
     }
 
     private static BMap<BString, Object> getFieldMapFromFields(List<SchemaField> fields) {
-        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(), FIELD_RECORD);
+        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         MapType fieldRecordMapType = TypeCreator.createMapType(fieldRecord.getType());
         BMap<BString, Object> fieldRecordMap = ValueCreator.createMapValue(fieldRecordMapType);
 
@@ -284,7 +285,7 @@ public class EngineUtils {
     }
 
     private static BMap<BString, Object> getFieldRecordFromObject(SchemaField fieldObject) {
-        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(), FIELD_RECORD);
+        BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
         SchemaType type = fieldObject.getType();
         if (type != null) {
@@ -300,7 +301,7 @@ public class EngineUtils {
     }
 
     private static BMap<BString, Object> getInputMapFromInputs(List<InputValue> inputValues) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(),
                                                                                 INPUT_VALUE_RECORD);
         MapType inputValueRecordMapType = TypeCreator.createMapType(inputValueRecord.getType());
         BMap<BString, Object> inputValueRecordMap = ValueCreator.createMapValue(inputValueRecordMapType);
@@ -313,7 +314,7 @@ public class EngineUtils {
     }
 
     private static BMap<BString, Object> getInputRecordFromObject(InputValue inputValue) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(),
                                                                                 INPUT_VALUE_RECORD);
         inputValueRecord.put(NAME_FIELD, StringUtils.fromString(inputValue.getName()));
         inputValueRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(inputValue.getType()));
@@ -328,7 +329,7 @@ public class EngineUtils {
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);
-        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(),
                                                                            ERROR_DETAIL_RECORD);
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);
