@@ -301,8 +301,7 @@ public class EngineUtils {
     }
 
     private static BMap<BString, Object> getInputMapFromInputs(List<InputValue> inputValues) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(),
-                                                                                INPUT_VALUE_RECORD);
+        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD);
         MapType inputValueRecordMapType = TypeCreator.createMapType(inputValueRecord.getType());
         BMap<BString, Object> inputValueRecordMap = ValueCreator.createMapValue(inputValueRecordMapType);
 
@@ -314,8 +313,7 @@ public class EngineUtils {
     }
 
     private static BMap<BString, Object> getInputRecordFromObject(InputValue inputValue) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(),
-                                                                                INPUT_VALUE_RECORD);
+        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD);
         inputValueRecord.put(NAME_FIELD, StringUtils.fromString(inputValue.getName()));
         inputValueRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(inputValue.getType()));
         if (Objects.nonNull(inputValue.getDefaultValue())) {
@@ -329,8 +327,7 @@ public class EngineUtils {
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);
-        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(),
-                                                                           ERROR_DETAIL_RECORD);
+        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(), ERROR_DETAIL_RECORD);
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);
         return errorDetail;
