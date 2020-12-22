@@ -37,7 +37,7 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
 import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
-import io.ballerina.stdlib.graphql.utils.Utils;
+import io.ballerina.stdlib.graphql.utils.ModuleUtils;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -76,7 +76,7 @@ public class Engine {
         ServiceType serviceType = (ServiceType) service.getType();
         BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
 
-        Module module = Utils.getModule();
+        Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                                                      EXECUTE_SINGLE_RESOURCE_FUNCTION);
 
@@ -159,7 +159,7 @@ public class Engine {
 
     private static BMap<BString, Object> getSelectionsFromRecord(BObject fieldNode, BMap<BString, Object> record) {
         BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = ValueCreator.createRecordValue(Utils.getModule(), DATA_RECORD);
+        BMap<BString, Object> data = ValueCreator.createRecordValue(ModuleUtils.getModule(), DATA_RECORD);
         for (int i = 0; i < selections.size(); i++) {
             BObject subfieldNode = (BObject) selections.get(i);
             BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
@@ -174,7 +174,7 @@ public class Engine {
     }
 
     private static ArrayType getDataRecordArrayType() {
-        BMap<BString, Object> data = ValueCreator.createRecordValue(Utils.getModule(), DATA_RECORD);
+        BMap<BString, Object> data = ValueCreator.createRecordValue(ModuleUtils.getModule(), DATA_RECORD);
         return TypeCreator.createArrayType(data.getType());
     }
 }

@@ -26,11 +26,11 @@ import io.ballerina.runtime.api.Module;
  *
  * @since 0.1.1
  */
-public class Utils {
+public class ModuleUtils {
 
     private static Module module;
 
-    private Utils() {}
+    private ModuleUtils() {}
 
     public static void setModule(Environment environment) {
         module = environment.getCurrentModule();
