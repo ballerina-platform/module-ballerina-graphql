@@ -24,10 +24,10 @@ import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
 
-import static io.ballerina.stdlib.graphql.engine.Utils.FIELD_RECORD;
-import static io.ballerina.stdlib.graphql.engine.Utils.INPUT_VALUE_RECORD;
-import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_KIND_ENUM;
-import static io.ballerina.stdlib.graphql.engine.Utils.TYPE_RECORD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.FIELD_RECORD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.INPUT_VALUE_RECORD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.TYPE_KIND_ENUM;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.TYPE_RECORD;
 
 /**
  * This class creates the introspection types for the Schema.
