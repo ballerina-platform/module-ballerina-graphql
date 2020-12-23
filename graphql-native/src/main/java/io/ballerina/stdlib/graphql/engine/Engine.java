@@ -40,34 +40,35 @@ import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
 
 import java.util.concurrent.CountDownLatch;
 
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.DATA_RECORD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.ERRORS_FIELD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.EXECUTE_SINGLE_RESOURCE_FUNCTION;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.SELECTIONS_FIELD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.VALUE_FIELD;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.addQueryFieldsForServiceType;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.getErrorDetailRecord;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.getResourceName;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.getSchemaRecordFromSchema;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.engine.IntrospectionUtils.initializeIntrospectionTypes;
-import static io.ballerina.stdlib.graphql.engine.Utils.ARGUMENTS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.DATA_RECORD;
-import static io.ballerina.stdlib.graphql.engine.Utils.ERRORS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.EXECUTE_SINGLE_RESOURCE_FUNCTION;
-import static io.ballerina.stdlib.graphql.engine.Utils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.QUERY;
-import static io.ballerina.stdlib.graphql.engine.Utils.SELECTIONS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.engine.Utils.addQueryFieldsForServiceType;
-import static io.ballerina.stdlib.graphql.engine.Utils.getErrorDetailRecord;
-import static io.ballerina.stdlib.graphql.engine.Utils.getResourceName;
-import static io.ballerina.stdlib.graphql.engine.Utils.getSchemaRecordFromSchema;
-import static io.ballerina.stdlib.graphql.engine.Utils.isScalarType;
+import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
 
 /**
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
 
-    public static BMap<BString, Object> createSchema(Environment environment, BObject service) {
+    public static BMap<BString, Object> createSchema(BObject service) {
         Schema schema = new Schema();
         initializeIntrospectionTypes(schema);
         ServiceType serviceType = (ServiceType) service.getType();
         SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT);
         addQueryFieldsForServiceType(serviceType, queryType, schema);
         schema.setQueryType(queryType);
-        return getSchemaRecordFromSchema(environment, schema);
+        return getSchemaRecordFromSchema(schema);
     }
 
     public static Object executeSingleResource(Environment environment, BObject service, BObject visitor,
@@ -75,7 +76,7 @@ public class Engine {
         ServiceType serviceType = (ServiceType) service.getType();
         BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
 
-        Module module = environment.getCurrentModule();
+        Module module = getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                                                      EXECUTE_SINGLE_RESOURCE_FUNCTION);
 
@@ -95,19 +96,19 @@ public class Engine {
                 Object result = callback.getResult();
                 if (result instanceof BError) {
                     BArray errors = visitor.getArrayValue(ERRORS_FIELD);
-                    errors.append(getErrorDetailRecord(environment.getCurrentModule(), (BError) result, fieldNode));
+                    errors.append(getErrorDetailRecord((BError) result, fieldNode));
                 } else if (result instanceof BMap) {
                     BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
-                    return getSelectionsFromRecord(fieldNode, resultRecord, module);
+                    return getSelectionsFromRecord(fieldNode, resultRecord);
                 } else if (result instanceof BArray) {
                     BArray dataArray = (BArray) result;
                     if (isScalarType(dataArray.getElementType())) {
                         return result;
                     } else if (dataArray.getElementType().getTag() == TypeTags.RECORD_TYPE_TAG) {
-                        BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType(module));
+                        BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
                         for (int i = 0; i < dataArray.size(); i++) {
                             BMap<BString, Object> resultRecord = (BMap<BString, Object>) dataArray.get(i);
-                            BMap<BString, Object> arrayField = getSelectionsFromRecord(fieldNode, resultRecord, module);
+                            BMap<BString, Object> arrayField = getSelectionsFromRecord(fieldNode, resultRecord);
                             resultArray.append(arrayField);
                         }
                         return resultArray;
@@ -156,16 +157,15 @@ public class Engine {
         return result;
     }
 
-    private static BMap<BString, Object> getSelectionsFromRecord(BObject fieldNode, BMap<BString, Object> record,
-                                                                 Module module) {
+    private static BMap<BString, Object> getSelectionsFromRecord(BObject fieldNode, BMap<BString, Object> record) {
         BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = ValueCreator.createRecordValue(module, DATA_RECORD);
+        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
         for (int i = 0; i < selections.size(); i++) {
             BObject subfieldNode = (BObject) selections.get(i);
             BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
             Object fieldValue = record.get(fieldName);
             if (fieldValue instanceof BMap) {
-                data.put(fieldName, getSelectionsFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue, module));
+                data.put(fieldName, getSelectionsFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue));
             } else {
                 data.put(fieldName, fieldValue);
             }
@@ -173,8 +173,8 @@ public class Engine {
         return data;
     }
 
-    private static ArrayType getDataRecordArrayType(Module module) {
-        BMap<BString, Object> data = ValueCreator.createRecordValue(module, DATA_RECORD);
+    private static ArrayType getDataRecordArrayType() {
+        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
         return TypeCreator.createArrayType(data.getType());
     }
 }
