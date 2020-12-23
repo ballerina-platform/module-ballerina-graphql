@@ -41,7 +41,6 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
-import io.ballerina.stdlib.graphql.utils.ModuleUtils;
 
 import java.util.Collection;
 import java.util.List;
