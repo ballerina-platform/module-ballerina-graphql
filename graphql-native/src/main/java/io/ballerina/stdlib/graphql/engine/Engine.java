@@ -37,7 +37,6 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
 import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
-import io.ballerina.stdlib.graphql.utils.ModuleUtils;
 
 import java.util.concurrent.CountDownLatch;
 
