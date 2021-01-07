@@ -29,7 +29,7 @@ ext.stdlibIoVersion = project.stdlibIoVersion
 ext.stdlibRuntimeVersion = project.stdlibRuntimeVersion
 ext.stdlibStringutilsVersion = project.stdlibStringutilsVersion
 
-ext.stdlibSystemVersion = project.stdlibSystemVersion
+ext.stdlibOsVersion = project.stdlibOsVersion
 ext.stdlibTaskVersion = project.stdlibTaskVersion
 ext.stdlibTimeVersion = project.stdlibTimeVersion
 
@@ -39,11 +39,14 @@ ext.stdlibFileVersion = project.stdlibFileVersion
 
 ext.stdlibLogVersion = project.stdlibLogVersion
 ext.stdlibReflectVersion = project.stdlibReflectVersion
+ext.stdlibUuidVersion = project.stdlibUuidVersion
 
 ext.stdlibCacheVersion = project.stdlibCacheVersion
 ext.stdlibMimeVersion = project.stdlibMimeVersion
 
 ext.stdlibAuthVersion = project.stdlibAuthVersion
+ext.stdlibJwtVersion = project.stdlibJwtVersion
+ext.stdlibOAuth2Version = project.stdlibOAuth2Version
 
 ext.stdlibHttpVersion = project.stdlibHttpVersion
 
@@ -141,6 +144,14 @@ allprojects {
         }
 
         maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-jwt'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-log'
             credentials {
                 username System.getenv("packageUser")
@@ -150,6 +161,22 @@ allprojects {
 
         maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-mime'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-oauth2'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-os'
             credentials {
                 username System.getenv("packageUser")
                 password System.getenv("packagePAT")
@@ -181,14 +208,6 @@ allprojects {
         }
 
         maven {
-            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-system'
-            credentials {
-                username System.getenv("packageUser")
-                password System.getenv("packagePAT")
-            }
-        }
-
-        maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-task'
             credentials {
                 username System.getenv("packageUser")
@@ -198,6 +217,14 @@ allprojects {
 
         maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-time'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-uuid'
             credentials {
                 username System.getenv("packageUser")
                 password System.getenv("packagePAT")
@@ -223,14 +250,17 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:file-ballerina:${stdlibFileVersion}"
         ballerinaStdLibs "org.ballerinalang:http-ballerina:${stdlibHttpVersion}"
         ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
+        ballerinaStdLibs "org.ballerinalang:jwt-ballerina:${stdlibJwtVersion}"
         ballerinaStdLibs "org.ballerinalang:log-ballerina:${stdlibLogVersion}"
         ballerinaStdLibs "org.ballerinalang:mime-ballerina:${stdlibMimeVersion}"
+        ballerinaStdLibs "org.ballerinalang:oauth2-ballerina:${stdlibOAuth2Version}"
+        ballerinaStdLibs "org.ballerinalang:os-ballerina:${stdlibOsVersion}"
         ballerinaStdLibs "org.ballerinalang:reflect-ballerina:${stdlibReflectVersion}"
         ballerinaStdLibs "org.ballerinalang:runtime-ballerina:${stdlibRuntimeVersion}"
         ballerinaStdLibs "org.ballerinalang:stringutils-ballerina:${stdlibStringutilsVersion}"
-        ballerinaStdLibs "org.ballerinalang:system-ballerina:${stdlibSystemVersion}"
         ballerinaStdLibs "org.ballerinalang:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
+        ballerinaStdLibs "org.ballerinalang:uuid-ballerina:${stdlibUuidVersion}"
     }
 
     release {
