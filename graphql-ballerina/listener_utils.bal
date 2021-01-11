@@ -22,7 +22,7 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     http:Response response = new;
     var query = request.getQueryParamValue(PARAM_QUERY);
     if (query is ()) {
-        // TODO: More meaningful error
+        // TODO: Use default bad request response when it is implemented
         setResponseForBadRequest(response);
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
