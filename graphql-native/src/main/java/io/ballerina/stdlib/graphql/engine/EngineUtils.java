@@ -26,7 +26,7 @@ import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
-import io.ballerina.runtime.api.types.ResourceFunctionType;
+import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -115,23 +115,23 @@ public class EngineUtils {
     static final BString VALUE_FIELD = StringUtils.fromString("value");
 
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
-        ResourceFunctionType[] resourceFunctions = serviceType.getResourceFunctions();
-        for (ResourceFunctionType resourceFunction : resourceFunctions) {
-            schemaType.addField(getFieldForResource(resourceFunction, schema));
+        ResourceMethodType[] resourceFunctions = serviceType.getResourceMethods();
+        for (ResourceMethodType resourceMethod : resourceFunctions) {
+            schemaType.addField(getFieldForResource(resourceMethod, schema));
         }
     }
 
-    private static SchemaField getFieldForResource(ResourceFunctionType resourceFunction, Schema schema) {
-        String fieldName = getResourceName(resourceFunction);
+    private static SchemaField getFieldForResource(ResourceMethodType resourceMethod, Schema schema) {
+        String fieldName = getResourceName(resourceMethod);
         // TODO: Check accessor: Only get allowed
         SchemaField field = new SchemaField(fieldName);
-        addArgsToField(field, resourceFunction, schema);
-        field.setType(getSchemaTypeForBalType(resourceFunction.getType().getReturnParameterType(), schema));
+        addArgsToField(field, resourceMethod, schema);
+        field.setType(getSchemaTypeForBalType(resourceMethod.getType().getReturnParameterType(), schema));
         return field;
     }
 
-    static String getResourceName(ResourceFunctionType resourceFunction) {
-        String[] nameArray = resourceFunction.getResourcePath();
+    static String getResourceName(ResourceMethodType resourceMethod) {
+        String[] nameArray = resourceMethod.getResourcePath();
         int nameIndex = nameArray.length;
         return nameArray[nameIndex - 1];
     }
@@ -204,9 +204,9 @@ public class EngineUtils {
         }
     }
 
-    private static void addArgsToField(SchemaField field, ResourceFunctionType resourceFunction, Schema schema) {
-        Type[] parameterTypes = resourceFunction.getParameterTypes();
-        String[] parameterNames = resourceFunction.getParamNames();
+    private static void addArgsToField(SchemaField field, ResourceMethodType resourceMethod, Schema schema) {
+        Type[] parameterTypes = resourceMethod.getParameterTypes();
+        String[] parameterNames = resourceMethod.getParamNames();
 
         if (parameterNames.length == 0) {
             return;
