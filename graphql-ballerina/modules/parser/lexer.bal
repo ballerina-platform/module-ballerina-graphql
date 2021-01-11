@@ -106,8 +106,8 @@ public class Lexer {
             string value = self.charReader.peek();
             if (value is LineTerminator) {
                 string message = "Syntax Error: Unterminated string.";
-                return UnterminatedStringError(message, line = self.currentLocation.line,
-                                               column = self.currentLocation.column);
+                return error UnterminatedStringError(message, line = self.currentLocation.line,
+                                                     column = self.currentLocation.column);
             } else if (value == DOUBLE_QUOTE && previousChar != BACK_SLASH) {
                 value = self.readNextChar();
                 break;
@@ -137,8 +137,8 @@ public class Lexer {
                 break;
             } else {
                 string message = "Syntax Error: Invalid number, expected digit but got: \"" + value + "\".";
-                return InvalidTokenError(message, line = self.currentLocation.line,
-                                         column = self.currentLocation.column);
+                return error InvalidTokenError(message, line = self.currentLocation.line,
+                                               column = self.currentLocation.column);
             }
         }
         int|float number = check getNumber(numeral, isFloat, location);
@@ -181,7 +181,7 @@ public class Lexer {
         TokenType kind = getWordTokenType(word);
         Scalar value = word;
         if (kind is T_BOOLEAN) {
-            value = <boolean>'boolean:fromString(word);
+            value = <boolean> checkpanic 'boolean:fromString(word);
         }
         return {
             value: value,
@@ -284,18 +284,18 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
 isolated function validateChar(string char, Location location) returns InvalidTokenError? {
     if (!isValidChar(char)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
-        return InvalidTokenError(message, line = location.line, column = location.column);
+        return error InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function validateFirstChar(string char, Location location) returns InvalidTokenError? {
     if (!isValidFirstChar(char)) {
         string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
-        return InvalidTokenError(message, line = location.line, column = location.column);
+        return error InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function getInternalError(string value, string kind, Location location) returns InternalError {
     string message = "Internal Error: Failed to convert the \"" + value + "\" to \"" + kind + "\".";
-    return InternalError(message, line = location.line, column = location.column);
+    return error InternalError(message, line = location.line, column = location.column);
 }

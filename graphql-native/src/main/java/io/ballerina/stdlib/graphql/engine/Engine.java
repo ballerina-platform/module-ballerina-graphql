@@ -25,7 +25,7 @@ import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.ResourceFunctionType;
+import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
@@ -80,13 +80,13 @@ public class Engine {
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                                                      EXECUTE_SINGLE_RESOURCE_FUNCTION);
 
-        for (ResourceFunctionType resourceFunction : serviceType.getResourceFunctions()) {
-            String resourceName = getResourceName(resourceFunction);
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            String resourceName = getResourceName(resourceMethod);
             if (resourceName.equals(expectedResourceName.getValue())) {
-                Object[] args = getArgsForResource(resourceFunction, arguments);
+                Object[] args = getArgsForResource(resourceMethod, arguments);
                 CountDownLatch latch = new CountDownLatch(1);
                 CallableUnitCallback callback = new CallableUnitCallback(latch);
-                environment.getRuntime().invokeMethodAsync(service, resourceFunction.getName(), null, metadata,
+                environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, metadata,
                                                            callback, args);
                 try {
                     latch.await();
@@ -147,8 +147,8 @@ public class Engine {
         return argumentsMap;
     }
 
-    public static Object[] getArgsForResource(ResourceFunctionType resourceFunction, BMap<BString, Object> arguments) {
-        String[] paramNames = resourceFunction.getParamNames();
+    public static Object[] getArgsForResource(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
+        String[] paramNames = resourceMethod.getParamNames();
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
             result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
