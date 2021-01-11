@@ -30,26 +30,13 @@ isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] error
 }
 
 isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail {
-    int line = <int>err.detail()["line"];
-    int column = <int>err.detail()["column"];
+    int line = <int> checkpanic err.detail()["line"];
+    int column = <int> checkpanic err.detail()["column"];
     Location location = { line: line, column: column };
     return {
         message: err.message(),
         locations: [location]
     };
-}
-
-isolated function getFieldMapForSelection(parser:FieldNode fieldNode, map<anydata> data) returns map<anydata>|error {
-    map<anydata> result = {};
-    foreach parser:FieldNode selection in fieldNode.getSelections() {
-        var fieldValue = data[selection.getName()];
-        if (fieldValue is map<anydata>) {
-            result[selection.getName()] = <anydata> getFieldMapForSelection(selection, fieldValue);
-        } else {
-            result[selection.getName()] = fieldValue;
-        }
-    }
-    return result;
 }
 
 isolated function createSchema(Service s) returns __Schema = @java:Method {

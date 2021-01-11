@@ -106,6 +106,7 @@ function readFileAndGetString(string filePath) returns string {
     var fileText = io:fileReadString(filePath);
     if (fileText is error) {
         panic fileText;
+    } else {
+        return <@untainted>fileText;
     }
-    return <@untainted string>fileText;
 }

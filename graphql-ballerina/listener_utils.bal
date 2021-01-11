@@ -27,7 +27,7 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
         OutputObject outputObject = engine.getOutputObjectForQuery(query, operationName);
-        response.setJsonPayload(<@untainted json>outputObject.cloneWithType(json)); // TODO: Handle error
+        response.setJsonPayload(<@untainted json> checkpanic outputObject.cloneWithType(json));
     }
     return response;
 }
@@ -67,7 +67,7 @@ isolated function processJsonPayload(Engine engine, json payload, http:Response 
     }
     if (documentString is string) {
         OutputObject outputObject = engine.getOutputObjectForQuery(documentString, operationName);
-        response.setJsonPayload(<json>outputObject.cloneWithType(json)); // TODO: Handle error
+        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
     } else {
         setResponseForBadRequest(response);
     }
