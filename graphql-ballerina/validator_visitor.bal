@@ -58,7 +58,6 @@ public class ValidatorVisitor {
         }
     }
 
-    // TODO: Simplify this function
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         Parent parent = <Parent>data;
         __Type parentType = parent.parentType;
@@ -117,7 +116,6 @@ public class ValidatorVisitor {
         parser:ArgumentValue value = argumentNode.getValue();
         string expectedTypeName = getTypeName(argumentNode);
         if (typeName != expectedTypeName) {
-            // TODO: Improve error message
             string message = typeName + " cannot represent non " + typeName + " value: " + value.value.toString();
             ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
             self.errors.push(errorDetail);

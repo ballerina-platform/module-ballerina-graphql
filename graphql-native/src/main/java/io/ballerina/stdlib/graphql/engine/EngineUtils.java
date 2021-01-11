@@ -88,7 +88,6 @@ public class EngineUtils {
     private static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
 
     // Schema related type names
-    // TODO: Make these values "graphql-specific" names
     static final String INTEGER = "Int";
     static final String STRING = "String";
     static final String BOOLEAN = "Boolean";

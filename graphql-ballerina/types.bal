@@ -14,11 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents a GraphQL ID field
-public type Id int|string;
-
 # Represents the supported Scalar types in Ballerina GraphQL module
-public type Scalar boolean|int|float|string|Id; // TODO: remove int and string from union
+public type Scalar boolean|int|float|string;
 
 # Represents a GraphQL service
 public type Service service object {
