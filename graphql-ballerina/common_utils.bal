@@ -43,7 +43,7 @@ isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue
 isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
     if (data.length() > 0) {
-        outputObject.data = <Data>data.cloneWithType(Data);
+        outputObject.data = <Data> checkpanic data.cloneWithType(Data);
     }
     if (errors.length() > 0) {
         outputObject.errors = errors;

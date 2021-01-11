@@ -36,7 +36,7 @@ public client class Client  {
         var result = self.httpClient->post("/", request, json);
         if (result is error) {
             string message = "Error occurred while retrieving the response from the GraphQL server";
-            return ConnectionError(message, result);
+            return error ConnectionError(message, result);
         } else {
             return <json>result;
         }
