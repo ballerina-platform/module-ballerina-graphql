@@ -41,38 +41,53 @@ public class Listener {
     #
     # + s - The `graphql:Service` object to attach
     # + name - The path of the service to be hosted
-    # + return - An `error`, if an error occurred during the service attaching process
-    public isolated function attach(Service s, string[]|string? name = ()) returns error? {
-        checkpanic self.httpListener.attach(self.httpService, name);
+    # + return - A `graphql:ListenerError`, if an error occurred during the service attaching process, otherwise nil
+    public isolated function attach(Service s, string[]|string? name = ()) returns ListenerError? {
+        error? result = self.httpListener.attach(self.httpService, name);
+        if (result is error) {
+            return error ListenerError("Error occurred while attaching the service", result);
+        }
         self.engine.registerService(s);
     }
 
     # Detaches the provided service from the Listener.
     #
     # + s - The service to be detached
-    # + return - An `error`, if an error occurred during the service detaching process
-    public isolated function detach(Service s) returns error? {
-        checkpanic self.httpListener.detach(self.httpService);
+    # + return - A `graphql:ListenerError`, if an error occurred during the service detaching process, otherwise nil
+    public isolated function detach(Service s) returns ListenerError? {
+        error? result = self.httpListener.detach(self.httpService);
+        if (result is error) {
+            return error ListenerError("Error occurred while detaching the service", result);
+        }
     }
 
     # Starts the attached service.
     #
-    # + return - An `error`, if an error occurred during the listener starting process
-    public isolated function 'start() returns error? {
-        checkpanic self.httpListener.'start();
+    # + return - A `graphql:ListenerError`, if an error occurred during the service starting process, otherwise nil
+    public isolated function 'start() returns ListenerError? {
+        error? result = self.httpListener.'start();
+        if (result is error) {
+            return error ListenerError("Error occurred while starting the service", result);
+        }
     }
 
     # Gracefully stops the graphql listener. Already accepted requests will be served before the connection closure.
     #
-    # + return - An `error`, if an error occurred during the listener stopping process
-    public isolated function gracefulStop() returns error? {
-        return self.httpListener.gracefulStop();
+    # + return - A `graphql:ListenerError`, if an error occurred during the service stopping process, otherwise nil
+    public isolated function gracefulStop() returns ListenerError? {
+        error? result = self.httpListener.gracefulStop();
+        if (result is error) {
+            return error ListenerError("Error occurred while stopping the service", result);
+        }
     }
 
     # Stops the service listener immediately. It is not implemented yet.
     #
-    # + return - An `error`, if an error occurred during the listener stopping process
-    public isolated function immediateStop() returns error? {
-        return self.httpListener.immediateStop();
+    # + return - A `graphql:ListenerError`, if an error occurred during the service stopping process, otherwise nil
+    public isolated function immediateStop() returns ListenerError? {
+        error? result = self.httpListener.immediateStop();
+        if (result is error) {
+            return error ListenerError("Error occurred while stopping the service", result);
+        }
     }
 }

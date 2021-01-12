@@ -74,7 +74,6 @@ public class Lexer {
         } else if (char == DASH || char is Digit) {
             return self.readNumericLiteral(char);
         } else if (char is Separator || char is SpecialCharacter) {
-            // TODO: Check this functions correctly when OR is present
             return self.readSpecialCharacterToken();
         } else if (char == HASH) {
             return self.readCommentToken();
