@@ -52,11 +52,6 @@ public type OutputObject record {
 public type __Schema record {|
     map<__Type> types;
     __Type queryType;
-
-    // TODO: Add the following
-    //__Type mutationType?;
-    //__Type subscriptionType?;
-    //__Directive[] directives;
 |};
 
 # Represents a GraphQL type.
@@ -72,8 +67,6 @@ public type __Type record {
     map<__Field> fields?;
     map<anydata> enumValues?;
     __Type ofType?;
-
-    // TODO: Add following: description, inputFields, interfaces, possibleTypes, ofType
 };
 
 # Represents a GraphQL enum.
@@ -92,10 +85,6 @@ public type __Field record {|
     string name;
     __Type 'type;
     map<__InputValue> args?;
-    // TODO: Add following
-    //string description?;
-    //boolean isDeprecated = true;
-    //string deprecationReason = "";
 |};
 
 # Represents an input value for a GraphQL field.
@@ -107,9 +96,6 @@ public type __InputValue record {|
 	string name;
 	__Type 'type;
 	string defaultValue?;
-
-	// TODO:
-	//string description?;
 |};
 
 
@@ -120,5 +106,4 @@ public type __TypeKind "SCALAR"|"OBJECT"|"ENUM"|"NON_NULL"|"LIST";
 type __Directive record {|
     string name;
     string description?;
-    // TODO: Add other fields
 |};
