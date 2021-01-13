@@ -98,8 +98,6 @@ public type __InputValue record {|
 	string defaultValue?;
 |};
 
-
-
 # Represents the type kind of a GraphQL type.
 public type __TypeKind "SCALAR"|"OBJECT"|"ENUM"|"NON_NULL"|"LIST";
 

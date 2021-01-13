@@ -27,7 +27,7 @@ service /graphql on new Listener(9100) {
 }
 
 @test:Config {
-    groups: ["test", "service", "unit"]
+    groups: ["array", "service", "unit"]
 }
 function testResourcesReturningScalarArrays() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9100/graphql");
@@ -42,7 +42,7 @@ function testResourcesReturningScalarArrays() returns @tainted error? {
 }
 
 @test:Config {
-    groups: ["test", "service", "unit"]
+    groups: ["array", "service", "unit"]
 }
 function testResourcesReturningArrays() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9100/graphql");
@@ -76,7 +76,7 @@ function testResourcesReturningArrays() returns @tainted error? {
 }
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["array", "service", "unit"]
 }
 function testResourcesReturningArraysMissingFields() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9100/graphql");

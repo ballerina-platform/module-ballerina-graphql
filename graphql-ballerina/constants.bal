@@ -36,3 +36,6 @@ const OPERATION_QUERY = "Query";
 const SCALAR = "SCALAR";
 const OBJECT = "OBJECT";
 const LIST = "LIST";
+const NON_NULL = "NON_NULL";
+
+const SCHEMA_FIELD = "__schema";
