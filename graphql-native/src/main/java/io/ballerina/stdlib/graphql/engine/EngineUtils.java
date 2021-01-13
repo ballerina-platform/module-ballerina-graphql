@@ -194,7 +194,7 @@ public class EngineUtils {
             ArrayType arrayType = (ArrayType) type;
             SchemaType ofType = getSchemaTypeForBalType(arrayType.getElementType(), schema);
             String typeName = "[" + ofType.getName() + "]";
-            SchemaType schemaType = new SchemaType(typeName, TypeKind.LIST);
+            SchemaType schemaType = new SchemaType(typeName, TypeKind.NON_NULL);
             schemaType.setOfType(ofType);
             return schemaType;
         } else {

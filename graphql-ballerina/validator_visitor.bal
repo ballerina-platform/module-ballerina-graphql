@@ -94,7 +94,7 @@ public class ValidatorVisitor {
         }
 
         foreach parser:FieldNode subFieldNode in selections {
-            if (fieldType.kind == LIST) {
+            if (fieldType.kind == LIST || fieldType.kind == NON_NULL) {
                 Parent subParent = {
                     parentType: <__Type>fieldType?.ofType,
                     name: fieldNode.getName()
@@ -171,7 +171,7 @@ isolated function hasFields(__Type fieldType) returns boolean {
     if (fieldType.kind == OBJECT) {
         return true;
     }
-    if (fieldType.kind == LIST) {
+    if (fieldType.kind == NON_NULL || fieldType.kind == LIST) {
         __Type ofType = <__Type>fieldType?.ofType;
         return ofType.kind == OBJECT;
     }
