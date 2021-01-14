@@ -47,14 +47,17 @@ public class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        __Type queryType = self.schema.queryType;
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode selection in selections {
-            Parent parent = {
-                parentType: queryType,
-                name: "Query"
-            };
-            self.visitField(selection, parent);
+            if (selection.getName() == SCHEMA_FIELD) {
+                self.processSchemaIntrospection(selection);
+            } else {
+                Parent parent = {
+                    parentType: self.schema.queryType,
+                    name: QUERY_TYPE_NAME
+                };
+                self.visitField(selection, parent);
+            }
         }
     }
 
@@ -165,6 +168,22 @@ public class ValidatorVisitor {
             }
         }
     }
+
+    isolated function processSchemaIntrospection(parser:FieldNode fieldNode) {
+        if (fieldNode.getSelections().length() < 1) {
+            string message = getMissingSubfieldsError(fieldNode.getName(), SCHEMA_TYPE_NAME);
+            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+            return;
+        }
+        foreach parser:FieldNode selection in fieldNode.getSelections() {
+            __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
+            Parent parent = {
+                parentType: schemaType,
+                name: SCHEMA_TYPE_NAME
+            };
+            self.visitField(selection, parent);
+        }
+    }
 }
 
 isolated function hasFields(__Type fieldType) returns boolean {
@@ -172,8 +191,10 @@ isolated function hasFields(__Type fieldType) returns boolean {
         return true;
     }
     if (fieldType.kind == NON_NULL || fieldType.kind == LIST) {
-        __Type ofType = <__Type>fieldType?.ofType;
-        return ofType.kind == OBJECT;
+        __Type? ofType = fieldType?.ofType;
+        if (ofType is __Type) {
+            return ofType.kind == OBJECT;
+        }
     }
     return false;
 }

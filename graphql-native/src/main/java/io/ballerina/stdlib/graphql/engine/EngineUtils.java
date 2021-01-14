@@ -101,7 +101,6 @@ public class EngineUtils {
     static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
     // Record Types
-    static final String LOCATION_RECORD = "Location";
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
     static final String DATA_RECORD = "Data";
 

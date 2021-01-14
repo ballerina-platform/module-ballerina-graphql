@@ -31,11 +31,13 @@ const FIELD_ERROR_RECORD = "errorRecord";
 const FIELD_LOCATIONS = "locations";
 const FIELD_MESSAGE = "message";
 
-const OPERATION_QUERY = "Query";
-
 const SCALAR = "SCALAR";
 const OBJECT = "OBJECT";
 const LIST = "LIST";
 const NON_NULL = "NON_NULL";
 
 const SCHEMA_FIELD = "__schema";
+const TYPES_FIELD = "types";
+const SCHEMA_TYPE_NAME = "__Schema";
+const TYPE_TYPE_NAME = "__Type";
+const QUERY_TYPE_NAME = "Query";

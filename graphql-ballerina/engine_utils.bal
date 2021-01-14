@@ -47,3 +47,8 @@ isolated function executeSingleResource(Service s, ExecutorVisitor visitor, pars
 map<Scalar> arguments) returns anydata = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
+
+isolated function getDataFromBalType(parser:FieldNode fieldNode, anydata fieldRecord) returns anydata =
+@java:Method {
+	'class: "io.ballerina.stdlib.graphql.engine.Engine"
+} external;
