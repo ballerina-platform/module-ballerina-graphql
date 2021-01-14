@@ -184,7 +184,7 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
 
 @test:Config {
     groups: ["introspection", "unit"],
-    enable: false
+    enable: false // Enable after fixing https://github.com/ballerina-platform/ballerina-standard-library/issues/832
 }
 function testQueryTypeIntrospection() returns @tainted error? {
     Client graphqlClient = new("http://localhost:9101/graphql");
