@@ -154,6 +154,8 @@ public class Engine {
             Object fieldValue = record.get(fieldName);
             if (fieldValue instanceof BMap) {
                 data.put(fieldName, getDataFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue));
+            } else if (fieldValue instanceof BArray) {
+                data.put(fieldName, getDataFromArray(subfieldNode, (BArray) fieldValue));
             } else {
                 data.put(fieldName, fieldValue);
             }
