@@ -15,6 +15,7 @@
 // under the License.
 
 import graphql.parser;
+//import ballerina/io;
 
 # Represents the Ballerina GraphQL engine.
 public class Engine {
@@ -59,6 +60,7 @@ public class Engine {
     isolated function registerService(Service s) {
         self.graphqlService = s;
         self.schema = createSchema(s);
+        self.populateSchemaType();
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
@@ -97,8 +99,30 @@ public class Engine {
             return getOutputObjectFromErrorDetail(errorDetail);
         }
         Service s = <Service>self.graphqlService;
-        ExecutorVisitor executor = new(s);
+        ExecutorVisitor executor = new(s, <__Schema>self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         return outputObject;
+    }
+
+    isolated function populateSchemaType() {
+        __Schema schema = <__Schema>self.schema;
+        __Type schemaType = {
+            kind: OBJECT,
+            name: SCHEMA_TYPE_NAME
+        };
+
+        __Type typesType = {
+            kind: NON_NULL,
+			name: (),
+			ofType: <__Type>schema.types[TYPE_TYPE_NAME]
+        };
+        map<__Field> fields = {};
+        __Field typesField = {
+            name: TYPES_FIELD,
+            'type: typesType
+        };
+        fields[TYPES_FIELD] = typesField;
+        schemaType.fields = fields;
+        schema.types[SCHEMA_TYPE_NAME] = schemaType;
     }
 }
