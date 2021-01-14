@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-//import ballerina/io;
 
 # Represents the Ballerina GraphQL engine.
 public class Engine {
