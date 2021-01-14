@@ -24,6 +24,10 @@ service /graphql on new Listener(9100) {
     isolated resource function get ids() returns int[] {
         return [0, 1, 2];
     }
+
+    resource function get students() returns Student[] {
+        return students;
+    }
 }
 
 @test:Config {
@@ -96,6 +100,114 @@ function testResourcesReturningArraysMissingFields() returns @tainted error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(actualResult, expectedResult);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+function testComplexArraySample() returns @tainted error? {
+    Client graphqlClient = new("http://localhost:9100/graphql");
+    string document = "{ students { name courses { name books { name } } } }";
+    json actualResult = check graphqlClient->query(document);
+    json expectedResult = {
+        data: {
+            students: [
+                {
+                    name: "John Doe",
+                    courses: [
+                        {
+                            name: "Electronics",
+                            books: [
+                                {
+                                    name: "The Art of Electronics"
+                                },
+                                {
+                                    name: "Practical Electronics"
+                                }
+                            ]
+                        },
+                        {
+                            name: "Computer Science",
+                            books: [
+                                {
+                                    name: "Algorithms to Live By"
+                                },
+                                {
+                                    name: "Code: The Hidden Language"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Jane Doe",
+                    courses: [
+                        {
+                            name: "Computer Science",
+                            books: [
+                                {
+                                    name: "Algorithms to Live By"
+                                },
+                                {
+                                    name: "Code: The Hidden Language"
+                                }
+                            ]
+                        },
+                        {
+                            name: "Mathematics",
+                            books: [
+                                {
+                                    name: "Calculus Made Easy"
+                                },
+                                {
+                                    name: "Calculus"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Jonny Doe",
+                    courses: [
+                        {
+                            name: "Electronics",
+                            books: [
+                                {
+                                    name: "The Art of Electronics"
+                                },
+                                {
+                                    name: "Practical Electronics"
+                                }
+                            ]
+                        },
+                        {
+                            name: "Computer Science",
+                            books: [
+                                {
+                                    name: "Algorithms to Live By"
+                                },
+                                {
+                                    name: "Code: The Hidden Language"
+                                }
+                            ]
+                        },
+                        {
+                            name: "Mathematics",
+                            books: [
+                                {
+                                    name: "Calculus Made Easy"
+                                },
+                                {
+                                    name: "Calculus"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     };
     test:assertEquals(actualResult, expectedResult);
 }

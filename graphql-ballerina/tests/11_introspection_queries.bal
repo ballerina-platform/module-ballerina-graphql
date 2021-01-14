@@ -95,12 +95,24 @@ function testComplexIntrospectionQuery() returns @tainted error? {
                         kind: "OBJECT"
                     },
                     {
+                        name: "Book",
+                        kind: "OBJECT"
+                    },
+                    {
                         name: "__InputValue",
                         kind: "OBJECT"
                     },
                     {
                         name: "String",
                         kind: "SCALAR"
+                    },
+                    {
+                        name: "Course",
+                        kind: "OBJECT"
+                    },
+                    {
+                        name: "Student",
+                        kind: "OBJECT"
                     },
                     {
                         name: "Person",
