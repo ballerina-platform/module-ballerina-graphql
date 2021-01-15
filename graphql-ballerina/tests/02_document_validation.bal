@@ -53,7 +53,7 @@ function testDocumentValidation() returns @tainted error? {
 
 @test:Config {
     groups: ["listener", "unit"],
-    dependsOn: ["testDocumentValidation"]
+    dependsOn: [testDocumentValidation]
 }
 function testQueryResult() returns @tainted error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
