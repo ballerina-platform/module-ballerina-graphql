@@ -20,7 +20,6 @@ package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
@@ -99,20 +98,9 @@ public class Engine {
                     errors.append(getErrorDetailRecord((BError) result, fieldNode));
                 } else if (result instanceof BMap) {
                     BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
-                    return getSelectionsFromRecord(fieldNode, resultRecord);
+                    return getDataFromRecord(fieldNode, resultRecord);
                 } else if (result instanceof BArray) {
-                    BArray dataArray = (BArray) result;
-                    if (isScalarType(dataArray.getElementType())) {
-                        return result;
-                    } else if (dataArray.getElementType().getTag() == TypeTags.RECORD_TYPE_TAG) {
-                        BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
-                        for (int i = 0; i < dataArray.size(); i++) {
-                            BMap<BString, Object> resultRecord = (BMap<BString, Object>) dataArray.get(i);
-                            BMap<BString, Object> arrayField = getSelectionsFromRecord(fieldNode, resultRecord);
-                            resultArray.append(arrayField);
-                        }
-                        return resultArray;
-                    }
+                    return getDataFromArray(fieldNode, (BArray) result);
                 } else if (result instanceof BObject) {
                     BObject subService = (BObject) result;
                     BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
@@ -133,7 +121,49 @@ public class Engine {
         return null;
     }
 
-    public static BMap<BString, Object> getArgumentsFromField(BObject fieldNode) {
+    public static Object getDataFromBalType(BObject fieldNode, Object data) {
+        if (data instanceof BArray) {
+            return getDataFromArray(fieldNode, (BArray) data);
+        } else if (data instanceof BMap) {
+            return getDataFromRecord(fieldNode, (BMap<BString, Object>) data);
+        } else {
+            return data;
+        }
+    }
+
+    private static BArray getDataFromArray(BObject fieldNode, BArray result) {
+        if (isScalarType(result.getElementType())) {
+            return result;
+        } else {
+            BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
+            for (int i = 0; i < result.size(); i++) {
+                BMap<BString, Object> resultRecord = (BMap<BString, Object>) result.get(i);
+                BMap<BString, Object> arrayField = getDataFromRecord(fieldNode, resultRecord);
+                resultArray.append(arrayField);
+            }
+            return resultArray;
+        }
+    }
+
+    private static BMap<BString, Object> getDataFromRecord(BObject fieldNode, BMap<BString, Object> record) {
+        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
+        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
+        for (int i = 0; i < selections.size(); i++) {
+            BObject subfieldNode = (BObject) selections.get(i);
+            BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
+            Object fieldValue = record.get(fieldName);
+            if (fieldValue instanceof BMap) {
+                data.put(fieldName, getDataFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue));
+            } else if (fieldValue instanceof BArray) {
+                data.put(fieldName, getDataFromArray(subfieldNode, (BArray) fieldValue));
+            } else {
+                data.put(fieldName, fieldValue);
+            }
+        }
+        return data;
+    }
+
+    private static BMap<BString, Object> getArgumentsFromField(BObject fieldNode) {
         BArray argumentArray = fieldNode.getArrayValue(ARGUMENTS_FIELD);
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
         for (int i = 0; i < argumentArray.size(); i++) {
@@ -147,7 +177,7 @@ public class Engine {
         return argumentsMap;
     }
 
-    public static Object[] getArgsForResource(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
+    private static Object[] getArgsForResource(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
         String[] paramNames = resourceMethod.getParamNames();
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
@@ -155,22 +185,6 @@ public class Engine {
             result[j + 1] = true;
         }
         return result;
-    }
-
-    private static BMap<BString, Object> getSelectionsFromRecord(BObject fieldNode, BMap<BString, Object> record) {
-        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
-        for (int i = 0; i < selections.size(); i++) {
-            BObject subfieldNode = (BObject) selections.get(i);
-            BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
-            Object fieldValue = record.get(fieldName);
-            if (fieldValue instanceof BMap) {
-                data.put(fieldName, getSelectionsFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue));
-            } else {
-                data.put(fieldName, fieldValue);
-            }
-        }
-        return data;
     }
 
     private static ArrayType getDataRecordArrayType() {
