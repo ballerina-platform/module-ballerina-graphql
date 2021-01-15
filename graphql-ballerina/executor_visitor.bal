@@ -23,13 +23,15 @@ public class ExecutorVisitor {
     private OutputObject outputObject;
     private map<anydata> data;
     private ErrorDetail[] errors;
+    private __Schema schema;
 
-    public isolated function init(Service serviceType) {
+    public isolated function init(Service serviceType, __Schema schema) {
         self.serviceType = serviceType;
         self.outputObject = {
             data: {},
             errors: []
         };
+        self.schema = schema;
         self.data = {};
         self.errors = [];
     }
@@ -46,9 +48,22 @@ public class ExecutorVisitor {
     public isolated function visitOperation(parser:OperationNode operationNode) {
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode fieldNode in selections {
-            var fieldResult = self.visitField(fieldNode, self.data);
-            if (fieldResult != ()) {
-                self.data[fieldNode.getName()] = fieldResult;
+            if (fieldNode.getName() == SCHEMA_FIELD) {
+                map<anydata> subData = {};
+                foreach parser:FieldNode selection in fieldNode.getSelections() {
+                    if (selection.getName() == TYPES_FIELD) {
+                        __Type[] types = self.schema.types.toArray();
+                        subData[selection.getName()] = getDataFromBalType(selection, types);
+                    } else {
+                        subData[selection.getName()] = getDataFromBalType(selection, self.schema);
+                    }
+                    self.data[fieldNode.getName()] = subData;
+                }
+            } else {
+                var fieldResult = self.visitField(fieldNode, self.data);
+                if (fieldResult != ()) {
+                    self.data[fieldNode.getName()] = fieldResult;
+                }
             }
         }
     }
