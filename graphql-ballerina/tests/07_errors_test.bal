@@ -26,7 +26,7 @@ service /graphql on new Listener(9096) {
     groups: ["negative", "listener", "unit"]
 }
 public function testMissingArgumentValueQuery() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ profile(id: ) { name age }";
 
     json expectedPayload = {
@@ -50,7 +50,7 @@ public function testMissingArgumentValueQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testEmptyQuery() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ }";
 
     json expectedPayload = {
@@ -74,7 +74,7 @@ public function testEmptyQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithNoSelectionQuery() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ profile(id: 4) }";
 
     string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
@@ -100,7 +100,7 @@ public function testObjectWithNoSelectionQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithNoSelectionQueryWithArguments() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ profile(id: 4) }";
 
     string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
@@ -126,7 +126,7 @@ public function testObjectWithNoSelectionQueryWithArguments() returns @tainted e
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ profile(id: 4) { status } }";
 
     string expectedMessage = "Cannot query field \"status\" on type \"Person\".";
@@ -151,7 +151,7 @@ public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithMissingRequiredArgument() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ profile { status } }";
 
     string expectedMessage1 = "Field \"profile\" argument \"id\" of type \"Int\" is required, but it was not provided.";
@@ -186,7 +186,7 @@ public function testObjectWithMissingRequiredArgument() returns @tainted error? 
     groups: ["negative", "listener", "unit"]
 }
 public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9096/graphql");
+    Client graphqlClient = check new("http://localhost:9096/graphql");
     string document = "{ profile (id: 2) { age { name } } }";
 
     string expectedMessage = "Field \"age\" must not have a selection since type \"Int\" has no subfields.";

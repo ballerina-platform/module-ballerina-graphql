@@ -45,7 +45,7 @@ service /graphql on new Listener(9097) {
     groups: ["service", "unit"]
 }
 public function testResourceReturningServiceObject() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9097/graphql");
+    Client graphqlClient = check new("http://localhost:9097/graphql");
     string document = "{ greet { generalGreeting } }";
 
     json expectedPayload = {
@@ -63,7 +63,7 @@ public function testResourceReturningServiceObject() returns @tainted error? {
     groups: ["service", "unit"]
 }
 public function testComplexService() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9097/graphql");
+    Client graphqlClient = check new("http://localhost:9097/graphql");
     string document = "{ profile { name { first, last } } }";
 
     json expectedPayload = {

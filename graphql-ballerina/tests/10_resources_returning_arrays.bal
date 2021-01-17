@@ -34,7 +34,7 @@ service /graphql on new Listener(9100) {
     groups: ["array", "service", "unit"]
 }
 function testResourcesReturningScalarArrays() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9100/graphql");
+    Client graphqlClient = check new("http://localhost:9100/graphql");
     string document = "{ ids }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {
@@ -49,7 +49,7 @@ function testResourcesReturningScalarArrays() returns @tainted error? {
     groups: ["array", "service", "unit"]
 }
 function testResourcesReturningArrays() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9100/graphql");
+    Client graphqlClient = check new("http://localhost:9100/graphql");
     string document = "{ people { name address { city } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {
@@ -83,7 +83,7 @@ function testResourcesReturningArrays() returns @tainted error? {
     groups: ["array", "service", "unit"]
 }
 function testResourcesReturningArraysMissingFields() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9100/graphql");
+    Client graphqlClient = check new("http://localhost:9100/graphql");
     string document = "{ people }";
     json actualResult = check graphqlClient->query(document);
     string expectedMessage = "Field \"people\" of type \"[Person]\" must have a selection of subfields. Did you mean " +
@@ -108,7 +108,7 @@ function testResourcesReturningArraysMissingFields() returns @tainted error? {
     groups: ["array", "service", "unit"]
 }
 function testComplexArraySample() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9100/graphql");
+    Client graphqlClient = check new("http://localhost:9100/graphql");
     string document = "{ students { name courses { name books { name } } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {

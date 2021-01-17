@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["introspection", "unit"]
 }
 function testSimpleIntrospectionQuery() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9101/graphql");
+    Client graphqlClient = check new("http://localhost:9101/graphql");
     string document = "{ __schema { types { name kind } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {
@@ -67,7 +67,7 @@ function testSimpleIntrospectionQuery() returns @tainted error? {
 }
 function testComplexIntrospectionQuery() returns @tainted error? {
     // Using 9100 endpoint since it has more complex schema
-    Client graphqlClient = new("http://localhost:9100/graphql");
+    Client graphqlClient = check new("http://localhost:9100/graphql");
     string document = "{ __schema { types { name kind } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {
@@ -137,7 +137,7 @@ function testComplexIntrospectionQuery() returns @tainted error? {
     groups: ["introspection", "unit"]
 }
 function testInvalidIntrospectionQuery() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9101/graphql");
+    Client graphqlClient = check new("http://localhost:9101/graphql");
     string document = "{ __schema { greet } }";
     json actualResult = check graphqlClient->query(document);
     string expectedMessage = "Cannot query field \"greet\" on type \"__Schema\".";
@@ -161,7 +161,7 @@ function testInvalidIntrospectionQuery() returns @tainted error? {
     groups: ["introspection", "unit"]
 }
 function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9101/graphql");
+    Client graphqlClient = check new("http://localhost:9101/graphql");
     string document = "{ __schema }";
     json actualResult = check graphqlClient->query(document);
     string expectedMessage = "Field \"__schema\" of type \"__Schema\" must have a selection of subfields." +
@@ -188,7 +188,7 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
     enable: false
 }
 function testQueryTypeIntrospection() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9101/graphql");
+    Client graphqlClient = check new("http://localhost:9101/graphql");
     string document = "{ __schema { queryType { fields { name } } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {

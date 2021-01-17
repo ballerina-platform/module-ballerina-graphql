@@ -26,9 +26,14 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service
-    public isolated function init(int|http:Listener listenTo) {
+    public isolated function init(int|http:Listener listenTo) returns ListenerError? {
         if (listenTo is int) {
-            self.httpListener = new(listenTo);
+            http:Listener|error httpListener = new(listenTo);
+            if (httpListener is error) {
+                return error ListenerError("Listener initialization failed", httpListener);
+            } else {
+                self.httpListener = httpListener;
+            }
         } else {
             self.httpListener = listenTo;
         }
