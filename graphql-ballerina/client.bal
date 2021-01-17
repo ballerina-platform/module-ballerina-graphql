@@ -20,8 +20,13 @@ import ballerina/http;
 public client class Client  {
     private http:Client httpClient;
 
-    public function init(string url) {
-        self.httpClient = new(url);
+    public function init(string url) returns ClientError? {
+        http:Client|error httpClient = new(url);
+        if (httpClient is error) {
+            return error InitializationError("Error occured while creating the client", httpClient);
+        } else {
+            self.httpClient = httpClient;
+        }
     }
 
     remote function query(string document, string? operationName = ()) returns @tainted json|ClientError {

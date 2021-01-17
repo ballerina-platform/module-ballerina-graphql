@@ -19,8 +19,8 @@ import ballerina/test;
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testResourcesReturningInvalidUnionType() {
-    Listener graphqlListener = new (9099);
+public function testResourcesReturningInvalidUnionType() returns error? {
+    Listener graphqlListener = check new (9099);
     var result = trap graphqlListener.attach(serviceWithInvalidUnionTypes);
     test:assertTrue(result is error);
     error err = <error> result;
@@ -48,7 +48,7 @@ service /graphql on new Listener(9098) {
     groups: ["service", "unit"]
 }
 public function testResourceReturningUnionTypes() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9098/graphql");
+    Client graphqlClient = check new("http://localhost:9098/graphql");
     string document = "{ profile (id: 5) { name } }";
 
     json expectedPayload = {
