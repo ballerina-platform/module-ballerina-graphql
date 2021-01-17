@@ -7,6 +7,15 @@
 * in the user manual at https://docs.gradle.org/6.3/userguide/multi_project_builds.html
 */
 
+pluginManagement {
+    plugins {
+        id "com.github.spotbugs-base" version "${spotbugsPluginVersion}"
+        id "com.github.johnrengelman.shadow" version "${shadowJarPluginVersion}"
+        id "de.undercouch.download" version "${downloadPluginVersion}"
+        id "net.researchgate.release" version "${releasePluginVersion}"
+    }
+}
+
 plugins {
    id "com.gradle.enterprise" version "3.2"
 }

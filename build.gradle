@@ -16,38 +16,11 @@
  */
 
 plugins {
-    id "com.github.spotbugs-base" version "4.5.1"
-    id "com.github.johnrengelman.shadow" version "5.2.0"
-    id "de.undercouch.download" version "4.0.4"
-    id "net.researchgate.release" version "2.6.0"
+    id 'com.github.spotbugs-base'
+    id 'com.github.johnrengelman.shadow'
+    id 'de.undercouch.download'
+    id 'net.researchgate.release'
 }
-
-ext.ballerinaLangVersion = project.ballerinaLangVersion
-ext.puppycrawlCheckstyleVersion = project.puppycrawlCheckstyleVersion
-
-ext.stdlibIoVersion = project.stdlibIoVersion
-ext.stdlibStringutilsVersion = project.stdlibStringutilsVersion
-
-ext.stdlibOsVersion = project.stdlibOsVersion
-ext.stdlibTaskVersion = project.stdlibTaskVersion
-ext.stdlibTimeVersion = project.stdlibTimeVersion
-
-ext.stdlibConfigVersion = project.stdlibConfigVersion
-ext.stdlibCryptoVersion = project.stdlibCryptoVersion
-ext.stdlibFileVersion = project.stdlibFileVersion
-
-ext.stdlibLogVersion = project.stdlibLogVersion
-ext.stdlibReflectVersion = project.stdlibReflectVersion
-ext.stdlibUuidVersion = project.stdlibUuidVersion
-
-ext.stdlibCacheVersion = project.stdlibCacheVersion
-ext.stdlibMimeVersion = project.stdlibMimeVersion
-
-ext.stdlibAuthVersion = project.stdlibAuthVersion
-ext.stdlibJwtVersion = project.stdlibJwtVersion
-ext.stdlibOAuth2Version = project.stdlibOAuth2Version
-
-ext.stdlibHttpVersion = project.stdlibHttpVersion
 
 allprojects {
     group = project.group
