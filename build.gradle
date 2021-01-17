@@ -22,33 +22,6 @@ plugins {
     id "net.researchgate.release" version "2.6.0"
 }
 
-ext.ballerinaLangVersion = project.ballerinaLangVersion
-ext.puppycrawlCheckstyleVersion = project.puppycrawlCheckstyleVersion
-
-ext.stdlibIoVersion = project.stdlibIoVersion
-ext.stdlibStringutilsVersion = project.stdlibStringutilsVersion
-
-ext.stdlibOsVersion = project.stdlibOsVersion
-ext.stdlibTaskVersion = project.stdlibTaskVersion
-ext.stdlibTimeVersion = project.stdlibTimeVersion
-
-ext.stdlibConfigVersion = project.stdlibConfigVersion
-ext.stdlibCryptoVersion = project.stdlibCryptoVersion
-ext.stdlibFileVersion = project.stdlibFileVersion
-
-ext.stdlibLogVersion = project.stdlibLogVersion
-ext.stdlibReflectVersion = project.stdlibReflectVersion
-ext.stdlibUuidVersion = project.stdlibUuidVersion
-
-ext.stdlibCacheVersion = project.stdlibCacheVersion
-ext.stdlibMimeVersion = project.stdlibMimeVersion
-
-ext.stdlibAuthVersion = project.stdlibAuthVersion
-ext.stdlibJwtVersion = project.stdlibJwtVersion
-ext.stdlibOAuth2Version = project.stdlibOAuth2Version
-
-ext.stdlibHttpVersion = project.stdlibHttpVersion
-
 allprojects {
     group = project.group
     version = project.version
@@ -191,7 +164,7 @@ allprojects {
         }
 
         maven {
-            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-stringutils'
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-regex'
             credentials {
                 username System.getenv("packageUser")
                 password System.getenv("packagePAT")
@@ -247,7 +220,7 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:oauth2-ballerina:${stdlibOAuth2Version}"
         ballerinaStdLibs "org.ballerinalang:os-ballerina:${stdlibOsVersion}"
         ballerinaStdLibs "org.ballerinalang:reflect-ballerina:${stdlibReflectVersion}"
-        ballerinaStdLibs "org.ballerinalang:stringutils-ballerina:${stdlibStringutilsVersion}"
+        ballerinaStdLibs "org.ballerinalang:regex-ballerina:${stdlibRegexVersion}"
         ballerinaStdLibs "org.ballerinalang:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
         ballerinaStdLibs "org.ballerinalang:uuid-ballerina:${stdlibUuidVersion}"
