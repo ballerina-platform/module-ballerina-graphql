@@ -140,9 +140,9 @@ task ballerinaTest {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/ballerina.bat test ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat test ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/ballerina test ${groupParams} ${disableGroups} ${debugParams}"
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal test ${groupParams} ${disableGroups} ${debugParams}"
             }
         }
     }
@@ -168,9 +168,9 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build --skip-tests -c"
+                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat build --skip-tests -c"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c"
+                commandLine 'sh', '-c', "$distributionBinPath/bal build --skip-tests -c"
             }
         }
         copy {
@@ -191,9 +191,9 @@ task ballerinaBuild {
                 workingDir project.projectDir
                 environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${packageName} && exit %%ERRORLEVEL%%"
+                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push ${packageName} && exit %%ERRORLEVEL%%"
                 } else {
-                    commandLine 'sh', '-c', "$distributionBinPath/ballerina push ${packageName}"
+                    commandLine 'sh', '-c', "$distributionBinPath/bal push ${packageName}"
                 }
             }
 
@@ -203,9 +203,9 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat doc && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina doc"
+                commandLine 'sh', '-c', "$distributionBinPath/bal doc"
             }
         }
         copy {
