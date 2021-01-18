@@ -35,7 +35,7 @@ function testGetFieldFromRecordResource() returns @tainted error? {
             }
         }
     };
-    http:Client httpClient = new("http://localhost:9094/graphql");
+    http:Client httpClient = check new("http://localhost:9094/graphql");
     http:Request request = new;
     request.setPayload(payload);
 
