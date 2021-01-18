@@ -17,7 +17,7 @@
 import ballerina/http;
 import ballerina/test;
 
-http:Listener httpListener = new(9091);
+http:Listener httpListener = checkpanic new(9091);
 listener Listener gqlListener = new(httpListener);
 
 @test:Config {
@@ -26,7 +26,7 @@ listener Listener gqlListener = new(httpListener);
 function testDocumentValidation() returns @tainted error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_1");
     string documentString = getShorthandDocumentWithInvalidQuery();
-    http:Client httpClient = new("http://localhost:9091/graphql_service_1");
+    http:Client httpClient = check new("http://localhost:9091/graphql_service_1");
     json payload = {
         query: documentString
     };
@@ -58,7 +58,7 @@ function testDocumentValidation() returns @tainted error? {
 function testQueryResult() returns @tainted error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
     string documentString = getShorthandDocument();
-    http:Client httpClient = new("http://localhost:9091/graphql_service_2");
+    http:Client httpClient = check new("http://localhost:9091/graphql_service_2");
     json payload = {
         query: documentString
     };
