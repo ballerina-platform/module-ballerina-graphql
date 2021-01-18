@@ -39,7 +39,7 @@ function testFunctionsWithInputParameter() returns @tainted error? {
             greet: "Hello, Thisaru"
         }
     };
-    http:Client httpClient = new("http://localhost:9093/graphql");
+    http:Client httpClient = check new("http://localhost:9093/graphql");
     http:Request request = new;
     request.setPayload(payload);
 
