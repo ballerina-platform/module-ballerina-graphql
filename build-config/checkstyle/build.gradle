@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id "de.undercouch.download"
+    id 'de.undercouch.download'
 }
 
 task downloadMultipleFiles(type: Download) {
