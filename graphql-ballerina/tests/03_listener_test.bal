@@ -34,7 +34,7 @@ function testShortHandQueryResult() returns @tainted error? {
             birthdate: "15-05-1848"
         }
     };
-    http:Client httpClient = new("http://localhost:9092/graphql");
+    http:Client httpClient = check new("http://localhost:9092/graphql");
     http:Request request = new;
     request.setPayload(payload);
 
@@ -57,7 +57,7 @@ function testGetRequestResult() returns @tainted error? {
             }
         }
     };
-    http:Client httpClient = new("http://localhost:9095");
+    http:Client httpClient = check new("http://localhost:9095");
     http:Request request = new;
 
     string path = "/graphql?query=" + encodedDocument;
