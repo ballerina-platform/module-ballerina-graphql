@@ -26,7 +26,7 @@ service /graphql on new Listener(9095) {
     groups: ["client", "unit"]
 }
 public function testClient() returns @tainted error? {
-    Client graphqlClient = new("http://localhost:9095/graphql");
+    Client graphqlClient = check new("http://localhost:9095/graphql");
     string document = "{ profile(id: 1) { name age address { city } } }";
 
     json expectedPayload = {
