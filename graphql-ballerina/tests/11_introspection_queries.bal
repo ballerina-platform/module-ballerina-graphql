@@ -182,19 +182,18 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
     test:assertEquals(actualResult, expectedResult);
 }
 
-// Enable after fixing https://github.com/ballerina-platform/ballerina-standard-library/issues/832
 @test:Config {
-    groups: ["introspection", "unit"],
-    enable: false
+    groups: ["introspection", "unit"]
 }
 function testQueryTypeIntrospection() returns @tainted error? {
     Client graphqlClient = check new("http://localhost:9101/graphql");
-    string document = "{ __schema { queryType { fields { name } } } }";
+    string document = "{ __schema { queryType { kind fields { name } } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {
         data: {
             __schema: {
                 queryType: {
+                    kind: "OBJECT",
                     fields: [
                         {
                             name: "greet"
