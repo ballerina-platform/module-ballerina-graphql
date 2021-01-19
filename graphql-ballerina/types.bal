@@ -21,3 +21,5 @@ public type Scalar boolean|int|float|string;
 public type Service service object {
     // TODO: Complete the type validation
 };
+
+type AnydataMap map<anydata>;

@@ -120,7 +120,14 @@ public class Engine {
             name: TYPES_FIELD,
             'type: typesType
         };
+
+        __Field queryTypeField = {
+            name: QUERY_TYPE_FIELD,
+            'type: <__Type>schema.types[QUERY_TYPE_NAME]
+        };
+
         fields[TYPES_FIELD] = typesField;
+        fields[QUERY_TYPE_FIELD] = queryTypeField;
         schemaType.fields = fields;
         schema.types[SCHEMA_TYPE_NAME] = schemaType;
     }
