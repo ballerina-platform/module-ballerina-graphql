@@ -134,7 +134,7 @@ function testComplexIntrospectionQuery() returns @tainted error? {
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["test", "introspection", "unit"]
 }
 function testInvalidIntrospectionQuery() returns @tainted error? {
     Client graphqlClient = check new("http://localhost:9101/graphql");
@@ -184,17 +184,17 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
 
 // Enable after fixing https://github.com/ballerina-platform/ballerina-standard-library/issues/832
 @test:Config {
-    groups: ["introspection", "unit"],
-    enable: false
+    groups: ["test", "introspection", "unit"]
 }
 function testQueryTypeIntrospection() returns @tainted error? {
     Client graphqlClient = check new("http://localhost:9101/graphql");
-    string document = "{ __schema { queryType { fields { name } } } }";
+    string document = "{ __schema { queryType { kind fields { name } } } }";
     json actualResult = check graphqlClient->query(document);
     json expectedResult = {
         data: {
             __schema: {
                 queryType: {
+                    kind: "OBJECT",
                     fields: [
                         {
                             name: "greet"

@@ -55,7 +55,14 @@ public class ExecutorVisitor {
                         __Type[] types = self.schema.types.toArray();
                         subData[selection.getName()] = getDataFromBalType(selection, types);
                     } else {
-                        subData[selection.getName()] = getDataFromBalType(selection, self.schema);
+                        __Type schemaType = <__Type>self.schema[selection.getName()];
+                        var fieldsValue = schemaType?.fields;
+                        if (fieldsValue is map<__Field>) {
+                            __Field[] fields = fieldsValue.toArray();
+                            map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
+                            typeMap[FIELDS_FIELD] = fields;
+                            subData[selection.getName()] = getDataFromBalType(selection, typeMap);
+                        }
                     }
                     self.data[fieldNode.getName()] = subData;
                 }
