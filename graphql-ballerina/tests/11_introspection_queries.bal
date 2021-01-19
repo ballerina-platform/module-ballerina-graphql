@@ -134,7 +134,7 @@ function testComplexIntrospectionQuery() returns @tainted error? {
 }
 
 @test:Config {
-    groups: ["test", "introspection", "unit"]
+    groups: ["introspection", "unit"]
 }
 function testInvalidIntrospectionQuery() returns @tainted error? {
     Client graphqlClient = check new("http://localhost:9101/graphql");
@@ -182,9 +182,8 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
     test:assertEquals(actualResult, expectedResult);
 }
 
-// Enable after fixing https://github.com/ballerina-platform/ballerina-standard-library/issues/832
 @test:Config {
-    groups: ["test", "introspection", "unit"]
+    groups: ["introspection", "unit"]
 }
 function testQueryTypeIntrospection() returns @tainted error? {
     Client graphqlClient = check new("http://localhost:9101/graphql");
