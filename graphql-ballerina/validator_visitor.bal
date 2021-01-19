@@ -98,11 +98,14 @@ public class ValidatorVisitor {
 
         foreach parser:FieldNode subFieldNode in selections {
             if (fieldType.kind == LIST || fieldType.kind == NON_NULL) {
-                Parent subParent = {
-                    parentType: <__Type>fieldType?.ofType,
-                    name: fieldNode.getName()
-                };
-                self.visitField(subFieldNode, subParent);
+                __Type? ofType = fieldType?.ofType;
+                if (ofType is __Type) {
+                    Parent subParent = {
+                        parentType: <__Type>fieldType?.ofType,
+                        name: fieldNode.getName()
+                    };
+                    self.visitField(subFieldNode, subParent);
+                }
             } else {
                 Parent subParent = {
                     parentType: fieldType,
@@ -176,12 +179,28 @@ public class ValidatorVisitor {
             return;
         }
         foreach parser:FieldNode selection in fieldNode.getSelections() {
-            __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
-            Parent parent = {
-                parentType: schemaType,
-                name: SCHEMA_TYPE_NAME
-            };
-            self.visitField(selection, parent);
+            if (selection.getName() == TYPES_FIELD) {
+                __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
+                Parent parent = {
+                    parentType: schemaType,
+                    name: SCHEMA_TYPE_NAME
+                };
+                return self.visitField(selection, parent);
+            }
+            var fieldValue = self.schema[selection.getName()];
+            if (fieldValue != ()) {
+                __Type schemaType = <__Type>self.schema.types[TYPE_TYPE_NAME];
+                Parent parent = {
+                    parentType: schemaType,
+                    name: SCHEMA_TYPE_NAME
+                };
+                foreach parser:FieldNode subSelection in selection.getSelections() {
+                    self.visitField(subSelection, parent);
+                }
+                return;
+            }
+            string message = getFieldNotFoundErrorMessage(selection.getName(), SCHEMA_TYPE_NAME);
+            self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
         }
     }
 }
