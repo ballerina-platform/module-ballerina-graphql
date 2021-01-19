@@ -14,7 +14,7 @@ The `graphql:Listener` is used to listen to a given port. Ballerina GraphQL is u
 import ballerina/http;
 import ballerina/graphql;
 
-http:Listener httpListener = new(<port number>);
+http:Listener httpListener = check new(4000);
 listener graphql:Listener graphqlListener = new(httpListener);
 ``` 
 
@@ -22,7 +22,7 @@ listener graphql:Listener graphqlListener = new(httpListener);
 ```ballerina
 import ballerina/graphql;
 
-listener graphql:Listener graphqlListener = new(<port number>);
+listener graphql:Listener graphqlListener = new(4000);
 ``` 
  
 ## Service
@@ -32,9 +32,7 @@ The `graphql:Service` represents a GraphQL endpoint. Inside a `graphql:Service`,
 ```ballerina
 import ballerina/graphql;
 
-listener graphql:Listener graphqlListener = new(<port number>);
-
-graphql:Service graphql on graphqlListener {
+service graphql:Service /graphql on new graphql:Listener(4000) {
     resource function get name() returns string {
         return "James Moriarty";
     }
