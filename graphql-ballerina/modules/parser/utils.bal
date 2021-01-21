@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/java;
+import ballerina/jballerina.java;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
