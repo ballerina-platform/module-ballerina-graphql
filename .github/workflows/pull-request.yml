@@ -23,6 +23,12 @@ jobs:
                     name: Ballerina Internal Log
                     path: graphql-ballerina/ballerina-internal.log
                     if-no-files-found: ignore
+            -   name: Archive Code Coverage JSON
+                uses: actions/upload-artifact@v2
+                with:
+                    name: Code Coverage JSON
+                    path: graphql-ballerina/target/report/test_results.json
+                    if-no-files-found: ignore
 
     windows-build:
         runs-on: windows-latest
