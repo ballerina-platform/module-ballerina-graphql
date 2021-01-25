@@ -87,6 +87,7 @@ def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN'
 def originalConfig = ballerinaConfigFile.text
 def originalDependencies = ballerinaDependencyFile.text
 def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+def coverageReport = ""
 
 task updateTomlFile {
     doLast {
@@ -115,8 +116,7 @@ task revertTomlFile {
 }
 
 task ballerinaTest {
-    dependsOn(":graphql-native:build")
-    dependsOn(unpackJballerinaTools)
+    inputs.dir file(project.projectDir)
     dependsOn(updateTomlFile)
     finalizedBy(revertTomlFile)
 
@@ -153,18 +153,23 @@ task ballerinaTest {
     }
 }
 
-test {
-    dependsOn(ballerinaTest)
+task preserveCoverageReport {
+    doLast {
+        File file = file('target/report/test_results.json')
+        coverageReport = file.text
+    }
+}
+
+task saveCoverageReport {
+    doLast {
+        File file = file('target/test_results.json')
+        file.text = coverageReport
+    }
 }
 
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
-    dependsOn(":graphql-native:build")
-    dependsOn(unpackJballerinaTools)
-    dependsOn(unpackStdLibs)
-    dependsOn(copyStdlibs)
     dependsOn(updateTomlFile)
-    dependsOn(test)
     finalizedBy(revertTomlFile)
 
     doLast {
@@ -201,8 +206,8 @@ task ballerinaBuild {
                     commandLine 'sh', '-c', "$distributionBinPath/bal push ${packageName}"
                 }
             }
-
         }
+
         // Doc creation and packing
         exec {
             workingDir project.projectDir
@@ -219,9 +224,7 @@ task ballerinaBuild {
         }
     }
 
-    outputs.dir artifactCacheParent
-    outputs.dir artifactBallerinaDocs
-    outputs.dir artifactLibParent
+    outputs.dir "target"
 }
 
 task createArtifactZip(type: Zip) {
@@ -250,6 +253,9 @@ publishing {
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
-ballerinaBuild.dependsOn updateTomlFile
-ballerinaBuild.dependsOn ":graphql-native:build"
-build.dependsOn ballerinaBuild
+ballerinaTest.dependsOn ":graphql-native:build"
+preserveCoverageReport.dependsOn ballerinaTest
+ballerinaBuild.dependsOn preserveCoverageReport
+test.dependsOn ballerinaTest
+saveCoverageReport.dependsOn ballerinaBuild
+build.dependsOn saveCoverageReport
