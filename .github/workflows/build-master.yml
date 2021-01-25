@@ -37,7 +37,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 with:
                     name: Code Coverage JSON
-                    path: graphql-ballerina/target/report/test_results.json
+                    path: graphql-ballerina/target/test_results.json
                     if-no-files-found: ignore
             -   name: Dispatch Dependent Module Builds
                 if: github.event.action != 'stdlib-publish-snapshot'
