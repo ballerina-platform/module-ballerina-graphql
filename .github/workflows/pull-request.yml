@@ -15,13 +15,19 @@ jobs:
                 env:
                     packageUser: ${{ github.actor }}
                     packagePAT: ${{ secrets.GITHUB_TOKEN }}
-                run: ./gradlew build
+                run: ./gradlew build --no-daemon
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
                 if: failure()
                 with:
                     name: Ballerina Internal Log
                     path: graphql-ballerina/ballerina-internal.log
+                    if-no-files-found: ignore
+            -   name: Archive Code Coverage JSON
+                uses: actions/upload-artifact@v2
+                with:
+                    name: Code Coverage JSON
+                    path: graphql-ballerina/target/report/test_results.json
                     if-no-files-found: ignore
 
     windows-build:
@@ -37,4 +43,4 @@ jobs:
                 env:
                     packageUser: ${{ github.actor }}
                     packagePAT: ${{ secrets.GITHUB_TOKEN }}
-                run: ./gradlew.bat build -x test
+                run: ./gradlew.bat build -x test --no-daemon
