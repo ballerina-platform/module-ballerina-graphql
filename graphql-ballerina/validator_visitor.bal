@@ -86,7 +86,7 @@ public class ValidatorVisitor {
         }
 
         __Field schemaField = <__Field>schemaFieldValue;
-        self.checkArguments(fieldNode, schemaField);
+        self.checkArguments(parentType, fieldNode, schemaField);
 
         __Type fieldType = schemaField.'type;
         parser:FieldNode[] selections = fieldNode.getSelections();
@@ -143,7 +143,7 @@ public class ValidatorVisitor {
         }
     }
 
-    isolated function checkArguments(parser:FieldNode fieldNode, __Field schemaField) {
+    isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
         map<__InputValue>? schemaArgs = schemaField?.args;
         map<__InputValue> notFoundArgs = {};
@@ -152,12 +152,13 @@ public class ValidatorVisitor {
             notFoundArgs = schemaArgs.clone();
             foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName().value;
-                __InputValue? schemaArg = schemaArgs.get(argName);
+                __InputValue|error schemaArg = trap schemaArgs.get(argName);
                 if (schemaArg is __InputValue) {
                     _ = notFoundArgs.remove(argName);
                     self.visitArgument(argumentNode, schemaArg);
                 } else {
-                    string message = getUnknownArgumentErrorMessage(argName, schemaField, argumentNode);
+                    string parentName = parentType.name is string ? <string>parentType.name : "";
+                    string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
                     self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
                 }
             }

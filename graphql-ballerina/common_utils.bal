@@ -24,9 +24,9 @@ isolated function getNoSubfieldsErrorMessage(string fieldName, string typeName) 
     return "Field \"" + fieldName + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
 }
 
-isolated function getUnknownArgumentErrorMessage(string argName, __Field parent, parser:ArgumentNode argument)
+isolated function getUnknownArgumentErrorMessage(string argName, string parentName, string fieldName)
 returns string {
-    return "Unknown argument \"" + argName + "\" on field \"" + parent.name + "." + argument.getName().value + "\".";
+    return "Unknown argument \"" + argName + "\" on field \"" + parentName + "." + fieldName + "\".";
 }
 
 isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
