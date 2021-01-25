@@ -206,3 +206,28 @@ public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
     json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+public function testInvalidArgument() returns @tainted error? {
+    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string document = "{ profile (name: \"name\", id: 3) { name } }";
+
+    string expectedMessage = "Unknown argument \"name\" on field \"Query.profile\".";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    json result = check graphqlClient->query(document);
+    test:assertEquals(result, expectedPayload);
+}
