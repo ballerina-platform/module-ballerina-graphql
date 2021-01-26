@@ -24,7 +24,7 @@ configurations {
 }
 
 dependencies {
-    jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
+    jbalTools("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
     compile project(':graphql-native')
@@ -36,8 +36,7 @@ clean {
 
 jar {
     manifest {
-        attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version)
+        attributes('Implementation-Title': project.name, 'Implementation-Version': project.version)
     }
 }
 
@@ -86,7 +85,7 @@ def tomlVersion = project.version.split("-")[0]
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 def originalConfig = ballerinaConfigFile.text
 def originalDependencies = ballerinaDependencyFile.text
-def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
 task updateTomlFile {
     doLast {
@@ -114,31 +113,30 @@ task revertTomlFile {
     }
 }
 
-task ballerinaTest {
-    dependsOn(":graphql-native:build")
-    dependsOn(unpackJballerinaTools)
-    dependsOn(updateTomlFile)
-    finalizedBy(revertTomlFile)
+def groupParams = ""
+def disableGroups = ""
+def debugParams = ""
+def balJavaDebugParam = ""
 
-    def groupParams = ""
+task initializeVariables {
     if (project.hasProperty("groups")) {
         groupParams = "--groups ${project.findProperty("groups")}"
     }
-
-    def disableGroups = ""
     if (project.hasProperty("disable")) {
         disableGroups = "--disable-groups ${project.findProperty("disable")}"
     }
-
-    def debugParams = ""
     if (project.hasProperty("debug")) {
         debugParams = "--debug ${project.findProperty("debug")}"
     }
-
-    def balJavaDebugParam = ""
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
     }
+}
+
+task ballerinaTest {
+    dependsOn(updateTomlFile)
+    dependsOn(initializeVariables)
+    finalizedBy(revertTomlFile)
 
     doLast {
         exec {
@@ -159,13 +157,19 @@ test {
 
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
-    dependsOn(":graphql-native:build")
-    dependsOn(unpackJballerinaTools)
-    dependsOn(unpackStdLibs)
-    dependsOn(copyStdlibs)
     dependsOn(updateTomlFile)
-    dependsOn(test)
+    dependsOn(initializeVariables)
     finalizedBy(revertTomlFile)
+
+    def testParams = "--skip-tests"
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(':graphql-ballerina:build')) {
+            ballerinaTest.enabled = false
+        }
+        if (graph.hasTask(':graphql-ballerina:test')) {
+            testParams = "--code-coverage"
+        }
+    }
 
     doLast {
         // Build and populate caches
@@ -173,9 +177,9 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat build --skip-tests -c"
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat build $testParams ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/bal build --skip-tests -c"
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build $testParams ${debugParams}"
             }
         }
         copy {
@@ -251,5 +255,5 @@ unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
 ballerinaBuild.dependsOn updateTomlFile
-ballerinaBuild.dependsOn ":graphql-native:build"
+ballerinaBuild.dependsOn test
 build.dependsOn ballerinaBuild
