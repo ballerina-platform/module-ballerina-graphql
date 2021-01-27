@@ -242,7 +242,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             artifact source: createArtifactZip, extension: 'zip'
-            artifact source: artifactCodeCoverageReport, classifier: getCheckedOutGitCommitHash()
+            artifact source: artifactCodeCoverageReport, classifier: 'jacoco'
         }
     }
     repositories {
