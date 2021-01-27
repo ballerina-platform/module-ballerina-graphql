@@ -227,7 +227,6 @@ task ballerinaBuild {
     outputs.dir artifactCacheParent
     outputs.dir artifactBallerinaDocs
     outputs.dir artifactLibParent
-    outputs.file artifactCodeCoverageReport
 }
 
 task createArtifactZip(type: Zip) {
@@ -235,10 +234,15 @@ task createArtifactZip(type: Zip) {
     from ballerinaBuild
 }
 
+def getCheckedOutGitCommitHash() {
+    'git rev-parse --verify --short HEAD'.execute().text.trim()
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
             artifact source: createArtifactZip, extension: 'zip'
+            artifact source: artifactCodeCoverageReport, classifier: getCheckedOutGitCommitHash()
         }
     }
     repositories {
