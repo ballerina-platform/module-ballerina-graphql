@@ -261,5 +261,7 @@ unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
 ballerinaBuild.dependsOn updateTomlFile
+ballerinaBuild.dependsOn ":graphql-native:build"
+ballerinaTest.dependsOn ":graphql-native:build"
 ballerinaBuild.dependsOn test
 build.dependsOn ballerinaBuild
