@@ -260,6 +260,7 @@ publishing {
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
-ballerinaBuild.dependsOn updateTomlFile
 ballerinaBuild.dependsOn test
+ballerinaBuild.dependsOn ":graphql-native:build"
+ballerinaTest.dependsOn ":graphql-native:build"
 build.dependsOn ballerinaBuild
