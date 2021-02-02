@@ -229,7 +229,6 @@ task createArtifactZip(type: Zip) {
 }
 
 task createTestableJarZip(type: Zip) {
-    dependsOn(ballerinaBuild)
     archiveName("${packageOrg}-${packageName}-${project.version}-testable-jars.zip")
     destinationDir(file("${buildDir}/distributions"))
     from ("${artifactTestableJar}") {
@@ -273,3 +272,5 @@ ballerinaBuild.dependsOn updateTomlFile
 ballerinaBuild.dependsOn initializeVariables
 ballerinaBuild.finalizedBy revertTomlFile
 build.dependsOn ballerinaBuild
+
+createTestableJarZip.dependsOn ballerinaBuild
