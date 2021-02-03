@@ -65,8 +65,8 @@ task copyStdlibs(type: Copy) {
     /* Standard Libraries */
     configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
         def artifactExtractedPath = "${buildDir}/target/extracted-distributions/" + artifact.name + "-zip"
-        into("repo/balo") {
-            from "${artifactExtractedPath}/balo"
+        into("repo/bala") {
+            from "${artifactExtractedPath}/bala"
         }
         into("repo/cache") {
             from "${artifactExtractedPath}/cache"
@@ -178,8 +178,8 @@ task ballerinaBuild {
             }
         }
         copy {
-            from file("$project.projectDir/target/balo")
-            into file("$artifactCacheParent/balo/${packageOrg}/${packageName}/${tomlVersion}")
+            from file("$project.projectDir/target/bala")
+            into file("$artifactCacheParent/bala/${packageOrg}/${packageName}/${tomlVersion}")
         }
         copy {
             from file("$project.projectDir/target/cache")
