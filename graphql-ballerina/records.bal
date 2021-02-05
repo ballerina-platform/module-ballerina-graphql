@@ -16,6 +16,7 @@
 
 import graphql.parser;
 
+# Represents the data in an output object for a GraphQL query.
 public type Data record {
     // Intentionally kept empty
 };

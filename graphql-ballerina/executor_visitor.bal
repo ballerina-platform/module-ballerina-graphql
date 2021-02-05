@@ -16,7 +16,7 @@
 
 import graphql.parser;
 
-public class ExecutorVisitor {
+class ExecutorVisitor {
     *parser:Visitor;
 
     private Service serviceType;
@@ -25,7 +25,7 @@ public class ExecutorVisitor {
     private ErrorDetail[] errors;
     private __Schema schema;
 
-    public isolated function init(Service serviceType, __Schema schema) {
+    isolated function init(Service serviceType, __Schema schema) {
         self.serviceType = serviceType;
         self.outputObject = {
             data: {},
