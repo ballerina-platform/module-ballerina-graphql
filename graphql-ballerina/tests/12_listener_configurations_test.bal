@@ -52,6 +52,22 @@ function testTimeoutResponse() returns error? {
         string expectedMessage = "Idle timeout triggered before initiating outbound response";
         string actualPaylaod = textPayload is error? textPayload.toString() : textPayload.toString();
         test:assertEquals(actualPaylaod, expectedMessage);
+    } else {
+        test:assertFail("HTTP response expected");
+    }
+}
+
+@test:Config {
+    groups: ["negative", "listenerConfigs", "unit"]
+}
+function testConfigurationsWithHttpListener() returns error? {
+    http:Listener httpListener = check new(91021);
+    var graphqlListener = new Listener(httpListener, configs);
+    if (graphqlListener is ListenerError) {
+        string message = "Provided listener configurations will be overridden by the http listener configurations";
+        test:assertEquals(message, graphqlListener.message());
+    } else {
+        test:assertFail("This must throw an error");
     }
 }
 
