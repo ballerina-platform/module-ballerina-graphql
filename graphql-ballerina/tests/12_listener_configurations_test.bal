@@ -21,12 +21,19 @@ import ballerina/test;
 ListenerConfiguration configs = {
     httpConfiguration: {
         timeoutInMillis: 1000
-    },
-    maxQueryDepth: 2
+    }
 };
 listener Listener timeoutListener = new(9102, configs);
+listener Listener depthLimitListener = new(9103, { maxQueryDepth: 2 });
 
-service /timeoutServer on timeoutListener {
+service /timeoutService on timeoutListener {
+    isolated resource function get greet() returns string {
+        runtime:sleep(3);
+        return "Hello";
+    }
+}
+
+service /depthLimitService on depthLimitListener {
     isolated resource function get greet() returns string {
         runtime:sleep(3);
         return "Hello";
@@ -41,7 +48,7 @@ function testTimeoutResponse() returns error? {
     json payload = {
         query: document
     };
-    http:Client httpClient = check new("http://localhost:9102/timeoutServer");
+    http:Client httpClient = check new("http://localhost:9102/timeoutService");
     http:Request request = new;
     request.setPayload(payload);
 
@@ -94,7 +101,7 @@ function testQueryExceedingMaxDepth() returns error? {
     json payload = {
         query: document
     };
-    http:Client httpClient = check new("http://localhost:9102/timeoutServer");
+    http:Client httpClient = check new("http://localhost:9103/depthLimitService");
     http:Request request = new;
     request.setPayload(payload);
 
