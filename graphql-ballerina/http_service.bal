@@ -19,7 +19,7 @@ import ballerina/http;
 service class HttpService {
     private Engine engine;
 
-    public isolated function init(Engine engine) {
+    isolated function init(Engine engine) {
         self.engine = engine;
     }
 

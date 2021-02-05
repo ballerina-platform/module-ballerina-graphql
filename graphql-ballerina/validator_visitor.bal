@@ -16,7 +16,7 @@
 
 import graphql.parser;
 
-public class ValidatorVisitor {
+class ValidatorVisitor {
     *parser:Visitor;
 
     private ErrorDetail[] errors;
