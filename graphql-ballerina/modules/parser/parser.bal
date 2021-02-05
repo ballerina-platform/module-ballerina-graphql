@@ -18,7 +18,7 @@ public class Parser {
     private Lexer lexer;
     private DocumentNode document;
     private int depth = 0;
-    private int highestDepth = 0;
+    private int operationMaxDepth = 0;
 
     public isolated function init(string text) {
         self.lexer = new(text);
@@ -76,10 +76,10 @@ public class Parser {
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
     returns OperationNode|Error {
         self.depth = 0;
-        self.highestDepth = 0;
+        self.operationMaxDepth = 0;
         OperationNode operation = new(name, kind, location);
         check self.addSelections(operation);
-        operation.setDepth(self.highestDepth);
+        operation.setMaxDepth(self.operationMaxDepth);
         return operation;
     }
 
@@ -102,8 +102,8 @@ public class Parser {
             parentNode.addSelection(fieldNode);
             token = check self.peekNextNonSeparatorToken();
         }
-        if (self.highestDepth < self.depth) {
-            self.highestDepth = self.depth;
+        if (self.operationMaxDepth < self.depth) {
+            self.operationMaxDepth = self.depth;
         }
         self.depth -= 1;
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
