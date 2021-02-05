@@ -26,18 +26,24 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service
-    public isolated function init(int|http:Listener listenTo) returns ListenerError? {
+    # + configuration - Configurations for the GraphQL service listener
+    public isolated function init(int|http:Listener listenTo, ListenerConfiguration? configuration = ())
+    returns ListenerError? {
         if (listenTo is int) {
-            http:Listener|error httpListener = new(listenTo);
+            http:Listener|error httpListener = new(listenTo, configuration);
             if (httpListener is error) {
                 return error ListenerError("Listener initialization failed", httpListener);
             } else {
                 self.httpListener = httpListener;
             }
         } else {
+            if (configuration is ListenerConfiguration) {
+                string message =
+                    "Provided listener configurations will be overridden by the http listener configurations";
+                return error ListenerError(message);
+            }
             self.httpListener = listenTo;
         }
-        // TODO: Decouple engine and the listener
         self.engine = new(self);
         self.httpService = new(self.engine);
     }
