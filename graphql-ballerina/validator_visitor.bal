@@ -49,8 +49,8 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        if (self.maxQueryDepth > 0 && operationNode.getDepth() > self.maxQueryDepth) {
-            string depthString = operationNode.getDepth().toString();
+        if (self.maxQueryDepth > 0 && operationNode.getMaxDepth() > self.maxQueryDepth) {
+            string depthString = operationNode.getMaxDepth().toString();
             string message = "Query has depth of " + depthString + ", which exceeds max depth of " +
                             self.maxQueryDepth.toString();
             self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));

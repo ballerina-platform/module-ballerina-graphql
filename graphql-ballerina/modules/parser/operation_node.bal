@@ -19,22 +19,22 @@ public class OperationNode {
     private RootOperationType kind;
     private Location location;
     private FieldNode[] selections;
-    private int depth;
+    private int maxDepth;
 
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
         self.kind = kind;
         self.location = location;
         self.selections = [];
-        self.depth = 0;
+        self.maxDepth = 0;
     }
 
-    public isolated function getDepth() returns int {
-        return self.depth;
+    public isolated function getMaxDepth() returns int {
+        return self.maxDepth;
     }
 
-    public isolated function setDepth(int depth) {
-        self.depth = depth;
+    public isolated function setMaxDepth(int depth) {
+        self.maxDepth = depth;
     }
 
     public isolated function getName() returns string {
