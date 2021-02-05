@@ -16,8 +16,7 @@
 
 import graphql.parser;
 
-# Represents the Ballerina GraphQL engine.
-public class Engine {
+class Engine {
     private Listener 'listener;
     private __Schema? schema;
     private Service? graphqlService;

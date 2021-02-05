@@ -48,7 +48,7 @@ public type Document record {
     Operation[] operations;
 };
 
-public class RecordCreatorVisitor {
+class RecordCreatorVisitor {
     *Visitor;
 
     public isolated function visitDocument(DocumentNode documentNode) returns Document {
