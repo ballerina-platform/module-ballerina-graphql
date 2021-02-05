@@ -20,11 +20,22 @@ class Engine {
     private Listener 'listener;
     private __Schema? schema;
     private Service? graphqlService;
+    private int maxQueryDepth;
 
-    public isolated function init(Listener 'listener) {
+    public isolated function init(Listener 'listener, ListenerConfiguration? configs = ()) returns ListenerError? {
         self.'listener = 'listener;
         self.schema = ();
         self.graphqlService = ();
+        var maxQueryDepth = trap configs?.maxQueryDepth;
+        if (maxQueryDepth is int) {
+            if (maxQueryDepth < 1) {
+                string message = "Maximum query depth should be an integer greater than 0";
+                return error ListenerError(message);
+            }
+            self.maxQueryDepth = maxQueryDepth;
+        } else {
+            self.maxQueryDepth = 0;
+        }
     }
 
     isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
@@ -73,7 +84,7 @@ class Engine {
 
     isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
         if (self.schema is __Schema) {
-            ValidatorVisitor validator = new(<__Schema>self.schema);
+            ValidatorVisitor validator = new(<__Schema>self.schema, self.maxQueryDepth);
             validator.validate(document);
             ErrorDetail[] errors = validator.getErrors();
             if (errors.length() > 0) {
