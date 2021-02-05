@@ -14,7 +14,45 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import graphql.parser;
+
+# Provides a set of configurations for the GraphQL listener endpoint.
+public type ListenerConfiguration record {|
+    *http:ListenerConfiguration;
+|};
+
+# Provides settings related to HTTP/1.x protocol, when using HTTP 1.x as the underlying protocol for the GraphQL
+# service.
+public type ListenerHttp1Settings record {|
+    *http:ListenerHttp1Settings;
+    // TODO: KeepAlive settings?
+|};
+
+# Configures the SSL/TLS options to be used for the underlying HTTP service used in GraphQL service.
+public type ListenerSecureSocket record {|
+    *http:ListenerSecureSocket;
+|};
+
+# Provides inbound request URI, total header and entity body size threshold configurations.
+public type RequestLimitConfigs record {|
+    *http:RequestLimitConfigs;
+|};
+
+# A record for configuring SSL/TLS protocol and version to be used for the undelying HTTP service.
+public type Protocols record {|
+    *http:Protocols;
+|};
+
+# A record for providing configurations for certificate revocation status checks.
+public type ValidateCert record {|
+    *http:ValidateCert;
+|};
+
+# A record for providing configurations for validate the certificate chain from the root CA.
+public type ListenerOcspStapling record {|
+    *http:ListenerOcspStapling;
+|};
 
 # Represents the data in an output object for a GraphQL query.
 public type Data record {
