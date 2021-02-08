@@ -57,9 +57,11 @@ class Engine {
         }
     }
 
-    isolated function registerService(Service s) {
+    isolated function registerService(Service s) returns ListenerError? {
         self.graphqlService = s;
         self.schema = createSchema(s);
+        GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
+        self.maxQueryDepth = check getMaxQueryDepth(s);
         self.populateSchemaType();
     }
 
