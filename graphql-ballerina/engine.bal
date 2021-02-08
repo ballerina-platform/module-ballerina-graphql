@@ -22,21 +22,11 @@ class Engine {
     private Service? graphqlService;
     private int maxQueryDepth;
 
-    public isolated function init(Listener 'listener, ListenerConfiguration? configs = ()) returns ListenerError? {
+    public isolated function init(Listener 'listener) returns ListenerError? {
         self.'listener = 'listener;
         self.schema = ();
         self.graphqlService = ();
         self.maxQueryDepth = 0;
-        if (configs is ListenerConfiguration) {
-            var maxQueryDepth = configs?.maxQueryDepth;
-            if (maxQueryDepth is int) {
-                if (maxQueryDepth < 1) {
-                    string message = "Maximum query depth should be an integer greater than 0";
-                    return error ListenerError(message);
-                }
-                self.maxQueryDepth = maxQueryDepth;
-            }
-        }
     }
 
     isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {

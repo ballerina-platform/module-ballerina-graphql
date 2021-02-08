@@ -30,7 +30,7 @@ public class Listener {
     public isolated function init(int|http:Listener listenTo, ListenerConfiguration? configuration = ())
     returns ListenerError? {
         if (listenTo is int) {
-            http:Listener|error httpListener = new(listenTo, configuration?.httpConfiguration);
+            http:Listener|error httpListener = new(listenTo, configuration);
             if (httpListener is error) {
                 return error ListenerError("Listener initialization failed", httpListener);
             } else {
@@ -38,15 +38,13 @@ public class Listener {
             }
         } else {
             if (configuration is ListenerConfiguration) {
-                if (configuration?.httpConfiguration is HttpConfiguration) {
-                    string message =
-                        "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
-                    return error ListenerError(message);
-                }
+                string message =
+                    "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
+                return error ListenerError(message);
             }
             self.httpListener = listenTo;
         }
-        self.engine = check new(self, configuration);
+        self.engine = check new(self);
         self.httpService = new(self.engine);
     }
 
