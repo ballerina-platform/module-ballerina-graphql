@@ -18,7 +18,16 @@ import ballerina/http;
 import graphql.parser;
 
 # Provides a set of configurations for the GraphQL listener endpoint.
+#
+# + httpConfiguration - Configurations related to underlying HTTP service
+# + maxQueryDepth - The maximum depth allowed for a query
 public type ListenerConfiguration record {|
+    HttpConfiguration httpConfiguration?;
+    int maxQueryDepth?;
+|};
+
+# Provides a set of configurations related to the underlying HTTP service.
+public type HttpConfiguration record {|
     *http:ListenerConfiguration;
 |};
 
