@@ -21,10 +21,12 @@ class ValidatorVisitor {
 
     private ErrorDetail[] errors;
     private __Schema schema;
+    private int maxQueryDepth;
 
-    public isolated function init(__Schema schema) {
+    public isolated function init(__Schema schema, int maxQueryDepth) {
         self.errors = [];
         self.schema = schema;
+        self.maxQueryDepth = maxQueryDepth;
     }
 
     public isolated function validate(parser:DocumentNode documentNode) {
@@ -47,6 +49,13 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
+        if (self.maxQueryDepth > 0 && operationNode.getMaxDepth() > self.maxQueryDepth) {
+            string depthString = operationNode.getMaxDepth().toString();
+            string message = "Query has depth of " + depthString + ", which exceeds max depth of " +
+                            self.maxQueryDepth.toString();
+            self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
+            return;
+        }
         parser:FieldNode[] selections = operationNode.getSelections();
         foreach parser:FieldNode selection in selections {
             if (selection.getName() == SCHEMA_FIELD) {

@@ -19,12 +19,21 @@ import ballerina/lang.runtime;
 import ballerina/test;
 
 ListenerConfiguration configs = {
-    timeoutInMillis: 1000,
-    server: "TIMEOUT_SERVER"
+    httpConfiguration: {
+        timeoutInMillis: 1000
+    }
 };
 listener Listener timeoutListener = new(9102, configs);
+listener Listener depthLimitListener = new(9103, { maxQueryDepth: 2 });
 
-service /timeoutServer on timeoutListener {
+service /timeoutService on timeoutListener {
+    isolated resource function get greet() returns string {
+        runtime:sleep(3);
+        return "Hello";
+    }
+}
+
+service /depthLimitService on depthLimitListener {
     isolated resource function get greet() returns string {
         runtime:sleep(3);
         return "Hello";
@@ -32,14 +41,14 @@ service /timeoutServer on timeoutListener {
 }
 
 @test:Config {
-    groups: ["listenerConfigs", "unit"]
+    groups: ["configs", "unit"]
 }
 function testTimeoutResponse() returns error? {
     string document = "{ greet }";
     json payload = {
         query: document
     };
-    http:Client httpClient = check new("http://localhost:9102/timeoutServer");
+    http:Client httpClient = check new("http://localhost:9102/timeoutService");
     http:Request request = new;
     request.setPayload(payload);
 
@@ -58,17 +67,60 @@ function testTimeoutResponse() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listenerConfigs", "unit"]
+    groups: ["negative", "configs", "unit"]
 }
 function testConfigurationsWithHttpListener() returns error? {
     http:Listener httpListener = check new(91021);
     var graphqlListener = new Listener(httpListener, configs);
     if (graphqlListener is ListenerError) {
-        string message = "Provided listener configurations will be overridden by the http listener configurations";
+        string message = "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
         test:assertEquals(message, graphqlListener.message());
     } else {
         test:assertFail("This must throw an error");
     }
+}
+
+@test:Config {
+    groups: ["negative", "configs", "unit"]
+}
+isolated function testInvalidMaxDepth() returns error? {
+    var graphqlListener = new Listener(91022, { maxQueryDepth: 0 });
+    if (graphqlListener is ListenerError) {
+        string message = "Maximum query depth should be an integer greater than 0";
+        test:assertEquals(message, graphqlListener.message());
+    } else {
+        test:assertFail("This must throw an error");
+    }
+}
+
+@test:Config {
+    groups: ["configs", "unit"]
+}
+function testQueryExceedingMaxDepth() returns error? {
+    string document = "{ book { author { books { author { books } } } } }";
+    json payload = {
+        query: document
+    };
+    http:Client httpClient = check new("http://localhost:9103/depthLimitService");
+    http:Request request = new;
+    request.setPayload(payload);
+
+    json actualPayload = <json> check httpClient->post("/", request, json);
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Query has depth of 5, which exceeds max depth of 2",
+                locations: [
+                    {
+                        line: 1,
+                        column: 1
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
 }
 
 
