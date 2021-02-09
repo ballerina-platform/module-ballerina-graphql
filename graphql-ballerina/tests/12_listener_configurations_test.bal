@@ -19,12 +19,10 @@ import ballerina/lang.runtime;
 import ballerina/test;
 
 ListenerConfiguration configs = {
-    httpConfiguration: {
-        timeoutInMillis: 1000
-    }
+    timeoutInMillis: 1000
 };
 listener Listener timeoutListener = new(9102, configs);
-listener Listener depthLimitListener = new(9103, { maxQueryDepth: 2 });
+listener Listener depthLimitListener = new(9103);
 
 service /timeoutService on timeoutListener {
     isolated resource function get greet() returns string {
@@ -33,12 +31,24 @@ service /timeoutService on timeoutListener {
     }
 }
 
+@ServiceConfiguration {
+    maxQueryDepth: 2
+}
 service /depthLimitService on depthLimitListener {
     isolated resource function get greet() returns string {
-        runtime:sleep(3);
         return "Hello";
     }
 }
+
+service object {} InvalidDepthLimitService =
+@ServiceConfiguration {
+    maxQueryDepth: 0
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
 
 @test:Config {
     groups: ["configs", "unit"]
@@ -83,11 +93,12 @@ function testConfigurationsWithHttpListener() returns error? {
 @test:Config {
     groups: ["negative", "configs", "unit"]
 }
-isolated function testInvalidMaxDepth() returns error? {
-    var graphqlListener = new Listener(91022, { maxQueryDepth: 0 });
-    if (graphqlListener is ListenerError) {
+function testInvalidMaxDepth() returns error? {
+    Listener graphqlListener = check new Listener(91022);
+    var result = graphqlListener.attach(InvalidDepthLimitService);
+    if (result is ListenerError) {
         string message = "Maximum query depth should be an integer greater than 0";
-        test:assertEquals(message, graphqlListener.message());
+        test:assertEquals(message, result.message());
     } else {
         test:assertFail("This must throw an error");
     }

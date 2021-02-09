@@ -17,14 +17,20 @@
 import graphql.parser;
 
 // General errors
-# Represents an error occurred while a listener operation
-public type ListenerError distinct error;
-
 # Represents a non-implemented feature error
 public type NotImplementedError distinct error;
 
 # Represents an unsupported functionality error
 public type NotSupportedError distinct error;
+
+# Represents an error due to invalid configurations
+public type InvalidConfigurationError distinct error;
+
+# Represents an error occurred in the listener while handling a service
+public type ServiceHandlingError distinct error;
+
+# Represents an error occurred while a listener operation
+public type ListenerError InvalidConfigurationError|ServiceHandlingError;
 
 // Validation errors
 # Represents an error where multiple operations with the same name exists
