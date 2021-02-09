@@ -30,23 +30,21 @@ public class Listener {
     public isolated function init(int|http:Listener listenTo, ListenerConfiguration? configuration = ())
     returns ListenerError? {
         if (listenTo is int) {
-            http:Listener|error httpListener = new(listenTo, configuration?.httpConfiguration);
+            http:Listener|error httpListener = new(listenTo, configuration);
             if (httpListener is error) {
-                return error ListenerError("Listener initialization failed", httpListener);
+                return error ServiceHandlingError("Listener initialization failed", httpListener);
             } else {
                 self.httpListener = httpListener;
             }
         } else {
             if (configuration is ListenerConfiguration) {
-                if (configuration?.httpConfiguration is HttpConfiguration) {
-                    string message =
-                        "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
-                    return error ListenerError(message);
-                }
+                string message =
+                    "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
+                return error InvalidConfigurationError(message);
             }
             self.httpListener = listenTo;
         }
-        self.engine = check new(self, configuration);
+        self.engine = check new(self);
         self.httpService = new(self.engine);
     }
 
@@ -58,9 +56,9 @@ public class Listener {
     public isolated function attach(Service s, string[]|string? name = ()) returns ListenerError? {
         error? result = self.httpListener.attach(self.httpService, name);
         if (result is error) {
-            return error ListenerError("Error occurred while attaching the service", result);
+            return error ServiceHandlingError("Error occurred while attaching the service", result);
         }
-        self.engine.registerService(s);
+        check self.engine.registerService(s);
     }
 
     # Detaches the provided service from the Listener.
@@ -70,7 +68,7 @@ public class Listener {
     public isolated function detach(Service s) returns ListenerError? {
         error? result = self.httpListener.detach(self.httpService);
         if (result is error) {
-            return error ListenerError("Error occurred while detaching the service", result);
+            return error ServiceHandlingError("Error occurred while detaching the service", result);
         }
     }
 
@@ -80,7 +78,7 @@ public class Listener {
     public isolated function 'start() returns ListenerError? {
         error? result = self.httpListener.'start();
         if (result is error) {
-            return error ListenerError("Error occurred while starting the service", result);
+            return error ServiceHandlingError("Error occurred while starting the service", result);
         }
     }
 
@@ -90,7 +88,7 @@ public class Listener {
     public isolated function gracefulStop() returns ListenerError? {
         error? result = self.httpListener.gracefulStop();
         if (result is error) {
-            return error ListenerError("Error occurred while stopping the service", result);
+            return error ServiceHandlingError("Error occurred while stopping the service", result);
         }
     }
 
@@ -100,7 +98,7 @@ public class Listener {
     public isolated function immediateStop() returns ListenerError? {
         error? result = self.httpListener.immediateStop();
         if (result is error) {
-            return error ListenerError("Error occurred while stopping the service", result);
+            return error ServiceHandlingError("Error occurred while stopping the service", result);
         }
     }
 }
