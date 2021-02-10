@@ -8,6 +8,12 @@ Ballerina GraphQL Library
 
 The GraphQL package is one of the standard library packages of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
 
+This package provides an implementation for connecting and interacting with GraphQL endpoints over the network.
+
+For more information go to [The GraphQL Module](https://ballerina.io/learn/api-docs/ballerina/graphql/index.html).
+
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
+
 ## Building from the Source
 
 ### Setting Up the Prerequisites
