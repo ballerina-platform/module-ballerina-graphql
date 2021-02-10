@@ -8,4 +8,3 @@ path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
 groupId = "io.ballerina.stdlib.graphql"
 artifactId = "graphql"
 version = "@project.version@"
-modules = ["graphql"]
