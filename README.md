@@ -6,7 +6,7 @@ Ballerina GraphQL Library
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/graphql.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fgraphql)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The GraphQL library is one of the standard library modules of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
+The GraphQL package is one of the standard library packages of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
 
 ## Building from the Source
 
@@ -29,7 +29,7 @@ The GraphQL library is one of the standard library modules of the <a target="_bl
 
 Execute the commands below to build from the source.
 
-1. To build the library:
+1. To build the package:
    ```    
    ./gradlew clean build
    ```
@@ -44,17 +44,17 @@ Execute the commands below to build from the source.
    ./gradlew clean test -Pgroups=<test_group_names>
    ```
    
-4. To build the module without the tests:
+4. To build the without the tests:
    ```
    ./gradlew clean build -x test
    ```
    
-5. To debug module implementation:
+5. To debug package implementation:
    ```
    ./gradlew clean build -Pdebug=<port>
    ```
    
-6. To debug the module with Ballerina language:
+6. To debug with Ballerina language:
    ```
    ./gradlew clean build -PbalJavaDebug=<port>
    ```
