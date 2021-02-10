@@ -140,24 +140,24 @@ public class EngineUtils {
             return schema.getType(type.getName());
         }
         if (tag == INT_TAG) {
-            SchemaType schemaType = new SchemaType(INTEGER, TypeKind.SCALAR);
+            SchemaType schemaType = new SchemaType(INTEGER, TypeKind.SCALAR, type.isNilable());
             schema.addType(schemaType);
             return schemaType;
         } else if (tag == STRING_TAG) {
-            SchemaType schemaType = new SchemaType(STRING, TypeKind.SCALAR);
+            SchemaType schemaType = new SchemaType(STRING, TypeKind.SCALAR, type.isNilable());
             schema.addType(schemaType);
             return schemaType;
         } else if (tag == BOOLEAN_TAG) {
-            SchemaType schemaType = new SchemaType(BOOLEAN, TypeKind.SCALAR);
+            SchemaType schemaType = new SchemaType(BOOLEAN, TypeKind.SCALAR, type.isNilable());
             schema.addType(schemaType);
             return schemaType;
         } else if (tag == FLOAT_TAG) {
-            SchemaType schemaType = new SchemaType(FLOAT, TypeKind.SCALAR);
+            SchemaType schemaType = new SchemaType(FLOAT, TypeKind.SCALAR, type.isNilable());
             schema.addType(schemaType);
             return schemaType;
         } else if (tag == RECORD_TYPE_TAG) {
             RecordType record = (RecordType) type;
-            SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT);
+            SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT, type.isNilable());
             Collection<Field> recordFields = record.getFields().values();
             for (Field recordField : recordFields) {
                 SchemaField field = new SchemaField(recordField.getFieldName());
@@ -168,7 +168,7 @@ public class EngineUtils {
             return fieldType;
         } else if (tag == SERVICE_TAG) {
             ServiceType service = (ServiceType) type;
-            SchemaType fieldType = new SchemaType(service.getName(), TypeKind.OBJECT);
+            SchemaType fieldType = new SchemaType(service.getName(), TypeKind.OBJECT, type.isNilable());
             addQueryFieldsForServiceType(service, fieldType, schema);
             schema.addType(fieldType);
             return fieldType;
@@ -180,7 +180,7 @@ public class EngineUtils {
             return schemaType;
         } else if (tag == FINITE_TYPE_TAG) {
             FiniteType finiteType = (FiniteType) type;
-            SchemaType schemaType = new SchemaType(type.getName(), TypeKind.ENUM);
+            SchemaType schemaType = new SchemaType(type.getName(), TypeKind.ENUM, type.isNilable());
             for (Object value : finiteType.getValueSpace()) {
                 schemaType.addEnumValue(value);
             }
@@ -193,7 +193,7 @@ public class EngineUtils {
             ArrayType arrayType = (ArrayType) type;
             SchemaType ofType = getSchemaTypeForBalType(arrayType.getElementType(), schema);
             String typeName = "[" + ofType.getName() + "]";
-            SchemaType schemaType = new SchemaType(typeName, TypeKind.NON_NULL);
+            SchemaType schemaType = new SchemaType(typeName, TypeKind.NON_NULL, type.isNilable());
             schemaType.setOfType(ofType);
             return schemaType;
         } else {
@@ -285,11 +285,8 @@ public class EngineUtils {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(fieldObject.getName()));
         SchemaType type = fieldObject.getType();
-        if (type != null) {
-            fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(type));
-        } else {
-            fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(createNonNullType()));
-        }
+        fieldRecord.put(TYPE_FIELD, getTypeRecordFromTypeObject(
+                Objects.requireNonNullElseGet(type, EngineUtils::createNonNullType)));
         List<InputValue> args = fieldObject.getArgs();
         if (args != null && args.size() > 0) {
             fieldRecord.put(ARGS_FIELD, getInputMapFromInputs(args));
@@ -370,7 +367,7 @@ public class EngineUtils {
     }
 
     private static SchemaType createNonNullType() {
-        return new SchemaType(null, TypeKind.NON_NULL);
+        return new SchemaType(null, TypeKind.NON_NULL, false);
     }
 
     static boolean isScalarType(Type type) {

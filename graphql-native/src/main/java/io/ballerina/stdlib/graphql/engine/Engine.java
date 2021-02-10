@@ -64,7 +64,7 @@ public class Engine {
         Schema schema = new Schema();
         initializeIntrospectionTypes(schema);
         ServiceType serviceType = (ServiceType) service.getType();
-        SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT);
+        SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT, false);
         addQueryFieldsForServiceType(serviceType, queryType, schema);
         schema.setQueryType(queryType);
         return getSchemaRecordFromSchema(schema);

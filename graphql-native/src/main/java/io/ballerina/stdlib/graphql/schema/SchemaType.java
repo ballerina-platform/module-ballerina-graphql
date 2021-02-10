@@ -30,11 +30,13 @@ public class SchemaType {
     private String name;
     private List<SchemaField> fields;
     private List<Object> enumValues;
+    private boolean nilable;
     SchemaType ofType;
 
-    public SchemaType(String name, TypeKind kind) {
+    public SchemaType(String name, TypeKind kind, boolean nilable) {
         this.name = name;
         this.kind = kind;
+        this.nilable = nilable;
         this.fields = new ArrayList<>();
         this.enumValues = new ArrayList<>();
     }
@@ -45,6 +47,10 @@ public class SchemaType {
 
     public TypeKind getKind() {
         return this.kind;
+    }
+
+    public boolean isNilable() {
+        return this.nilable;
     }
 
     public List<SchemaField> getFields() {

@@ -49,7 +49,7 @@ public class IntrospectionUtils {
     }
 
     private static SchemaType createTypeKindSchemaType() {
-        SchemaType typeKindSchemaType = new SchemaType(TYPE_KIND_ENUM, TypeKind.ENUM);
+        SchemaType typeKindSchemaType = new SchemaType(TYPE_KIND_ENUM, TypeKind.ENUM, false);
         typeKindSchemaType.addEnumValue(StringUtils.fromString(TypeKind.SCALAR.toString()));
         typeKindSchemaType.addEnumValue(StringUtils.fromString(TypeKind.OBJECT.toString()));
         typeKindSchemaType.addEnumValue(StringUtils.fromString(TypeKind.ENUM.toString()));
@@ -57,7 +57,7 @@ public class IntrospectionUtils {
     }
 
     private static SchemaType createTypeSchemaType() {
-        SchemaType typeSchemaType = new SchemaType(TYPE_RECORD, TypeKind.OBJECT);
+        SchemaType typeSchemaType = new SchemaType(TYPE_RECORD, TypeKind.OBJECT, false);
         typeSchemaType.addField(new SchemaField(NAME));
         typeSchemaType.addField(new SchemaField(KIND));
         typeSchemaType.addField(new SchemaField(FIELDS));
@@ -66,7 +66,7 @@ public class IntrospectionUtils {
     }
 
     private static SchemaType createFieldSchemaType() {
-        SchemaType fieldSchemaType = new SchemaType(FIELD_RECORD, TypeKind.OBJECT);
+        SchemaType fieldSchemaType = new SchemaType(FIELD_RECORD, TypeKind.OBJECT, false);
         fieldSchemaType.addField(new SchemaField(NAME));
         fieldSchemaType.addField(new SchemaField(TYPE));
         fieldSchemaType.addField(new SchemaField(ARGS));
@@ -74,7 +74,7 @@ public class IntrospectionUtils {
     }
 
     private static SchemaType createInputValueSchemaType() {
-        SchemaType inputValueSchemaType = new SchemaType(INPUT_VALUE_RECORD, TypeKind.OBJECT);
+        SchemaType inputValueSchemaType = new SchemaType(INPUT_VALUE_RECORD, TypeKind.OBJECT, false);
         inputValueSchemaType.addField(new SchemaField(NAME));
         inputValueSchemaType.addField(new SchemaField(TYPE));
         inputValueSchemaType.addField(new SchemaField(DEFAULT_VALUE));
