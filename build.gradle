@@ -188,6 +188,8 @@ allprojects {
     }
 }
 
+def moduleVersion = project.version.replace("-SNAPSHOT", "")
+
 subprojects {
     apply plugin: 'java'
 
@@ -225,7 +227,8 @@ subprojects {
         tagTemplate = 'v${version}'
         git {
             // To release from any branch
-            requireBranch = null
+            requireBranch = "release-${moduleVersion}"
+            pushToRemote = 'origin'
         }
     }
 }
