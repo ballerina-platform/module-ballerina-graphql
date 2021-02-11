@@ -34,9 +34,10 @@ service /graphql on new Listener(9100) {
     groups: ["array", "service", "unit"]
 }
 function testResourcesReturningScalarArrays() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9100/graphql");
+    string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ ids }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+
     json expectedResult = {
         data: {
             ids: [0, 1, 2]
@@ -49,9 +50,10 @@ function testResourcesReturningScalarArrays() returns @tainted error? {
     groups: ["array", "service", "unit"]
 }
 function testResourcesReturningArrays() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9100/graphql");
+    string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ people { name address { city } } }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+
     json expectedResult = {
         data: {
             people: [
@@ -83,9 +85,10 @@ function testResourcesReturningArrays() returns @tainted error? {
     groups: ["array", "service", "unit"]
 }
 function testResourcesReturningArraysMissingFields() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9100/graphql");
+    string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ people }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+
     string expectedMessage = "Field \"people\" of type \"[Person]\" must have a selection of subfields. Did you mean " +
                              "\"people { ... }\"?";
     json expectedResult = {
@@ -108,9 +111,10 @@ function testResourcesReturningArraysMissingFields() returns @tainted error? {
     groups: ["array", "service", "unit"]
 }
 function testComplexArraySample() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9100/graphql");
+    string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ students { name courses { name books { name } } } }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+
     json expectedResult = {
         data: {
             students: [
