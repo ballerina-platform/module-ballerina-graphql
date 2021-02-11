@@ -16,7 +16,7 @@
 
 import ballerina/test;
 
-service /graphql on new Listener(9096) {
+service /graphql on new Listener(9095) {
     resource function get profile(int id) returns Person {
         return people[id];
     }
@@ -26,8 +26,9 @@ service /graphql on new Listener(9096) {
     groups: ["negative", "listener", "unit"]
 }
 public function testMissingArgumentValueQuery() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: ) { name age }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
@@ -42,7 +43,6 @@ public function testMissingArgumentValueQuery() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -50,8 +50,9 @@ public function testMissingArgumentValueQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testEmptyQuery() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
@@ -66,7 +67,6 @@ public function testEmptyQuery() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -74,8 +74,9 @@ public function testEmptyQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithNoSelectionQuery() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
                              " Did you mean \"profile { ... }\"?";
@@ -92,7 +93,6 @@ public function testObjectWithNoSelectionQuery() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -100,8 +100,9 @@ public function testObjectWithNoSelectionQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithNoSelectionQueryWithArguments() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
                              " Did you mean \"profile { ... }\"?";
@@ -118,7 +119,6 @@ public function testObjectWithNoSelectionQueryWithArguments() returns @tainted e
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -126,8 +126,9 @@ public function testObjectWithNoSelectionQueryWithArguments() returns @tainted e
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) { status } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     string expectedMessage = "Cannot query field \"status\" on type \"Person\".";
     json expectedPayload = {
@@ -143,7 +144,6 @@ public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -151,8 +151,9 @@ public function testObjectWithInvalidSelectionQuery() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testObjectWithMissingRequiredArgument() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile { status } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     string expectedMessage1 = "Field \"profile\" argument \"id\" of type \"Int\" is required, but it was not provided.";
     string expectedMessage2 = "Cannot query field \"status\" on type \"Person\".";
@@ -178,7 +179,6 @@ public function testObjectWithMissingRequiredArgument() returns @tainted error? 
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -186,8 +186,9 @@ public function testObjectWithMissingRequiredArgument() returns @tainted error? 
     groups: ["negative", "listener", "unit"]
 }
 public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile (id: 2) { age { name } } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     string expectedMessage = "Field \"age\" must not have a selection since type \"Int\" has no subfields.";
     json expectedPayload = {
@@ -203,7 +204,6 @@ public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -211,8 +211,9 @@ public function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
     groups: ["negative", "listener", "unit"]
 }
 public function testInvalidArgument() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9096/graphql");
+    string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile (name: \"name\", id: 3) { name } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     string expectedMessage = "Unknown argument \"name\" on field \"Query.profile\".";
     json expectedPayload = {
@@ -228,6 +229,5 @@ public function testInvalidArgument() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
