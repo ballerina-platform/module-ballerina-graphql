@@ -20,9 +20,9 @@ import ballerina/test;
     groups: ["introspection", "unit"]
 }
 function testSimpleIntrospectionQuery() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9101/graphql");
+    string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema { types { name kind } } }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         data: {
             __schema: {
@@ -67,9 +67,9 @@ function testSimpleIntrospectionQuery() returns @tainted error? {
 }
 function testComplexIntrospectionQuery() returns @tainted error? {
     // Using 9100 endpoint since it has more complex schema
-    Client graphqlClient = check new("http://localhost:9100/graphql");
+    string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ __schema { types { name kind } } }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         data: {
             __schema: {
@@ -137,9 +137,9 @@ function testComplexIntrospectionQuery() returns @tainted error? {
     groups: ["introspection", "unit"]
 }
 function testInvalidIntrospectionQuery() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9101/graphql");
+    string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema { greet } }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = "Cannot query field \"greet\" on type \"__Schema\".";
     json expectedResult = {
         errors: [
@@ -161,9 +161,9 @@ function testInvalidIntrospectionQuery() returns @tainted error? {
     groups: ["introspection", "unit"]
 }
 function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9101/graphql");
+    string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = "Field \"__schema\" of type \"__Schema\" must have a selection of subfields." +
                              " Did you mean \"__schema { ... }\"?";
     json expectedResult = {
@@ -186,9 +186,9 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
     groups: ["introspection", "unit"]
 }
 function testQueryTypeIntrospection() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9101/graphql");
+    string graphqlUrl ="http://localhost:9101/graphql";
     string document = "{ __schema { queryType { kind fields { name } } } }";
-    json actualResult = check graphqlClient->query(document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         data: {
             __schema: {
