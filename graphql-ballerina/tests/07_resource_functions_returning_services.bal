@@ -45,8 +45,9 @@ service /graphql on new Listener(9097) {
     groups: ["service", "unit"]
 }
 public function testResourceReturningServiceObject() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9097/graphql");
+    string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ greet { generalGreeting } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     json expectedPayload = {
         data: {
@@ -55,7 +56,6 @@ public function testResourceReturningServiceObject() returns @tainted error? {
             }
         }
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 
@@ -63,8 +63,9 @@ public function testResourceReturningServiceObject() returns @tainted error? {
     groups: ["service", "unit"]
 }
 public function testComplexService() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9097/graphql");
+    string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { first, last } } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     json expectedPayload = {
         data: {
@@ -76,6 +77,5 @@ public function testComplexService() returns @tainted error? {
             }
         }
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
