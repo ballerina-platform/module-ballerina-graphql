@@ -19,6 +19,22 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 description = 'Ballerina - GraphQl Ballerina'
 
+def packageName = "graphql"
+def packageOrg = "ballerina"
+def snapshotVersion = "-SNAPSHOT"
+def tomlVersion = project.version.replace("${snapshotVersion}", "")
+def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
+def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
+def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
+def artifactCacheParent = file("$project.projectDir/build/cache_parent/")
+def artifactLibParent = file("$project.projectDir/build/lib_parent/")
+def artifactCodeCoverageReport = file("$project.projectDir/target/cache/tests_cache/coverage/ballerina.exec")
+def artifactTestableJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
+def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
+def originalConfig = ballerinaConfigFile.text
+def originalDependencies = ballerinaDependencyFile.text
+def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+
 configurations {
     jbalTools
 }
@@ -27,7 +43,7 @@ dependencies {
     jbalTools("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
-    compile project(':graphql-native')
+    compile project(":${packageName}-native")
 }
 
 clean {
@@ -74,27 +90,12 @@ task copyStdlibs(type: Copy) {
     }
 }
 
-def packageName = "graphql"
-def packageOrg = "ballerina"
-def tomlVersion = project.version.split("-")[0]
-def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
-def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
-def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
-def artifactCacheParent = file("$project.projectDir/build/cache_parent/")
-def artifactLibParent = file("$project.projectDir/build/lib_parent/")
-def artifactCodeCoverageReport = file("$project.projectDir/target/cache/tests_cache/coverage/ballerina.exec")
-def artifactTestableJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
-def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
-def originalConfig = ballerinaConfigFile.text
-def originalDependencies = ballerinaDependencyFile.text
-def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
-
 task updateTomlFile {
     doLast {
-        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.split("-")[0]
-        def stdlibDependentFileVersion = project.stdlibFileVersion.split("-")[0]
-        def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
-        def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
+        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentFileVersion = project.stdlibFileVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentHttpVersion = project.stdlibHttpVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentIoVersion = project.stdlibIoVersion.replace("${snapshotVersion}", "")
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
@@ -119,6 +120,7 @@ def groupParams = ""
 def disableGroups = ""
 def debugParams = ""
 def balJavaDebugParam = ""
+def testParams = ""
 
 task initializeVariables {
     if (project.hasProperty("groups")) {
@@ -132,6 +134,24 @@ task initializeVariables {
     }
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
+    }
+
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(":${packageName}-ballerina:build") || graph.hasTask(":${packageName}-ballerina:publish")) {
+            ballerinaTest.enabled = false
+        }
+
+        if (graph.hasTask(":${packageName}-ballerina:test")) {
+            testParams = "--code-coverage --includes=*"
+        } else {
+            testParams = "--skip-tests"
+        }
+
+        if (graph.hasTask(":${packageName}-ballerina:publish")) {
+            ballerinaPublish.enabled = true
+        } else {
+            ballerinaPublish.enabled = false
+        }
     }
 }
 
@@ -149,22 +169,8 @@ task ballerinaTest {
     }
 }
 
-test {
-    dependsOn(ballerinaTest)
-}
-
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
-
-    def testParams = "--skip-tests"
-    gradle.taskGraph.whenReady { graph ->
-        if (graph.hasTask(":${packageName}-ballerina:build") || graph.hasTask(":${packageName}-ballerina:publish")) {
-            ballerinaTest.enabled = false
-        }
-        if (graph.hasTask(":${packageName}-ballerina:test")) {
-            testParams = "--code-coverage --includes=*"
-        }
-    }
 
     doLast {
         // Build and populate caches
@@ -172,9 +178,9 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat build $testParams ${debugParams} && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat build ${testParams} ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build $testParams ${debugParams}"
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build ${testParams} ${debugParams}"
             }
         }
         copy {
@@ -186,21 +192,6 @@ task ballerinaBuild {
             exclude '**/*-testable.jar'
             exclude '**/tests_cache/'
             into file("$artifactCacheParent/cache/")
-        }
-
-        // Publish to central
-        if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
-            println("Publishing to the ballerina central...")
-            exec {
-                workingDir project.projectDir
-                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push ${packageName} && exit %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "$distributionBinPath/bal push ${packageName}"
-                }
-            }
-
         }
         // Doc creation and packing
         exec {
@@ -221,6 +212,23 @@ task ballerinaBuild {
     outputs.dir artifactCacheParent
     outputs.dir artifactBallerinaDocs
     outputs.dir artifactLibParent
+}
+
+task ballerinaPublish {
+    doLast {
+        if (ballerinaCentralAccessToken != null) {
+            println("Publishing to the ballerina central...")
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push ${packageName} && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "$distributionBinPath/bal push ${packageName}"
+                }
+            }
+        }
+    }
 }
 
 task createArtifactZip(type: Zip) {
@@ -247,7 +255,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-graphql")
+            url = uri("https://maven.pkg.github.com/ballerina-platform/module-${packageOrg}-${packageName}")
             credentials {
                 username = System.getenv("packageUser")
                 password = System.getenv("packagePAT")
@@ -260,17 +268,20 @@ unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
 
-ballerinaTest.dependsOn ":graphql-native:build"
+ballerinaTest.dependsOn ":${packageName}-native:build"
 ballerinaTest.dependsOn updateTomlFile
 ballerinaTest.dependsOn initializeVariables
 ballerinaTest.finalizedBy revertTomlFile
 test.dependsOn ballerinaTest
 
 ballerinaBuild.dependsOn test
-ballerinaBuild.dependsOn ":graphql-native:build"
+ballerinaBuild.dependsOn ":${packageName}-native:build"
 ballerinaBuild.dependsOn updateTomlFile
 ballerinaBuild.dependsOn initializeVariables
 ballerinaBuild.finalizedBy revertTomlFile
 build.dependsOn ballerinaBuild
+
+ballerinaPublish.dependsOn ballerinaBuild
+publish.dependsOn ballerinaPublish
 
 createTestableJarZip.dependsOn ballerinaBuild
