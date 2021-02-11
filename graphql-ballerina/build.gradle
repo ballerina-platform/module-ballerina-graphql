@@ -21,7 +21,8 @@ description = 'Ballerina - GraphQl Ballerina'
 
 def packageName = "graphql"
 def packageOrg = "ballerina"
-def tomlVersion = project.version.replace("-SNAPSHOT", "")
+def snapshotVersion = "-SNAPSHOT"
+def tomlVersion = project.version.replace("${snapshotVersion}", "")
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
 def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
 def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
@@ -91,10 +92,10 @@ task copyStdlibs(type: Copy) {
 
 task updateTomlFile {
     doLast {
-        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.split("-")[0]
-        def stdlibDependentFileVersion = project.stdlibFileVersion.split("-")[0]
-        def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
-        def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
+        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentFileVersion = project.stdlibFileVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentHttpVersion = project.stdlibHttpVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentIoVersion = project.stdlibIoVersion.replace("${snapshotVersion}", "")
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
@@ -280,6 +281,7 @@ ballerinaBuild.dependsOn initializeVariables
 ballerinaBuild.finalizedBy revertTomlFile
 build.dependsOn ballerinaBuild
 
+ballerinaPublish.dependsOn ballerinaBuild
 publish.dependsOn ballerinaPublish
 
 createTestableJarZip.dependsOn ballerinaBuild
