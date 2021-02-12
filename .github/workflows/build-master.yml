@@ -42,9 +42,6 @@ jobs:
                     if-no-files-found: ignore
             -   name: Generate CodeCov Report
                 uses: codecov/codecov-action@v1
-                with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
-                    name: codecov-report
             -   name: Dispatch Dependent Module Builds
                 if: github.event.action != 'stdlib-publish-snapshot'
                 run: |
