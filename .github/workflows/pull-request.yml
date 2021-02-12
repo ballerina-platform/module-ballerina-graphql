@@ -15,7 +15,7 @@ jobs:
                 env:
                     packageUser: ${{ github.actor }}
                     packagePAT: ${{ secrets.GITHUB_TOKEN }}
-                run: ./gradlew build --no-daemon
+                run: ./gradlew build codeCoverageReport --no-daemon
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
                 if: failure()
@@ -29,6 +29,11 @@ jobs:
                     name: Code Coverage JSON
                     path: graphql-ballerina/target/report/test_results.json
                     if-no-files-found: ignore
+            -   name: Generate Codecov Report
+                uses: codecov/codecov-action@v1
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+                    name: codecov-report
 
     windows-build:
         runs-on: windows-latest
