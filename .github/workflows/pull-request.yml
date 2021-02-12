@@ -18,7 +18,6 @@ jobs:
                 run: |
                     ./gradlew build --no-daemon
                     ./gradlew codeCoverageReport --no-daemon
-
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
                 if: failure()
