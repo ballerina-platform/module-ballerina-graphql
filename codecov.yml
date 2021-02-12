@@ -1,5 +1,6 @@
 fixes:
   - "ballerina/graphql/*/::graphql-ballerina/"
   - "ballerina/graphql$0046parser/*::graphql-ballerina/modules/parser"
+
 ignore:
   - "**/test"
