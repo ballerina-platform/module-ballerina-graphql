@@ -48,8 +48,9 @@ service /graphql on new Listener(9098) {
     groups: ["service", "unit"]
 }
 public function testResourceReturningUnionTypes() returns @tainted error? {
-    Client graphqlClient = check new("http://localhost:9098/graphql");
+    string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ profile (id: 5) { name } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
@@ -64,7 +65,6 @@ public function testResourceReturningUnionTypes() returns @tainted error? {
             }
         ]
     };
-    json result = check graphqlClient->query(document);
     test:assertEquals(result, expectedPayload);
 }
 

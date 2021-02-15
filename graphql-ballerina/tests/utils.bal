@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/file;
+import ballerina/http;
 import ballerina/io;
 
 const SHORTHAND_DOCUMENT = "document_shorthand.txt";
@@ -76,4 +77,14 @@ function readFileAndGetString(string filePath) returns string {
     } else {
         return <@untainted>fileText;
     }
+}
+
+function getJsonPayloadFromService(string url, string document) returns json|error {
+    http:Client httpClient = check new(url);
+    json payload = {
+        query: document
+    };
+    http:Request request = new;
+    request.setPayload(payload);
+    return <json> check httpClient->post("/", request, json);
 }
