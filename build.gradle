@@ -20,6 +20,7 @@ plugins {
     id 'com.github.johnrengelman.shadow'
     id 'de.undercouch.download'
     id 'net.researchgate.release'
+    id 'jacoco'
 }
 
 allprojects {
@@ -232,3 +233,27 @@ subprojects {
         }
     }
 }
+
+task codeCoverageReport(type: JacocoReport) {
+    dependsOn('graphql-native:copyJavaClassFiles')
+    dependsOn('graphql-ballerina:extractBallerinaClassFiles')
+    
+    executionData fileTree(project.rootDir.absolutePath).include("**/target/cache/tests_cache/coverage/ballerina.exec")
+    additionalClassDirs files("${buildDir}/classes")
+    
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+    
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        xml.destination = new File("${buildDir}/reports/jacoco/report.xml")
+        html.destination = new File("${buildDir}/reports/jacoco/report.html")
+    }
+
+    onlyIf = {
+        true
+    }
+}
+
