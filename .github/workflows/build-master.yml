@@ -18,8 +18,10 @@ jobs:
                 uses: actions/setup-java@v1
                 with:
                     java-version: 11
+
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
+
             -   name: Build with Gradle
                 env:
                     packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
@@ -27,6 +29,7 @@ jobs:
                 run: |
                     ./gradlew publish --no-daemon
                     ./gradlew codeCoverageReport --no-daemon
+
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
                 if: failure()
@@ -34,14 +37,12 @@ jobs:
                     name: Ballerina Internal Log
                     path: graphql-ballerina/ballerina-internal.log
                     if-no-files-found: ignore
-            -   name: Archive Code Coverage JSON
-                uses: actions/upload-artifact@v2
-                with:
-                    name: Code Coverage JSON
-                    path: graphql-ballerina/target/report/test_results.json
-                    if-no-files-found: ignore
+
             -   name: Generate CodeCov Report
                 uses: codecov/codecov-action@v1
+                with:
+                    name: CodeCov Report
+
             -   name: Dispatch Dependent Module Builds
                 if: github.event.action != 'stdlib-publish-snapshot'
                 run: |
