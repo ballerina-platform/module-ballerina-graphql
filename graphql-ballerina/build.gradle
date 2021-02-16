@@ -231,7 +231,7 @@ task ballerinaPublish {
                 }
             }
         } else {
-            println("Central Access Token is Not Present")
+            throw new InvalidUserDataException("Central Access Token is Not Present")
         }
     }
 }
