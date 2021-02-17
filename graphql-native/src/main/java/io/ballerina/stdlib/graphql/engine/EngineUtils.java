@@ -168,6 +168,11 @@ public class EngineUtils {
             return fieldType;
         } else if (tag == SERVICE_TAG) {
             ServiceType service = (ServiceType) type;
+            String serviceName = service.getName();
+            if (serviceName.startsWith("$anon")) {
+                String message = "Returning anonymous service objects are not supported by GraphQL resources.";
+                throw ErrorCreator.createError(StringUtils.fromString(message));
+            }
             SchemaType fieldType = new SchemaType(service.getName(), TypeKind.OBJECT);
             addQueryFieldsForServiceType(service, fieldType, schema);
             schema.addType(fieldType);

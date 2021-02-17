@@ -16,44 +16,35 @@
 
 import ballerina/test;
 
-service class FirstName {
+service class Name {
     isolated resource function get first() returns string {
         return "Sherlock";
     }
-}
 
-service class LastName {
     isolated resource function get last() returns string {
         return "Holmes";
     }
 }
 
-service class Name {
-    isolated resource function get name() returns
+service class Profile {
+    isolated resource function get name() returns Name {
+        return new;
+    }
+}
+
+service class GeneratGreeting {
+    isolated resource function get generalGreeting() returns string {
+        return "Hello, world";
+    }
 }
 
 service /graphql on new Listener(9097) {
-    isolated resource function get greet() returns service object {} {
-        return service object {
-            isolated resource function get generalGreeting() returns string {
-                return "Hello, world";
-            }
-        };
+    isolated resource function get greet() returns GeneratGreeting {
+        return new;
     }
 
-    isolated resource function get profile() returns service object {} {
-        return service object {
-            isolated resource function get name() returns service object {} {
-                return service object {
-                    isolated resource function get first() returns string {
-                        return "Sherlock";
-                    }
-                    isolated resource function get last() returns string {
-                        return "Holmes";
-                    }
-                };
-            }
-        };
+    isolated resource function get profile() returns Profile {
+        return new;
     }
 }
 
