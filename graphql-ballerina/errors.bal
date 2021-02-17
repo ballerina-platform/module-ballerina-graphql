@@ -68,13 +68,3 @@ public type ExecutionError OperationNotFoundError;
 
 # Represents any error related to the Ballerina GraphQL module
 public type Error ParsingError|ValidationError|ExecutionError|ListenerError;
-
-// Client Errors
-# Represents an error occurred in client while creating the GraphQL client.
-public type InitializationError distinct error;
-
-# Represents an error occurred in client while connecting with the GraphQL server.
-public type ConnectionError distinct error;
-
-# Represents all the errors related to the GraphQL client.
-public type ClientError ConnectionError|InitializationError;
