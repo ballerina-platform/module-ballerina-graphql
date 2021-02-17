@@ -59,7 +59,12 @@ class Engine {
 
     isolated function registerService(Service s) returns ListenerError? {
         self.graphqlService = s;
-        self.schema = createSchema(s);
+        var schema = trap createSchema(s);
+        if (schema is error) {
+            return error ServiceHandlingError("Error occurred while generating the schema", schema);
+        } else {
+            self.schema = schema;
+        }
         GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
         self.maxQueryDepth = check getMaxQueryDepth(s);
         self.populateSchemaType();
