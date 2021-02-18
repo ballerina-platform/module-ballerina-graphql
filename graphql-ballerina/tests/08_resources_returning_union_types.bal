@@ -21,9 +21,10 @@ import ballerina/test;
 }
 public function testResourcesReturningInvalidUnionType() returns error? {
     Listener graphqlListener = check new (9099);
-    var result = trap graphqlListener.attach(serviceWithInvalidUnionTypes);
-    test:assertTrue(result is error);
-    error err = <error> result;
+    var result = graphqlListener.attach(serviceWithInvalidUnionTypes);
+    string str = result is error ? result.toString() : result.toString();
+    test:assertTrue(result is ListenerError);
+    ListenerError err = <ListenerError> result;
     string expectedErrorMessage = "Unsupported union: Ballerina GraphQL does not allow unions other that <T>|error";
     test:assertEquals(err.message(), expectedErrorMessage);
 }

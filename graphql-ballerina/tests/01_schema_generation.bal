@@ -19,16 +19,16 @@ import ballerina/test;
 @test:Config {
     groups: ["schema_generation", "engine", "unit"]
 }
-function testSchemaGenerationForMultipleResources() {
-    __Schema actualSchema = createSchema(serviceWithMultipleResources);
+function testSchemaGenerationForMultipleResources() returns error? {
+    __Schema actualSchema = check createSchema(serviceWithMultipleResources);
     test:assertEquals(actualSchema, expectedSchemaForMultipleResources);
 }
 
 @test:Config {
     groups: ["schema_generation", "engine", "unit"]
 }
-function testSchemaGenerationForResourcesReturningRecords() {
-    __Schema actualSchema = createSchema(serviceWithResourcesReturningRecords);
+function testSchemaGenerationForResourcesReturningRecords() returns error? {
+    __Schema actualSchema = check createSchema(serviceWithResourcesReturningRecords);
     test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
 }
 
