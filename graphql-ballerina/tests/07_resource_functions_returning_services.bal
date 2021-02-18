@@ -16,6 +16,8 @@
 
 import ballerina/test;
 
+listener Listener serviceTypeListener = new(9097);
+
 service class Name {
     isolated resource function get first() returns string {
         return "Sherlock";
@@ -38,7 +40,7 @@ service class GeneratGreeting {
     }
 }
 
-service /graphql on new Listener(9097) {
+service /graphql on serviceTypeListener {
     isolated resource function get greet() returns GeneratGreeting {
         return new;
     }
@@ -47,6 +49,23 @@ service /graphql on new Listener(9097) {
         return new;
     }
 }
+
+Service serviceReturningServiceObjects = service object {
+    isolated resource function get profile() returns service object {} {
+        return service object {
+            isolated resource function get name() returns service object {} {
+                return service object {
+                    isolated resource function get first() returns string {
+                        return "Sherlock";
+                    }
+                    isolated resource function get last() returns string {
+                        return "Holmes";
+                    }
+                };
+            }
+        };
+    }
+};
 
 @test:Config {
     groups: ["service", "unit"]
@@ -85,4 +104,15 @@ public function testComplexService() returns @tainted error? {
         }
     };
     test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "unit"]
+}
+public function testResourcesReturningServiceObjects() returns @tainted error? {
+    var result = serviceTypeListener.attach(serviceReturningServiceObjects, "invalidService");
+    test:assertTrue(result is ListenerError);
+    ListenerError err = <ListenerError> result;
+    string expectedMessage = "Returning anonymous service objects are not supported by GraphQL resources";
+    test:assertEquals(err.message(), expectedMessage);
 }

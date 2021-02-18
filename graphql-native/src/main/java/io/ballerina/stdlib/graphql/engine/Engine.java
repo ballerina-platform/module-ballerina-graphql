@@ -60,14 +60,18 @@ import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
  */
 public class Engine {
 
-    public static BMap<BString, Object> createSchema(BObject service) {
-        Schema schema = new Schema();
-        initializeIntrospectionTypes(schema);
-        ServiceType serviceType = (ServiceType) service.getType();
-        SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT);
-        addQueryFieldsForServiceType(serviceType, queryType, schema);
-        schema.setQueryType(queryType);
-        return getSchemaRecordFromSchema(schema);
+    public static Object createSchema(BObject service) {
+        try {
+            Schema schema = new Schema();
+            initializeIntrospectionTypes(schema);
+            ServiceType serviceType = (ServiceType) service.getType();
+            SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT);
+            addQueryFieldsForServiceType(serviceType, queryType, schema);
+            schema.setQueryType(queryType);
+            return getSchemaRecordFromSchema(schema);
+        } catch (BError e) {
+            return e;
+        }
     }
 
     public static Object executeSingleResource(Environment environment, BObject service, BObject visitor,
