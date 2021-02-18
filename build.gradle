@@ -222,8 +222,7 @@ subprojects {
     release {
         // Disable check snapshots temporarily
         buildTasks = []
-        failOnSnapshotDependencies = false
-        failOnCommitNeeded = false
+        failOnSnapshotDependencies = true
         versionPropertyFile = 'gradle.properties'
         tagTemplate = 'v${version}'
         git {
