@@ -88,6 +88,27 @@ public function testResourceReturningServiceObject() returns @tainted error? {
 @test:Config {
     groups: ["service", "unit"]
 }
+public function testInvalidQueryFromServiceObjectResource() returns @tainted error? {
+    string graphqlUrl = "http://localhost:9097/graphql";
+    string document = "{ profile { name { nonExisting } } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                maessage: "Cannot query field \"nonExisting\" on type \"Name\"",
+                location: {
+                    line: 1,
+                    column: 9
+                }
+            }
+        ]
+    };
+}
+
+@test:Config {
+    groups: ["service", "unit"]
+}
 public function testComplexService() returns @tainted error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { first, last } } }";
