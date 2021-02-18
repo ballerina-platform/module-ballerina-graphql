@@ -74,11 +74,6 @@ class ValidatorVisitor {
         Parent parent = <Parent>data;
         __Type parentType = parent.parentType;
 
-        // Skip service types validation
-        if (parentType.name.toString().startsWith("$")) {
-            return;
-        }
-
         map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
         if (fields.length() == 0) {
             string message = getNoSubfieldsErrorMessage(parent.name, parentType.name.toString());
