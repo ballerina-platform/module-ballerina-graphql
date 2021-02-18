@@ -137,7 +137,9 @@ task initializeVariables {
     }
 
     gradle.taskGraph.whenReady { graph ->
-        if (graph.hasTask(":${packageName}-ballerina:build")) {
+        if (graph.hasTask(":${packageName}-ballerina:build") ||
+                graph.hasTask(":${packageName}-ballerina:publish") ||
+                graph.hasTask(":${packageName}-ballerina:publishToMavenLocal")) {
             ballerinaTest.enabled = false
         } else {
             ballerinaTest.enabled = true
@@ -149,9 +151,8 @@ task initializeVariables {
             testParams = "--skip-tests"
         }
 
-        if (graph.hasTask(":${packageName}-ballerina:publish") || graph.hasTask(":${packageName}-ballerina:publishToMavenLocal")) {
+        if (graph.hasTask(":${packageName}-ballerina:publish")) {
             ballerinaPublish.enabled = true
-            ballerinaTest.enabled = false
         } else {
             ballerinaPublish.enabled = false
         }
@@ -242,7 +243,7 @@ task createArtifactZip(type: Zip) {
 task createTestableJarZip(type: Zip) {
     archiveName("${packageOrg}-${packageName}-${project.version}-testable-jars.zip")
     destinationDir(file("${buildDir}/distributions"))
-    from ("${artifactTestableJar}") {
+    from("${artifactTestableJar}") {
         include '**/*-testable.jar'
     }
 }
@@ -269,7 +270,7 @@ publishing {
 
 task extractBallerinaClassFiles(type: Copy) {
     def jars = fileTree(artifactTestableJar).findAll {
-         it.name.endsWith("-testable.jar")
+        it.name.endsWith("-testable.jar")
     }
 
     jars.forEach { file ->
