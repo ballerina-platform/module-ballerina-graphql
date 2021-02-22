@@ -43,7 +43,7 @@ dependencies {
     jbalTools("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
-    compile project(":${packageName}-native")
+    implementation project(":${packageName}-native")
 }
 
 clean {
@@ -246,8 +246,8 @@ task createArtifactZip(type: Zip) {
 }
 
 task createTestableJarZip(type: Zip) {
-    archiveName("${packageOrg}-${packageName}-${project.version}-testable-jars.zip")
-    destinationDir(file("${buildDir}/distributions"))
+    archiveFileName = "${packageOrg}-${packageName}-${project.version}-testable-jars.zip"
+    destinationDirectory = file("${buildDir}/distributions")
     from("${artifactTestableJar}") {
         include '**/*-testable.jar'
     }
