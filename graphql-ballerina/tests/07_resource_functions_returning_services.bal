@@ -16,15 +16,41 @@
 
 import ballerina/test;
 
-service /graphql on new Listener(9097) {
-    isolated resource function get greet() returns service object {} {
-        return service object {
-            isolated resource function get generalGreeting() returns string {
-                return "Hello, world";
-            }
-        };
+listener Listener serviceTypeListener = new(9097);
+
+service class Name {
+    isolated resource function get first() returns string {
+        return "Sherlock";
     }
 
+    isolated resource function get last() returns string {
+        return "Holmes";
+    }
+}
+
+service class Profile {
+    isolated resource function get name() returns Name {
+        return new;
+    }
+}
+
+service class GeneratGreeting {
+    isolated resource function get generalGreeting() returns string {
+        return "Hello, world";
+    }
+}
+
+service /graphql on serviceTypeListener {
+    isolated resource function get greet() returns GeneratGreeting {
+        return new;
+    }
+
+    isolated resource function get profile() returns Profile {
+        return new;
+    }
+}
+
+Service serviceReturningServiceObjects = service object {
     isolated resource function get profile() returns service object {} {
         return service object {
             isolated resource function get name() returns service object {} {
@@ -39,7 +65,7 @@ service /graphql on new Listener(9097) {
             }
         };
     }
-}
+};
 
 @test:Config {
     groups: ["service", "unit"]
@@ -62,6 +88,27 @@ public function testResourceReturningServiceObject() returns @tainted error? {
 @test:Config {
     groups: ["service", "unit"]
 }
+public function testInvalidQueryFromServiceObjectResource() returns @tainted error? {
+    string graphqlUrl = "http://localhost:9097/graphql";
+    string document = "{ profile { name { nonExisting } } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                maessage: "Cannot query field \"nonExisting\" on type \"Name\"",
+                location: {
+                    line: 1,
+                    column: 9
+                }
+            }
+        ]
+    };
+}
+
+@test:Config {
+    groups: ["service", "unit"]
+}
 public function testComplexService() returns @tainted error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { first, last } } }";
@@ -78,4 +125,15 @@ public function testComplexService() returns @tainted error? {
         }
     };
     test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "unit"]
+}
+public function testResourcesReturningServiceObjects() returns @tainted error? {
+    var result = serviceTypeListener.attach(serviceReturningServiceObjects, "invalidService");
+    test:assertTrue(result is ListenerError);
+    ListenerError err = <ListenerError> result;
+    string expectedMessage = "Returning anonymous service objects are not supported by GraphQL resources";
+    test:assertEquals(err.message(), expectedMessage);
 }

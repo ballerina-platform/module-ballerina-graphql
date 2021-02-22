@@ -39,7 +39,7 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function createSchema(Service s) returns __Schema = @java:Method {
+isolated function createSchema(Service s) returns __Schema|ListenerError = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 

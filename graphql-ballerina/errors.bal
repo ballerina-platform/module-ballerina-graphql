@@ -30,7 +30,7 @@ public type InvalidConfigurationError distinct error;
 public type ServiceHandlingError distinct error;
 
 # Represents an error occurred while a listener operation
-public type ListenerError InvalidConfigurationError|ServiceHandlingError;
+public type ListenerError InvalidConfigurationError|ServiceHandlingError|NotSupportedError;
 
 // Validation errors
 # Represents an error where multiple operations with the same name exists
