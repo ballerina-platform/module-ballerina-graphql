@@ -20,7 +20,7 @@ jobs:
                     packageUser: ${{ github.actor }}
                     packagePAT: ${{ secrets.GITHUB_TOKEN }}
                 run: |
-                    ./gradlew build --no-daemon
+                    ./gradlew build --no-daemon --scan
                     ./gradlew codeCoverageReport --no-daemon
 
             -   name: Archive Error Log
