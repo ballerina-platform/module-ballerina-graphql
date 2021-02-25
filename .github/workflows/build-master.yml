@@ -31,7 +31,6 @@ jobs:
                     packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
                     ./gradlew publish --no-daemon --scan
-                    ./gradlew codeCoverageReport --no-daemon
 
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
