@@ -21,7 +21,6 @@ jobs:
                     packagePAT: ${{ secrets.GITHUB_TOKEN }}
                 run: |
                     ./gradlew build --no-daemon --scan
-                    ./gradlew codeCoverageReport --no-daemon
 
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
