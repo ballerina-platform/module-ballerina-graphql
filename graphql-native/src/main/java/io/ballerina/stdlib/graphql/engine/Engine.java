@@ -35,6 +35,7 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
+import io.ballerina.stdlib.graphql.schema.tree.Node;
 import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
 
 import java.util.concurrent.CountDownLatch;
@@ -53,6 +54,7 @@ import static io.ballerina.stdlib.graphql.engine.EngineUtils.getResourceName;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.getSchemaRecordFromSchema;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.engine.IntrospectionUtils.initializeIntrospectionTypes;
+import static io.ballerina.stdlib.graphql.schema.tree.TreeGenerator.createNodeForService;
 import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
 
 /**
@@ -68,10 +70,19 @@ public class Engine {
             SchemaType queryType = new SchemaType(QUERY, TypeKind.OBJECT);
             addQueryFieldsForServiceType(serviceType, queryType, schema);
             schema.setQueryType(queryType);
+            Node node = createSchemaTree(serviceType);
             return getSchemaRecordFromSchema(schema);
         } catch (BError e) {
             return e;
         }
+    }
+
+    private static Node createSchemaTree(ServiceType serviceType) {
+        return createNodeForService(QUERY, serviceType);
+    }
+
+    private static void getTypesFromSchemaTree(Node root) {
+
     }
 
     public static Object executeSingleResource(Environment environment, BObject service, BObject visitor,
