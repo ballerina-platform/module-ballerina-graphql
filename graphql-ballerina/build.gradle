@@ -273,20 +273,6 @@ publishing {
     }
 }
 
-task extractBallerinaClassFiles(type: Copy) {
-    def jars = fileTree(artifactTestableJar).findAll {
-        it.name.endsWith("-testable.jar")
-    }
-
-    jars.forEach { file ->
-        from zipTree(file).matching {
-            exclude '**/tests/*'
-            include '**/*.class'
-        }
-        into "${project.rootDir.absolutePath}/build/classes"
-    }
-}
-
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
