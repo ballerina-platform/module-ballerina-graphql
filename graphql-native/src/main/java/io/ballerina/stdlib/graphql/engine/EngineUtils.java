@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
-import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -41,6 +40,7 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
+import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
 import java.util.List;
@@ -59,6 +59,7 @@ import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
 import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
 import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.graphql.utils.Utils.createError;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
@@ -74,6 +75,7 @@ public class EngineUtils {
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
     public static final String TYPE_KIND_ENUM = "__TypeKind";
+    public static final String QUERY_TYPE_NAME = "queryType";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -112,22 +114,6 @@ public class EngineUtils {
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
 
-    // Error Types
-    enum ErrorCode {
-
-        NotSupportedError("NotSupportedError");
-
-        private String errorCode;
-
-        ErrorCode(String errorCode) {
-            this.errorCode = errorCode;
-        }
-
-        public String errorCode() {
-            return errorCode;
-        }
-    }
-
     static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
         ResourceMethodType[] resourceFunctions = serviceType.getResourceMethods();
         for (ResourceMethodType resourceMethod : resourceFunctions) {
@@ -144,7 +130,18 @@ public class EngineUtils {
         return field;
     }
 
-    static String getResourceName(ResourceMethodType resourceMethod) {
+
+
+
+
+
+
+
+
+
+
+
+    public static String getResourceName(ResourceMethodType resourceMethod) {
         String[] nameArray = resourceMethod.getResourcePath();
         int nameIndex = nameArray.length;
         return nameArray[nameIndex - 1];
@@ -187,8 +184,7 @@ public class EngineUtils {
             String serviceName = service.getName();
             if (serviceName.startsWith("$anon")) {
                 String message = "Returning anonymous service objects are not supported by GraphQL resources";
-                throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                       StringUtils.fromString(message));
+                throw createError(message, Utils.ErrorCode.NotSupportedError);
             }
             SchemaType fieldType = new SchemaType(service.getName(), TypeKind.OBJECT);
             addQueryFieldsForServiceType(service, fieldType, schema);
@@ -220,8 +216,7 @@ public class EngineUtils {
             return schemaType;
         } else {
             String message = "Unsupported return type: " + type.getName();
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
+            throw createError(message, Utils.ErrorCode.NotSupportedError);
         }
     }
 
@@ -360,8 +355,7 @@ public class EngineUtils {
         }
         if (memberTypes.size() != 2) {
             String message = "GraphQL resources does not allow to return union of more than two types";
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
+            throw createError(message, Utils.ErrorCode.NotSupportedError);
         }
         if (memberTypes.get(0).getTag() == ERROR_TAG) {
             return getMainTypeFromErrorUnion(memberTypes.get(1));
@@ -369,8 +363,7 @@ public class EngineUtils {
             return getMainTypeFromErrorUnion(memberTypes.get(0));
         } else {
             String message = "Unsupported union: Ballerina GraphQL does not allow unions other that <T>|error";
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
+            throw createError(message, Utils.ErrorCode.NotSupportedError);
         }
     }
 
@@ -381,8 +374,7 @@ public class EngineUtils {
             return mainType;
         } else {
             String message = "Unsupported union with error: " + mainType.getName();
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
+            throw createError(message, Utils.ErrorCode.NotSupportedError);
         }
     }
 
