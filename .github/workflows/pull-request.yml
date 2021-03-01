@@ -31,6 +31,7 @@ jobs:
                     if-no-files-found: ignore
 
             -   name: Generate Codecov Report
+                if:  github.event_name == 'pull_request'
                 uses: codecov/codecov-action@v1
 
     windows-build:
