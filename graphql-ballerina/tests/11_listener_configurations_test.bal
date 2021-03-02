@@ -65,7 +65,6 @@ function testTimeoutResponse() returns error? {
     var response = check httpClient->post("/", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 408, msg = "Unexpected status code received: " + statusCode.toString());
-
     var textPayload = response.getTextPayload();
     string expectedMessage = "Idle timeout triggered before initiating outbound response";
     string actualPaylaod = textPayload is error? textPayload.toString() : textPayload.toString();
