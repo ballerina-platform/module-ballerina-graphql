@@ -89,8 +89,8 @@ function testResourcesReturningArraysMissingFields() returns @tainted error? {
     string document = "{ people }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
 
-    string expectedMessage = "Field \"people\" of type \"[Person]\" must have a selection of subfields. Did you mean " +
-                             "\"people { ... }\"?";
+    string expectedMessage = "Field \"people\" of type \"[Person!]\" must have a selection of subfields. Did you mean "
+                            + "\"people { ... }\"?";
     json expectedResult = {
         errors: [
             {

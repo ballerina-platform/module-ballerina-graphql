@@ -16,11 +16,17 @@
 
 import graphql.parser;
 
+isolated function getFieldNotFoundErrorMessageFromType(string requiredFieldName, __Type rootType) returns string {
+    string typeName = getTypeNameFromType(rootType);
+    return getFieldNotFoundErrorMessage(requiredFieldName, typeName);
+}
+
 isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string rootType) returns string {
     return "Cannot query field \"" + requiredFieldName + "\" on type \"" + rootType + "\".";
 }
 
-isolated function getNoSubfieldsErrorMessage(string fieldName, string typeName) returns string {
+isolated function getNoSubfieldsErrorMessage(string fieldName, __Type schemaType) returns string {
+    string typeName = getTypeNameFromType(schemaType);
     return "Field \"" + fieldName + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
 }
 
@@ -29,13 +35,19 @@ returns string {
     return "Unknown argument \"" + argName + "\" on field \"" + parentName + "." + fieldName + "\".";
 }
 
+isolated function getMissingSubfieldsErrorFromType(string fieldName, __Type schemaType) returns string {
+    string typeName = getTypeNameFromType(schemaType);
+    return getMissingSubfieldsError(fieldName, typeName);
+}
+
 isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
     return "Field \"" + fieldName + "\" of type \"" + typeName
             + "\" must have a selection of subfields. Did you mean \"" + fieldName + " { ... }\"?";
 }
 
 isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
-    return "Field \"" + node.getName() + "\" argument \"" + input.name + "\" of type \"" + input.'type.name.toString()
+    string typeName = getTypeNameFromType(input.'type);
+    return "Field \"" + node.getName() + "\" argument \"" + input.name + "\" of type \"" + typeName
             + "\" is required, but it was not provided.";
 
 }
@@ -62,6 +74,29 @@ isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
     } else {
         return "String";
     }
+}
+
+isolated function getOfType(__Type schemaType) returns __Type {
+    __Type? ofType = schemaType?.ofType;
+    if (ofType is ()) {
+        return schemaType;
+    } else {
+        return getOfType(ofType);
+    }
+}
+
+isolated function getTypeNameFromType(__Type schemaType) returns string {
+    string typeName = getOfType(schemaType).name.toString();
+    if (schemaType.kind == NON_NULL) {
+        typeName = typeName + "!";
+        __Type ofType = <__Type>schemaType?.ofType;
+        if (ofType.kind == LIST) {
+            typeName = "[" + typeName + "]";
+        }
+    } else if (schemaType.kind == LIST) {
+        typeName = "[" + typeName + "]";
+    }
+    return typeName;
 }
 
 isolated function getErrorDetailRecord(string message, Location|Location[] location) returns ErrorDetail {

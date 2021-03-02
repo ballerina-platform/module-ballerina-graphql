@@ -72,11 +72,11 @@ class ValidatorVisitor {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         Parent parent = <Parent>data;
-        __Type parentType = parent.parentType;
+        __Type parentType = getOfType(parent.parentType);
 
         map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
         if (fields.length() == 0) {
-            string message = getNoSubfieldsErrorMessage(parent.name, parentType.name.toString());
+            string message = getNoSubfieldsErrorMessage(parent.name, parent.parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
@@ -84,7 +84,7 @@ class ValidatorVisitor {
         string requiredFieldName = fieldNode.getName();
         var schemaFieldValue = fields[requiredFieldName];
         if (schemaFieldValue is ()) {
-            string message = getFieldNotFoundErrorMessage(requiredFieldName, parentType.name.toString());
+            string message = getFieldNotFoundErrorMessageFromType(requiredFieldName, parent.parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
@@ -92,11 +92,11 @@ class ValidatorVisitor {
         __Field schemaField = <__Field>schemaFieldValue;
         self.checkArguments(parentType, fieldNode, schemaField);
 
-        __Type fieldType = schemaField.'type;
+        __Type fieldType = getOfType(schemaField.'type);
         parser:FieldNode[] selections = fieldNode.getSelections();
 
         if (hasFields(fieldType) && selections.length() == 0) {
-            string message = getMissingSubfieldsError(requiredFieldName, fieldType.name.toString());
+            string message = getMissingSubfieldsErrorFromType(requiredFieldName, schemaField.'type);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
 
@@ -122,7 +122,8 @@ class ValidatorVisitor {
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>data;
-        string typeName = schemaArg.'type.name.toString();
+        __Type argType = getOfType(schemaArg.'type);
+        string typeName = argType.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
         string expectedTypeName = getTypeName(argumentNode);
         if (typeName != expectedTypeName) {
