@@ -14,9 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/encoding;
 import ballerina/http;
 import ballerina/test;
+import ballerina/url;
 
 listener Listener simpleResourceListener = new(9092);
 
@@ -47,7 +47,7 @@ function testShortHandQueryResult() returns @tainted error? {
 }
 function testGetRequestResult() returns @tainted error? {
     string document = "query getPerson { profile(id: 1) { address { city } } }";
-    string encodedDocument = check encoding:encodeUriComponent(document, "UTF-8");
+    string encodedDocument = check url:encode(document, "UTF-8");
     json expectedPayload = {
         data: {
             profile: {
