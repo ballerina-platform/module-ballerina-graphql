@@ -34,7 +34,8 @@ public class Utils {
      */
     public enum ErrorCode {
 
-        NotSupportedError("NotSupportedError");
+        NotSupportedError("NotSupportedError"),
+        InvalidTypeError("InvalidTypeError");
 
         private String errorCode;
 
@@ -48,5 +49,12 @@ public class Utils {
     }
     public static BError createError(String message, ErrorCode errorCode) {
         return ErrorCreator.createDistinctError(errorCode.errorCode(), getModule(), StringUtils.fromString(message));
+    }
+
+    public static String[] removeFirstElementFromArray(String[] array) {
+        int length = array.length - 1;
+        String[] result = new String[length];
+        System.arraycopy(array, 1, result, 0, length);
+        return result;
     }
 }
