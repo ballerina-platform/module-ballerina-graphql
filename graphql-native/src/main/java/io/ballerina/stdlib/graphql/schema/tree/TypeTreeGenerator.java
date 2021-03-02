@@ -27,7 +27,6 @@ import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
-import io.ballerina.stdlib.graphql.schema.tree.nodes.Node;
 import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
