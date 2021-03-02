@@ -27,7 +27,6 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
-import io.ballerina.stdlib.graphql.schema.tree.nodes.Node;
 import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;

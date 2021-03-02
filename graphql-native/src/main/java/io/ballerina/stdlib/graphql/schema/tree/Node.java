@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.schema.tree.nodes;
+package io.ballerina.stdlib.graphql.schema.tree;
 
 import io.ballerina.runtime.api.types.Type;
 
