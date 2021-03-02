@@ -76,14 +76,6 @@ allprojects {
         }
 
         maven {
-            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-encoding'
-            credentials {
-                username System.getenv("packageUser")
-                password System.getenv("packagePAT")
-            }
-        }
-
-        maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-file'
             credentials {
                 username System.getenv("packageUser")
@@ -180,6 +172,14 @@ allprojects {
         }
 
         maven {
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-url'
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-uuid'
             credentials {
                 username System.getenv("packageUser")
@@ -203,7 +203,6 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:auth-ballerina:${stdlibAuthVersion}"
         ballerinaStdLibs "org.ballerinalang:cache-ballerina:${stdlibCacheVersion}"
         ballerinaStdLibs "org.ballerinalang:crypto-ballerina:${stdlibCryptoVersion}"
-        ballerinaStdLibs "org.ballerinalang:encoding-ballerina:${stdlibEncodingVersion}"
         ballerinaStdLibs "org.ballerinalang:file-ballerina:${stdlibFileVersion}"
         ballerinaStdLibs "org.ballerinalang:http-ballerina:${stdlibHttpVersion}"
         ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
@@ -216,6 +215,7 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:regex-ballerina:${stdlibRegexVersion}"
         ballerinaStdLibs "org.ballerinalang:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
+        ballerinaStdLibs "org.ballerinalang:url-ballerina:${stdlibUrlVersion}"
         ballerinaStdLibs "org.ballerinalang:uuid-ballerina:${stdlibUuidVersion}"
     }
 

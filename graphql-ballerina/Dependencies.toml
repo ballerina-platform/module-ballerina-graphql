@@ -1,10 +1,5 @@
 [[dependency]]
 org = "ballerina"
-name = "encoding"
-version = "@stdlib.encoding.version@"
-
-[[dependency]]
-org = "ballerina"
 name = "file"
 version = "@stdlib.file.version@"
 
@@ -17,3 +12,8 @@ version = "@stdlib.http.version@"
 org = "ballerina"
 name = "io"
 version = "@stdlib.io.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "url"
+version = "@stdlib.url.version@"
