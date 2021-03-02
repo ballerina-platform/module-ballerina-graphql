@@ -143,7 +143,7 @@ public class TypeTreeGenerator {
         return createNodeForType(name, type);
     }
 
-    private static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {
+    public static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {
         int count = 0;
         Type resultType = null;
         for (Type type : memberTypes) {
@@ -154,7 +154,7 @@ public class TypeTreeGenerator {
         }
         if (count != 1) {
             String message =
-                    "Unsupported union: If a field type is a union, it should be subtype of \"<T>|error?\", except " +
+                    "Unsupported union: If a field type is a union, it should be a subtype of \"<T>|error?\", except " +
                             "\"error?\"";
             throw createError(message, Utils.ErrorCode.NotSupportedError);
         }

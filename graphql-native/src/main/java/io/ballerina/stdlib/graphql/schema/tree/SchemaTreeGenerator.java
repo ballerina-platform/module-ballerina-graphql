@@ -35,10 +35,10 @@ import io.ballerina.stdlib.graphql.schema.TypeKind;
 import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArray;
@@ -182,23 +182,5 @@ public class SchemaTreeGenerator {
 
     private static SchemaType getNonNullType() {
         return new SchemaType(null, TypeKind.NON_NULL);
-    }
-
-    private static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {
-        int count = 0;
-        Type resultType = null;
-        for (Type type : memberTypes) {
-            if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
-                count++;
-                resultType = type;
-            }
-        }
-        if (count != 1) {
-            String message =
-                    "Unsupported union: If a field type is a union, it should be subtype of \"<T>|error?\", except " +
-                            "\"error?\"";
-            throw createError(message, Utils.ErrorCode.NotSupportedError);
-        }
-        return resultType;
     }
 }

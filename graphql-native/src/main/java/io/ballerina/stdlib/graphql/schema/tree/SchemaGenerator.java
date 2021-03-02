@@ -19,10 +19,13 @@
 package io.ballerina.stdlib.graphql.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
@@ -38,6 +41,7 @@ import static io.ballerina.stdlib.graphql.engine.EngineUtils.DECIMAL;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.FLOAT;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.INTEGER;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.utils.Utils.createError;
 
 /**
@@ -130,11 +134,16 @@ public class SchemaGenerator {
                 }
             }
         } else if (tag == TypeTags.MAP_TAG) {
-            schemaType = new SchemaType(type.getName(), TypeKind.OBJECT);
+            MapType mapType = (MapType) type;
+            Type constrainedType = mapType.getConstrainedType();
+            return getSchemaTypeFromType(constrainedType);
         } else if (tag == TypeTags.ARRAY_TAG) {
-            schemaType = new SchemaType(type.getName(), TypeKind.LIST);
+            ArrayType arrayType = (ArrayType) type;
+            return getSchemaTypeFromType(arrayType.getElementType());
         } else if (tag == TypeTags.UNION_TAG) {
-            schemaType = new SchemaType(type.getName(), TypeKind.OBJECT);
+            UnionType unionType = (UnionType) type;
+            Type mainType = getNonNullNonErrorTypeFromUnion(unionType.getMemberTypes());
+            return getSchemaTypeFromType(mainType);
         } else {
             String message = "Unsupported type for schema field: " + type.getName();
             throw createError(message, Utils.ErrorCode.NotSupportedError);
