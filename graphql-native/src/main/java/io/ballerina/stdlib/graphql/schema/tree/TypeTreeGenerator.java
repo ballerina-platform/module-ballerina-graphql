@@ -21,62 +21,81 @@ package io.ballerina.stdlib.graphql.schema.tree;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
+import io.ballerina.stdlib.graphql.schema.tree.nodes.TypeNode;
 import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.BOOLEAN;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.DECIMAL;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.FLOAT;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.INTEGER;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArray;
 
 /**
- * This class is used to generate a tree for the GraphQL schema for a given Ballerina GraphQL service.
+ * Generates a tree of types found in a ballerina service.
+ *
+ * @since 0.2.0
  */
-public class TreeGenerator {
+public class TypeTreeGenerator {
+    private ServiceType serviceType;
 
-    public static Node createNodeForService(String name, ServiceType serviceType) {
-        Node serviceNode = new Node(name, serviceType);
-        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            serviceNode.addChild(createNodeForResource(resourceMethod, resourceMethod.getResourcePath(), serviceNode));
-        }
-        return serviceNode;
+    public TypeTreeGenerator(ServiceType serviceType) {
+        this.serviceType = serviceType;
     }
 
-    public static Node createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, Node parent) {
+    public TypeNode generateTypeTree() {
+        return createNodeForService(QUERY, serviceType);
+    }
+
+    private TypeNode createNodeForService(String name, ServiceType serviceType) {
+        TypeNode serviceTypeNode = new TypeNode(name);
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            serviceTypeNode.addChild(createNodeForResource(resourceMethod, resourceMethod.getResourcePath(),
+                                                           serviceTypeNode));
+        }
+        return serviceTypeNode;
+    }
+
+    TypeNode createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, TypeNode parent) {
         if (resourcePath == null || resourcePath.length == 0) {
             String message = "Invalid resource path found for the resource";
-            throw createError(message, Utils.ErrorCode.NotSupportedError);
+            throw createError(message, Utils.ErrorCode.InvalidTypeError);
         }
 
         String name = resourcePath[0];
         if (resourcePath.length > 1) {
             String[] paths = removeFirstElementFromArray(resourcePath);
-            Node resourceNode;
+            TypeNode resourceTypeNode;
             if (parent.hasChild(name)) {
-                resourceNode = parent.getChild(name);
+                resourceTypeNode = parent.getChild(name);
             } else {
-                resourceNode = new Node(name);
+                resourceTypeNode = new TypeNode(name);
             }
-            resourceNode.addChild(createNodeForResource(resourceMethod, paths, resourceNode));
-            return resourceNode;
+            resourceTypeNode.addChild(createNodeForResource(resourceMethod, paths, resourceTypeNode));
+            return resourceTypeNode;
         }
 
-        Node resourceNode = createNodeForType(name, resourceMethod.getType().getReturnType());
-        addArgumentsForResourceNode(resourceNode, resourceMethod);
-        return resourceNode;
+        return createNodeForType(name, resourceMethod.getType().getReturnType());
     }
 
-    private static Node createNodeForType(String name, Type type) {
+    private TypeNode createNodeForType(String name, Type type) {
         int tag = type.getTag();
         if (tag == TypeTags.STRING_TAG || tag == TypeTags.INT_TAG || tag == TypeTags.FLOAT_TAG ||
                 tag == TypeTags.DECIMAL_TAG || tag == TypeTags.BOOLEAN_TAG) {
-            return new Node(name, type, false);
+            return new TypeNode(getScalarTypeName(tag), type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
-            return createNodeForRecordType(name, (RecordType) type, false);
+            return createNodeForRecordType(name, (RecordType) type);
         } else if (tag == TypeTags.SERVICE_TAG) {
             ServiceType serviceType = (ServiceType) type;
             String serviceName = serviceType.getName();
@@ -85,45 +104,44 @@ public class TreeGenerator {
                 throw createError(message, Utils.ErrorCode.NotSupportedError);
             }
             return createNodeForService(name, serviceType);
-        } else if (tag == TypeTags.UNION_TAG) {
-            return createNodeForUnionType(name, (UnionType) type);
+        } else if (tag == TypeTags.MAP_TAG) {
+            MapType mapType = (MapType) type;
+            return createNodeForMapType(name, mapType);
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
             Type elementType = arrayType.getElementType();
-            Node node = createNodeForType(name, elementType);
-            node.setType(arrayType);
-            return node;
+            return createNodeForType(name, elementType);
+        } else if (tag == TypeTags.UNION_TAG) {
+            return createNodeForUnionType(name, (UnionType) type);
         } else {
             String message = "Unsupported type found: " + type.getName();
             throw createError(message, Utils.ErrorCode.NotSupportedError);
         }
     }
 
-    private static Node createNodeForRecordType(String name, RecordType recordType, boolean nullable) {
+    private TypeNode createNodeForRecordType(String name, RecordType recordType) {
         Collection<Field> fields = recordType.getFields().values();
-        Node recordNode = new Node(name, recordType, nullable);
+        TypeNode recordTypeNode = new TypeNode(name, recordType);
         for (Field field : fields) {
-            recordNode.addChild(createNodeForType(field.getFieldName(), field.getFieldType()));
+            TypeNode fieldTypeNode = createNodeForType(field.getFieldName(), field.getFieldType());
+            recordTypeNode.addChild(fieldTypeNode);
         }
-        return recordNode;
+        return recordTypeNode;
     }
 
-    private static void addArgumentsForResourceNode(Node resourceNode, ResourceMethodType resourceMethod) {
-        String[] paramNames = resourceMethod.getParamNames();
-        Type[] paramTypes = resourceMethod.getParameterTypes();
-        for (int i = 0; i < paramNames.length; i++) {
-            resourceNode.addArgument(paramNames[i], paramTypes[i]);
-        }
+    private TypeNode createNodeForMapType(String name, MapType mapType) {
+        Type constrainedType = mapType.getConstrainedType();
+        TypeNode mapTypeNode = new TypeNode(name, mapType);
+        TypeNode typeNode = createNodeForType(constrainedType.getName(), constrainedType);
+        mapTypeNode.addChild(typeNode);
+        return mapTypeNode;
     }
 
-    private static Node createNodeForUnionType(String name, UnionType unionType) {
+    private TypeNode createNodeForUnionType(String name, UnionType unionType) {
         // TODO: Finite Type?
         List<Type> memberTypes = unionType.getMemberTypes();
         Type type = getNonNullNonErrorTypeFromUnion(memberTypes);
-        Node unionTypeNode = createNodeForType(name, type);
-        unionTypeNode.setType(unionType);
-        unionTypeNode.setNullable(isNullable(unionType));
-        return unionTypeNode;
+        return createNodeForType(name, type);
     }
 
     private static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {
@@ -144,19 +162,17 @@ public class TreeGenerator {
         return resultType;
     }
 
-    private static boolean isNullable(UnionType unionType) {
-        for (Type type : unionType.getMemberTypes()) {
-            if (type.getTag() == TypeTags.NULL_TAG) {
-                return true;
-            }
+    public static String getScalarTypeName(int tag) {
+        if (tag == TypeTags.INT_TAG) {
+            return INTEGER;
+        } else if (tag == TypeTags.DECIMAL_TAG) {
+            return DECIMAL;
+        } else if (tag == TypeTags.FLOAT_TAG) {
+            return FLOAT;
+        } else if (tag == TypeTags.BOOLEAN_TAG) {
+            return BOOLEAN;
+        } else {
+            return STRING;
         }
-        return false;
-    }
-
-    private static String[] removeFirstElementFromArray(String[] array) {
-        int length = array.length - 1;
-        String[] result = new String[length];
-        System.arraycopy(array, 1, result, 0, length);
-        return result;
     }
 }
