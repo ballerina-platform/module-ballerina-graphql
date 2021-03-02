@@ -27,7 +27,7 @@ import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
-import io.ballerina.stdlib.graphql.schema.tree.nodes.TypeNode;
+import io.ballerina.stdlib.graphql.schema.tree.nodes.Node;
 import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
@@ -54,20 +54,20 @@ public class TypeTreeGenerator {
         this.serviceType = serviceType;
     }
 
-    public TypeNode generateTypeTree() {
+    public Node generateTypeTree() {
         return createNodeForService(QUERY, serviceType);
     }
 
-    private TypeNode createNodeForService(String name, ServiceType serviceType) {
-        TypeNode serviceTypeNode = new TypeNode(name);
+    private Node createNodeForService(String name, ServiceType serviceType) {
+        Node serviceNode = new Node(name);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            serviceTypeNode.addChild(createNodeForResource(resourceMethod, resourceMethod.getResourcePath(),
-                                                           serviceTypeNode));
+            serviceNode.addChild(createNodeForResource(resourceMethod, resourceMethod.getResourcePath(),
+                                                       serviceNode));
         }
-        return serviceTypeNode;
+        return serviceNode;
     }
 
-    TypeNode createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, TypeNode parent) {
+    Node createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, Node parent) {
         if (resourcePath == null || resourcePath.length == 0) {
             String message = "Invalid resource path found for the resource";
             throw createError(message, Utils.ErrorCode.InvalidTypeError);
@@ -76,24 +76,24 @@ public class TypeTreeGenerator {
         String name = resourcePath[0];
         if (resourcePath.length > 1) {
             String[] paths = removeFirstElementFromArray(resourcePath);
-            TypeNode resourceTypeNode;
+            Node resourceNode;
             if (parent.hasChild(name)) {
-                resourceTypeNode = parent.getChild(name);
+                resourceNode = parent.getChild(name);
             } else {
-                resourceTypeNode = new TypeNode(name);
+                resourceNode = new Node(name);
             }
-            resourceTypeNode.addChild(createNodeForResource(resourceMethod, paths, resourceTypeNode));
-            return resourceTypeNode;
+            resourceNode.addChild(createNodeForResource(resourceMethod, paths, resourceNode));
+            return resourceNode;
         }
 
         return createNodeForType(name, resourceMethod.getType().getReturnType());
     }
 
-    private TypeNode createNodeForType(String name, Type type) {
+    private Node createNodeForType(String name, Type type) {
         int tag = type.getTag();
         if (tag == TypeTags.STRING_TAG || tag == TypeTags.INT_TAG || tag == TypeTags.FLOAT_TAG ||
                 tag == TypeTags.DECIMAL_TAG || tag == TypeTags.BOOLEAN_TAG) {
-            return new TypeNode(getScalarTypeName(tag), type);
+            return new Node(getScalarTypeName(tag), type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
             return createNodeForRecordType(name, (RecordType) type);
         } else if (tag == TypeTags.SERVICE_TAG) {
@@ -119,25 +119,25 @@ public class TypeTreeGenerator {
         }
     }
 
-    private TypeNode createNodeForRecordType(String name, RecordType recordType) {
+    private Node createNodeForRecordType(String name, RecordType recordType) {
         Collection<Field> fields = recordType.getFields().values();
-        TypeNode recordTypeNode = new TypeNode(name, recordType);
+        Node recordNode = new Node(name, recordType);
         for (Field field : fields) {
-            TypeNode fieldTypeNode = createNodeForType(field.getFieldName(), field.getFieldType());
-            recordTypeNode.addChild(fieldTypeNode);
+            Node fieldNode = createNodeForType(field.getFieldName(), field.getFieldType());
+            recordNode.addChild(fieldNode);
         }
-        return recordTypeNode;
+        return recordNode;
     }
 
-    private TypeNode createNodeForMapType(String name, MapType mapType) {
+    private Node createNodeForMapType(String name, MapType mapType) {
         Type constrainedType = mapType.getConstrainedType();
-        TypeNode mapTypeNode = new TypeNode(name, mapType);
-        TypeNode typeNode = createNodeForType(constrainedType.getName(), constrainedType);
-        mapTypeNode.addChild(typeNode);
-        return mapTypeNode;
+        Node mapNode = new Node(name, mapType);
+        Node node = createNodeForType(constrainedType.getName(), constrainedType);
+        mapNode.addChild(node);
+        return mapNode;
     }
 
-    private TypeNode createNodeForUnionType(String name, UnionType unionType) {
+    private Node createNodeForUnionType(String name, UnionType unionType) {
         // TODO: Finite Type?
         List<Type> memberTypes = unionType.getMemberTypes();
         Type type = getNonNullNonErrorTypeFromUnion(memberTypes);

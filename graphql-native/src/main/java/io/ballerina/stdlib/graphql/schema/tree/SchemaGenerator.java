@@ -27,7 +27,7 @@ import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
-import io.ballerina.stdlib.graphql.schema.tree.nodes.TypeNode;
+import io.ballerina.stdlib.graphql.schema.tree.nodes.Node;
 import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
@@ -56,11 +56,11 @@ public class SchemaGenerator {
     }
 
     public Schema generate() {
-        TypeNode typeNode = this.findBasicTypes();
-        return this.generateSchema(typeNode);
+        this.populateBasicTypes();
+        return this.generateSchema();
     }
 
-    public Schema generateSchema(TypeNode typeNode) {
+    public Schema generateSchema() {
         Schema schema = new Schema();
         SchemaTreeGenerator schemaTreeGenerator = new SchemaTreeGenerator(this.serviceType, this.typeMap);
         SchemaType queryType = schemaTreeGenerator.getQueryType();
@@ -71,34 +71,33 @@ public class SchemaGenerator {
         return schema;
     }
 
-    private TypeNode findBasicTypes() {
+    private void populateBasicTypes() {
         TypeTreeGenerator typeTreeGenerator = new TypeTreeGenerator(this.serviceType);
-        TypeNode typeNode = typeTreeGenerator.generateTypeTree();
-        populateTypesMap(typeNode);
-        return typeNode;
+        Node node = typeTreeGenerator.generateTypeTree();
+        populateTypesMap(node);
     }
 
     private void addType(SchemaType schemaType) {
         this.typeMap.put(schemaType.getName(), schemaType);
     }
 
-    private SchemaType populateTypesMap(TypeNode typeNode) {
-        if (typeNode.getChildren() == null || typeNode.getChildren().size() == 0) {
-            Type type = typeNode.getType();
+    private SchemaType populateTypesMap(Node node) {
+        if (node.getChildren() == null || node.getChildren().size() == 0) {
+            Type type = node.getType();
             if (type == null) {
                 // This code shouldn't be reached
-                String message = "Type not found for the resource: " + typeNode.getName();
+                String message = "Type not found for the resource: " + node.getName();
                 throw createError(message, Utils.ErrorCode.InvalidTypeError);
             } else {
                 return getSchemaTypeFromType(type);
             }
         } else {
-            for (TypeNode childTypeNode : typeNode.getChildren().values()) {
-                populateTypesMap(childTypeNode);
+            for (Node childNode : node.getChildren().values()) {
+                populateTypesMap(childNode);
             }
-            Type type = typeNode.getType();
+            Type type = node.getType();
             if (type == null) {
-                SchemaType schemaType = getSchemaTypeForHierarchicalResource(typeNode);
+                SchemaType schemaType = getSchemaTypeForHierarchicalResource(node);
                 this.addType(schemaType);
                 return schemaType;
             } else {
@@ -152,11 +151,11 @@ public class SchemaGenerator {
         return schemaField;
     }
 
-    private SchemaType getSchemaTypeForHierarchicalResource(TypeNode typeNode) {
-        SchemaType schemaType = new SchemaType(typeNode.getName(), TypeKind.OBJECT);
-        for (TypeNode childTypeNode : typeNode.getChildren().values()) {
-            SchemaField childField = new SchemaField(childTypeNode.getName());
-            childField.setType(populateTypesMap(childTypeNode));
+    private SchemaType getSchemaTypeForHierarchicalResource(Node node) {
+        SchemaType schemaType = new SchemaType(node.getName(), TypeKind.OBJECT);
+        for (Node childNode : node.getChildren().values()) {
+            SchemaField childField = new SchemaField(childNode.getName());
+            childField.setType(populateTypesMap(childNode));
             schemaType.addField(childField);
         }
         return schemaType;
