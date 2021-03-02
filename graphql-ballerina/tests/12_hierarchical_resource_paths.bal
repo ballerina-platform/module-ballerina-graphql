@@ -33,7 +33,7 @@ service /graphql on new Listener(9104) {
 }
 
 @test:Config {
-    groups: ["test", "hierarchicalPaths", "unit"]
+    groups: ["hierarchicalPaths", "unit"]
 }
 function testHierarchicalResourcePaths() returns error? {
     string document = "{ foo { bar { baf } } }";
