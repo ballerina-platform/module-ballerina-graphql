@@ -90,19 +90,19 @@ task copyStdlibs(type: Copy) {
 
 task updateTomlFile {
     doLast {
-        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.replace("${snapshotVersion}", "")
         def stdlibDependentFileVersion = project.stdlibFileVersion.replace("${snapshotVersion}", "")
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.replace("${snapshotVersion}", "")
         def stdlibDependentIoVersion = project.stdlibIoVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentUrlVersion = project.stdlibUrlVersion.replace("${snapshotVersion}", "")
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
         ballerinaConfigFile.text = newConfig
 
-        def newDependencyConfig = ballerinaDependencyFile.text.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
-        newDependencyConfig = newDependencyConfig.replace("@stdlib.file.version@", stdlibDependentFileVersion)
+        def newDependencyConfig = ballerinaDependencyFile.text.replace("@stdlib.file.version@", stdlibDependentFileVersion)
         newDependencyConfig = newDependencyConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newDependencyConfig = newDependencyConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.url.version@", stdlibDependentUrlVersion)
         ballerinaDependencyFile.text = newDependencyConfig
     }
 }
