@@ -25,20 +25,14 @@ listener Listener simpleResourceListener = new(9092);
 }
 function testShortHandQueryResult() returns @tainted error? {
     string document = getGeneralNotationDocument();
-    json payload = {
-        query: document
-    };
+    string url = "http://localhost:9092/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
             name: "James Moriarty",
             birthdate: "15-05-1848"
         }
     };
-    http:Client httpClient = check new("http://localhost:9092/graphql");
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json actualPayload = <json> check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 
@@ -61,7 +55,7 @@ function testGetRequestResult() returns @tainted error? {
     http:Request request = new;
 
     string path = "/graphql?query=" + encodedDocument;
-    json actualPayload = <json> check httpClient->get(path, request, json);
+    json actualPayload = check httpClient->get(path, request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 
