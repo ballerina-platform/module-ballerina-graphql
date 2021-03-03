@@ -14,20 +14,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/test;
 import ballerina/io;
 
 service /graphql on new Listener(9104) {
-    isolated resource function get foo/bar/baz() returns string {
+    isolated resource function get profile/name/first() returns string {
         return "Sherlock";
     }
 
-    isolated resource function get foo/bar/baf() returns string {
+    isolated resource function get profile/name/last() returns string {
         return "Holmes";
     }
 
-    isolated resource function get foo/daz() returns int {
+    isolated resource function get profile/age() returns int {
         return 40;
     }
 }
@@ -36,13 +35,9 @@ service /graphql on new Listener(9104) {
     groups: ["hierarchicalPaths", "unit"]
 }
 function testHierarchicalResourcePaths() returns error? {
-    string document = "{ foo { bar { baf } } }";
-    json payload = {
-        query: document
-    };
-    http:Client httpClient = check new("http://localhost:9104/graphql");
-    http:Request request = new;
-    request.setPayload(payload);
+    string document = "{ profile { name { first } } }";
+    string url = "http://localhost:9104/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
         data: {
@@ -53,9 +48,6 @@ function testHierarchicalResourcePaths() returns error? {
             }
         }
     };
-
-    json actualPayload = <json> check httpClient->post("/", request, json);
     io:println(actualPayload);
-
     test:assertEquals(actualPayload, expectedPayload);
 }
