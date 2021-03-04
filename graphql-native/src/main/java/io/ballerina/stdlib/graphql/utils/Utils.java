@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.utils;
 
+import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -28,6 +29,9 @@ import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
  * This class contains utility methods for the Ballerina GraphQL module.
  */
 public class Utils {
+
+    // Inter-op function names
+    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
     /**
      * Represents different error codes for errors in Ballerina GraphQL package.
@@ -47,6 +51,11 @@ public class Utils {
             return errorCode;
         }
     }
+
+    public static final StrandMetadata STRAND_METADATA = new StrandMetadata(getModule().getOrg(), getModule().getName(),
+                                                                            getModule().getVersion(),
+                                                                            EXECUTE_SINGLE_RESOURCE_FUNCTION);
+
     public static BError createError(String message, ErrorCode errorCode) {
         return ErrorCreator.createDistinctError(errorCode.errorCode(), getModule(), StringUtils.fromString(message));
     }

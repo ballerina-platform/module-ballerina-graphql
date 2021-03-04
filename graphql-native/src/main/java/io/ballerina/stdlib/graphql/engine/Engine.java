@@ -19,8 +19,6 @@
 package io.ballerina.stdlib.graphql.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -41,7 +39,6 @@ import java.util.concurrent.CountDownLatch;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.DATA_RECORD;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.ERRORS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.EXECUTE_SINGLE_RESOURCE_FUNCTION;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.VALUE_FIELD;
@@ -51,6 +48,7 @@ import static io.ballerina.stdlib.graphql.engine.EngineUtils.getSchemaRecordFrom
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.engine.IntrospectionUtils.initializeIntrospectionTypes;
 import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.graphql.utils.Utils.STRAND_METADATA;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -73,53 +71,46 @@ public class Engine {
         return schemaGenerator.generate();
     }
 
-    public static Object executeSingleResource(Environment environment, BObject service, BObject visitor,
-                                               BObject fieldNode, BMap<BString, Object> arguments) {
+    public static Object executeResource(Environment environment, BObject service, BObject visitor, BObject fieldNode) {
         ServiceType serviceType = (ServiceType) service.getType();
-        BString expectedResourceName = fieldNode.getStringValue(NAME_FIELD);
-
-        Module module = getModule();
-        StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
-                                                     EXECUTE_SINGLE_RESOURCE_FUNCTION);
-
+        String fieldName = fieldNode.getStringValue(NAME_FIELD).getValue();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             String resourceName = getResourceName(resourceMethod);
-            if (resourceName.equals(expectedResourceName.getValue())) {
-                Object[] args = getArgsForResource(resourceMethod, arguments);
-                CountDownLatch latch = new CountDownLatch(1);
-                CallableUnitCallback callback = new CallableUnitCallback(latch);
-                environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, metadata,
-                                                           callback, args);
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    // Ignore
-                }
-                Object result = callback.getResult();
-                if (result instanceof BError) {
-                    BArray errors = visitor.getArrayValue(ERRORS_FIELD);
-                    errors.append(getErrorDetailRecord((BError) result, fieldNode));
-                } else if (result instanceof BMap) {
-                    BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
-                    return getDataFromRecord(fieldNode, resultRecord);
-                } else if (result instanceof BArray) {
-                    return getDataFromArray(fieldNode, (BArray) result);
-                } else if (result instanceof BObject) {
-                    BObject subService = (BObject) result;
-                    BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-                    BMap<BString, Object> data = ValueCreator.createRecordValue(module, DATA_RECORD);
-                    for (int i = 0; i < selections.size(); i++) {
-                        BObject subField = (BObject) selections.get(i);
-                        BMap<BString, Object> subfieldArgs = getArgumentsFromField(subField);
-                        Object subFieldValue = executeSingleResource(environment, subService, visitor, subField,
-                                                                     subfieldArgs);
-                        data.put(subField.getStringValue(NAME_FIELD), subFieldValue);
-                    }
-                    return data;
-                } else {
-                    return result;
-                }
+            if (resourceName.equals(fieldName)) {
+                return getResourceExecutionResult(environment, service, visitor, fieldNode, resourceMethod);
             }
+        }
+        // Won't hit here if the exact resource is already found, hence must be hierarchical resource
+        return getDataFromService(environment, service, visitor, fieldNode);
+    }
+
+    private static Object getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
+                                                     BObject fieldNode, ResourceMethodType resourceMethod) {
+
+        BMap<BString, Object> arguments = getArgumentsFromField(fieldNode);
+        Object[] args = getArgsForResource(resourceMethod, arguments);
+        CountDownLatch latch = new CountDownLatch(1);
+        CallableUnitCallback callback = new CallableUnitCallback(latch);
+        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
+                                                   callback, args);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // Ignore
+        }
+        Object result = callback.getResult();
+        if (result instanceof BError) {
+            BArray errors = visitor.getArrayValue(ERRORS_FIELD);
+            errors.append(getErrorDetailRecord((BError) result, fieldNode));
+        } else if (result instanceof BMap) {
+            BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
+            return getDataFromRecord(fieldNode, resultRecord);
+        } else if (result instanceof BArray) {
+            return getDataFromArray(fieldNode, (BArray) result);
+        } else if (result instanceof BObject) {
+            return getDataFromService(environment, (BObject) result, visitor, fieldNode);
+        } else {
+            return result;
         }
         return null;
     }
@@ -162,6 +153,18 @@ public class Engine {
             } else {
                 data.put(fieldName, fieldValue);
             }
+        }
+        return data;
+    }
+
+    private static BMap<BString, Object> getDataFromService(Environment environment, BObject service, BObject visitor,
+                                                            BObject fieldNode) {
+        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
+        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
+        for (int i = 0; i < selections.size(); i++) {
+            BObject subField = (BObject) selections.get(i);
+            Object subFieldValue = executeResource(environment, service, visitor, subField);
+            data.put(subField.getStringValue(NAME_FIELD), subFieldValue);
         }
         return data;
     }

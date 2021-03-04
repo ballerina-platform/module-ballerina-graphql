@@ -47,7 +47,7 @@ import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArra
  * @since 0.2.0
  */
 public class TypeTreeGenerator {
-    private ServiceType serviceType;
+    private final ServiceType serviceType;
 
     public TypeTreeGenerator(ServiceType serviceType) {
         this.serviceType = serviceType;
@@ -66,7 +66,7 @@ public class TypeTreeGenerator {
         return serviceNode;
     }
 
-    Node createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, Node parent) {
+    private Node createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, Node parent) {
         if (resourcePath == null || resourcePath.length == 0) {
             String message = "Invalid resource path found for the resource";
             throw createError(message, Utils.ErrorCode.InvalidTypeError);
