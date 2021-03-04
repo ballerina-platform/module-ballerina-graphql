@@ -86,9 +86,6 @@ public class EngineUtils {
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 
-    // Inter-op function names
-    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
-
     // Record Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
     static final String DATA_RECORD = "Data";

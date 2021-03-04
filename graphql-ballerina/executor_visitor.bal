@@ -76,22 +76,10 @@ class ExecutorVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata {
-        map<Scalar> arguments = {};
-        foreach parser:ArgumentNode argument in fieldNode.getArguments() {
-            var argumentValues = self.visitArgument(argument);
-            arguments[argumentValues.name] = argumentValues.value;
-        }
-        return executeSingleResource(self.serviceType, self, fieldNode, arguments);
+        return executeResource(self.serviceType, self, fieldNode);
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ())
-    returns record { string name; Scalar value; } {
-        Scalar value = argumentNode.getValue().value;
-        string name = argumentNode.getName().value;
-
-        return {
-            name: name,
-            value: value
-        };
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+        // Do nothing
     }
 }

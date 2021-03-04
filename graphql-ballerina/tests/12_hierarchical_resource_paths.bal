@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
 
 service /graphql on new Listener(9104) {
     isolated resource function get profile/name/first() returns string {
@@ -48,6 +47,26 @@ function testHierarchicalResourcePaths() returns error? {
             }
         }
     };
-    io:println(actualPayload);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["hierarchicalPaths", "unit"]
+}
+function testHierarchicalResourcePathsMultipleFields() returns error? {
+    string document = "{ profile { name { first last } } }";
+    string url = "http://localhost:9104/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: {
+                    first: "Sherlock",
+                    last: "Holmes"
+                }
+            }
+        }
+    };
     test:assertEquals(actualPayload, expectedPayload);
 }
