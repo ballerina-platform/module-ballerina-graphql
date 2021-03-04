@@ -36,12 +36,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.BOOLEAN;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.DECIMAL;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.FLOAT;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.INTEGER;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
+import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.utils.Utils.createError;
 
 /**
@@ -167,19 +163,5 @@ public class SchemaGenerator {
             schemaType.addField(childField);
         }
         return schemaType;
-    }
-
-    private static String getScalarTypeName(int tag) {
-        if (tag == TypeTags.INT_TAG) {
-            return INTEGER;
-        } else if (tag == TypeTags.DECIMAL_TAG) {
-            return DECIMAL;
-        } else if (tag == TypeTags.FLOAT_TAG) {
-            return FLOAT;
-        } else if (tag == TypeTags.BOOLEAN_TAG) {
-            return BOOLEAN;
-        } else {
-            return STRING;
-        }
     }
 }
