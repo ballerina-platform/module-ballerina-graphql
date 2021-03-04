@@ -19,9 +19,10 @@
 package io.ballerina.stdlib.graphql.schema;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * This class represents a Type in GraphQL schema.
@@ -30,14 +31,14 @@ public class SchemaType {
 
     private TypeKind kind;
     private String name;
-    private Set<SchemaField> fields;
+    private Map<String, SchemaField> fields;
     private List<Object> enumValues;
     SchemaType ofType;
 
     public SchemaType(String name, TypeKind kind) {
         this.name = name;
         this.kind = kind;
-        this.fields = new HashSet<>();
+        this.fields = new HashMap<>();
         this.enumValues = new ArrayList<>();
     }
 
@@ -49,8 +50,16 @@ public class SchemaType {
         return this.kind;
     }
 
-    public Set<SchemaField> getFields() {
-        return this.fields;
+    public Collection<SchemaField> getFields() {
+        return this.fields.values();
+    }
+
+    public SchemaField getField(String name) {
+        return this.fields.get(name);
+    }
+
+    public boolean hasField(String name) {
+        return this.fields.containsKey(name);
     }
 
     public List<Object> getEnumValues() {
@@ -62,7 +71,7 @@ public class SchemaType {
     }
 
     public void addField(SchemaField field) {
-        this.fields.add(field);
+        this.fields.put(field.getName(), field);
     }
 
     public void addEnumValue(Object o) {

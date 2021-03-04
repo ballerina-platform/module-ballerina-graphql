@@ -70,3 +70,50 @@ function testHierarchicalResourcePathsMultipleFields() returns error? {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["hierarchicalPaths", "unit"]
+}
+function testHierarchicalResourcePathsComplete() returns error? {
+    string document = "{ profile { name { first last } age } }";
+    string url = "http://localhost:9104/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: {
+                    first: "Sherlock",
+                    last: "Holmes"
+                },
+                age: 40
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["test", "negative", "hierarchicalPaths", "unit"]
+}
+function testInvalidHierarchicalResourcePaths() returns error? {
+    string document = "{ profile { name { first middle } } }";
+    string url = "http://localhost:9104/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    string expectedErrorMessage = "Cannot query field \"middle\" on type \"name\".";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedErrorMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 26
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
