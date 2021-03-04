@@ -65,19 +65,25 @@ public class SchemaTreeGenerator {
 
     private void addFieldsForServiceType(ServiceType serviceType, SchemaType parent) {
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            parent.addField(createFieldForResource(resourceMethod, resourceMethod.getResourcePath()));
+            parent.addField(createFieldForResource(resourceMethod, resourceMethod.getResourcePath(), parent));
         }
     }
 
-    private SchemaField createFieldForResource(ResourceMethodType resourceMethod, String[] resourcePath) {
+    private SchemaField createFieldForResource(ResourceMethodType resourceMethod, String[] resourcePath,
+                                               SchemaType parent) {
         String name = resourcePath[0];
-        SchemaField schemaField = new SchemaField(name);
+        SchemaField schemaField;
+        if (parent.hasField(name)) {
+            schemaField = parent.getField(name);
+        } else {
+            schemaField = new SchemaField(name);
+        }
 
         if (resourcePath.length > 1) {
             String[] paths = removeFirstElementFromArray(resourcePath);
-            // TODO: Check parent has this field already. Currently changed to a Set
             SchemaType schemaType = getType(name);
-            schemaType.addField(createFieldForResource(resourceMethod, paths));
+            schemaType.addField(createFieldForResource(resourceMethod, paths, schemaType));
+            schemaField.setType(schemaType);
         } else {
             addArgumentsForSchemaField(resourceMethod, schemaField);
             schemaField.setType(getSchemaTypeForField(resourceMethod.getType().getReturnType()));

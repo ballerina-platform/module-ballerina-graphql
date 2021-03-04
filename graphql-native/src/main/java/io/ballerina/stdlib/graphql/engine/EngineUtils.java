@@ -36,10 +36,10 @@ import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
@@ -129,7 +129,7 @@ public class EngineUtils {
         BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
         typeRecord.put(KIND_FIELD, StringUtils.fromString(typeObject.getKind().toString()));
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
-        Set<SchemaField> fields = typeObject.getFields();
+        Collection<SchemaField> fields = typeObject.getFields();
         if (fields != null && fields.size() > 0) {
             typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(fields));
         }
@@ -144,7 +144,7 @@ public class EngineUtils {
         return typeRecord;
     }
 
-    private static BMap<BString, Object> getFieldMapFromFields(Set<SchemaField> fields) {
+    private static BMap<BString, Object> getFieldMapFromFields(Collection<SchemaField> fields) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         MapType fieldRecordMapType = TypeCreator.createMapType(fieldRecord.getType());
         BMap<BString, Object> fieldRecordMap = ValueCreator.createMapValue(fieldRecordMapType);
