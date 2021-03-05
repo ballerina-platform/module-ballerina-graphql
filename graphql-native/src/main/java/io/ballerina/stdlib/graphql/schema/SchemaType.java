@@ -81,20 +81,4 @@ public class SchemaType {
     public void setOfType(SchemaType ofType) {
         this.ofType = ofType;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof SchemaType)) {
-            return false;
-        }
-        if (this.kind != ((SchemaType) obj).kind) {
-            return false;
-        }
-        return this.name.equals(((SchemaType) obj).name);
-    }
-
-    @Override
-    public int hashCode() {
-        return (this.name + this.kind).hashCode();
-    }
 }
