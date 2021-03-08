@@ -44,12 +44,12 @@ function testSimpleIntrospectionQuery() returns @tainted error? {
                         kind: "OBJECT"
                     },
                     {
-                        name: "__InputValue",
-                        kind: "OBJECT"
-                    },
-                    {
                         name: "String",
                         kind: "SCALAR"
+                    },
+                    {
+                        name: "__InputValue",
+                        kind: "OBJECT"
                     },
                     {
                         name: "__Schema",
@@ -83,11 +83,11 @@ function testComplexIntrospectionQuery() returns @tainted error? {
                         kind: "OBJECT"
                     },
                     {
-                        name: "Address",
+                        name: "Query",
                         kind: "OBJECT"
                     },
                     {
-                        name: "Query",
+                        name: "Address",
                         kind: "OBJECT"
                     },
                     {
@@ -99,12 +99,12 @@ function testComplexIntrospectionQuery() returns @tainted error? {
                         kind: "OBJECT"
                     },
                     {
-                        name: "__InputValue",
-                        kind: "OBJECT"
-                    },
-                    {
                         name: "String",
                         kind: "SCALAR"
+                    },
+                    {
+                        name: "__InputValue",
+                        kind: "OBJECT"
                     },
                     {
                         name: "Course",

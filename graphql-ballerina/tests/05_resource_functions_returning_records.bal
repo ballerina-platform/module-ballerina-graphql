@@ -39,7 +39,7 @@ function testGetFieldFromRecordResource() returns @tainted error? {
     http:Request request = new;
     request.setPayload(payload);
 
-    json actualPayload = <json> check httpClient->post("/", request, json);
+    json actualPayload = check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 

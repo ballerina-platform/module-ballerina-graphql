@@ -19,7 +19,10 @@
 package io.ballerina.stdlib.graphql.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents a Type in GraphQL schema.
@@ -28,14 +31,14 @@ public class SchemaType {
 
     private TypeKind kind;
     private String name;
-    private List<SchemaField> fields;
+    private Map<String, SchemaField> fields;
     private List<Object> enumValues;
     SchemaType ofType;
 
     public SchemaType(String name, TypeKind kind) {
         this.name = name;
         this.kind = kind;
-        this.fields = new ArrayList<>();
+        this.fields = new HashMap<>();
         this.enumValues = new ArrayList<>();
     }
 
@@ -47,8 +50,16 @@ public class SchemaType {
         return this.kind;
     }
 
-    public List<SchemaField> getFields() {
-        return this.fields;
+    public Collection<SchemaField> getFields() {
+        return this.fields.values();
+    }
+
+    public SchemaField getField(String name) {
+        return this.fields.get(name);
+    }
+
+    public boolean hasField(String name) {
+        return this.fields.containsKey(name);
     }
 
     public List<Object> getEnumValues() {
@@ -60,7 +71,7 @@ public class SchemaType {
     }
 
     public void addField(SchemaField field) {
-        this.fields.add(field);
+        this.fields.put(field.getName(), field);
     }
 
     public void addEnumValue(Object o) {
@@ -69,21 +80,5 @@ public class SchemaType {
 
     public void setOfType(SchemaType ofType) {
         this.ofType = ofType;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof SchemaType)) {
-            return false;
-        }
-        if (this.kind != ((SchemaType) obj).kind) {
-            return false;
-        }
-        return this.name.equals(((SchemaType) obj).name);
-    }
-
-    @Override
-    public int hashCode() {
-        return (this.name + this.kind).hashCode();
     }
 }
