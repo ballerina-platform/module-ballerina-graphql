@@ -86,5 +86,5 @@ function getJsonPayloadFromService(string url, string document) returns json|err
     };
     http:Request request = new;
     request.setPayload(payload);
-    return <json> check httpClient->post("/", request, json);
+    return check httpClient->post("/", request, json);
 }

@@ -20,6 +20,9 @@ import graphql.parser;
 # Represents a non-implemented feature error
 public type NotImplementedError distinct error;
 
+# Represents an error due to invalid type in GraphQL service
+public type InvalidTypeError distinct error;
+
 # Represents an unsupported functionality error
 public type NotSupportedError distinct error;
 
@@ -30,7 +33,7 @@ public type InvalidConfigurationError distinct error;
 public type ServiceHandlingError distinct error;
 
 # Represents an error occurred while a listener operation
-public type ListenerError InvalidConfigurationError|ServiceHandlingError|NotSupportedError;
+public type ListenerError InvalidConfigurationError|ServiceHandlingError|NotSupportedError|InvalidTypeError;
 
 // Validation errors
 # Represents an error where multiple operations with the same name exists

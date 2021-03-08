@@ -25,7 +25,9 @@ public function testResourcesReturningInvalidUnionType() returns error? {
     string str = result is error ? result.toString() : result.toString();
     test:assertTrue(result is ListenerError);
     ListenerError err = <ListenerError> result;
-    string expectedErrorMessage = "Unsupported union: Ballerina GraphQL does not allow unions other that <T>|error";
+
+    string expectedErrorMessage =
+        "Unsupported union: If a field type is a union, it should be a subtype of \"<T>|error?\", except \"error?\"";
     test:assertEquals(err.message(), expectedErrorMessage);
 }
 

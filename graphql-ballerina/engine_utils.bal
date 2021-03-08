@@ -43,8 +43,8 @@ isolated function createSchema(Service s) returns __Schema|ListenerError = @java
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 
-isolated function executeSingleResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode,
-map<Scalar> arguments) returns anydata = @java:Method {
+isolated function executeResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode)
+returns anydata = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 

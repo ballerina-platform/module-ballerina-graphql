@@ -21,7 +21,8 @@ import ballerina/test;
 }
 function testSchemaGenerationForMultipleResources() returns error? {
     __Schema actualSchema = check createSchema(serviceWithMultipleResources);
-    test:assertEquals(actualSchema, expectedSchemaForMultipleResources);
+    __Schema expectedSchema = check expectedSchemaForMultipleResources.cloneWithType(__Schema);
+    test:assertEquals(actualSchema, expectedSchema);
 }
 
 @test:Config {
@@ -29,7 +30,8 @@ function testSchemaGenerationForMultipleResources() returns error? {
 }
 function testSchemaGenerationForResourcesReturningRecords() returns error? {
     __Schema actualSchema = check createSchema(serviceWithResourcesReturningRecords);
-    test:assertEquals(actualSchema, expectedSchemaForResourcesReturningRecords);
+    __Schema expectedSchema = check expectedSchemaForResourcesReturningRecords.cloneWithType(__Schema);
+    test:assertEquals(actualSchema, expectedSchema);
 }
 
 Service serviceWithMultipleResources = service object {

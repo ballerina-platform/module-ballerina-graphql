@@ -78,7 +78,7 @@ public function testObjectWithNoSelectionQuery() returns @tainted error? {
     string document = "{ profile(id: 4) }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
 
-    string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
+    string expectedMessage = "Field \"profile\" of type \"Person!\" must have a selection of subfields." +
                              " Did you mean \"profile { ... }\"?";
     json expectedPayload = {
         errors: [
@@ -104,7 +104,7 @@ public function testObjectWithNoSelectionQueryWithArguments() returns @tainted e
     string document = "{ profile(id: 4) }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
 
-    string expectedMessage = "Field \"profile\" of type \"Person\" must have a selection of subfields." +
+    string expectedMessage = "Field \"profile\" of type \"Person!\" must have a selection of subfields." +
                              " Did you mean \"profile { ... }\"?";
     json expectedPayload = {
         errors: [
@@ -155,7 +155,8 @@ public function testObjectWithMissingRequiredArgument() returns @tainted error? 
     string document = "{ profile { status } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
 
-    string expectedMessage1 = "Field \"profile\" argument \"id\" of type \"Int\" is required, but it was not provided.";
+    string expectedMessage1 =
+        "Field \"profile\" argument \"id\" of type \"Int!\" is required, but it was not provided.";
     string expectedMessage2 = "Cannot query field \"status\" on type \"Person\".";
     json expectedPayload = {
         errors: [

@@ -62,12 +62,11 @@ function testTimeoutResponse() returns error? {
     http:Request request = new;
     request.setPayload(payload);
 
-    var response = check httpClient->post("/", request);
+    http:Response response = check httpClient->post("/", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 408, msg = "Unexpected status code received: " + statusCode.toString());
-    var textPayload = response.getTextPayload();
+    string actualPaylaod = check response.getTextPayload();
     string expectedMessage = "Idle timeout triggered before initiating outbound response";
-    string actualPaylaod = textPayload is error? textPayload.toString() : textPayload.toString();
     test:assertEquals(actualPaylaod, expectedMessage);
 }
 
@@ -104,14 +103,8 @@ function testInvalidMaxDepth() returns error? {
 }
 function testQueryExceedingMaxDepth() returns error? {
     string document = "{ book { author { books { author { books } } } } }";
-    json payload = {
-        query: document
-    };
-    http:Client httpClient = check new("http://localhost:9103/depthLimitService");
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json actualPayload = <json> check httpClient->post("/", request, json);
+    string url = "http://localhost:9103/depthLimitService";
+    json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
         errors: [
