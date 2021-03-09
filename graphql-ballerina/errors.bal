@@ -14,60 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.parser;
+# Represents any error related to the Ballerina GraphQL module
+public type Error distinct error;
 
-// General errors
 # Represents a non-implemented feature error
-public type NotImplementedError distinct error;
+public type NotImplementedError distinct Error;
 
 # Represents an error due to invalid type in GraphQL service
-public type InvalidTypeError distinct error;
+public type InvalidTypeError distinct Error;
 
 # Represents an unsupported functionality error
-public type NotSupportedError distinct error;
+public type NotSupportedError distinct Error;
 
 # Represents an error due to invalid configurations
-public type InvalidConfigurationError distinct error;
+public type InvalidConfigurationError distinct Error;
 
 # Represents an error occurred in the listener while handling a service
-public type ServiceHandlingError distinct error;
-
-# Represents an error occurred while a listener operation
-public type ListenerError InvalidConfigurationError|ServiceHandlingError|NotSupportedError|InvalidTypeError;
-
-// Validation errors
-# Represents an error where multiple operations with the same name exists
-public type DuplicateOperationError distinct error;
-
-# Represents an error occurred when a required field not found in graphql service resources
-public type FieldNotFoundError distinct error;
-
-# Represents an error occurred when a required field not found in graphql service resources
-public type InvalidDocumentError distinct error;
-
-# Represents an error occurred when the provided argument type mismatched with the expected type
-public type InvalidArgumentTypeError distinct error;
-
-# Represents an error occurred when the provided selection is invalid
-public type InvalidSelectionError distinct error;
-
-# Represents an error occurred when a required argument is missing
-public type MissingRequiredArgumentError distinct error;
-
-# Represents the errors occurred while validating a GraphQL document
-public type ValidationError DuplicateOperationError|FieldNotFoundError|InvalidDocumentError|NotImplementedError|
-                            InvalidArgumentTypeError|InvalidSelectionError|MissingRequiredArgumentError;
-
-// Execution errors
-
-# Represents an error occurred while parsing a document
-public type ParsingError distinct error<parser:Location>;
-
-# Represents an error where the provided operation is not found in a document
-public type OperationNotFoundError distinct error;
-
-# Represents the errors occurred while executing a GraphQL document
-public type ExecutionError OperationNotFoundError;
-
-# Represents any error related to the Ballerina GraphQL module
-public type Error ParsingError|ValidationError|ExecutionError|ListenerError;
+public type ServiceHandlingError distinct Error;

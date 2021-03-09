@@ -39,21 +39,6 @@ public type RequestLimitConfigs record {|
     *http:RequestLimitConfigs;
 |};
 
-# A record for configuring SSL/TLS protocol and version to be used for the undelying HTTP service.
-public type Protocols record {|
-    *http:Protocols;
-|};
-
-# A record for providing configurations for certificate revocation status checks.
-public type ValidateCert record {|
-    *http:ValidateCert;
-|};
-
-# A record for providing configurations for validate the certificate chain from the root CA.
-public type ListenerOcspStapling record {|
-    *http:ListenerOcspStapling;
-|};
-
 # Represents the data in an output object for a GraphQL query.
 public type Data record {
     // Intentionally kept empty
