@@ -30,8 +30,8 @@ isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] error
 }
 
 isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail {
-    int line = <int> checkpanic err.detail()["line"];
-    int column = <int> checkpanic err.detail()["column"];
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
     Location location = { line: line, column: column };
     return {
         message: err.message(),
