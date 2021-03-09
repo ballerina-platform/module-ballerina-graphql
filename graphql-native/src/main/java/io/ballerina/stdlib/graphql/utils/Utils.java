@@ -33,31 +33,15 @@ public class Utils {
     // Inter-op function names
     static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
-    /**
-     * Represents different error codes for errors in Ballerina GraphQL package.
-     */
-    public enum ErrorCode {
-
-        NotSupportedError("NotSupportedError"),
-        InvalidTypeError("InvalidTypeError");
-
-        private String errorCode;
-
-        ErrorCode(String errorCode) {
-            this.errorCode = errorCode;
-        }
-
-        public String errorCode() {
-            return errorCode;
-        }
-    }
+    public static final String NOT_SUPPORTED_ERROR = "NotSupportedError";
+    public static final String INVALID_TYPE_ERROR = "InvalidTypeError";
 
     public static final StrandMetadata STRAND_METADATA = new StrandMetadata(getModule().getOrg(), getModule().getName(),
                                                                             getModule().getVersion(),
                                                                             EXECUTE_SINGLE_RESOURCE_FUNCTION);
 
-    public static BError createError(String message, ErrorCode errorCode) {
-        return ErrorCreator.createDistinctError(errorCode.errorCode(), getModule(), StringUtils.fromString(message));
+    public static BError createError(String message, String errorTypeName) {
+        return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);
     }
 
     public static String[] removeFirstElementFromArray(String[] array) {

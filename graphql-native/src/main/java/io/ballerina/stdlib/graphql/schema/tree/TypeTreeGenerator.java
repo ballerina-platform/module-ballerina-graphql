@@ -27,7 +27,6 @@ import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
-import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +37,8 @@ import static io.ballerina.stdlib.graphql.engine.EngineUtils.FLOAT;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.INTEGER;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.utils.Utils.INVALID_TYPE_ERROR;
+import static io.ballerina.stdlib.graphql.utils.Utils.NOT_SUPPORTED_ERROR;
 import static io.ballerina.stdlib.graphql.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArray;
 
@@ -69,7 +70,7 @@ public class TypeTreeGenerator {
     private Node createNodeForResource(ResourceMethodType resourceMethod, String[] resourcePath, Node parent) {
         if (resourcePath == null || resourcePath.length == 0) {
             String message = "Invalid resource path found for the resource";
-            throw createError(message, Utils.ErrorCode.InvalidTypeError);
+            throw createError(message, INVALID_TYPE_ERROR);
         }
 
         String name = resourcePath[0];
@@ -100,7 +101,7 @@ public class TypeTreeGenerator {
             String serviceName = serviceType.getName();
             if (serviceName.startsWith("$")) {
                 String message = "Returning anonymous service objects are not supported by GraphQL resources";
-                throw createError(message, Utils.ErrorCode.NotSupportedError);
+                throw createError(message, NOT_SUPPORTED_ERROR);
             }
             return createNodeForService(name, serviceType);
         } else if (tag == TypeTags.MAP_TAG) {
@@ -114,7 +115,7 @@ public class TypeTreeGenerator {
             return createNodeForUnionType(name, (UnionType) type);
         } else {
             String message = "Unsupported type found: " + type.getName();
-            throw createError(message, Utils.ErrorCode.NotSupportedError);
+            throw createError(message, NOT_SUPPORTED_ERROR);
         }
     }
 
@@ -156,7 +157,7 @@ public class TypeTreeGenerator {
             String message =
                     "Unsupported union: If a field type is a union, it should be a subtype of \"<T>|error?\", except " +
                             "\"error?\"";
-            throw createError(message, Utils.ErrorCode.NotSupportedError);
+            throw createError(message, NOT_SUPPORTED_ERROR);
         }
         return resultType;
     }

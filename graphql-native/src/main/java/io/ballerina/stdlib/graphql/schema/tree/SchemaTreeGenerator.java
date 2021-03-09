@@ -32,7 +32,6 @@ import io.ballerina.stdlib.graphql.schema.InputValue;
 import io.ballerina.stdlib.graphql.schema.SchemaField;
 import io.ballerina.stdlib.graphql.schema.SchemaType;
 import io.ballerina.stdlib.graphql.schema.TypeKind;
-import io.ballerina.stdlib.graphql.utils.Utils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -40,6 +39,7 @@ import java.util.Map;
 import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getScalarTypeName;
+import static io.ballerina.stdlib.graphql.utils.Utils.INVALID_TYPE_ERROR;
 import static io.ballerina.stdlib.graphql.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArray;
 
@@ -125,7 +125,7 @@ public class SchemaTreeGenerator {
         } else {
             // TODO: Redundant error, since this type cannot be null
             String message = "Type information not found: " + typeName;
-            throw createError(message, Utils.ErrorCode.InvalidTypeError);
+            throw createError(message, INVALID_TYPE_ERROR);
         }
     }
 
