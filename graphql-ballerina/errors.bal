@@ -17,20 +17,17 @@
 # Represents any error related to the Ballerina GraphQL module
 public type Error distinct error;
 
-# Represents an error occurred while a listener operation
-public type ListenerError distinct Error;
-
 # Represents a non-implemented feature error
-public type NotImplementedError distinct ListenerError;
+public type NotImplementedError distinct Error;
 
 # Represents an error due to invalid type in GraphQL service
-public type InvalidTypeError distinct ListenerError;
+public type InvalidTypeError distinct Error;
 
 # Represents an unsupported functionality error
-public type NotSupportedError distinct ListenerError;
+public type NotSupportedError distinct Error;
 
 # Represents an error due to invalid configurations
-public type InvalidConfigurationError distinct ListenerError;
+public type InvalidConfigurationError distinct Error;
 
 # Represents an error occurred in the listener while handling a service
-public type ServiceHandlingError distinct ListenerError;
+public type ServiceHandlingError distinct Error;

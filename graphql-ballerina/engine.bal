@@ -22,7 +22,7 @@ class Engine {
     private Service? graphqlService;
     private int maxQueryDepth;
 
-    public isolated function init(Listener 'listener) returns ListenerError? {
+    public isolated function init(Listener 'listener) returns Error? {
         self.'listener = 'listener;
         self.schema = ();
         self.graphqlService = ();
@@ -57,7 +57,7 @@ class Engine {
         }
     }
 
-    isolated function registerService(Service s) returns ListenerError? {
+    isolated function registerService(Service s) returns Error? {
         self.graphqlService = s;
         self.schema = check createSchema(s);
         GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
