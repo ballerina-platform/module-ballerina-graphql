@@ -76,7 +76,7 @@ function testTimeoutResponse() returns error? {
 function testConfigurationsWithHttpListener() returns error? {
     http:Listener httpListener = check new(91021);
     var graphqlListener = new Listener(httpListener, configs);
-    if (graphqlListener is ListenerError) {
+    if (graphqlListener is Error) {
         string message = "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
         test:assertEquals(message, graphqlListener.message());
     } else {
@@ -90,7 +90,7 @@ function testConfigurationsWithHttpListener() returns error? {
 function testInvalidMaxDepth() returns error? {
     Listener graphqlListener = check new Listener(91022);
     var result = graphqlListener.attach(InvalidDepthLimitService);
-    if (result is ListenerError) {
+    if (result is Error) {
         string message = "Maximum query depth should be an integer greater than 0";
         test:assertEquals(message, result.message());
     } else {
