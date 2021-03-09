@@ -25,52 +25,52 @@ const DOCUMENT_GENERAL = "document_general.txt";
 const GREETING_QUERY_DOCUMENT = "greeting_query.txt";
 const DIR_DOCUMENTS = "documents";
 
-function getGreetingQueryDocument() returns string {
+isolated function getGreetingQueryDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, GREETING_QUERY_DOCUMENT);
     return readFileAndGetString(path);
 }
 
-function getGeneralNotationDocument() returns string {
+isolated function getGeneralNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_GENERAL);
     return readFileAndGetString(path);
 }
 
-function getShorthandDocument() returns string {
+isolated function getShorthandDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, SHORTHAND_DOCUMENT);
     return readFileAndGetString(path);
 }
 
-function getShorthandDocumentWithInvalidQuery() returns string {
+isolated function getShorthandDocumentWithInvalidQuery() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, INVALID_SHORTHAND_DOCUMENT);
     return readFileAndGetString(path);
 }
 
-function getDocumentWithTwoAnonymousOperations() returns string {
+isolated function getDocumentWithTwoAnonymousOperations() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_TWO_ANONYMOUS_OPERATIONS);
     return readFileAndGetString(path);
 }
 
-function getInvalidShorthandNotationDocument() returns string {
+isolated function getInvalidShorthandNotationDocument() returns string {
     string documentsDirPath = checkpanic getDocumentsPath();
     string path = checkpanic file:joinPath(documentsDirPath, DOCUMENT_SHORTHAND_INVALID);
     return readFileAndGetString(path);
 }
 
-function getDocumentsPath() returns string|error {
+isolated function getDocumentsPath() returns string|error {
     string resourcePath = check getResourcePath();
     return file:joinPath(resourcePath, DIR_DOCUMENTS);
 }
 
-function getResourcePath() returns string|error {
+isolated function getResourcePath() returns string|error {
     return file:joinPath("tests", "resources");
 }
 
-function readFileAndGetString(string filePath) returns string {
+isolated function readFileAndGetString(string filePath) returns string {
     var fileText = io:fileReadString(filePath);
     if (fileText is error) {
         panic fileText;
@@ -86,5 +86,5 @@ function getJsonPayloadFromService(string url, string document) returns json|err
     };
     http:Request request = new;
     request.setPayload(payload);
-    return <json> check httpClient->post("/", request, json);
+    return check httpClient->post("/", request, json);
 }

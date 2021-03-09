@@ -18,18 +18,12 @@
 
 package io.ballerina.stdlib.graphql.engine;
 
-import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.MapType;
-import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
-import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
-import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -47,17 +41,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static io.ballerina.runtime.api.TypeTags.ARRAY_TAG;
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
-import static io.ballerina.runtime.api.TypeTags.ERROR_TAG;
-import static io.ballerina.runtime.api.TypeTags.FINITE_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
-import static io.ballerina.runtime.api.TypeTags.MAP_TAG;
-import static io.ballerina.runtime.api.TypeTags.RECORD_TYPE_TAG;
-import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
 import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
 
 /**
@@ -74,6 +61,7 @@ public class EngineUtils {
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
     public static final String TYPE_KIND_ENUM = "__TypeKind";
+    public static final String QUERY_TYPE_NAME = "queryType";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -88,17 +76,15 @@ public class EngineUtils {
     private static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
 
     // Schema related type names
-    static final String INTEGER = "Int";
-    static final String STRING = "String";
-    static final String BOOLEAN = "Boolean";
-    static final String FLOAT = "Float";
-    static final String QUERY = "Query";
+    public static final String INTEGER = "Int";
+    public static final String STRING = "String";
+    public static final String BOOLEAN = "Boolean";
+    public static final String FLOAT = "Float";
+    public static final String DECIMAL = "Decimal";
+    public static final String QUERY = "Query";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
-
-    // Inter-op function names
-    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
     // Record Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
@@ -112,136 +98,10 @@ public class EngineUtils {
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
 
-    // Error Types
-    enum ErrorCode {
-
-        NotSupportedError("NotSupportedError");
-
-        private String errorCode;
-
-        ErrorCode(String errorCode) {
-            this.errorCode = errorCode;
-        }
-
-        public String errorCode() {
-            return errorCode;
-        }
-    }
-
-    static void addQueryFieldsForServiceType(ServiceType serviceType, SchemaType schemaType, Schema schema) {
-        ResourceMethodType[] resourceFunctions = serviceType.getResourceMethods();
-        for (ResourceMethodType resourceMethod : resourceFunctions) {
-            schemaType.addField(getFieldForResource(resourceMethod, schema));
-        }
-    }
-
-    private static SchemaField getFieldForResource(ResourceMethodType resourceMethod, Schema schema) {
-        String fieldName = getResourceName(resourceMethod);
-        // TODO: Check accessor: Only get allowed
-        SchemaField field = new SchemaField(fieldName);
-        addArgsToField(field, resourceMethod, schema);
-        field.setType(getSchemaTypeForBalType(resourceMethod.getType().getReturnParameterType(), schema));
-        return field;
-    }
-
-    static String getResourceName(ResourceMethodType resourceMethod) {
+    public static String getResourceName(ResourceMethodType resourceMethod) {
         String[] nameArray = resourceMethod.getResourcePath();
         int nameIndex = nameArray.length;
         return nameArray[nameIndex - 1];
-    }
-
-    static SchemaType getSchemaTypeForBalType(Type type, Schema schema) {
-        int tag = type.getTag();
-        if (schema.getType(type.getName()) != null) {
-            return schema.getType(type.getName());
-        }
-        if (tag == INT_TAG) {
-            SchemaType schemaType = new SchemaType(INTEGER, TypeKind.SCALAR);
-            schema.addType(schemaType);
-            return schemaType;
-        } else if (tag == STRING_TAG) {
-            SchemaType schemaType = new SchemaType(STRING, TypeKind.SCALAR);
-            schema.addType(schemaType);
-            return schemaType;
-        } else if (tag == BOOLEAN_TAG) {
-            SchemaType schemaType = new SchemaType(BOOLEAN, TypeKind.SCALAR);
-            schema.addType(schemaType);
-            return schemaType;
-        } else if (tag == FLOAT_TAG) {
-            SchemaType schemaType = new SchemaType(FLOAT, TypeKind.SCALAR);
-            schema.addType(schemaType);
-            return schemaType;
-        } else if (tag == RECORD_TYPE_TAG) {
-            RecordType record = (RecordType) type;
-            SchemaType fieldType = new SchemaType(record.getName(), TypeKind.OBJECT);
-            Collection<Field> recordFields = record.getFields().values();
-            for (Field recordField : recordFields) {
-                SchemaField field = new SchemaField(recordField.getFieldName());
-                field.setType(getSchemaTypeForBalType(recordField.getFieldType(), schema));
-                fieldType.addField(field);
-            }
-            schema.addType(fieldType);
-            return fieldType;
-        } else if (tag == SERVICE_TAG) {
-            ServiceType service = (ServiceType) type;
-            String serviceName = service.getName();
-            if (serviceName.startsWith("$anon")) {
-                String message = "Returning anonymous service objects are not supported by GraphQL resources";
-                throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                       StringUtils.fromString(message));
-            }
-            SchemaType fieldType = new SchemaType(service.getName(), TypeKind.OBJECT);
-            addQueryFieldsForServiceType(service, fieldType, schema);
-            schema.addType(fieldType);
-            return fieldType;
-        } else if (tag == MAP_TAG) {
-            MapType mapType = (MapType) type;
-            Type constrainedType = mapType.getConstrainedType();
-            SchemaType schemaType = getSchemaTypeForBalType(constrainedType, schema);
-            schema.addType(schemaType);
-            return schemaType;
-        } else if (tag == FINITE_TYPE_TAG) {
-            FiniteType finiteType = (FiniteType) type;
-            SchemaType schemaType = new SchemaType(type.getName(), TypeKind.ENUM);
-            for (Object value : finiteType.getValueSpace()) {
-                schemaType.addEnumValue(value);
-            }
-            schema.addType(schemaType);
-            return schemaType;
-        } else if (tag == UNION_TAG) {
-            Type mainType = getMainTypeForUnionTypes((UnionType) type);
-            return getSchemaTypeForBalType(mainType, schema);
-        } else if (tag == ARRAY_TAG) {
-            ArrayType arrayType = (ArrayType) type;
-            SchemaType ofType = getSchemaTypeForBalType(arrayType.getElementType(), schema);
-            String typeName = "[" + ofType.getName() + "]";
-            SchemaType schemaType = new SchemaType(typeName, TypeKind.NON_NULL);
-            schemaType.setOfType(ofType);
-            return schemaType;
-        } else {
-            String message = "Unsupported return type: " + type.getName();
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
-        }
-    }
-
-    private static void addArgsToField(SchemaField field, ResourceMethodType resourceMethod, Schema schema) {
-        Type[] parameterTypes = resourceMethod.getParameterTypes();
-        String[] parameterNames = resourceMethod.getParamNames();
-
-        if (parameterNames.length == 0) {
-            return;
-        }
-        // TODO: Handle default values (https://github.com/ballerina-platform/ballerina-lang/issues/27417)
-        for (int i = 0; i < parameterNames.length; i++) {
-            field.addArg(getInputValue(parameterNames[i], parameterTypes[i], schema));
-        }
-    }
-
-    private static InputValue getInputValue(String name, Type type, Schema schema) {
-        SchemaType inputType = getSchemaTypeForBalType(type, schema);
-        // TODO: Handle record fields. Records can't be inputs yet
-        return new InputValue(name, inputType);
     }
 
     static BMap<BString, Object> getSchemaRecordFromSchema(Schema schema) {
@@ -252,7 +112,6 @@ public class EngineUtils {
         return schemaRecord;
     }
 
-    // TODO: Can we re-use the same type record, when needed?
     private static BMap<BString, Object> getTypeRecordMapFromSchema(Map<String, SchemaType> types) {
         BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
         MapType typesMapType = TypeCreator.createMapType(typeRecord.getType());
@@ -270,7 +129,7 @@ public class EngineUtils {
         BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
         typeRecord.put(KIND_FIELD, StringUtils.fromString(typeObject.getKind().toString()));
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
-        List<SchemaField> fields = typeObject.getFields();
+        Collection<SchemaField> fields = typeObject.getFields();
         if (fields != null && fields.size() > 0) {
             typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(fields));
         }
@@ -285,7 +144,7 @@ public class EngineUtils {
         return typeRecord;
     }
 
-    private static BMap<BString, Object> getFieldMapFromFields(List<SchemaField> fields) {
+    private static BMap<BString, Object> getFieldMapFromFields(Collection<SchemaField> fields) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         MapType fieldRecordMapType = TypeCreator.createMapType(fieldRecord.getType());
         BMap<BString, Object> fieldRecordMap = ValueCreator.createMapValue(fieldRecordMapType);
@@ -351,48 +210,6 @@ public class EngineUtils {
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);
         return errorDetail;
-    }
-
-    private static Type getMainTypeForUnionTypes(UnionType type) {
-        List<Type> memberTypes = type.getMemberTypes();
-        if (isFinite(memberTypes)) {
-            return memberTypes.get(0);
-        }
-        if (memberTypes.size() != 2) {
-            String message = "GraphQL resources does not allow to return union of more than two types";
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
-        }
-        if (memberTypes.get(0).getTag() == ERROR_TAG) {
-            return getMainTypeFromErrorUnion(memberTypes.get(1));
-        } else if (memberTypes.get(1).getTag() == ERROR_TAG) {
-            return getMainTypeFromErrorUnion(memberTypes.get(0));
-        } else {
-            String message = "Unsupported union: Ballerina GraphQL does not allow unions other that <T>|error";
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
-        }
-    }
-
-    private static Type getMainTypeFromErrorUnion(Type mainType) {
-        int mainTypeTag = mainType.getTag();
-        if (mainTypeTag == INT_TAG || mainTypeTag == FLOAT_TAG || mainTypeTag == BOOLEAN_TAG ||
-                mainTypeTag == STRING_TAG || mainTypeTag == RECORD_TYPE_TAG || mainTypeTag == SERVICE_TAG) {
-            return mainType;
-        } else {
-            String message = "Unsupported union with error: " + mainType.getName();
-            throw ErrorCreator.createDistinctError(ErrorCode.NotSupportedError.errorCode(), getModule(),
-                                                   StringUtils.fromString(message));
-        }
-    }
-
-    private static boolean isFinite(List<Type> memberTypes) {
-        for (Type type : memberTypes) {
-            if (type.getTag() != FINITE_TYPE_TAG) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static SchemaType createNonNullType() {

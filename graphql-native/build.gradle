@@ -27,8 +27,8 @@ dependencies {
     checkstyle project(':build-config:checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstylePluginVersion}"
 
-    compile group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
-    compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
+    implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
+    implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
 }
 
 def excludePattern = '**/module-info.java'
@@ -69,13 +69,5 @@ compileJava {
         ]
         classpath = files()
     }
-}
-
-task copyJavaClassFiles(type: Copy) {
-    from("${project.buildDir}/classes") {
-        exclude '**/module-info.class'
-        include '**/*.class'
-    }
-    into "${project.rootDir.absolutePath}/build/classes"
 }
 

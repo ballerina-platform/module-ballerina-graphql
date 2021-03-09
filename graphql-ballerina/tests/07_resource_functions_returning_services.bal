@@ -132,8 +132,8 @@ public function testComplexService() returns @tainted error? {
 }
 public function testResourcesReturningServiceObjects() returns @tainted error? {
     var result = serviceTypeListener.attach(serviceReturningServiceObjects, "invalidService");
-    test:assertTrue(result is ListenerError);
-    ListenerError err = <ListenerError> result;
+    test:assertTrue(result is Error);
+    Error err = <Error> result;
     string expectedMessage = "Returning anonymous service objects are not supported by GraphQL resources";
     test:assertEquals(err.message(), expectedMessage);
 }

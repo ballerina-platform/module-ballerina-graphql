@@ -27,8 +27,9 @@ public class Listener {
     #
     # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service
     # + configuration - Configurations for the GraphQL service listener
+    # + return - A `graphql:Error` if the listener initialization is failed, otherwise nil
     public isolated function init(int|http:Listener listenTo, ListenerConfiguration? configuration = ())
-    returns ListenerError? {
+    returns Error? {
         if (listenTo is int) {
             http:Listener|error httpListener = new(listenTo, configuration);
             if (httpListener is error) {
@@ -52,8 +53,9 @@ public class Listener {
     #
     # + s - The `graphql:Service` object to attach
     # + name - The path of the service to be hosted
-    # + return - A `graphql:ListenerError`, if an error occurred during the service attaching process, otherwise nil
-    public isolated function attach(Service s, string[]|string? name = ()) returns ListenerError? {
+    # + return - A `graphql:Error`, if an error occurred during the service attaching process or the schema
+    #            generation process, otherwise nil
+    public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         error? result = self.httpListener.attach(self.httpService, name);
         if (result is error) {
             return error ServiceHandlingError("Error occurred while attaching the service", result);
@@ -64,8 +66,8 @@ public class Listener {
     # Detaches the provided service from the Listener.
     #
     # + s - The service to be detached
-    # + return - A `graphql:ListenerError`, if an error occurred during the service detaching process, otherwise nil
-    public isolated function detach(Service s) returns ListenerError? {
+    # + return - A `graphql:Error`, if an error occurred during the service detaching process, otherwise nil
+    public isolated function detach(Service s) returns Error? {
         error? result = self.httpListener.detach(self.httpService);
         if (result is error) {
             return error ServiceHandlingError("Error occurred while detaching the service", result);
@@ -74,8 +76,8 @@ public class Listener {
 
     # Starts the attached service.
     #
-    # + return - A `graphql:ListenerError`, if an error occurred during the service starting process, otherwise nil
-    public isolated function 'start() returns ListenerError? {
+    # + return - A `graphql:Error`, if an error occurred during the service starting process, otherwise nil
+    public isolated function 'start() returns Error? {
         error? result = self.httpListener.'start();
         if (result is error) {
             return error ServiceHandlingError("Error occurred while starting the service", result);
@@ -84,8 +86,8 @@ public class Listener {
 
     # Gracefully stops the graphql listener. Already accepted requests will be served before the connection closure.
     #
-    # + return - A `graphql:ListenerError`, if an error occurred during the service stopping process, otherwise nil
-    public isolated function gracefulStop() returns ListenerError? {
+    # + return - A `graphql:Error`, if an error occurred during the service stopping process, otherwise nil
+    public isolated function gracefulStop() returns Error? {
         error? result = self.httpListener.gracefulStop();
         if (result is error) {
             return error ServiceHandlingError("Error occurred while stopping the service", result);
@@ -94,8 +96,8 @@ public class Listener {
 
     # Stops the service listener immediately. It is not implemented yet.
     #
-    # + return - A `graphql:ListenerError`, if an error occurred during the service stopping process, otherwise nil
-    public isolated function immediateStop() returns ListenerError? {
+    # + return - A `graphql:Error`, if an error occurred during the service stopping process, otherwise nil
+    public isolated function immediateStop() returns Error? {
         error? result = self.httpListener.immediateStop();
         if (result is error) {
             return error ServiceHandlingError("Error occurred while stopping the service", result);

@@ -62,18 +62,12 @@ function testTimeoutResponse() returns error? {
     http:Request request = new;
     request.setPayload(payload);
 
-    var response = check httpClient->post("/", request);
-    if (response is http:Response) {
-        int statusCode = response.statusCode;
-        test:assertEquals(statusCode, 408, msg = "Unexpected status code received: " + statusCode.toString());
-
-        var textPayload = response.getTextPayload();
-        string expectedMessage = "Idle timeout triggered before initiating outbound response";
-        string actualPaylaod = textPayload is error? textPayload.toString() : textPayload.toString();
-        test:assertEquals(actualPaylaod, expectedMessage);
-    } else {
-        test:assertFail("HTTP response expected");
-    }
+    http:Response response = check httpClient->post("/", request);
+    int statusCode = response.statusCode;
+    test:assertEquals(statusCode, 408, msg = "Unexpected status code received: " + statusCode.toString());
+    string actualPaylaod = check response.getTextPayload();
+    string expectedMessage = "Idle timeout triggered before initiating outbound response";
+    test:assertEquals(actualPaylaod, expectedMessage);
 }
 
 @test:Config {
@@ -82,7 +76,7 @@ function testTimeoutResponse() returns error? {
 function testConfigurationsWithHttpListener() returns error? {
     http:Listener httpListener = check new(91021);
     var graphqlListener = new Listener(httpListener, configs);
-    if (graphqlListener is ListenerError) {
+    if (graphqlListener is Error) {
         string message = "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
         test:assertEquals(message, graphqlListener.message());
     } else {
@@ -96,7 +90,7 @@ function testConfigurationsWithHttpListener() returns error? {
 function testInvalidMaxDepth() returns error? {
     Listener graphqlListener = check new Listener(91022);
     var result = graphqlListener.attach(InvalidDepthLimitService);
-    if (result is ListenerError) {
+    if (result is Error) {
         string message = "Maximum query depth should be an integer greater than 0";
         test:assertEquals(message, result.message());
     } else {
@@ -109,14 +103,8 @@ function testInvalidMaxDepth() returns error? {
 }
 function testQueryExceedingMaxDepth() returns error? {
     string document = "{ book { author { books { author { books } } } } }";
-    json payload = {
-        query: document
-    };
-    http:Client httpClient = check new("http://localhost:9103/depthLimitService");
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json actualPayload = <json> check httpClient->post("/", request, json);
+    string url = "http://localhost:9103/depthLimitService";
+    json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
         errors: [

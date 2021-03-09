@@ -14,21 +14,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// Lexer errors
-# Represents an error due to unterminated string in the GraphQL document
-public type UnterminatedStringError distinct error<Location>;
-
-# Represents an error due to invalid token in the GraphQL document
-public type InvalidTokenError distinct error<Location>;
-
-# Represents an error due to invalid character in the GraphQL document
-public type InvalidCharacterError distinct error<Location>;
-
-# Represents an internal error occurred during the document parsing
-public type InternalError distinct error<Location>;
+# Represents the errors occurred while parsing a GraphQL document
+public type Error distinct error<Location>;
 
 # Represents a syntax error in a GraphQL document
-public type SyntaxError InvalidTokenError|InvalidCharacterError|UnterminatedStringError|InternalError;
+public type SyntaxError distinct Error;
 
-# Represents the errors occurred while parsing a GraphQL document
-public type Error SyntaxError;
+// Lexer errors
+# Represents an error due to unterminated string in the GraphQL document
+public type UnterminatedStringError distinct SyntaxError;
+
+# Represents an error due to invalid token in the GraphQL document
+public type InvalidTokenError distinct SyntaxError;
+
+# Represents an error due to invalid character in the GraphQL document
+public type InvalidCharacterError distinct SyntaxError;
+
+# Represents an internal error occurred during the document parsing
+public type InternalError distinct SyntaxError;

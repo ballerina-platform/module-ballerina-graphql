@@ -67,7 +67,7 @@ isolated function processJsonPayload(Engine engine, json payload, http:Response 
     }
     if (documentString is string) {
         OutputObject outputObject = engine.getOutputObjectForQuery(documentString, operationName);
-        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
+        response.setJsonPayload(checkpanic outputObject.cloneWithType(json));
     } else {
         setResponseForBadRequest(response);
     }

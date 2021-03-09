@@ -20,8 +20,7 @@ jobs:
                     packageUser: ${{ github.actor }}
                     packagePAT: ${{ secrets.GITHUB_TOKEN }}
                 run: |
-                    ./gradlew build --no-daemon
-                    ./gradlew codeCoverageReport --no-daemon
+                    ./gradlew build --no-daemon --scan
 
             -   name: Archive Error Log
                 uses: actions/upload-artifact@v2
@@ -32,6 +31,7 @@ jobs:
                     if-no-files-found: ignore
 
             -   name: Generate Codecov Report
+                if:  github.event_name == 'pull_request'
                 uses: codecov/codecov-action@v1
 
     windows-build:

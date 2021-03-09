@@ -30,8 +30,8 @@ isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] error
 }
 
 isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail {
-    int line = <int> checkpanic err.detail()["line"];
-    int column = <int> checkpanic err.detail()["column"];
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
     Location location = { line: line, column: column };
     return {
         message: err.message(),
@@ -39,12 +39,12 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function createSchema(Service s) returns __Schema|ListenerError = @java:Method {
+isolated function createSchema(Service s) returns __Schema|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 
-isolated function executeSingleResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode,
-map<Scalar> arguments) returns anydata = @java:Method {
+isolated function executeResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode)
+returns anydata = @java:Method {
     'class: "io.ballerina.stdlib.graphql.engine.Engine"
 } external;
 

@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-__Schema expectedSchemaForMultipleResources = {
+json expectedSchemaForMultipleResources = {
     "types": {
         "__TypeKind": {
-            kind: "ENUM",
-            name: "__TypeKind",
+            "kind": "ENUM",
+            "name": "__TypeKind",
             "enumValues": {
                 "SCALAR": "SCALAR",
                 "OBJECT": "OBJECT",
@@ -26,169 +26,169 @@ __Schema expectedSchemaForMultipleResources = {
             }
         },
         "__Field": {
-            kind: "OBJECT",
-            name: "__Field",
-            fields: {
-                "name": {
-                    name: "name",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+            "kind": "OBJECT",
+            "name": "__Field",
+            "fields": {
+                "args": {
+                    "name": "args",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
                 "type": {
-                    name: "type",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "type",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
-                "args": {
-                    name: "args",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                "name": {
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 }
             }
         },
-        "String": {
-            kind: "SCALAR",
-            name: "String"
-        },
         "Query": {
-            kind: "OBJECT",
-            name: "Query",
-            fields: {
-                "name": {
-                    name: "name",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "String"
+            "kind": "OBJECT",
+            "name": "Query",
+            "fields": {
+                "String": {
+                    "name": "String",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
                     }
                 },
-                "id": {
-                    name: "id",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "Int"
-                    }
-                },
-                "birthdate": {
-                    name: "birthdate",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "String"
-                    },
-                    "args": {
-                        "format": {
-                            name: "format",
-                            'type: {
-                                kind: "SCALAR",
-                                name: "String"
-                            }
-                        }
+                "Int": {
+                    "name": "Int",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "Int"
                     }
                 }
             }
         },
         "__Type": {
-            kind: "OBJECT",
-            name: "__Type",
-            fields: {
+            "kind": "OBJECT",
+            "name": "__Type",
+            "fields": {
+                "fields": {
+                    "name": "fields",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
                 "name": {
-                    name: "name",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
-                    }
-                },
-                kind: {
-                    name: "kind",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
-                    }
-                },
-                fields: {
-                    name: "fields",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
                 "enumValues": {
-                    name: "enumValues",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "enumValues",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                "kind": {
+                    "name": "kind",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 }
             }
         },
+        "String": {
+            "kind": "SCALAR",
+            "name": "String"
+        },
         "__InputValue": {
-            kind: "OBJECT",
-            name: "__InputValue",
-            fields: {
+            "kind": "OBJECT",
+            "name": "__InputValue",
+            "fields": {
+                "defaultValue": {
+                    "name": "defaultValue",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
                 "name": {
-                    name: "name",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
                 "type": {
-                    name: "type",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
-                    }
-                },
-                "defaultValue": {
-                    name: "defaultValue",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "type",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 }
             }
         },
         "Int": {
-            kind: "SCALAR",
-            name: "Int"
+            "kind": "SCALAR",
+            "name": "Int"
         }
     },
-    queryType: {
-        kind: "OBJECT",
-        name: "Query",
-        fields: {
-            "name": {
-                name: "name",
-                'type: {
-                    kind: "SCALAR",
-                    name: "String"
-                }
-            },
+    "queryType": {
+        "kind": "OBJECT",
+        "name": "Query",
+        "fields": {
             "id": {
-                name: "id",
-                'type: {
-                    kind: "SCALAR",
-                    name: "Int"
+                "name": "id",
+                "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                        "kind": "SCALAR",
+                        "name": "Int"
+                    }
                 }
             },
             "birthdate": {
-                name: "birthdate",
-                'type: {
-                    kind: "SCALAR",
-                    name: "String"
+                "name": "birthdate",
+                "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                        "kind": "SCALAR",
+                        "name": "String"
+                    }
                 },
                 "args": {
                     "format": {
-                        name: "format",
-                        'type: {
-                            kind: "SCALAR",
-                            name: "String"
+                        "name": "format",
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "String"
+                            }
                         }
+                    }
+                }
+            },
+            "name": {
+                "name": "name",
+                "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                        "kind": "SCALAR",
+                        "name": "String"
                     }
                 }
             }
@@ -196,11 +196,11 @@ __Schema expectedSchemaForMultipleResources = {
     }
 };
 
-__Schema expectedSchemaForResourcesReturningRecords = {
+json expectedSchemaForResourcesReturningRecords = {
     "types": {
         "__TypeKind": {
-            kind: "ENUM",
-            name: "__TypeKind",
+            "kind": "ENUM",
+            "name": "__TypeKind",
             "enumValues": {
                 "SCALAR": "SCALAR",
                 "OBJECT": "OBJECT",
@@ -208,112 +208,81 @@ __Schema expectedSchemaForResourcesReturningRecords = {
             }
         },
         "__Field": {
-            kind: "OBJECT",
-            name: "__Field",
-            fields: {
+            "kind": "OBJECT",
+            "name": "__Field",
+            "fields": {
                 "name": {
-                    name: "name",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
                 "type": {
-                    name: "type",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "type",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
                 "args": {
-                    name: "args",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
-                    }
-                }
-            }
-        },
-        "String": {
-            kind: "SCALAR",
-            name: "String"
-        },
-        "Address": {
-            kind: "OBJECT",
-            name: "Address",
-            fields: {
-                "number": {
-                    name: "number",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "String"
-                    }
-                },
-                "street": {
-                    name: "street",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "String"
-                    }
-                },
-                "city": {
-                    name: "city",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "String"
+                    "name": "args",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 }
             }
         },
         "Query": {
-            kind: "OBJECT",
-            name: "Query",
-            fields: {
+            "kind": "OBJECT",
+            "name": "Query",
+            "fields": {
                 "person": {
-                    name: "person",
-                    'type: {
-                        kind: "OBJECT",
-                        name: "Person",
-                        fields: {
+                    "name": "person",
+                    "type": {
+                        "kind": "OBJECT",
+                        "name": "Person",
+                        "fields": {
                             "name": {
-                                name: "name",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "String"
+                                "name": "name",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "String"
                                 }
                             },
                             "age": {
-                                name: "age",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "Int"
+                                "name": "age",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "Int"
                                 }
                             },
                             "address": {
-                                name: "address",
-                                'type: {
-                                    kind: "OBJECT",
-                                    name: "Address",
-                                    fields: {
+                                "name": "address",
+                                "type": {
+                                    "kind": "OBJECT",
+                                    "name": "Address",
+                                    "fields": {
                                         "number": {
-                                            name: "number",
-                                            'type: {
-                                                kind: "SCALAR",
-                                                name: "String"
+                                            "name": "number",
+                                            "type": {
+                                                "kind": "SCALAR",
+                                                "name": "String"
                                             }
                                         },
                                         "street": {
-                                            name: "street",
-                                            'type: {
-                                                kind: "SCALAR",
-                                                name: "String"
+                                            "name": "street",
+                                            "type": {
+                                                "kind": "SCALAR",
+                                                "name": "String"
                                             }
                                         },
                                         "city": {
-                                            name: "city",
-                                            'type: {
-                                                kind: "SCALAR",
-                                                name: "String"
+                                            "name": "city",
+                                            "type": {
+                                                "kind": "SCALAR",
+                                                "name": "String"
                                             }
                                         }
                                     }
@@ -324,110 +293,141 @@ __Schema expectedSchemaForResourcesReturningRecords = {
                 }
             }
         },
-        "__Type": {
-            kind: "OBJECT",
-            name: "__Type",
-            fields: {
-                "name": {
-                    name: "name",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+        "Address": {
+            "kind": "OBJECT",
+            "name": "Address",
+            "fields": {
+                "number": {
+                    "name": "number",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
                     }
                 },
-                kind: {
-                    name: "kind",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                "street": {
+                    "name": "street",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
                     }
                 },
-                fields: {
-                    name: "fields",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
-                    }
-                },
-                enumValues: {
-                    name: "enumValues",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                "city": {
+                    "name": "city",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
                     }
                 }
             }
         },
-        "__InputValue": {
-            kind: "OBJECT",
-            name: "__InputValue",
-            fields: {
-                "name": {
-                    name: "name",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+        "__Type": {
+            "kind": "OBJECT",
+            "name": "__Type",
+            "fields": {
+                "fields": {
+                    "name": "fields",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
+                "name": {
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                "kind": {
+                    "name": "kind",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                "enumValues": {
+                    "name": "enumValues",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                }
+            }
+        },
+        "String": {
+            "kind": "SCALAR",
+            "name": "String"
+        },
+        "__InputValue": {
+            "kind": "OBJECT",
+            "name": "__InputValue",
+            "fields": {
                 "type": {
-                    name: "type",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "type",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 },
                 "defaultValue": {
-                    name: "defaultValue",
-                    'type: {
-                        kind: "NON_NULL",
-                        name: ()
+                    "name": "defaultValue",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                "name": {
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
                     }
                 }
             }
         },
         "Person": {
-            kind: "OBJECT",
-            name: "Person",
-            fields: {
+            "kind": "OBJECT",
+            "name": "Person",
+            "fields": {
                 "name": {
-                    name: "name",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "String"
+                    "name": "name",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
                     }
                 },
                 "age": {
-                    name: "age",
-                    'type: {
-                        kind: "SCALAR",
-                        name: "Int"
+                    "name": "age",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "Int"
                     }
                 },
                 "address": {
-                    name: "address",
-                    'type: {
-                        kind: "OBJECT",
-                        name: "Address",
-                        fields: {
+                    "name": "address",
+                    "type": {
+                        "kind": "OBJECT",
+                        "name": "Address",
+                        "fields": {
                             "number": {
-                                name: "number",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "String"
+                                "name": "number",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "String"
                                 }
                             },
                             "street": {
-                                name: "street",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "String"
+                                "name": "street",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "String"
                                 }
                             },
                             "city": {
-                                name: "city",
-                                'type: {
-                                    kind: "SCALAR",
-                                    name: "String"
+                                "name": "city",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "String"
                                 }
                             }
                         }
@@ -436,60 +436,88 @@ __Schema expectedSchemaForResourcesReturningRecords = {
             }
         },
         "Int": {
-            kind: "SCALAR",
-            name: "Int"
+            "kind": "SCALAR",
+            "name": "Int"
         }
     },
-    queryType: {
-        kind: "OBJECT",
-        name: "Query",
-        fields: {
+    "queryType": {
+        "kind": "OBJECT",
+        "name": "Query",
+        "fields": {
             "person": {
-                name: "person",
-                'type: {
-                    kind: "OBJECT",
-                    name: "Person",
-                    fields: {
-                        "name": {
-                            name: "name",
-                            'type: {
-                                kind: "SCALAR",
-                                name: "String"
-                            }
-                        },
-                        "age": {
-                            name: "age",
-                            'type: {
-                                kind: "SCALAR",
-                                name: "Int"
-                            }
-                        },
-                        "address": {
-                            name: "address",
-                            'type: {
-                                kind: "OBJECT",
-                                name: "Address",
-                                fields: {
-                                    "number": {
-                                        name: "number",
-                                        'type: {
-                                            kind: "SCALAR",
-                                            name: "String"
+                "name": "person",
+                "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                        "kind": "OBJECT",
+                        "name": "Person",
+                        "fields": {
+                            "name": {
+                                "name": "name",
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String"
+                                    }
+                                }
+                            },
+                            "address": {
+                                "name": "address",
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "OBJECT",
+                                        "name": "Address",
+                                        "fields": {
+                                            "number": {
+                                                "name": "number",
+                                                "type": {
+                                                    "kind": "NON_NULL",
+                                                    "name": null,
+                                                    "ofType": {
+                                                        "kind": "SCALAR",
+                                                        "name": "String"
+                                                    }
+                                                }
+                                            },
+                                            "street": {
+                                                "name": "street",
+                                                "type": {
+                                                    "kind": "NON_NULL",
+                                                    "name": null,
+                                                    "ofType": {
+                                                        "kind": "SCALAR",
+                                                        "name": "String"
+                                                    }
+                                                }
+                                            },
+                                            "city": {
+                                                "name": "city",
+                                                "type": {
+                                                    "kind": "NON_NULL",
+                                                    "name": null,
+                                                    "ofType": {
+                                                        "kind": "SCALAR",
+                                                        "name": "String"
+                                                    }
+                                                }
+                                            }
                                         }
-                                    },
-                                    "street": {
-                                        name: "street",
-                                        'type: {
-                                            kind: "SCALAR",
-                                            name: "String"
-                                        }
-                                    },
-                                    "city": {
-                                        name: "city",
-                                        'type: {
-                                            kind: "SCALAR",
-                                            name: "String"
-                                        }
+                                    }
+                                }
+                            },
+                            "age": {
+                                "name": "age",
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Int"
                                     }
                                 }
                             }
