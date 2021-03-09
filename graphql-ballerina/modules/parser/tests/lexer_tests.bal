@@ -139,7 +139,7 @@ isolated function testStringInStringInput() returns error? {
 @test:Config {
     groups: ["lexer", "parser", "unit"]
 }
-function testStringWithDoubleQuotes() returns error? {
+isolated function testStringWithDoubleQuotes() returns error? {
     string s = getTextWithQuoteFile();
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -155,7 +155,7 @@ function testStringWithDoubleQuotes() returns error? {
 @test:Config {
     groups: ["lexer", "parser", "unit"]
 }
-function testUnterminatedString() returns error? {
+isolated function testUnterminatedString() returns error? {
     string s = getTextWithUnterminatedStringFile();
     Lexer lexer = new(s);
     Token token = check lexer.read();
