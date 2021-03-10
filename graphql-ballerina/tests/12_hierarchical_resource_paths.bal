@@ -94,7 +94,7 @@ function testHierarchicalResourcePathsComplete() returns error? {
 }
 
 @test:Config {
-    groups: ["test", "negative", "hierarchicalPaths", "unit"]
+    groups: ["negative", "hierarchicalPaths", "unit"]
 }
 function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";

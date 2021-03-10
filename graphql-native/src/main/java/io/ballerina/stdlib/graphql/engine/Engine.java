@@ -102,6 +102,7 @@ public class Engine {
         if (result instanceof BError) {
             BArray errors = visitor.getArrayValue(ERRORS_FIELD);
             errors.append(getErrorDetailRecord((BError) result, fieldNode));
+            return result;
         } else if (result instanceof BMap) {
             BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
             return getDataFromRecord(fieldNode, resultRecord);
@@ -112,7 +113,6 @@ public class Engine {
         } else {
             return result;
         }
-        return null;
     }
 
     public static Object getDataFromBalType(BObject fieldNode, Object data) {
@@ -141,7 +141,7 @@ public class Engine {
 
     private static BMap<BString, Object> getDataFromRecord(BObject fieldNode, BMap<BString, Object> record) {
         BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
+        BMap<BString, Object> data = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BObject subfieldNode = (BObject) selections.get(i);
             BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
@@ -160,7 +160,7 @@ public class Engine {
     private static BMap<BString, Object> getDataFromService(Environment environment, BObject service, BObject visitor,
                                                             BObject fieldNode) {
         BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
+        BMap<BString, Object> data = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BObject subField = (BObject) selections.get(i);
             Object subFieldValue = executeResource(environment, service, visitor, subField);
@@ -194,7 +194,11 @@ public class Engine {
     }
 
     private static ArrayType getDataRecordArrayType() {
-        BMap<BString, Object> data = ValueCreator.createRecordValue(getModule(), DATA_RECORD);
+        BMap<BString, Object> data = createDataRecord();
         return TypeCreator.createArrayType(data.getType());
+    }
+
+    private static BMap<BString, Object> createDataRecord() {
+        return ValueCreator.createRecordValue(getModule(), DATA_RECORD);
     }
 }
