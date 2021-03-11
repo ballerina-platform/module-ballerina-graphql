@@ -68,14 +68,14 @@ class ExecutorVisitor {
                 }
             } else {
                 var fieldResult = self.visitField(fieldNode, self.data);
-                if (fieldResult != ()) {
+                if (fieldResult is anydata) {
                     self.data[fieldNode.getName()] = fieldResult;
                 }
             }
         }
     }
 
-    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata {
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata|error {
         return executeResource(self.serviceType, self, fieldNode);
     }
 

@@ -38,9 +38,11 @@ Service serviceWithInvalidUnionTypes = service object {
 };
 
 service /graphql on new Listener(9098) {
-    resource function get profile(int id) returns Person|error {
+    resource function get profile(int id) returns Person|error? {
         if (id < people.length()) {
             return people[id];
+        } else if (id < 5) {
+            return;
         } else {
             return error("Invalid ID provided");
         }
@@ -67,6 +69,22 @@ public function testResourceReturningUnionTypes() returns @tainted error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["test", "service", "unit"]
+}
+public function testResourceReturningUnionWithNull() returns @tainted error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = "{ profile (id: 4) { name } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            profile: null
+        }
     };
     test:assertEquals(result, expectedPayload);
 }
