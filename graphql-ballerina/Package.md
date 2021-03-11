@@ -26,8 +26,8 @@ listener graphql:Listener graphqlListener = new(4000);
 ``` 
  
 ## Service
-The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated. The resource functions inside the service represents resolvers in the root type.
-Then the GraphQL listener will handle all the incoming requests and dispatches them to the relevant resource function.
+The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated. The resource functions inside the service represent the resolvers of the root type.
+Then, the GraphQL listener will handle all the incoming requests and dispatch them to the relevant resource function.
 
 ### Hello World
 
@@ -41,7 +41,7 @@ service graphql:Service /graphql on new graphql:Listener(4000) {
 }
 ```
 
-The above can be queried using the following graphql document:
+The above can be queried using the GraphQL document below:
 
 ```
 {
@@ -49,7 +49,7 @@ The above can be queried using the following graphql document:
 }
 ```
 
-The result will be the following JSON
+The result will be the following JSON.
 
 ```json
 {
@@ -68,7 +68,7 @@ For more information, see the following.
 The Ballerina GraphQL resources can return the following types:
 
 #### Scalar types 
-The following ballerina types are considered as Scalar types:
+The following Ballerina types are considered as Scalar types:
 - `int`
 - `string`
 - `boolean`
@@ -134,7 +134,7 @@ Result:
 }
 ```
 
-Each field can be queried separately, as the following document:
+Each field can be queried separately as shown in the following document:
 ```
 {
     profile {
@@ -200,7 +200,7 @@ Result:
 }
 ```
 
-Note how each element in the array consists only the required field `name`.
+Each element in the array consists only of the required `name` field.
 
 
 #### Optional Types
@@ -305,7 +305,7 @@ Result:
 Additional configurations to a Ballerina GraphQL service can be provided using a service annotation (`graphql:ServiceConfiguration`).
 
 #### Defining maximum query depth
-When a maximum query depth is provided, all the queries exceeding that limit will be rejected at the validation phase, and will not be executed.
+When a maximum query depth is provided, all the queries exceeding that limit will be rejected at the validation phase and will not be executed.
 
 ```ballerina
 import ballerina/graphql;
@@ -320,7 +320,7 @@ service graphql:Service /graphql on new graphql:Listener(9090) {
 }
 ```
 
-The above service only accepts queries less than 2 levels. For an example, consider the following document:
+The above service only accepts queries of less than 2 levels. For an example, consider the following document:
 ```
 {
     book {
