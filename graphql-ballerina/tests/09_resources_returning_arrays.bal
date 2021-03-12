@@ -33,7 +33,7 @@ service /graphql on new Listener(9100) {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-function testResourcesReturningScalarArrays() returns @tainted error? {
+isolated function testResourcesReturningScalarArrays() returns @tainted error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ ids }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
@@ -49,7 +49,7 @@ function testResourcesReturningScalarArrays() returns @tainted error? {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-function testResourcesReturningArrays() returns @tainted error? {
+isolated function testResourcesReturningArrays() returns @tainted error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ people { name address { city } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
@@ -84,7 +84,7 @@ function testResourcesReturningArrays() returns @tainted error? {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-function testResourcesReturningArraysMissingFields() returns @tainted error? {
+isolated function testResourcesReturningArraysMissingFields() returns @tainted error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ people }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
@@ -110,7 +110,7 @@ function testResourcesReturningArraysMissingFields() returns @tainted error? {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-function testComplexArraySample() returns @tainted error? {
+isolated function testComplexArraySample() returns @tainted error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ students { name courses { name books { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);

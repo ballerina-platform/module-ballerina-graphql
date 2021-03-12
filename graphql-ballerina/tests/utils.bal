@@ -79,12 +79,12 @@ isolated function readFileAndGetString(string filePath) returns string {
     }
 }
 
-function getJsonPayloadFromService(string url, string document) returns json|error {
+isolated function getJsonPayloadFromService(string url, string document) returns json|error {
     http:Client httpClient = check new(url);
     json payload = {
         query: document
     };
     http:Request request = new;
     request.setPayload(payload);
-    return check httpClient->post("/", request, json);
+    return check httpClient->post("/", request, targetType = json);
 }
