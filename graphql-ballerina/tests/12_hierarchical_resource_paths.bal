@@ -33,7 +33,7 @@ service /graphql on new Listener(9104) {
 @test:Config {
     groups: ["hierarchicalPaths", "unit"]
 }
-function testHierarchicalResourcePaths() returns error? {
+isolated function testHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first } } }";
     string url = "http://localhost:9104/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
@@ -53,7 +53,7 @@ function testHierarchicalResourcePaths() returns error? {
 @test:Config {
     groups: ["hierarchicalPaths", "unit"]
 }
-function testHierarchicalResourcePathsMultipleFields() returns error? {
+isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
     string document = "{ profile { name { first last } } }";
     string url = "http://localhost:9104/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
@@ -74,7 +74,7 @@ function testHierarchicalResourcePathsMultipleFields() returns error? {
 @test:Config {
     groups: ["hierarchicalPaths", "unit"]
 }
-function testHierarchicalResourcePathsComplete() returns error? {
+isolated function testHierarchicalResourcePathsComplete() returns error? {
     string document = "{ profile { name { first last } age } }";
     string url = "http://localhost:9104/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
@@ -96,7 +96,7 @@ function testHierarchicalResourcePathsComplete() returns error? {
 @test:Config {
     groups: ["negative", "hierarchicalPaths", "unit"]
 }
-function testInvalidHierarchicalResourcePaths() returns error? {
+isolated function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";
     string url = "http://localhost:9104/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);

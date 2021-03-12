@@ -19,7 +19,7 @@ import ballerina/test;
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testResourcesReturningInvalidUnionType() returns error? {
+function testResourcesReturningInvalidUnionType() returns error? {
     Listener graphqlListener = check new (9099);
     var result = graphqlListener.attach(serviceWithInvalidUnionTypes);
     string str = result is error ? result.toString() : result.toString();
@@ -52,7 +52,7 @@ service /graphql on new Listener(9098) {
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testResourceReturningUnionTypes() returns @tainted error? {
+isolated function testResourceReturningUnionTypes() returns @tainted error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ profile (id: 5) { name } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -76,7 +76,7 @@ public function testResourceReturningUnionTypes() returns @tainted error? {
 @test:Config {
     groups: ["test", "service", "unit"]
 }
-public function testResourceReturningUnionWithNull() returns @tainted error? {
+isolated function testResourceReturningUnionWithNull() returns @tainted error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ profile (id: 4) { name } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);

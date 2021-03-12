@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/test;
 
 listener Listener functionWithArgumentsListener = new(9093);
@@ -29,21 +28,16 @@ service /graphql on functionWithArgumentsListener {
 @test:Config {
     groups: ["listener", "unit"]
 }
-function testFunctionsWithInputParameter() returns @tainted error? {
+isolated function testFunctionsWithInputParameter() returns @tainted error? {
     string document = getGreetingQueryDocument();
-    json payload = {
-        query: document
-    };
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
     json expectedPayload = {
         data: {
             greet: "Hello, Thisaru"
         }
     };
-    http:Client httpClient = check new("http://localhost:9093/graphql");
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json actualPayload = check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 

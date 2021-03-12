@@ -19,7 +19,7 @@ import ballerina/lang.runtime;
 import ballerina/test;
 
 ListenerConfiguration configs = {
-    timeoutInMillis: 1000
+    timeout: 1.0
 };
 listener Listener timeoutListener = new(9102, configs);
 listener Listener depthLimitListener = new(9103);
@@ -53,7 +53,7 @@ service object {
 @test:Config {
     groups: ["configs", "unit"]
 }
-function testTimeoutResponse() returns error? {
+isolated function testTimeoutResponse() returns error? {
     string document = "{ greet }";
     json payload = {
         query: document
@@ -101,7 +101,7 @@ function testInvalidMaxDepth() returns error? {
 @test:Config {
     groups: ["configs", "unit"]
 }
-function testQueryExceedingMaxDepth() returns error? {
+isolated function testQueryExceedingMaxDepth() returns error? {
     string document = "{ book { author { books { author { books } } } } }";
     string url = "http://localhost:9103/depthLimitService";
     json actualPayload = check getJsonPayloadFromService(url, document);
