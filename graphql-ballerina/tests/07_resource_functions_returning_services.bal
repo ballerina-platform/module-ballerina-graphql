@@ -70,7 +70,7 @@ Service serviceReturningServiceObjects = service object {
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testResourceReturningServiceObject() returns @tainted error? {
+isolated function testResourceReturningServiceObject() returns @tainted error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ greet { generalGreeting } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -88,7 +88,7 @@ public function testResourceReturningServiceObject() returns @tainted error? {
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testInvalidQueryFromServiceObjectResource() returns @tainted error? {
+isolated function testInvalidQueryFromServiceObjectResource() returns @tainted error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { nonExisting } } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -109,7 +109,7 @@ public function testInvalidQueryFromServiceObjectResource() returns @tainted err
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testComplexService() returns @tainted error? {
+isolated function testComplexService() returns @tainted error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { first, last } } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -130,7 +130,7 @@ public function testComplexService() returns @tainted error? {
 @test:Config {
     groups: ["service", "unit"]
 }
-public function testResourcesReturningServiceObjects() returns @tainted error? {
+function testResourcesReturningServiceObjects() returns @tainted error? {
     var result = serviceTypeListener.attach(serviceReturningServiceObjects, "invalidService");
     test:assertTrue(result is Error);
     Error err = <Error> result;

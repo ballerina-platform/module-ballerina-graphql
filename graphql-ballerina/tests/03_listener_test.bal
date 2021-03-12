@@ -23,7 +23,7 @@ listener Listener simpleResourceListener = new(9092);
 @test:Config {
     groups: ["listener", "unit"]
 }
-function testShortHandQueryResult() returns @tainted error? {
+isolated function testShortHandQueryResult() returns @tainted error? {
     string document = getGeneralNotationDocument();
     string url = "http://localhost:9092/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
@@ -39,7 +39,7 @@ function testShortHandQueryResult() returns @tainted error? {
 @test:Config {
     groups: ["listener", "unit"]
 }
-function testGetRequestResult() returns @tainted error? {
+isolated function testGetRequestResult() returns @tainted error? {
     string document = "query getPerson { profile(id: 1) { address { city } } }";
     string encodedDocument = check url:encode(document, "UTF-8");
     json expectedPayload = {
@@ -52,10 +52,8 @@ function testGetRequestResult() returns @tainted error? {
         }
     };
     http:Client httpClient = check new("http://localhost:9095");
-    http:Request request = new;
-
     string path = "/graphql?query=" + encodedDocument;
-    json actualPayload = check httpClient->get(path, request, json);
+    json actualPayload = check httpClient->get(path, targetType = json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 

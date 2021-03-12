@@ -14,17 +14,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/test;
 
 @test:Config {
     groups: ["service", "unit"]
 }
-function testGetFieldFromRecordResource() returns @tainted error? {
+isolated function testGetFieldFromRecordResource() returns @tainted error? {
     string document = "query getPerson { profile { name, address { street } } }";
-    json payload = {
-        query: document
-    };
+    string url = "http://localhost:9094/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
     json expectedPayload = {
         data: {
             profile: {
@@ -35,11 +34,6 @@ function testGetFieldFromRecordResource() returns @tainted error? {
             }
         }
     };
-    http:Client httpClient = check new("http://localhost:9094/graphql");
-    http:Request request = new;
-    request.setPayload(payload);
-
-    json actualPayload = check httpClient->post("/", request, json);
     test:assertEquals(actualPayload, expectedPayload);
 }
 

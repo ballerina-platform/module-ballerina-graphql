@@ -19,7 +19,7 @@ import ballerina/test;
 @test:Config {
     groups: ["introspection", "unit"]
 }
-function testSimpleIntrospectionQuery() returns @tainted error? {
+isolated function testSimpleIntrospectionQuery() returns @tainted error? {
     string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema { types { name kind } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
@@ -65,7 +65,7 @@ function testSimpleIntrospectionQuery() returns @tainted error? {
 @test:Config {
     groups: ["introspection", "unit"]
 }
-function testComplexIntrospectionQuery() returns @tainted error? {
+isolated function testComplexIntrospectionQuery() returns @tainted error? {
     // Using 9100 endpoint since it has more complex schema
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ __schema { types { name kind } } }";
@@ -136,7 +136,7 @@ function testComplexIntrospectionQuery() returns @tainted error? {
 @test:Config {
     groups: ["introspection", "unit"]
 }
-function testInvalidIntrospectionQuery() returns @tainted error? {
+isolated function testInvalidIntrospectionQuery() returns @tainted error? {
     string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema { greet } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
@@ -160,7 +160,7 @@ function testInvalidIntrospectionQuery() returns @tainted error? {
 @test:Config {
     groups: ["introspection", "unit"]
 }
-function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
+isolated function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
     string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
@@ -185,7 +185,7 @@ function testIntrospectionQueryWithMissingSelection() returns @tainted error? {
 @test:Config {
     groups: ["introspection", "unit"]
 }
-function testQueryTypeIntrospection() returns @tainted error? {
+isolated function testQueryTypeIntrospection() returns @tainted error? {
     string graphqlUrl ="http://localhost:9101/graphql";
     string document = "{ __schema { queryType { kind fields { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
