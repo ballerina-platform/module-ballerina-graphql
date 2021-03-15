@@ -116,3 +116,9 @@ Student s3 = {
 };
 
 Student[] students = [s1, s2, s3];
+
+EmployeeTable employees = table[
+    { id: 1, name: "John Doe", salary: 1000.00 },
+    { id: 2, name: "Jane Doe", salary: 2000.00 },
+    { id: 3, name: "Johnny Roe", salary: 500.00 }
+];

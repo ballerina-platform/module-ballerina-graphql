@@ -41,3 +41,11 @@ type Student record {
     string name;
     Course[] courses;
 };
+
+type Employee record {|
+    readonly int id;
+    string name;
+    decimal salary;
+|};
+
+type EmployeeTable table<Employee> key(id);
