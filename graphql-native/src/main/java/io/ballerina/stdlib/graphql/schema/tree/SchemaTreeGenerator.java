@@ -22,10 +22,10 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.stdlib.graphql.schema.InputValue;
@@ -102,14 +102,14 @@ public class SchemaTreeGenerator {
             SchemaType ofType = createSchemaTypeForRecordType((RecordType) type);
             schemaType.setOfType(ofType);
             return schemaType;
-        } else if (tag == TypeTags.MAP_TAG) {
-            SchemaType schemaType = getNonNullType();
-            SchemaType ofType = createSchemaTypeForMapType((MapType) type);
-            schemaType.setOfType(ofType);
-            return schemaType;
         } else if (tag == TypeTags.SERVICE_TAG) {
             SchemaType schemaType = getNonNullType();
             addFieldsForServiceType((ServiceType) type, schemaType);
+            return schemaType;
+        } else if (tag == TypeTags.TABLE_TAG) {
+            SchemaType schemaType = getNonNullType();
+            SchemaType ofType = createSchemaTypeForTableType((TableType) type);
+            schemaType.setOfType(ofType);
             return schemaType;
         } else {
             String typeName = getScalarTypeName(tag);
@@ -162,9 +162,15 @@ public class SchemaTreeGenerator {
         return schemaType;
     }
 
-    private SchemaType createSchemaTypeForMapType(MapType mapType) {
-        Type constrainedType = mapType.getConstrainedType();
-        return getSchemaTypeForField(constrainedType);
+    private SchemaType createSchemaTypeForTableType(TableType tableType) {
+        Type constrainedType = tableType.getConstrainedType();
+        SchemaType internalType = getSchemaTypeForField(constrainedType);
+
+        SchemaType returnType = getNonNullType();
+        SchemaType ofType = new SchemaType(null, TypeKind.LIST);
+        ofType.setOfType(internalType);
+        returnType.setOfType(ofType);
+        return returnType;
     }
 
     private void addArgumentsForSchemaField(ResourceMethodType resourceMethod, SchemaField field) {
