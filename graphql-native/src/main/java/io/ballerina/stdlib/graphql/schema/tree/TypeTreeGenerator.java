@@ -21,10 +21,10 @@ package io.ballerina.stdlib.graphql.schema.tree;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 
@@ -104,15 +104,15 @@ public class TypeTreeGenerator {
                 throw createError(message, NOT_SUPPORTED_ERROR);
             }
             return createNodeForService(name, serviceType);
-        } else if (tag == TypeTags.MAP_TAG) {
-            MapType mapType = (MapType) type;
-            return createNodeForMapType(name, mapType);
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
             Type elementType = arrayType.getElementType();
             return createNodeForType(name, elementType);
         } else if (tag == TypeTags.UNION_TAG) {
             return createNodeForUnionType(name, (UnionType) type);
+        } else if (tag == TypeTags.TABLE_TAG) {
+            TableType tableType = (TableType) type;
+            return createNodeForTableType(name, tableType);
         } else {
             String message = "Unsupported type found: " + type.getName();
             throw createError(message, NOT_SUPPORTED_ERROR);
@@ -129,19 +129,19 @@ public class TypeTreeGenerator {
         return recordNode;
     }
 
-    private Node createNodeForMapType(String name, MapType mapType) {
-        Type constrainedType = mapType.getConstrainedType();
-        Node mapNode = new Node(name, mapType);
-        Node node = createNodeForType(constrainedType.getName(), constrainedType);
-        mapNode.addChild(node);
-        return mapNode;
-    }
-
     private Node createNodeForUnionType(String name, UnionType unionType) {
         // TODO: Finite Type?
         List<Type> memberTypes = unionType.getMemberTypes();
         Type type = getNonNullNonErrorTypeFromUnion(memberTypes);
         return createNodeForType(name, type);
+    }
+
+    private Node createNodeForTableType(String name, TableType tableType) {
+        Type constrainedType = tableType.getConstrainedType();
+        Node tableNode = new Node(name, tableType);
+        Node node = createNodeForType(constrainedType.getName(), constrainedType);
+        tableNode.addChild(node);
+        return tableNode;
     }
 
     public static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {

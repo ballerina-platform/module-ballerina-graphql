@@ -21,9 +21,9 @@ package io.ballerina.stdlib.graphql.schema.tree;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.stdlib.graphql.schema.Schema;
@@ -130,13 +130,12 @@ public class SchemaGenerator {
                     schemaType.addField(getSchemaFieldFromRecordField(field));
                 }
             }
-        } else if (tag == TypeTags.MAP_TAG) {
-            MapType mapType = (MapType) type;
-            Type constrainedType = mapType.getConstrainedType();
-            return getSchemaTypeFromType(constrainedType);
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
             return getSchemaTypeFromType(arrayType.getElementType());
+        } else if (tag == TypeTags.TABLE_TAG) {
+            TableType tableType = (TableType) type;
+            return getSchemaTypeFromType(tableType.getConstrainedType());
         } else if (tag == TypeTags.UNION_TAG) {
             UnionType unionType = (UnionType) type;
             Type mainType = getNonNullNonErrorTypeFromUnion(unionType.getMemberTypes());

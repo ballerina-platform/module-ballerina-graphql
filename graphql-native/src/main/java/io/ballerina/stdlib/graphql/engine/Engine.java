@@ -30,6 +30,8 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.values.BTable;
+import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.schema.Schema;
 import io.ballerina.stdlib.graphql.schema.tree.SchemaGenerator;
 import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
@@ -103,15 +105,10 @@ public class Engine {
             BArray errors = visitor.getArrayValue(ERRORS_FIELD);
             errors.append(getErrorDetailRecord((BError) result, fieldNode));
             return result;
-        } else if (result instanceof BMap) {
-            BMap<BString, Object> resultRecord = (BMap<BString, Object>) result;
-            return getDataFromRecord(fieldNode, resultRecord);
-        } else if (result instanceof BArray) {
-            return getDataFromArray(fieldNode, (BArray) result);
         } else if (result instanceof BObject) {
             return getDataFromService(environment, (BObject) result, visitor, fieldNode);
         } else {
-            return result;
+            return getDataFromResult(fieldNode, result);
         }
     }
 
@@ -131,8 +128,8 @@ public class Engine {
         } else {
             BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
             for (int i = 0; i < result.size(); i++) {
-                BMap<BString, Object> resultRecord = (BMap<BString, Object>) result.get(i);
-                BMap<BString, Object> arrayField = getDataFromRecord(fieldNode, resultRecord);
+                Object resultRecord = result.get(i);
+                Object arrayField = getDataFromResult(fieldNode, resultRecord);
                 resultArray.append(arrayField);
             }
             return resultArray;
@@ -146,13 +143,7 @@ public class Engine {
             BObject subfieldNode = (BObject) selections.get(i);
             BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
             Object fieldValue = record.get(fieldName);
-            if (fieldValue instanceof BMap) {
-                data.put(fieldName, getDataFromRecord(subfieldNode, (BMap<BString, Object>) fieldValue));
-            } else if (fieldValue instanceof BArray) {
-                data.put(fieldName, getDataFromArray(subfieldNode, (BArray) fieldValue));
-            } else {
-                data.put(fieldName, fieldValue);
-            }
+            data.put(fieldName, getDataFromResult(subfieldNode, fieldValue));
         }
         return data;
     }
@@ -167,6 +158,25 @@ public class Engine {
             data.put(subField.getStringValue(NAME_FIELD), subFieldValue);
         }
         return data;
+    }
+
+    private static BArray getDataFromTable(BObject fieldNode, BTable table) {
+        Object[] valueArray = table.values().toArray();
+        ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
+        BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
+        return getDataFromArray(fieldNode, valueBArray);
+    }
+
+    private static Object getDataFromResult(BObject fieldNode, Object result) {
+        if (result instanceof BMap) {
+            return getDataFromRecord(fieldNode, (BMap<BString, Object>) result);
+        } else if (result instanceof BArray) {
+            return getDataFromArray(fieldNode, (BArray) result);
+        } else if (result instanceof BTable) {
+            return getDataFromTable(fieldNode, (BTable) result);
+        } else {
+            return result;
+        }
     }
 
     private static BMap<BString, Object> getArgumentsFromField(BObject fieldNode) {
