@@ -16,18 +16,18 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.engine;
+package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.stdlib.graphql.schema.Schema;
-import io.ballerina.stdlib.graphql.schema.SchemaField;
-import io.ballerina.stdlib.graphql.schema.SchemaType;
-import io.ballerina.stdlib.graphql.schema.TypeKind;
+import io.ballerina.stdlib.graphql.runtime.schema.Schema;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaField;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaType;
+import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
 
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.FIELD_RECORD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.INPUT_VALUE_RECORD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.TYPE_KIND_ENUM;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.TYPE_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_VALUE_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_KIND_ENUM;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 
 /**
  * This class creates the introspection types for the Schema.

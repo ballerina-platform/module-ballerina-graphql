@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.schema.tree;
+package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -28,20 +28,20 @@ import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
-import io.ballerina.stdlib.graphql.schema.InputValue;
-import io.ballerina.stdlib.graphql.schema.SchemaField;
-import io.ballerina.stdlib.graphql.schema.SchemaType;
-import io.ballerina.stdlib.graphql.schema.TypeKind;
+import io.ballerina.stdlib.graphql.runtime.schema.InputValue;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaField;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaType;
+import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
 
 import java.util.Collection;
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
-import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
-import static io.ballerina.stdlib.graphql.schema.tree.TypeTreeGenerator.getScalarTypeName;
-import static io.ballerina.stdlib.graphql.utils.Utils.INVALID_TYPE_ERROR;
-import static io.ballerina.stdlib.graphql.utils.Utils.createError;
-import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArray;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
  * Generates a tree of fields found in a ballerina service to create a schema.

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.schema;
+package io.ballerina.stdlib.graphql.runtime.schema;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -21,5 +21,5 @@ isolated function init() {
 }
 
 isolated function setModule() = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.utils.ModuleUtils"
+    'class: "io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils"
 } external;

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.engine;
+package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.TypeCreator;
@@ -32,25 +32,25 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTable;
 import io.ballerina.runtime.api.values.BValue;
-import io.ballerina.stdlib.graphql.schema.Schema;
-import io.ballerina.stdlib.graphql.schema.tree.SchemaGenerator;
-import io.ballerina.stdlib.graphql.utils.CallableUnitCallback;
+import io.ballerina.stdlib.graphql.runtime.schema.Schema;
+import io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaGenerator;
+import io.ballerina.stdlib.graphql.runtime.utils.CallableUnitCallback;
 
 import java.util.concurrent.CountDownLatch;
 
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.ARGUMENTS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.DATA_RECORD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.ERRORS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.SELECTIONS_FIELD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.getErrorDetailRecord;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.getResourceName;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.getSchemaRecordFromSchema;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.isScalarType;
-import static io.ballerina.stdlib.graphql.engine.IntrospectionUtils.initializeIntrospectionTypes;
-import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
-import static io.ballerina.stdlib.graphql.utils.Utils.STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getSchemaRecordFromSchema;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
+import static io.ballerina.stdlib.graphql.runtime.engine.IntrospectionUtils.initializeIntrospectionTypes;
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
  * This handles Ballerina GraphQL Engine.
