@@ -16,14 +16,14 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.utils;
+package io.ballerina.stdlib.graphql.runtime.utils;
 
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 
-import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
  * This class contains utility methods for the Ballerina GraphQL module.

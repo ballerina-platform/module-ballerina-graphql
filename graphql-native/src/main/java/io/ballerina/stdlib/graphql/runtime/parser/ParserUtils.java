@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.parser;
+package io.ballerina.stdlib.graphql.runtime.parser;
 
 import io.ballerina.runtime.api.values.BString;
 
