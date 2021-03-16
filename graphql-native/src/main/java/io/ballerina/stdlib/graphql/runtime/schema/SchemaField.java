@@ -16,35 +16,41 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.schema;
+package io.ballerina.stdlib.graphql.runtime.schema;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * This class represents an InputValue of a GraphQL field.
+ * This class represents a field in a GraphQL schema.
  */
-public class InputValue {
+public class SchemaField {
     private String name;
+    private List<InputValue> args;
     private SchemaType type;
-    private String defaultValue;
 
-    public InputValue(String name, SchemaType type) {
-        this(name, type, null);
+    public SchemaField(String name) {
+        this.name = name;
+        this.args = new ArrayList<>();
     }
 
-    public InputValue(String name, SchemaType type, String defaultValue) {
-        this.name = name;
+    public void setType(SchemaType type) {
         this.type = type;
-        this.defaultValue = defaultValue;
+    }
+
+    public void addArg(InputValue arg) {
+        this.args.add(arg);
     }
 
     public String getName() {
-        return name;
+        return this.name;
+    }
+
+    public List<InputValue> getArgs() {
+        return this.args;
     }
 
     public SchemaType getType() {
-        return type;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
+        return this.type;
     }
 }

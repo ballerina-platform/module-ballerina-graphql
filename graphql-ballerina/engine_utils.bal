@@ -40,15 +40,15 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
 }
 
 isolated function createSchema(Service s) returns __Schema|Error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
 isolated function executeResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode)
 returns anydata|error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.engine.Engine"
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
 isolated function getDataFromBalType(parser:FieldNode fieldNode, anydata fieldRecord) returns anydata =
 @java:Method {
-	'class: "io.ballerina.stdlib.graphql.engine.Engine"
+	'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
