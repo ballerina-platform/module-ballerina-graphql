@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.engine;
+package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
@@ -30,11 +30,11 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.stdlib.graphql.schema.InputValue;
-import io.ballerina.stdlib.graphql.schema.Schema;
-import io.ballerina.stdlib.graphql.schema.SchemaField;
-import io.ballerina.stdlib.graphql.schema.SchemaType;
-import io.ballerina.stdlib.graphql.schema.TypeKind;
+import io.ballerina.stdlib.graphql.runtime.schema.InputValue;
+import io.ballerina.stdlib.graphql.runtime.schema.Schema;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaField;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaType;
+import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +45,7 @@ import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.stdlib.graphql.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.

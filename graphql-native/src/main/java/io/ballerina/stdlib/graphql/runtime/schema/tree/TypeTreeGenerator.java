@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.schema.tree;
+package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -31,16 +31,16 @@ import io.ballerina.runtime.api.types.UnionType;
 import java.util.Collection;
 import java.util.List;
 
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.BOOLEAN;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.DECIMAL;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.FLOAT;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.INTEGER;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.QUERY;
-import static io.ballerina.stdlib.graphql.engine.EngineUtils.STRING;
-import static io.ballerina.stdlib.graphql.utils.Utils.INVALID_TYPE_ERROR;
-import static io.ballerina.stdlib.graphql.utils.Utils.NOT_SUPPORTED_ERROR;
-import static io.ballerina.stdlib.graphql.utils.Utils.createError;
-import static io.ballerina.stdlib.graphql.utils.Utils.removeFirstElementFromArray;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DECIMAL;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FLOAT;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTEGER;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
  * Generates a tree of types found in a ballerina service.

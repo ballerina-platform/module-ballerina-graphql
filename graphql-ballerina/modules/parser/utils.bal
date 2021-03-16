@@ -68,9 +68,9 @@ isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.parser.ParserUtils"
+    'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
 } external;
 
 isolated function isValidChar(string char) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.parser.ParserUtils"
+    'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
 } external;

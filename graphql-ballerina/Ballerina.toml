@@ -5,6 +5,6 @@ version = "@toml.version@"
 
 [[platform.java11.dependency]]
 path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
-groupId = "io.ballerina.stdlib.graphql"
+groupId = "io.ballerina.stdlib.graphql.runtime"
 artifactId = "graphql"
 version = "@project.version@"
