@@ -42,9 +42,6 @@ configurations {
 }
 
 dependencies {
-    jbalTools("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
-        transitive = false
-    }
     implementation project(":${packageName}-native")
 }
 
