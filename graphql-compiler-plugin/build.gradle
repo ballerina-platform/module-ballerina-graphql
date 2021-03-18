@@ -60,10 +60,6 @@ spotbugsMain {
     }
 }
 
-spotbugsTest {
-    enabled = false
-}
-
 compileJava {
     doFirst {
         options.compilerArgs = [
