@@ -18,15 +18,16 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.CodeAnalysisContext;
 import io.ballerina.projects.plugins.CodeAnalyzer;
 
 /**
  * The {@code CodeAnalyzer} for Ballerina GraphQL services.
  */
-public class ServiceAnalyzer extends CodeAnalyzer {
+public class GraphqlServiceAnalyzer extends CodeAnalyzer {
     @Override
     public void init(CodeAnalysisContext codeAnalysisContext) {
-
+        codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlServiceValidator(), SyntaxKind.SERVICE_DECLARATION);
     }
 }
