@@ -26,6 +26,7 @@ import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
 import io.ballerina.tools.diagnostics.Diagnostic;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.PrintStream;
@@ -49,10 +50,9 @@ public class CompilerPluginTest {
         PackageCompilation compilation = currentPackage.getCompilation();
 
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        for (Diagnostic diagnostic : diagnosticResult.diagnostics()) {
-            OUT.println(diagnostic.diagnosticInfo().code());
-        }
-        OUT.println("Success********************");
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        Assert.assertEquals(diagnostic.diagnosticInfo().code(), "GRAPHQL_101");
     }
 
     private Package loadPackage(String path) {
@@ -61,7 +61,7 @@ public class CompilerPluginTest {
         return project.currentPackage();
     }
 
-    private ProjectEnvironmentBuilder getEnvironmentBuilder() {
+    private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
     }
