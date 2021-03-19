@@ -32,13 +32,20 @@ public class Node {
     private String name;
     private Type type;
     private Map<String, Node> children;
+    private Node returnType;
 
     public Node(String name) {
-        this(name, null);
+        this(name, null, null);
     }
+
     public Node(String name, Type type) {
+        this(name, type, null);
+    }
+
+    public Node(String name, Type type, Node returnType) {
         this.name = name;
         this.type = type;
+        this.returnType = returnType;
         this.children = new HashMap<>();
     }
 
@@ -51,7 +58,9 @@ public class Node {
     }
 
     public void addChild(Node child) {
-        this.children.put(child.getName(), child);
+        if (child != null) {
+            this.children.put(child.getName(), child);
+        }
     }
 
     public Node getChild(String name) {
@@ -60,6 +69,10 @@ public class Node {
 
     public boolean hasChild(String name) {
         return this.children.containsKey(name);
+    }
+
+    public Node getReturnType() {
+        return this.returnType;
     }
 
     public Map<String, Node> getChildren() {

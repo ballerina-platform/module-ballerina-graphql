@@ -74,7 +74,7 @@ class ValidatorVisitor {
         Parent parent = <Parent>data;
         __Type parentType = getOfType(parent.parentType);
 
-        map<__Field> fields = parentType?.fields == () ? {} : <map<__Field>>parentType?.fields;
+        __Field[] fields = parentType?.fields == () ? [] : <__Field[]>parentType?.fields;
         if (fields.length() == 0) {
             string message = getNoSubfieldsErrorMessage(parent.name, parent.parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
@@ -82,7 +82,7 @@ class ValidatorVisitor {
         }
 
         string requiredFieldName = fieldNode.getName();
-        var schemaFieldValue = fields[requiredFieldName];
+        var schemaFieldValue = getFieldFromFieldArray(fields, requiredFieldName);
         if (schemaFieldValue is ()) {
             string message = getFieldNotFoundErrorMessageFromType(requiredFieldName, parent.parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
@@ -207,6 +207,14 @@ class ValidatorVisitor {
             }
             string message = getFieldNotFoundErrorMessage(selection.getName(), SCHEMA_TYPE_NAME);
             self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
+        }
+    }
+}
+
+isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) returns __Field? {
+    foreach __Field schemaField in fields {
+        if (schemaField.name == fieldName) {
+            return schemaField;
         }
     }
 }
