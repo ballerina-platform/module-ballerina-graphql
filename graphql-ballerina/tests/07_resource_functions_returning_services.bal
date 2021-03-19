@@ -34,14 +34,14 @@ service class Profile {
     }
 }
 
-service class GeneratGreeting {
+service class GeneralGreeting {
     isolated resource function get generalGreeting() returns string {
         return "Hello, world";
     }
 }
 
 service /graphql on serviceTypeListener {
-    isolated resource function get greet() returns GeneratGreeting {
+    isolated resource function get greet() returns GeneralGreeting {
         return new;
     }
 
