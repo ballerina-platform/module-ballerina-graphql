@@ -56,9 +56,8 @@ class ExecutorVisitor {
                         subData[selection.getName()] = getDataFromBalType(selection, types);
                     } else {
                         __Type schemaType = <__Type>self.schema[selection.getName()];
-                        var fieldsValue = schemaType?.fields;
-                        if (fieldsValue is map<__Field>) {
-                            __Field[] fields = fieldsValue.toArray();
+                        var fields = schemaType?.fields;
+                        if (fields is __Field[]) {
                             map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
                             typeMap[FIELDS_FIELD] = fields;
                             subData[selection.getName()] = getDataFromBalType(selection, typeMap);
