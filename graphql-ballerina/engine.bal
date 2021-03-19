@@ -118,12 +118,11 @@ class Engine {
 			name: (),
 			ofType: <__Type>schema.types[TYPE_TYPE_NAME]
         };
-        map<__Field> fields = {};
         __Field typesField = {
             name: TYPES_FIELD,
             'type: typesType
         };
-        fields[TYPES_FIELD] = typesField;
+        __Field[] fields = [typesField];
         schemaType.fields = fields;
         schema.types[SCHEMA_TYPE_NAME] = schemaType;
     }

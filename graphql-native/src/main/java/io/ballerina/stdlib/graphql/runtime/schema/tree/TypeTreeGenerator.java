@@ -49,9 +49,11 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElement
  */
 public class TypeTreeGenerator {
     private final ServiceType serviceType;
+    private final SchemaGenerator schemaGenerator;
 
-    public TypeTreeGenerator(ServiceType serviceType) {
-        this.serviceType = serviceType;
+    public TypeTreeGenerator(SchemaGenerator schemaGenerator) {
+        this.serviceType = schemaGenerator.getServiceType();
+        this.schemaGenerator = schemaGenerator;
     }
 
     public Node generateTypeTree() {
@@ -85,8 +87,12 @@ public class TypeTreeGenerator {
             resourceNode.addChild(createNodeForResource(resourceMethod, paths, resourceNode));
             return resourceNode;
         }
-
-        return createNodeForType(name, resourceMethod.getType().getReturnType());
+        Type[] inputTypes = resourceMethod.getParameterTypes();
+        for (Type inputType : inputTypes) {
+            schemaGenerator.addType(schemaGenerator.getSchemaTypeFromType(inputType));
+        }
+        Node returnTypeNode = createNodeForType(name, resourceMethod.getType().getReturnType());
+        return new Node(name, null, returnTypeNode);
     }
 
     private Node createNodeForType(String name, Type type) {
