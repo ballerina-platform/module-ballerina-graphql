@@ -22,11 +22,17 @@ service /graphql on functionWithArgumentsListener {
     isolated resource function get greet(string name) returns string {
         return "Hello, " + name;
     }
+
+    isolated resource function get isLegal(int age) returns boolean {
+        if (age < 21) {
+            return false;
+        }
+        return true;
+    }
 }
 
-
 @test:Config {
-    groups: ["listener", "unit"]
+    groups: ["input_types", "unit"]
 }
 isolated function testFunctionsWithInputParameter() returns @tainted error? {
     string document = getGreetingQueryDocument();
@@ -41,3 +47,18 @@ isolated function testFunctionsWithInputParameter() returns @tainted error? {
     test:assertEquals(actualPayload, expectedPayload);
 }
 
+@test:Config {
+    groups: ["input_types", "unit"]
+}
+isolated function testInputParameterTypeNotPresentInReturnTypes() returns @tainted error? {
+    string document = "{ isLegal(age: 21) }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            isLegal: true
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}

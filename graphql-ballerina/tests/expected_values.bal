@@ -28,83 +28,90 @@ json expectedSchemaForMultipleResources = {
         "__Field": {
             "kind": "OBJECT",
             "name": "__Field",
-            "fields": {
-                "args": {
+            "fields": [
+                {
                     "name": "args",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "type": {
-                    "name": "type",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                "name": {
+                {
                     "name": "name",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
+                },
+                {
+                    "name": "type",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
                 }
-            }
+            ]
         },
         "Query": {
             "kind": "OBJECT",
             "name": "Query",
-            "fields": {
-                "String": {
-                    "name": "String",
+            "fields": [
+                {
+                    "name": "birthdate",
                     "type": {
                         "kind": "SCALAR",
                         "name": "String"
                     }
                 },
-                "Int": {
-                    "name": "Int",
+                {
+                    "name": "name",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
+                    }
+                },
+                {
+                    "name": "id",
                     "type": {
                         "kind": "SCALAR",
                         "name": "Int"
                     }
                 }
-            }
+            ]
         },
         "__Type": {
             "kind": "OBJECT",
             "name": "__Type",
-            "fields": {
-                "fields": {
+            "fields": [
+                {
+                    "name": "kind",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                {
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                {
                     "name": "fields",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "name": {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                "enumValues": {
+                {
                     "name": "enumValues",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
-                },
-                "kind": {
-                    "name": "kind",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
                 }
-            }
+            ]
         },
         "String": {
             "kind": "SCALAR",
@@ -113,29 +120,29 @@ json expectedSchemaForMultipleResources = {
         "__InputValue": {
             "kind": "OBJECT",
             "name": "__InputValue",
-            "fields": {
-                "defaultValue": {
+            "fields": [
+                {
                     "name": "defaultValue",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "name": {
+                {
                     "name": "name",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "type": {
+                {
                     "name": "type",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 }
-            }
+            ]
         },
         "Int": {
             "kind": "SCALAR",
@@ -145,19 +152,8 @@ json expectedSchemaForMultipleResources = {
     "queryType": {
         "kind": "OBJECT",
         "name": "Query",
-        "fields": {
-            "id": {
-                "name": "id",
-                "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                        "kind": "SCALAR",
-                        "name": "Int"
-                    }
-                }
-            },
-            "birthdate": {
+        "fields": [
+            {
                 "name": "birthdate",
                 "type": {
                     "kind": "NON_NULL",
@@ -181,7 +177,7 @@ json expectedSchemaForMultipleResources = {
                     }
                 }
             },
-            "name": {
+            {
                 "name": "name",
                 "type": {
                     "kind": "NON_NULL",
@@ -191,8 +187,19 @@ json expectedSchemaForMultipleResources = {
                         "name": "String"
                     }
                 }
+            },
+            {
+                "name": "id",
+                "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                        "kind": "SCALAR",
+                        "name": "Int"
+                    }
+                }
             }
-        }
+        ]
     }
 };
 
@@ -210,149 +217,149 @@ json expectedSchemaForResourcesReturningRecords = {
         "__Field": {
             "kind": "OBJECT",
             "name": "__Field",
-            "fields": {
-                "name": {
+            "fields": [
+                {
+                    "name": "args",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                {
                     "name": "name",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "type": {
+                {
                     "name": "type",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
-                },
-                "args": {
-                    "name": "args",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
                 }
-            }
+            ]
         },
         "Query": {
             "kind": "OBJECT",
             "name": "Query",
-            "fields": {
-                "person": {
+            "fields": [
+                {
                     "name": "person",
                     "type": {
                         "kind": "OBJECT",
                         "name": "Person",
-                        "fields": {
-                            "name": {
-                                "name": "name",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String"
-                                }
-                            },
-                            "age": {
-                                "name": "age",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "Int"
-                                }
-                            },
-                            "address": {
+                        "fields": [
+                            {
                                 "name": "address",
                                 "type": {
                                     "kind": "OBJECT",
                                     "name": "Address",
-                                    "fields": {
-                                        "number": {
+                                    "fields": [
+                                        {
                                             "name": "number",
                                             "type": {
                                                 "kind": "SCALAR",
                                                 "name": "String"
                                             }
                                         },
-                                        "street": {
-                                            "name": "street",
-                                            "type": {
-                                                "kind": "SCALAR",
-                                                "name": "String"
-                                            }
-                                        },
-                                        "city": {
+                                        {
                                             "name": "city",
                                             "type": {
                                                 "kind": "SCALAR",
                                                 "name": "String"
                                             }
+                                        },
+                                        {
+                                            "name": "street",
+                                            "type": {
+                                                "kind": "SCALAR",
+                                                "name": "String"
+                                            }
                                         }
-                                    }
+                                    ]
+                                }
+                            },
+                            {
+                                "name": "name",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "String"
+                                }
+                            },
+                            {
+                                "name": "age",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "Int"
                                 }
                             }
-                        }
+                        ]
                     }
                 }
-            }
+            ]
         },
         "Address": {
             "kind": "OBJECT",
             "name": "Address",
-            "fields": {
-                "number": {
+            "fields": [
+                {
                     "name": "number",
                     "type": {
                         "kind": "SCALAR",
                         "name": "String"
                     }
                 },
-                "street": {
-                    "name": "street",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                "city": {
+                {
                     "name": "city",
                     "type": {
                         "kind": "SCALAR",
                         "name": "String"
                     }
+                },
+                {
+                    "name": "street",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
+                    }
                 }
-            }
+            ]
         },
         "__Type": {
             "kind": "OBJECT",
             "name": "__Type",
-            "fields": {
-                "fields": {
-                    "name": "fields",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                "name": {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                "kind": {
+            "fields": [
+                {
                     "name": "kind",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "enumValues": {
+                {
+                    "name": "name",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                {
+                    "name": "fields",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
+                },
+                {
                     "name": "enumValues",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 }
-            }
+            ]
         },
         "String": {
             "kind": "SCALAR",
@@ -361,79 +368,79 @@ json expectedSchemaForResourcesReturningRecords = {
         "__InputValue": {
             "kind": "OBJECT",
             "name": "__InputValue",
-            "fields": {
-                "type": {
-                    "name": "type",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                "defaultValue": {
+            "fields": [
+                {
                     "name": "defaultValue",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
                 },
-                "name": {
+                {
                     "name": "name",
                     "type": {
                         "kind": "NON_NULL",
                         "name": null
                     }
+                },
+                {
+                    "name": "type",
+                    "type": {
+                        "kind": "NON_NULL",
+                        "name": null
+                    }
                 }
-            }
+            ]
         },
         "Person": {
             "kind": "OBJECT",
             "name": "Person",
-            "fields": {
-                "name": {
-                    "name": "name",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                "age": {
-                    "name": "age",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "Int"
-                    }
-                },
-                "address": {
+            "fields": [
+                {
                     "name": "address",
                     "type": {
                         "kind": "OBJECT",
                         "name": "Address",
-                        "fields": {
-                            "number": {
+                        "fields": [
+                            {
                                 "name": "number",
                                 "type": {
                                     "kind": "SCALAR",
                                     "name": "String"
                                 }
                             },
-                            "street": {
-                                "name": "street",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String"
-                                }
-                            },
-                            "city": {
+                            {
                                 "name": "city",
                                 "type": {
                                     "kind": "SCALAR",
                                     "name": "String"
                                 }
+                            },
+                            {
+                                "name": "street",
+                                "type": {
+                                    "kind": "SCALAR",
+                                    "name": "String"
+                                }
                             }
-                        }
+                        ]
+                    }
+                },
+                {
+                    "name": "name",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "String"
+                    }
+                },
+                {
+                    "name": "age",
+                    "type": {
+                        "kind": "SCALAR",
+                        "name": "Int"
                     }
                 }
-            }
+            ]
         },
         "Int": {
             "kind": "SCALAR",
@@ -443,8 +450,8 @@ json expectedSchemaForResourcesReturningRecords = {
     "queryType": {
         "kind": "OBJECT",
         "name": "Query",
-        "fields": {
-            "person": {
+        "fields": [
+            {
                 "name": "person",
                 "type": {
                     "kind": "NON_NULL",
@@ -452,19 +459,8 @@ json expectedSchemaForResourcesReturningRecords = {
                     "ofType": {
                         "kind": "OBJECT",
                         "name": "Person",
-                        "fields": {
-                            "name": {
-                                "name": "name",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            },
-                            "address": {
+                        "fields": [
+                            {
                                 "name": "address",
                                 "type": {
                                     "kind": "NON_NULL",
@@ -472,8 +468,8 @@ json expectedSchemaForResourcesReturningRecords = {
                                     "ofType": {
                                         "kind": "OBJECT",
                                         "name": "Address",
-                                        "fields": {
-                                            "number": {
+                                        "fields": [
+                                            {
                                                 "name": "number",
                                                 "type": {
                                                     "kind": "NON_NULL",
@@ -484,18 +480,7 @@ json expectedSchemaForResourcesReturningRecords = {
                                                     }
                                                 }
                                             },
-                                            "street": {
-                                                "name": "street",
-                                                "type": {
-                                                    "kind": "NON_NULL",
-                                                    "name": null,
-                                                    "ofType": {
-                                                        "kind": "SCALAR",
-                                                        "name": "String"
-                                                    }
-                                                }
-                                            },
-                                            "city": {
+                                            {
                                                 "name": "city",
                                                 "type": {
                                                     "kind": "NON_NULL",
@@ -505,12 +490,34 @@ json expectedSchemaForResourcesReturningRecords = {
                                                         "name": "String"
                                                     }
                                                 }
+                                            },
+                                            {
+                                                "name": "street",
+                                                "type": {
+                                                    "kind": "NON_NULL",
+                                                    "name": null,
+                                                    "ofType": {
+                                                        "kind": "SCALAR",
+                                                        "name": "String"
+                                                    }
+                                                }
                                             }
-                                        }
+                                        ]
                                     }
                                 }
                             },
-                            "age": {
+                            {
+                                "name": "name",
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String"
+                                    }
+                                }
+                            },
+                            {
                                 "name": "age",
                                 "type": {
                                     "kind": "NON_NULL",
@@ -521,10 +528,114 @@ json expectedSchemaForResourcesReturningRecords = {
                                     }
                                 }
                             }
-                        }
+                        ]
                     }
                 }
             }
+        ]
+    }
+};
+
+json hierarchicalResourcePathIntrospectionResult = {
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "__TypeKind",
+                    "fields": null
+                },
+                {
+                    "name": "__Field",
+                    "fields": [
+                        {
+                            "name": "args"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "type"
+                        }
+                    ]
+                },
+                {
+                    "name": "Query",
+                    "fields": [
+                        {
+                            "name": "profile"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Type",
+                    "fields": [
+                        {
+                            "name": "kind"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "fields"
+                        },
+                        {
+                            "name": "enumValues"
+                        }
+                    ]
+                },
+                {
+                    "name": "profile",
+                    "fields": [
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "age"
+                        }
+                    ]
+                },
+                {
+                    "name": "name",
+                    "fields": [
+                        {
+                            "name": "last"
+                        },
+                        {
+                            "name": "first"
+                        }
+                    ]
+                },
+                {
+                    "name": "String",
+                    "fields": null
+                },
+                {
+                    "name": "__InputValue",
+                    "fields": [
+                        {
+                            "name": "defaultValue"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "type"
+                        }
+                    ]
+                },
+                {
+                    "name": "Int",
+                    "fields": null
+                },
+                {
+                    "name": "__Schema",
+                    "fields": [
+                        {
+                            "name": "types"
+                        }
+                    ]
+                }
+            ]
         }
     }
 };

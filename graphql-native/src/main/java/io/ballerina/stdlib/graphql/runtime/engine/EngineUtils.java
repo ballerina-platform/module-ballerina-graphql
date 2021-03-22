@@ -131,7 +131,7 @@ public class EngineUtils {
         typeRecord.put(NAME_FIELD, StringUtils.fromString(typeObject.getName()));
         Collection<SchemaField> fields = typeObject.getFields();
         if (fields != null && fields.size() > 0) {
-            typeRecord.put(FIELDS_FIELD, getFieldMapFromFields(fields));
+            typeRecord.put(FIELDS_FIELD, getFieldArrayFromFields(fields));
         }
         List<Object> enumValues = typeObject.getEnumValues();
         if (enumValues != null && enumValues.size() > 0) {
@@ -144,15 +144,15 @@ public class EngineUtils {
         return typeRecord;
     }
 
-    private static BMap<BString, Object> getFieldMapFromFields(Collection<SchemaField> fields) {
+    private static BArray getFieldArrayFromFields(Collection<SchemaField> fields) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
-        MapType fieldRecordMapType = TypeCreator.createMapType(fieldRecord.getType());
-        BMap<BString, Object> fieldRecordMap = ValueCreator.createMapValue(fieldRecordMapType);
+        ArrayType arrayType = TypeCreator.createArrayType(fieldRecord.getType());
+        BArray fieldArray = ValueCreator.createArrayValue(arrayType);
 
         for (SchemaField field : fields) {
-            fieldRecordMap.put(StringUtils.fromString(field.getName()), getFieldRecordFromObject(field));
+            fieldArray.append(getFieldRecordFromObject(field));
         }
-        return fieldRecordMap;
+        return fieldArray;
     }
 
     private static BMap<BString, Object> getEnumValuesMapFromEnumValues(List<Object> enumValues) {

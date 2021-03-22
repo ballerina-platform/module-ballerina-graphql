@@ -72,25 +72,18 @@ public class SchemaGenerator {
     }
 
     private void populateBasicTypes() {
-        TypeTreeGenerator typeTreeGenerator = new TypeTreeGenerator(this.serviceType);
+        TypeTreeGenerator typeTreeGenerator = new TypeTreeGenerator(this);
         Node node = typeTreeGenerator.generateTypeTree();
         populateTypesMap(node);
     }
 
-    private void addType(SchemaType schemaType) {
+    public void addType(SchemaType schemaType) {
         this.typeMap.put(schemaType.getName(), schemaType);
     }
 
     private SchemaType populateTypesMap(Node node) {
         if (node.getChildren() == null || node.getChildren().size() == 0) {
-            Type type = node.getType();
-            if (type == null) {
-                // This code shouldn't be reached
-                String message = "Type not found for the resource: " + node.getName();
-                throw createError(message, INVALID_TYPE_ERROR);
-            } else {
-                return getSchemaTypeFromType(type);
-            }
+            return getSchemaTypeForLeafResourceNode(node);
         } else {
             for (Node childNode : node.getChildren().values()) {
                 populateTypesMap(childNode);
@@ -106,7 +99,22 @@ public class SchemaGenerator {
         }
     }
 
-    private SchemaType getSchemaTypeFromType(Type type) {
+    private SchemaType getSchemaTypeForLeafResourceNode(Node node) {
+        Type type = node.getType();
+        if (type == null) {
+            if (node.getReturnType() != null) {
+                return populateTypesMap(node.getReturnType());
+            } else {
+                // This code shouldn't be reached
+                String message = "Type not found for the resource: " + node.getName();
+                throw createError(message, INVALID_TYPE_ERROR);
+            }
+        } else {
+            return getSchemaTypeFromType(type);
+        }
+    }
+
+    public SchemaType getSchemaTypeFromType(Type type) {
         int tag = type.getTag();
         SchemaType schemaType;
 
@@ -132,14 +140,14 @@ public class SchemaGenerator {
             }
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
-            return getSchemaTypeFromType(arrayType.getElementType());
+            schemaType = getSchemaTypeFromType(arrayType.getElementType());
         } else if (tag == TypeTags.TABLE_TAG) {
             TableType tableType = (TableType) type;
-            return getSchemaTypeFromType(tableType.getConstrainedType());
+            schemaType = getSchemaTypeFromType(tableType.getConstrainedType());
         } else if (tag == TypeTags.UNION_TAG) {
             UnionType unionType = (UnionType) type;
             Type mainType = getNonNullNonErrorTypeFromUnion(unionType.getMemberTypes());
-            return getSchemaTypeFromType(mainType);
+            schemaType = getSchemaTypeFromType(mainType);
         } else {
             String message = "Unsupported type for schema field: " + type.getName();
             throw createError(message, NOT_SUPPORTED_ERROR);
@@ -163,5 +171,9 @@ public class SchemaGenerator {
             schemaType.addField(childField);
         }
         return schemaType;
+    }
+
+    public ServiceType getServiceType() {
+        return this.serviceType;
     }
 }
