@@ -88,7 +88,7 @@ public type __Schema record {|
 public type __Type record {
     __TypeKind kind;
     string? name;
-    map<__Field> fields?;
+    __Field[] fields?;
     map<anydata> enumValues?;
     __Type ofType?;
 };
