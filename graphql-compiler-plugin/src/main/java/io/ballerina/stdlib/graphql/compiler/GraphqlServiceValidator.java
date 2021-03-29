@@ -19,8 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.compiler.api.symbols.FunctionSymbol;
-import io.ballerina.compiler.api.symbols.ModuleSymbol;
+import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -29,7 +28,6 @@ import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.compiler.syntax.tree.UnionTypeDescriptorNode;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.plugins.AnalysisTask;
@@ -38,10 +36,8 @@ import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
-import io.ballerina.tools.diagnostics.Location;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Validates a Ballerina GraphQL Service.
@@ -51,11 +47,24 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
     @Override
     public void perform(SyntaxNodeAnalysisContext syntaxNodeAnalysisContext) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) syntaxNodeAnalysisContext.node();
+        getListenerTypes(syntaxNodeAnalysisContext);
         TypeSymbol typeSymbol = getListenerTypeSymbol(syntaxNodeAnalysisContext);
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo("GRAPHQL_101", typeSymbol.signature(),
                                                            DiagnosticSeverity.INFO);
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, serviceDeclarationNode.location());
         syntaxNodeAnalysisContext.reportDiagnostic(diagnostic);
+    }
+
+    private void getListenerTypes(SyntaxNodeAnalysisContext syntaxNodeAnalysisContext) {
+        ServiceDeclarationNode node = (ServiceDeclarationNode) syntaxNodeAnalysisContext.node();
+        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) syntaxNodeAnalysisContext.semanticModel().symbol(
+                node).get();
+        List<TypeSymbol> listenerTypes = symbol.listenerTypes();
+        for (TypeSymbol listenerType : listenerTypes) {
+            if (listenerType.kind() == SymbolKind.) {
+                listenerType.signature();
+            }
+        }
     }
 
     private TypeSymbol getListenerTypeSymbol(SyntaxNodeAnalysisContext syntaxNodeAnalysisContext) {
@@ -67,7 +76,8 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
                 Module defaultModule = syntaxNodeAnalysisContext.currentPackage().getDefaultModule();
                 DocumentId documentId = syntaxNodeAnalysisContext.documentId();
                 moduleType = ((TypeReferenceTypeSymbol) (semanticModel.symbol(defaultModule.document(documentId),
-                         expressionNode.lineRange().startLine()).get())).typeDescriptor();
+                                                                              expressionNode.lineRange().startLine())
+                        .get())).typeDescriptor();
 
             } else if (expressionNode.kind() == SyntaxKind.SIMPLE_NAME_REFERENCE) {
                 VariableSymbol symbol = (VariableSymbol) syntaxNodeAnalysisContext.semanticModel().symbol
