@@ -135,7 +135,7 @@ public class Lexer {
             } else if (value is Separator || value is SpecialCharacter) {
                 break;
             } else {
-                string message = "Syntax Error: Invalid number, expected digit but got: \"" + value + "\".";
+                string message = string`Syntax Error: Invalid number, expected digit but got: "${value}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
                                                column = self.currentLocation.column);
             }
@@ -282,19 +282,19 @@ isolated function getNumber(string value, boolean isFloat, Location location) re
 
 isolated function validateChar(string char, Location location) returns InvalidTokenError? {
     if (!isValidChar(char)) {
-        string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
+        string message = string`Syntax Error: Cannot parse the unexpected character "${char}".`;
         return error InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function validateFirstChar(string char, Location location) returns InvalidTokenError? {
     if (!isValidFirstChar(char)) {
-        string message = "Syntax Error: Cannot parse the unexpected character \"" + char + "\".";
+        string message = string`Syntax Error: Cannot parse the unexpected character "${char}".`;
         return error InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function getInternalError(string value, string kind, Location location) returns InternalError {
-    string message = "Internal Error: Failed to convert the \"" + value + "\" to \"" + kind + "\".";
+    string message = string`Internal Error: Failed to convert the "${value}" to "${kind}".`;
     return error InternalError(message, line = location.line, column = location.column);
 }
