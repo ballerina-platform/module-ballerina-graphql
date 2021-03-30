@@ -35,7 +35,10 @@ service /graphql on functionWithArgumentsListener {
     groups: ["input_types", "unit"]
 }
 isolated function testFunctionsWithInputParameter() returns @tainted error? {
-    string document = getGreetingQueryDocument();
+    string document = string
+    `{
+    greet (name: "Thisaru")
+}`;
     string url = "http://localhost:9093/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
 

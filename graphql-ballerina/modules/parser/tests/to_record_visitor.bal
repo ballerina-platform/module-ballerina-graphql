@@ -30,11 +30,6 @@ public type Argument record {
     ArgumentType kind;
 };
 
-public type Fragment record {
-    string name;
-    Location location;
-};
-
 public type Field record {
     string name;
     Argument[] arguments;
@@ -119,9 +114,5 @@ class RecordCreatorVisitor {
             value: value,
             kind: argumentNode.getKind()
         };
-    }
-
-    public isolated function visitFragment(FragmentNode fragmentNode) returns Fragment {
-        return { name: fragmentNode.getName(), location: fragmentNode.getLocation()};
     }
 }
