@@ -24,7 +24,11 @@ listener Listener simpleResourceListener = new(9092);
     groups: ["listener", "unit"]
 }
 isolated function testShortHandQueryResult() returns @tainted error? {
-    string document = getGeneralNotationDocument();
+    string document = string
+    `query getData {
+    name
+    birthdate
+}`;
     string url = "http://localhost:9092/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
