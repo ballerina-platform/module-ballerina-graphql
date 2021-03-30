@@ -20,7 +20,26 @@ import ballerina/test;
     groups: ["parse", "parser", "unit"]
 }
 function testComplexDocument() returns error? {
-    string documentString = getDocumentWithParameters();
+    string documentString = string
+    `,,,
+
+
+
+
+query getData, {
+    # Line comment
+    name(id: 132,,, name: "Prof. Moriarty", negative: -123, weight: 75.4) { # Inline Comment {
+        first
+        last
+    }
+    id {
+        prefix {
+            sample
+        }
+        suffix
+    }
+    birthdate (format: "DD/MM/YYYY")
+},`;
     Parser parser = new(documentString);
     DocumentNode documentNode = check parser.parse();
     RecordCreatorVisitor v = new;
@@ -32,7 +51,11 @@ function testComplexDocument() returns error? {
     groups: ["parse", "parser", "unit"]
 }
 function testShorthandDocument() returns error? {
-    string documentString = getShorthandNotationDocument();
+    string documentString = string
+`{
+    name
+    id
+}`;
     Parser parser = new(documentString);
     DocumentNode documentNode = check parser.parse();
     RecordCreatorVisitor v = new;
@@ -44,7 +67,11 @@ function testShorthandDocument() returns error? {
     groups: ["parse", "parser", "unit"]
 }
 function testDocumentWithNamedOperations() returns error? {
-    string documentString = getGeneralNotationDocument();
+    string documentString = string
+`query getData {
+    name
+    birthdate
+}`;
     Parser parser = new(documentString);
     DocumentNode documentNode = check parser.parse();
     RecordCreatorVisitor v = new;
@@ -56,7 +83,16 @@ function testDocumentWithNamedOperations() returns error? {
     groups: ["parse", "parser", "unit"]
 }
 function testDocumentWithTwoNamedOperations() returns error? {
-    string documentString = getDocumentWithTwoNamedOperations();
+    string documentString = string
+`query getName {
+    name
+}
+
+query getBirthDate {
+    birthdate
+}
+
+`;
     Parser parser = new(documentString);
     DocumentNode documentNode = check parser.parse();
     RecordCreatorVisitor v = new;

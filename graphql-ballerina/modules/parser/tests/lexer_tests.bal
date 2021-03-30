@@ -140,7 +140,7 @@ isolated function testStringInStringInput() returns error? {
     groups: ["lexer", "parser", "unit"]
 }
 isolated function testStringWithDoubleQuotes() returns error? {
-    string s = getTextWithQuoteFile();
+    string s = string`test "This is a \"test\" string" inside a string`;
     Lexer lexer = new(s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
@@ -148,7 +148,7 @@ isolated function testStringWithDoubleQuotes() returns error? {
 
     token = check lexer.read(); // Space
     token = check lexer.read();
-    expectedToken = getExpectedToken("This is a \\\"test\\\" string",T_STRING, 1, 6);
+    expectedToken = getExpectedToken(string`This is a \"test\" string`, T_STRING, 1, 6);
     test:assertEquals(token, expectedToken);
 }
 
@@ -156,7 +156,9 @@ isolated function testStringWithDoubleQuotes() returns error? {
     groups: ["lexer", "parser", "unit"]
 }
 isolated function testUnterminatedString() returns error? {
-    string s = getTextWithUnterminatedStringFile();
+    string s = string
+    `test "This is a \"test\" string
+in multiple lines`;
     Lexer lexer = new(s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
@@ -258,6 +260,17 @@ isolated function testComplexString() returns error? {
     token = check lexer.read();
     token = check lexer.read();
     expectedToken = getExpectedToken("", T_EOF, 6, 2);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["fragments", "lexer"]
+}
+isolated function readFragmentToken() returns error? {
+    string s = "...friends { name }";
+    Lexer lexer = new(s);
+    Token token = check lexer.read();
+    Token expectedToken = getExpectedToken("...", T_FRAGMENT, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
