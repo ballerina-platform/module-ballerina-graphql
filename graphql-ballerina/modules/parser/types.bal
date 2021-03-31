@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Scalar int|float|boolean|string;
+public type Scalar int|float|decimal|string|boolean;
 
 type CharIteratorNode record {
     string value;
