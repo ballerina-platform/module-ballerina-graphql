@@ -45,19 +45,13 @@ public type Data record {
 };
 
 # Represents a location in a GraphQL document.
-public type Location record {
+public type Location record {|
     *parser:Location;
-};
+|};
 
 # Represents the details of an error occurred during parsing, validating, or executing a GraphQL document.
-#
-# + message - The details of the error
-# + locations - The locations in the GraphQL document related to the error
-# + path - The GraphQL resource path of the error
 public type ErrorDetail record {|
-    string message;
-    Location[] locations;
-    (int|string)[] path?;
+    *parser:ErrorDetail;
 |};
 
 # Represents a GraphQL output object.

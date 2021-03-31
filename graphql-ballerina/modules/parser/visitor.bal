@@ -19,4 +19,5 @@ public type Visitor object {
     public isolated function visitOperation(OperationNode operationNode) returns anydata;
     public isolated function visitField(FieldNode fieldNode, anydata data = ()) returns anydata|error;
     public isolated function visitArgument(ArgumentNode argumentNode, anydata data = ()) returns anydata;
+    public isolated function visitFragment(FragmentNode fragmentNode) returns anydata|error;
 };

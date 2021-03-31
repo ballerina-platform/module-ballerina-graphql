@@ -24,7 +24,7 @@ isolated function testInvalidCharacter() returns error? {
     Lexer lexer = new(name);
     Token token = check lexer.read();
 
-    Token expectedToken = getExpectedToken("John", T_TEXT, 1, 1);
+    Token expectedToken = getExpectedToken("John", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read();
@@ -84,11 +84,11 @@ isolated function testPeek() returns error? {
     Lexer lexer = new(s);
 
     Token token = check lexer.peek();
-    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.peek(3);
-    expectedToken = getExpectedToken("integer", T_TEXT, 1, 6);
+    expectedToken = getExpectedToken("integer", T_IDENTIFIER, 1, 6);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.peek(5);
@@ -100,7 +100,7 @@ isolated function testPeek() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read();
-    expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
+    expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 
@@ -111,7 +111,7 @@ isolated function testBooleanInput() returns error? {
     string s = "test false";
     Lexer lexer = new(s);
     Token token = check lexer.read();
-    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
@@ -127,7 +127,7 @@ isolated function testStringInStringInput() returns error? {
     string s = "test \"This is a test string\"";
     Lexer lexer = new(s);
     Token token = check lexer.read();
-    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
@@ -140,15 +140,15 @@ isolated function testStringInStringInput() returns error? {
     groups: ["lexer", "parser", "unit"]
 }
 isolated function testStringWithDoubleQuotes() returns error? {
-    string s = getTextWithQuoteFile();
+    string s = string`test "This is a \"test\" string" inside a string`;
     Lexer lexer = new(s);
     Token token = check lexer.read();
-    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
     token = check lexer.read();
-    expectedToken = getExpectedToken("This is a \\\"test\\\" string",T_STRING, 1, 6);
+    expectedToken = getExpectedToken(string`This is a \"test\" string`, T_STRING, 1, 6);
     test:assertEquals(token, expectedToken);
 }
 
@@ -156,10 +156,12 @@ isolated function testStringWithDoubleQuotes() returns error? {
     groups: ["lexer", "parser", "unit"]
 }
 isolated function testUnterminatedString() returns error? {
-    string s = getTextWithUnterminatedStringFile();
+    string s = string
+    `test "This is a \"test\" string
+in multiple lines`;
     Lexer lexer = new(s);
     Token token = check lexer.read();
-    Token expectedToken = getExpectedToken("test", T_TEXT, 1, 1);
+    Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
@@ -194,12 +196,12 @@ isolated function testComplexString() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read();
-    expectedToken = getExpectedToken("query", T_TEXT, 4, 1);
+    expectedToken = getExpectedToken("query", T_IDENTIFIER, 4, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
     token = check lexer.read();
-    expectedToken = getExpectedToken("getData", T_TEXT, 4, 7);
+    expectedToken = getExpectedToken("getData", T_IDENTIFIER, 4, 7);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
@@ -213,7 +215,7 @@ isolated function testComplexString() returns error? {
     token = check lexer.read(); // Space
     token = check lexer.read(); // Space
     token = check lexer.read();
-    expectedToken = getExpectedToken("picture", T_TEXT, 5, 5);
+    expectedToken = getExpectedToken("picture", T_IDENTIFIER, 5, 5);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read();
@@ -221,7 +223,7 @@ isolated function testComplexString() returns error? {
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read();
-    expectedToken = getExpectedToken("h", T_TEXT, 5, 13);
+    expectedToken = getExpectedToken("h", T_IDENTIFIER, 5, 13);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read();
@@ -258,6 +260,17 @@ isolated function testComplexString() returns error? {
     token = check lexer.read();
     token = check lexer.read();
     expectedToken = getExpectedToken("", T_EOF, 6, 2);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["fragments", "lexer"]
+}
+isolated function readFragmentToken() returns error? {
+    string s = "...friends { name }";
+    Lexer lexer = new(s);
+    Token token = check lexer.read();
+    Token expectedToken = getExpectedToken("...", T_ELLIPSIS, 1, 1);
     test:assertEquals(token, expectedToken);
 }
 

@@ -33,11 +33,13 @@ class ValidatorVisitor {
         self.visitDocument(documentNode);
     }
 
-    // TODO: Check for definitions other than Operations and Fragments, and if they exists, invalidate.
-    // Parser doesn't support it yet.
     public isolated function visitDocument(parser:DocumentNode documentNode) {
         parser:OperationNode[] operations = documentNode.getOperations();
         parser:OperationNode[] anonymousOperations = [];
+
+        foreach ErrorDetail errorDetail in documentNode.getErrors() {
+            self.errors.push(errorDetail);
+        }
 
         foreach parser:OperationNode operationNode in operations {
             if (operationNode.getName() == parser:ANONYMOUS_OPERATION) {
@@ -132,6 +134,10 @@ class ValidatorVisitor {
             self.errors.push(errorDetail);
             return;
         }
+    }
+
+    public isolated function visitFragment(parser:FragmentNode fragmentNode) {
+        // TODO;
     }
 
     public isolated function getErrors() returns ErrorDetail[] {

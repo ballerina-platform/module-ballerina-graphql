@@ -81,4 +81,8 @@ class ExecutorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         // Do nothing
     }
+
+    public isolated function visitFragment(parser:FragmentNode fragmentNode) {
+        // TODO;
+    }
 }
