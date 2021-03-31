@@ -22,15 +22,6 @@ const CONTENT_TYPE_GQL = "application/graphql";
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
 
-const VALIDATION_TYPE_NAME = "Name";
-
-const RESULT_FIELD_ERRORS = "errors";
-const RESULT_FIELD_DATA = "data";
-
-const FIELD_ERROR_RECORD = "errorRecord";
-const FIELD_LOCATIONS = "locations";
-const FIELD_MESSAGE = "message";
-
 const SCALAR = "SCALAR";
 const OBJECT = "OBJECT";
 const LIST = "LIST";

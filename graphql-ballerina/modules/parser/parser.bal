@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
+
 public class Parser {
     private Lexer lexer;
     private DocumentNode document;
@@ -42,10 +44,12 @@ public class Parser {
     isolated function parseRootOperation(Token token) returns Error? {
         if (token.kind == T_OPEN_BRACE) {
             return self.parseAnonymousOperation();
-        } else if (token.kind == T_TEXT) {
+        } else if (token.kind == T_IDENTIFIER) {
             Scalar value = token.value;
             if (value is RootOperationType) {
                 return self.parseOperationWithType(value);
+            } else if (value == FRAGMENT) {
+                return self.parseFragment();
             }
         }
         return getUnexpectedTokenError(token);
@@ -71,6 +75,19 @@ public class Parser {
         } else {
             return getExpectedCharError(token, OPEN_BRACE);
         }
+    }
+
+    isolated function parseFragment() returns Error? {
+        Token token = check self.readNextNonSeparatorToken(); // fragment definition
+        Location location = token.location.clone();
+
+        token = check self.readNextNonSeparatorToken();
+        if (token.kind != T_IDENTIFIER) {
+            return getExpectedNameError(token);
+        }
+        string name = <string>token.value;
+
+        io:println("Fragment Name: " + name);
     }
 
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
@@ -168,7 +185,7 @@ isolated function getRootOperationType(Token token) returns RootOperationType|Er
 }
 
 isolated function getArgumentName(Token token) returns ArgumentName|Error {
-    if (token.kind == T_TEXT) {
+    if (token.kind == T_IDENTIFIER) {
         return {
             value: <string>token.value,
             location: token.location
@@ -191,7 +208,7 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
 
 isolated function getOperationNameFromToken(Parser parser) returns string|Error {
     Token token = check parser.peekNextNonSeparatorToken();
-    if (token.kind == T_TEXT) {
+    if (token.kind == T_IDENTIFIER) {
         // If this is a named operation, we should consume name token
         token = check parser.readNextNonSeparatorToken();
         return <string>token.value;
@@ -202,7 +219,7 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Error 
 }
 
 isolated function getIdentifierTokenvalue(Token token) returns string|Error {
-    if (token.kind == T_TEXT) {
+    if (token.kind == T_IDENTIFIER) {
         return <string>token.value;
     } else {
         return getExpectedNameError(token);

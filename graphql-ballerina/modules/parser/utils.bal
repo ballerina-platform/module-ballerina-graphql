@@ -57,19 +57,12 @@ isolated function getErrorMessageTypeNameForError(Token token) returns string {
     TokenType kind = token.kind;
     if (kind == T_EOF) {
         return "<EOF>.";
-    } else if (kind == T_TEXT) {
+    } else if (kind == T_IDENTIFIER) {
         return getScalarTypeNameForError(token.value);
     } else {
         // TODO: Remove toString after fixing https://github.com/ballerina-platform/ballerina-lang/issues/29674
         return string`"${token.value.toString()}".`;
     }
-}
-
-isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
-    Location location = token.location;
-    return {
-        locations: [location]
-    };
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {
