@@ -18,21 +18,21 @@ import ballerina/jballerina.java;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = string`Syntax Error: Unexpected ${getErrorMessageTypeNameForError(token)}`;
+    string message = string`Syntax Error: Unexpected ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedNameError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = string`Syntax Error: Expected Name, found ${getErrorMessageTypeNameForError(token)}`;
+    string message = string`Syntax Error: Expected Name, found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedCharError(Token token, string char) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = string`Syntax Error: Expected "${char}", found ${getErrorMessageTypeNameForError(token)}`;
+    string message = string`Syntax Error: Expected "${char}", found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
@@ -40,13 +40,13 @@ isolated function getExpectedCharError(Token token, string char) returns Invalid
 isolated function getScalarTypeNameForError(Scalar value) returns string {
     string result = "";
     if (value is int) {
-        result = "Int ";
+        result = "Int";
     } else if (value is float) {
-        result = "Float ";
+        result = "Float";
     } else if (value is boolean) {
-        result = "Boolean ";
+        result = "Boolean";
     } else {
-        result = "Name ";
+        result = "Name";
     }
 
     // TODO: Remove toString after fixing https://github.com/ballerina-platform/ballerina-lang/issues/29674
@@ -56,12 +56,15 @@ isolated function getScalarTypeNameForError(Scalar value) returns string {
 isolated function getErrorMessageTypeNameForError(Token token) returns string {
     TokenType kind = token.kind;
     if (kind == T_EOF) {
-        return "<EOF>.";
+        return "<EOF>";
     } else if (kind == T_IDENTIFIER) {
         return getScalarTypeNameForError(token.value);
+    } else if (kind == T_STRING) {
+        // TODO: Same as above
+        return string`String "${token.value.toString()}"`;
     } else {
         // TODO: Remove toString after fixing https://github.com/ballerina-platform/ballerina-lang/issues/29674
-        return string`"${token.value.toString()}".`;
+        return string`"${token.value.toString()}"`;
     }
 }
 
