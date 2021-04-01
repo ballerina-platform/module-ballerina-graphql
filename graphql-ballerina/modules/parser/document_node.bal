@@ -50,4 +50,8 @@ public class DocumentNode {
     public isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
     }
+
+    public isolated function getFragments() returns map<FragmentNode> {
+        return self.fragments;
+    }
 }

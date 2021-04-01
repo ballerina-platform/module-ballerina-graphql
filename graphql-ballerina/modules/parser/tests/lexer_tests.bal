@@ -272,6 +272,21 @@ isolated function readFragmentToken() returns error? {
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("...", T_ELLIPSIS, 1, 1);
     test:assertEquals(token, expectedToken);
+    token = check lexer.read();
+    expectedToken = getExpectedToken("friends", T_IDENTIFIER, 1, 4);
+}
+
+@test:Config {
+    groups: ["fragments", "lexer"]
+}
+isolated function readFragmentTokenWithSpace() returns error? {
+    string s = "... friends { name }";
+    Lexer lexer = new(s);
+    Token token = check lexer.read();
+    Token expectedToken = getExpectedToken("...", T_ELLIPSIS, 1, 1);
+    test:assertEquals(token, expectedToken);
+    token = check lexer.read();
+    expectedToken = getExpectedToken("friends", T_IDENTIFIER, 1, 5);
 }
 
 isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {

@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
-
 public class Parser {
     private Lexer lexer;
     private DocumentNode document;
@@ -78,16 +76,28 @@ public class Parser {
     }
 
     isolated function parseFragment() returns Error? {
-        Token token = check self.readNextNonSeparatorToken(); // fragment definition
+        Token token = check self.readNextNonSeparatorToken(); // fragment keyword already validated
         Location location = token.location.clone();
 
         token = check self.readNextNonSeparatorToken();
-        if (token.kind != T_IDENTIFIER) {
-            return getExpectedNameError(token);
-        }
-        string name = <string>token.value;
+        string name = check getIdentifierTokenvalue(token);
 
-        io:println("Fragment Name: " + name);
+        token = check self.readNextNonSeparatorToken();
+        string keyword = check getIdentifierTokenvalue(token);
+        if (keyword != ON) {
+            return getExpectedCharError(token, ON);
+        }
+
+        token = check self.readNextNonSeparatorToken();
+        string onType = check getIdentifierTokenvalue(token);
+
+        FragmentNode fragmentNode = new(name, location, onType);
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind != T_OPEN_BRACE) {
+            return getExpectedCharError(token, OPEN_BRACE);
+        }
+        check self.addSelections(fragmentNode);
+        check self.document.addFragment(fragmentNode);
     }
 
     isolated function createOperationNode(string name, RootOperationType kind, Location location)

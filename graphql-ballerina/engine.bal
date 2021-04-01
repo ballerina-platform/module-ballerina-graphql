@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-//import ballerina/io;
 
 class Engine {
     private Listener 'listener;

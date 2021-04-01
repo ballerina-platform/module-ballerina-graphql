@@ -106,5 +106,53 @@ query getBirthDate {
 isolated function testFragment() returns error? {
     string document = string`fragment friendFields on User { name }`;
     Parser parser = new(document);
-    var result = check parser.parse();
+    DocumentNode documentNode = check parser.parse();
+    map<FragmentNode> fragments = documentNode.getFragments();
+    test:assertEquals(fragments.length(), 1);
+    string fragmentName = "friendFields";
+    test:assertTrue(fragments.hasKey(fragmentName));
+    FragmentNode fragmentNode = fragments.get(fragmentName);
+    FieldNode[] selections = fragmentNode.getSelections();
+    test:assertEquals(selections.length(), 1);
+    FieldNode fieldNode = selections[0];
+    test:assertEquals(fieldNode.getName(), "name");
+}
+
+@test:Config {
+    groups: ["fragments", "parser"]
+}
+isolated function testInvalidFragmentNoSelections() returns error? {
+    string document = string`fragment friendFields on User`;
+    Parser parser = new(document);
+    var result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected "{", found <EOF>.`;
+    test:assertEquals(err.message(), expectedMessage);
+}
+
+@test:Config {
+    groups: ["fragments", "parser"]
+}
+isolated function testInvalidFragmentMissingOnKeyword() returns error? {
+    string document = string`fragment friendFields o User`;
+    Parser parser = new(document);
+    var result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected "on", found Name "o".`;
+    test:assertEquals(err.message(), expectedMessage);
+}
+
+@test:Config {
+    groups: ["fragments", "parser"]
+}
+isolated function testInvalidFragmentInvalidTypeType() returns error? {
+    string document = string`fragment friendFields on "User"`;
+    Parser parser = new(document);
+    var result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected Name, found String "User".`;
+    test:assertEquals(err.message(), expectedMessage);
 }
