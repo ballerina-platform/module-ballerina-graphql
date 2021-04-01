@@ -232,3 +232,28 @@ isolated function testInvalidArgument() returns @tainted error? {
     };
     test:assertEquals(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+isolated function testRuntimeError() returns error? {
+    string graphqlUrl = "http://localhost:9095/graphql";
+    string document = "{ profile (id: 10) { name } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    string expectedMessage = "{ballerina/lang.array}IndexOutOfRange";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
