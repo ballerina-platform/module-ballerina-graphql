@@ -1,6 +1,14 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina GraphQL package through the releases.
 
+## 0.2.0-alpha6
+
+### Added
+- [[#1191] Support Ballerina Decimal Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/1191)
+
+### Fixed
+- [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
+
 ## 0.2.0-alpha5
 
 ### Added

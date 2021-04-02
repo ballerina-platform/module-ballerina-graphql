@@ -74,7 +74,7 @@ isolated function testResourceReturningUnionTypes() returns @tainted error? {
 }
 
 @test:Config {
-    groups: ["test", "service", "unit"]
+    groups: ["service", "unit"]
 }
 isolated function testResourceReturningUnionWithNull() returns @tainted error? {
     string graphqlUrl = "http://localhost:9098/graphql";
