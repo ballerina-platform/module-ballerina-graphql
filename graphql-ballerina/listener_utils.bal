@@ -38,7 +38,6 @@ isolated function handlePostRequests(Engine engine, http:Request request) return
     if (contentType == CONTENT_TYPE_JSON) {
         processRequestWithJsonPayload(engine, request, response);
     } else if (contentType == CONTENT_TYPE_GQL) {
-        var document = request.getTextPayload();
         json payload = getErrorJson("Content-Type 'application/graphql' is not yet supported");
         response.setPayload(payload);
     } else {

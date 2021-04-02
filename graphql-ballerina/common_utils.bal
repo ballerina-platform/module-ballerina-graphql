@@ -22,17 +22,17 @@ isolated function getFieldNotFoundErrorMessageFromType(string requiredFieldName,
 }
 
 isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string rootType) returns string {
-    return "Cannot query field \"" + requiredFieldName + "\" on type \"" + rootType + "\".";
+    return string`Cannot query field "${requiredFieldName}" on type "${rootType}".`;
 }
 
 isolated function getNoSubfieldsErrorMessage(string fieldName, __Type schemaType) returns string {
     string typeName = getTypeNameFromType(schemaType);
-    return "Field \"" + fieldName + "\" must not have a selection since type \"" + typeName + "\" has no subfields.";
+    return string`Field "${fieldName}" must not have a selection since type "${typeName}" has no subfields.`;
 }
 
 isolated function getUnknownArgumentErrorMessage(string argName, string parentName, string fieldName)
 returns string {
-    return "Unknown argument \"" + argName + "\" on field \"" + parentName + "." + fieldName + "\".";
+    return string`Unknown argument "${argName}" on field "${parentName}.${fieldName}".`;
 }
 
 isolated function getMissingSubfieldsErrorFromType(string fieldName, __Type schemaType) returns string {
@@ -41,15 +41,12 @@ isolated function getMissingSubfieldsErrorFromType(string fieldName, __Type sche
 }
 
 isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
-    return "Field \"" + fieldName + "\" of type \"" + typeName
-            + "\" must have a selection of subfields. Did you mean \"" + fieldName + " { ... }\"?";
+    return string`Field "${fieldName}" of type "${typeName}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
 }
 
 isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
     string typeName = getTypeNameFromType(input.'type);
-    return "Field \"" + node.getName() + "\" argument \"" + input.name + "\" of type \"" + typeName
-            + "\" is required, but it was not provided.";
-
+    return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
 }
 
 isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) returns OutputObject {
@@ -88,13 +85,13 @@ isolated function getOfType(__Type schemaType) returns __Type {
 isolated function getTypeNameFromType(__Type schemaType) returns string {
     string typeName = getOfType(schemaType).name.toString();
     if (schemaType.kind == NON_NULL) {
-        typeName = typeName + "!";
+        typeName = string`${typeName}!`;
         __Type ofType = <__Type>schemaType?.ofType;
         if (ofType.kind == LIST) {
-            typeName = "[" + typeName + "]";
+            typeName = string`[${typeName}]`;
         }
     } else if (schemaType.kind == LIST) {
-        typeName = "[" + typeName + "]";
+        typeName = string`[${typeName}]`;
     }
     return typeName;
 }
