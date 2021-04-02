@@ -19,12 +19,14 @@ public class FieldNode {
     private Location location;
     private ArgumentNode[] arguments;
     private FieldNode[] selections;
+    private string[] fragments;
 
     public isolated function init(string name, Location location) {
         self.name = name;
         self.location = location;
         self.selections = [];
         self.arguments = [];
+        self.fragments = [];
     }
 
     public isolated function getName() returns string {
@@ -53,5 +55,13 @@ public class FieldNode {
 
     public isolated function getSelections() returns FieldNode[] {
         return self.selections;
+    }
+
+    public isolated function addFragment(string name) {
+        self.fragments.push(name);
+    }
+
+    public isolated function getFragments() returns string[] {
+        return self.fragments;
     }
 }

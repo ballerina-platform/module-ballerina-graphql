@@ -114,19 +114,12 @@ public class Parser {
         Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
         self.depth += 1;
         while (token.kind != T_CLOSE_BRACE) {
-            token = check self.readNextNonSeparatorToken();
-            string name = check getIdentifierTokenvalue(token);
-            FieldNode fieldNode = new(name, token.location);
             token = check self.peekNextNonSeparatorToken();
-            if (token.kind == T_OPEN_PARENTHESES) {
-                check self.addArgumentsToSelection(fieldNode);
+            if (token.kind == T_ELLIPSIS) {
+                check self.addFragmentToNode(parentNode);
+            } else {
+                check self.addSelectionToNode(parentNode);
             }
-
-            token = check self.peekNextNonSeparatorToken();
-            if (token.kind == T_OPEN_BRACE) {
-                check self.addSelections(fieldNode);
-            }
-            parentNode.addSelection(fieldNode);
             token = check self.peekNextNonSeparatorToken();
         }
         if (self.operationMaxDepth < self.depth) {
@@ -135,6 +128,29 @@ public class Parser {
         self.depth -= 1;
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
         token = check self.readNextNonSeparatorToken();
+    }
+
+    isolated function addSelectionToNode(ParentType parentNode) returns Error? {
+        Token token = check self.readNextNonSeparatorToken();
+        string name = check getIdentifierTokenvalue(token);
+        FieldNode fieldNode = new(name, token.location);
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind == T_OPEN_PARENTHESES) {
+            check self.addArgumentsToSelection(fieldNode);
+        }
+
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind == T_OPEN_BRACE) {
+            check self.addSelections(fieldNode);
+        }
+        parentNode.addSelection(fieldNode);
+    }
+
+    isolated function addFragmentToNode(ParentType parentNode) returns Error? {
+        Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
+        token = check self.readNextNonSeparatorToken();
+        string fragmentName = check getIdentifierTokenvalue(token);
+        parentNode.addFragment(fragmentName);
     }
 
     isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {

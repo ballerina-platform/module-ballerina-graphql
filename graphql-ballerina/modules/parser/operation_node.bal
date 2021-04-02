@@ -20,12 +20,14 @@ public class OperationNode {
     private Location location;
     private FieldNode[] selections;
     private int maxDepth;
+    private string[] fragments;
 
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
         self.kind = kind;
         self.location = location;
         self.selections = [];
+        self.fragments = [];
         self.maxDepth = 0;
     }
 
@@ -59,5 +61,13 @@ public class OperationNode {
 
     public isolated function getSelections() returns FieldNode[] {
         return self.selections;
+    }
+
+    public isolated function addFragment(string name) {
+        self.fragments.push(name);
+    }
+
+    public isolated function getFragments() returns string[] {
+        return self.fragments;
     }
 }
