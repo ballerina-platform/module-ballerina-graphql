@@ -44,6 +44,8 @@ jobs:
                     BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
                     packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
                     packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
+                    publishUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                    publishPAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
                     ./gradlew release -Prelease.useAutomaticVersion=true
                     ./gradlew -Pversion=${VERSION} publish -x test
