@@ -22,12 +22,14 @@ public class FragmentNode {
     private Location location;
     private string onType;
     private FieldNode[] selections;
+    private string[] fragments;
 
     public isolated function init(string name, Location location, string onType) {
         self.name = name;
         self.location = location;
         self.onType = onType;
         self.selections = [];
+        self.fragments = [];
     }
 
     public isolated function getName() returns string {
@@ -48,5 +50,17 @@ public class FragmentNode {
 
     public isolated function getSelections() returns FieldNode[] {
         return self.selections;
+    }
+
+    public isolated function getOnType() returns string {
+        return self.onType;
+    }
+
+    public isolated function addFragment(string name) {
+        self.fragments.push(name);
+    }
+
+    public isolated function getFragments() returns string[] {
+        return self.fragments;
     }
 }

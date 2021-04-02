@@ -156,3 +156,38 @@ isolated function testInvalidFragmentInvalidTypeType() returns error? {
     string expectedMessage = string`Syntax Error: Expected Name, found String "User".`;
     test:assertEquals(err.message(), expectedMessage);
 }
+
+@test:Config {
+    groups: ["fragments", "parser"]
+}
+isolated function testDocumentWithFragment() returns error? {
+    string document = string
+`{
+    profile {
+        ...profileFields
+    }
+}
+
+fragment profileFields on Profile {
+    name
+    age
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    OperationNode[] operations = documentNode.getOperations();
+    test:assertEquals(operations.length(), 1);
+    OperationNode operationNode = operations[0];
+    FieldNode[] fieldNodes = operationNode.getSelections();
+    test:assertEquals(fieldNodes.length(), 1);
+    FieldNode fieldNode = fieldNodes[0];
+    string[] fragments = fieldNode.getFragments();
+    test:assertEquals(fragments.length(), 1);
+    string fragmentName = fragments[0];
+    test:assertEquals(fragmentName, "profileFields");
+    map<FragmentNode> fragmentsMap = documentNode.getFragments();
+    FragmentNode? result = fragmentsMap[fragmentName];
+    test:assertTrue(result is FragmentNode);
+    FragmentNode fragmentNode = <FragmentNode>result;
+    test:assertEquals(fragmentNode.getSelections().length(), 2);
+    test:assertEquals(fragmentNode.getOnType(), "Profile");
+}
