@@ -1,7 +1,7 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina GraphQL package through the releases.
 
-## 0.2.0-alpha6
+## [0.2.0-alpha6] - 2021-04-02
 
 ### Added
 - [[#1191] Support Ballerina Decimal Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/1191)
@@ -9,7 +9,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 ### Fixed
 - [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
 
-## 0.2.0-alpha5
+## [0.2.0-alpha5] - 2021-03-19
 
 ### Added
 - [[#779] Hierarchical Resource Path Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/779)
@@ -22,7 +22,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#743] Improve Type Name Display in Error Messages](https://github.com/ballerina-platform/ballerina-standard-library/issues/743)
 
 
-## 0.2.0-alpha4
+## [0.2.0-alpha4] - 2021-02-20
 
 ### Added
 - [[#934] Configure Listener using HTTP Listener Configurations](https://github.com/ballerina-platform/ballerina-standard-library/issues/934)
