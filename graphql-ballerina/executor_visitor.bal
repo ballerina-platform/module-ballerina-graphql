@@ -41,37 +41,42 @@ class ExecutorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        parser:FieldNode[] selections = operationNode.getFields();
-        foreach parser:FieldNode fieldNode in selections {
-            if (fieldNode.getName() == SCHEMA_FIELD) {
-                map<anydata> subData = {};
-                foreach parser:FieldNode selection in fieldNode.getFields() {
-                    if (selection.getName() == TYPES_FIELD) {
-                        __Type[] types = self.schema.types.toArray();
-                        subData[selection.getName()] = getDataFromBalType(selection, types);
-                    } else {
-                        __Type schemaType = <__Type>self.schema[selection.getName()];
-                        var fields = schemaType?.fields;
-                        if (fields is __Field[]) {
-                            map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
-                            typeMap[FIELDS_FIELD] = fields;
-                            subData[selection.getName()] = getDataFromBalType(selection, typeMap);
-                        }
-                    }
-                    self.data[fieldNode.getName()] = subData;
-                }
-            } else {
-                self.visitField(fieldNode, self.data);
-            }
+        foreach parser:Selection selection in operationNode.getSelections() {
+            self.visitSelection(selection);
         }
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-
+        if (selection.isFragment) {
+            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
+            self.visitFragment(fragmentNode);
+        } else {
+            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
+            self.visitField(fieldNode);
+        }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        executeResource(self.serviceType, self, fieldNode, self.data);
+        if (fieldNode.getName() == SCHEMA_FIELD) {
+            map<anydata> subData = {};
+            foreach parser:FieldNode selection in fieldNode.getFields() {
+                if (selection.getName() == TYPES_FIELD) {
+                    __Type[] types = self.schema.types.toArray();
+                    subData[selection.getName()] = getDataFromBalType(selection, types);
+                } else {
+                    __Type schemaType = <__Type>self.schema[selection.getName()];
+                    var fields = schemaType?.fields;
+                    if (fields is __Field[]) {
+                        map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
+                        typeMap[FIELDS_FIELD] = fields;
+                        subData[selection.getName()] = getDataFromBalType(selection, typeMap);
+                    }
+                }
+                self.data[fieldNode.getName()] = subData;
+            }
+        } else {
+            self.executeResource(fieldNode);
+        }
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
@@ -79,6 +84,12 @@ class ExecutorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        // TODO;
+        foreach parser:Selection selection in fragmentNode.getSelections() {
+            self.visitSelection(selection);
+        }
+    }
+
+    isolated function executeResource(parser:FieldNode fieldNode) {
+        executeResource(self.serviceType, self, fieldNode, self.data);
     }
 }

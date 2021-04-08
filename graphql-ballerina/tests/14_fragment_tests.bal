@@ -162,8 +162,7 @@ fragment data on Query {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"],
-    enable: false
+    groups: ["fragments", "unit"]
 }
 isolated function testFragments() returns error? {
     string document = string
@@ -181,15 +180,15 @@ fragment data on Query {
 
     json expectedPayload = {
         data: {
-            employees: [
+            people: [
                 {
-                    name: "John Doe"
+                    name: "Sherlock Holmes"
                 },
                 {
-                    name: "Jane Doe"
+                    name: "Walter White"
                 },
                 {
-                    name: "Johnny Roe"
+                    name: "Tom Marvolo Riddle"
                 }
             ]
         }
@@ -197,4 +196,49 @@ fragment data on Query {
     test:assertEquals(actualPayload, expectedPayload);
 }
 
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testNestedFragments() returns error? {
+    string document = string
+`query {
+    ...data
+}
 
+fragment data on Query {
+    people {
+        ...address
+    }
+}
+
+fragment address on Person {
+    address {
+        city
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            people: [
+                {
+                    address: {
+                        city: "London"
+                    }
+                },
+                {
+                    address: {
+                        city: "Albuquerque"
+                    }
+                },
+                {
+                    address: {
+                        city: "Hogwarts"
+                    }
+                }
+            ]
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
