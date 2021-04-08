@@ -20,17 +20,12 @@ class ExecutorVisitor {
     *parser:Visitor;
 
     private Service serviceType;
-    private OutputObject outputObject;
     private map<anydata> data;
     private ErrorDetail[] errors;
     private __Schema schema;
 
     isolated function init(Service serviceType, __Schema schema) {
         self.serviceType = serviceType;
-        self.outputObject = {
-            data: {},
-            errors: []
-        };
         self.schema = schema;
         self.data = {};
         self.errors = [];
