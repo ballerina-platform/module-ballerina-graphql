@@ -70,7 +70,7 @@ class RecordCreatorVisitor {
 
     public isolated function visitOperation(OperationNode operationNode) returns Operation {
         Field[] selections = [];
-        FieldNode[] fieldNodes = operationNode.getSelections();
+        FieldNode[] fieldNodes = operationNode.getFields();
         foreach FieldNode selection in fieldNodes {
             selections.push(self.visitField(selection));
         }
@@ -83,6 +83,10 @@ class RecordCreatorVisitor {
         };
     }
 
+    public isolated function visitSelection(Selection selection, anydata data = ()) {
+
+    }
+
     public isolated function visitField(FieldNode fieldNode, anydata data = ()) returns Field {
         Argument[] arguments = [];
         ArgumentNode[] argumensNodes = fieldNode.getArguments();
@@ -91,7 +95,7 @@ class RecordCreatorVisitor {
         }
 
         Field[] fields = [];
-        FieldNode[] fieldNodes = fieldNode.getSelections();
+        FieldNode[] fieldNodes = fieldNode.getFields();
         foreach FieldNode selection in fieldNodes {
             fields.push(self.visitField(selection));
         }
@@ -121,7 +125,7 @@ class RecordCreatorVisitor {
         };
     }
 
-    public isolated function visitFragment(FragmentNode fragmentNode) returns Fragment {
+    public isolated function visitFragment(FragmentNode fragmentNode, anydata data = ()) returns Fragment {
         return { name: fragmentNode.getName(), location: fragmentNode.getLocation()};
     }
 }

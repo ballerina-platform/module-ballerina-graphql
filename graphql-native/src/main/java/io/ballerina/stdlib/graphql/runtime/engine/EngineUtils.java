@@ -69,7 +69,7 @@ public class EngineUtils {
     private static final BString TYPE_FIELD = StringUtils.fromString("type");
     static final BString NAME_FIELD = StringUtils.fromString("name");
     private static final BString KIND_FIELD = StringUtils.fromString("kind");
-    private static final BString FIELDS_FIELD = StringUtils.fromString("fields");
+    static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
     private static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");

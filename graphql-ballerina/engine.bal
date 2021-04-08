@@ -76,19 +76,10 @@ class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
-        if (self.schema is __Schema) {
-            ValidatorVisitor validator = new(<__Schema>self.schema, self.maxQueryDepth);
-            validator.validate(document);
-            ErrorDetail[] errors = validator.getErrors();
-            if (errors.length() > 0) {
-                return getOutputObjectFromErrorDetail(errors);
-            }
-        } else {
-            ErrorDetail errorDetail = {
-                message: "Internal Error: GraphQL Schema is not present.",
-                locations: []
-            };
-            return getOutputObjectFromErrorDetail(errorDetail);
+        ValidatorVisitor validator = new(<__Schema>self.schema, document, self.maxQueryDepth);
+        ErrorDetail[]? errors = validator.validate();
+        if (errors is ErrorDetail[]) {
+            return getOutputObjectFromErrorDetail(errors);
         }
     }
 

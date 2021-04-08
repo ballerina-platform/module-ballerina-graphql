@@ -46,11 +46,11 @@ class ExecutorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        parser:FieldNode[] selections = operationNode.getSelections();
+        parser:FieldNode[] selections = operationNode.getFields();
         foreach parser:FieldNode fieldNode in selections {
             if (fieldNode.getName() == SCHEMA_FIELD) {
                 map<anydata> subData = {};
-                foreach parser:FieldNode selection in fieldNode.getSelections() {
+                foreach parser:FieldNode selection in fieldNode.getFields() {
                     if (selection.getName() == TYPES_FIELD) {
                         __Type[] types = self.schema.types.toArray();
                         subData[selection.getName()] = getDataFromBalType(selection, types);
@@ -74,6 +74,10 @@ class ExecutorVisitor {
         }
     }
 
+    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+
+    }
+
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata|error {
         return executeResource(self.serviceType, self, fieldNode);
     }
@@ -82,7 +86,7 @@ class ExecutorVisitor {
         // Do nothing
     }
 
-    public isolated function visitFragment(parser:FragmentNode fragmentNode) {
+    public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         // TODO;
     }
 }

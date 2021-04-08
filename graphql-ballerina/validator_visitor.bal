@@ -19,18 +19,30 @@ import graphql.parser;
 class ValidatorVisitor {
     *parser:Visitor;
 
-    private ErrorDetail[] errors;
     private __Schema schema;
+    private parser:DocumentNode documentNode;
     private int maxQueryDepth;
+    private ErrorDetail[] errors;
+    private map<string> usedFragments;
 
-    public isolated function init(__Schema schema, int maxQueryDepth) {
-        self.errors = [];
+    public isolated function init(__Schema schema, parser:DocumentNode documentNode, int maxQueryDepth) {
         self.schema = schema;
+        self.documentNode = documentNode;
         self.maxQueryDepth = maxQueryDepth;
+        self.errors = [];
+        self.usedFragments = {};
     }
 
-    public isolated function validate(parser:DocumentNode documentNode) {
-        self.visitDocument(documentNode);
+    public isolated function validate() returns ErrorDetail[]? {
+        FragmentVisitor fragmentVisitor = new();
+        fragmentVisitor.visitDocument(self.documentNode);
+        foreach ErrorDetail errorDetail in fragmentVisitor.getErrors() {
+            self.errors.push(errorDetail);
+        }
+        self.visitDocument(self.documentNode);
+        if (self.errors.length() > 0) {
+            return self.errors;
+        }
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode) {
@@ -58,16 +70,34 @@ class ValidatorVisitor {
             self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
             return;
         }
-        parser:FieldNode[] selections = operationNode.getSelections();
-        foreach parser:FieldNode selection in selections {
-            if (selection.getName() == SCHEMA_FIELD) {
-                self.processSchemaIntrospection(selection);
+        Parent parent = {
+            parentType: self.schema.queryType,
+            name: QUERY_TYPE_NAME
+        };
+        foreach parser:Selection selection in operationNode.getSelections() {
+            self.visitSelection(selection, parent);
+        }
+    }
+
+    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+        Parent parent = <Parent>data;
+        if (selection.isFragment) {
+            // This will be nil if the fragment is not found. The error is recorded in the fragment visitor.
+            // Therefore nil value is ignored.
+            var node = selection?.node;
+            if (node is ()) {
+                return;
+            }
+            __Type parentType = <__Type>getOfType(parent.parentType);
+            self.validateFragment(selection, <string>parentType.name);
+            parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
+            self.visitFragment(fragmentNode, parent);
+        } else {
+            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
+            if (selection.name == SCHEMA_FIELD) {
+                self.processSchemaIntrospection(fieldNode);
             } else {
-                Parent parent = {
-                    parentType: self.schema.queryType,
-                    name: QUERY_TYPE_NAME
-                };
-                self.visitField(selection, parent);
+                self.visitField(fieldNode, parent);
             }
         }
     }
@@ -95,7 +125,7 @@ class ValidatorVisitor {
         self.checkArguments(parentType, fieldNode, schemaField);
 
         __Type fieldType = getOfType(schemaField.'type);
-        parser:FieldNode[] selections = fieldNode.getSelections();
+        parser:FieldNode[] selections = fieldNode.getFields();
 
         if (hasFields(fieldType) && selections.length() == 0) {
             string message = getMissingSubfieldsErrorFromType(requiredFieldName, schemaField.'type);
@@ -136,8 +166,10 @@ class ValidatorVisitor {
         }
     }
 
-    public isolated function visitFragment(parser:FragmentNode fragmentNode) {
-        // TODO;
+    public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        Parent parent = <Parent>data;
+        __Type parentType = getOfType(parent.parentType);
+
     }
 
     public isolated function getErrors() returns ErrorDetail[] {
@@ -190,7 +222,7 @@ class ValidatorVisitor {
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
-        foreach parser:FieldNode selection in fieldNode.getSelections() {
+        foreach parser:FieldNode selection in fieldNode.getFields() {
             if (selection.getName() == TYPES_FIELD) {
                 __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
                 Parent parent = {
@@ -206,13 +238,32 @@ class ValidatorVisitor {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
                 };
-                foreach parser:FieldNode subSelection in selection.getSelections() {
+                foreach parser:FieldNode subSelection in selection.getFields() {
                     self.visitField(subSelection, parent);
                 }
                 return;
             }
             string message = getFieldNotFoundErrorMessage(selection.getName(), SCHEMA_TYPE_NAME);
             self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
+        }
+    }
+
+    isolated function validateFragment(parser:Selection fragment, string schemaTypeName) {
+        parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
+        string fragmentOnTypeName = fragmentNode.getOnType();
+        __Type? fragmentOnType = self.schema.types[fragmentOnTypeName];
+        if (fragmentOnType is ()) {
+            string message = string`Unknown type "${fragmentOnTypeName}".`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
+            self.errors.push(errorDetail);
+        } else {
+            __Type schemaType = <__Type>self.schema.types[schemaTypeName];
+            __Type ofType = getOfType(schemaType);
+            if (fragmentOnType != ofType) {
+                string message = string`Fragment "${fragment.name}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
+                self.errors.push(errorDetail);
+            }
         }
     }
 }
