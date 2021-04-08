@@ -36,8 +36,8 @@ import java.util.concurrent.CountDownLatch;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
@@ -98,7 +98,7 @@ public class CallableUnitCallback implements Callback {
 
     static BMap<BString, Object> getDataFromService(Environment environment, BObject service, BObject visitor,
                                                             BObject fieldNode) {
-        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
+        BArray selections = fieldNode.getArrayValue(FIELDS_FIELD);
         BMap<BString, Object> data = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BObject subField = (BObject) selections.get(i);
@@ -123,7 +123,7 @@ public class CallableUnitCallback implements Callback {
     }
 
     static BMap<BString, Object> getDataFromRecord(BObject fieldNode, BMap<BString, Object> record) {
-        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
+        BArray selections = fieldNode.getArrayValue(FIELDS_FIELD);
         BMap<BString, Object> data = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BObject subfieldNode = (BObject) selections.get(i);

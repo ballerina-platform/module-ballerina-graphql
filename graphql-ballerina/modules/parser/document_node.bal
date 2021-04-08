@@ -54,4 +54,8 @@ public class DocumentNode {
     public isolated function getFragments() returns map<FragmentNode> {
         return self.fragments;
     }
+
+    public isolated function getFragment(string name) returns FragmentNode? {
+        return self.fragments[name];
+    }
 }

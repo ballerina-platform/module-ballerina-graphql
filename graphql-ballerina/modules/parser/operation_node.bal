@@ -13,21 +13,23 @@
 
 public class OperationNode {
     *Node;
-    *ParentType;
+    *ParentNode;
 
     private string name;
     private RootOperationType kind;
     private Location location;
-    private FieldNode[] selections;
+    private FieldNode[] fields;
     private int maxDepth;
     private string[] fragments;
+    private Selection[] selections;
 
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
         self.kind = kind;
         self.location = location;
-        self.selections = [];
+        self.fields = [];
         self.fragments = [];
+        self.selections = [];
         self.maxDepth = 0;
     }
 
@@ -55,12 +57,12 @@ public class OperationNode {
         var result = v.visitOperation(self);
     }
 
-    public isolated function addSelection(FieldNode selection) {
-        self.selections.push(selection);
+    public isolated function addField(FieldNode fieldNode) {
+        self.fields.push(fieldNode);
     }
 
-    public isolated function getSelections() returns FieldNode[] {
-        return self.selections;
+    public isolated function getFields() returns FieldNode[] {
+        return self.fields;
     }
 
     public isolated function addFragment(string name) {
@@ -69,5 +71,13 @@ public class OperationNode {
 
     public isolated function getFragments() returns string[] {
         return self.fragments;
+    }
+
+    public isolated function addSelection(Selection selection) {
+        self.selections.push(selection);
+    }
+
+    public isolated function getSelections() returns Selection[] {
+        return self.selections;
     }
 }

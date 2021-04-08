@@ -48,3 +48,10 @@ public enum RootOperationType {
     MUTATION = "mutation",
     SUBSCRIPTION = "subscription"
 }
+
+public type Selection record {|
+    string name;
+    boolean isFragment;
+    ParentNode node?;
+    Location location;
+|};

@@ -16,20 +16,22 @@
 
 public class FragmentNode {
     *Node;
-    *ParentType;
+    *ParentNode;
 
     private string name;
     private Location location;
     private string onType;
-    private FieldNode[] selections;
+    private FieldNode[] fields;
     private string[] fragments;
+    private Selection[] selections;
 
     public isolated function init(string name, Location location, string onType) {
         self.name = name;
         self.location = location;
         self.onType = onType;
-        self.selections = [];
+        self.fields = [];
         self.fragments = [];
+        self.selections = [];
     }
 
     public isolated function getName() returns string {
@@ -44,12 +46,12 @@ public class FragmentNode {
         anydata|error result = v.visitFragment(self);
     }
 
-    public isolated function addSelection(FieldNode selection) {
-        self.selections.push(selection);
+    public isolated function addField(FieldNode fieldNode) {
+        self.fields.push(fieldNode);
     }
 
-    public isolated function getSelections() returns FieldNode[] {
-        return self.selections;
+    public isolated function getFields() returns FieldNode[] {
+        return self.fields;
     }
 
     public isolated function getOnType() returns string {
@@ -62,5 +64,13 @@ public class FragmentNode {
 
     public isolated function getFragments() returns string[] {
         return self.fragments;
+    }
+
+    public isolated function addSelection(Selection selection) {
+        self.selections.push(selection);
+    }
+
+    public isolated function getSelections() returns Selection[] {
+        return self.selections;
     }
 }

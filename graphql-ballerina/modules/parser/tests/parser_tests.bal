@@ -112,7 +112,7 @@ isolated function testFragment() returns error? {
     string fragmentName = "friendFields";
     test:assertTrue(fragments.hasKey(fragmentName));
     FragmentNode fragmentNode = fragments.get(fragmentName);
-    FieldNode[] selections = fragmentNode.getSelections();
+    FieldNode[] selections = fragmentNode.getFields();
     test:assertEquals(selections.length(), 1);
     FieldNode fieldNode = selections[0];
     test:assertEquals(fieldNode.getName(), "name");
@@ -177,7 +177,7 @@ fragment profileFields on Profile {
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
     OperationNode operationNode = operations[0];
-    FieldNode[] fieldNodes = operationNode.getSelections();
+    FieldNode[] fieldNodes = operationNode.getFields();
     test:assertEquals(fieldNodes.length(), 1);
     FieldNode fieldNode = fieldNodes[0];
     string[] fragments = fieldNode.getFragments();
@@ -188,6 +188,6 @@ fragment profileFields on Profile {
     FragmentNode? result = fragmentsMap[fragmentName];
     test:assertTrue(result is FragmentNode);
     FragmentNode fragmentNode = <FragmentNode>result;
-    test:assertEquals(fragmentNode.getSelections().length(), 2);
+    test:assertEquals(fragmentNode.getFields().length(), 2);
     test:assertEquals(fragmentNode.getOnType(), "Profile");
 }
