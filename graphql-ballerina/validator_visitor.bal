@@ -64,9 +64,7 @@ class ValidatorVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
         if (self.maxQueryDepth > 0 && operationNode.getMaxDepth() > self.maxQueryDepth) {
-            string depthString = operationNode.getMaxDepth().toString();
-            string message = "Query has depth of " + depthString + ", which exceeds max depth of " +
-                            self.maxQueryDepth.toString();
+            string message = string`Query has depth of ${operationNode.getMaxDepth()}, which exceeds max depth of ${self.maxQueryDepth.toString()}`;
             self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
             return;
         }
@@ -89,9 +87,15 @@ class ValidatorVisitor {
                 return;
             }
             __Type parentType = <__Type>getOfType(parent.parentType);
-            self.validateFragment(selection, <string>parentType.name);
-            parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
-            self.visitFragment(fragmentNode, parent);
+            __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
+            if (fragmentOnType is __Type) {
+                Parent fragmentParent = {
+                    parentType: fragmentOnType,
+                    name: "QUERY_TYPE_NAME"
+                };
+                parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
+                self.visitFragment(fragmentNode, fragmentParent);
+            }
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             if (selection.name == SCHEMA_FIELD) {
@@ -125,14 +129,14 @@ class ValidatorVisitor {
         self.checkArguments(parentType, fieldNode, schemaField);
 
         __Type fieldType = getOfType(schemaField.'type);
-        parser:FieldNode[] selections = fieldNode.getFields();
+        parser:Selection[] selections = fieldNode.getSelections();
 
         if (hasFields(fieldType) && selections.length() == 0) {
             string message = getMissingSubfieldsErrorFromType(requiredFieldName, schemaField.'type);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
 
-        foreach parser:FieldNode subFieldNode in selections {
+        foreach parser:Selection subSelection in selections {
             if (fieldType.kind == LIST || fieldType.kind == NON_NULL) {
                 __Type? ofType = fieldType?.ofType;
                 if (ofType is __Type) {
@@ -140,14 +144,14 @@ class ValidatorVisitor {
                         parentType: <__Type>fieldType?.ofType,
                         name: fieldNode.getName()
                     };
-                    self.visitField(subFieldNode, subParent);
+                    self.visitSelection(subSelection, subParent);
                 }
             } else {
                 Parent subParent = {
                     parentType: fieldType,
                     name: fieldNode.getName()
                 };
-                self.visitField(subFieldNode, subParent);
+                self.visitSelection(subSelection, subParent);
             }
         }
     }
@@ -159,7 +163,7 @@ class ValidatorVisitor {
         parser:ArgumentValue value = argumentNode.getValue();
         string expectedTypeName = getTypeName(argumentNode);
         if (typeName != expectedTypeName) {
-            string message = typeName + " cannot represent non " + typeName + " value: " + value.value.toString();
+            string message = string`${typeName} cannot represent non ${typeName} value: ${value.value.toString()}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
             self.errors.push(errorDetail);
             return;
@@ -168,8 +172,10 @@ class ValidatorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         Parent parent = <Parent>data;
-        __Type parentType = getOfType(parent.parentType);
-
+        __Type? fragmentType = self.schema.types[fragmentNode.getOnType()];
+        foreach parser:Selection selection in fragmentNode.getSelections() {
+            self.visitSelection(selection, parent);
+        }
     }
 
     public isolated function getErrors() returns ErrorDetail[] {
@@ -248,7 +254,7 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateFragment(parser:Selection fragment, string schemaTypeName) {
+    isolated function validateFragment(parser:Selection fragment, string schemaTypeName) returns __Type? {
         parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
         string fragmentOnTypeName = fragmentNode.getOnType();
         __Type? fragmentOnType = self.schema.types[fragmentOnTypeName];
@@ -264,6 +270,7 @@ class ValidatorVisitor {
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
                 self.errors.push(errorDetail);
             }
+            return fragmentOnType;
         }
     }
 }
