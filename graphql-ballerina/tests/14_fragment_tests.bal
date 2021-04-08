@@ -98,6 +98,73 @@ fragment details on Student {
 @test:Config {
     groups: ["fragments", "unit"]
 }
+isolated function testFragmentOnInvalidType() returns error? {
+    string document = string
+`query {
+    ...data
+}
+
+fragment data on Person {
+    name
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    string message = string`Fragment "data" cannot be spread here as objects of type "Query" can never be of type "Person".`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: message,
+                locations: [
+                    {
+                        line: 2,
+                        column: 8
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testFragmentWithInvalidField() returns error? {
+    string document = string
+`query {
+    ...data
+}
+
+fragment data on Query {
+    people {
+        invalid
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    string message = string`Cannot query field "invalid" on type "Person".`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: message,
+                locations: [
+                    {
+                        line: 7,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"],
+    enable: false
+}
 isolated function testFragments() returns error? {
     string document = string
 `query {
