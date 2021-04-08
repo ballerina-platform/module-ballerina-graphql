@@ -25,7 +25,7 @@ listener Listener simpleResourceListener = new(9092);
 }
 isolated function testShortHandQueryResult() returns @tainted error? {
     string document = string
-    `query getData {
+    `{
     name
     birthdate
 }`;

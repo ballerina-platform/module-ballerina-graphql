@@ -39,6 +39,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.ge
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getSchemaRecordFromSchema;
 import static io.ballerina.stdlib.graphql.runtime.engine.IntrospectionUtils.initializeIntrospectionTypes;
@@ -65,26 +66,28 @@ public class Engine {
         return schemaGenerator.generate();
     }
 
-    public static Object executeResource(Environment environment, BObject service, BObject visitor, BObject fieldNode) {
+    public static void executeResource(Environment environment, BObject service, BObject visitor, BObject fieldNode,
+                                       BMap<BString, Object> data) {
         ServiceType serviceType = (ServiceType) service.getType();
         String fieldName = fieldNode.getStringValue(NAME_FIELD).getValue();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             String resourceName = getResourceName(resourceMethod);
             if (resourceName.equals(fieldName)) {
-                return getResourceExecutionResult(environment, service, visitor, fieldNode, resourceMethod);
+                getResourceExecutionResult(environment, service, visitor, fieldNode, resourceMethod, data);
+                return;
             }
         }
         // Won't hit here if the exact resource is already found, hence must be hierarchical resource
-        return getDataFromService(environment, service, visitor, fieldNode);
+        getDataFromService(environment, service, visitor, fieldNode, data);
     }
 
-    private static Object getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
-                                                     BObject fieldNode, ResourceMethodType resourceMethod) {
-
+    private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
+                                                   BObject fieldNode, ResourceMethodType resourceMethod,
+                                                   BMap<BString, Object> data) {
         BMap<BString, Object> arguments = getArgumentsFromField(fieldNode);
         Object[] args = getArgsForResource(resourceMethod, arguments);
         CountDownLatch latch = new CountDownLatch(1);
-        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, fieldNode);
+        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, fieldNode, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
         try {
@@ -92,14 +95,18 @@ public class Engine {
         } catch (InterruptedException e) {
             // Ignore
         }
-        return callback.getResult();
     }
 
+    // TODO: Improve this method to not return but populate inside
     public static Object getDataFromBalType(BObject fieldNode, Object data) {
         if (data instanceof BArray) {
-            return getDataFromArray(fieldNode, (BArray) data);
+            BMap<BString, Object> dataRecord = createDataRecord();
+            getDataFromArray(fieldNode, (BArray) data, dataRecord);
+            return dataRecord.getArrayValue(fieldNode.getStringValue(NAME_FIELD));
         } else if (data instanceof BMap) {
-            return getDataFromRecord(fieldNode, (BMap<BString, Object>) data);
+            BMap<BString, Object> dataRecord = createDataRecord();
+            getDataFromRecord(fieldNode, (BMap<BString, Object>) data, dataRecord);
+            return dataRecord.getMapValue(fieldNode.getStringValue(NAME_FIELD));
         } else {
             return data;
         }
