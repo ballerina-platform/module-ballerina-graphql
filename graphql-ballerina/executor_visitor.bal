@@ -20,7 +20,7 @@ class ExecutorVisitor {
     *parser:Visitor;
 
     private Service serviceType;
-    private map<anydata> data;
+    private Data data;
     private ErrorDetail[] errors;
     private __Schema schema;
 
@@ -61,10 +61,7 @@ class ExecutorVisitor {
                     self.data[fieldNode.getName()] = subData;
                 }
             } else {
-                var fieldResult = self.visitField(fieldNode, self.data);
-                if (fieldResult is anydata) {
-                    self.data[fieldNode.getName()] = fieldResult;
-                }
+                self.visitField(fieldNode, self.data);
             }
         }
     }
@@ -73,8 +70,8 @@ class ExecutorVisitor {
 
     }
 
-    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) returns anydata|error {
-        return executeResource(self.serviceType, self, fieldNode);
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
+        executeResource(self.serviceType, self, fieldNode, self.data);
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {

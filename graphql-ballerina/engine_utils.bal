@@ -43,8 +43,8 @@ isolated function createSchema(Service s) returns __Schema|Error = @java:Method 
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode)
-returns anydata|error = @java:Method {
+isolated function executeResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode, Data data) =
+@java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 

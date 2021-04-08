@@ -212,6 +212,10 @@ public class EngineUtils {
         return errorDetail;
     }
 
+    static BMap<BString, Object> createDataRecord() {
+        return ValueCreator.createRecordValue(getModule(), DATA_RECORD);
+    }
+
     private static SchemaType createNonNullType() {
         return new SchemaType(null, TypeKind.NON_NULL);
     }
