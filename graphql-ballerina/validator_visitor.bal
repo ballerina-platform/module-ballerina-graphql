@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-import ballerina/io;
 
 class ValidatorVisitor {
     *parser:Visitor;
@@ -270,8 +269,6 @@ class ValidatorVisitor {
     }
 
     isolated function validateFragment(parser:Selection fragment, string schemaTypeName) returns __Type? {
-        io:println("Schema Type: " + schemaTypeName);
-        io:println("Fragment: " + schemaTypeName);
         parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
         string fragmentOnTypeName = fragmentNode.getOnType();
         __Type? fragmentOnType = self.schema.types[fragmentOnTypeName];
