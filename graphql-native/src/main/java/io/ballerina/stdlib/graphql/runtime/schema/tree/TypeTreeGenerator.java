@@ -109,7 +109,7 @@ public class TypeTreeGenerator {
                 String message = "Returning anonymous service objects are not supported by GraphQL resources";
                 throw createError(message, NOT_SUPPORTED_ERROR);
             }
-            return createNodeForService(name, serviceType);
+            return createNodeForService(serviceName, serviceType);
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
             Type elementType = arrayType.getElementType();
