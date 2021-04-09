@@ -15,6 +15,7 @@
 // under the License.
 
 import graphql.parser;
+import ballerina/io;
 
 class ValidatorVisitor {
     *parser:Visitor;
@@ -91,7 +92,7 @@ class ValidatorVisitor {
             if (fragmentOnType is __Type) {
                 Parent fragmentParent = {
                     parentType: fragmentOnType,
-                    name: "QUERY_TYPE_NAME"
+                    name: fragmentOnType.name.toString()
                 };
                 parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
                 self.visitFragment(fragmentNode, fragmentParent);
@@ -99,7 +100,7 @@ class ValidatorVisitor {
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             if (selection.name == SCHEMA_FIELD) {
-                self.processSchemaIntrospection(fieldNode);
+                self.processSchemaIntrospection(selection);
             } else {
                 self.visitField(fieldNode, parent);
             }
@@ -222,39 +223,55 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function processSchemaIntrospection(parser:FieldNode fieldNode) {
-        if (fieldNode.getSelections().length() < 1) {
-            string message = getMissingSubfieldsError(fieldNode.getName(), SCHEMA_TYPE_NAME);
-            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+    isolated function processSchemaIntrospection(parser:Selection selection) {
+        parser:ParentNode parentNode = <parser:ParentNode>selection?.node;
+        if (parentNode.getSelections().length() < 1) {
+            string message = getMissingSubfieldsError(parentNode.getName(), SCHEMA_TYPE_NAME);
+            self.errors.push(getErrorDetailRecord(message, selection.location));
             return;
         }
-        foreach parser:FieldNode selection in fieldNode.getFields() {
-            if (selection.getName() == TYPES_FIELD) {
+
+        foreach parser:Selection subSelection in parentNode.getSelections() {
+            self.validateIntrospectionFields(subSelection);
+        }
+    }
+
+    isolated function validateIntrospectionFields(parser:Selection selection) {
+        if (selection.isFragment) {
+            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
+            foreach parser:Selection subSelection in fragmentNode.getSelections() {
+                self.validateIntrospectionFields(subSelection);
+            }
+        } else {
+            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
+            if (selection.name == TYPES_FIELD) {
                 __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
                 Parent parent = {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
                 };
-                return self.visitField(selection, parent);
+                return self.visitSelection(selection, parent);
             }
-            var fieldValue = self.schema[selection.getName()];
+            var fieldValue = self.schema[selection.name];
             if (fieldValue != ()) {
                 __Type schemaType = <__Type>self.schema.types[TYPE_TYPE_NAME];
                 Parent parent = {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
                 };
-                foreach parser:FieldNode subSelection in selection.getFields() {
-                    self.visitField(subSelection, parent);
+                foreach parser:Selection subSelection in fieldNode.getSelections() {
+                    self.visitSelection(subSelection, parent);
                 }
                 return;
             }
-            string message = getFieldNotFoundErrorMessage(selection.getName(), SCHEMA_TYPE_NAME);
-            self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
+            string message = getFieldNotFoundErrorMessage(selection.name, SCHEMA_TYPE_NAME);
+            self.errors.push(getErrorDetailRecord(message, selection.location));
         }
     }
 
     isolated function validateFragment(parser:Selection fragment, string schemaTypeName) returns __Type? {
+        io:println("Schema Type: " + schemaTypeName);
+        io:println("Fragment: " + schemaTypeName);
         parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
         string fragmentOnTypeName = fragmentNode.getOnType();
         __Type? fragmentOnType = self.schema.types[fragmentOnTypeName];
