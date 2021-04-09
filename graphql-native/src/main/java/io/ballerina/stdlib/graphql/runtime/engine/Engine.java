@@ -66,28 +66,28 @@ public class Engine {
         return schemaGenerator.generate();
     }
 
-    public static void executeResource(Environment environment, BObject service, BObject visitor, BObject fieldNode,
+    public static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
                                        BMap<BString, Object> data) {
         ServiceType serviceType = (ServiceType) service.getType();
-        String fieldName = fieldNode.getStringValue(NAME_FIELD).getValue();
+        String fieldName = node.getStringValue(NAME_FIELD).getValue();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             String resourceName = getResourceName(resourceMethod);
             if (resourceName.equals(fieldName)) {
-                getResourceExecutionResult(environment, service, visitor, fieldNode, resourceMethod, data);
+                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data);
                 return;
             }
         }
         // Won't hit here if the exact resource is already found, hence must be hierarchical resource
-        getDataFromService(environment, service, visitor, fieldNode, data);
+        getDataFromService(environment, service, visitor, node, data);
     }
 
     private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
-                                                   BObject fieldNode, ResourceMethodType resourceMethod,
+                                                   BObject node, ResourceMethodType resourceMethod,
                                                    BMap<BString, Object> data) {
-        BMap<BString, Object> arguments = getArgumentsFromField(fieldNode);
+        BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
         CountDownLatch latch = new CountDownLatch(1);
-        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, fieldNode, data);
+        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, node, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
         try {
@@ -98,22 +98,22 @@ public class Engine {
     }
 
     // TODO: Improve this method to not return but populate inside
-    public static Object getDataFromBalType(BObject fieldNode, Object data) {
+    public static Object getDataFromBalType(BObject node, Object data) {
         if (data instanceof BArray) {
             BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromArray(fieldNode, (BArray) data, dataRecord);
-            return dataRecord.getArrayValue(fieldNode.getStringValue(NAME_FIELD));
+            getDataFromArray(node, (BArray) data, dataRecord);
+            return dataRecord.getArrayValue(node.getStringValue(NAME_FIELD));
         } else if (data instanceof BMap) {
             BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromRecord(fieldNode, (BMap<BString, Object>) data, dataRecord);
-            return dataRecord.getMapValue(fieldNode.getStringValue(NAME_FIELD));
+            getDataFromRecord(node, (BMap<BString, Object>) data, dataRecord);
+            return dataRecord.getMapValue(node.getStringValue(NAME_FIELD));
         } else {
             return data;
         }
     }
 
-    private static BMap<BString, Object> getArgumentsFromField(BObject fieldNode) {
-        BArray argumentArray = fieldNode.getArrayValue(ARGUMENTS_FIELD);
+    private static BMap<BString, Object> getArgumentsFromField(BObject node) {
+        BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
