@@ -1,6 +1,11 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina GraphQL package through the releases.
 
+## [Unreleased]
+
+### Added
+- [[#1224] Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1224)
+
 ## [0.2.0-alpha6] - 2021-04-02
 
 ### Added
