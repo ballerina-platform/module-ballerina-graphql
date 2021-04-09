@@ -461,41 +461,18 @@ fragment nameFragment on Profile {
 }
 
 fragment fullNameFragment on Name {
-    name
+    first
 }`;
     string url = "http://localhost:9106/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
         data: {
-            people: [
-                {
-                    address: {
-                        city: "London"
-                    }
-                },
-                {
-                    address: {
-                        city: "Albuquerque"
-                    }
-                },
-                {
-                    address: {
-                        city: "Hogwarts"
-                    }
+            profile: {
+                name: {
+                    first: "Sherlock"
                 }
-            ],
-            students: [
-                {
-                    name: "John Doe"
-                },
-                {
-                    name: "Jane Doe"
-                },
-                {
-                    name: "Jonny Doe"
-                }
-            ]
+            }
         }
     };
     test:assertEquals(actualPayload, expectedPayload);

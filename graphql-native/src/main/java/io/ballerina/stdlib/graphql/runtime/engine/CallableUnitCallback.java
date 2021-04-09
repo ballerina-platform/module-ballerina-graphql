@@ -35,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
@@ -96,13 +95,19 @@ public class CallableUnitCallback implements Callback {
 
     static void getDataFromService(Environment environment, BObject service, BObject visitor, BObject node,
                                    BMap<BString, Object> data) {
-        BArray selections = node.getArrayValue(FIELDS_FIELD);
+        BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
-            BObject subField = (BObject) selections.get(i);
-            executeResource(environment, service, visitor, subField, subData);
+            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
+            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
+            BObject subNode = selection.getObjectValue(NODE_FIELD);
+            if (isFragment) {
+                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+            } else {
+                executeResource(environment, service, visitor, subNode, subData);
+            }
+            data.put(node.getStringValue(NAME_FIELD), subData);
         }
-        data.put(node.getStringValue(NAME_FIELD), subData);
     }
 
     static void getDataFromArray(BObject node, BArray result, BMap<BString, Object> data) {
@@ -150,6 +155,23 @@ public class CallableUnitCallback implements Callback {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
                 getDataFromResult(subNode, fieldValue, data);
+            }
+        }
+    }
+
+    private static void executeResourceForFragmentNodes(Environment environment, BObject service, BObject visitor,
+                                                        BObject node, BMap<BString, Object> data) {
+        BArray selections = node.getArrayValue(SELECTIONS_FIELD);
+        BMap<BString, Object> subData = createDataRecord();
+        for (int i = 0; i < selections.size(); i++) {
+            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
+            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
+            BObject subNode = selection.getObjectValue(NODE_FIELD);
+            if (isFragment) {
+                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+            } else {
+                executeResource(environment, service, visitor, subNode, subData);
+                data.put(subNode.getStringValue(NAME_FIELD), subData.get(subNode.getStringValue(NAME_FIELD)));
             }
         }
     }
