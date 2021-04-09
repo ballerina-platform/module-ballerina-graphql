@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
 
 service /graphql on new Listener(9106) {
     resource function get people() returns Person[] {
@@ -313,7 +312,7 @@ fragment student on Student {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments", "introspection", "unit"]
 }
 isolated function testFragmentsWithInvalidIntrospection() returns error? {
     string document = string
@@ -352,12 +351,11 @@ fragment types on __Schema {
             }
         ]
     };
-    io:println(actualPayload);
     test:assertEquals(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["test", "fragments", "unit"]
+    groups: ["fragments", "introspection", "unit"]
 }
 isolated function testFragmentsWithIntrospection() returns error? {
     string document = string
@@ -388,12 +386,47 @@ fragment types on __Schema {
             __schema: {
                 types: [
                     {
-                        name: ""
+                        name: "__TypeKind"
+                    },
+                    {
+                        name: "__Field"
+                    },
+                    {
+                        name: "Query"
+                    },
+                    {
+                        name: "Address"
+                    },
+                    {
+                        name: "__Type"
+                    },
+                    {
+                        name: "Book"
+                    },
+                    {
+                        name: "String"
+                    },
+                    {
+                        name: "__InputValue"
+                    },
+                    {
+                        name: "Course"
+                    },
+                    {
+                        name: "Student"
+                    },
+                    {
+                        name: "Person"
+                    },
+                    {
+                        name: "Int"
+                    },
+                    {
+                        name: "__Schema"
                     }
                 ]
             }
         }
     };
-    io:println(actualPayload);
     test:assertEquals(actualPayload, expectedPayload);
 }

@@ -58,22 +58,7 @@ class ExecutorVisitor {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         if (fieldNode.getName() == SCHEMA_FIELD) {
-            map<anydata> subData = {};
-            foreach parser:FieldNode selection in fieldNode.getFields() {
-                if (selection.getName() == TYPES_FIELD) {
-                    __Type[] types = self.schema.types.toArray();
-                    subData[selection.getName()] = getDataFromBalType(selection, types);
-                } else {
-                    __Type schemaType = <__Type>self.schema[selection.getName()];
-                    var fields = schemaType?.fields;
-                    if (fields is __Field[]) {
-                        map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
-                        typeMap[FIELDS_FIELD] = fields;
-                        subData[selection.getName()] = getDataFromBalType(selection, typeMap);
-                    }
-                }
-                self.data[fieldNode.getName()] = subData;
-            }
+            self.handleIntrospectionQuery(fieldNode);
         } else {
             self.executeResource(fieldNode);
         }
@@ -86,6 +71,49 @@ class ExecutorVisitor {
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
+        }
+    }
+
+    // TODO: Improve this logic
+    isolated function handleIntrospectionQuery(parser:FieldNode fieldNode) {
+        map<anydata> subData = {};
+        foreach parser:Selection selection in fieldNode.getSelections() {
+            if (selection.isFragment) {
+                parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
+                self.handleIntrospectionFragments(fragmentNode);
+            } else {
+                parser:FieldNode subFieldNode = <parser:FieldNode>selection?.node;
+                if (fieldNode.getName() == TYPES_FIELD) {
+                    __Type[] types = self.schema.types.toArray();
+                    subData[fieldNode.getName()] = getDataFromBalType(fieldNode, types);
+                    self.data[SCHEMA_FIELD] = subData;
+                } else if (subFieldNode.getName() == TYPES_FIELD) {
+                    __Type[] types = self.schema.types.toArray();
+                    subData[subFieldNode.getName()] = getDataFromBalType(subFieldNode, types);
+                    self.data[fieldNode.getName()] = subData;
+                } else {
+                    __Type schemaType = <__Type>self.schema[subFieldNode.getName()];
+                    var fields = schemaType?.fields;
+                    if (fields is __Field[]) {
+                        map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
+                        typeMap[FIELDS_FIELD] = fields;
+                        subData[subFieldNode.getName()] = getDataFromBalType(subFieldNode, typeMap);
+                    }
+                    self.data[fieldNode.getName()] = subData;
+                }
+            }
+        }
+    }
+
+    isolated function handleIntrospectionFragments(parser:FragmentNode fragmentNode) {
+        foreach parser:Selection selection in fragmentNode.getSelections() {
+            if (selection.isFragment) {
+                parser:FragmentNode subFragmentNode = <parser:FragmentNode>selection?.node;
+                self.handleIntrospectionFragments(subFragmentNode);
+            } else {
+                parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
+                self.handleIntrospectionQuery(fieldNode);
+            }
         }
     }
 
