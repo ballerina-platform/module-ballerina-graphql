@@ -191,3 +191,26 @@ fragment profileFields on Profile {
     test:assertEquals(fragmentNode.getFields().length(), 2);
     test:assertEquals(fragmentNode.getOnType(), "Profile");
 }
+
+@test:Config {
+    groups: ["fragments", "parser"]
+}
+isolated function testInvalidFragmentName() returns error? {
+    string document = string
+`{
+    profile {
+        ...on
+    }
+}
+
+fragment on on Profile {
+    name
+    age
+}`;
+    Parser parser = new(document);
+    var result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected Name "on".`;
+    test:assertEquals(err.message(), expectedMessage);
+}

@@ -81,6 +81,9 @@ public class Parser {
 
         token = check self.readNextNonSeparatorToken();
         string name = check getIdentifierTokenvalue(token);
+        if (name == ON) {
+            return getUnexpectedTokenError(token);
+        }
 
         token = check self.readNextNonSeparatorToken();
         string keyword = check getIdentifierTokenvalue(token);
