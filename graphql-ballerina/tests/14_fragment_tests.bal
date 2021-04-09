@@ -24,6 +24,10 @@ service /graphql on new Listener(9106) {
     resource function get students() returns Student[] {
         return students;
     }
+
+    isolated resource function get profile() returns Profile {
+        return new;
+    }
 }
 
 @test:Config {
@@ -244,8 +248,7 @@ fragment address on Person {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"],
-    enable: false
+    groups: ["fragments", "unit"]
 }
 isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
     string document = string
@@ -400,10 +403,22 @@ fragment types on __Schema {
                         name: "__Type"
                     },
                     {
-                        name: "Book"
+                        name: "String"
                     },
                     {
-                        name: "String"
+                        name: "Student"
+                    },
+                    {
+                        name: "Profile"
+                    },
+                    {
+                        name: "Int"
+                    },
+                    {
+                        name: "Name"
+                    },
+                    {
+                        name: "Book"
                     },
                     {
                         name: "__InputValue"
@@ -412,19 +427,75 @@ fragment types on __Schema {
                         name: "Course"
                     },
                     {
-                        name: "Student"
-                    },
-                    {
                         name: "Person"
-                    },
-                    {
-                        name: "Int"
                     },
                     {
                         name: "__Schema"
                     }
                 ]
             }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testFragmentsWithResourcesReturningServices() returns error? {
+    string document = string
+`query {
+    ...greetingFragment
+}
+
+fragment greetingFragment on Query {
+    profile {
+        ...nameFragment
+    }
+}
+
+fragment nameFragment on Profile {
+    name {
+        ...fullNameFragment
+    }
+}
+
+fragment fullNameFragment on Name {
+    name
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            people: [
+                {
+                    address: {
+                        city: "London"
+                    }
+                },
+                {
+                    address: {
+                        city: "Albuquerque"
+                    }
+                },
+                {
+                    address: {
+                        city: "Hogwarts"
+                    }
+                }
+            ],
+            students: [
+                {
+                    name: "John Doe"
+                },
+                {
+                    name: "Jane Doe"
+                },
+                {
+                    name: "Jonny Doe"
+                }
+            ]
         }
     };
     test:assertEquals(actualPayload, expectedPayload);
