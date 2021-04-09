@@ -197,8 +197,7 @@ fragment data on Query {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"],
-    enable: false
+    groups: ["fragments", "unit"]
 }
 isolated function testNestedFragments() returns error? {
     string document = string
