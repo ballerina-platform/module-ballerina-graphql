@@ -36,7 +36,10 @@ import java.util.concurrent.CountDownLatch;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
@@ -108,9 +111,9 @@ public class CallableUnitCallback implements Callback {
         } else {
             BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
             for (int i = 0; i < result.size(); i++) {
-                Object resultRecord = result.get(i);
+                Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
-                getDataFromResult(node, resultRecord, subData);
+                getDataFromResult(node, resultElement, subData);
                 resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
             data.put(node.getStringValue(NAME_FIELD), resultArray);
@@ -118,15 +121,37 @@ public class CallableUnitCallback implements Callback {
     }
 
     static void getDataFromRecord(BObject node, BMap<BString, Object> record, BMap<BString, Object> data) {
-        BArray selections = node.getArrayValue(FIELDS_FIELD);
+        BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
-            BObject subNode = (BObject) selections.get(i);
-            BString fieldName = subNode.getStringValue(NAME_FIELD);
-            Object fieldValue = record.get(fieldName);
-            getDataFromResult(subNode, fieldValue, subData);
+            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
+            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
+            BObject subNode = selection.getObjectValue(NODE_FIELD);
+            if (isFragment) {
+                processFragmentNodes(subNode, record, subData);
+            } else {
+                BString fieldName = subNode.getStringValue(NAME_FIELD);
+                Object fieldValue = record.get(fieldName);
+                getDataFromResult(subNode, fieldValue, subData);
+            }
         }
         data.put(node.getStringValue(NAME_FIELD), subData);
+    }
+
+    static void processFragmentNodes(BObject node, BMap<BString, Object> record, BMap<BString, Object> data) {
+        BArray selections = node.getArrayValue(SELECTIONS_FIELD);
+        for (int i = 0; i < selections.size(); i++) {
+            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
+            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
+            BObject subNode = selection.getObjectValue(NODE_FIELD);
+            if (isFragment) {
+                processFragmentNodes(subNode, record, data);
+            } else {
+                BString fieldName = subNode.getStringValue(NAME_FIELD);
+                Object fieldValue = record.get(fieldName);
+                getDataFromResult(subNode, fieldValue, data);
+            }
+        }
     }
 
     private static void getDataFromTable(BObject node, BTable table, BMap<BString, Object> data) {
