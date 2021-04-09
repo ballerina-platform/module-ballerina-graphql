@@ -30,7 +30,6 @@ import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
@@ -94,7 +93,7 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
 
     private void checkForRemoteMethods(FunctionDefinitionNode node, SyntaxNodeAnalysisContext context) {
         int hasRemoteKeyword = node.qualifierList().stream()
-                .filter(q -> q.kind() == SyntaxKind.RESOURCE_KEYWORD && q.isMissing()).toArray().length;
+                .filter(q -> q.kind() == SyntaxKind.REMOTE_KEYWORD).toArray().length;
 
         if (hasRemoteKeyword > 0) {
             reportDiagnostic(node, "GRAPHQL_101", "REMOTE_METHODS_ARE_NOT_ALLOWED", context);
