@@ -97,6 +97,8 @@ public class EngineUtils {
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
+    static final BString IS_FRAGMENT_FIELD = StringUtils.fromString("isFragment");
+    static final BString NODE_FIELD = StringUtils.fromString("node");
 
     public static String getResourceName(ResourceMethodType resourceMethod) {
         String[] nameArray = resourceMethod.getResourcePath();
@@ -201,8 +203,8 @@ public class EngineUtils {
         return inputValueRecord;
     }
 
-    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject fieldNode) {
-        BMap<BString, Object> location = fieldNode.getMapValue(LOCATION_FIELD);
+    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node) {
+        BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);

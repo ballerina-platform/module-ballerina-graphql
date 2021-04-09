@@ -48,15 +48,15 @@ public class CallableUnitCallback implements Callback {
     private final Environment environment;
     private final CountDownLatch latch;
     private final BObject visitor;
-    private final BObject fieldNode;
+    private final BObject node;
     private BMap<BString, Object> data;
 
-    public CallableUnitCallback(Environment environment, CountDownLatch latch, BObject visitor, BObject fieldNode,
+    public CallableUnitCallback(Environment environment, CountDownLatch latch, BObject visitor, BObject node,
                                 BMap<BString, Object> data) {
         this.environment = environment;
         this.latch = latch;
         this.visitor = visitor;
-        this.fieldNode = fieldNode;
+        this.node = node;
         this.data = data;
     }
 
@@ -66,9 +66,9 @@ public class CallableUnitCallback implements Callback {
             BError bError = (BError) o;
             appendErrorToVisitor(bError);
         } else if (o instanceof BObject) {
-            getDataFromService(this.environment, (BObject) o, this.visitor, this.fieldNode, this.data);
+            getDataFromService(this.environment, (BObject) o, this.visitor, this.node, this.data);
         } else {
-            getDataFromResult(this.fieldNode, o, this.data);
+            getDataFromResult(this.node, o, this.data);
         }
         this.latch.countDown();
     }
@@ -79,66 +79,66 @@ public class CallableUnitCallback implements Callback {
         this.latch.countDown();
     }
 
-    private static void getDataFromResult(BObject fieldNode, Object result, BMap<BString, Object> data) {
+    private static void getDataFromResult(BObject node, Object result, BMap<BString, Object> data) {
         if (result instanceof BMap) {
-            getDataFromRecord(fieldNode, (BMap<BString, Object>) result, data);
+            getDataFromRecord(node, (BMap<BString, Object>) result, data);
         } else if (result instanceof BArray) {
-            getDataFromArray(fieldNode, (BArray) result, data);
+            getDataFromArray(node, (BArray) result, data);
         } else if (result instanceof BTable) {
-            getDataFromTable(fieldNode, (BTable) result, data);
+            getDataFromTable(node, (BTable) result, data);
         } else {
-            data.put(fieldNode.getStringValue(NAME_FIELD), result);
+            data.put(node.getStringValue(NAME_FIELD), result);
         }
     }
 
-    static void getDataFromService(Environment environment, BObject service, BObject visitor, BObject fieldNode,
+    static void getDataFromService(Environment environment, BObject service, BObject visitor, BObject node,
                                    BMap<BString, Object> data) {
-        BArray selections = fieldNode.getArrayValue(FIELDS_FIELD);
+        BArray selections = node.getArrayValue(FIELDS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BObject subField = (BObject) selections.get(i);
             executeResource(environment, service, visitor, subField, subData);
         }
-        data.put(fieldNode.getStringValue(NAME_FIELD), subData);
+        data.put(node.getStringValue(NAME_FIELD), subData);
     }
 
-    static void getDataFromArray(BObject fieldNode, BArray result, BMap<BString, Object> data) {
+    static void getDataFromArray(BObject node, BArray result, BMap<BString, Object> data) {
         if (isScalarType(result.getElementType())) {
-            data.put(fieldNode.getStringValue(NAME_FIELD), result);
+            data.put(node.getStringValue(NAME_FIELD), result);
         } else {
             BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
             for (int i = 0; i < result.size(); i++) {
                 Object resultRecord = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
-                getDataFromResult(fieldNode, resultRecord, subData);
-                resultArray.append(subData.get(fieldNode.getStringValue(NAME_FIELD)));
+                getDataFromResult(node, resultRecord, subData);
+                resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
-            data.put(fieldNode.getStringValue(NAME_FIELD), resultArray);
+            data.put(node.getStringValue(NAME_FIELD), resultArray);
         }
     }
 
-    static void getDataFromRecord(BObject fieldNode, BMap<BString, Object> record, BMap<BString, Object> data) {
-        BArray selections = fieldNode.getArrayValue(FIELDS_FIELD);
+    static void getDataFromRecord(BObject node, BMap<BString, Object> record, BMap<BString, Object> data) {
+        BArray selections = node.getArrayValue(FIELDS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
-            BObject subfieldNode = (BObject) selections.get(i);
-            BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
+            BObject subNode = (BObject) selections.get(i);
+            BString fieldName = subNode.getStringValue(NAME_FIELD);
             Object fieldValue = record.get(fieldName);
-            getDataFromResult(subfieldNode, fieldValue, subData);
+            getDataFromResult(subNode, fieldValue, subData);
         }
-        data.put(fieldNode.getStringValue(NAME_FIELD), subData);
+        data.put(node.getStringValue(NAME_FIELD), subData);
     }
 
-    private static void getDataFromTable(BObject fieldNode, BTable table, BMap<BString, Object> data) {
+    private static void getDataFromTable(BObject node, BTable table, BMap<BString, Object> data) {
         Object[] valueArray = table.values().toArray();
         ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
         BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        getDataFromArray(fieldNode, valueBArray, data);
+        getDataFromArray(node, valueBArray, data);
     }
 
     private void appendErrorToVisitor(BError bError) {
         BArray errors = this.visitor.getArrayValue(ERRORS_FIELD);
-        errors.append(getErrorDetailRecord(bError, this.fieldNode));
+        errors.append(getErrorDetailRecord(bError, this.node));
     }
 
     private static ArrayType getDataRecordArrayType() {
