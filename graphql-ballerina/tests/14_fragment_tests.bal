@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/io;
 
 service /graphql on new Listener(9106) {
     resource function get people() returns Person[] {
@@ -197,7 +198,8 @@ fragment data on Query {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments", "unit"],
+    enable: false
 }
 isolated function testNestedFragments() returns error? {
     string document = string
@@ -240,5 +242,158 @@ fragment address on Person {
             ]
         }
     };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"],
+    enable: false
+}
+isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
+    string document = string
+`query {
+    ...data
+}
+
+fragment data on Query {
+    people {
+        ...people
+    }
+
+    students {
+        ...student
+    }
+}
+
+fragment people on Person {
+    address {
+        city
+    }
+}
+
+fragment student on Student {
+    name
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            people: [
+                {
+                    address: {
+                        city: "London"
+                    }
+                },
+                {
+                    address: {
+                        city: "Albuquerque"
+                    }
+                },
+                {
+                    address: {
+                        city: "Hogwarts"
+                    }
+                }
+            ],
+            students: [
+                {
+                    name: "John Doe"
+                },
+                {
+                    name: "Jane Doe"
+                },
+                {
+                    name: "Jonny Doe"
+                }
+            ]
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testFragmentsWithInvalidIntrospection() returns error? {
+    string document = string
+`query {
+    ...data
+}
+
+fragment data on Query {
+    ...schema
+}
+
+fragment schema on Query {
+    __schema {
+        ...types
+    }
+}
+
+fragment types on __Schema {
+    types {
+        invalid
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "invalid" on type "__Type".`,
+                locations: [
+                    {
+                        line: 17,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    io:println(actualPayload);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["test", "fragments", "unit"]
+}
+isolated function testFragmentsWithIntrospection() returns error? {
+    string document = string
+`query {
+    ...data
+}
+
+fragment data on Query {
+    ...schema
+}
+
+fragment schema on Query {
+    __schema {
+        ...types
+    }
+}
+
+fragment types on __Schema {
+    types {
+        name
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            __schema: {
+                types: [
+                    {
+                        name: ""
+                    }
+                ]
+            }
+        }
+    };
+    io:println(actualPayload);
     test:assertEquals(actualPayload, expectedPayload);
 }
