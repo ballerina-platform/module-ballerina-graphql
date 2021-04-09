@@ -477,3 +477,36 @@ fragment fullNameFragment on Name {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testUnusedFragmentError() returns error? {
+    string document = string
+`query {
+    people {
+        name
+    }
+}
+
+fragment fullNameFragment on Name {
+    first
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Fragment "fullNameFragment" is never used.`,
+                locations: [
+                    {
+                        line: 7,
+                        column: 1
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}

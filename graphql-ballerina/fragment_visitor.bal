@@ -34,6 +34,14 @@ class FragmentVisitor {
         foreach parser:OperationNode operation in documentNode.getOperations() {
             self.visitOperation(operation);
         }
+
+        foreach parser:FragmentNode fragmentNode in documentNode.getFragments().toArray() {
+            if (!self.usedFragments.hasKey(fragmentNode.getName())) {
+                string message = string`Fragment "${fragmentNode.getName()}" is never used.`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
+                self.errors.push(errorDetail);
+            }
+        }
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
@@ -66,6 +74,7 @@ class FragmentVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        self.usedFragments[fragmentNode.getName()] = fragmentNode.getName();
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
         }
