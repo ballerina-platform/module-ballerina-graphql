@@ -1,3 +1,6 @@
+// Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -11,42 +14,28 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class OperationNode {
+public class FragmentNode {
     *Node;
     *ParentNode;
 
     private string name;
-    private RootOperationType kind;
     private Location location;
+    private string onType;
     private FieldNode[] fields;
-    private int maxDepth;
     private string[] fragments;
     private Selection[] selections;
 
-    public isolated function init(string name, RootOperationType kind, Location location) {
+    public isolated function init(string name, Location location, string onType) {
         self.name = name;
-        self.kind = kind;
         self.location = location;
+        self.onType = onType;
         self.fields = [];
         self.fragments = [];
         self.selections = [];
-        self.maxDepth = 0;
-    }
-
-    public isolated function getMaxDepth() returns int {
-        return self.maxDepth;
-    }
-
-    public isolated function setMaxDepth(int depth) {
-        self.maxDepth = depth;
     }
 
     public isolated function getName() returns string {
         return self.name;
-    }
-
-    public isolated function getKind() returns RootOperationType {
-        return self.kind;
     }
 
     public isolated function getLocation() returns Location {
@@ -54,7 +43,7 @@ public class OperationNode {
     }
 
     public isolated function accept(Visitor v) {
-        var result = v.visitOperation(self);
+        anydata|error result = v.visitFragment(self);
     }
 
     public isolated function addField(FieldNode fieldNode) {
@@ -63,6 +52,10 @@ public class OperationNode {
 
     public isolated function getFields() returns FieldNode[] {
         return self.fields;
+    }
+
+    public isolated function getOnType() returns string {
+        return self.onType;
     }
 
     public isolated function addFragment(string name) {

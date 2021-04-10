@@ -69,7 +69,7 @@ public class EngineUtils {
     private static final BString TYPE_FIELD = StringUtils.fromString("type");
     static final BString NAME_FIELD = StringUtils.fromString("name");
     private static final BString KIND_FIELD = StringUtils.fromString("kind");
-    private static final BString FIELDS_FIELD = StringUtils.fromString("fields");
+    static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     private static final BString ARGS_FIELD = StringUtils.fromString("args");
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
     private static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
@@ -97,6 +97,8 @@ public class EngineUtils {
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
+    static final BString IS_FRAGMENT_FIELD = StringUtils.fromString("isFragment");
+    static final BString NODE_FIELD = StringUtils.fromString("node");
 
     public static String getResourceName(ResourceMethodType resourceMethod) {
         String[] nameArray = resourceMethod.getResourcePath();
@@ -201,8 +203,8 @@ public class EngineUtils {
         return inputValueRecord;
     }
 
-    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject fieldNode) {
-        BMap<BString, Object> location = fieldNode.getMapValue(LOCATION_FIELD);
+    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node) {
+        BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);
@@ -210,6 +212,10 @@ public class EngineUtils {
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);
         return errorDetail;
+    }
+
+    static BMap<BString, Object> createDataRecord() {
+        return ValueCreator.createRecordValue(getModule(), DATA_RECORD);
     }
 
     private static SchemaType createNonNullType() {

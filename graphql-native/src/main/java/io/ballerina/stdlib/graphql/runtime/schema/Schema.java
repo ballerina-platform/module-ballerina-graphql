@@ -40,10 +40,6 @@ public class Schema {
         return this.types;
     }
 
-    public SchemaType getType(String name) {
-        return this.types.get(name);
-    }
-
     public void setQueryType(SchemaType queryType) {
         this.addType(queryType);
         this.queryType = queryType;
