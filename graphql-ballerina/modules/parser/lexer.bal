@@ -77,6 +77,8 @@ public class Lexer {
             return self.readSpecialCharacterToken();
         } else if (char == HASH) {
             return self.readCommentToken();
+        } else if (char == DOT) {
+            return self.readEllipsisToken();
         } else {
             return self.readIdentifierToken(char);
         }
@@ -158,6 +160,19 @@ public class Lexer {
             }
         }
         return getToken(word, T_COMMENT, location);
+    }
+
+    isolated function readEllipsisToken() returns Token|SyntaxError {
+        Location location = self.currentLocation.clone();
+        foreach int i in 0...2 {
+            string c = self.readNextChar();
+            if (c != DOT) {
+                string message = string`Syntax Error: Cannot parse the unexpected character "${DOT}".`;
+                return error InvalidTokenError(message, line = self.currentLocation.line,
+                                                               column = self.currentLocation.column);
+            }
+        }
+        return getToken(ELLIPSIS, T_ELLIPSIS, location);
     }
 
     isolated function readIdentifierToken(string firstChar) returns Token|SyntaxError {
@@ -244,7 +259,7 @@ isolated function getTokenType(string value) returns TokenType {
     } else if (value == HASH) {
         return T_COMMENT;
     }
-    return T_TEXT;
+    return T_IDENTIFIER;
 }
 
 isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
@@ -259,7 +274,7 @@ isolated function getWordTokenType(string value) returns TokenType {
     if (value is Boolean) {
         return T_BOOLEAN;
     }
-    return T_TEXT;
+    return T_IDENTIFIER;
 }
 
 isolated function getNumber(string value, boolean isFloat, Location location) returns int|float|InternalError {

@@ -25,7 +25,12 @@ listener Listener gqlListener = new(httpListener);
 }
 function testDocumentValidation() returns @tainted error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_1");
-    string document = getShorthandDocumentWithInvalidQuery();
+    string document = string
+    `{
+    name
+    id
+    Voldemort
+}`;
     string url = "http://localhost:9091/graphql_service_1";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
@@ -52,7 +57,11 @@ function testDocumentValidation() returns @tainted error? {
 }
 function testQueryResult() returns @tainted error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
-    string document = getShorthandDocument();
+    string document = string
+    `{
+    name
+    id
+}`;
     string url = "http://localhost:9091/graphql_service_2";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {

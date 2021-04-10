@@ -109,7 +109,7 @@ isolated function testInvalidQueryFromServiceObjectResource() returns @tainted e
 @test:Config {
     groups: ["service", "unit"]
 }
-isolated function testComplexService() returns @tainted error? {
+isolated function testComplexService() returns error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { first, last } } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
