@@ -28,6 +28,6 @@ import io.ballerina.projects.plugins.CodeAnalyzer;
 public class GraphqlServiceAnalyzer extends CodeAnalyzer {
     @Override
     public void init(CodeAnalysisContext codeAnalysisContext) {
-        codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlServiceAnalysisTask(), SyntaxKind.SERVICE_DECLARATION);
+        codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlServiceValidator(), SyntaxKind.SERVICE_DECLARATION);
     }
 }

@@ -18,12 +18,20 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
+import io.ballerina.compiler.api.symbols.Qualifier;
+import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
+import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
+
+import java.util.Optional;
 
 /**
  * Util class for the compiler plugin.
@@ -42,5 +50,22 @@ public class PluginUtils {
         String orgName = moduleSymbol.id().orgName();
         return moduleName.equals(PluginConstants.PACKAGE_PREFIX) &&
                 orgName.equals(PluginConstants.PACKAGE_ORG);
+    }
+
+    public static MethodSymbol getMethodSymbol(SyntaxNodeAnalysisContext context,
+                                               FunctionDefinitionNode functionDefinitionNode) {
+        MethodSymbol methodSymbol = null;
+        SemanticModel semanticModel = context.semanticModel();
+        Optional<Symbol> symbol = semanticModel.symbol(functionDefinitionNode);
+        if (symbol.isPresent()) {
+            methodSymbol = (MethodSymbol) symbol.get();
+        }
+        return methodSymbol;
+    }
+
+    public static boolean isRemoteFunction(SyntaxNodeAnalysisContext context,
+                                           FunctionDefinitionNode functionDefinitionNode) {
+        MethodSymbol methodSymbol = getMethodSymbol(context, functionDefinitionNode);
+        return methodSymbol.qualifiers().contains(Qualifier.REMOTE);
     }
 }

@@ -27,10 +27,17 @@ public class PluginConstants {
     public static final String PACKAGE_PREFIX = "graphql";
     public static final String PACKAGE_ORG = "ballerina";
 
+    // resource function constants
+    public static final String RESOURCE_FUNCTION_GET = "get";
+
     /**
      * Compilation errors.
      */
     enum CompilationErrors {
+        INVALID_FUNCTION("Invalid method. Only object methods and resource functions are allowed",
+                "GRAPHQL_101"),
+        INVALID_RESOURCE_FUNCTION_NAME("Invalid resource function name. Only get is allowed",
+                "GRAPHQL_101"),
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
                 "GRAPHQL_101");
 

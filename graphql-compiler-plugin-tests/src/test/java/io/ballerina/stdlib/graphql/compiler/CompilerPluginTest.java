@@ -44,6 +44,14 @@ public class CompilerPluginTest {
             .toAbsolutePath();
 
     @Test
+    public void testValidService1() {
+        Package currentPackage = loadPackage("valid_service_1");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
     public void testInvalidService1() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -51,6 +59,16 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
         assertDiagnostic(diagnostic, CompilationErrors.INVALID_MULTIPLE_LISTENERS);
+    }
+
+    @Test
+    public void testInvalidService2() {
+        Package currentPackage = loadPackage("invalid_service_2");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FUNCTION);
     }
 
     private Package loadPackage(String path) {
