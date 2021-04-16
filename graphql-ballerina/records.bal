@@ -83,7 +83,7 @@ public type __Type record {
     __TypeKind kind;
     string? name;
     __Field[] fields?;
-    map<anydata> enumValues?;
+    __EnumValue[] enumValues?;
     __Type ofType?;
 };
 
