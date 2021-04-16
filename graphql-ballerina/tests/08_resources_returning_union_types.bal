@@ -27,7 +27,7 @@ function testResourcesReturningInvalidUnionType() returns error? {
     Error err = <Error> result;
 
     string expectedErrorMessage =
-        "Unsupported union: If a field type is a union, it should be a subtype of \"<T>|error?\", except \"error?\"";
+        string`Unsupported union: If a field type is a union, it should be a subtype of "<T>|error?", except "error?"`;
     test:assertEquals(err.message(), expectedErrorMessage);
 }
 

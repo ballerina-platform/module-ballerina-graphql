@@ -141,9 +141,20 @@ public class SchemaTreeGenerator {
     }
 
     private SchemaType getSchemaTypeForUnionType(UnionType unionType) {
-        Type mainType = getNonNullNonErrorTypeFromUnion(unionType.getMemberTypes());
+        if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
+            SchemaType schemaType = new SchemaType(unionType.getName(), TypeKind.ENUM);
+            addEnumValueToEnumType(schemaType, unionType);
+            return schemaType;
+        }
+        Type mainType = getNonNullNonErrorTypeFromUnion(unionType);
         SchemaType schemaType = getSchemaTypeForField(mainType);
         return schemaType.getOfType();
+    }
+
+    public static void addEnumValueToEnumType(SchemaType schemaType, UnionType unionType) {
+        for (Type type : unionType.getMemberTypes()) {
+            schemaType.addEnumValue(type.getZeroValue());
+        }
     }
 
     private SchemaType createSchemaTypeForRecordType(RecordType recordType) {
