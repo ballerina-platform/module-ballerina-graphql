@@ -1,0 +1,25 @@
+name: Publish to the Ballerina central
+
+on:
+    workflow_dispatch:
+
+jobs:
+    publish-release:
+        runs-on: ubuntu-latest
+        if: github.repository_owner == 'ballerina-platform'
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Set up JDK 11
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 11
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Publish artifact
+                env:
+                    BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
+                    packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                    packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
+                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+                run: |
+                    ./gradlew clean build -PpublishToCentral=true
