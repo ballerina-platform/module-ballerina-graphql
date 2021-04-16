@@ -28,6 +28,6 @@ service class HttpService {
     }
 
     isolated resource function post .(http:Request request) returns http:Response {
-        return handlePostRequests(<@untainted>self.engine, request);
+        return handlePostRequests(self.engine, request);
     }
 }

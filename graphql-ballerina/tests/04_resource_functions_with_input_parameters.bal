@@ -34,7 +34,7 @@ service /graphql on functionWithArgumentsListener {
 @test:Config {
     groups: ["input_types", "unit"]
 }
-isolated function testFunctionsWithInputParameter() returns @tainted error? {
+isolated function testFunctionsWithInputParameter() returns error? {
     string document = string
     `{
     greet (name: "Thisaru")
@@ -53,7 +53,7 @@ isolated function testFunctionsWithInputParameter() returns @tainted error? {
 @test:Config {
     groups: ["input_types", "unit"]
 }
-isolated function testInputParameterTypeNotPresentInReturnTypes() returns @tainted error? {
+isolated function testInputParameterTypeNotPresentInReturnTypes() returns error? {
     string document = "{ isLegal(age: 21) }";
     string url = "http://localhost:9093/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
