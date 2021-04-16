@@ -102,7 +102,7 @@ public class SchemaTreeGenerator {
             return getSchemaTypeForUnionType((UnionType) type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
             SchemaType schemaType = getNonNullType();
-            SchemaType ofType = createSchemaTypeForRecordType((RecordType) type);
+            SchemaType ofType = getSchemaTypeForRecordType((RecordType) type);
             schemaType.setOfType(ofType);
             return schemaType;
         } else if (tag == TypeTags.SERVICE_TAG) {
@@ -111,11 +111,11 @@ public class SchemaTreeGenerator {
             return schemaType;
         } else if (tag == TypeTags.TABLE_TAG) {
             SchemaType schemaType = getNonNullType();
-            SchemaType ofType = createSchemaTypeForTableType((TableType) type);
+            SchemaType ofType = getSchemaTypeForTableType((TableType) type);
             schemaType.setOfType(ofType);
             return schemaType;
         } else if (tag == TypeTags.MAP_TAG) {
-            return getSchemaTypeForField(((MapType) type).getConstrainedType());
+            return getSchemaTypeForMapType((MapType) type);
         } else {
             String typeName = getScalarTypeName(tag);
             SchemaType schemaType = getNonNullType();
@@ -162,7 +162,7 @@ public class SchemaTreeGenerator {
         }
     }
 
-    private SchemaType createSchemaTypeForRecordType(RecordType recordType) {
+    private SchemaType getSchemaTypeForRecordType(RecordType recordType) {
         Collection<Field> fields = recordType.getFields().values();
         SchemaType schemaType = new SchemaType(recordType.getName(), TypeKind.OBJECT);
         for (Field field : fields) {
@@ -183,7 +183,19 @@ public class SchemaTreeGenerator {
         return schemaType;
     }
 
-    private SchemaType createSchemaTypeForTableType(TableType tableType) {
+    private SchemaType getSchemaTypeForMapType(MapType mapType) {
+        Type constrainedType = mapType.getConstrainedType();
+        int tag = constrainedType.getTag();
+        if (tag == TypeTags.RECORD_TYPE_TAG) {
+            return getSchemaTypeForRecordType((RecordType) constrainedType);
+        } else if (tag == TypeTags.ARRAY_TAG) {
+            return getSchemaTypeForArrayType((ArrayType) constrainedType);
+        } else {
+            return getSchemaTypeForField(constrainedType);
+        }
+    }
+
+    private SchemaType getSchemaTypeForTableType(TableType tableType) {
         Type constrainedType = tableType.getConstrainedType();
         SchemaType internalType = getSchemaTypeForField(constrainedType);
 
