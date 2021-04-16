@@ -39,9 +39,11 @@ import static io.ballerina.stdlib.graphql.compiler.PluginUtils.validateModuleId;
 /**
  * Validates a Ballerina GraphQL Service.
  */
-public class GraphqlServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext> {
+public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
+    private final GraphqlFunctionValidator functionValidator;
 
-    public GraphqlServiceAnalysisTask() {
+    public GraphqlServiceValidator() {
+        this.functionValidator = new GraphqlFunctionValidator();
     }
 
     @Override
@@ -49,6 +51,7 @@ public class GraphqlServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalys
         if (!isGraphQlService(context)) {
             return;
         }
+        this.functionValidator.validate(context);
     }
 
     private boolean isGraphQlService(SyntaxNodeAnalysisContext context) {
@@ -59,7 +62,7 @@ public class GraphqlServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalys
         if (symbol.isPresent()) {
             ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
             List<TypeSymbol> listeners = serviceDeclarationSymbol.listenerTypes();
-            if (listeners.size() > 1) {
+            if (listeners.size() > 1 && hasGraphqlListener(listeners)) {
                 context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_MULTIPLE_LISTENERS,
                         DiagnosticSeverity.ERROR, serviceDeclarationNode.location()));
             } else {
@@ -81,5 +84,24 @@ public class GraphqlServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalys
             }
         }
         return isGraphQlService;
+    }
+
+    private boolean hasGraphqlListener(List<TypeSymbol> listeners) {
+        for (TypeSymbol listener: listeners) {
+            if (listener.typeKind() == TypeDescKind.UNION) {
+                UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listener;
+                List<TypeSymbol> members = unionTypeSymbol.memberTypeDescriptors();
+                for (TypeSymbol member: members) {
+                    if (validateModuleId(member.getModule().get())) {
+                        return true;
+                    }
+                }
+            } else {
+                if (validateModuleId(listener.getModule().get())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
