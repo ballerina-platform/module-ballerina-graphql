@@ -1,6 +1,0 @@
-{
-    person {
-        name
-    }
-    nameWithId(number: 42, name: "Prof. Moriarty")
-}

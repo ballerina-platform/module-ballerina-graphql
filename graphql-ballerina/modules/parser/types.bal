@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Scalar int|float|boolean|string;
+public type Scalar int|float|decimal|string|boolean;
 
 type CharIteratorNode record {
     string value;
@@ -33,10 +33,10 @@ type Separator WhiteSpace|LineTerminator|COMMA;
 type SpecialCharacter EXCLAMATION|DOLLAR|OPEN_PARENTHESES|CLOSE_PARENTHESES|ELLIPSIS|COLON|EQUAL|AT|OPEN_BRACKET|
                       CLOSE_BRACKET|OPEN_BRACE|PIPE|CLOSE_BRACE;
 
-type TokenType SeparatorType|SpecialCharacterType|T_TEXT|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT;
+type TokenType SeparatorType|SpecialCharacterType|T_IDENTIFIER|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT|T_ELLIPSIS;
 
-type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_TEXT|T_STRING|
-                 T_INT|T_FLOAT|T_BOOLEAN;
+type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_IDENTIFIER|T_STRING|
+                 T_INT|T_FLOAT|T_BOOLEAN|T_ELLIPSIS;
 
 type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
 
@@ -48,3 +48,10 @@ public enum RootOperationType {
     MUTATION = "mutation",
     SUBSCRIPTION = "subscription"
 }
+
+public type Selection record {|
+    string name;
+    boolean isFragment;
+    ParentNode node?;
+    Location location;
+|};
