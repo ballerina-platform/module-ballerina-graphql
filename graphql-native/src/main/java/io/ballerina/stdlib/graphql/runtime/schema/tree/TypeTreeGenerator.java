@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.RecordType;
@@ -28,6 +29,7 @@ import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -136,9 +138,10 @@ public class TypeTreeGenerator {
     }
 
     private Node createNodeForUnionType(String name, UnionType unionType) {
-        // TODO: Finite Type?
-        List<Type> memberTypes = unionType.getMemberTypes();
-        Type type = getNonNullNonErrorTypeFromUnion(memberTypes);
+        Type type = getNonNullNonErrorTypeFromUnion(unionType);
+        if (type.getTag() == TypeTags.UNION_TAG) {
+            return new Node(type.getName(), type);
+        }
         return createNodeForType(name, type);
     }
 
@@ -150,9 +153,10 @@ public class TypeTreeGenerator {
         return tableNode;
     }
 
-    public static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {
+    public static Type getNonNullNonErrorTypeFromUnion(UnionType unionType) {
         int count = 0;
         Type resultType = null;
+        List<Type> memberTypes = getMemberTypes(unionType);
         for (Type type : memberTypes) {
             if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
                 count++;
@@ -166,6 +170,23 @@ public class TypeTreeGenerator {
             throw createError(message, NOT_SUPPORTED_ERROR);
         }
         return resultType;
+    }
+
+    private static List<Type> getMemberTypes(UnionType unionType) {
+        List<Type> members = new ArrayList<>();
+        if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
+            members.add(unionType);
+        } else {
+            List<Type> originalMembers = unionType.getOriginalMemberTypes();
+            for (Type type : originalMembers) {
+                if (type.getTag() == TypeTags.UNION_TAG) {
+                    members.addAll(getMemberTypes((UnionType) type));
+                } else {
+                    members.add(type);
+                }
+            }
+        }
+        return members;
     }
 
     public static String getScalarTypeName(int tag) {

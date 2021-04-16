@@ -19,11 +19,17 @@ json expectedSchemaForMultipleResources = {
         "__TypeKind": {
             "kind": "ENUM",
             "name": "__TypeKind",
-            "enumValues": {
-                "SCALAR": "SCALAR",
-                "OBJECT": "OBJECT",
-                "ENUM": "ENUM"
-            }
+            "enumValues": [
+                {
+                    "name": "SCALAR"
+                },
+                {
+                    "name": "OBJECT"
+                },
+                {
+                    "name": "ENUM"
+                }
+            ]
         },
         "__Field": {
             "kind": "OBJECT",
@@ -208,11 +214,17 @@ json expectedSchemaForResourcesReturningRecords = {
         "__TypeKind": {
             "kind": "ENUM",
             "name": "__TypeKind",
-            "enumValues": {
-                "SCALAR": "SCALAR",
-                "OBJECT": "OBJECT",
-                "ENUM": "ENUM"
-            }
+            "enumValues": [
+                {
+                    "name": "SCALAR"
+                },
+                {
+                    "name": "OBJECT"
+                },
+                {
+                    "name": "ENUM"
+                }
+            ]
         },
         "__Field": {
             "kind": "OBJECT",
@@ -634,6 +646,87 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "types"
                         }
                     ]
+                }
+            ]
+        }
+    }
+};
+
+json enumTypeInspectionResult = {
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "__TypeKind",
+                    "enumValues": [
+                        {
+                            "name": "SCALAR"
+                        },
+                        {
+                            "name": "OBJECT"
+                        },
+                        {
+                            "name": "ENUM"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Field",
+                    "enumValues": null
+                },
+                {
+                    "name": "ballerina/graphql:0.2.0-alpha8:Weekday",
+                    "enumValues": [
+                        {
+                            "name": "SATURDAY"
+                        },
+                        {
+                            "name": "FRIDAY"
+                        },
+                        {
+                            "name": "THURSDAY"
+                        },
+                        {
+                            "name": "WEDNESDAY"
+                        },
+                        {
+                            "name": "TUESDAY"
+                        },
+                        {
+                            "name": "MONDAY"
+                        },
+                        {
+                            "name": "SUNDAY"
+                        }
+                    ]
+                },
+                {
+                    "name": "Query",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Type",
+                    "enumValues": null
+                },
+                {
+                    "name": "Time",
+                    "enumValues": null
+                },
+                {
+                    "name": "String",
+                    "enumValues": null
+                },
+                {
+                    "name": "__InputValue",
+                    "enumValues": null
+                },
+                {
+                    "name": "Int",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Schema",
+                    "enumValues": null
                 }
             ]
         }

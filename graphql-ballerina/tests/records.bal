@@ -49,3 +49,18 @@ type Employee record {|
 |};
 
 type EmployeeTable table<Employee> key(id);
+
+public enum Weekday {
+    SUNDAY,
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY
+}
+
+type Time record {|
+    Weekday weekday;
+    string time;
+|};
