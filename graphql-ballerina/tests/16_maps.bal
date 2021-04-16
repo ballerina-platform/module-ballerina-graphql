@@ -79,13 +79,36 @@ service /graphql on new Listener(9109) {
     groups: ["map", "unit"]
 }
 isolated function testMap() returns error? {
-    string document = string`query { company { workers(key: "w1") { name } } }`;
+    string document = string`query { company { workers(key: "id1") { name } } }`;
     string url = "http://localhost:9109/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
-            time: {
-                weekday: "MONDAY"
+            company: {
+                workers: {
+                    name: "John Doe"
+                }
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["map", "unit"]
+}
+isolated function testNestedMap() returns error? {
+    string document = string`query { company { workers(key: "id3") { contacts(key: "home") { number } } } }`;
+    string url = "http://localhost:9109/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            company: {
+                workers: {
+                    contacts: {
+                        number: "+94771234567"
+                    }
+                }
             }
         }
     };
