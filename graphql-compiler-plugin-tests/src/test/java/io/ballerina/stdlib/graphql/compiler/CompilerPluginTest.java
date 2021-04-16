@@ -25,11 +25,11 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
+import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -40,25 +40,29 @@ public class CompilerPluginTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources")
             .toAbsolutePath();
-    private static final PrintStream OUT = System.out;
     private static final Path DISTRIBUTION_PATH = Paths.get("build", "target", "ballerina-distribution")
             .toAbsolutePath();
 
     @Test
-    public void testCompilerPlugin() {
-        Package currentPackage = loadPackage("sample_package_1");
+    public void testInvalidService1() {
+        Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
-
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        Assert.assertEquals(diagnostic.diagnosticInfo().code(), "GRAPHQL_101");
+        assertDiagnostic(diagnostic, CompilationErrors.INVALID_MULTIPLE_LISTENERS);
     }
 
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
         return project.currentPackage();
+    }
+
+    private void assertDiagnostic(Diagnostic diagnostic, CompilationErrors error) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().code(), error.getErrorCode());
+        Assert.assertEquals(diagnostic.diagnosticInfo().messageFormat(),
+                error.getError());
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
