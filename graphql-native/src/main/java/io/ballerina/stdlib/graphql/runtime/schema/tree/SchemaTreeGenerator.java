@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -36,7 +37,9 @@ import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
 import java.util.Collection;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
@@ -111,6 +114,8 @@ public class SchemaTreeGenerator {
             SchemaType ofType = createSchemaTypeForTableType((TableType) type);
             schemaType.setOfType(ofType);
             return schemaType;
+        } else if (tag == TypeTags.MAP_TAG) {
+            return getSchemaTypeForField(((MapType) type).getConstrainedType());
         } else {
             String typeName = getScalarTypeName(tag);
             SchemaType schemaType = getNonNullType();
@@ -162,6 +167,11 @@ public class SchemaTreeGenerator {
         SchemaType schemaType = new SchemaType(recordType.getName(), TypeKind.OBJECT);
         for (Field field : fields) {
             SchemaField schemaField = new SchemaField(field.getFieldName());
+            if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
+                SchemaType stringType = new SchemaType(STRING, TypeKind.SCALAR);
+                InputValue inputValue = new InputValue(KEY, stringType);
+                schemaField.addArg(inputValue);
+            }
             SchemaType fieldType = getSchemaTypeForField(field.getFieldType());
             if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL)) {
                 schemaField.setType(fieldType.getOfType());

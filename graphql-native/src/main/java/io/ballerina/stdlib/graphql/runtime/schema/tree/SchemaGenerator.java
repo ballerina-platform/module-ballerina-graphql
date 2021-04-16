@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.TableType;
@@ -155,6 +156,9 @@ public class SchemaGenerator {
                 Type mainType = getNonNullNonErrorTypeFromUnion(unionType);
                 schemaType = getSchemaTypeFromType(mainType);
             }
+        } else if (tag == TypeTags.MAP_TAG) {
+            MapType mapType = (MapType) type;
+            schemaType = getSchemaTypeFromType(mapType.getConstrainedType());
         } else {
             String message = "Unsupported type for schema field: " + type.getName();
             throw createError(message, NOT_SUPPORTED_ERROR);

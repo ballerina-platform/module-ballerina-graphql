@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -122,7 +123,7 @@ public class TypeTreeGenerator {
             TableType tableType = (TableType) type;
             return createNodeForTableType(name, tableType);
         } else {
-            String message = "Unsupported type found: " + type.getName();
+            String message = "GraphQL resource cannot return type: " + type.getName();
             throw createError(message, NOT_SUPPORTED_ERROR);
         }
     }
@@ -131,7 +132,12 @@ public class TypeTreeGenerator {
         Collection<Field> fields = recordType.getFields().values();
         Node recordNode = new Node(name, recordType);
         for (Field field : fields) {
-            Node fieldNode = createNodeForType(field.getFieldName(), field.getFieldType());
+            Type fieldType = field.getFieldType();
+            if (fieldType.getTag() == TypeTags.MAP_TAG) {
+                MapType mapType = (MapType) fieldType;
+                fieldType = mapType.getConstrainedType();
+            }
+            Node fieldNode = createNodeForType(field.getFieldName(), fieldType);
             recordNode.addChild(fieldNode);
         }
         return recordNode;
