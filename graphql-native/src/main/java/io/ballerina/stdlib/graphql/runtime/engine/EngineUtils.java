@@ -61,7 +61,7 @@ public class EngineUtils {
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
     public static final String TYPE_KIND_ENUM = "__TypeKind";
-    public static final String QUERY_TYPE_NAME = "queryType";
+    public static final String ENUM_VALUE_RECORD = "__EnumValue";
 
     // Schema related record field names
     private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -157,10 +157,13 @@ public class EngineUtils {
         return fieldArray;
     }
 
-    private static BMap<BString, Object> getEnumValuesMapFromEnumValues(List<Object> enumValues) {
-        BMap<BString, Object> result = ValueCreator.createMapValue();
+    private static BArray getEnumValuesMapFromEnumValues(List<Object> enumValues) {
+        Type elementType = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD).getType();
+        BArray result = ValueCreator.createArrayValue(TypeCreator.createArrayType(elementType));
         for (Object value : enumValues) {
-            result.put(StringUtils.fromString(value.toString()), value);
+            BMap<BString, Object> enumRecord = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD);
+            enumRecord.put(NAME_FIELD, value);
+            result.append(enumRecord);
         }
         return result;
     }
