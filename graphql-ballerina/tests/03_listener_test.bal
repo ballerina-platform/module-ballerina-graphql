@@ -23,7 +23,7 @@ listener Listener simpleResourceListener = new(9092);
 @test:Config {
     groups: ["listener", "unit"]
 }
-isolated function testShortHandQueryResult() returns @tainted error? {
+isolated function testShortHandQueryResult() returns error? {
     string document = string
     `{
     name
@@ -43,7 +43,7 @@ isolated function testShortHandQueryResult() returns @tainted error? {
 @test:Config {
     groups: ["listener", "unit"]
 }
-isolated function testGetRequestResult() returns @tainted error? {
+isolated function testGetRequestResult() returns error? {
     string document = "query getPerson { profile(id: 1) { address { city } } }";
     string encodedDocument = check url:encode(document, "UTF-8");
     json expectedPayload = {
