@@ -19,10 +19,12 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -34,8 +36,10 @@ import io.ballerina.runtime.api.values.BValue;
 import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getArgumentsFromField;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
@@ -83,7 +87,12 @@ public class CallableUnitCallback implements Callback {
 
     private static void getDataFromResult(BObject node, Object result, BMap<BString, Object> data) {
         if (result instanceof BMap) {
-            getDataFromRecord(node, (BMap<BString, Object>) result, data);
+            BMap<BString, Object> map = (BMap<BString, Object>) result;
+            if (map.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
+                getDataFromRecord(node, map, data);
+            } else if (map.getType().getTag() == TypeTags.MAP_TAG) {
+                getDataFromMap(node, map, data);
+            }
         } else if (result instanceof BArray) {
             getDataFromArray(node, (BArray) result, data);
         } else if (result instanceof BTable) {
@@ -141,6 +150,13 @@ public class CallableUnitCallback implements Callback {
             }
         }
         data.put(node.getStringValue(NAME_FIELD), subData);
+    }
+
+    static void getDataFromMap(BObject node, BMap<BString, Object> map, BMap<BString, Object> data) {
+        BMap<BString, Object> arguments = getArgumentsFromField(node);
+        BString key = arguments.getStringValue(StringUtils.fromString(KEY));
+        Object result = map.get(key);
+        getDataFromResult(node, result, data);
     }
 
     static void processFragmentNodes(BObject node, BMap<BString, Object> record, BMap<BString, Object> data) {
