@@ -18,53 +18,54 @@ import ballerina/jballerina.java;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = "Syntax Error: Unexpected " + getErrorMessageTypeNameForError(token);
+    string message = string`Syntax Error: Unexpected ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedNameError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = "Syntax Error: Expected Name, found " + getErrorMessageTypeNameForError(token);
+    string message = string`Syntax Error: Expected Name, found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedCharError(Token token, string char) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = "Syntax Error: Expected \"" + char + "\", found " + getErrorMessageTypeNameForError(token);
+    string message = string`Syntax Error: Expected "${char}", found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getScalarTypeNameForError(Scalar value) returns string {
+    string result = "";
     if (value is int) {
-        return "Int \"" + value.toString() + "\".";
+        result = "Int";
     } else if (value is float) {
-        return "Float \"" + value.toString() + "\".";
+        result = "Float";
     } else if (value is boolean) {
-        return "Boolean \"" + value.toString() + "\".";
+        result = "Boolean";
     } else {
-        return "Name \"" + value + "\".";
+        result = "Name";
     }
+
+    // TODO: Remove toString after fixing https://github.com/ballerina-platform/ballerina-lang/issues/29674
+    return string`${result} "${value.toString()}"`;
 }
 
 isolated function getErrorMessageTypeNameForError(Token token) returns string {
     TokenType kind = token.kind;
     if (kind == T_EOF) {
-        return "<EOF>.";
-    } else if (kind == T_TEXT) {
+        return "<EOF>";
+    } else if (kind == T_IDENTIFIER) {
         return getScalarTypeNameForError(token.value);
+    } else if (kind == T_STRING) {
+        // TODO: Same as above
+        return string`String "${token.value.toString()}"`;
     } else {
-        return "\"" + token.value.toString() + "\".";
+        // TODO: Remove toString after fixing https://github.com/ballerina-platform/ballerina-lang/issues/29674
+        return string`"${token.value.toString()}"`;
     }
-}
-
-isolated function getErrorRecordFromToken(Token token) returns ErrorRecord {
-    Location location = token.location;
-    return {
-        locations: [location]
-    };
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {

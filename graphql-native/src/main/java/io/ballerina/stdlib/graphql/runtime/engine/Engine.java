@@ -19,9 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -30,26 +28,21 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.api.values.BTable;
-import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.runtime.schema.Schema;
 import io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaGenerator;
-import io.ballerina.stdlib.graphql.runtime.utils.CallableUnitCallback;
 
 import java.util.concurrent.CountDownLatch;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromArray;
+import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromRecord;
+import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_RECORD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getSchemaRecordFromSchema;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.IntrospectionUtils.initializeIntrospectionTypes;
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
@@ -73,26 +66,28 @@ public class Engine {
         return schemaGenerator.generate();
     }
 
-    public static Object executeResource(Environment environment, BObject service, BObject visitor, BObject fieldNode) {
+    public static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
+                                       BMap<BString, Object> data) {
         ServiceType serviceType = (ServiceType) service.getType();
-        String fieldName = fieldNode.getStringValue(NAME_FIELD).getValue();
+        String fieldName = node.getStringValue(NAME_FIELD).getValue();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             String resourceName = getResourceName(resourceMethod);
             if (resourceName.equals(fieldName)) {
-                return getResourceExecutionResult(environment, service, visitor, fieldNode, resourceMethod);
+                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data);
+                return;
             }
         }
         // Won't hit here if the exact resource is already found, hence must be hierarchical resource
-        return getDataFromService(environment, service, visitor, fieldNode);
+        getDataFromService(environment, service, visitor, node, data);
     }
 
-    private static Object getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
-                                                     BObject fieldNode, ResourceMethodType resourceMethod) {
-
-        BMap<BString, Object> arguments = getArgumentsFromField(fieldNode);
+    private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
+                                                   BObject node, ResourceMethodType resourceMethod,
+                                                   BMap<BString, Object> data) {
+        BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
         CountDownLatch latch = new CountDownLatch(1);
-        CallableUnitCallback callback = new CallableUnitCallback(latch);
+        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, node, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
         try {
@@ -100,87 +95,25 @@ public class Engine {
         } catch (InterruptedException e) {
             // Ignore
         }
-        Object result = callback.getResult();
-        if (result instanceof BError) {
-            BArray errors = visitor.getArrayValue(ERRORS_FIELD);
-            errors.append(getErrorDetailRecord((BError) result, fieldNode));
-            return result;
-        } else if (result instanceof BObject) {
-            return getDataFromService(environment, (BObject) result, visitor, fieldNode);
-        } else {
-            return getDataFromResult(fieldNode, result);
-        }
     }
 
-    public static Object getDataFromBalType(BObject fieldNode, Object data) {
+    // TODO: Improve this method to not return but populate inside
+    public static Object getDataFromBalType(BObject node, Object data) {
         if (data instanceof BArray) {
-            return getDataFromArray(fieldNode, (BArray) data);
+            BMap<BString, Object> dataRecord = createDataRecord();
+            getDataFromArray(node, (BArray) data, dataRecord);
+            return dataRecord.getArrayValue(node.getStringValue(NAME_FIELD));
         } else if (data instanceof BMap) {
-            return getDataFromRecord(fieldNode, (BMap<BString, Object>) data);
+            BMap<BString, Object> dataRecord = createDataRecord();
+            getDataFromRecord(node, (BMap<BString, Object>) data, dataRecord);
+            return dataRecord.getMapValue(node.getStringValue(NAME_FIELD));
         } else {
             return data;
         }
     }
 
-    private static BArray getDataFromArray(BObject fieldNode, BArray result) {
-        if (isScalarType(result.getElementType())) {
-            return result;
-        } else {
-            BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
-            for (int i = 0; i < result.size(); i++) {
-                Object resultRecord = result.get(i);
-                Object arrayField = getDataFromResult(fieldNode, resultRecord);
-                resultArray.append(arrayField);
-            }
-            return resultArray;
-        }
-    }
-
-    private static BMap<BString, Object> getDataFromRecord(BObject fieldNode, BMap<BString, Object> record) {
-        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = createDataRecord();
-        for (int i = 0; i < selections.size(); i++) {
-            BObject subfieldNode = (BObject) selections.get(i);
-            BString fieldName = subfieldNode.getStringValue(NAME_FIELD);
-            Object fieldValue = record.get(fieldName);
-            data.put(fieldName, getDataFromResult(subfieldNode, fieldValue));
-        }
-        return data;
-    }
-
-    private static BMap<BString, Object> getDataFromService(Environment environment, BObject service, BObject visitor,
-                                                            BObject fieldNode) {
-        BArray selections = fieldNode.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> data = createDataRecord();
-        for (int i = 0; i < selections.size(); i++) {
-            BObject subField = (BObject) selections.get(i);
-            Object subFieldValue = executeResource(environment, service, visitor, subField);
-            data.put(subField.getStringValue(NAME_FIELD), subFieldValue);
-        }
-        return data;
-    }
-
-    private static BArray getDataFromTable(BObject fieldNode, BTable table) {
-        Object[] valueArray = table.values().toArray();
-        ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
-        BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        return getDataFromArray(fieldNode, valueBArray);
-    }
-
-    private static Object getDataFromResult(BObject fieldNode, Object result) {
-        if (result instanceof BMap) {
-            return getDataFromRecord(fieldNode, (BMap<BString, Object>) result);
-        } else if (result instanceof BArray) {
-            return getDataFromArray(fieldNode, (BArray) result);
-        } else if (result instanceof BTable) {
-            return getDataFromTable(fieldNode, (BTable) result);
-        } else {
-            return result;
-        }
-    }
-
-    private static BMap<BString, Object> getArgumentsFromField(BObject fieldNode) {
-        BArray argumentArray = fieldNode.getArrayValue(ARGUMENTS_FIELD);
+    private static BMap<BString, Object> getArgumentsFromField(BObject node) {
+        BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
@@ -201,14 +134,5 @@ public class Engine {
             result[j + 1] = true;
         }
         return result;
-    }
-
-    private static ArrayType getDataRecordArrayType() {
-        BMap<BString, Object> data = createDataRecord();
-        return TypeCreator.createArrayType(data.getType());
-    }
-
-    private static BMap<BString, Object> createDataRecord() {
-        return ValueCreator.createRecordValue(getModule(), DATA_RECORD);
     }
 }

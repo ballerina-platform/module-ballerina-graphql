@@ -38,6 +38,8 @@ const CLOSE_BRACKET = "]";
 const OPEN_BRACE = "{";
 const PIPE = "|";
 const CLOSE_BRACE = "}";
+const FRAGMENT = "fragment";
+const ON = "on";
 
 enum Digit {
     ZERO = "0",
@@ -69,7 +71,7 @@ const FALSE = "false";
 
 // Token Types
 const T_EOF = 0;
-const T_TEXT = 1;
+const T_IDENTIFIER = 1;
 public const T_STRING = 2;
 public const T_INT = 3;
 public const T_FLOAT = 4;
@@ -83,5 +85,6 @@ const T_COLON = 11;
 const T_COMMA = 12;
 const T_NEW_LINE = 13;
 const T_WHITE_SPACE = 14;
+const T_ELLIPSIS = 15;
 
 public const ANONYMOUS_OPERATION = "<anonymous>";

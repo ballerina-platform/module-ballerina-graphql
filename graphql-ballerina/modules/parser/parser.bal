@@ -42,10 +42,12 @@ public class Parser {
     isolated function parseRootOperation(Token token) returns Error? {
         if (token.kind == T_OPEN_BRACE) {
             return self.parseAnonymousOperation();
-        } else if (token.kind == T_TEXT) {
+        } else if (token.kind == T_IDENTIFIER) {
             Scalar value = token.value;
             if (value is RootOperationType) {
                 return self.parseOperationWithType(value);
+            } else if (value == FRAGMENT) {
+                return self.parseFragment();
             }
         }
         return getUnexpectedTokenError(token);
@@ -73,6 +75,34 @@ public class Parser {
         }
     }
 
+    isolated function parseFragment() returns Error? {
+        Token token = check self.readNextNonSeparatorToken(); // fragment keyword already validated
+        Location location = token.location.clone();
+
+        token = check self.readNextNonSeparatorToken();
+        string name = check getIdentifierTokenvalue(token);
+        if (name == ON) {
+            return getUnexpectedTokenError(token);
+        }
+
+        token = check self.readNextNonSeparatorToken();
+        string keyword = check getIdentifierTokenvalue(token);
+        if (keyword != ON) {
+            return getExpectedCharError(token, ON);
+        }
+
+        token = check self.readNextNonSeparatorToken();
+        string onType = check getIdentifierTokenvalue(token);
+
+        FragmentNode fragmentNode = new(name, location, onType);
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind != T_OPEN_BRACE) {
+            return getExpectedCharError(token, OPEN_BRACE);
+        }
+        check self.addSelections(fragmentNode);
+        check self.document.addFragment(fragmentNode);
+    }
+
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
     returns OperationNode|Error {
         self.depth = 0;
@@ -83,23 +113,29 @@ public class Parser {
         return operation;
     }
 
-    isolated function addSelections(ParentType parentNode) returns Error? {
+    isolated function addSelections(ParentNode parentNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
-        self.depth += 1;
+        self.depth += 1; // TODO: Calculate depth with fragments depth.
         while (token.kind != T_CLOSE_BRACE) {
-            token = check self.readNextNonSeparatorToken();
-            string name = check getIdentifierTokenvalue(token);
-            FieldNode fieldNode = new(name, token.location);
             token = check self.peekNextNonSeparatorToken();
-            if (token.kind == T_OPEN_PARENTHESES) {
-                check self.addArgumentsToSelection(fieldNode);
+            if (token.kind == T_ELLIPSIS) {
+                var [name, location] = check self.addFragmentToNode(parentNode);
+                Selection selection = {
+                    name: name,
+                    isFragment: true,
+                    location: location
+                };
+                parentNode.addSelection(selection);
+            } else {
+                FieldNode fieldNode = check self.addSelectionToNode(parentNode);
+                Selection selection = {
+                    name: fieldNode.getName(),
+                    isFragment: false,
+                    node: fieldNode,
+                    location: fieldNode.getLocation()
+                };
+                parentNode.addSelection(selection);
             }
-
-            token = check self.peekNextNonSeparatorToken();
-            if (token.kind == T_OPEN_BRACE) {
-                check self.addSelections(fieldNode);
-            }
-            parentNode.addSelection(fieldNode);
             token = check self.peekNextNonSeparatorToken();
         }
         if (self.operationMaxDepth < self.depth) {
@@ -108,6 +144,31 @@ public class Parser {
         self.depth -= 1;
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
         token = check self.readNextNonSeparatorToken();
+    }
+
+    isolated function addSelectionToNode(ParentNode parentNode) returns FieldNode|Error {
+        Token token = check self.readNextNonSeparatorToken();
+        string name = check getIdentifierTokenvalue(token);
+        FieldNode fieldNode = new(name, token.location);
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind == T_OPEN_PARENTHESES) {
+            check self.addArgumentsToSelection(fieldNode);
+        }
+
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind == T_OPEN_BRACE) {
+            check self.addSelections(fieldNode);
+        }
+        parentNode.addField(fieldNode);
+        return fieldNode;
+    }
+
+    isolated function addFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
+        Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
+        token = check self.readNextNonSeparatorToken();
+        string fragmentName = check getIdentifierTokenvalue(token);
+        parentNode.addFragment(fragmentName);
+        return [fragmentName, token.location];
     }
 
     isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {
@@ -168,7 +229,7 @@ isolated function getRootOperationType(Token token) returns RootOperationType|Er
 }
 
 isolated function getArgumentName(Token token) returns ArgumentName|Error {
-    if (token.kind == T_TEXT) {
+    if (token.kind == T_IDENTIFIER) {
         return {
             value: <string>token.value,
             location: token.location
@@ -191,7 +252,7 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
 
 isolated function getOperationNameFromToken(Parser parser) returns string|Error {
     Token token = check parser.peekNextNonSeparatorToken();
-    if (token.kind == T_TEXT) {
+    if (token.kind == T_IDENTIFIER) {
         // If this is a named operation, we should consume name token
         token = check parser.readNextNonSeparatorToken();
         return <string>token.value;
@@ -202,7 +263,7 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Error 
 }
 
 isolated function getIdentifierTokenvalue(Token token) returns string|Error {
-    if (token.kind == T_TEXT) {
+    if (token.kind == T_IDENTIFIER) {
         return <string>token.value;
     } else {
         return getExpectedNameError(token);
