@@ -23,7 +23,7 @@ listener Listener gqlListener = new(httpListener);
 @test:Config {
     groups: ["listener", "unit"]
 }
-function testDocumentValidation() returns @tainted error? {
+function testDocumentValidation() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_1");
     string document = string
     `{
@@ -55,7 +55,7 @@ function testDocumentValidation() returns @tainted error? {
     groups: ["listener", "unit"],
     dependsOn: [testDocumentValidation]
 }
-function testQueryResult() returns @tainted error? {
+function testQueryResult() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
     string document = string
     `{

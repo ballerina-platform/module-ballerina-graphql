@@ -19,7 +19,7 @@ import ballerina/test;
 @test:Config {
     groups: ["service", "unit"]
 }
-isolated function testGetFieldFromRecordResource() returns @tainted error? {
+isolated function testGetFieldFromRecordResource() returns error? {
     string document = "query getPerson { profile { name, address { street } } }";
     string url = "http://localhost:9094/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);

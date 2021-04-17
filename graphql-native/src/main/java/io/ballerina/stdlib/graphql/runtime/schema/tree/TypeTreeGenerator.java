@@ -19,8 +19,10 @@
 package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -28,6 +30,7 @@ import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -120,7 +123,7 @@ public class TypeTreeGenerator {
             TableType tableType = (TableType) type;
             return createNodeForTableType(name, tableType);
         } else {
-            String message = "Unsupported type found: " + type.getName();
+            String message = "GraphQL resource cannot return type: " + type.getName();
             throw createError(message, NOT_SUPPORTED_ERROR);
         }
     }
@@ -129,16 +132,22 @@ public class TypeTreeGenerator {
         Collection<Field> fields = recordType.getFields().values();
         Node recordNode = new Node(name, recordType);
         for (Field field : fields) {
-            Node fieldNode = createNodeForType(field.getFieldName(), field.getFieldType());
+            Type fieldType = field.getFieldType();
+            if (fieldType.getTag() == TypeTags.MAP_TAG) {
+                MapType mapType = (MapType) fieldType;
+                fieldType = mapType.getConstrainedType();
+            }
+            Node fieldNode = createNodeForType(field.getFieldName(), fieldType);
             recordNode.addChild(fieldNode);
         }
         return recordNode;
     }
 
     private Node createNodeForUnionType(String name, UnionType unionType) {
-        // TODO: Finite Type?
-        List<Type> memberTypes = unionType.getMemberTypes();
-        Type type = getNonNullNonErrorTypeFromUnion(memberTypes);
+        Type type = getNonNullNonErrorTypeFromUnion(unionType);
+        if (type.getTag() == TypeTags.UNION_TAG) {
+            return new Node(type.getName(), type);
+        }
         return createNodeForType(name, type);
     }
 
@@ -150,9 +159,10 @@ public class TypeTreeGenerator {
         return tableNode;
     }
 
-    public static Type getNonNullNonErrorTypeFromUnion(List<Type> memberTypes) {
+    public static Type getNonNullNonErrorTypeFromUnion(UnionType unionType) {
         int count = 0;
         Type resultType = null;
+        List<Type> memberTypes = getMemberTypes(unionType);
         for (Type type : memberTypes) {
             if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
                 count++;
@@ -166,6 +176,23 @@ public class TypeTreeGenerator {
             throw createError(message, NOT_SUPPORTED_ERROR);
         }
         return resultType;
+    }
+
+    private static List<Type> getMemberTypes(UnionType unionType) {
+        List<Type> members = new ArrayList<>();
+        if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
+            members.add(unionType);
+        } else {
+            List<Type> originalMembers = unionType.getOriginalMemberTypes();
+            for (Type type : originalMembers) {
+                if (type.getTag() == TypeTags.UNION_TAG) {
+                    members.addAll(getMemberTypes((UnionType) type));
+                } else {
+                    members.add(type);
+                }
+            }
+        }
+        return members;
     }
 
     public static String getScalarTypeName(int tag) {
