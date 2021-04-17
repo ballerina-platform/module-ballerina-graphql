@@ -27,7 +27,7 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
         OutputObject outputObject = engine.getOutputObjectForQuery(query, operationName);
-        response.setJsonPayload(<@untainted json> checkpanic outputObject.cloneWithType(json));
+        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
     }
     return response;
 }
@@ -50,7 +50,7 @@ isolated function handlePostRequests(Engine engine, http:Request request) return
 isolated function processRequestWithJsonPayload(Engine engine, http:Request request, http:Response response) {
     var payload = request.getJsonPayload();
     if (payload is json) {
-        return processJsonPayload(engine, <@untainted>payload, response);
+        return processJsonPayload(engine, payload, response);
     } else {
         string message = "Error occurred while retriving the payload from the request.";
         response.setJsonPayload(getErrorJson(message));

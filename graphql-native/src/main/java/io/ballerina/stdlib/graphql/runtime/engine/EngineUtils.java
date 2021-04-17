@@ -83,6 +83,9 @@ public class EngineUtils {
     public static final String DECIMAL = "Decimal";
     public static final String QUERY = "Query";
 
+    // Input values
+    public static final String KEY = "key";
+
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
 

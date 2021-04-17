@@ -112,7 +112,7 @@ public class Engine {
         }
     }
 
-    private static BMap<BString, Object> getArgumentsFromField(BObject node) {
+    public static BMap<BString, Object> getArgumentsFromField(BObject node) {
         BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
         for (int i = 0; i < argumentArray.size(); i++) {
