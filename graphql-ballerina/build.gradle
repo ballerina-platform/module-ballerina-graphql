@@ -231,25 +231,23 @@ task ballerinaBuild {
                 into file("$project.projectDir/build/docs_parent/docs/${packageName}")
             }
             if (needPublishToCentral) {
-                doLast {
-                    if (project.version.endsWith('-SNAPSHOT') ||
-                            project.version.matches(project.ext.timestampedVersionRegex)) {
-                        return
-                    }
-                    if (ballerinaCentralAccessToken != null) {
-                        println("Publishing to the ballerina central...")
-                        exec {
-                            workingDir project.projectDir
-                            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-                            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%%"
-                            } else {
-                                commandLine 'sh', '-c', "$distributionBinPath/bal push"
-                            }
+                if (project.version.endsWith('-SNAPSHOT') ||
+                        project.version.matches(project.ext.timestampedVersionRegex)) {
+                    return
+                }
+                if (ballerinaCentralAccessToken != null) {
+                    println("Publishing to the ballerina central...")
+                    exec {
+                        workingDir project.projectDir
+                        environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                            commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%%"
+                        } else {
+                            commandLine 'sh', '-c', "$distributionBinPath/bal push"
                         }
-                    } else {
-                        throw new InvalidUserDataException("Central Access Token is not present")
                     }
+                } else {
+                    throw new InvalidUserDataException("Central Access Token is not present")
                 }
             } else if (needPublishToLocalCentral) {
                 println("Publishing to the ballerina local central repository..")
