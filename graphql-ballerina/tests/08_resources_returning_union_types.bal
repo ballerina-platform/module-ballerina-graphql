@@ -52,7 +52,7 @@ service /graphql on new Listener(9098) {
 @test:Config {
     groups: ["service", "unit"]
 }
-isolated function testResourceReturningUnionTypes() returns @tainted error? {
+isolated function testResourceReturningUnionTypes() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ profile (id: 5) { name } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -76,7 +76,7 @@ isolated function testResourceReturningUnionTypes() returns @tainted error? {
 @test:Config {
     groups: ["service", "unit"]
 }
-isolated function testResourceReturningUnionWithNull() returns @tainted error? {
+isolated function testResourceReturningUnionWithNull() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ profile (id: 4) { name } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
