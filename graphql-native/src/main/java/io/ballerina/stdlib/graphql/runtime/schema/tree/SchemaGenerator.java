@@ -19,8 +19,10 @@
 package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.TableType;
@@ -35,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaTreeGenerator.addEnumValueToEnumType;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
@@ -146,8 +149,16 @@ public class SchemaGenerator {
             schemaType = getSchemaTypeFromType(tableType.getConstrainedType());
         } else if (tag == TypeTags.UNION_TAG) {
             UnionType unionType = (UnionType) type;
-            Type mainType = getNonNullNonErrorTypeFromUnion(unionType.getMemberTypes());
-            schemaType = getSchemaTypeFromType(mainType);
+            if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
+                schemaType = new SchemaType(unionType.getName(), TypeKind.ENUM);
+                addEnumValueToEnumType(schemaType, unionType);
+            } else {
+                Type mainType = getNonNullNonErrorTypeFromUnion(unionType);
+                schemaType = getSchemaTypeFromType(mainType);
+            }
+        } else if (tag == TypeTags.MAP_TAG) {
+            MapType mapType = (MapType) type;
+            schemaType = getSchemaTypeFromType(mapType.getConstrainedType());
         } else {
             String message = "Unsupported type for schema field: " + type.getName();
             throw createError(message, NOT_SUPPORTED_ERROR);

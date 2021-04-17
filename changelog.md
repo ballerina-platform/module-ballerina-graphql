@@ -5,6 +5,8 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ### Added
 - [[#1224] Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1224)
+- [[#1000] Enum Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1000)
+- [[#999] Map Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/999)
 
 ## [0.2.0-alpha6] - 2021-04-02
 

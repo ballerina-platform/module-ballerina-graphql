@@ -25,7 +25,7 @@ service /graphql on new Listener(9095) {
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testMissingArgumentValueQuery() returns @tainted error? {
+isolated function testMissingArgumentValueQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: ) { name age }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -49,7 +49,7 @@ isolated function testMissingArgumentValueQuery() returns @tainted error? {
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testEmptyQuery() returns @tainted error? {
+isolated function testEmptyQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -73,7 +73,7 @@ isolated function testEmptyQuery() returns @tainted error? {
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testObjectWithNoSelectionQuery() returns @tainted error? {
+isolated function testObjectWithNoSelectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -99,7 +99,7 @@ isolated function testObjectWithNoSelectionQuery() returns @tainted error? {
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testObjectWithNoSelectionQueryWithArguments() returns @tainted error? {
+isolated function testObjectWithNoSelectionQueryWithArguments() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -125,7 +125,7 @@ isolated function testObjectWithNoSelectionQueryWithArguments() returns @tainted
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testObjectWithInvalidSelectionQuery() returns @tainted error? {
+isolated function testObjectWithInvalidSelectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) { status } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -150,7 +150,7 @@ isolated function testObjectWithInvalidSelectionQuery() returns @tainted error? 
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testObjectWithMissingRequiredArgument() returns @tainted error? {
+isolated function testObjectWithMissingRequiredArgument() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile { status } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -186,7 +186,7 @@ isolated function testObjectWithMissingRequiredArgument() returns @tainted error
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testRequestSubtypeFromPrimitiveType() returns @tainted error? {
+isolated function testRequestSubtypeFromPrimitiveType() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile (id: 2) { age { name } } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
@@ -211,7 +211,7 @@ isolated function testRequestSubtypeFromPrimitiveType() returns @tainted error? 
 @test:Config {
     groups: ["negative", "listener", "unit"]
 }
-isolated function testInvalidArgument() returns @tainted error? {
+isolated function testInvalidArgument() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile (name: \"name\", id: 3) { name } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
