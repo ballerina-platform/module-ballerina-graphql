@@ -34,7 +34,10 @@ public class PluginConstants {
      * Compilation errors.
      */
     enum CompilationErrors {
-        INVALID_FUNCTION("Invalid method. Only object methods and resource functions are allowed",
+        INVALID_FUNCTION("Invalid method. Only object methods and resource functions are allowed.",
+                "GRAPHQL_101"),
+        INVALID_RETURN_TYPE("Invalid return type.", "GRAPHQL_101"),
+        MUST_HAVE_RETURN_TYPE("Invalid return type nil. Resource function must have a return type.",
                 "GRAPHQL_101"),
         INVALID_RESOURCE_FUNCTION_NAME("Invalid resource function name. Only get is allowed",
                 "GRAPHQL_101"),
