@@ -1,10 +1,10 @@
 name: Timestamped Build
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build:
@@ -33,7 +33,7 @@ jobs:
           publishUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
           publishPAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
         run: |
-          ./gradlew publish
+          ./gradlew publish --no-daemon --scan
       - name: Archive Error Log
         uses: actions/upload-artifact@v2
         if: failure()
@@ -41,5 +41,5 @@ jobs:
           name: Ballerina Internal Log
           path: graphql-ballerina/ballerina-internal.log
           if-no-files-found: ignore
-      - name: Generate Codecov Report
+      - name: Generate CodeCov Report
         uses: codecov/codecov-action@v1
