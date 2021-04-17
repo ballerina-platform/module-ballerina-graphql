@@ -134,6 +134,10 @@ def disableGroups = ""
 def debugParams = ""
 def balJavaDebugParam = ""
 def testParams = ""
+def needSeparateTest = false
+def needBuildWithTest = false
+def needPublishToCentral = false
+def needPublishToLocalCentral = false
 
 task initializeVariables {
     if (project.hasProperty("groups")) {
@@ -148,40 +152,29 @@ task initializeVariables {
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
     }
+    if (project.hasProperty("publishToLocalCentral") && (project.findProperty("publishToLocalCentral") == "true")) {
+        needPublishToLocalCentral = true
+    }
+    if (project.hasProperty("publishToCentral") && (project.findProperty("publishToCentral") == "true")) {
+        needPublishToCentral = true
+    }
 
     gradle.taskGraph.whenReady { graph ->
-        if (graph.hasTask(":${packageName}-ballerina:build") ||
-                graph.hasTask(":${packageName}-ballerina:publish") ||
+        if (graph.hasTask(":${packageName}-ballerina:build") || graph.hasTask(":${packageName}-ballerina:publish") ||
                 graph.hasTask(":${packageName}-ballerina:publishToMavenLocal")) {
-            ballerinaTest.enabled = false
+            needSeparateTest = false
+            needBuildWithTest = true
+            if (graph.hasTask(":${packageName}-ballerina:publish")) {
+                needPublishToCentral = true
+            }
         } else {
-            ballerinaTest.enabled = true
+            needSeparateTest = true
         }
 
         if (graph.hasTask(":${packageName}-ballerina:test")) {
             testParams = "${testCoverageParam}"
         } else {
             testParams = "--skip-tests"
-        }
-
-        if (graph.hasTask(":${packageName}-ballerina:publish")) {
-            ballerinaPublish.enabled = true
-        } else {
-            ballerinaPublish.enabled = false
-        }
-    }
-}
-
-task ballerinaTest {
-    doLast {
-        exec {
-            workingDir project.projectDir
-            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat test ${testCoverageParam} ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
-            } else {
-                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal test ${testCoverageParam} ${groupParams} ${disableGroups} ${debugParams}"
-            }
         }
     }
 }
@@ -190,70 +183,92 @@ task ballerinaBuild {
     inputs.dir file(project.projectDir)
 
     doLast {
-        // Build and populate caches
-        exec {
-            workingDir project.projectDir
-            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat build -c ${testParams} ${debugParams} && exit %%ERRORLEVEL%%"
-            } else {
-                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build -c ${testParams} ${debugParams}"
+        if (needSeparateTest) {
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${testCoverageParam} ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal test ${testCoverageParam} ${groupParams} ${disableGroups} ${debugParams}"
+                }
             }
-        }
-        // extract bala file to artifact cache directory
-        file("$project.projectDir/target/bala").eachFileMatch(~/.*.bala/) { balaFile ->
+        } else if (needBuildWithTest) {
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat build -c ${testParams} ${debugParams} && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build -c ${testParams} ${debugParams}"
+                }
+            }
+            // extract bala file to artifact cache directory
+            file("$project.projectDir/target/bala").eachFileMatch(~/.*.bala/) { balaFile ->
+                copy {
+                    from zipTree(balaFile)
+                    into file("$artifactCacheParent/bala/${packageOrg}/${packageName}/${tomlVersion}/${platform}")
+                }
+            }
             copy {
-                from zipTree(balaFile)
-                into file("$artifactCacheParent/bala/${packageOrg}/${packageName}/${tomlVersion}/${platform}")
+                from file("$project.projectDir/target/cache")
+                exclude '**/*-testable.jar'
+                exclude '**/tests_cache/'
+                into file("$artifactCacheParent/cache/")
             }
-        }
-        copy {
-            from file("$project.projectDir/target/cache")
-            exclude '**/*-testable.jar'
-            exclude '**/tests_cache/'
-            into file("$artifactCacheParent/cache/")
-        }
-        // Doc creation and packing
-        exec {
-            workingDir project.projectDir
-            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat doc && exit %%ERRORLEVEL%%"
-            } else {
-                commandLine 'sh', '-c', "$distributionBinPath/bal doc"
+            // Doc creation and packing
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat doc && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "$distributionBinPath/bal doc"
+                }
             }
-        }
-        copy {
-            from file("$project.projectDir/target/apidocs/${packageName}")
-            into file("$project.projectDir/build/docs_parent/docs/${packageName}")
+            copy {
+                from file("$project.projectDir/target/apidocs/${packageName}")
+                into file("$project.projectDir/build/docs_parent/docs/${packageName}")
+            }
+            if (needPublishToCentral) {
+                doLast {
+                    if (project.version.endsWith('-SNAPSHOT') ||
+                            project.version.matches(project.ext.timestampedVersionRegex)) {
+                        return
+                    }
+                    if (ballerinaCentralAccessToken != null) {
+                        println("Publishing to the ballerina central...")
+                        exec {
+                            workingDir project.projectDir
+                            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%%"
+                            } else {
+                                commandLine 'sh', '-c', "$distributionBinPath/bal push"
+                            }
+                        }
+                    } else {
+                        throw new InvalidUserDataException("Central Access Token is not present")
+                    }
+                }
+            } else if (needPublishToLocalCentral) {
+                println("Publishing to the ballerina local central repository..")
+                exec {
+                    workingDir project.projectDir
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                        commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%% --repository=local"
+                    } else {
+                        commandLine 'sh', '-c', "$distributionBinPath/bal push --repository=local"
+                    }
+                }
+            }
         }
     }
 
     outputs.dir artifactCacheParent
     outputs.dir artifactBallerinaDocs
     outputs.dir artifactLibParent
-}
-
-task ballerinaPublish {
-    doLast {
-        if (project.version.endsWith('-SNAPSHOT')) {
-            return
-        }
-        if (ballerinaCentralAccessToken != null) {
-            println("Publishing to the ballerina central...")
-            exec {
-                workingDir project.projectDir
-                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "$distributionBinPath/bal push"
-                }
-            }
-        } else {
-            throw new InvalidUserDataException("Central Access Token is not present")
-        }
-    }
 }
 
 task createArtifactZip(type: Zip) {
@@ -283,22 +298,12 @@ unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
 
-ballerinaTest.dependsOn ":${packageName}-native:build"
-ballerinaTest.dependsOn updateTomlFile
-ballerinaTest.dependsOn initializeVariables
-ballerinaTest.finalizedBy revertTomlFile
-test.dependsOn ballerinaTest
-
-ballerinaBuild.dependsOn test
 ballerinaBuild.dependsOn ":${packageName}-native:build"
 ballerinaBuild.dependsOn updateTomlFile
 ballerinaBuild.dependsOn initializeVariables
 ballerinaBuild.finalizedBy revertTomlFile
+test.dependsOn ballerinaBuild
 build.dependsOn ballerinaBuild
 
-ballerinaPublish.dependsOn ":${packageName}-native:build"
-ballerinaPublish.dependsOn ballerinaBuild
-ballerinaPublish.dependsOn updateTomlFile
-ballerinaPublish.dependsOn initializeVariables
-ballerinaPublish.finalizedBy revertTomlFile
-publish.dependsOn ballerinaPublish
+publishToMavenLocal.dependsOn build
+publish.dependsOn build
