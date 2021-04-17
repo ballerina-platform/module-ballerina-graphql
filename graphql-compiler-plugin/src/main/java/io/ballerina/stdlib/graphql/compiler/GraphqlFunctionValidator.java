@@ -151,6 +151,8 @@ public class GraphqlFunctionValidator {
                     hasInvalidReturnType = true;
                 }
             }
+        } else if (returnTypeSymbol.typeKind() == TypeDescKind.OBJECT) {
+            hasInvalidReturnType = true;
         }
         return hasInvalidReturnType;
     }
