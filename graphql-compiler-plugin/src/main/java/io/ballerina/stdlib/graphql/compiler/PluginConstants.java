@@ -36,13 +36,13 @@ public class PluginConstants {
     enum CompilationErrors {
         INVALID_FUNCTION("Invalid method. Only object methods and resource functions are allowed.",
                 "GRAPHQL_101"),
-        INVALID_RETURN_TYPE("Invalid return type.", "GRAPHQL_101"),
+        INVALID_RETURN_TYPE("Invalid return type.", "GRAPHQL_102"),
         MUST_HAVE_RETURN_TYPE("Invalid return type nil. Resource function must have a return type.",
-                "GRAPHQL_101"),
+                "GRAPHQL_103"),
         INVALID_RESOURCE_FUNCTION_NAME("Invalid resource function name. Only get is allowed",
-                "GRAPHQL_101"),
+                "GRAPHQL_104"),
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
-                "GRAPHQL_101");
+                "GRAPHQL_105");
 
         private final String error;
         private final String errorCode;
