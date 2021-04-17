@@ -19,8 +19,18 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
+import io.ballerina.compiler.api.symbols.ClassSymbol;
+import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
@@ -30,6 +40,7 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -80,5 +91,79 @@ public class GraphqlFunctionValidator {
     }
 
     private void validateReturnType(FunctionDefinitionNode functionDefinitionNode, SyntaxNodeAnalysisContext context) {
+        MethodSymbol methodSymbol = PluginUtils.getMethodSymbol(context, functionDefinitionNode);
+        if (methodSymbol != null) {
+            Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
+            if (returnTypeDesc.isPresent()) {
+                // if return type is a union
+                if (returnTypeDesc.get().typeKind() == TypeDescKind.UNION) {
+                    List<TypeSymbol> returnTypeMembers =
+                            ((UnionTypeSymbol) returnTypeDesc.get()).memberTypeDescriptors();
+
+                    // for cases like returning (float|decimal) - only one scalar type is allowed
+                    boolean unionMemberWithTypeExists = false;
+
+                    for (TypeSymbol returnType : returnTypeMembers) {
+                        if (returnType.typeKind() != TypeDescKind.NIL && returnType.typeKind() != TypeDescKind.ERROR) {
+                            if (unionMemberWithTypeExists || hasInvalidReturnType(returnType)) {
+                                context.reportDiagnostic(PluginUtils.getDiagnostic
+                                        (CompilationErrors.INVALID_RETURN_TYPE,
+                                                DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                            }
+                            unionMemberWithTypeExists = true;
+                        } // nil in a union in valid, no validation
+                    }
+                } else {
+                    // if return type not a union
+                    // nil alone is invalid - must have a return type
+                    if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
+                        context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.MUST_HAVE_RETURN_TYPE,
+                                DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                    } else {
+                        if (hasInvalidReturnType(returnTypeDesc.get())) {
+                            context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_RETURN_TYPE,
+                                    DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                        }
+                    }
+                }
+            }
+        }
+
     }
+
+    private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
+        boolean hasInvalidReturnType = false;
+        if (returnTypeSymbol.typeKind() == TypeDescKind.MAP ||
+                returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
+                returnTypeSymbol.typeKind() == TypeDescKind.BYTE) {
+            hasInvalidReturnType = true;
+        } else if (returnTypeSymbol.typeKind() == TypeDescKind.ARRAY) {
+            // check member type
+            hasInvalidReturnType = hasInvalidReturnType(((ArrayTypeSymbol) returnTypeSymbol).memberTypeDescriptor());
+        } else if (returnTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            // only service object types and records are allowed
+            if ((((TypeReferenceTypeSymbol) returnTypeSymbol).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
+                if (!isRecordType(returnTypeSymbol)) {
+                    hasInvalidReturnType = true;
+                }
+            } else if (((TypeReferenceTypeSymbol) returnTypeSymbol).definition().kind() == SymbolKind.CLASS) {
+                if (!isValidServiceType(returnTypeSymbol)) {
+                    hasInvalidReturnType = true;
+                }
+            }
+        }
+        return hasInvalidReturnType;
+    }
+
+    private boolean isRecordType(TypeSymbol returnTypeSymbol) {
+        TypeDefinitionSymbol definitionSymbol =
+                (TypeDefinitionSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
+        return definitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD;
+    }
+
+    private boolean isValidServiceType(TypeSymbol returnTypeSymbol) {
+        ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
+        return classSymbol.qualifiers().contains(Qualifier.SERVICE) && classSymbol.getName().isPresent();
+    }
+
 }

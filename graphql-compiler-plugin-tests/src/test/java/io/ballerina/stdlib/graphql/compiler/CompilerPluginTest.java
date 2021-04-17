@@ -71,6 +71,29 @@ public class CompilerPluginTest {
         assertDiagnostic(diagnostic, CompilationErrors.INVALID_FUNCTION);
     }
 
+    @Test
+    public void testInvalidService3() {
+        Package currentPackage = loadPackage("invalid_service_3");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_NAME);
+    }
+
+    @Test
+    public void testInvalidService4() {
+        Package currentPackage = loadPackage("invalid_service_4");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 7);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
+        }
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);

@@ -21,67 +21,51 @@ type Person record {
 };
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns string {
-        return "Hello";
+    isolated resource function get greeting() returns map<int>  {
+        return {sam: 50, jon: 60};
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get name() returns string {
-        return "John";
+    isolated resource function get greeting() returns json {
+        json j1 = "Apple";
+        return j1;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get name() returns string|error {
-        return "John";
+    isolated resource function get greeting() returns byte {
+         byte a = 12;
+         return a;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get name() returns string|error? {
-        return "John";
+    isolated resource function get greeting() returns byte[] {
+        byte[] arr1 = [5, 24, 56, 243];
+        return arr1;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get weight() returns float {
+    resource function get marks() returns float|decimal { // Union of two scalars
         return 80.5;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get weight() returns float|error {
-        return 80.5;
+    resource function get id() returns Person|string {  // Union of two types
+        return "1234";
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get married() returns boolean {
-        return true;
-    }
-}
-
-service graphql:Service on new graphql:Listener(4000) {
-    resource function get married() returns boolean|error {
-        return true;
-    }
-}
-
-service graphql:Service on new graphql:Listener(4000) {
-    resource function get profile() returns Person {
-        return {name: "John"};
-    }
-}
-
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting {
-        return new;
-    }
-}
-
-service class GeneralGreeting {
-    isolated resource function get generalGreeting() returns string {
-        return "Hello, world";
+    // Invalid - Returning dynamic service object
+    isolated resource function get foo() returns service object {} {
+        return service object {
+            resource function get name() returns string {
+                return "name";
+            }
+        };
     }
 }
