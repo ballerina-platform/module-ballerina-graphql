@@ -176,10 +176,10 @@ public class GraphqlFunctionValidator {
         if (returnTypeSymbol.typeKind() == TypeDescKind.MAP ||
                 returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
                 returnTypeSymbol.typeKind() == TypeDescKind.BYTE) {
-            hasInvalidReturnType = true;
+            return true;
         } else if (returnTypeSymbol.typeKind() == TypeDescKind.ARRAY) {
             // check member type
-            hasInvalidReturnType = hasInvalidReturnType(((ArrayTypeSymbol) returnTypeSymbol).memberTypeDescriptor());
+            return hasInvalidReturnType(((ArrayTypeSymbol) returnTypeSymbol).memberTypeDescriptor());
         } else if (returnTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             // only service object types and records are allowed
             if ((((TypeReferenceTypeSymbol) returnTypeSymbol).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
