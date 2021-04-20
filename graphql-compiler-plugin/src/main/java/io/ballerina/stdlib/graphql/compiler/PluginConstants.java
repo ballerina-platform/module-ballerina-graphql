@@ -43,7 +43,8 @@ public class PluginConstants {
         INVALID_RESOURCE_FUNCTION_NAME("Invalid resource function name. Only get is allowed",
                 "GRAPHQL_105"),
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
-                "GRAPHQL_106");
+                "GRAPHQL_106"),
+        INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value cannot be negative", "GRAPHQL_107");
 
         private final String error;
         private final String errorCode;
