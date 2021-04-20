@@ -40,7 +40,6 @@ import io.ballerina.compiler.syntax.tree.UnaryExpressionNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
-import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.List;
 import java.util.Optional;
@@ -77,24 +76,22 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
                 SeparatedNodeList<MappingFieldNode> mappingFieldNodes = constructorExpressionNode.fields();
                 for (MappingFieldNode mappingNode : mappingFieldNodes) {
                     SpecificFieldNode specificFieldNode = (SpecificFieldNode) mappingNode;
-                    if (specificFieldNode.fieldName().toString().contains("maxQueryDepth") &&
+                    if (specificFieldNode.fieldName().toString().contains(PluginConstants.MAX_QUERY_DEPTH) &&
                             specificFieldNode.valueExpr().isPresent()) {
                         if (specificFieldNode.valueExpr().get().kind() == SyntaxKind.UNARY_EXPRESSION) {
                             UnaryExpressionNode queryDepthValueNode =
                                     (UnaryExpressionNode) specificFieldNode.valueExpr().get();
                             Token unaryOp = queryDepthValueNode.unaryOperator();
                             // check 0
-                            if (unaryOp.text().equals("-")) {
-                                context.reportDiagnostic(PluginUtils.getDiagnostic(
-                                        CompilationErrors.INVALID_MAX_QUERY_DEPTH,
-                                        DiagnosticSeverity.ERROR, queryDepthValueNode.location()));
+                            if (unaryOp.text().equals(PluginConstants.UNARY_NEGATIVE)) {
+                                PluginUtils.updateContext(context, CompilationErrors.INVALID_MAX_QUERY_DEPTH,
+                                        queryDepthValueNode.location());
                             }
                         } else if (specificFieldNode.valueExpr().get().kind() == SyntaxKind.NUMERIC_LITERAL) {
                             BasicLiteralNode basicLiteralNode = (BasicLiteralNode) specificFieldNode.valueExpr().get();
                             if (Integer.parseInt(basicLiteralNode.literalToken().text()) == 0) {
-                                context.reportDiagnostic(PluginUtils.getDiagnostic(
-                                        CompilationErrors.INVALID_MAX_QUERY_DEPTH,
-                                        DiagnosticSeverity.ERROR, specificFieldNode.location()));
+                                PluginUtils.updateContext(context, CompilationErrors.INVALID_MAX_QUERY_DEPTH,
+                                        specificFieldNode.location());
                             }
                         }
                     }
@@ -112,8 +109,8 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
             ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
             List<TypeSymbol> listeners = serviceDeclarationSymbol.listenerTypes();
             if (listeners.size() > 1 && hasGraphqlListener(listeners)) {
-                context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_MULTIPLE_LISTENERS,
-                        DiagnosticSeverity.ERROR, serviceDeclarationNode.location()));
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_MULTIPLE_LISTENERS,
+                        serviceDeclarationNode.location());
             } else {
                 if (listeners.get(0).typeKind() == TypeDescKind.UNION) {
                     UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listeners.get(0);

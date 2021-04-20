@@ -25,10 +25,10 @@ import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
-import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.Optional;
@@ -37,14 +37,6 @@ import java.util.Optional;
  * Util class for the compiler plugin.
  */
 public class PluginUtils {
-    public static Diagnostic getDiagnostic(PluginConstants.CompilationErrors error,
-                                           DiagnosticSeverity severity, Location location) {
-        String errorMessage = error.getError();
-        String diagnosticCode = error.getErrorCode();
-        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(diagnosticCode, errorMessage, severity);
-        return DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
-    }
-
     public static boolean validateModuleId(ModuleSymbol moduleSymbol) {
         String moduleName = moduleSymbol.id().moduleName();
         String orgName = moduleSymbol.id().orgName();
@@ -67,5 +59,13 @@ public class PluginUtils {
                                            FunctionDefinitionNode functionDefinitionNode) {
         MethodSymbol methodSymbol = getMethodSymbol(context, functionDefinitionNode);
         return methodSymbol.qualifiers().contains(Qualifier.REMOTE);
+    }
+
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationErrors errorCode,
+                                     Location location) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
+        Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
+        context.reportDiagnostic(diagnostic);
     }
 }
