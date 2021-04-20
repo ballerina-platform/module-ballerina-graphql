@@ -16,10 +16,6 @@
 
 import ballerina/graphql;
 
-type Person record {
-    string name;
-};
-
 @graphql:ServiceConfiguration {
     maxQueryDepth: 2
 }
