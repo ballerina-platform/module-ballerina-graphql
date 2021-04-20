@@ -107,6 +107,7 @@ task copyPackageBala {
 }
 
 test {
+    systemProperty "ballerina.offline.flag", "true"
     useTestNG()
 }
 
