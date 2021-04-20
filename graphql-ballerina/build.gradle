@@ -23,14 +23,16 @@ def packageName = "graphql"
 def packageOrg = "ballerina"
 def platform = "java11"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
-def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
-def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
+def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
+def dependenciesTomlFile = new File("$project.projectDir/Dependencies.toml")
+def compilerPluginTomlFile = new File("$project.projectDir/CompilerPlugin.toml")
 def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
 def artifactCacheParent = file("$project.projectDir/build/cache_parent/")
 def artifactLibParent = file("$project.projectDir/build/lib_parent/")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
-def originalConfig = ballerinaConfigFile.text
-def originalDependencies = ballerinaDependencyFile.text
+def originalBallerinaToml = ballerinaTomlFile.text
+def originalDependenciesToml = dependenciesTomlFile.text
+def originalCompilerPluginToml = compilerPluginTomlFile.text
 def testCoverageParam = "--code-coverage --includes=io.ballerina.stdlib.graphql.*:ballerina.*"
 def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
@@ -53,9 +55,6 @@ configurations {
 }
 
 dependencies {
-    jbalTools("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
-        transitive = false
-    }
     implementation project(":${packageName}-native")
 }
 
@@ -103,29 +102,33 @@ task copyStdlibs(type: Copy) {
     }
 }
 
-task updateTomlFile {
+task updateTomlFiles {
     doLast {
         def stdlibDependentFileVersion = stripBallerinaExtensionVersion(project.stdlibFileVersion)
         def stdlibDependentHttpVersion = stripBallerinaExtensionVersion(project.stdlibHttpVersion)
         def stdlibDependentIoVersion = stripBallerinaExtensionVersion(project.stdlibIoVersion)
         def stdlibDependentUrlVersion = stripBallerinaExtensionVersion(project.stdlibUrlVersion)
 
-        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
-        newConfig = newConfig.replace("@toml.version@", tomlVersion)
-        ballerinaConfigFile.text = newConfig
+        def newBallerinaToml = ballerinaTomlFile.text.replace("@project.version@", project.version)
+        newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
+        ballerinaTomlFile.text = newBallerinaToml
 
-        def newDependencyConfig = ballerinaDependencyFile.text.replace("@stdlib.file.version@", stdlibDependentFileVersion)
-        newDependencyConfig = newDependencyConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
-        newDependencyConfig = newDependencyConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
-        newDependencyConfig = newDependencyConfig.replace("@stdlib.url.version@", stdlibDependentUrlVersion)
-        ballerinaDependencyFile.text = newDependencyConfig
+        def newDependenciesToml = dependenciesTomlFile.text.replace("@stdlib.file.version@", stdlibDependentFileVersion)
+        newDependenciesToml = newDependenciesToml.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
+        newDependenciesToml = newDependenciesToml.replace("@stdlib.io.version@", stdlibDependentIoVersion)
+        newDependenciesToml = newDependenciesToml.replace("@stdlib.url.version@", stdlibDependentUrlVersion)
+        dependenciesTomlFile.text = newDependenciesToml
+
+        def newCompilerPluginToml = compilerPluginTomlFile.text.replace("@project.version@", project.version)
+        compilerPluginTomlFile.text = newCompilerPluginToml
     }
 }
 
-task revertTomlFile {
+task revertTomlFiles {
     doLast {
-        ballerinaConfigFile.text = originalConfig
-        ballerinaDependencyFile.text = originalDependencies
+        ballerinaTomlFile.text = originalBallerinaToml
+        dependenciesTomlFile.text = originalDependenciesToml
+        compilerPluginTomlFile.text = originalCompilerPluginToml
     }
 }
 
@@ -294,12 +297,13 @@ publishing {
 
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
-updateTomlFile.dependsOn copyStdlibs
+updateTomlFiles.dependsOn copyStdlibs
 
 ballerinaBuild.dependsOn ":${packageName}-native:build"
-ballerinaBuild.dependsOn updateTomlFile
+ballerinaBuild.dependsOn ":${packageName}-compiler-plugin:build"
+ballerinaBuild.dependsOn updateTomlFiles
 ballerinaBuild.dependsOn initializeVariables
-ballerinaBuild.finalizedBy revertTomlFile
+ballerinaBuild.finalizedBy revertTomlFiles
 test.dependsOn ballerinaBuild
 build.dependsOn ballerinaBuild
 
