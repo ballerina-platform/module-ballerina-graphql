@@ -40,7 +40,6 @@ import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
-import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,8 +60,8 @@ public class GraphqlFunctionValidator {
             } else if (functionDefinitionNode.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION) {
                 // object methods are valid, object methods that are remote functions are invalid
                 if (PluginUtils.isRemoteFunction(context, functionDefinitionNode)) {
-                    context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_FUNCTION,
-                            DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                    PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION,
+                            functionDefinitionNode.location());
                 }
             }
         }
@@ -83,14 +82,13 @@ public class GraphqlFunctionValidator {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) symbolOptional.get();
             if (resourceMethodSymbol.getName().isPresent()) {
                 if (!resourceMethodSymbol.getName().get().equals(PluginConstants.RESOURCE_FUNCTION_GET)) {
-                    context.reportDiagnostic(PluginUtils.getDiagnostic(
-                            CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
-                            DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                    PluginUtils.updateContext(context,
+                            CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR, functionDefinitionNode.location());
                 }
             } else {
-                context.reportDiagnostic(PluginUtils.getDiagnostic(
+                PluginUtils.updateContext(context,
                         CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
-                        DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                        functionDefinitionNode.location());
             }
         }
     }
@@ -111,28 +109,27 @@ public class GraphqlFunctionValidator {
                     for (TypeSymbol returnType : returnTypeMembers) {
                         if (returnType.typeKind() != TypeDescKind.NIL && returnType.typeKind() != TypeDescKind.ERROR) {
                             if (unionMemberWithTypeExists || hasInvalidReturnType(returnType)) {
-                                context.reportDiagnostic(PluginUtils.getDiagnostic
-                                        (CompilationErrors.INVALID_RETURN_TYPE,
-                                                DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
+                                        , functionDefinitionNode.location());
                             }
                             unionMemberWithTypeExists = true;
                         } // nil in a union in valid, no validation
                     }
                     if (!unionMemberWithTypeExists) {
-                        context.reportDiagnostic(PluginUtils.getDiagnostic(
+                        PluginUtils.updateContext(context,
                                 CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL,
-                                DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                                functionDefinitionNode.location());
                     }
                 } else {
                     // if return type not a union
                     // nil alone is invalid - must have a return type
                     if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
-                        context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_RETURN_TYPE_NIL,
-                                DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL,
+                                functionDefinitionNode.location());
                     } else {
                         if (hasInvalidReturnType(returnTypeDesc.get())) {
-                            context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_RETURN_TYPE,
-                                    DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
+                                    functionDefinitionNode.location());
                         }
                     }
                 }
@@ -152,9 +149,8 @@ public class GraphqlFunctionValidator {
                     // can have any number of valid input params
                     for (ParameterSymbol param : parameterSymbols) {
                         if (hasInvalidInputParamType(param)) {
-                            context.reportDiagnostic(PluginUtils.getDiagnostic(
-                                    CompilationErrors.INVALID_RESOURCE_INPUT_PARAM,
-                                    DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM,
+                                    functionDefinitionNode.location());
                         }
                     }
                 }

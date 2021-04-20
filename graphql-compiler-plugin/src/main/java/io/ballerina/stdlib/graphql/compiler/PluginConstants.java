@@ -18,6 +18,8 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
+
 /**
  * GraphQl compiler plugin constants.
  */
@@ -29,32 +31,38 @@ public class PluginConstants {
 
     // resource function constants
     public static final String RESOURCE_FUNCTION_GET = "get";
+    public static final String MAX_QUERY_DEPTH = "maxQueryDepth";
+    public static final String UNARY_NEGATIVE = "-";
 
     /**
      * Compilation errors.
      */
     enum CompilationErrors {
         INVALID_FUNCTION("Invalid method. Remote methods are not allowed.",
-                "GRAPHQL_101"),
-        INVALID_RETURN_TYPE("Invalid return type for resource function.", "GRAPHQL_102"),
-        INVALID_RESOURCE_INPUT_PARAM("Invalid resource input parameter type.", "GRAPHQL_103"),
+                "GRAPHQL_101", DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE("Invalid return type for resource function.", "GRAPHQL_102",
+                DiagnosticSeverity.ERROR),
+        INVALID_RESOURCE_INPUT_PARAM("Invalid resource input parameter type.", "GRAPHQL_103",
+                DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_NIL("Invalid return type nil. Resource function must have a return type.",
-                "GRAPHQL_104"),
+                "GRAPHQL_104", DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ERROR_OR_NIL("Invalid return type error or nil. " +
-                "Resource function must have a return data type.", "GRAPHQL_105"),
+                "Resource function must have a return data type.", "GRAPHQL_105", DiagnosticSeverity.ERROR),
         INVALID_RESOURCE_FUNCTION_ACCESSOR("Invalid resource function accessor. Only get is allowed",
-                "GRAPHQL_106"),
+                "GRAPHQL_106", DiagnosticSeverity.ERROR),
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
-                "GRAPHQL_107"),
+                "GRAPHQL_107", DiagnosticSeverity.ERROR),
         INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value must be a positive integer",
-                "GRAPHQL_108");
+                "GRAPHQL_108", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;
+        private final DiagnosticSeverity diagnosticSeverity;
 
-        CompilationErrors(String error, String errorCode) {
+        CompilationErrors(String error, String errorCode, DiagnosticSeverity diagnosticSeverity) {
             this.error = error;
             this.errorCode = errorCode;
+            this.diagnosticSeverity = diagnosticSeverity;
         }
 
         String getError() {
@@ -62,6 +70,9 @@ public class PluginConstants {
         }
         String getErrorCode() {
             return errorCode;
+        }
+        DiagnosticSeverity getDiagnosticSeverity() {
+            return this.diagnosticSeverity;
         }
     }
 
