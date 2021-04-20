@@ -26,6 +26,7 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.MetadataNode;
@@ -82,16 +83,22 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
                             UnaryExpressionNode queryDepthValueNode =
                                     (UnaryExpressionNode) specificFieldNode.valueExpr().get();
                             Token unaryOp = queryDepthValueNode.unaryOperator();
+                            // check 0
                             if (unaryOp.text().equals("-")) {
                                 context.reportDiagnostic(PluginUtils.getDiagnostic(
                                         CompilationErrors.INVALID_MAX_QUERY_DEPTH,
                                         DiagnosticSeverity.ERROR, queryDepthValueNode.location()));
                             }
+                        } else if (specificFieldNode.valueExpr().get().kind() == SyntaxKind.NUMERIC_LITERAL) {
+                            BasicLiteralNode basicLiteralNode = (BasicLiteralNode) specificFieldNode.valueExpr().get();
+                            if (Integer.parseInt(basicLiteralNode.literalToken().text()) == 0) {
+                                context.reportDiagnostic(PluginUtils.getDiagnostic(
+                                        CompilationErrors.INVALID_MAX_QUERY_DEPTH,
+                                        DiagnosticSeverity.ERROR, specificFieldNode.location()));
+                            }
                         }
                     }
                 }
-
-
             }
         }
     }

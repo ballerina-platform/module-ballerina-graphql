@@ -83,11 +83,13 @@ public class GraphqlFunctionValidator {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) symbolOptional.get();
             if (resourceMethodSymbol.getName().isPresent()) {
                 if (!resourceMethodSymbol.getName().get().equals(PluginConstants.RESOURCE_FUNCTION_GET)) {
-                    context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_RESOURCE_FUNCTION_NAME,
+                    context.reportDiagnostic(PluginUtils.getDiagnostic(
+                            CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
                             DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
                 }
             } else {
-                context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_RESOURCE_FUNCTION_NAME,
+                context.reportDiagnostic(PluginUtils.getDiagnostic(
+                        CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
                         DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
             }
         }
@@ -116,11 +118,16 @@ public class GraphqlFunctionValidator {
                             unionMemberWithTypeExists = true;
                         } // nil in a union in valid, no validation
                     }
+                    if (!unionMemberWithTypeExists) {
+                        context.reportDiagnostic(PluginUtils.getDiagnostic(
+                                CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL,
+                                DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                    }
                 } else {
                     // if return type not a union
                     // nil alone is invalid - must have a return type
                     if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
-                        context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.MUST_HAVE_RETURN_TYPE,
+                        context.reportDiagnostic(PluginUtils.getDiagnostic(CompilationErrors.INVALID_RETURN_TYPE_NIL,
                                 DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
                     } else {
                         if (hasInvalidReturnType(returnTypeDesc.get())) {
