@@ -34,17 +34,20 @@ public class PluginConstants {
      * Compilation errors.
      */
     enum CompilationErrors {
-        INVALID_FUNCTION("Invalid method. Only object methods and resource functions are allowed.",
+        INVALID_FUNCTION("Invalid method. Remote methods are not allowed.",
                 "GRAPHQL_101"),
-        INVALID_RETURN_TYPE("Invalid return type.", "GRAPHQL_102"),
+        INVALID_RETURN_TYPE("Invalid return type for resource function.", "GRAPHQL_102"),
         INVALID_RESOURCE_INPUT_PARAM("Invalid resource input parameter type.", "GRAPHQL_103"),
-        MUST_HAVE_RETURN_TYPE("Invalid return type nil. Resource function must have a return type.",
+        INVALID_RETURN_TYPE_NIL("Invalid return type nil. Resource function must have a return type.",
                 "GRAPHQL_104"),
-        INVALID_RESOURCE_FUNCTION_NAME("Invalid resource function name. Only get is allowed",
-                "GRAPHQL_105"),
-        INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
+        INVALID_RETURN_TYPE_ERROR_OR_NIL("Invalid return type error or nil. " +
+                "Resource function must have a return data type.", "GRAPHQL_105"),
+        INVALID_RESOURCE_FUNCTION_ACCESSOR("Invalid resource function accessor. Only get is allowed",
                 "GRAPHQL_106"),
-        INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value cannot be negative", "GRAPHQL_107");
+        INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
+                "GRAPHQL_107"),
+        INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value must be a positive integer",
+                "GRAPHQL_108");
 
         private final String error;
         private final String errorCode;
