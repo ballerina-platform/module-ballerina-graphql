@@ -21,7 +21,9 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
+import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -70,6 +72,7 @@ public class GraphqlFunctionValidator {
                                           SyntaxNodeAnalysisContext context) {
         validateResourceAccessorName(functionDefinitionNode, context);
         validateReturnType(functionDefinitionNode, context);
+        validateInputParamType(functionDefinitionNode, context);
     }
 
     private void validateResourceAccessorName(FunctionDefinitionNode functionDefinitionNode,
@@ -129,6 +132,40 @@ public class GraphqlFunctionValidator {
             }
         }
 
+    }
+
+    private void validateInputParamType(FunctionDefinitionNode functionDefinitionNode,
+                                        SyntaxNodeAnalysisContext context) {
+        MethodSymbol methodSymbol = PluginUtils.getMethodSymbol(context, functionDefinitionNode);
+        if (methodSymbol != null) {
+            if (methodSymbol.typeDescriptor().typeKind() == TypeDescKind.FUNCTION) {
+                FunctionTypeSymbol functionTypeSymbol = methodSymbol.typeDescriptor();
+                if (functionTypeSymbol.params().isPresent()) {
+                    List<ParameterSymbol> parameterSymbols = functionTypeSymbol.params().get();
+                    // can have any number of valid input params
+                    for (ParameterSymbol param : parameterSymbols) {
+                        if (hasInvalidInputParamType(param)) {
+                            context.reportDiagnostic(PluginUtils.getDiagnostic(
+                                    CompilationErrors.INVALID_RESOURCE_INPUT_PARAM,
+                                    DiagnosticSeverity.ERROR, functionDefinitionNode.location()));
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private boolean hasInvalidInputParamType(ParameterSymbol inputTypeSymbol) {
+        boolean hasInvalidInputParamType = false;
+        if (inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.STRING &&
+                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.INT &&
+                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.DECIMAL &&
+                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.FLOAT &&
+                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.BOOLEAN) {
+            hasInvalidInputParamType = true;
+        }
+        return hasInvalidInputParamType;
     }
 
     private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
