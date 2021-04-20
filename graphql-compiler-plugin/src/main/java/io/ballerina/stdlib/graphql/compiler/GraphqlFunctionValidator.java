@@ -104,22 +104,34 @@ public class GraphqlFunctionValidator {
                             ((UnionTypeSymbol) returnTypeDesc.get()).memberTypeDescriptors();
 
                     // for cases like returning (float|decimal) - only one scalar type is allowed
-                    boolean unionMemberWithTypeExists = false;
+                    int primitiveType = 0;
+                    // for cases with only error?
+                    int type = 0;
 
                     for (TypeSymbol returnType : returnTypeMembers) {
                         if (returnType.typeKind() != TypeDescKind.NIL && returnType.typeKind() != TypeDescKind.ERROR) {
-                            if (unionMemberWithTypeExists || hasInvalidReturnType(returnType)) {
+                            if (hasInvalidReturnType(returnType)) {
                                 PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
                                         , functionDefinitionNode.location());
                             }
-                            unionMemberWithTypeExists = true;
+                            if (hasPrimitiveType(returnType)) {
+                                primitiveType++;
+                            } else {
+                                type++;
+                            }
                         } // nil in a union in valid, no validation
                     }
-                    if (!unionMemberWithTypeExists) {
+                    if (type == 0 && primitiveType == 0) { // error? - invalid
                         PluginUtils.updateContext(context,
                                 CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL,
                                 functionDefinitionNode.location());
-                    }
+                    } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
+                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
+                                , functionDefinitionNode.location());
+                    } else if (primitiveType > 1) { // string|int - invalid
+                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
+                                , functionDefinitionNode.location());
+                    } // type > 1 is valid - Person|Student
                 } else {
                     // if return type not a union
                     // nil alone is invalid - must have a return type
@@ -160,15 +172,7 @@ public class GraphqlFunctionValidator {
     }
 
     private boolean hasInvalidInputParamType(ParameterSymbol inputTypeSymbol) {
-        boolean hasInvalidInputParamType = false;
-        if (inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.STRING &&
-                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.INT &&
-                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.DECIMAL &&
-                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.FLOAT &&
-                inputTypeSymbol.typeDescriptor().typeKind() != TypeDescKind.BOOLEAN) {
-            hasInvalidInputParamType = true;
-        }
-        return hasInvalidInputParamType;
+        return !hasPrimitiveType(inputTypeSymbol.typeDescriptor());
     }
 
     private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
@@ -201,6 +205,14 @@ public class GraphqlFunctionValidator {
         TypeDefinitionSymbol definitionSymbol =
                 (TypeDefinitionSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
         return definitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD;
+    }
+
+    private boolean hasPrimitiveType(TypeSymbol returnType) {
+        return returnType.typeKind() == TypeDescKind.STRING ||
+                returnType.typeKind() == TypeDescKind.INT ||
+                returnType.typeKind() == TypeDescKind.FLOAT ||
+                returnType.typeKind() == TypeDescKind.BOOLEAN ||
+                returnType.typeKind() == TypeDescKind.DECIMAL;
     }
 
     private boolean isValidServiceType(TypeSymbol returnTypeSymbol) {
