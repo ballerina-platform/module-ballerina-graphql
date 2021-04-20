@@ -135,7 +135,6 @@ public class GraphqlFunctionValidator {
                 }
             }
         }
-
     }
 
     private void validateInputParamType(FunctionDefinitionNode functionDefinitionNode,
@@ -156,7 +155,6 @@ public class GraphqlFunctionValidator {
                 }
             }
         }
-
     }
 
     private boolean hasInvalidInputParamType(ParameterSymbol inputTypeSymbol) {
@@ -207,5 +205,4 @@ public class GraphqlFunctionValidator {
         ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
         return classSymbol.qualifiers().contains(Qualifier.SERVICE) && classSymbol.getName().isPresent();
     }
-
 }

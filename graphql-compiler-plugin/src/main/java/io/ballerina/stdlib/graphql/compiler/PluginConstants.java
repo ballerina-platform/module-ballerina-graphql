@@ -76,7 +76,6 @@ public class PluginConstants {
         }
     }
 
-
     private PluginConstants() {
     }
 }
