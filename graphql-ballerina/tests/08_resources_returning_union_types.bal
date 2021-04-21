@@ -16,27 +16,6 @@
 
 import ballerina/test;
 
-@test:Config {
-    groups: ["service", "unit"]
-}
-function testResourcesReturningInvalidUnionType() returns error? {
-    Listener graphqlListener = check new (9099);
-    var result = graphqlListener.attach(serviceWithInvalidUnionTypes);
-    string str = result is error ? result.toString() : result.toString();
-    test:assertTrue(result is Error);
-    Error err = <Error> result;
-
-    string expectedErrorMessage =
-        string`Unsupported union: If a field type is a union, it should be a subtype of "<T>|error?", except "error?"`;
-    test:assertEquals(err.message(), expectedErrorMessage);
-}
-
-Service serviceWithInvalidUnionTypes = service object {
-    isolated resource function get name() returns int|string {
-        return "John Doe";
-    }
-};
-
 service /graphql on new Listener(9098) {
     resource function get profile(int id) returns Person|error? {
         if (id < people.length()) {
@@ -47,10 +26,14 @@ service /graphql on new Listener(9098) {
             return error("Invalid ID provided");
         }
     }
+
+    resource function get information() returns Address|Person {
+        return p1;
+    }
 }
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["union", "unit"]
 }
 isolated function testResourceReturningUnionTypes() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -74,7 +57,7 @@ isolated function testResourceReturningUnionTypes() returns error? {
 }
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["union", "unit"]
 }
 isolated function testResourceReturningUnionWithNull() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -89,3 +72,18 @@ isolated function testResourceReturningUnionWithNull() returns error? {
     test:assertEquals(result, expectedPayload);
 }
 
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testResourceReturningUnions() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = "{ profile (id: 4) { name } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            profile: null
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}

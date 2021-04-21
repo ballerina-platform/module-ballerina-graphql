@@ -35,13 +35,15 @@ import io.ballerina.stdlib.graphql.runtime.schema.SchemaType;
 import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
@@ -146,14 +148,23 @@ public class SchemaTreeGenerator {
     }
 
     private SchemaType getSchemaTypeForUnionType(UnionType unionType) {
-        if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
+        if (isEnum(unionType)) {
             SchemaType schemaType = new SchemaType(unionType.getName(), TypeKind.ENUM);
             addEnumValueToEnumType(schemaType, unionType);
             return schemaType;
         }
-        Type mainType = getNonNullNonErrorTypeFromUnion(unionType);
-        SchemaType schemaType = getSchemaTypeForField(mainType);
-        return schemaType.getOfType();
+        List<Type> memberTypes = getMemberTypes(unionType);
+        if (memberTypes.size() == 1) {
+            SchemaType schemaType = getSchemaTypeForField(memberTypes.get(0));
+            return schemaType.getOfType();
+        } else {
+            SchemaType schemaType = new SchemaType(unionType.getName(), TypeKind.UNION);
+            for (Type member : memberTypes) {
+                SchemaType memberType = getSchemaTypeForField(member);
+                schemaType.addPossibleType(memberType);
+            }
+            return schemaType;
+        }
     }
 
     public static void addEnumValueToEnumType(SchemaType schemaType, UnionType unionType) {

@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
@@ -30,7 +29,6 @@ import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -40,6 +38,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FLOAT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTEGER;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -144,11 +144,15 @@ public class TypeTreeGenerator {
     }
 
     private Node createNodeForUnionType(String name, UnionType unionType) {
-        Type type = getNonNullNonErrorTypeFromUnion(unionType);
-        if (type.getTag() == TypeTags.UNION_TAG) {
-            return new Node(type.getName(), type);
+        List<Type> memberTypes = getMemberTypes(unionType);
+        if (isEnum(unionType)) {
+            return new Node(unionType.getName(), unionType);
+        } else if (memberTypes.size() == 1) {
+            return createNodeForType(name, memberTypes.get(0));
+        } else {
+            // Compiler plugin validates the union types so this should be a GraphQL union type.
+            return new Node(unionType.getName(), null, null, memberTypes);
         }
-        return createNodeForType(name, type);
     }
 
     private Node createNodeForTableType(String name, TableType tableType) {
@@ -157,42 +161,6 @@ public class TypeTreeGenerator {
         Node node = createNodeForType(constrainedType.getName(), constrainedType);
         tableNode.addChild(node);
         return tableNode;
-    }
-
-    public static Type getNonNullNonErrorTypeFromUnion(UnionType unionType) {
-        int count = 0;
-        Type resultType = null;
-        List<Type> memberTypes = getMemberTypes(unionType);
-        for (Type type : memberTypes) {
-            if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
-                count++;
-                resultType = type;
-            }
-        }
-        if (count != 1) {
-            String message =
-                    "Unsupported union: If a field type is a union, it should be a subtype of \"<T>|error?\", except " +
-                            "\"error?\"";
-            throw createError(message, NOT_SUPPORTED_ERROR);
-        }
-        return resultType;
-    }
-
-    private static List<Type> getMemberTypes(UnionType unionType) {
-        List<Type> members = new ArrayList<>();
-        if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
-            members.add(unionType);
-        } else {
-            List<Type> originalMembers = unionType.getOriginalMemberTypes();
-            for (Type type : originalMembers) {
-                if (type.getTag() == TypeTags.UNION_TAG) {
-                    members.addAll(getMemberTypes((UnionType) type));
-                } else {
-                    members.add(type);
-                }
-            }
-        }
-        return members;
     }
 
     public static String getScalarTypeName(int tag) {
