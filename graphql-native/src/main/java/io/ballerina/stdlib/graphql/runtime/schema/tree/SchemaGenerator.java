@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
@@ -35,11 +34,14 @@ import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaTreeGenerator.addEnumValueToEnumType;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getNonNullNonErrorTypeFromUnion;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getTypeNameFromType;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -107,6 +109,13 @@ public class SchemaGenerator {
         if (type == null) {
             if (node.getReturnType() != null) {
                 return populateTypesMap(node.getReturnType());
+            } else if (node.getPossibleTypes() != null) {
+                SchemaType schemaType = new SchemaType(node.getName(), TypeKind.UNION);
+                for (Type member : node.getPossibleTypes()) {
+                    schemaType.addPossibleType(getSchemaTypeFromType(member));
+                }
+                this.addType(schemaType);
+                return schemaType;
             } else {
                 // This code shouldn't be reached
                 String message = "Type not found for the resource: " + node.getName();
@@ -149,12 +158,20 @@ public class SchemaGenerator {
             schemaType = getSchemaTypeFromType(tableType.getConstrainedType());
         } else if (tag == TypeTags.UNION_TAG) {
             UnionType unionType = (UnionType) type;
-            if (SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM)) {
-                schemaType = new SchemaType(unionType.getName(), TypeKind.ENUM);
+            if (isEnum(unionType)) {
+                schemaType = new SchemaType(getTypeNameFromType(unionType), TypeKind.ENUM);
                 addEnumValueToEnumType(schemaType, unionType);
             } else {
-                Type mainType = getNonNullNonErrorTypeFromUnion(unionType);
-                schemaType = getSchemaTypeFromType(mainType);
+                List<Type> memberTypes = getMemberTypes(unionType);
+                if (memberTypes.size() == 1) {
+                    Type mainType = memberTypes.get(0);
+                    schemaType = getSchemaTypeFromType(mainType);
+                } else {
+                    schemaType = new SchemaType(getTypeNameFromType(unionType), TypeKind.UNION);
+                    for (Type member : memberTypes) {
+                        schemaType.addPossibleType(getSchemaTypeFromType(member));
+                    }
+                }
             }
         } else if (tag == TypeTags.MAP_TAG) {
             MapType mapType = (MapType) type;

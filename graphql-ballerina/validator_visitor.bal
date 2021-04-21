@@ -79,6 +79,28 @@ class ValidatorVisitor {
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         Parent parent = <Parent>data;
+        __Type parentType = <__Type>getOfType(parent.parentType);
+        if (parentType.kind == UNION) {
+            if (!selection.isFragment) {
+                string message = getInvalidFieldOnUnionTypeError(selection.name, parentType);
+                self.errors.push(getErrorDetailRecord(message, selection.location));
+                return;
+            } else {
+                parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
+                __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, fragmentNode.getOnType());
+                if (requiredType is __Type) {
+                    Parent fragmentParent = {
+                        parentType: requiredType,
+                        name: requiredType.name.toString()
+                    };
+                    self.visitFragment(fragmentNode, fragmentParent);
+                } else {
+                    string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
+                    self.errors.push(getErrorDetailRecord(message, selection.location));
+                }
+            }
+            return;
+        }
         if (selection.isFragment) {
             // This will be nil if the fragment is not found. The error is recorded in the fragment visitor.
             // Therefore nil value is ignored.
@@ -86,7 +108,6 @@ class ValidatorVisitor {
             if (node is ()) {
                 return;
             }
-            __Type parentType = <__Type>getOfType(parent.parentType);
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if (fragmentOnType is __Type) {
                 Parent fragmentParent = {
@@ -280,7 +301,7 @@ class ValidatorVisitor {
             __Type schemaType = <__Type>self.schema.types[schemaTypeName];
             __Type ofType = getOfType(schemaType);
             if (fragmentOnType != ofType) {
-                string message = string`Fragment "${fragment.name}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+                string message = getFragmetCannotSpreadError(fragmentNode, fragment.name, ofType);
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
                 self.errors.push(errorDetail);
             }
@@ -297,8 +318,17 @@ isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) ret
     }
 }
 
+isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
+    foreach __Type schemaType in types {
+        __Type ofType = getOfType(schemaType);
+        if (ofType.name == typeName) {
+            return schemaType;
+        }
+    }
+}
+
 isolated function hasFields(__Type fieldType) returns boolean {
-    if (fieldType.kind == OBJECT) {
+    if (fieldType.kind == OBJECT || fieldType.kind == UNION) {
         return true;
     }
     if (fieldType.kind == NON_NULL || fieldType.kind == LIST) {
