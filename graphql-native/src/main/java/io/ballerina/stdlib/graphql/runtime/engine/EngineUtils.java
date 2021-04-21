@@ -74,6 +74,7 @@ public class EngineUtils {
     private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
     private static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
     private static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
+    private static final BString POSSIBLE_TYPES_FIELD = StringUtils.fromString("possibleTypes");
 
     // Schema related type names
     public static final String INTEGER = "Int";
@@ -146,7 +147,21 @@ public class EngineUtils {
         if (ofType != null) {
             typeRecord.put(OF_TYPE_FIELD, getTypeRecordFromTypeObject(ofType));
         }
+        List<SchemaType> possibleTypes = typeObject.getPossibleTypes();
+        if (possibleTypes != null) {
+            typeRecord.put(POSSIBLE_TYPES_FIELD, getPossibleTypesArrayFromSchemaTypeArray(possibleTypes));
+        }
         return typeRecord;
+    }
+
+    private static BArray getPossibleTypesArrayFromSchemaTypeArray(List<SchemaType> possibleTypes) {
+        BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
+        ArrayType arrayType = TypeCreator.createArrayType(typeRecord.getType());
+        BArray possibleTypesArray = ValueCreator.createArrayValue(arrayType);
+        for (SchemaType schemaType : possibleTypes) {
+            possibleTypesArray.append(getTypeRecordFromTypeObject(schemaType));
+        }
+        return possibleTypesArray;
     }
 
     private static BArray getFieldArrayFromFields(Collection<SchemaField> fields) {

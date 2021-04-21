@@ -108,6 +108,12 @@ public class SchemaGenerator {
         if (type == null) {
             if (node.getReturnType() != null) {
                 return populateTypesMap(node.getReturnType());
+            } else if (node.getPossibleTypes() != null) {
+                SchemaType schemaType = new SchemaType(node.getName(), TypeKind.UNION);
+                for (Type member : node.getPossibleTypes()) {
+                    schemaType.addPossibleType(getSchemaTypeFromType(member));
+                }
+                return schemaType;
             } else {
                 // This code shouldn't be reached
                 String message = "Type not found for the resource: " + node.getName();
