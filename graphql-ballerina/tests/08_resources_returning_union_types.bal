@@ -18,6 +18,10 @@ import ballerina/test;
 
 type Information Address|Person;
 
+type Details record {
+    Information information;
+};
+
 service /graphql on new Listener(9098) {
     resource function get profile(int id) returns Person|error? {
         if (id < people.length()) {
@@ -34,6 +38,14 @@ service /graphql on new Listener(9098) {
             return p1;
         } else {
             return a1;
+        }
+    }
+
+    resource function get details(int id) returns Details {
+        if (id < 5) {
+            return { information: p1 };
+        } else {
+            return { information: a1 };
         }
     }
 }
@@ -257,6 +269,73 @@ isolated function testQueryUnionTypeWithSelection() returns error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testUnionTypeAsRecordFieldWithoutFragment() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`
+query {
+    details(id: 3) {
+        information {
+            name
+        }
+    }
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "name" on type "Information". Did you mean to use a fragment on "Address" or "Person"?`,
+                locations: [
+                    {
+                        line: 5,
+                        column: 13
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testUnionTypeAsRecordField() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`
+query {
+    details(id: 10) {
+        information {
+            ...addressFragment
+            ...personFragment
+        }
+    }
+}
+
+fragment addressFragment on Address {
+    city
+}
+
+fragment personFragment on Person {
+    name
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data: {
+            details: {
+                information: {
+                    city: "London"
+                }
+            }
+        }
     };
     test:assertEquals(result, expectedPayload);
 }
