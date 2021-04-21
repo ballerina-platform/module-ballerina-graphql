@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.runtime.schema.tree;
 import io.ballerina.runtime.api.types.Type;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,6 +34,7 @@ public class Node {
     private Type type;
     private Map<String, Node> children;
     private Node returnType;
+    private List<Type> possibleTypes;
 
     public Node(String name) {
         this(name, null, null);
@@ -43,11 +45,17 @@ public class Node {
     }
 
     public Node(String name, Type type, Node returnType) {
+        this(name, type, returnType, null);
+    }
+
+    public Node(String name, Type type, Node returnType, List<Type> possibleTypes) {
         this.name = name;
         this.type = type;
         this.returnType = returnType;
+        this.possibleTypes = possibleTypes;
         this.children = new HashMap<>();
     }
+
 
     public Type getType() {
         return this.type;
@@ -61,6 +69,10 @@ public class Node {
         if (child != null) {
             this.children.put(child.getName(), child);
         }
+    }
+
+    public List<Type> getPossibleTypes() {
+        return this.possibleTypes;
     }
 
     public Node getChild(String name) {
