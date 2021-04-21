@@ -33,6 +33,7 @@ public class SchemaType {
     private String name;
     private Map<String, SchemaField> fields;
     private List<Object> enumValues;
+    private List<SchemaType> possibleTypes;
     SchemaType ofType;
 
     public SchemaType(String name, TypeKind kind) {
@@ -40,6 +41,7 @@ public class SchemaType {
         this.kind = kind;
         this.fields = new HashMap<>();
         this.enumValues = new ArrayList<>();
+        this.possibleTypes = new ArrayList<>();
     }
 
     public String getName() {
@@ -80,5 +82,16 @@ public class SchemaType {
 
     public void setOfType(SchemaType ofType) {
         this.ofType = ofType;
+    }
+
+    public void addPossibleType(SchemaType schemaType) {
+        this.possibleTypes.add(schemaType);
+    }
+
+    public List<SchemaType> getPossibleTypes() {
+        if (this.possibleTypes.size() == 0) {
+            return null;
+        }
+        return this.possibleTypes;
     }
 }

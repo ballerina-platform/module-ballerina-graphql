@@ -42,6 +42,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
@@ -142,7 +143,9 @@ public class CallableUnitCallback implements Callback {
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                processFragmentNodes(subNode, record, subData);
+                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(record.getType().getName())) {
+                    processFragmentNodes(subNode, record, subData);
+                }
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);

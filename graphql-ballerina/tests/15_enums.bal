@@ -133,22 +133,3 @@ isolated function testEnumWithUnion() returns error? {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
-
-@test:Config {
-    groups: ["enum", "unit"]
-}
-function testEnumWithInvalidUnion() returns error? {
-    Listener l = check new(9108);
-    var result = l.attach(serviceWithInvalidUnion, "/graphql");
-    test:assertTrue(result is error);
-    error err = <error>result;
-    string expectedMessage =
-        string`Unsupported union: If a field type is a union, it should be a subtype of "<T>|error?", except "error?"`;
-    test:assertEquals(err.message(), expectedMessage);
-}
-
-Service serviceWithInvalidUnion = service object {
-    isolated resource function get invalidResource() returns Weekday|string {
-        return "John Doe";
-    }
-};

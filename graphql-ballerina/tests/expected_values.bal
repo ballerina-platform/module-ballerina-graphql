@@ -28,6 +28,15 @@ json expectedSchemaForMultipleResources = {
                 },
                 {
                     "name": "ENUM"
+                },
+                {
+                    "name": "NON_NULL"
+                },
+                {
+                    "name": "LIST"
+                },
+                {
+                    "name": "UNION"
                 }
             ]
         },
@@ -223,6 +232,15 @@ json expectedSchemaForResourcesReturningRecords = {
                 },
                 {
                     "name": "ENUM"
+                },
+                {
+                    "name": "NON_NULL"
+                },
+                {
+                    "name": "LIST"
+                },
+                {
+                    "name": "UNION"
                 }
             ]
         },
@@ -657,25 +675,7 @@ json enumTypeInspectionResult = {
         "__schema": {
             "types": [
                 {
-                    "name": "__TypeKind",
-                    "enumValues": [
-                        {
-                            "name": "SCALAR"
-                        },
-                        {
-                            "name": "OBJECT"
-                        },
-                        {
-                            "name": "ENUM"
-                        }
-                    ]
-                },
-                {
-                    "name": "__Field",
-                    "enumValues": null
-                },
-                {
-                    "name": "ballerina/graphql:0.2.0-alpha8:Weekday",
+                    "name": "Weekday",
                     "enumValues": [
                         {
                             "name": "SATURDAY"
@@ -699,6 +699,33 @@ json enumTypeInspectionResult = {
                             "name": "SUNDAY"
                         }
                     ]
+                },
+                {
+                    "name": "__TypeKind",
+                    "enumValues": [
+                        {
+                            "name": "SCALAR"
+                        },
+                        {
+                            "name": "OBJECT"
+                        },
+                        {
+                            "name": "ENUM"
+                        },
+                        {
+                            "name": "NON_NULL"
+                        },
+                        {
+                            "name": "LIST"
+                        },
+                        {
+                            "name": "UNION"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Field",
+                    "enumValues": null
                 },
                 {
                     "name": "Query",

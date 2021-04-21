@@ -22,11 +22,6 @@ const CONTENT_TYPE_GQL = "application/graphql";
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
 
-const SCALAR = "SCALAR";
-const OBJECT = "OBJECT";
-const LIST = "LIST";
-const NON_NULL = "NON_NULL";
-
 const SCHEMA_FIELD = "__schema";
 const TYPES_FIELD = "types";
 const SCHEMA_TYPE_NAME = "__Schema";
