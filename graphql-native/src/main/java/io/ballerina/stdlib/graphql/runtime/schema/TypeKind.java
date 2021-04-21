@@ -26,5 +26,6 @@ public enum TypeKind {
     OBJECT,
     ENUM,
     NON_NULL,
-    LIST
+    LIST,
+    UNION
 }

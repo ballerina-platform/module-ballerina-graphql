@@ -50,9 +50,9 @@ public class IntrospectionUtils {
 
     private static SchemaType createTypeKindSchemaType() {
         SchemaType typeKindSchemaType = new SchemaType(TYPE_KIND_ENUM, TypeKind.ENUM);
-        typeKindSchemaType.addEnumValue(StringUtils.fromString(TypeKind.SCALAR.toString()));
-        typeKindSchemaType.addEnumValue(StringUtils.fromString(TypeKind.OBJECT.toString()));
-        typeKindSchemaType.addEnumValue(StringUtils.fromString(TypeKind.ENUM.toString()));
+        for (TypeKind typeKind : TypeKind.values()) {
+            typeKindSchemaType.addEnumValue(StringUtils.fromString(typeKind.name()));
+        }
         return typeKindSchemaType;
     }
 

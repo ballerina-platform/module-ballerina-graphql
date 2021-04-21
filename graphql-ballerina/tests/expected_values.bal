@@ -28,6 +28,15 @@ json expectedSchemaForMultipleResources = {
                 },
                 {
                     "name": "ENUM"
+                },
+                {
+                    "name": "NON_NULL"
+                },
+                {
+                    "name": "LIST"
+                },
+                {
+                    "name": "UNION"
                 }
             ]
         },
@@ -223,6 +232,15 @@ json expectedSchemaForResourcesReturningRecords = {
                 },
                 {
                     "name": "ENUM"
+                },
+                {
+                    "name": "NON_NULL"
+                },
+                {
+                    "name": "LIST"
+                },
+                {
+                    "name": "UNION"
                 }
             ]
         },
@@ -667,6 +685,15 @@ json enumTypeInspectionResult = {
                         },
                         {
                             "name": "ENUM"
+                        },
+                        {
+                            "name": "NON_NULL"
+                        },
+                        {
+                            "name": "LIST"
+                        },
+                        {
+                            "name": "UNION"
                         }
                     ]
                 },
