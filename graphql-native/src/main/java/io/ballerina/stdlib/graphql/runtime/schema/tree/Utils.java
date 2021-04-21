@@ -53,4 +53,10 @@ public class Utils {
         }
         return members;
     }
+
+    // TODO: This is a temporary fix for https://github.com/ballerina-platform/ballerina-lang/issues/30108
+    public static String getTypeNameFromType(Type type) {
+        String[] splitName = type.getName().split(":");
+        return (splitName[splitName.length - 1]);
+    }
 }

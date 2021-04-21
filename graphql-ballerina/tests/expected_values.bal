@@ -675,6 +675,32 @@ json enumTypeInspectionResult = {
         "__schema": {
             "types": [
                 {
+                    "name": "Weekday",
+                    "enumValues": [
+                        {
+                            "name": "SATURDAY"
+                        },
+                        {
+                            "name": "FRIDAY"
+                        },
+                        {
+                            "name": "THURSDAY"
+                        },
+                        {
+                            "name": "WEDNESDAY"
+                        },
+                        {
+                            "name": "TUESDAY"
+                        },
+                        {
+                            "name": "MONDAY"
+                        },
+                        {
+                            "name": "SUNDAY"
+                        }
+                    ]
+                },
+                {
                     "name": "__TypeKind",
                     "enumValues": [
                         {
@@ -700,32 +726,6 @@ json enumTypeInspectionResult = {
                 {
                     "name": "__Field",
                     "enumValues": null
-                },
-                {
-                    "name": "ballerina/graphql:0.2.0-alpha8:Weekday",
-                    "enumValues": [
-                        {
-                            "name": "SATURDAY"
-                        },
-                        {
-                            "name": "FRIDAY"
-                        },
-                        {
-                            "name": "THURSDAY"
-                        },
-                        {
-                            "name": "WEDNESDAY"
-                        },
-                        {
-                            "name": "TUESDAY"
-                        },
-                        {
-                            "name": "MONDAY"
-                        },
-                        {
-                            "name": "SUNDAY"
-                        }
-                    ]
                 },
                 {
                     "name": "Query",
