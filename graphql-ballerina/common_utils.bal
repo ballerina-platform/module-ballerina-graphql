@@ -53,6 +53,12 @@ isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type union
     return string`Cannot query field "${fieldName}" on type "${unionType?.name.toString()}". Did you mean to use a fragment on ${onTypes}?`;
 }
 
+isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
+returns string {
+    string fragmentOnTypeName = fragmentNode.getOnType();
+    return string`Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+}
+
 isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
     string typeName = getTypeNameFromType(input.'type);
     return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;

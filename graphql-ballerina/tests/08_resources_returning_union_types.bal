@@ -113,6 +113,109 @@ fragment personFragment on Person {
 @test:Config {
     groups: ["union", "unit"]
 }
+isolated function testQueryUnionTypeWithIncorrectFragment() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`query {
+    information(id: 3) {
+        ...invalidFragment
+        ...personFragment
+    }
+}
+
+fragment invalidFragment on Student {
+    name
+}
+
+fragment personFragment on Person {
+    name
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Fragment "invalidFragment" cannot be spread here as objects of type "Information" can never be of type "Student".`,
+                locations: [
+                    {
+                        line: 3,
+                        column: 12
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testQueryUnionTypeWithFieldAndFragment() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`query {
+    information(id: 3) {
+        name
+        ...personFragment
+    }
+}
+
+fragment personFragment on Person {
+    name
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "name" on type "Information". Did you mean to use a fragment on "Address" or "Person"?`,
+                locations: [
+                    {
+                        line: 3,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testQueryUnionTypeWithFragmentAndField() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`query {
+    information(id: 3) {
+        ...personFragment
+        name
+    }
+}
+
+fragment personFragment on Person {
+    name
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "name" on type "Information". Did you mean to use a fragment on "Address" or "Person"?`,
+                locations: [
+                    {
+                        line: 4,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
 isolated function testQueryUnionTypeWithoutSelection() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ information(id: 2) }";

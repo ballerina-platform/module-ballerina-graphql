@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-//import ballerina/io;
 
 class ValidatorVisitor {
     *parser:Visitor;
@@ -96,7 +95,8 @@ class ValidatorVisitor {
                     };
                     self.visitFragment(fragmentNode, fragmentParent);
                 } else {
-
+                    string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
+                    self.errors.push(getErrorDetailRecord(message, selection.location));
                 }
             }
             return;
@@ -301,7 +301,7 @@ class ValidatorVisitor {
             __Type schemaType = <__Type>self.schema.types[schemaTypeName];
             __Type ofType = getOfType(schemaType);
             if (fragmentOnType != ofType) {
-                string message = string`Fragment "${fragment.name}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+                string message = getFragmetCannotSpreadError(fragmentNode, fragment.name, ofType);
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
                 self.errors.push(errorDetail);
             }
@@ -320,7 +320,8 @@ isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) ret
 
 isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
     foreach __Type schemaType in types {
-        if (schemaType.name == typeName) {
+        __Type ofType = getOfType(schemaType);
+        if (ofType.name == typeName) {
             return schemaType;
         }
     }
