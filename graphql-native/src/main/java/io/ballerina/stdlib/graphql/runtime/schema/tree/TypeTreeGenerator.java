@@ -39,6 +39,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTEGER;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getTypeNameFromType;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
@@ -146,12 +147,12 @@ public class TypeTreeGenerator {
     private Node createNodeForUnionType(String name, UnionType unionType) {
         List<Type> memberTypes = getMemberTypes(unionType);
         if (isEnum(unionType)) {
-            return new Node(unionType.getName(), unionType);
+            return new Node(getTypeNameFromType(unionType), unionType);
         } else if (memberTypes.size() == 1) {
             return createNodeForType(name, memberTypes.get(0));
         } else {
             // Compiler plugin validates the union types so this should be a GraphQL union type.
-            return new Node(unionType.getName(), null, null, memberTypes);
+            return new Node(getTypeNameFromType(unionType), null, null, memberTypes);
         }
     }
 

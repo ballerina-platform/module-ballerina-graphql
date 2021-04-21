@@ -40,6 +40,7 @@ import java.util.Map;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaTreeGenerator.addEnumValueToEnumType;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getTypeNameFromType;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INVALID_TYPE_ERROR;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
@@ -113,6 +114,7 @@ public class SchemaGenerator {
                 for (Type member : node.getPossibleTypes()) {
                     schemaType.addPossibleType(getSchemaTypeFromType(member));
                 }
+                this.addType(schemaType);
                 return schemaType;
             } else {
                 // This code shouldn't be reached
@@ -157,7 +159,7 @@ public class SchemaGenerator {
         } else if (tag == TypeTags.UNION_TAG) {
             UnionType unionType = (UnionType) type;
             if (isEnum(unionType)) {
-                schemaType = new SchemaType(unionType.getName(), TypeKind.ENUM);
+                schemaType = new SchemaType(getTypeNameFromType(unionType), TypeKind.ENUM);
                 addEnumValueToEnumType(schemaType, unionType);
             } else {
                 List<Type> memberTypes = getMemberTypes(unionType);
@@ -165,7 +167,7 @@ public class SchemaGenerator {
                     Type mainType = memberTypes.get(0);
                     schemaType = getSchemaTypeFromType(mainType);
                 } else {
-                    schemaType = new SchemaType(unionType.getName(), TypeKind.UNION);
+                    schemaType = new SchemaType(getTypeNameFromType(unionType), TypeKind.UNION);
                     for (Type member : memberTypes) {
                         schemaType.addPossibleType(getSchemaTypeFromType(member));
                     }

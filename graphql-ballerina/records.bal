@@ -120,7 +120,14 @@ public type __InputValue record {|
 |};
 
 # Represents the type kind of a GraphQL type.
-public type __TypeKind "SCALAR"|"OBJECT"|"ENUM"|"NON_NULL"|"LIST"|"UNION";
+public enum __TypeKind {
+    SCALAR,
+    OBJECT,
+    ENUM,
+    NON_NULL,
+    LIST,
+    UNION
+}
 
 type __Directive record {|
     string name;

@@ -15,6 +15,7 @@
 // under the License.
 
 import graphql.parser;
+//import ballerina/io;
 
 class ValidatorVisitor {
     *parser:Visitor;
@@ -79,6 +80,27 @@ class ValidatorVisitor {
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         Parent parent = <Parent>data;
+        __Type parentType = <__Type>getOfType(parent.parentType);
+        if (parentType.kind == UNION) {
+            if (!selection.isFragment) {
+                string message = getInvalidFieldOnUnionTypeError(selection.name, parentType);
+                self.errors.push(getErrorDetailRecord(message, selection.location));
+                return;
+            } else {
+                parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
+                __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, fragmentNode.getOnType());
+                if (requiredType is __Type) {
+                    Parent fragmentParent = {
+                        parentType: requiredType,
+                        name: requiredType.name.toString()
+                    };
+                    self.visitFragment(fragmentNode, fragmentParent);
+                } else {
+
+                }
+            }
+            return;
+        }
         if (selection.isFragment) {
             // This will be nil if the fragment is not found. The error is recorded in the fragment visitor.
             // Therefore nil value is ignored.
@@ -86,7 +108,6 @@ class ValidatorVisitor {
             if (node is ()) {
                 return;
             }
-            __Type parentType = <__Type>getOfType(parent.parentType);
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if (fragmentOnType is __Type) {
                 Parent fragmentParent = {
@@ -297,8 +318,16 @@ isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) ret
     }
 }
 
+isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
+    foreach __Type schemaType in types {
+        if (schemaType.name == typeName) {
+            return schemaType;
+        }
+    }
+}
+
 isolated function hasFields(__Type fieldType) returns boolean {
-    if (fieldType.kind == OBJECT) {
+    if (fieldType.kind == OBJECT || fieldType.kind == UNION) {
         return true;
     }
     if (fieldType.kind == NON_NULL || fieldType.kind == LIST) {

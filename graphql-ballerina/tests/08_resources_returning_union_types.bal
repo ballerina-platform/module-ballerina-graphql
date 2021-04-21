@@ -15,6 +15,9 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/io;
+
+type Information Address|Person;
 
 service /graphql on new Listener(9098) {
     resource function get profile(int id) returns Person|error? {
@@ -27,8 +30,12 @@ service /graphql on new Listener(9098) {
         }
     }
 
-    resource function get information() returns Address|Person {
-        return p1;
+    resource function get information(int id) returns Information {
+        if (id < 5) {
+            return p1;
+        } else {
+            return a1;
+        }
     }
 }
 
@@ -75,15 +82,80 @@ isolated function testResourceReturningUnionWithNull() returns error? {
 @test:Config {
     groups: ["union", "unit"]
 }
-isolated function testResourceReturningUnions() returns error? {
+isolated function testQueryUnionType() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
-    string document = "{ profile (id: 4) { name } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    string document = string`
+query {
+    information(id: 3) {
+        ...addressFragment
+        ...personFragment
+    }
+}
 
+fragment addressFragment on Address {
+    city
+}
+
+fragment personFragment on Person {
+    name
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         data: {
-            profile: null
+            information: {
+                name: "Sherlock Holmes"
+            }
         }
+    };
+    io:println(result);
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testQueryUnionTypeWithoutSelection() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = "{ information(id: 2) }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    string message = string`Field "information" of type "Information" must have a selection of subfields. Did you mean "information { ... }"?`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: message,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testQueryUnionTypeWithSelection() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = "{ information(id: 2) { name } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    string message = string`Cannot query field "name" on type "Information". Did you mean to use a fragment on "Address" or "Person"?`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: message,
+                locations: [
+                    {
+                        line: 1,
+                        column: 24
+                    }
+                ]
+            }
+        ]
     };
     test:assertEquals(result, expectedPayload);
 }

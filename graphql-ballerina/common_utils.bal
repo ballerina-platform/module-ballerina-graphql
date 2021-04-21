@@ -44,6 +44,15 @@ isolated function getMissingSubfieldsError(string fieldName, string typeName) re
     return string`Field "${fieldName}" of type "${typeName}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
 }
 
+isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type unionType) returns string {
+    __Type[] possibleTypes = <__Type[]>unionType?.possibleTypes;
+    string onTypes = string`"${getOfType(possibleTypes[0]).name.toString()}"`;
+    foreach int i in 1...possibleTypes.length() - 1 {
+        onTypes += string` or "${getOfType(possibleTypes[i]).name.toString()}"`;
+    }
+    return string`Cannot query field "${fieldName}" on type "${unionType?.name.toString()}". Did you mean to use a fragment on ${onTypes}?`;
+}
+
 isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
     string typeName = getTypeNameFromType(input.'type);
     return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
