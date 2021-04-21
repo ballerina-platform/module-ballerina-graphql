@@ -111,6 +111,6 @@ test {
     useTestNG()
 }
 
-copyDistribution.dependsOn ":graphql-ballerina:build"
+copyDistribution.dependsOn ":graphql-ballerina:ballerinaBuild"
 copyPackageBala.dependsOn copyDistribution
 test.dependsOn copyPackageBala
