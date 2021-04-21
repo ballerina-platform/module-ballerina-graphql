@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
 
 type Information Address|Person;
 
@@ -108,7 +107,6 @@ fragment personFragment on Person {
             }
         }
     };
-    io:println(result);
     test:assertEquals(result, expectedPayload);
 }
 
