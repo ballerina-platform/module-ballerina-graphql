@@ -53,7 +53,9 @@ public class PluginConstants {
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed.",
                 "GRAPHQL_107", DiagnosticSeverity.ERROR),
         INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value must be a positive integer",
-                "GRAPHQL_108", DiagnosticSeverity.ERROR);
+                "GRAPHQL_108", DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_ERROR("Invalid return type error. Resource function must have a return data type.",
+                "GRAPHQL_109", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;
