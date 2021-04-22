@@ -51,6 +51,7 @@ import static io.ballerina.stdlib.graphql.compiler.PluginUtils.validateModuleId;
  */
 public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
     private final GraphqlFunctionValidator functionValidator;
+    private GraphqlListenerInitVisitor initVisitor;
 
     public GraphqlServiceValidator() {
         this.functionValidator = new GraphqlFunctionValidator();
@@ -58,9 +59,13 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
 
     @Override
     public void perform(SyntaxNodeAnalysisContext context) {
+        ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         if (!isGraphQlService(context)) {
             return;
         }
+        this.initVisitor = new GraphqlListenerInitVisitor(context);
+        serviceDeclarationNode.syntaxTree().rootNode().accept(initVisitor);
+//        validateListenerArguments(context);
         this.functionValidator.validate(context);
         validateAnnotation(context);
     }
@@ -150,4 +155,38 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
         }
         return false;
     }
+
+//    private void validateListenerArguments(SyntaxNodeAnalysisContext context) {
+//        initVisitor.getExplicitNewExpressionNodes()
+//                .forEach(explicitNewExpressionNode -> {
+//                    SeparatedNodeList<FunctionArgumentNode> functionArgs = explicitNewExpressionNode
+//                            .parenthesizedArgList().arguments();
+//                    verifyListenerArgType(context, explicitNewExpressionNode.location(), functionArgs);
+//                });
+//
+//        initVisitor.getImplicitNewExpressionNodes()
+//                .forEach(implicitNewExpressionNode -> {
+//                    Optional<ParenthesizedArgList> argListOpt = implicitNewExpressionNode.parenthesizedArgList();
+//                    if (argListOpt.isPresent()) {
+//                        SeparatedNodeList<FunctionArgumentNode> functionArgs = argListOpt.get().arguments();
+//                        verifyListenerArgType(context, implicitNewExpressionNode.location(), functionArgs);
+//                    }
+//                });
+//    }
+//
+//    private void verifyListenerArgType(SyntaxNodeAnalysisContext context, NodeLocation location,
+//                                       SeparatedNodeList<FunctionArgumentNode> functionArgs) {
+//        if (functionArgs.size() >= 2) {
+//            PositionalArgumentNode firstArg = (PositionalArgumentNode) functionArgs.get(0);
+//            PositionalArgumentNode secondArg = (PositionalArgumentNode) functionArgs.get(1);
+//            SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
+//            SyntaxKind secondArgSyntaxKind = secondArg.expression().kind();
+//            if ((firstArgSyntaxKind == SyntaxKind.SIMPLE_NAME_REFERENCE
+//                    || firstArgSyntaxKind == SyntaxKind.MAPPING_CONSTRUCTOR)
+//                    && (secondArgSyntaxKind == SyntaxKind.SIMPLE_NAME_REFERENCE
+//                    || secondArgSyntaxKind == SyntaxKind.MAPPING_CONSTRUCTOR)) {
+//
+//            }
+//        }
+//    }
 }

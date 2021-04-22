@@ -32,6 +32,7 @@ public class PluginConstants {
     // resource function constants
     public static final String RESOURCE_FUNCTION_GET = "get";
     public static final String MAX_QUERY_DEPTH = "maxQueryDepth";
+    public  static final String LISTENER_IDENTIFIER = "Listener";
     public static final String UNARY_NEGATIVE = "-";
 
     /**
