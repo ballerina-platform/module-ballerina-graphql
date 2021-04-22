@@ -164,6 +164,16 @@ public class CompilerPluginTest {
         assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_NIL);
     }
 
+    @Test
+    public void testInvalidService9() {
+        Package currentPackage = loadPackage("invalid_service_9");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
