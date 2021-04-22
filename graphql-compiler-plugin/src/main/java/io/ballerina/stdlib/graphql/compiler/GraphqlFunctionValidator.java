@@ -138,6 +138,9 @@ public class GraphqlFunctionValidator {
                     if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
                         PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL,
                                 functionDefinitionNode.location());
+                    } else if (returnTypeDesc.get().typeKind() == TypeDescKind.ERROR) {
+                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR,
+                                functionDefinitionNode.location());
                     } else {
                         if (hasInvalidReturnType(returnTypeDesc.get())) {
                             PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
