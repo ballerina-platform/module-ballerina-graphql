@@ -47,7 +47,6 @@ service class Vehicle {
 @test:Config {
     groups: ["array", "unit"]
 }
-}
 isolated function testResourcesReturningScalarArrays() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ ids }";
