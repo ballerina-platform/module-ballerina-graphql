@@ -90,6 +90,7 @@ public class Engine {
         CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, node, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                 callback, args);
+
         try {
             latch.await();
         } catch (InterruptedException e) {
