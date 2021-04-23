@@ -89,7 +89,7 @@ public class Engine {
         CountDownLatch latch = new CountDownLatch(1);
         CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, node, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
-                                                   callback, args);
+                callback, args);
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -98,14 +98,14 @@ public class Engine {
     }
 
     // TODO: Improve this method to not return but populate inside
-    public static Object getDataFromBalType(BObject node, Object data) {
+    public static Object getDataFromBalType(Environment environment, BObject visitor, BObject node, Object data) {
         if (data instanceof BArray) {
             BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromArray(node, (BArray) data, dataRecord);
+            getDataFromArray(environment, visitor, node, (BArray) data, dataRecord);
             return dataRecord.getArrayValue(node.getStringValue(NAME_FIELD));
         } else if (data instanceof BMap) {
             BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromRecord(node, (BMap<BString, Object>) data, dataRecord);
+            getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) data, dataRecord);
             return dataRecord.getMapValue(node.getStringValue(NAME_FIELD));
         } else {
             return data;
