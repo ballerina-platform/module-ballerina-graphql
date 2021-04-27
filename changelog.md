@@ -3,12 +3,16 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ## [Unreleased]
 
+## [0.2.0-alpha8] - 2021-04-23
+
 ### Added
 - [[#1224] Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1224)
 - [[#1000] Enum Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1000)
 - [[#999] Map Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/999)
 - [[#1091] Compiler plugin validations for GraphQL services](https://github.com/ballerina-platform/ballerina-standard-library/issues/1091)
 - [[#1001] Support Union Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1001)
+
+## [0.2.0-alpha7] - 2021-04-06
 
 ## [0.2.0-alpha6] - 2021-04-02
 
