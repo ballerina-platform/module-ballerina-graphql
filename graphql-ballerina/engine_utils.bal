@@ -49,7 +49,6 @@ isolated function executeResource(Service s, ExecutorVisitor visitor, parser:Fie
 } external;
 
 isolated function getDataFromBalType(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata fieldRecord) returns
-anydata =
-@java:Method {
+anydata = @java:Method {
 	'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
