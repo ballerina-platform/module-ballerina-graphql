@@ -28,6 +28,20 @@ service /graphql on new Listener(9100) {
     resource function get students() returns Student[] {
         return students;
     }
+
+    isolated resource function get allVehicles(string status) returns Vehicle[] {
+            return [new Vehicle()];
+        }
+    }
+
+    service class Vehicle {
+        isolated resource function get id () returns string|error {
+            return "v1";
+        }
+
+        isolated resource function get name () returns string|error {
+            return "vehicle1";
+        }
 }
 
 @test:Config {
@@ -79,6 +93,26 @@ isolated function testResourcesReturningArrays() returns error? {
         }
     };
     test:assertEquals(actualResult, expectedResult);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+isolated function testResourceReturningServiceObjectArray() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ allVehicles(status:"OPEN") { name } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            allVehicles: [
+                {
+                    name: "vehicle1"
+                }
+            ]
+        }
+    };
+    test:assertEquals(result, expectedPayload);
 }
 
 @test:Config {

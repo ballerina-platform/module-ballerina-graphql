@@ -3,6 +3,9 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ## [Unreleased]
 
+### Fixed
+- [[#1250] Fix Hanging the Service when Returning Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1250)
+
 ## [0.2.0-alpha8] - 2021-04-23
 
 ### Added

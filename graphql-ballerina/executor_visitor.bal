@@ -85,11 +85,11 @@ class ExecutorVisitor {
                 parser:FieldNode subFieldNode = <parser:FieldNode>selection?.node;
                 if (fieldNode.getName() == TYPES_FIELD) {
                     __Type[] types = self.schema.types.toArray();
-                    subData[fieldNode.getName()] = getDataFromBalType(fieldNode, types);
+                    subData[fieldNode.getName()] = getDataFromBalType(self, fieldNode, types);
                     self.data[SCHEMA_FIELD] = subData;
                 } else if (subFieldNode.getName() == TYPES_FIELD) {
                     __Type[] types = self.schema.types.toArray();
-                    subData[subFieldNode.getName()] = getDataFromBalType(subFieldNode, types);
+                    subData[subFieldNode.getName()] = getDataFromBalType(self, subFieldNode, types);
                     self.data[fieldNode.getName()] = subData;
                 } else {
                     __Type schemaType = <__Type>self.schema[subFieldNode.getName()];
@@ -97,7 +97,7 @@ class ExecutorVisitor {
                     if (fields is __Field[]) {
                         map<anydata> typeMap = checkpanic schemaType.cloneWithType(AnydataMap);
                         typeMap[FIELDS_FIELD] = fields;
-                        subData[subFieldNode.getName()] = getDataFromBalType(subFieldNode, typeMap);
+                        subData[subFieldNode.getName()] = getDataFromBalType(self, subFieldNode, typeMap);
                     }
                     self.data[fieldNode.getName()] = subData;
                 }
