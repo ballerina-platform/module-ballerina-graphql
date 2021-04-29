@@ -248,7 +248,7 @@ fragment address on Person {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments", "unit", "test"]
 }
 isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
     string document = string
@@ -507,6 +507,60 @@ fragment fullNameFragment on Name {
                 ]
             }
         ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit", "inline"]
+}
+isolated function testInlneFragment() returns error? {
+    string document = string
+`query {
+    ... on Query {
+            people{
+                address{
+                    city
+                }
+            }
+            students{
+                name
+            }
+        }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+             people: [
+                 {
+                     address: {
+                         city: "London"
+                     }
+                 },
+                 {
+                     address: {
+                         city: "Albuquerque"
+                     }
+                 },
+                 {
+                     address: {
+                         city: "Hogwarts"
+                     }
+                 }],
+             students: [
+                 {
+                     name: "John Doe"
+                 },
+                 {
+                     name: "Jane Doe"
+                 },
+                 {
+                     name: "Jonny Doe"
+                 }
+             ]
+        }
     };
     test:assertEquals(actualPayload, expectedPayload);
 }

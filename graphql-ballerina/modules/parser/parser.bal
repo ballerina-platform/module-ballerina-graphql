@@ -13,7 +13,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
+import ballerina/log;
 public class Parser {
     private Lexer lexer;
     private DocumentNode document;
@@ -119,13 +119,26 @@ public class Parser {
         while (token.kind != T_CLOSE_BRACE) {
             token = check self.peekNextNonSeparatorToken();
             if (token.kind == T_ELLIPSIS) {
-                var [name, location] = check self.addFragmentToNode(parentNode);
-                Selection selection = {
-                    name: name,
-                    isFragment: true,
-                    location: location
-                };
-                parentNode.addSelection(selection);
+                token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
+                token = check self.peekNextNonSeparatorToken();
+                string keyword = check getIdentifierTokenvalue(token);
+                if (keyword == ON) {
+                    var [name, location] = check self.addInlineFragmentToNode(parentNode);
+                    Selection selection = {
+                        name: name,
+                        isFragment: true,
+                        location: location
+                    };
+                    parentNode.addSelection(selection);
+                } else {
+                    var [name, location] = check self.addFragmentToNode(parentNode);
+                    Selection selection = {
+                        name: name,
+                        isFragment: true,
+                        location: location
+                    };
+                    parentNode.addSelection(selection);
+                }
             } else {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
                 Selection selection = {
@@ -134,6 +147,7 @@ public class Parser {
                     node: fieldNode,
                     location: fieldNode.getLocation()
                 };
+                //log:printInfo(fieldNode.getName());
                 parentNode.addSelection(selection);
             }
             token = check self.peekNextNonSeparatorToken();
@@ -164,11 +178,29 @@ public class Parser {
     }
 
     isolated function addFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
-        Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
-        token = check self.readNextNonSeparatorToken();
+
+        Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
         parentNode.addFragment(fragmentName);
         return [fragmentName, token.location];
+    }
+
+    isolated function addInlineFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
+        Token token = check self.readNextNonSeparatorToken();//Consume on keyword
+        Location location = token.location.clone();
+        token = check self.readNextNonSeparatorToken();
+        string onType = check getIdentifierTokenvalue(token);
+        string fragmentName = onType;
+        log:printInfo(onType);
+        FragmentNode fragmentNode = new(fragmentName, token.location, onType);
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind != T_OPEN_BRACE) {
+            return getExpectedCharError(token, OPEN_BRACE);
+        }
+        check self.addSelections(fragmentNode);
+        check self.document.addFragment(fragmentNode);
+        parentNode.addFragment(fragmentName);
+        return [fragmentName, location];
     }
 
     isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {
