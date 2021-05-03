@@ -215,16 +215,16 @@ class ValidatorVisitor {
 
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
-        map<__InputValue>? schemaArgs = schemaField?.args;
-        map<__InputValue> notFoundArgs = {};
+        __InputValue[]? schemaArgs = schemaField?.args;
+        __InputValue[] notFoundArgs = [];
 
-        if (schemaArgs is map<__InputValue>) {
+        if (schemaArgs is __InputValue[]) {
             notFoundArgs = schemaArgs.clone();
             foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName().value;
-                __InputValue|error schemaArg = trap schemaArgs.get(argName);
+                __InputValue? schemaArg = self.getInputValue(argName, schemaArgs);
                 if (schemaArg is __InputValue) {
-                    _ = notFoundArgs.remove(argName);
+                    _ = notFoundArgs.remove(<int>notFoundArgs.indexOf(schemaArg));
                     self.visitArgument(argumentNode, schemaArg);
                 } else {
                     string parentName = parentType.name is string ? <string>parentType.name : "";
@@ -236,9 +236,11 @@ class ValidatorVisitor {
 
         if (notFoundArgs.length() > 0) {
             // TODO: Check dafaultability
-            foreach __InputValue inputValue in notFoundArgs.toArray() {
-                string message = getMissingRequiredArgError(fieldNode, inputValue);
-                self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+            foreach __InputValue inputValue in notFoundArgs {
+                if (inputValue?.defaultValue == ()) {
+                    string message = getMissingRequiredArgError(fieldNode, inputValue);
+                    self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+                }
             }
         }
     }
@@ -306,6 +308,14 @@ class ValidatorVisitor {
                 self.errors.push(errorDetail);
             }
             return fragmentOnType;
+        }
+    }
+
+    isolated function getInputValue(string name, __InputValue[] inputValues) returns __InputValue? {
+        foreach __InputValue inputValue in inputValues {
+            if (inputValue.name == name) {
+                return inputValue;
+            }
         }
     }
 }
