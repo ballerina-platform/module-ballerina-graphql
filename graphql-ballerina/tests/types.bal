@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+type SearchResult Lift|Trail;
+
 service class Lift {
 
     private TLift tLift;

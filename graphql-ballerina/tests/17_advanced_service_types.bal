@@ -57,6 +57,30 @@ service /graphql on new Listener(9111) {
         TTrail[] tTrail = from var trail in trailTabel where trail.status == status2 select trail;
         return tTrail.length();
     }
+
+    isolated resource function get search () returns SearchResult[] {
+        SearchResult[] searchResult = [];
+        TTrail tTrail = {
+            id: "ID_1",
+            name: "1",
+            status: "OPEN",
+            difficulty: "",
+            groomed: false,
+            trees: false,
+            night: false
+        };
+        searchResult.push(new Trail(tTrail));
+        TLift tLift = {
+            id: "ID_1",
+            name: "1",
+            status: "OPEN",
+            capacity: 5,
+            night: false,
+            elevationgain: 100
+        };
+        searchResult.push(new Lift(tLift));
+        return searchResult;
+   }
 }
 
 @test:Config {
@@ -71,6 +95,43 @@ isolated function testReturningRecursiveServiceTypes() returns error? {
             Trail: {
                 id: "ID_1"
             }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "union", "recursive_service", "schema_generation"]
+}
+isolated function testReturningUnionOfServiceTypes() returns error? {
+    string document = string`
+query {
+    search {
+        ...TrailFragment
+        ...LiftFragment
+    }
+}
+
+fragment TrailFragment on Trail {
+    name
+}
+
+fragment LiftFragment on Lift {
+    name
+}
+`;
+    string url = "http://localhost:9111/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            search: [
+                {
+                    name: "1"
+                },
+                {
+                    name: "1"
+                }
+            ]
         }
     };
     test:assertEquals(actualPayload, expectedPayload);
