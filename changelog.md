@@ -5,6 +5,9 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ### Fixed
 - [[#1250] Fix Hanging the Service when Returning Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1250)
+- [[#1307] Returning Union of Service Types from a Resource](https://github.com/ballerina-platform/ballerina-standard-library/issues/1307)
+- [[#1274] Fix Recursive Type Reference Causing Stack Overflow](https://github.com/ballerina-platform/ballerina-standard-library/issues/1274)
+- [[]]()
 
 ## [0.2.0-alpha8] - 2021-04-23
 
