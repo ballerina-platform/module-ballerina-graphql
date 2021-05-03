@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,15 +16,15 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema;
+package io.ballerina.stdlib.graphql.runtime.schema.types;
 
 /**
  * This class represents an InputValue of a GraphQL field.
  */
 public class InputValue {
-    private String name;
-    private SchemaType type;
-    private String defaultValue;
+    private final String name;
+    private final SchemaType type;
+    private final String defaultValue;
 
     public InputValue(String name, SchemaType type) {
         this(name, type, null);
@@ -33,10 +33,6 @@ public class InputValue {
     public InputValue(String name, SchemaType type, String defaultValue) {
         this.name = name;
         this.type = type;
-        this.defaultValue = defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
 

@@ -16,9 +16,11 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema.tree;
+package io.ballerina.stdlib.graphql.runtime.schema;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
@@ -26,6 +28,9 @@ import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
+import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,5 +120,10 @@ public class Utils {
             default:
                 return STRING;
         }
+    }
+
+    public static BArray getArrayTypeFromBMap(BMap<BString, Object> recordValue) {
+        ArrayType arrayType = TypeCreator.createArrayType(recordValue.getType());
+        return ValueCreator.createArrayValue(arrayType);
     }
 }

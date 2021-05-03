@@ -28,9 +28,9 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.stdlib.graphql.runtime.schema.Schema;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
-import io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaGenerator;
+import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.concurrent.CountDownLatch;
 

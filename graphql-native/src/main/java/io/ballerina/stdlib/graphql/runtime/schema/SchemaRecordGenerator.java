@@ -24,6 +24,11 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.graphql.runtime.schema.types.InputValue;
+import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
+import io.ballerina.stdlib.graphql.runtime.schema.types.SchemaField;
+import io.ballerina.stdlib.graphql.runtime.schema.types.SchemaType;
+import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +51,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECO
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getArrayTypeFromBMap;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getArrayTypeFromBMap;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -67,8 +72,8 @@ public class SchemaRecordGenerator {
         BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD);
         Type typeRecordType = ValueCreator.createRecordValue(getModule(), TYPE_RECORD).getType();
         BMap<BString, Object> typesMap = ValueCreator.createMapValue(typeRecordType);
-        for (String typeName : this.typeRecords.keySet()) {
-            typesMap.put(StringUtils.fromString(typeName), this.typeRecords.get(typeName));
+        for (BMap<BString, Object> typeRecord : this.typeRecords.values()) {
+            typesMap.put(typeRecord.getStringValue(NAME_FIELD), typeRecord);
         }
         schemaRecord.put(TYPES_FIELD, typesMap);
         schemaRecord.put(QUERY_TYPE_FIELD, this.typeRecords.get(QUERY));
@@ -166,12 +171,5 @@ public class SchemaRecordGenerator {
             inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
         }
         return inputValueRecord;
-    }
-
-    private SchemaType getOfType(SchemaType schemaType) {
-        if (schemaType.getOfType() != null) {
-            return getOfType(schemaType.getOfType());
-        }
-        return schemaType;
     }
 }

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema.tree;
+package io.ballerina.stdlib.graphql.runtime.schema;
 
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -27,21 +27,21 @@ import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
-import io.ballerina.stdlib.graphql.runtime.schema.InputValue;
-import io.ballerina.stdlib.graphql.runtime.schema.SchemaField;
-import io.ballerina.stdlib.graphql.runtime.schema.SchemaType;
-import io.ballerina.stdlib.graphql.runtime.schema.TypeKind;
+import io.ballerina.stdlib.graphql.runtime.schema.types.InputValue;
+import io.ballerina.stdlib.graphql.runtime.schema.types.SchemaField;
+import io.ballerina.stdlib.graphql.runtime.schema.types.SchemaType;
+import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 
 import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getTypeNameFromType;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isEnum;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isOptional;
-import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.isReturningErrorOrNil;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isOptional;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isReturningErrorOrNil;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**

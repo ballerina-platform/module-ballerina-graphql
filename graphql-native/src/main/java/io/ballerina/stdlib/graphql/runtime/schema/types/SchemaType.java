@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema;
+package io.ballerina.stdlib.graphql.runtime.schema.types;
 
 import io.ballerina.runtime.api.types.Type;
 
@@ -66,14 +66,6 @@ public class SchemaType {
 
     public Type getBalType() {
         return this.balType;
-    }
-
-    public SchemaField getField(String name) {
-        return this.fields.get(name);
-    }
-
-    public boolean hasField(String name) {
-        return this.fields.containsKey(name);
     }
 
     public List<Object> getEnumValues() {
