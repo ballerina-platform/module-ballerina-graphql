@@ -78,63 +78,63 @@ isolated function testComplexIntrospectionQuery() returns error? {
         data: {
             __schema: {
                 types: [
-                    {
-                        name: "__TypeKind",
-                        kind: "ENUM"
-                    },
-                    {
-                        name: "__Field",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "Query",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "Address",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "__Schema",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "__Type",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "__EnumValue",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "String",
-                        kind: "SCALAR"
-                    },
-                    {
-                        name: "Student",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "Int",
-                        kind: "SCALAR"
-                    },
-                    {
-                        name: "Book",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "__InputValue",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "Course",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "Person",
-                        kind: "OBJECT"
-                    }
-                ]
+                   {
+                       "name": "__TypeKind",
+                       "kind": "ENUM"
+                   },
+                   {
+                       "name": "__Field",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "Query",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "Address",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "__Type",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "String",
+                       "kind": "SCALAR"
+                   },
+                   {
+                       "name": "Student",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "Int",
+                       "kind": "SCALAR"
+                   },
+                   {
+                       "name": "Vehicle",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "Book",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "__InputValue",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "Course",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "Person",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "__Schema",
+                       "kind": "OBJECT"
+                   }
+               ]
             }
         }
     };
