@@ -18,6 +18,8 @@
 
 package io.ballerina.stdlib.graphql.runtime.schema;
 
+import io.ballerina.runtime.api.types.Type;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,16 +31,22 @@ import java.util.Map;
  */
 public class SchemaType {
 
-    private TypeKind kind;
-    private String name;
-    private Map<String, SchemaField> fields;
-    private List<Object> enumValues;
-    private List<SchemaType> possibleTypes;
-    SchemaType ofType;
+    private final TypeKind kind;
+    private final String name;
+    private final Map<String, SchemaField> fields;
+    private final List<Object> enumValues;
+    private final List<SchemaType> possibleTypes;
+    private SchemaType ofType;
+    private final Type balType;
 
     public SchemaType(String name, TypeKind kind) {
+        this(name, kind, null);
+    }
+
+    public SchemaType(String name, TypeKind kind, Type balType) {
         this.name = name;
         this.kind = kind;
+        this.balType = balType;
         this.fields = new HashMap<>();
         this.enumValues = new ArrayList<>();
         this.possibleTypes = new ArrayList<>();
@@ -54,6 +62,10 @@ public class SchemaType {
 
     public Collection<SchemaField> getFields() {
         return this.fields.values();
+    }
+
+    public Type getBalType() {
+        return this.balType;
     }
 
     public SchemaField getField(String name) {

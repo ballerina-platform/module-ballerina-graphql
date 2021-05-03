@@ -28,32 +28,36 @@ isolated function testSimpleIntrospectionQuery() returns error? {
             __schema: {
                 types: [
                     {
-                        name: "__TypeKind",
-                        kind: "ENUM"
+                        "name": "__TypeKind",
+                        "kind": "ENUM"
                     },
                     {
-                        name: "__Field",
-                        kind: "OBJECT"
+                        "name": "__Field",
+                        "kind": "OBJECT"
                     },
                     {
-                        name: "Query",
-                        kind: "OBJECT"
+                        "name": "Query",
+                        "kind": "OBJECT"
                     },
                     {
-                        name: "__Type",
-                        kind: "OBJECT"
+                        "name": "__Schema",
+                        "kind": "OBJECT"
                     },
                     {
-                        name: "String",
-                        kind: "SCALAR"
+                        "name": "__Type",
+                        "kind": "OBJECT"
                     },
                     {
-                        name: "__InputValue",
-                        kind: "OBJECT"
+                        "name": "__EnumValue",
+                        "kind": "OBJECT"
                     },
                     {
-                        name: "__Schema",
-                        kind: "OBJECT"
+                        "name": "String",
+                        "kind": "SCALAR"
+                    },
+                    {
+                        "name": "__InputValue",
+                        "kind": "OBJECT"
                     }
                 ]
             }
@@ -91,16 +95,32 @@ isolated function testComplexIntrospectionQuery() returns error? {
                         kind: "OBJECT"
                     },
                     {
+                        name: "__Schema",
+                        kind: "OBJECT"
+                    },
+                    {
                         name: "__Type",
                         kind: "OBJECT"
                     },
                     {
-                        name: "Book",
+                        name: "__EnumValue",
                         kind: "OBJECT"
                     },
                     {
                         name: "String",
                         kind: "SCALAR"
+                    },
+                    {
+                        name: "Student",
+                        kind: "OBJECT"
+                    },
+                    {
+                        name: "Int",
+                        kind: "SCALAR"
+                    },
+                    {
+                        name: "Book",
+                        kind: "OBJECT"
                     },
                     {
                         name: "__InputValue",
@@ -111,19 +131,7 @@ isolated function testComplexIntrospectionQuery() returns error? {
                         kind: "OBJECT"
                     },
                     {
-                        name: "Student",
-                        kind: "OBJECT"
-                    },
-                    {
                         name: "Person",
-                        kind: "OBJECT"
-                    },
-                    {
-                        name: "Int",
-                        kind: "SCALAR"
-                    },
-                    {
-                        name: "__Schema",
                         kind: "OBJECT"
                     }
                 ]

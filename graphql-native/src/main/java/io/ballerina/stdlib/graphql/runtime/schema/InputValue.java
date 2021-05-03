@@ -36,6 +36,10 @@ public class InputValue {
         this.defaultValue = defaultValue;
     }
 
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     public String getName() {
         return name;
     }

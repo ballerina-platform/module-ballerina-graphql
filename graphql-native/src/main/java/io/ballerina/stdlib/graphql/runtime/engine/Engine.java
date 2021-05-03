@@ -29,6 +29,7 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.runtime.schema.Schema;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaGenerator;
 
 import java.util.concurrent.CountDownLatch;
@@ -41,21 +42,20 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getSchemaRecordFromSchema;
-import static io.ballerina.stdlib.graphql.runtime.engine.IntrospectionUtils.initializeIntrospectionTypes;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
+    private Engine() {}
 
     public static Object createSchema(BObject service) {
         try {
             ServiceType serviceType = (ServiceType) service.getType();
             Schema schema = createSchema(serviceType);
-            initializeIntrospectionTypes(schema);
-            return getSchemaRecordFromSchema(schema);
+            SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
+            return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
             return e;
         }

@@ -14,26 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/test;
-
-@test:Config {
-    groups: ["schema_generation", "engine", "unit"]
-}
-function testSchemaGenerationForMultipleResources() returns error? {
-    __Schema actualSchema = check createSchema(serviceWithMultipleResources);
-    __Schema expectedSchema = check expectedSchemaForMultipleResources.cloneWithType(__Schema);
-    test:assertEquals(actualSchema, expectedSchema);
-}
-
-@test:Config {
-    groups: ["schema_generation", "engine", "unit"]
-}
-function testSchemaGenerationForResourcesReturningRecords() returns error? {
-    __Schema actualSchema = check createSchema(serviceWithResourcesReturningRecords);
-    __Schema expectedSchema = check expectedSchemaForResourcesReturningRecords.cloneWithType(__Schema);
-    test:assertEquals(actualSchema, expectedSchema);
-}
-
 Service serviceWithMultipleResources = service object {
     isolated resource function get name() returns string {
         return "John Doe";

@@ -64,17 +64,17 @@ public class EngineUtils {
     public static final String ENUM_VALUE_RECORD = "__EnumValue";
 
     // Schema related record field names
-    private static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
-    private static final BString TYPES_FIELD = StringUtils.fromString("types");
-    private static final BString TYPE_FIELD = StringUtils.fromString("type");
-    static final BString NAME_FIELD = StringUtils.fromString("name");
-    private static final BString KIND_FIELD = StringUtils.fromString("kind");
-    static final BString FIELDS_FIELD = StringUtils.fromString("fields");
-    private static final BString ARGS_FIELD = StringUtils.fromString("args");
-    private static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
-    private static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
-    private static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
-    private static final BString POSSIBLE_TYPES_FIELD = StringUtils.fromString("possibleTypes");
+    public static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
+    public static final BString TYPES_FIELD = StringUtils.fromString("types");
+    public static final BString TYPE_FIELD = StringUtils.fromString("type");
+    public static final BString NAME_FIELD = StringUtils.fromString("name");
+    public static final BString KIND_FIELD = StringUtils.fromString("kind");
+    public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
+    public static final BString ARGS_FIELD = StringUtils.fromString("args");
+    public static final BString DEFAULT_VALUE_FIELD = StringUtils.fromString("defaultValue");
+    public static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
+    public static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
+    public static final BString POSSIBLE_TYPES_FIELD = StringUtils.fromString("possibleTypes");
 
     // Schema related type names
     public static final String INTEGER = "Int";
@@ -203,16 +203,16 @@ public class EngineUtils {
         return fieldRecord;
     }
 
-    private static BMap<BString, Object> getInputMapFromInputs(List<InputValue> inputValues) {
-        BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD);
-        MapType inputValueRecordMapType = TypeCreator.createMapType(inputValueRecord.getType());
-        BMap<BString, Object> inputValueRecordMap = ValueCreator.createMapValue(inputValueRecordMapType);
+    private static BArray getInputMapFromInputs(List<InputValue> inputValues) {
+        Type inputValueRecordType = ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD).getType();
+        ArrayType inputValueArrayType = TypeCreator.createArrayType(inputValueRecordType);
+        BArray inputValueArray = ValueCreator.createArrayValue(inputValueArrayType);
 
         for (InputValue inputValue : inputValues) {
             BMap<BString, Object> inputRecord = getInputRecordFromObject(inputValue);
-            inputValueRecordMap.put(StringUtils.fromString(inputValue.getName()), inputRecord);
+            inputValueArray.append(inputRecord);
         }
-        return inputValueRecordMap;
+        return inputValueArray;
     }
 
     private static BMap<BString, Object> getInputRecordFromObject(InputValue inputValue) {
@@ -247,5 +247,10 @@ public class EngineUtils {
     static boolean isScalarType(Type type) {
         int tag = type.getTag();
         return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
+    }
+
+    public static BArray getArrayTypeFromBMap(BMap<BString, Object> recordValue) {
+        ArrayType arrayType = TypeCreator.createArrayType(recordValue.getType());
+        return ValueCreator.createArrayValue(arrayType);
     }
 }

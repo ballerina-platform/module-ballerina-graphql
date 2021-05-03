@@ -20,11 +20,21 @@ package io.ballerina.stdlib.graphql.runtime.schema.tree;
 
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MapType;
+import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DECIMAL;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FLOAT;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTEGER;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 
 /**
  * Utility methods for the Ballerina GraphQL schema generator.
@@ -32,6 +42,26 @@ import java.util.List;
 public class Utils {
     public static boolean isEnum(UnionType unionType) {
         return SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM);
+    }
+
+    public static boolean isOptional(Field field) {
+        return SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL);
+    }
+
+    public static boolean isReturningErrorOrNil(Type type) {
+        if (type.getTag() == TypeTags.ERROR_TAG) {
+            return true;
+        }
+        if (type.getTag() != TypeTags.UNION_TAG) {
+            return false;
+        }
+        UnionType unionType = (UnionType) type;
+        for (Type memberType : unionType.getMemberTypes()) {
+            if (memberType.getTag() == TypeTags.ERROR_TAG || memberType.getTag() == TypeTags.NULL_TAG) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static List<Type> getMemberTypes(UnionType unionType) {
@@ -56,7 +86,34 @@ public class Utils {
 
     // TODO: This is a temporary fix for https://github.com/ballerina-platform/ballerina-lang/issues/30108
     public static String getTypeNameFromType(Type type) {
-        String[] splitName = type.getName().split(":");
-        return (splitName[splitName.length - 1]);
+        int tag = type.getTag();
+        if (type.getTag() < TypeTags.JSON_TAG) {
+            return getScalarTypeName(tag);
+        } else if (tag == TypeTags.UNION_TAG) {
+            String[] splitName = type.getName().split(":");
+            return (splitName[splitName.length - 1]);
+        } else if (tag == TypeTags.ARRAY_TAG) {
+            return getTypeNameFromType(((ArrayType) type).getElementType());
+        } else if (tag == TypeTags.MAP_TAG) {
+            return getTypeNameFromType(((MapType) type).getConstrainedType());
+        } else if (tag == TypeTags.TABLE_TAG) {
+            return getTypeNameFromType(((TableType) type).getConstrainedType());
+        }
+        return type.getName();
+    }
+
+    public static String getScalarTypeName(int tag) {
+        switch (tag) {
+            case TypeTags.INT_TAG:
+                return INTEGER;
+            case TypeTags.FLOAT_TAG:
+                return FLOAT;
+            case TypeTags.DECIMAL_TAG:
+                return DECIMAL;
+            case TypeTags.BOOLEAN_TAG:
+                return BOOLEAN;
+            default:
+                return STRING;
+        }
     }
 }

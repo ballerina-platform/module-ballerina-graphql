@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaTreeGenerator.addEnumValueToEnumType;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.TypeTreeGenerator.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.tree.Utils.getMemberTypes;
@@ -66,14 +67,21 @@ public class SchemaGenerator {
     }
 
     public Schema generateSchema() {
-        Schema schema = new Schema();
-        SchemaTreeGenerator schemaTreeGenerator = new SchemaTreeGenerator(this.serviceType, this.typeMap);
-        SchemaType queryType = schemaTreeGenerator.getQueryType();
-        schema.setQueryType(queryType);
-        for (SchemaType schemaType : this.typeMap.values()) {
-            schema.addType(schemaType);
-        }
-        return schema;
+//        Schema schema = new Schema();
+//        SchemaTreeGenerator schemaTreeGenerator = new SchemaTreeGenerator(this.serviceType, this.typeMap);
+//        SchemaType queryType = schemaTreeGenerator.getQueryType();
+//        schema.setQueryType(queryType);
+//        for (SchemaType schemaType : this.typeMap.values()) {
+//            schema.addType(schemaType);
+//        }
+        TypeFinder typeFinder = new TypeFinder(this.serviceType);
+        typeFinder.find();
+        FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
+        fieldFinder.populateFields();
+        Schema newSchema = new Schema();
+        newSchema.setTypes(fieldFinder.getTypeMap());
+        newSchema.setQueryType(fieldFinder.getType(QUERY));
+        return newSchema;
     }
 
     private void populateBasicTypes() {

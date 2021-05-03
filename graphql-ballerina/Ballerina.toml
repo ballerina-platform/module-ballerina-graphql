@@ -1,10 +1,10 @@
 [package]
 org = "ballerina"
 name = "graphql"
-version = "@toml.version@"
+version = "0.2.0-alpha9"
 
 [[platform.java11.dependency]]
-path = "../graphql-native/build/libs/graphql-native-@project.version@.jar"
+path = "../graphql-native/build/libs/graphql-native-0.2.0-alpha9-SNAPSHOT.jar"
 groupId = "io.ballerina.stdlib.graphql.runtime"
 artifactId = "graphql"
-version = "@project.version@"
+version = "0.2.0-alpha9-SNAPSHOT"

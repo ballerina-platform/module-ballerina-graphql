@@ -232,7 +232,7 @@ isolated function testQueryUnionTypeWithoutSelection() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ information(id: 2) }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-    string message = string`Field "information" of type "Information" must have a selection of subfields. Did you mean "information { ... }"?`;
+    string message = string`Field "information" of type "Information!" must have a selection of subfields. Did you mean "information { ... }"?`;
     json expectedPayload = {
         errors: [
             {

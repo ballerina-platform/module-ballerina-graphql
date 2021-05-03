@@ -388,49 +388,52 @@ fragment types on __Schema {
             __schema: {
                 types: [
                     {
-                        name: "__TypeKind"
+                        "name": "__TypeKind"
                     },
                     {
-                        name: "__Field"
+                        "name": "__Field"
                     },
                     {
-                        name: "Query"
+                        "name": "Query"
                     },
                     {
-                        name: "Address"
+                        "name": "Address"
                     },
                     {
-                        name: "__Type"
+                        "name": "__Schema"
                     },
                     {
-                        name: "String"
+                        "name": "__Type"
                     },
                     {
-                        name: "Student"
+                        "name": "__EnumValue"
                     },
                     {
-                        name: "Profile"
+                        "name": "String"
                     },
                     {
-                        name: "Int"
+                        "name": "Student"
                     },
                     {
-                        name: "Name"
+                        "name": "Int"
                     },
                     {
-                        name: "Book"
+                        "name": "Profile"
                     },
                     {
-                        name: "__InputValue"
+                        "name": "Name"
                     },
                     {
-                        name: "Course"
+                        "name": "Book"
                     },
                     {
-                        name: "Person"
+                        "name": "__InputValue"
                     },
                     {
-                        name: "__Schema"
+                        "name": "Course"
+                    },
+                    {
+                        "name": "Person"
                     }
                 ]
             }
