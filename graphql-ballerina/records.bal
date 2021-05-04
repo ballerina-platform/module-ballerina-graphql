@@ -68,7 +68,7 @@ public type OutputObject record {
 # + types - The types defined in the GraphQL schema
 # + queryType - The root operation type of the GraphQL service
 public type __Schema record {|
-    map<__Type> types;
+    __Type[] types;
     __Type queryType;
 |};
 

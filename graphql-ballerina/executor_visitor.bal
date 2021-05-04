@@ -84,11 +84,11 @@ class ExecutorVisitor {
             } else {
                 parser:FieldNode subFieldNode = <parser:FieldNode>selection?.node;
                 if (fieldNode.getName() == TYPES_FIELD) {
-                    __Type[] types = self.schema.types.toArray();
+                    __Type[] types = self.schema.types;
                     subData[fieldNode.getName()] = getDataFromBalType(self, fieldNode, types);
                     self.data[SCHEMA_FIELD] = subData;
                 } else if (subFieldNode.getName() == TYPES_FIELD) {
-                    __Type[] types = self.schema.types.toArray();
+                    __Type[] types = self.schema.types;
                     subData[subFieldNode.getName()] = getDataFromBalType(self, subFieldNode, types);
                     self.data[fieldNode.getName()] = subData;
                 } else {

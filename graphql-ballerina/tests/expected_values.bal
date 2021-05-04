@@ -49,6 +49,9 @@ json hierarchicalResourcePathIntrospectionResult = {
                     "fields": [
                         {
                             "name": "types"
+                        },
+                        {
+                            "name": "queryType"
                         }
                     ]
                 },
