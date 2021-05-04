@@ -221,7 +221,7 @@ isolated function testQueryTypeIntrospection() returns error? {
 @test:Config {
     groups: ["introspection", "unit"]
 }
-isolated function testEnumValueIntrrospection() returns error? {
+isolated function testEnumValueIntrospection() returns error? {
     string graphqlUrl ="http://localhost:9101/graphql";
     string document = "{ __schema { types { enumValues } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
