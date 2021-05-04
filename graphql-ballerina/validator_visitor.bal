@@ -120,7 +120,19 @@ class ValidatorVisitor {
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             if (selection.name == SCHEMA_FIELD) {
-                self.processSchemaIntrospection(selection);
+                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
+                parent = {
+                    parentType: schemaType,
+                    name: selection.name
+                };
+                if (fieldNode.getSelections().length() == 0) {
+                    string message = getMissingSubfieldsError(fieldNode.getName(), SCHEMA_TYPE_NAME);
+                    self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+                    return;
+                }
+                foreach parser:Selection subSelection in fieldNode.getSelections() {
+                    self.visitSelection(subSelection, parent);
+                }
             } else {
                 self.visitField(fieldNode, parent);
             }
@@ -248,52 +260,6 @@ class ValidatorVisitor {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
-        }
-    }
-
-    isolated function processSchemaIntrospection(parser:Selection selection) {
-        parser:ParentNode parentNode = <parser:ParentNode>selection?.node;
-        if (parentNode.getSelections().length() < 1) {
-            string message = getMissingSubfieldsError(parentNode.getName(), SCHEMA_TYPE_NAME);
-            self.errors.push(getErrorDetailRecord(message, selection.location));
-            return;
-        }
-
-        foreach parser:Selection subSelection in parentNode.getSelections() {
-            self.validateIntrospectionFields(subSelection);
-        }
-    }
-
-    isolated function validateIntrospectionFields(parser:Selection selection) {
-        if (selection.isFragment) {
-            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
-            foreach parser:Selection subSelection in fragmentNode.getSelections() {
-                self.validateIntrospectionFields(subSelection);
-            }
-        } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            if (selection.name == TYPES_FIELD) {
-                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
-                Parent parent = {
-                    parentType: schemaType,
-                    name: SCHEMA_TYPE_NAME
-                };
-                return self.visitSelection(selection, parent);
-            }
-            var fieldValue = self.schema[selection.name];
-            if (fieldValue != ()) {
-                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
-                Parent parent = {
-                    parentType: schemaType,
-                    name: SCHEMA_TYPE_NAME
-                };
-                foreach parser:Selection subSelection in fieldNode.getSelections() {
-                    self.visitSelection(subSelection, parent);
-                }
-                return;
-            }
-            string message = getFieldNotFoundErrorMessage(selection.name, SCHEMA_TYPE_NAME);
-            self.errors.push(getErrorDetailRecord(message, selection.location));
         }
     }
 
