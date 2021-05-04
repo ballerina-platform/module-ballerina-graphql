@@ -193,7 +193,7 @@ class ValidatorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         Parent parent = <Parent>data;
-        __Type? fragmentType = self.schema.types[fragmentNode.getOnType()];
+        __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, parent);
         }
@@ -267,7 +267,7 @@ class ValidatorVisitor {
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             if (selection.name == TYPES_FIELD) {
-                __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
+                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
                 Parent parent = {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
@@ -276,7 +276,7 @@ class ValidatorVisitor {
             }
             var fieldValue = self.schema[selection.name];
             if (fieldValue != ()) {
-                __Type schemaType = <__Type>self.schema.types[TYPE_TYPE_NAME];
+                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
                 Parent parent = {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
@@ -294,13 +294,13 @@ class ValidatorVisitor {
     isolated function validateFragment(parser:Selection fragment, string schemaTypeName) returns __Type? {
         parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
         string fragmentOnTypeName = fragmentNode.getOnType();
-        __Type? fragmentOnType = self.schema.types[fragmentOnTypeName];
+        __Type? fragmentOnType = getTypeFromTypeArray(self.schema.types, fragmentOnTypeName);
         if (fragmentOnType is ()) {
             string message = string`Unknown type "${fragmentOnTypeName}".`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
             self.errors.push(errorDetail);
         } else {
-            __Type schemaType = <__Type>self.schema.types[schemaTypeName];
+            __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, schemaTypeName);
             __Type ofType = getOfType(schemaType);
             if (fragmentOnType != ofType) {
                 string message = getFragmetCannotSpreadError(fragmentNode, fragment.name, ofType);
