@@ -29,6 +29,10 @@ service /graphql on functionWithArgumentsListener {
         }
         return true;
     }
+
+    resource function get person() returns Person {
+        return people[0];
+    }
 }
 
 @test:Config {
@@ -62,6 +66,30 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
         data: {
             isLegal: true
         }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_types", "unit", "test"]
+}
+isolated function testInvalidParameter() returns error? {
+    string document = "{ person(id: 4) { name } }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Unknown argument "id" on field "Query.person".`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 10
+                    }
+                ]
+            }
+        ]
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
