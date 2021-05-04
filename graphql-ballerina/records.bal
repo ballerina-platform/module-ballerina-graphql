@@ -105,7 +105,7 @@ public type __EnumValue record {
 public type __Field record {|
     string name;
     __Type 'type;
-    map<__InputValue> args?;
+    __InputValue[] args?;
 |};
 
 # Represents an input value for a GraphQL field.

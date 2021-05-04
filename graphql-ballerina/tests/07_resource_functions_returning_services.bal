@@ -50,23 +50,6 @@ service /graphql on serviceTypeListener {
     }
 }
 
-Service serviceReturningServiceObjects = service object {
-    isolated resource function get profile() returns service object {} {
-        return service object {
-            isolated resource function get name() returns service object {} {
-                return service object {
-                    isolated resource function get first() returns string {
-                        return "Sherlock";
-                    }
-                    isolated resource function get last() returns string {
-                        return "Holmes";
-                    }
-                };
-            }
-        };
-    }
-};
-
 @test:Config {
     groups: ["service", "unit"]
 }
@@ -125,15 +108,4 @@ isolated function testComplexService() returns error? {
         }
     };
     test:assertEquals(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "unit"]
-}
-function testResourcesReturningServiceObjects() returns error? {
-    var result = serviceTypeListener.attach(serviceReturningServiceObjects, "invalidService");
-    test:assertTrue(result is Error);
-    Error err = <Error> result;
-    string expectedMessage = "Returning anonymous service objects are not supported by GraphQL resources";
-    test:assertEquals(err.message(), expectedMessage);
 }

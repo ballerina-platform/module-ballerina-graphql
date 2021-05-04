@@ -29,6 +29,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
  * This class contains utility methods for the Ballerina GraphQL module.
  */
 public class Utils {
+    private Utils() {}
 
     // Inter-op function names
     static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
