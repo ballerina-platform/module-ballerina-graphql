@@ -33,6 +33,12 @@ service /graphql on functionWithArgumentsListener {
     resource function get person() returns Person {
         return people[0];
     }
+
+    resource function get personById(int id = 0) returns Person? {
+        if (id < people.length()) {
+            return people[id];
+        }
+    }
 }
 
 @test:Config {
@@ -71,7 +77,7 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
 }
 
 @test:Config {
-    groups: ["input_types", "unit", "test"]
+    groups: ["input_types", "unit"]
 }
 isolated function testInvalidParameter() returns error? {
     string document = "{ person(id: 4) { name } }";
@@ -90,6 +96,42 @@ isolated function testInvalidParameter() returns error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_types", "unit"]
+}
+isolated function testQueryWithoutDefaultParameter() returns error? {
+    string document = "{ personById { name } }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            personById: {
+                name: "Sherlock Holmes"
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_types", "unit"]
+}
+isolated function testQueryWithDefaultParameter() returns error? {
+    string document = "{ personById(id: 2) { name } }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            personById: {
+                name: "Tom Marvolo Riddle"
+            }
+        }
     };
     test:assertEquals(actualPayload, expectedPayload);
 }

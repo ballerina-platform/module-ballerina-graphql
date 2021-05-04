@@ -135,7 +135,8 @@ public class Engine {
                 result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
                 result[j + 1] = true;
             } else {
-                
+                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
+                result[j + 1] = false;
             }
         }
         return result;
