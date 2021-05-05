@@ -13,7 +13,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-import ballerina/log;
+
 public class Parser {
     private Lexer lexer;
     private DocumentNode document;
@@ -94,7 +94,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         string onType = check getIdentifierTokenvalue(token);
 
-        FragmentNode fragmentNode = new(name, location, onType);
+        FragmentNode fragmentNode = new(name, location, onType, false);
         token = check self.peekNextNonSeparatorToken();
         if (token.kind != T_OPEN_BRACE) {
             return getExpectedCharError(token, OPEN_BRACE);
@@ -147,7 +147,6 @@ public class Parser {
                     node: fieldNode,
                     location: fieldNode.getLocation()
                 };
-                //log:printInfo(fieldNode.getName());
                 parentNode.addSelection(selection);
             }
             token = check self.peekNextNonSeparatorToken();
@@ -190,9 +189,11 @@ public class Parser {
         Location location = token.location.clone();
         token = check self.readNextNonSeparatorToken();
         string onType = check getIdentifierTokenvalue(token);
+        if (onType == ON) {
+            return getUnexpectedTokenError(token);
+        }
         string fragmentName = onType;
-        log:printInfo(onType);
-        FragmentNode fragmentNode = new(fragmentName, token.location, onType);
+        FragmentNode fragmentNode = new(fragmentName, token.location, onType, true);
         token = check self.peekNextNonSeparatorToken();
         if (token.kind != T_OPEN_BRACE) {
             return getExpectedCharError(token, OPEN_BRACE);

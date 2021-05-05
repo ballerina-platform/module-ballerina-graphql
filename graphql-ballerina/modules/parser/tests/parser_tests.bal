@@ -199,7 +199,7 @@ isolated function testInvalidFragmentName() returns error? {
     string document = string
 `{
     profile {
-        ...on
+        name
     }
 }
 

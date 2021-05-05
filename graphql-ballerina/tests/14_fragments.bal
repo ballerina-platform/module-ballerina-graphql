@@ -521,15 +521,19 @@ isolated function testInlneFragment() returns error? {
     string document = string
 `query {
     ... on Query {
-            people{
+        people{
+            ... on Person{
                 address{
                     city
                 }
             }
+        }
+    }
+    ... on Query{
             students{
                 name
+                }
             }
-        }
 }`;
     string url = "http://localhost:9106/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
