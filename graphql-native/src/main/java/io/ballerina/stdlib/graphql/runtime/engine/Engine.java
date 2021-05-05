@@ -35,13 +35,10 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromArray;
-import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
@@ -95,21 +92,6 @@ public class Engine {
             latch.await();
         } catch (InterruptedException e) {
             // Ignore
-        }
-    }
-
-    // TODO: Improve this method to not return but populate inside
-    public static Object getDataFromBalType(Environment environment, BObject visitor, BObject node, Object data) {
-        if (data instanceof BArray) {
-            BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromArray(environment, visitor, node, (BArray) data, dataRecord);
-            return dataRecord.getArrayValue(node.getStringValue(NAME_FIELD));
-        } else if (data instanceof BMap) {
-            BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) data, dataRecord);
-            return dataRecord.getMapValue(node.getStringValue(NAME_FIELD));
-        } else {
-            return data;
         }
     }
 

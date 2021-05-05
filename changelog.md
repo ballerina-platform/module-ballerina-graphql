@@ -3,6 +3,9 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ## [Unreleased]
 
+### Changed
+- [[#1329] Improve Introspection Validation and Execution](https://github.com/ballerina-platform/ballerina-standard-library/issues/1329)
+
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
 - [[#1250] Fix Hanging the Service when Returning Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1250)
