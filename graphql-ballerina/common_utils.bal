@@ -46,9 +46,9 @@ isolated function getMissingSubfieldsError(string fieldName, string typeName) re
 
 isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type unionType) returns string {
     __Type[] possibleTypes = <__Type[]>unionType?.possibleTypes;
-    string onTypes = string`"${getOfType(possibleTypes[0]).name.toString()}"`;
+    string onTypes = string`"${getOfType(possibleTypes[0])?.name.toString()}"`;
     foreach int i in 1...possibleTypes.length() - 1 {
-        onTypes += string` or "${getOfType(possibleTypes[i]).name.toString()}"`;
+        onTypes += string` or "${getOfType(possibleTypes[i])?.name.toString()}"`;
     }
     return string`Cannot query field "${fieldName}" on type "${unionType?.name.toString()}". Did you mean to use a fragment on ${onTypes}?`;
 }
@@ -56,7 +56,7 @@ isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type union
 isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
 returns string {
     string fragmentOnTypeName = fragmentNode.getOnType();
-    return string`Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+    return string`Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType?.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
 }
 
 isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
@@ -98,7 +98,7 @@ isolated function getOfType(__Type schemaType) returns __Type {
 }
 
 isolated function getTypeNameFromType(__Type schemaType) returns string {
-    string typeName = getOfType(schemaType).name.toString();
+    string typeName = getOfType(schemaType)?.name.toString();
     if (schemaType.kind == NON_NULL) {
         typeName = string`${typeName}!`;
         __Type ofType = <__Type>schemaType?.ofType;
