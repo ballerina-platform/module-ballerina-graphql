@@ -29,7 +29,16 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "args"
                         },
                         {
+                            "name": "deprecationReason"
+                        },
+                        {
+                            "name": "isDeprecated"
+                        },
+                        {
                             "name": "name"
+                        },
+                        {
+                            "name": "description"
                         },
                         {
                             "name": "type"
@@ -59,6 +68,12 @@ json hierarchicalResourcePathIntrospectionResult = {
                     "name": "__Type",
                     "fields": [
                         {
+                            "name": "inputFields"
+                        },
+                        {
+                            "name": "interfaces"
+                        },
+                        {
                             "name": "possibleTypes"
                         },
                         {
@@ -66,6 +81,9 @@ json hierarchicalResourcePathIntrospectionResult = {
                         },
                         {
                             "name": "name"
+                        },
+                        {
+                            "name": "description"
                         },
                         {
                             "name": "fields"
@@ -82,9 +100,22 @@ json hierarchicalResourcePathIntrospectionResult = {
                     "name": "__EnumValue",
                     "fields": [
                         {
+                            "name": "deprecationReason"
+                        },
+                        {
+                            "name": "isDeprecated"
+                        },
+                        {
                             "name": "name"
+                        },
+                        {
+                            "name": "description"
                         }
                     ]
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "fields": null
                 },
                 {
                     "name": "profile",
@@ -98,6 +129,14 @@ json hierarchicalResourcePathIntrospectionResult = {
                     ]
                 },
                 {
+                    "name": "String",
+                    "fields": null
+                },
+                {
+                    "name": "Int",
+                    "fields": null
+                },
+                {
                     "name": "name",
                     "fields": [
                         {
@@ -109,10 +148,6 @@ json hierarchicalResourcePathIntrospectionResult = {
                     ]
                 },
                 {
-                    "name": "String",
-                    "fields": null
-                },
-                {
                     "name": "__InputValue",
                     "fields": [
                         {
@@ -122,13 +157,33 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "name"
                         },
                         {
+                            "name": "description"
+                        },
+                        {
                             "name": "type"
                         }
                     ]
                 },
                 {
-                    "name": "Int",
+                    "name": "Boolean",
                     "fields": null
+                },
+                {
+                    "name": "__Directive",
+                    "fields": [
+                        {
+                            "name": "args"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "locations"
+                        }
+                    ]
                 }
             ]
         }
@@ -139,32 +194,6 @@ json enumTypeInspectionResult = {
     "data": {
         "__schema": {
             "types": [
-                {
-                    "name": "Weekday",
-                    "enumValues": [
-                        {
-                            "name": "SATURDAY"
-                        },
-                        {
-                            "name": "FRIDAY"
-                        },
-                        {
-                            "name": "THURSDAY"
-                        },
-                        {
-                            "name": "WEDNESDAY"
-                        },
-                        {
-                            "name": "TUESDAY"
-                        },
-                        {
-                            "name": "MONDAY"
-                        },
-                        {
-                            "name": "SUNDAY"
-                        }
-                    ]
-                },
                 {
                     "name": "__TypeKind",
                     "enumValues": [
@@ -209,6 +238,53 @@ json enumTypeInspectionResult = {
                     "enumValues": null
                 },
                 {
+                    "name": "__DirectiveLocation",
+                    "enumValues": [
+                        {
+                            "name": "INPUT_FIELD_DEFINITION"
+                        },
+                        {
+                            "name": "INPUT_OBJECT"
+                        },
+                        {
+                            "name": "ENUM_VALUE"
+                        },
+                        {
+                            "name": "INTERFACE"
+                        },
+                        {
+                            "name": "ARGUMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FIELD_DEFINITION"
+                        },
+                        {
+                            "name": "SCHEMA"
+                        },
+                        {
+                            "name": "INLINE_FRAGMENT"
+                        },
+                        {
+                            "name": "FRAGMENT_SPREAD"
+                        },
+                        {
+                            "name": "FRAGMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FIELD"
+                        },
+                        {
+                            "name": "SUBSCRIPTION"
+                        },
+                        {
+                            "name": "MUTATION"
+                        },
+                        {
+                            "name": "QUERY"
+                        }
+                    ]
+                },
+                {
                     "name": "Time",
                     "enumValues": null
                 },
@@ -217,11 +293,45 @@ json enumTypeInspectionResult = {
                     "enumValues": null
                 },
                 {
+                    "name": "Int",
+                    "enumValues": null
+                },
+                {
+                    "name": "Weekday",
+                    "enumValues": [
+                        {
+                            "name": "SATURDAY"
+                        },
+                        {
+                            "name": "FRIDAY"
+                        },
+                        {
+                            "name": "THURSDAY"
+                        },
+                        {
+                            "name": "WEDNESDAY"
+                        },
+                        {
+                            "name": "TUESDAY"
+                        },
+                        {
+                            "name": "MONDAY"
+                        },
+                        {
+                            "name": "SUNDAY"
+                        }
+                    ]
+                },
+                {
                     "name": "__InputValue",
                     "enumValues": null
                 },
                 {
-                    "name": "Int",
+                    "name": "Boolean",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Directive",
                     "enumValues": null
                 }
             ]

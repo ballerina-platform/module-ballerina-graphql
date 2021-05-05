@@ -66,55 +66,81 @@ public type OutputObject record {
 # Represents a GraphQL schema. This will be auto-generated when a service is attached to the GraphQL listener.
 #
 # + types - The types defined in the GraphQL schema
-# + queryType - The root operation type of the GraphQL service
+# + queryType - The root query operation type of the GraphQL service
+# + mutationType - The mutation type of the GraphQL service
+# + subscriptionType - The subscription type of the GraphQL service
+# + directives - The set of directives used in the GraphQL schema
 public type __Schema record {|
     __Type[] types;
     __Type queryType;
+    __Type mutationType?;
+    __Type subscriptionType?;
+    __Directive[] directives = [];
 |};
 
 # Represents a GraphQL type.
 #
 # + kind - The `graphql:__TypeKind` type of the type
 # + name - The name of the type
-# + fields - The fields of the given type, if the type qaulifies to have fields
-# + enumValues - The possible set of values, if the type is an enum
-# + ofType - If the type is a `NON_NULL` or a `LIST`, the `__Type` of the wrapped type
+# + description - The description of the type
+# + fields - The fields of the given type, if the type qaulifies to have fields (OBJECT and INTERFACE kinds only)
+# + interfaces - The interface types of the type (INTERFACE kind only)
 # + possibleTypes - The list of types that can be represented from this type. Only applies for the Union types, and
 #                   the the list can only contain object types
-public type __Type record {
+# + enumValues - The possible set of values, if the type is an enum (ENUM kind only)
+# + inputFields - The set of input values (INPUT_OBJECT kind only)
+# + ofType - If the type is a `NON_NULL` or a `LIST`, the `__Type` of the wrapped type
+public type __Type record {|
     __TypeKind kind;
-    string? name;
+    string name?;
+    string description?;
     __Field[] fields?;
-    __EnumValue[] enumValues?;
-    __Type ofType?;
+    __Type[] interfaces?;
     __Type[] possibleTypes?;
-};
+    __EnumValue[] enumValues?;
+    __InputValue[] inputFields?;
+    __Type ofType?;
+|};
 
 # Represents a GraphQL enum.
 #
 # + name - The name of the enum
-public type __EnumValue record {
+# + description - The desciption of the enum
+# + isDeprecated - Whether the enum is deprecated or not
+# + deprecationReason - The reason for deprecation
+public type __EnumValue record {|
     string name;
-};
+    string description?;
+    boolean isDeprecated = false;
+    string deprecationReason?;
+|};
 
 # Represents a GraphQL field.
 #
 # + name - Name of the field
-# + type - The type of the field
+# + description - The description of the field
 # + args - The arguments needed to query the field
+# + type - The type of the field
+# + isDeprecated - Whether the field is deprecated or not
+# + deprecationReason - The reason for deprecation
 public type __Field record {|
     string name;
-    __Type 'type;
+    string description?;
     __InputValue[] args?;
+    __Type 'type;
+    boolean isDeprecated = false;
+    string deprecationReason?;
 |};
 
 # Represents an input value for a GraphQL field.
 #
 # + name - Name of the input argument
+# + description - The description of the input value
 # + type - The type of the input argument
 # + defaultValue - The string reperesentation of the default value of the input argument
 public type __InputValue record {|
 	string name;
+	string description?;
 	__Type 'type;
 	string defaultValue?;
 |};
@@ -129,7 +155,33 @@ public enum __TypeKind {
     UNION
 }
 
-type __Directive record {|
+# Represents a directive in a GraphQL schema.
+#
+# + name - The name of the directive
+# + description - The description of the directive
+# + locations - The locations of the directive is used
+# + args - The set of `__Inputvalue`s for the directive
+public type __Directive record {|
     string name;
     string description?;
+    __DirectiveLocation[] locations?;
+    __InputValue[] args = [];
 |};
+
+# Set of locations the directives can be applied.
+public enum __DirectiveLocation {
+  QUERY,
+  MUTATION,
+  SUBSCRIPTION,
+  FIELD,
+  FRAGMENT_DEFINITION,
+  FRAGMENT_SPREAD,
+  INLINE_FRAGMENT,
+  SCHEMA,
+  FIELD_DEFINITION,
+  ARGUMENT_DEFINITION,
+  INTERFACE,
+  ENUM_VALUE,
+  INPUT_OBJECT,
+  INPUT_FIELD_DEFINITION
+}

@@ -52,11 +52,23 @@ isolated function testSimpleIntrospectionQuery() returns error? {
                         "kind": "OBJECT"
                     },
                     {
+                        "name": "__DirectiveLocation",
+                        "kind": "ENUM"
+                    },
+                    {
                         "name": "String",
                         "kind": "SCALAR"
                     },
                     {
                         "name": "__InputValue",
+                        "kind": "OBJECT"
+                    },
+                    {
+                        "name": "Boolean",
+                        "kind": "SCALAR"
+                    },
+                    {
+                        "name": "__Directive",
                         "kind": "OBJECT"
                     }
                 ]
@@ -107,6 +119,10 @@ isolated function testComplexIntrospectionQuery() returns error? {
                        "kind": "OBJECT"
                    },
                    {
+                       "name": "__DirectiveLocation",
+                       "kind": "ENUM"
+                   },
+                   {
                        "name": "String",
                        "kind": "SCALAR"
                    },
@@ -135,7 +151,15 @@ isolated function testComplexIntrospectionQuery() returns error? {
                        "kind": "OBJECT"
                    },
                    {
+                       "name": "Boolean",
+                       "kind": "SCALAR"
+                   },
+                   {
                        "name": "Person",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "__Directive",
                        "kind": "OBJECT"
                    }
                ]
@@ -259,6 +283,10 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
                        "kind": "OBJECT"
                    },
                    {
+                       "name": "__DirectiveLocation",
+                       "kind": "ENUM"
+                   },
+                   {
                        "name": "String",
                        "kind": "SCALAR"
                    },
@@ -287,7 +315,15 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
                        "kind": "OBJECT"
                    },
                    {
+                       "name": "Boolean",
+                       "kind": "SCALAR"
+                   },
+                   {
                        "name": "Person",
+                       "kind": "OBJECT"
+                   },
+                   {
+                       "name": "__Directive",
                        "kind": "OBJECT"
                    }
                ]
