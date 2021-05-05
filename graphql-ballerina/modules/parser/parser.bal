@@ -177,7 +177,6 @@ public class Parser {
     }
 
     isolated function addFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
-
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
         parentNode.addFragment(fragmentName);

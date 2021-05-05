@@ -248,7 +248,7 @@ fragment address on Person {
 }
 
 @test:Config {
-    groups: ["fragments", "unit", "test"]
+    groups: ["fragments", "unit"]
 }
 isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
     string document = string
