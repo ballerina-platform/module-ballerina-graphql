@@ -16,7 +16,11 @@
 
 import ballerina/http;
 
-isolated function getJsonPayloadFromService(string url, string document) returns json|error {
+isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
+returns json|error {
     http:Client httpClient = check new(url);
+    if (operationName is string) {
+        return check httpClient->post("/", { query: document, operationName: operationName }, targetType = json);
+    }
     return check httpClient->post("/", { query: document }, targetType = json);
 }
