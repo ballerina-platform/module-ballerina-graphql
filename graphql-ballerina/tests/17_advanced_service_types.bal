@@ -101,6 +101,40 @@ isolated function testReturningRecursiveServiceTypes() returns error? {
 }
 
 @test:Config {
+    groups: ["service", "recursive_service", "schema_generation"]
+}
+isolated function testRequestInvalidFieldFromServiceTypes() returns error? {
+    string document = string
+`query {
+    allLifts(status: "OPEN") {
+        name
+        id
+        shafreen
+        trailAccess {
+            name
+            difficulty
+        }
+    }
+}`;
+    string url = "http://localhost:9111/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "shafreen" on type "Lift".`,
+                locations: [
+                    {
+                        line: 5,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
     groups: ["service", "union", "recursive_service", "schema_generation"]
 }
 isolated function testReturningUnionOfServiceTypes() returns error? {
