@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.schema;
 
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
@@ -70,12 +69,11 @@ public class SchemaRecordGenerator {
 
     public BMap<BString, Object> getSchemaRecord() {
         BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD);
-        Type typeRecordType = ValueCreator.createRecordValue(getModule(), TYPE_RECORD).getType();
-        BMap<BString, Object> typesMap = ValueCreator.createMapValue(typeRecordType);
+        BArray typesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
         for (BMap<BString, Object> typeRecord : this.typeRecords.values()) {
-            typesMap.put(typeRecord.getStringValue(NAME_FIELD), typeRecord);
+            typesArray.append(typeRecord);
         }
-        schemaRecord.put(TYPES_FIELD, typesMap);
+        schemaRecord.put(TYPES_FIELD, typesArray);
         schemaRecord.put(QUERY_TYPE_FIELD, this.typeRecords.get(QUERY));
         return schemaRecord;
     }

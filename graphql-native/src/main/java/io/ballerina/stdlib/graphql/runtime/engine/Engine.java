@@ -32,6 +32,7 @@ import io.ballerina.stdlib.graphql.runtime.schema.SchemaGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromArray;
@@ -130,8 +131,13 @@ public class Engine {
         String[] paramNames = resourceMethod.getParamNames();
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
-            result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
-            result[j + 1] = true;
+            if (Objects.nonNull(arguments.get(StringUtils.fromString(paramNames[i])))) {
+                result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
+                result[j + 1] = true;
+            } else {
+                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
+                result[j + 1] = false;
+            }
         }
         return result;
     }

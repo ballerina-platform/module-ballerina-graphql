@@ -139,7 +139,7 @@ class ValidatorVisitor {
         }
 
         string requiredFieldName = fieldNode.getName();
-        var schemaFieldValue = getFieldFromFieldArray(fields, requiredFieldName);
+        __Field? schemaFieldValue = getFieldFromFieldArray(fields, requiredFieldName);
         if (schemaFieldValue is ()) {
             string message = getFieldNotFoundErrorMessageFromType(requiredFieldName, parent.parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
@@ -193,7 +193,7 @@ class ValidatorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         Parent parent = <Parent>data;
-        __Type? fragmentType = self.schema.types[fragmentNode.getOnType()];
+        __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, parent);
         }
@@ -215,32 +215,38 @@ class ValidatorVisitor {
 
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
-        __InputValue[]? schemaArgs = schemaField?.args;
-        __InputValue[] notFoundArgs = [];
+        __InputValue[]? inputValues = schemaField?.args;
+        __InputValue[] notFoundInputValues = [];
 
-        if (schemaArgs is __InputValue[]) {
-            notFoundArgs = schemaArgs.clone();
+        if (inputValues is ()) {
+            if (arguments.length() > 0) {
+                foreach parser:ArgumentNode argumentNode in arguments {
+                    string argName = argumentNode.getName().value;
+                    string parentName = parentType.name is string ? <string>parentType.name : "";
+                    string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
+                    self.errors.push(getErrorDetailRecord(message, argumentNode.getName().location));
+                }
+            }
+        } else {
+            notFoundInputValues = inputValues.clone();
             foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName().value;
-                __InputValue? schemaArg = self.getInputValue(argName, schemaArgs);
-                if (schemaArg is __InputValue) {
-                    _ = notFoundArgs.remove(<int>notFoundArgs.indexOf(schemaArg));
-                    self.visitArgument(argumentNode, schemaArg);
+                __InputValue? inputValue = getInputValueFromArray(inputValues, argName);
+                if (inputValue is __InputValue) {
+                    _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
+                    self.visitArgument(argumentNode, inputValue);
                 } else {
                     string parentName = parentType.name is string ? <string>parentType.name : "";
                     string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
-                    self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+                    self.errors.push(getErrorDetailRecord(message, argumentNode.getName().location));
                 }
             }
         }
 
-        if (notFoundArgs.length() > 0) {
-            // TODO: Check dafaultability
-            foreach __InputValue inputValue in notFoundArgs {
-                if (inputValue?.defaultValue == ()) {
-                    string message = getMissingRequiredArgError(fieldNode, inputValue);
-                    self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
-                }
+        foreach __InputValue inputValue in notFoundInputValues {
+            if (inputValue?.defaultValue == ()) {
+                string message = getMissingRequiredArgError(fieldNode, inputValue);
+                self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
         }
     }
@@ -267,7 +273,7 @@ class ValidatorVisitor {
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             if (selection.name == TYPES_FIELD) {
-                __Type schemaType = <__Type>self.schema.types[SCHEMA_TYPE_NAME];
+                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
                 Parent parent = {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
@@ -276,7 +282,7 @@ class ValidatorVisitor {
             }
             var fieldValue = self.schema[selection.name];
             if (fieldValue != ()) {
-                __Type schemaType = <__Type>self.schema.types[TYPE_TYPE_NAME];
+                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
                 Parent parent = {
                     parentType: schemaType,
                     name: SCHEMA_TYPE_NAME
@@ -294,13 +300,13 @@ class ValidatorVisitor {
     isolated function validateFragment(parser:Selection fragment, string schemaTypeName) returns __Type? {
         parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
         string fragmentOnTypeName = fragmentNode.getOnType();
-        __Type? fragmentOnType = self.schema.types[fragmentOnTypeName];
+        __Type? fragmentOnType = getTypeFromTypeArray(self.schema.types, fragmentOnTypeName);
         if (fragmentOnType is ()) {
             string message = string`Unknown type "${fragmentOnTypeName}".`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
             self.errors.push(errorDetail);
         } else {
-            __Type schemaType = <__Type>self.schema.types[schemaTypeName];
+            __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, schemaTypeName);
             __Type ofType = getOfType(schemaType);
             if (fragmentOnType != ofType) {
                 string message = getFragmetCannotSpreadError(fragmentNode, fragment.name, ofType);
@@ -310,12 +316,12 @@ class ValidatorVisitor {
             return fragmentOnType;
         }
     }
+}
 
-    isolated function getInputValue(string name, __InputValue[] inputValues) returns __InputValue? {
-        foreach __InputValue inputValue in inputValues {
-            if (inputValue.name == name) {
-                return inputValue;
-            }
+isolated function getInputValueFromArray(__InputValue[] inputValues, string name) returns __InputValue? {
+    foreach __InputValue inputValue in inputValues {
+        if (inputValue.name == name) {
+            return inputValue;
         }
     }
 }

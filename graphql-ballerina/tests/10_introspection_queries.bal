@@ -218,6 +218,29 @@ isolated function testQueryTypeIntrospection() returns error? {
     test:assertEquals(actualResult, expectedResult);
 }
 
+@test:Config {
+    groups: ["introspection", "unit"]
+}
+isolated function testEnumValueIntrospection() returns error? {
+    string graphqlUrl ="http://localhost:9101/graphql";
+    string document = "{ __schema { types { enumValues } } }";
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedResult = {
+        errors: [
+            {
+                message: string`Field "enumValues" of type "[__EnumValue]" must have a selection of subfields. Did you mean "enumValues { ... }"?`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 22
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualResult, expectedResult);
+}
+
 service /graphql on new Listener(9101) {
     isolated resource function get greet() returns string {
         return "Hello";

@@ -188,7 +188,7 @@ public class FieldFinder {
             SchemaType inputValueType = this.typeMap.get(getTypeNameFromType(paramTypes[i]));
             InputValue inputValue;
             if (paramDefaultability[i]) {
-                inputValue = new InputValue(paramNames[i], inputValueType, paramTypes[i].getZeroValue());
+                inputValue = new InputValue(paramNames[i], inputValueType, paramTypes[i].getZeroValue().toString());
             } else {
                 SchemaType nonNullType = getNonNullType();
                 nonNullType.setOfType(inputValueType);

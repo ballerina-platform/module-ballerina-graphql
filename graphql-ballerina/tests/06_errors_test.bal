@@ -224,7 +224,7 @@ isolated function testInvalidArgument() returns error? {
                 locations: [
                     {
                         line: 1,
-                        column: 3
+                        column: 12
                     }
                 ]
             }
