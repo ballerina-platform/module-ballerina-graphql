@@ -14,558 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-json expectedSchemaForMultipleResources = {
-    "types": {
-        "__TypeKind": {
-            "kind": "ENUM",
-            "name": "__TypeKind",
-            "enumValues": [
-                {
-                    "name": "SCALAR"
-                },
-                {
-                    "name": "OBJECT"
-                },
-                {
-                    "name": "ENUM"
-                },
-                {
-                    "name": "NON_NULL"
-                },
-                {
-                    "name": "LIST"
-                },
-                {
-                    "name": "UNION"
-                }
-            ]
-        },
-        "__Field": {
-            "kind": "OBJECT",
-            "name": "__Field",
-            "fields": [
-                {
-                    "name": "args",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "type",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                }
-            ]
-        },
-        "Query": {
-            "kind": "OBJECT",
-            "name": "Query",
-            "fields": [
-                {
-                    "name": "birthdate",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                {
-                    "name": "id",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "Int"
-                    }
-                }
-            ]
-        },
-        "__Type": {
-            "kind": "OBJECT",
-            "name": "__Type",
-            "fields": [
-                {
-                    "name": "kind",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "fields",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "enumValues",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                }
-            ]
-        },
-        "String": {
-            "kind": "SCALAR",
-            "name": "String"
-        },
-        "__InputValue": {
-            "kind": "OBJECT",
-            "name": "__InputValue",
-            "fields": [
-                {
-                    "name": "defaultValue",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "type",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                }
-            ]
-        },
-        "Int": {
-            "kind": "SCALAR",
-            "name": "Int"
-        }
-    },
-    "queryType": {
-        "kind": "OBJECT",
-        "name": "Query",
-        "fields": [
-            {
-                "name": "birthdate",
-                "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                "args": {
-                    "format": {
-                        "name": "format",
-                        "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "String"
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                "name": "name",
-                "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                }
-            },
-            {
-                "name": "id",
-                "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                        "kind": "SCALAR",
-                        "name": "Int"
-                    }
-                }
-            }
-        ]
-    }
-};
-
-json expectedSchemaForResourcesReturningRecords = {
-    "types": {
-        "__TypeKind": {
-            "kind": "ENUM",
-            "name": "__TypeKind",
-            "enumValues": [
-                {
-                    "name": "SCALAR"
-                },
-                {
-                    "name": "OBJECT"
-                },
-                {
-                    "name": "ENUM"
-                },
-                {
-                    "name": "NON_NULL"
-                },
-                {
-                    "name": "LIST"
-                },
-                {
-                    "name": "UNION"
-                }
-            ]
-        },
-        "__Field": {
-            "kind": "OBJECT",
-            "name": "__Field",
-            "fields": [
-                {
-                    "name": "args",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "type",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                }
-            ]
-        },
-        "Query": {
-            "kind": "OBJECT",
-            "name": "Query",
-            "fields": [
-                {
-                    "name": "person",
-                    "type": {
-                        "kind": "OBJECT",
-                        "name": "Person",
-                        "fields": [
-                            {
-                                "name": "address",
-                                "type": {
-                                    "kind": "OBJECT",
-                                    "name": "Address",
-                                    "fields": [
-                                        {
-                                            "name": "number",
-                                            "type": {
-                                                "kind": "SCALAR",
-                                                "name": "String"
-                                            }
-                                        },
-                                        {
-                                            "name": "city",
-                                            "type": {
-                                                "kind": "SCALAR",
-                                                "name": "String"
-                                            }
-                                        },
-                                        {
-                                            "name": "street",
-                                            "type": {
-                                                "kind": "SCALAR",
-                                                "name": "String"
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "name": "name",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String"
-                                }
-                            },
-                            {
-                                "name": "age",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "Int"
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        "Address": {
-            "kind": "OBJECT",
-            "name": "Address",
-            "fields": [
-                {
-                    "name": "number",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                {
-                    "name": "city",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                {
-                    "name": "street",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                }
-            ]
-        },
-        "__Type": {
-            "kind": "OBJECT",
-            "name": "__Type",
-            "fields": [
-                {
-                    "name": "kind",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "fields",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "enumValues",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                }
-            ]
-        },
-        "String": {
-            "kind": "SCALAR",
-            "name": "String"
-        },
-        "__InputValue": {
-            "kind": "OBJECT",
-            "name": "__InputValue",
-            "fields": [
-                {
-                    "name": "defaultValue",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                },
-                {
-                    "name": "type",
-                    "type": {
-                        "kind": "NON_NULL",
-                        "name": null
-                    }
-                }
-            ]
-        },
-        "Person": {
-            "kind": "OBJECT",
-            "name": "Person",
-            "fields": [
-                {
-                    "name": "address",
-                    "type": {
-                        "kind": "OBJECT",
-                        "name": "Address",
-                        "fields": [
-                            {
-                                "name": "number",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String"
-                                }
-                            },
-                            {
-                                "name": "city",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String"
-                                }
-                            },
-                            {
-                                "name": "street",
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String"
-                                }
-                            }
-                        ]
-                    }
-                },
-                {
-                    "name": "name",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "String"
-                    }
-                },
-                {
-                    "name": "age",
-                    "type": {
-                        "kind": "SCALAR",
-                        "name": "Int"
-                    }
-                }
-            ]
-        },
-        "Int": {
-            "kind": "SCALAR",
-            "name": "Int"
-        }
-    },
-    "queryType": {
-        "kind": "OBJECT",
-        "name": "Query",
-        "fields": [
-            {
-                "name": "person",
-                "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                        "kind": "OBJECT",
-                        "name": "Person",
-                        "fields": [
-                            {
-                                "name": "address",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "OBJECT",
-                                        "name": "Address",
-                                        "fields": [
-                                            {
-                                                "name": "number",
-                                                "type": {
-                                                    "kind": "NON_NULL",
-                                                    "name": null,
-                                                    "ofType": {
-                                                        "kind": "SCALAR",
-                                                        "name": "String"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "name": "city",
-                                                "type": {
-                                                    "kind": "NON_NULL",
-                                                    "name": null,
-                                                    "ofType": {
-                                                        "kind": "SCALAR",
-                                                        "name": "String"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "name": "street",
-                                                "type": {
-                                                    "kind": "NON_NULL",
-                                                    "name": null,
-                                                    "ofType": {
-                                                        "kind": "SCALAR",
-                                                        "name": "String"
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            {
-                                "name": "name",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            },
-                            {
-                                "name": "age",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "Int"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        ]
-    }
-};
-
 json hierarchicalResourcePathIntrospectionResult = {
     "data": {
         "__schema": {
@@ -581,7 +29,16 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "args"
                         },
                         {
+                            "name": "deprecationReason"
+                        },
+                        {
+                            "name": "isDeprecated"
+                        },
+                        {
                             "name": "name"
+                        },
+                        {
+                            "name": "description"
                         },
                         {
                             "name": "type"
@@ -597,8 +54,28 @@ json hierarchicalResourcePathIntrospectionResult = {
                     ]
                 },
                 {
+                    "name": "__Schema",
+                    "fields": [
+                        {
+                            "name": "types"
+                        },
+                        {
+                            "name": "queryType"
+                        }
+                    ]
+                },
+                {
                     "name": "__Type",
                     "fields": [
+                        {
+                            "name": "inputFields"
+                        },
+                        {
+                            "name": "interfaces"
+                        },
+                        {
+                            "name": "possibleTypes"
+                        },
                         {
                             "name": "kind"
                         },
@@ -606,12 +83,39 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "name"
                         },
                         {
+                            "name": "description"
+                        },
+                        {
                             "name": "fields"
+                        },
+                        {
+                            "name": "ofType"
                         },
                         {
                             "name": "enumValues"
                         }
                     ]
+                },
+                {
+                    "name": "__EnumValue",
+                    "fields": [
+                        {
+                            "name": "deprecationReason"
+                        },
+                        {
+                            "name": "isDeprecated"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        }
+                    ]
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "fields": null
                 },
                 {
                     "name": "profile",
@@ -625,6 +129,14 @@ json hierarchicalResourcePathIntrospectionResult = {
                     ]
                 },
                 {
+                    "name": "String",
+                    "fields": null
+                },
+                {
+                    "name": "Int",
+                    "fields": null
+                },
+                {
                     "name": "name",
                     "fields": [
                         {
@@ -636,10 +148,6 @@ json hierarchicalResourcePathIntrospectionResult = {
                     ]
                 },
                 {
-                    "name": "String",
-                    "fields": null
-                },
-                {
                     "name": "__InputValue",
                     "fields": [
                         {
@@ -649,19 +157,31 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "name"
                         },
                         {
+                            "name": "description"
+                        },
+                        {
                             "name": "type"
                         }
                     ]
                 },
                 {
-                    "name": "Int",
+                    "name": "Boolean",
                     "fields": null
                 },
                 {
-                    "name": "__Schema",
+                    "name": "__Directive",
                     "fields": [
                         {
-                            "name": "types"
+                            "name": "args"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "locations"
                         }
                     ]
                 }
@@ -674,6 +194,108 @@ json enumTypeInspectionResult = {
     "data": {
         "__schema": {
             "types": [
+                {
+                    "name": "__TypeKind",
+                    "enumValues": [
+                        {
+                            "name": "UNION"
+                        },
+                        {
+                            "name": "LIST"
+                        },
+                        {
+                            "name": "NON_NULL"
+                        },
+                        {
+                            "name": "ENUM"
+                        },
+                        {
+                            "name": "OBJECT"
+                        },
+                        {
+                            "name": "SCALAR"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Field",
+                    "enumValues": null
+                },
+                {
+                    "name": "Query",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Schema",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Type",
+                    "enumValues": null
+                },
+                {
+                    "name": "__EnumValue",
+                    "enumValues": null
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "enumValues": [
+                        {
+                            "name": "INPUT_FIELD_DEFINITION"
+                        },
+                        {
+                            "name": "INPUT_OBJECT"
+                        },
+                        {
+                            "name": "ENUM_VALUE"
+                        },
+                        {
+                            "name": "INTERFACE"
+                        },
+                        {
+                            "name": "ARGUMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FIELD_DEFINITION"
+                        },
+                        {
+                            "name": "SCHEMA"
+                        },
+                        {
+                            "name": "INLINE_FRAGMENT"
+                        },
+                        {
+                            "name": "FRAGMENT_SPREAD"
+                        },
+                        {
+                            "name": "FRAGMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FIELD"
+                        },
+                        {
+                            "name": "SUBSCRIPTION"
+                        },
+                        {
+                            "name": "MUTATION"
+                        },
+                        {
+                            "name": "QUERY"
+                        }
+                    ]
+                },
+                {
+                    "name": "Time",
+                    "enumValues": null
+                },
+                {
+                    "name": "String",
+                    "enumValues": null
+                },
+                {
+                    "name": "Int",
+                    "enumValues": null
+                },
                 {
                     "name": "Weekday",
                     "enumValues": [
@@ -701,58 +323,15 @@ json enumTypeInspectionResult = {
                     ]
                 },
                 {
-                    "name": "__TypeKind",
-                    "enumValues": [
-                        {
-                            "name": "SCALAR"
-                        },
-                        {
-                            "name": "OBJECT"
-                        },
-                        {
-                            "name": "ENUM"
-                        },
-                        {
-                            "name": "NON_NULL"
-                        },
-                        {
-                            "name": "LIST"
-                        },
-                        {
-                            "name": "UNION"
-                        }
-                    ]
-                },
-                {
-                    "name": "__Field",
-                    "enumValues": null
-                },
-                {
-                    "name": "Query",
-                    "enumValues": null
-                },
-                {
-                    "name": "__Type",
-                    "enumValues": null
-                },
-                {
-                    "name": "Time",
-                    "enumValues": null
-                },
-                {
-                    "name": "String",
-                    "enumValues": null
-                },
-                {
                     "name": "__InputValue",
                     "enumValues": null
                 },
                 {
-                    "name": "Int",
+                    "name": "Boolean",
                     "enumValues": null
                 },
                 {
-                    "name": "__Schema",
+                    "name": "__Directive",
                     "enumValues": null
                 }
             ]

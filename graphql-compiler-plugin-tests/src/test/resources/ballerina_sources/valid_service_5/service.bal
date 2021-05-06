@@ -1,4 +1,4 @@
-// Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -14,13 +14,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
+import ballerina/graphql;
 
-isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
-returns json|error {
-    http:Client httpClient = check new(url);
-    if (operationName is string) {
-        return check httpClient->post("/", { query: document, operationName: operationName }, targetType = json);
+enum Color {
+  RED,
+  GREEN,
+  BLUE
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get color(Color color) returns Color {
+        return RED;
     }
-    return check httpClient->post("/", { query: document }, targetType = json);
 }

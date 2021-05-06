@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.values.BString;
  * This class is used to implement utility functions for the Ballerina GraphQL parser.
  */
 public class ParserUtils {
+    private ParserUtils() {}
 
     /**
      * Validates whether a given character is a valid first character for a GraphQL identifier. The input is a BString,

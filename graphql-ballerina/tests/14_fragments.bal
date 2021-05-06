@@ -388,49 +388,61 @@ fragment types on __Schema {
             __schema: {
                 types: [
                     {
-                        name: "__TypeKind"
+                        "name": "__TypeKind"
                     },
                     {
-                        name: "__Field"
+                        "name": "__Field"
                     },
                     {
-                        name: "Query"
+                        "name": "Query"
                     },
                     {
-                        name: "Address"
+                        "name": "Address"
                     },
                     {
-                        name: "__Type"
+                        "name": "__Schema"
                     },
                     {
-                        name: "String"
+                        "name": "__Type"
                     },
                     {
-                        name: "Student"
+                        "name": "__EnumValue"
                     },
                     {
-                        name: "Profile"
+                        "name": "__DirectiveLocation"
                     },
                     {
-                        name: "Int"
+                        "name": "String"
                     },
                     {
-                        name: "Name"
+                        "name": "Student"
                     },
                     {
-                        name: "Book"
+                        "name": "Int"
                     },
                     {
-                        name: "__InputValue"
+                        "name": "Profile"
                     },
                     {
-                        name: "Course"
+                        "name": "Name"
                     },
                     {
-                        name: "Person"
+                        "name": "Book"
                     },
                     {
-                        name: "__Schema"
+                        "name": "__InputValue"
+                    },
+                    {
+                        "name": "Course"
+                    },
+                    {
+                        "name": "Boolean"
+                    },
+                    {
+                        "name": "Person"
+                    },
+                    {
+                        "name": "__Directive"
                     }
                 ]
             }

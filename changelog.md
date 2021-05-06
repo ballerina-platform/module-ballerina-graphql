@@ -3,12 +3,30 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ## [Unreleased]
 
+### Changed
+- [[#1329] Improve Introspection Validation and Execution](https://github.com/ballerina-platform/ballerina-standard-library/issues/1329)
+- [[#1330] Added Missing Fields of GraphQL Schema-Related Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1330)
+
+### Fixed
+- [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
+- [[#1250] Fix Hanging the Service when Returning Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1250)
+- [[#1307] Returning Union of Service Types from a Resource](https://github.com/ballerina-platform/ballerina-standard-library/issues/1307)
+- [[#1274] Fix Recursive Type Reference Causing Stack Overflow](https://github.com/ballerina-platform/ballerina-standard-library/issues/1274)
+- [[#1252] Fix Incorrect Behaviour in Validation EnumValues Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/1251)
+- [[#1269] Fix Validating Incorrect Arguments as Valid](https://github.com/ballerina-platform/ballerina-standard-library/issues/1269)
+- [[#1266] Fix Incorrect Validation for Input Parameters with Default Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/1266)
+- [[#1268] Fix Incorrect Validation for Fields in Service Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1268)
+
+## [0.2.0-alpha8] - 2021-04-23
+
 ### Added
 - [[#1224] Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1224)
 - [[#1000] Enum Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1000)
 - [[#999] Map Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/999)
 - [[#1091] Compiler plugin validations for GraphQL services](https://github.com/ballerina-platform/ballerina-standard-library/issues/1091)
 - [[#1001] Support Union Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1001)
+
+## [0.2.0-alpha7] - 2021-04-06
 
 ## [0.2.0-alpha6] - 2021-04-02
 

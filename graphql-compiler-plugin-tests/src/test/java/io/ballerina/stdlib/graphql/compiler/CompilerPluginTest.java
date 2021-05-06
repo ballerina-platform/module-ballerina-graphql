@@ -76,6 +76,14 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testValidService5() {
+        Package currentPackage = loadPackage("valid_service_5");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
     public void testInvalidService1() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -162,6 +170,16 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
         assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_NIL);
+    }
+
+    @Test
+    public void testInvalidService9() {
+        Package currentPackage = loadPackage("invalid_service_9");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR);
     }
 
     private Package loadPackage(String path) {

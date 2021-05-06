@@ -28,34 +28,32 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.stdlib.graphql.runtime.schema.Schema;
-import io.ballerina.stdlib.graphql.runtime.schema.tree.SchemaGenerator;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaGenerator;
+import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
+import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromArray;
-import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getSchemaRecordFromSchema;
-import static io.ballerina.stdlib.graphql.runtime.engine.IntrospectionUtils.initializeIntrospectionTypes;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
+    private Engine() {}
 
     public static Object createSchema(BObject service) {
         try {
             ServiceType serviceType = (ServiceType) service.getType();
             Schema schema = createSchema(serviceType);
-            initializeIntrospectionTypes(schema);
-            return getSchemaRecordFromSchema(schema);
+            SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
+            return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
             return e;
         }
@@ -97,21 +95,6 @@ public class Engine {
         }
     }
 
-    // TODO: Improve this method to not return but populate inside
-    public static Object getDataFromBalType(BObject node, Object data) {
-        if (data instanceof BArray) {
-            BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromArray(node, (BArray) data, dataRecord);
-            return dataRecord.getArrayValue(node.getStringValue(NAME_FIELD));
-        } else if (data instanceof BMap) {
-            BMap<BString, Object> dataRecord = createDataRecord();
-            getDataFromRecord(node, (BMap<BString, Object>) data, dataRecord);
-            return dataRecord.getMapValue(node.getStringValue(NAME_FIELD));
-        } else {
-            return data;
-        }
-    }
-
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
         BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
@@ -130,8 +113,13 @@ public class Engine {
         String[] paramNames = resourceMethod.getParamNames();
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
-            result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
-            result[j + 1] = true;
+            if (Objects.nonNull(arguments.get(StringUtils.fromString(paramNames[i])))) {
+                result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
+                result[j + 1] = true;
+            } else {
+                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
+                result[j + 1] = false;
+            }
         }
         return result;
     }

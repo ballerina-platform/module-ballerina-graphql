@@ -62,7 +62,6 @@ class Engine {
         self.schema = check createSchema(s);
         GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
         self.maxQueryDepth = check getMaxQueryDepth(s);
-        self.populateSchemaType();
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
@@ -95,26 +94,5 @@ class Engine {
         ExecutorVisitor executor = new(s, <__Schema>self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         return outputObject;
-    }
-
-    isolated function populateSchemaType() {
-        __Schema schema = <__Schema>self.schema;
-        __Type schemaType = {
-            kind: OBJECT,
-            name: SCHEMA_TYPE_NAME
-        };
-
-        __Type typesType = {
-            kind: NON_NULL,
-			name: (),
-			ofType: <__Type>schema.types[TYPE_TYPE_NAME]
-        };
-        __Field typesField = {
-            name: TYPES_FIELD,
-            'type: typesType
-        };
-        __Field[] fields = [typesField];
-        schemaType.fields = fields;
-        schema.types[SCHEMA_TYPE_NAME] = schemaType;
     }
 }

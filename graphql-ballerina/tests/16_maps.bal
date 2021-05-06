@@ -147,7 +147,7 @@ isolated function testNestedMapWithoutKeyInput() returns error? {
     string url = "http://localhost:9109/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
     string message1 = string`Field "contacts" argument "key" of type "String" is required, but it was not provided.`;
-    string message2 = string`Field "contacts" of type "Contact" must have a selection of subfields. Did you mean "contacts { ... }"?`;
+    string message2 = string`Field "contacts" of type "Contact!" must have a selection of subfields. Did you mean "contacts { ... }"?`;
     json expectedPayload = {
         errors: [
             {
@@ -172,21 +172,3 @@ isolated function testNestedMapWithoutKeyInput() returns error? {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
-
-@test:Config {
-    groups: ["map", "unit"]
-}
-function testMapsReturningFromResource() returns error? {
-    Listener l = check new(9110);
-    var result = l.attach(serviceWithResourcesReturningMaps, "/graphql");
-    test:assertTrue(result is error);
-    error err = <error>result;
-    string expectedMessage = string`GraphQL resource cannot return type: map`;
-    test:assertEquals(err.message(), expectedMessage);
-}
-
-Service serviceWithResourcesReturningMaps = service object {
-    resource function get invalidResource() returns map<Contact> {
-        return contacts;
-    }
-};

@@ -122,3 +122,19 @@ EmployeeTable employees = table[
     { id: 2, name: "Jane Doe", salary: 2000.00 },
     { id: 3, name: "Johnny Roe", salary: 500.00 }
 ];
+
+table<TLift> key(id) liftTable = table [
+    { id: "astra-express", name: "Astra Express", status: "OPEN", capacity: 10, night: false, elevationgain: 20},
+    { id: "jazz-cat", name: "Jazz Cat", status: "CLOSED", capacity: 5, night: true, elevationgain: 30},
+    { id: "jolly-roger", name: "Jolly Roger", status: "CLOSED", capacity: 8, night: true, elevationgain: 10}
+];
+
+table<TTrail> key(id) trailTabel = table [
+    {id: "blue-bird", name: "Blue Bird", status: "OPEN", difficulty: "intermediate", groomed: true, trees: false, night: false},
+    {id: "blackhawk", name: "Blackhawk", status: "OPEN", difficulty: "intermediate", groomed: true, trees: false, night: false},
+    {id: "ducks-revenge", name: "Duck's Revenge", status: "CLOSED", difficulty: "expert", groomed: true, trees: false, night: false}
+];
+
+table<Edge> key(liftId, trailId) edgeTable = table [
+    {liftId: "astra-express", trailId: "blue-bird"}
+];

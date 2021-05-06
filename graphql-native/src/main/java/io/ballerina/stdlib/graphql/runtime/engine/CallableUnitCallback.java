@@ -75,7 +75,7 @@ public class CallableUnitCallback implements Callback {
         } else if (o instanceof BObject) {
             getDataFromService(this.environment, (BObject) o, this.visitor, this.node, this.data);
         } else {
-            getDataFromResult(this.node, o, this.data);
+            getDataFromResult(this.environment, this.visitor, this.node, o, this.data);
         }
         this.latch.countDown();
     }
@@ -86,18 +86,21 @@ public class CallableUnitCallback implements Callback {
         this.latch.countDown();
     }
 
-    private static void getDataFromResult(BObject node, Object result, BMap<BString, Object> data) {
+    public static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
+                                          BMap<BString, Object> data) {
         if (result instanceof BMap) {
             BMap<BString, Object> map = (BMap<BString, Object>) result;
             if (map.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
-                getDataFromRecord(node, map, data);
+                getDataFromRecord(environment, visitor, node, map, data);
             } else if (map.getType().getTag() == TypeTags.MAP_TAG) {
-                getDataFromMap(node, map, data);
+                getDataFromMap(environment, visitor, node, map, data);
             }
         } else if (result instanceof BArray) {
-            getDataFromArray(node, (BArray) result, data);
+            getDataFromArray(environment, visitor, node, (BArray) result, data);
         } else if (result instanceof BTable) {
-            getDataFromTable(node, (BTable) result, data);
+            getDataFromTable(environment, visitor, node, (BTable) result, data);
+        } else if (result instanceof BObject) {
+            getDataFromService(environment, (BObject) result, visitor, node, data);
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
         }
@@ -120,7 +123,8 @@ public class CallableUnitCallback implements Callback {
         }
     }
 
-    static void getDataFromArray(BObject node, BArray result, BMap<BString, Object> data) {
+    static void getDataFromArray(Environment environment, BObject visitor, BObject node, BArray result,
+                                 BMap<BString, Object> data) {
         if (isScalarType(result.getElementType())) {
             data.put(node.getStringValue(NAME_FIELD), result);
         } else {
@@ -128,14 +132,15 @@ public class CallableUnitCallback implements Callback {
             for (int i = 0; i < result.size(); i++) {
                 Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
-                getDataFromResult(node, resultElement, subData);
+                getDataFromResult(environment, visitor, node, resultElement, subData);
                 resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
             data.put(node.getStringValue(NAME_FIELD), resultArray);
         }
     }
 
-    static void getDataFromRecord(BObject node, BMap<BString, Object> record, BMap<BString, Object> data) {
+    static void getDataFromRecord(Environment environment, BObject visitor, BObject node, BMap<BString, Object> record,
+                                  BMap<BString, Object> data) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
@@ -144,36 +149,38 @@ public class CallableUnitCallback implements Callback {
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
                 if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(record.getType().getName())) {
-                    processFragmentNodes(subNode, record, subData);
+                    processFragmentNodes(environment, visitor, subNode, record, subData);
                 }
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
-                getDataFromResult(subNode, fieldValue, subData);
+                getDataFromResult(environment, visitor, subNode, fieldValue, subData);
             }
         }
         data.put(node.getStringValue(NAME_FIELD), subData);
     }
 
-    static void getDataFromMap(BObject node, BMap<BString, Object> map, BMap<BString, Object> data) {
+    static void getDataFromMap(Environment environment, BObject visitor, BObject node, BMap<BString, Object> map,
+                               BMap<BString, Object> data) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         BString key = arguments.getStringValue(StringUtils.fromString(KEY));
         Object result = map.get(key);
-        getDataFromResult(node, result, data);
+        getDataFromResult(environment, visitor, node, result, data);
     }
 
-    static void processFragmentNodes(BObject node, BMap<BString, Object> record, BMap<BString, Object> data) {
+    static void processFragmentNodes(Environment environment, BObject visitor, BObject node,
+                                     BMap<BString, Object> record, BMap<BString, Object> data) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                processFragmentNodes(subNode, record, data);
+                processFragmentNodes(environment, visitor, subNode, record, data);
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
-                getDataFromResult(subNode, fieldValue, data);
+                getDataFromResult(environment, visitor, subNode, fieldValue, data);
             }
         }
     }
@@ -195,11 +202,12 @@ public class CallableUnitCallback implements Callback {
         }
     }
 
-    private static void getDataFromTable(BObject node, BTable table, BMap<BString, Object> data) {
+    private static void getDataFromTable(Environment environment, BObject visitor, BObject node, BTable table,
+                                         BMap<BString, Object> data) {
         Object[] valueArray = table.values().toArray();
         ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
         BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        getDataFromArray(node, valueBArray, data);
+        getDataFromArray(environment, visitor, node, valueBArray, data);
     }
 
     private void appendErrorToVisitor(BError bError) {

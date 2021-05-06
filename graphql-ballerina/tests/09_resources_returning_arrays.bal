@@ -28,6 +28,24 @@ service /graphql on new Listener(9100) {
     resource function get students() returns Student[] {
         return students;
     }
+
+    isolated resource function get allVehicles() returns Vehicle[] {
+        return [new Vehicle()];
+    }
+
+    isolated resource function get searchVehicles(string keyword) returns Vehicle[]? {
+        return [new Vehicle()];
+    }
+}
+
+service class Vehicle {
+    isolated resource function get id () returns string|error {
+        return "v1";
+    }
+
+    isolated resource function get name () returns string|error {
+        return "vehicle1";
+    }
 }
 
 @test:Config {
@@ -214,4 +232,63 @@ isolated function testComplexArraySample() returns error? {
         }
     };
     test:assertEquals(actualResult, expectedResult);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+isolated function testResourceReturningServiceObjectArray() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ allVehicles { name } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            allVehicles: [
+                {
+                    name: "vehicle1"
+                }
+            ]
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+isolated function testOptionalArray() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ searchVehicles(keyword: "vehicle") { name } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            searchVehicles: [
+                {
+                    name: "vehicle1"
+                }
+            ]
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"],
+    enable: false // To be enabled after fixing ballerina-standard-library/#1321
+}
+isolated function testOptionalArrayInvalidQuery() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ searchVehicles(keyword: "vehicle") }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Field "searchVehicles" of type "[Vehicle!]" must have a selection of subfields. Did you mean "searchVehicles { ... }"?`
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,9 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema;
+package io.ballerina.stdlib.graphql.runtime.schema.types;
+
+import io.ballerina.runtime.api.types.Type;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,16 +31,22 @@ import java.util.Map;
  */
 public class SchemaType {
 
-    private TypeKind kind;
-    private String name;
-    private Map<String, SchemaField> fields;
-    private List<Object> enumValues;
-    private List<SchemaType> possibleTypes;
-    SchemaType ofType;
+    private final TypeKind kind;
+    private final String name;
+    private final Map<String, SchemaField> fields;
+    private final List<Object> enumValues;
+    private final List<SchemaType> possibleTypes;
+    private SchemaType ofType;
+    private final Type balType;
 
     public SchemaType(String name, TypeKind kind) {
+        this(name, kind, null);
+    }
+
+    public SchemaType(String name, TypeKind kind, Type balType) {
         this.name = name;
         this.kind = kind;
+        this.balType = balType;
         this.fields = new HashMap<>();
         this.enumValues = new ArrayList<>();
         this.possibleTypes = new ArrayList<>();
@@ -56,12 +64,8 @@ public class SchemaType {
         return this.fields.values();
     }
 
-    public SchemaField getField(String name) {
-        return this.fields.get(name);
-    }
-
-    public boolean hasField(String name) {
-        return this.fields.containsKey(name);
+    public Type getBalType() {
+        return this.balType;
     }
 
     public List<Object> getEnumValues() {
