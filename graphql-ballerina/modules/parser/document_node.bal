@@ -31,7 +31,7 @@ public class DocumentNode {
     public isolated function addFragment(FragmentNode fragment) returns SyntaxError? {
         if (self.fragments.hasKey(fragment.getName())) {
             FragmentNode originalFragment = <FragmentNode>self.fragments[fragment.getName()];
-            if(fragment.isIncludeInlineFragment()) {
+            if(fragment.isInlineFragment()) {
                 self.appendDuplicateInlineFragment(fragment, originalFragment);
             } else {
                 string message = string`There can be only one fragment named "${fragment.getName()}".`;

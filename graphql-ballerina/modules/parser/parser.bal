@@ -183,16 +183,13 @@ public class Parser {
         return [fragmentName, token.location];
     }
 
-    isolated function addInlineFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
+    isolated function addInlineFragmentToNode(ParentNode parentNode) returns ([string,Location]|Error) {
         Token token = check self.readNextNonSeparatorToken();//Consume on keyword
-        Location location = token.location.clone();
         token = check self.readNextNonSeparatorToken();
+        Location location = token.location;
         string onType = check getIdentifierTokenvalue(token);
-        if (onType == ON) {
-            return getUnexpectedTokenError(token);
-        }
         string fragmentName = onType;
-        FragmentNode fragmentNode = new(fragmentName, token.location, onType, true);
+        FragmentNode fragmentNode = new(fragmentName, location, onType, true);
         token = check self.peekNextNonSeparatorToken();
         if (token.kind != T_OPEN_BRACE) {
             return getExpectedCharError(token, OPEN_BRACE);

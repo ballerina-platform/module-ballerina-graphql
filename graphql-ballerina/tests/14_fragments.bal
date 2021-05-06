@@ -517,27 +517,27 @@ fragment fullNameFragment on Name {
 @test:Config {
     groups: ["fragments", "unit", "inline"]
 }
-isolated function testInlneFragment() returns error? {
+isolated function testInlineFragment() returns error? {
     string document = string
 `query {
-    ... on Query {
-        people{
-            ... on Person{
-                address{
-                    city
-                }
-            }
-        }
-    }
-    ... on Query{
-            students{
-                name
-                }
-            }
+   ...on Query {
+       people {
+           ... on Person {
+               address {
+                   city
+               }
+           }
+       }
+   }
+
+   ... on Query {
+       students {
+           name
+       }
+   }
 }`;
     string url = "http://localhost:9106/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
              people: [
@@ -568,6 +568,34 @@ isolated function testInlneFragment() returns error? {
                  }
              ]
         }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit", "inline"]
+}
+isolated function testUnknownInlineFragments() returns error? {
+    string document = string
+`query {
+    ...on on {
+        name
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+            errors: [
+                {
+                    message: string`Unknown type "on".`,
+                    locations: [
+                        {
+                            "line": 2,
+                            "column": 11
+                        }
+                    ]
+                }
+            ]
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
