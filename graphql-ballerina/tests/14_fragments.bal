@@ -609,3 +609,4 @@ isolated function testUnknownInlineFragments() returns error? {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
+
