@@ -142,7 +142,7 @@ fragment TypeRef on __Type {
 }
 
 @test:Config {
-    groups: ["playground", "introspection", "test"]
+    groups: ["playground", "introspection"]
 }
 isolated function testIntrospectionForPersonAndGreet() returns error? {
     string document = string`
