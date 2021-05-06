@@ -133,3 +133,4 @@ isolated function testEnumWithUnion() returns error? {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
+
