@@ -31,12 +31,30 @@ public class DocumentNode {
     public isolated function addFragment(FragmentNode fragment) returns SyntaxError? {
         if (self.fragments.hasKey(fragment.getName())) {
             FragmentNode originalFragment = <FragmentNode>self.fragments[fragment.getName()];
-            string message = string`There can be only one fragment named "${fragment.getName()}".`;
-            Location l1 = originalFragment.getLocation();
-            Location l2 = fragment.getLocation();
-            self.errors.push({message: message, locations: [l1, l2]});
+            if(fragment.isInlineFragment()) {
+                self.appendDuplicateInlineFragment(fragment, originalFragment);
+            } else {
+                string message = string`There can be only one fragment named "${fragment.getName()}".`;
+                Location l1 = originalFragment.getLocation();
+                Location l2 = fragment.getLocation();
+                self.errors.push({message: message, locations: [l1, l2]});
+                self.fragments[fragment.getName()] = fragment;
+            }
+        } else {
+            self.fragments[fragment.getName()] = fragment;
         }
-        self.fragments[fragment.getName()] = fragment;
+    }
+
+    private isolated function appendDuplicateInlineFragment(FragmentNode duplicate, FragmentNode original) {
+        foreach var fields in duplicate.getFields() {
+            original.addField(fields);
+        }
+        foreach var fragments in duplicate.getFragments() {
+            original.addFragment(fragments);
+        }
+        foreach var selections in duplicate.getSelections() {
+            original.addSelection(selections);
+        }
     }
 
     public isolated function accept(Visitor v) {
