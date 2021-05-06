@@ -595,17 +595,17 @@ isolated function testUnknownInlineFragments() returns error? {
     string url = "http://localhost:9106/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
-            errors: [
-                {
-                    message: string`Unknown type "on".`,
-                    locations: [
-                        {
-                            "line": 2,
-                            "column": 11
-                        }
-                    ]
-                }
-            ]
+        errors: [
+            {
+                message: string`Unknown type "on".`,
+                locations: [
+                    {
+                        "line": 2,
+                        "column": 11
+                    }
+                ]
+            }
+        ]
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
