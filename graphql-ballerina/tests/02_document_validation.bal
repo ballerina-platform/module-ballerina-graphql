@@ -73,3 +73,53 @@ function testQueryResult() returns error? {
     test:assertEquals(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
+
+@test:Config {
+    groups: ["listener", "unit"],
+    dependsOn: [testDocumentValidation]
+}
+function testDocumentWithMultipleOperations() returns error? {
+    check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
+    string document = string
+`query getName {
+    name
+}
+query getId {
+    id
+}
+`;
+    string url = "http://localhost:9091/graphql_service_2";
+    json actualPayload = check getJsonPayloadFromService(url, document, "getName");
+    json expectedPayload = {
+        data: {
+            name: "John Doe"
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+    check gqlListener.detach(serviceWithMultipleResources);
+}
+
+@test:Config {
+    groups: ["listener", "unit"],
+    dependsOn: [testDocumentValidation]
+}
+function testDocumentWithMultipleOperationsSecondOperation() returns error? {
+    check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
+    string document = string
+`query getName {
+    name
+}
+query getId {
+    id
+}
+`;
+    string url = "http://localhost:9091/graphql_service_2";
+    json actualPayload = check getJsonPayloadFromService(url, document, "getId");
+    json expectedPayload = {
+        data: {
+            id: 1
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+    check gqlListener.detach(serviceWithMultipleResources);
+}

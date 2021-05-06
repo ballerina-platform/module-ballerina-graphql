@@ -36,7 +36,11 @@ import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY_TYPE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
@@ -59,6 +63,24 @@ public class FieldFinder {
         for (SchemaType schemaType : this.typeMap.values()) {
             populateFieldsOfSchemaType(schemaType);
         }
+        this.addSchemaTypeFields();
+    }
+
+    private void addSchemaTypeFields() {
+        SchemaType schemaType = new SchemaType(SCHEMA_RECORD, TypeKind.OBJECT);
+        SchemaField queryTypeField = new SchemaField(QUERY_TYPE_FIELD.getValue());
+        queryTypeField.setType(this.typeMap.get(TYPE_RECORD));
+        schemaType.addField(queryTypeField);
+
+        SchemaField typesField = new SchemaField(TYPES_FIELD.getValue());
+        SchemaType typesFieldWrapper =  getNonNullType();
+        SchemaType typesFieldType = new SchemaType(null, TypeKind.LIST);
+        typesFieldType.setOfType(this.typeMap.get(TYPE_RECORD));
+        typesFieldWrapper.setOfType(typesFieldType);
+        typesField.setType(typesFieldWrapper);
+        schemaType.addField(typesField);
+
+        this.typeMap.put(SCHEMA_RECORD, schemaType);
     }
 
     public Map<String, SchemaType> getTypeMap() {

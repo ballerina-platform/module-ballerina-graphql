@@ -86,7 +86,7 @@ public class CallableUnitCallback implements Callback {
         this.latch.countDown();
     }
 
-    private static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
+    public static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
                                           BMap<BString, Object> data) {
         if (result instanceof BMap) {
             BMap<BString, Object> map = (BMap<BString, Object>) result;

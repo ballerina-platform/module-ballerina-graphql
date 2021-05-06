@@ -409,6 +409,9 @@ fragment types on __Schema {
                         "name": "__EnumValue"
                     },
                     {
+                        "name": "__DirectiveLocation"
+                    },
+                    {
                         "name": "String"
                     },
                     {
@@ -433,7 +436,13 @@ fragment types on __Schema {
                         "name": "Course"
                     },
                     {
+                        "name": "Boolean"
+                    },
+                    {
                         "name": "Person"
+                    },
+                    {
+                        "name": "__Directive"
                     }
                 ]
             }

@@ -31,7 +31,12 @@ public class Listener {
     public isolated function init(int|http:Listener listenTo, ListenerConfiguration? configuration = ())
     returns Error? {
         if (listenTo is int) {
-            http:Listener|error httpListener = new(listenTo, configuration);
+            http:Listener|error httpListener;
+            if (configuration is ListenerConfiguration) {
+                httpListener = new(listenTo, configuration);
+            } else {
+                httpListener = new(listenTo);
+            }
             if (httpListener is error) {
                 return error ServiceHandlingError("Listener initialization failed", httpListener);
             } else {
