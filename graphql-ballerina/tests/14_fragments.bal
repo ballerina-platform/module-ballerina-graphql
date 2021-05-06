@@ -564,7 +564,8 @@ isolated function testInlineFragment() returns error? {
                      address: {
                          city: "Hogwarts"
                      }
-                 }],
+                 }
+             ],
              students: [
                  {
                      name: "John Doe"
