@@ -60,6 +60,15 @@ json hierarchicalResourcePathIntrospectionResult = {
                             "name": "types"
                         },
                         {
+                            "name": "subscriptionType"
+                        },
+                        {
+                            "name": "directives"
+                        },
+                        {
+                            "name": "mutationType"
+                        },
+                        {
                             "name": "queryType"
                         }
                     ]
@@ -198,6 +207,9 @@ json enumTypeInspectionResult = {
                     "name": "__TypeKind",
                     "enumValues": [
                         {
+                            "name": "INTERFACE"
+                        },
+                        {
                             "name": "UNION"
                         },
                         {
@@ -248,9 +260,6 @@ json enumTypeInspectionResult = {
                         },
                         {
                             "name": "ENUM_VALUE"
-                        },
-                        {
-                            "name": "INTERFACE"
                         },
                         {
                             "name": "ARGUMENT_DEFINITION"

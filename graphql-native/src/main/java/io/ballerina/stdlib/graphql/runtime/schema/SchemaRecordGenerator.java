@@ -40,6 +40,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUE_
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_VALUE_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERFACES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.OF_TYPE_FIELD;
@@ -58,7 +59,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
  */
 public class SchemaRecordGenerator {
     private final Schema schema;
-    private Map<String, BMap<BString, Object>> typeRecords;
+    private final Map<String, BMap<BString, Object>> typeRecords;
 
     public SchemaRecordGenerator(Schema schema) {
         this.schema = schema;
@@ -83,6 +84,9 @@ public class SchemaRecordGenerator {
             BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
             typeRecord.put(NAME_FIELD, StringUtils.fromString(schemaType.getName()));
             typeRecord.put(KIND_FIELD, StringUtils.fromString(schemaType.getKind().toString()));
+            if (schemaType.getKind() == TypeKind.OBJECT) {
+                typeRecord.put(INTERFACES_FIELD, getInterfacesArray(schemaType));
+            }
             this.typeRecords.put(schemaType.getName(), typeRecord);
         }
     }
@@ -117,6 +121,9 @@ public class SchemaRecordGenerator {
     }
 
     private BArray getEnumValuesArray(SchemaType schemaType) {
+        if (schemaType.getEnumValues() == null) {
+            return null;
+        }
         BArray enumValuesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD));
         for (Object enumValue : schemaType.getEnumValues()) {
             BMap<BString, Object> enumValueRecord = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD);
@@ -127,11 +134,21 @@ public class SchemaRecordGenerator {
     }
 
     private BArray getPossibleTypesArray(SchemaType schemaType) {
+        if (schemaType.getPossibleTypes() == null) {
+            return null;
+        }
         BArray possibleTypesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
         for (SchemaType possibleType : schemaType.getPossibleTypes()) {
             possibleTypesArray.append(getTypeRecord(possibleType));
         }
         return possibleTypesArray;
+    }
+
+    private BArray getInterfacesArray(SchemaType schemaType) {
+        if (schemaType.getKind() == TypeKind.OBJECT) {
+            return getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
+        }
+        return null;
     }
 
     private BArray getFieldsArray(SchemaType schemaType) {
@@ -151,9 +168,6 @@ public class SchemaRecordGenerator {
     }
 
     private BArray getInputValueArray(SchemaField schemaField) {
-        if (schemaField.getArgs().size() == 0) {
-            return null;
-        }
         BArray inputValueArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD));
         for (InputValue inputValue : schemaField.getArgs()) {
             inputValueArray.append(getInputValueRecordFromInputValue(inputValue));

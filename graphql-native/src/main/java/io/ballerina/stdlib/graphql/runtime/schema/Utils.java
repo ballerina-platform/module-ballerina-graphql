@@ -49,8 +49,9 @@ public class Utils {
         return SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM);
     }
 
-    public static boolean isOptional(Field field) {
-        return SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL);
+    public static boolean isRequired(Field field) {
+        return SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) ||
+                !SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL);
     }
 
     public static boolean isReturningErrorOrNil(Type type) {

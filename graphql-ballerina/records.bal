@@ -152,7 +152,8 @@ public enum __TypeKind {
     ENUM,
     NON_NULL,
     LIST,
-    UNION
+    UNION,
+    INTERFACE
 }
 
 # Represents a directive in a GraphQL schema.
@@ -180,7 +181,6 @@ public enum __DirectiveLocation {
   SCHEMA,
   FIELD_DEFINITION,
   ARGUMENT_DEFINITION,
-  INTERFACE,
   ENUM_VALUE,
   INPUT_OBJECT,
   INPUT_FIELD_DEFINITION

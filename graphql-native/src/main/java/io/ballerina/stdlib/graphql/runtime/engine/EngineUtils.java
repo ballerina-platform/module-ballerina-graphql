@@ -63,6 +63,11 @@ public class EngineUtils {
     public static final BString ENUM_VALUES_FIELD = StringUtils.fromString("enumValues");
     public static final BString OF_TYPE_FIELD = StringUtils.fromString("ofType");
     public static final BString POSSIBLE_TYPES_FIELD = StringUtils.fromString("possibleTypes");
+    public static final BString INTERFACES_FIELD = StringUtils.fromString("interfaces");
+
+    // Schema related values
+    public static final String INCLUDE_DEPRECATED = "includeDeprecated";
+    public static final String FALSE = "false";
 
     // Schema related type names
     public static final String INTEGER = "Int";

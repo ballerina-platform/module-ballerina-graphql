@@ -47,9 +47,9 @@ public class SchemaType {
         this.name = name;
         this.kind = kind;
         this.balType = balType;
-        this.fields = new HashMap<>();
-        this.enumValues = new ArrayList<>();
-        this.possibleTypes = new ArrayList<>();
+        this.fields = (kind == TypeKind.OBJECT) ? new HashMap<>() : null;
+        this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
+        this.possibleTypes = (kind == TypeKind.UNION) ? new ArrayList<>() : null;
     }
 
     public String getName() {
@@ -78,6 +78,13 @@ public class SchemaType {
 
     public void addField(SchemaField field) {
         this.fields.put(field.getName(), field);
+    }
+
+    public SchemaField getField(String name) {
+        if (this.fields.containsKey(name)) {
+            return this.fields.get(name);
+        }
+        return null;
     }
 
     public void addEnumValue(Object o) {
