@@ -20,6 +20,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'com.github.spotbugs'
+    id 'jacoco'
 }
 
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
@@ -114,3 +115,5 @@ test {
 copyDistribution.dependsOn ":graphql-ballerina:ballerinaBuild"
 copyPackageBala.dependsOn copyDistribution
 test.dependsOn copyPackageBala
+test.finalizedBy jacocoTestReport
+jacocoTestReport.dependsOn test
