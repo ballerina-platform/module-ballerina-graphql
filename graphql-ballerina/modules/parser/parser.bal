@@ -94,7 +94,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         string onType = check getIdentifierTokenvalue(token);
 
-        FragmentNode fragmentNode = new(name, location, onType);
+        FragmentNode fragmentNode = new(name, location, onType, false);
         token = check self.peekNextNonSeparatorToken();
         if (token.kind != T_OPEN_BRACE) {
             return getExpectedCharError(token, OPEN_BRACE);
@@ -119,13 +119,26 @@ public class Parser {
         while (token.kind != T_CLOSE_BRACE) {
             token = check self.peekNextNonSeparatorToken();
             if (token.kind == T_ELLIPSIS) {
-                var [name, location] = check self.addFragmentToNode(parentNode);
-                Selection selection = {
-                    name: name,
-                    isFragment: true,
-                    location: location
-                };
-                parentNode.addSelection(selection);
+                token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
+                token = check self.peekNextNonSeparatorToken();
+                string keyword = check getIdentifierTokenvalue(token);
+                if (keyword == ON) {
+                    var [name, location] = check self.addInlineFragmentToNode(parentNode);
+                    Selection selection = {
+                        name: name,
+                        isFragment: true,
+                        location: location
+                    };
+                    parentNode.addSelection(selection);
+                } else {
+                    var [name, location] = check self.addFragmentToNode(parentNode);
+                    Selection selection = {
+                        name: name,
+                        isFragment: true,
+                        location: location
+                    };
+                    parentNode.addSelection(selection);
+                }
             } else {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
                 Selection selection = {
@@ -164,11 +177,27 @@ public class Parser {
     }
 
     isolated function addFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
-        Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
-        token = check self.readNextNonSeparatorToken();
+        Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
         parentNode.addFragment(fragmentName);
         return [fragmentName, token.location];
+    }
+
+    isolated function addInlineFragmentToNode(ParentNode parentNode) returns ([string,Location]|Error) {
+        Token token = check self.readNextNonSeparatorToken();//Consume on keyword
+        token = check self.readNextNonSeparatorToken();
+        Location location = token.location;
+        string onType = check getIdentifierTokenvalue(token);
+        string fragmentName = onType;
+        FragmentNode fragmentNode = new(fragmentName, location, onType, true);
+        token = check self.peekNextNonSeparatorToken();
+        if (token.kind != T_OPEN_BRACE) {
+            return getExpectedCharError(token, OPEN_BRACE);
+        }
+        check self.addSelections(fragmentNode);
+        check self.document.addFragment(fragmentNode);
+        parentNode.addFragment(fragmentName);
+        return [fragmentName, location];
     }
 
     isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {

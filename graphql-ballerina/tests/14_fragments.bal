@@ -522,3 +522,90 @@ fragment fullNameFragment on Name {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["fragments", "unit", "inline"]
+}
+isolated function testInlineFragment() returns error? {
+    string document = string
+`query {
+   ...on Query {
+       people {
+           ... on Person {
+               address {
+                   city
+               }
+           }
+       }
+   }
+
+   ... on Query {
+       students {
+           name
+       }
+   }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+             people: [
+                 {
+                     address: {
+                         city: "London"
+                     }
+                 },
+                 {
+                     address: {
+                         city: "Albuquerque"
+                     }
+                 },
+                 {
+                     address: {
+                         city: "Hogwarts"
+                     }
+                 }
+             ],
+             students: [
+                 {
+                     name: "John Doe"
+                 },
+                 {
+                     name: "Jane Doe"
+                 },
+                 {
+                     name: "Jonny Doe"
+                 }
+             ]
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit", "inline"]
+}
+isolated function testUnknownInlineFragments() returns error? {
+    string document = string
+`query {
+    ...on on {
+        name
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Unknown type "on".`,
+                locations: [
+                    {
+                        "line": 2,
+                        "column": 11
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
