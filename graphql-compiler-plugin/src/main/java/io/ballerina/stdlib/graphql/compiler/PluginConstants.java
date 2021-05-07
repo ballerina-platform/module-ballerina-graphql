@@ -58,7 +58,7 @@ public class PluginConstants {
         INVALID_RETURN_TYPE_ERROR("Invalid return type error. Resource function must have a return data type",
                 "GRAPHQL_109", DiagnosticSeverity.ERROR),
         INVALID_LISTENER_INIT("Invalid arguments passed for the listener. " +
-                "http:Listener and  graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_110",
+                "http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_110",
                 DiagnosticSeverity.ERROR);
 
         private final String error;
