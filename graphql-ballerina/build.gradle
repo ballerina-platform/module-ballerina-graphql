@@ -33,7 +33,7 @@ def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN'
 def originalBallerinaToml = ballerinaTomlFile.text
 def originalDependenciesToml = dependenciesTomlFile.text
 def originalCompilerPluginToml = compilerPluginTomlFile.text
-def testCoverageParam = "--code-coverage --includes=io.ballerina.stdlib.graphql.*:ballerina.*"
+def testCoverageParam = "--code-coverage --jacoco-xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
 def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
 def stripBallerinaExtensionVersion(String extVersion) {
