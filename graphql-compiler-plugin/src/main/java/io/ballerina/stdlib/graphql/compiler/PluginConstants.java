@@ -32,6 +32,7 @@ public class PluginConstants {
     // resource function constants
     public static final String RESOURCE_FUNCTION_GET = "get";
     public static final String MAX_QUERY_DEPTH = "maxQueryDepth";
+    public  static final String LISTENER_IDENTIFIER = "Listener";
     public static final String UNARY_NEGATIVE = "-";
 
     /**
@@ -55,7 +56,10 @@ public class PluginConstants {
         INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value must be a positive integer",
                 "GRAPHQL_108", DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ERROR("Invalid return type error. Resource function must have a return data type",
-                "GRAPHQL_109", DiagnosticSeverity.ERROR);
+                "GRAPHQL_109", DiagnosticSeverity.ERROR),
+        INVALID_LISTENER_INIT("Invalid arguments passed for the listener. " +
+                "http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_110",
+                DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

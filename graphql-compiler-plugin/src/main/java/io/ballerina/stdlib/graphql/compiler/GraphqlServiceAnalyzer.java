@@ -22,6 +22,8 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.CodeAnalysisContext;
 import io.ballerina.projects.plugins.CodeAnalyzer;
 
+import java.util.Arrays;
+
 /**
  * The {@code CodeAnalyzer} for Ballerina GraphQL services.
  */
@@ -29,5 +31,8 @@ public class GraphqlServiceAnalyzer extends CodeAnalyzer {
     @Override
     public void init(CodeAnalysisContext codeAnalysisContext) {
         codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlServiceValidator(), SyntaxKind.SERVICE_DECLARATION);
+        codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlListenerValidator(),
+                Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION, SyntaxKind.EXPLICIT_NEW_EXPRESSION));
+
     }
 }
