@@ -29,6 +29,17 @@ isolated function getMaxQueryDepth(Service serviceObject) returns int|InvalidCon
     return 0;
 }
 
+isolated function getListenerAuthConfig(Service serviceObject) returns ListenerAuthConfig[]? {
+    GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(serviceObject);
+    if (serviceConfig is GraphqlServiceConfiguration) {
+        if (serviceConfig?.auth is ListenerAuthConfig[]) {
+            ListenerAuthConfig[] auth = <ListenerAuthConfig[]>serviceConfig?.auth;
+            return auth;
+        }
+    }
+    return;
+}
+
 isolated function getServiceConfiguration(Service serviceObject) returns GraphqlServiceConfiguration? {
     typedesc<any> serviceType = typeof serviceObject;
     var serviceConfiguration = serviceType.@ServiceConfiguration;

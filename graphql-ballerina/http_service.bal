@@ -24,10 +24,18 @@ service class HttpService {
     }
 
     isolated resource function get .(http:Request request) returns http:Response {
+        http:Response? authResult = authenticateService(self.engine.auth, request);
+        if (authResult is http:Response) {
+            return authResult;
+        }
         return handleGetRequests(self.engine, request);
     }
 
     isolated resource function post .(http:Request request) returns http:Response {
+        http:Response? authResult = authenticateService(self.engine.auth, request);
+        if (authResult is http:Response) {
+            return authResult;
+        }
         return handlePostRequests(self.engine, request);
     }
 }
