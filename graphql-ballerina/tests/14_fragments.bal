@@ -122,7 +122,7 @@ fragment data on Person {
                 locations: [
                     {
                         line: 2,
-                        column: 8
+                        column: 5
                     }
                 ]
             }
@@ -606,6 +606,50 @@ isolated function testUnknownInlineFragments() returns error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit", "inline"]
+}
+isolated function testInvalidSpreadInlineFragments() returns error? {
+    string document = string
+`query {
+    __schema{
+        types{
+            ...on Student{
+                name
+            }
+            ...on Person{
+                name
+            }
+        }
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+          errors: [
+            {
+              message: "Fragment \"Student\" cannot be spread here as objects of type \"__Type\" can never be of type \"Student\".",
+              locations: [
+                {
+                  "line": 4,
+                  "column": 13
+                }
+              ]
+            },
+            {
+              message: "Fragment \"Person\" cannot be spread here as objects of type \"__Type\" can never be of type \"Person\".",
+              locations: [
+                {
+                  "line": 7,
+                  "column": 13
+                }
+              ]
+            }
+          ]
     };
     test:assertEquals(actualPayload, expectedPayload);
 }

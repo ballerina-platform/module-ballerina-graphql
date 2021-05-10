@@ -119,6 +119,7 @@ public class Parser {
         while (token.kind != T_CLOSE_BRACE) {
             token = check self.peekNextNonSeparatorToken();
             if (token.kind == T_ELLIPSIS) {
+                Location ellipsisLocation = token.location;
                 token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
                 token = check self.peekNextNonSeparatorToken();
                 string keyword = check getIdentifierTokenvalue(token);
@@ -127,7 +128,8 @@ public class Parser {
                     Selection selection = {
                         name: name,
                         isFragment: true,
-                        location: location
+                        location: location,
+                        ellipsisLocation: ellipsisLocation
                     };
                     parentNode.addSelection(selection);
                 } else {
@@ -135,7 +137,8 @@ public class Parser {
                     Selection selection = {
                         name: name,
                         isFragment: true,
-                        location: location
+                        location: location,
+                        ellipsisLocation: ellipsisLocation
                     };
                     parentNode.addSelection(selection);
                 }
