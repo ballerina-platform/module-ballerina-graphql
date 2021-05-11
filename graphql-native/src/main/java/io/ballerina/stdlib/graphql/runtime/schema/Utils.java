@@ -49,24 +49,9 @@ public class Utils {
         return SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM);
     }
 
-    public static boolean isOptional(Field field) {
-        return SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL);
-    }
-
-    public static boolean isReturningErrorOrNil(Type type) {
-        if (type.getTag() == TypeTags.ERROR_TAG) {
-            return true;
-        }
-        if (type.getTag() != TypeTags.UNION_TAG) {
-            return false;
-        }
-        UnionType unionType = (UnionType) type;
-        for (Type memberType : unionType.getMemberTypes()) {
-            if (memberType.getTag() == TypeTags.ERROR_TAG || memberType.getTag() == TypeTags.NULL_TAG) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean isRequired(Field field) {
+        return SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) ||
+                !SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL);
     }
 
     public static List<Type> getMemberTypes(UnionType unionType) {
