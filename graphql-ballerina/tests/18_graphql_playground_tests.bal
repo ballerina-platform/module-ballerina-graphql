@@ -29,8 +29,7 @@ service /graphql on new Listener(9112) {
 }
 
 @test:Config {
-    groups: ["playground", "introspection"],
-    enable: false
+    groups: ["playground", "introspection"]
 }
 isolated function testGraphQLPlaygroundIntrospectionQuery() returns error? {
     string document = string`
