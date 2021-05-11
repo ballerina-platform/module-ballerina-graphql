@@ -6,6 +6,9 @@
                     "name": "__TypeKind",
                     "enumValues": [
                         {
+                            "name": "INPUT_OBJECT"
+                        },
+                        {
                             "name": "INTERFACE"
                         },
                         {
@@ -53,9 +56,6 @@
                     "enumValues": [
                         {
                             "name": "INPUT_FIELD_DEFINITION"
-                        },
-                        {
-                            "name": "INPUT_OBJECT"
                         },
                         {
                             "name": "ENUM_VALUE"

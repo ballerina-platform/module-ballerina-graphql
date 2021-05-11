@@ -28,5 +28,6 @@ public enum TypeKind {
     NON_NULL,
     LIST,
     UNION,
-    INTERFACE
+    INTERFACE,
+    INPUT_OBJECT
 }

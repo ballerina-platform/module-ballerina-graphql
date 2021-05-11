@@ -36,10 +36,12 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FALSE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INCLUDE_DEPRECATED;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
@@ -78,6 +80,10 @@ public class FieldFinder {
 
         SchemaField enumValuesField = schemaType.getField(ENUM_VALUES_FIELD.getValue());
         enumValuesField.addArg(getIncludeDeprecatedInputValue());
+
+        SchemaType fieldType = this.getType(FIELD_RECORD);
+        SchemaField argsField = fieldType.getField(ARGS_FIELD.getValue());
+        argsField.addArg(getIncludeDeprecatedInputValue());
     }
 
     private InputValue getIncludeDeprecatedInputValue() {
@@ -134,7 +140,7 @@ public class FieldFinder {
             if (memberTypes.size() == 1) {
                 return getSchemaTypeFromType(memberTypes.get(0));
             } else {
-                SchemaType schemaType = new SchemaType(getTypeNameFromType(unionType), TypeKind.UNION);
+                SchemaType schemaType = this.getType(unionType.getName());
                 for (Type memberType : memberTypes) {
                     SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
                     schemaType.addPossibleType(possibleType);

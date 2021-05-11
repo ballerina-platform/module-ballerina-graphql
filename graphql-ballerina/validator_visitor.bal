@@ -192,7 +192,7 @@ class ValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>data;
         __Type argType = getOfType(schemaArg.'type);
-        string typeName = argType?.name.toString();
+        string typeName = argType.kind == ENUM ? "String" : argType?.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
         string expectedTypeName = getTypeName(argumentNode);
         if (typeName != expectedTypeName) {

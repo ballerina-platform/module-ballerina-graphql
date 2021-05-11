@@ -16,6 +16,12 @@
                     "interfaces": null,
                     "enumValues": [
                         {
+                            "name": "INPUT_OBJECT",
+                            "description": null,
+                            "isDeprecated": false,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "INTERFACE",
                             "description": null,
                             "isDeprecated": false,
@@ -68,17 +74,32 @@
                         {
                             "name": "args",
                             "description": null,
-                            "args": [],
+                            "args": [
+                                {
+                                    "name": "includeDeprecated",
+                                    "description": null,
+                                    "type": {
+                                        "kind": "SCALAR",
+                                        "name": "Boolean",
+                                        "ofType": null
+                                    },
+                                    "defaultValue": "false"
+                                }
+                            ],
                             "type": {
-                                "kind": "LIST",
+                                "kind": "NON_NULL",
                                 "name": null,
                                 "ofType": {
-                                    "kind": "NON_NULL",
+                                    "kind": "LIST",
                                     "name": null,
                                     "ofType": {
-                                        "kind": "OBJECT",
-                                        "name": "__InputValue",
-                                        "ofType": null
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "OBJECT",
+                                            "name": "__InputValue",
+                                            "ofType": null
+                                        }
                                     }
                                 }
                             },
@@ -637,12 +658,6 @@
                     "enumValues": [
                         {
                             "name": "INPUT_FIELD_DEFINITION",
-                            "description": null,
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
-                            "name": "INPUT_OBJECT",
                             "description": null,
                             "isDeprecated": false,
                             "deprecationReason": null
