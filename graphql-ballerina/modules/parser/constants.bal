@@ -71,7 +71,7 @@ const FALSE = "false";
 
 // Token Types
 const T_EOF = 0;
-const T_IDENTIFIER = 1;
+public const T_IDENTIFIER = 1;
 public const T_STRING = 2;
 public const T_INT = 3;
 public const T_FLOAT = 4;
