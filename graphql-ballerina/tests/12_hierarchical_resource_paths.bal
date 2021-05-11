@@ -121,9 +121,10 @@ isolated function testInvalidHierarchicalResourcePaths() returns error? {
 @test:Config {
     groups: ["introspection", "hierarchicalPaths", "unit"]
 }
-function testHierarchicalResourcePathsIntrospection() returns error? {
+isolated function testHierarchicalResourcePathsIntrospection() returns error? {
     string document = "{ __schema { types { name fields { name } } } }";
     string url = "http://localhost:9104/graphql";
+    json expectedPayload = check getJsonContentFromFile("hierarchical_resource_path_introspection_result.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, hierarchicalResourcePathIntrospectionResult);
+    test:assertEquals(actualPayload, expectedPayload);
 }

@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.schema;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.RecordType;
@@ -35,17 +36,22 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FALSE;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INCLUDE_DEPRECATED;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isOptional;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isReturningErrorOrNil;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isRequired;
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -60,26 +66,33 @@ public class FieldFinder {
     }
 
     public void populateFields() {
+        this.addSchemaTypeFields();
         for (SchemaType schemaType : this.typeMap.values()) {
             populateFieldsOfSchemaType(schemaType);
         }
-        this.addSchemaTypeFields();
+        this.addAdditionalInputValuesToTypeFields();
+    }
+
+    private void addAdditionalInputValuesToTypeFields() {
+        SchemaType schemaType = this.getType(TYPE_RECORD);
+        SchemaField fieldsSchemaField = schemaType.getField(FIELDS_FIELD.getValue());
+        fieldsSchemaField.addArg(getIncludeDeprecatedInputValue());
+
+        SchemaField enumValuesField = schemaType.getField(ENUM_VALUES_FIELD.getValue());
+        enumValuesField.addArg(getIncludeDeprecatedInputValue());
+
+        SchemaType fieldType = this.getType(FIELD_RECORD);
+        SchemaField argsField = fieldType.getField(ARGS_FIELD.getValue());
+        argsField.addArg(getIncludeDeprecatedInputValue());
+    }
+
+    private InputValue getIncludeDeprecatedInputValue() {
+        return new InputValue(INCLUDE_DEPRECATED, this.getType(BOOLEAN), FALSE);
     }
 
     private void addSchemaTypeFields() {
-        SchemaType schemaType = new SchemaType(SCHEMA_RECORD, TypeKind.OBJECT);
-        SchemaField queryTypeField = new SchemaField(QUERY_TYPE_FIELD.getValue());
-        queryTypeField.setType(this.typeMap.get(TYPE_RECORD));
-        schemaType.addField(queryTypeField);
-
-        SchemaField typesField = new SchemaField(TYPES_FIELD.getValue());
-        SchemaType typesFieldWrapper =  getNonNullType();
-        SchemaType typesFieldType = new SchemaType(null, TypeKind.LIST);
-        typesFieldType.setOfType(this.typeMap.get(TYPE_RECORD));
-        typesFieldWrapper.setOfType(typesFieldType);
-        typesField.setType(typesFieldWrapper);
-        schemaType.addField(typesField);
-
+        SchemaType schemaType = new SchemaType(SCHEMA_RECORD, TypeKind.OBJECT,
+                                               ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD).getType());
         this.typeMap.put(SCHEMA_RECORD, schemaType);
     }
 
@@ -127,7 +140,7 @@ public class FieldFinder {
             if (memberTypes.size() == 1) {
                 return getSchemaTypeFromType(memberTypes.get(0));
             } else {
-                SchemaType schemaType = new SchemaType(getTypeNameFromType(unionType), TypeKind.UNION);
+                SchemaType schemaType = this.getType(unionType.getName());
                 for (Type memberType : memberTypes) {
                     SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
                     schemaType.addPossibleType(possibleType);
@@ -137,7 +150,14 @@ public class FieldFinder {
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
             SchemaType schemaType = new SchemaType(null, TypeKind.LIST);
-            schemaType.setOfType(getSchemaTypeFromType(arrayType.getElementType()));
+            Type elementType = arrayType.getElementType();
+            if (elementType.getTag() != TypeTags.UNION_TAG) {
+                SchemaType wrapperType = getNonNullType();
+                wrapperType.setOfType(getSchemaTypeFromType(elementType));
+                schemaType.setOfType(wrapperType);
+            } else {
+                schemaType.setOfType(getSchemaTypeFromType(elementType));
+            }
             return schemaType;
         } else if (tag == TypeTags.TABLE_TAG) {
             TableType tableType = (TableType) type;
@@ -145,13 +165,7 @@ public class FieldFinder {
             schemaType.setOfType(getSchemaTypeFromType(tableType.getConstrainedType()));
             return schemaType;
         } else {
-            if (isReturningErrorOrNil(type)) {
-                return this.typeMap.get(getTypeNameFromType(type));
-            } else {
-                SchemaType schemaType = getNonNullType();
-                schemaType.setOfType(this.typeMap.get(getTypeNameFromType(type)));
-                return schemaType;
-            }
+            return this.typeMap.get(getTypeNameFromType(type));
         }
     }
 
@@ -160,11 +174,13 @@ public class FieldFinder {
         for (Field field : recordType.getFields().values()) {
             SchemaField schemaField = new SchemaField(field.getFieldName());
             SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
-            if (!isOptional(field)) {
+            if (isRequired(field)) {
                 SchemaType wrapperType = getNonNullType();
                 wrapperType.setOfType(fieldType);
+                schemaField.setType(wrapperType);
+            } else {
+                schemaField.setType(fieldType);
             }
-            schemaField.setType(fieldType);
             if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
                 schemaField.addArg(new InputValue(KEY, this.typeMap.get(STRING)));
             }

@@ -25,8 +25,8 @@ import java.util.List;
  * This class represents a field in a GraphQL schema.
  */
 public class SchemaField {
-    private String name;
-    private List<InputValue> args;
+    private final String name;
+    private final List<InputValue> args;
     private SchemaType type;
 
     public SchemaField(String name) {

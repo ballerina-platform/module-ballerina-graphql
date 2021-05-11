@@ -107,8 +107,7 @@ isolated function testResourcesReturningArraysMissingFields() returns error? {
     string document = "{ people }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
 
-    string expectedMessage = "Field \"people\" of type \"[Person!]\" must have a selection of subfields. Did you mean "
-                            + "\"people { ... }\"?";
+    string expectedMessage = string`Field "people" of type "[Person!]!" must have a selection of subfields. Did you mean "people { ... }"?`;
     json expectedResult = {
         errors: [
             {
@@ -275,8 +274,7 @@ isolated function testOptionalArray() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"],
-    enable: false // To be enabled after fixing ballerina-standard-library/#1321
+    groups: ["array", "service", "unit", "test"]
 }
 isolated function testOptionalArrayInvalidQuery() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -286,7 +284,13 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: string`Field "searchVehicles" of type "[Vehicle!]" must have a selection of subfields. Did you mean "searchVehicles { ... }"?`
+                message: string`Field "searchVehicles" of type "[Vehicle!]" must have a selection of subfields. Did you mean "searchVehicles { ... }"?`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
             }
         ]
     };
