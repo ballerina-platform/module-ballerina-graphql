@@ -150,7 +150,7 @@ fragment personFragment on Person {
                 locations: [
                     {
                         line: 3,
-                        column: 12
+                        column: 9
                     }
                 ]
             }
