@@ -38,6 +38,7 @@ import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
@@ -145,8 +146,13 @@ public class TypeFinder {
             this.createSchemaType(getTypeNameFromType(unionType), TypeKind.ENUM, unionType);
         } else {
             // TODO: Handle cases where record fields have `error?` type.
-            List<Type> members = unionType.getOriginalMemberTypes();
-            for (Type type : members) {
+            List<Type> memberTypes = getMemberTypes(unionType);
+            if (memberTypes.size() == 1) {
+                getSchemaTypeFromBalType(memberTypes.get(0));
+            } else {
+                this.createSchemaType(unionType.getName(), TypeKind.UNION, unionType);
+            }
+            for (Type type : memberTypes) {
                 if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
                     getSchemaTypeFromBalType(type);
                 }

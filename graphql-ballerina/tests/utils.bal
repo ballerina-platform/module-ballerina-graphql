@@ -14,7 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/file;
 import ballerina/http;
+import ballerina/io;
 
 isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
 returns json|error {
@@ -23,4 +25,9 @@ returns json|error {
         return check httpClient->post("/", { query: document, operationName: operationName }, targetType = json);
     }
     return check httpClient->post("/", { query: document }, targetType = json);
+}
+
+isolated function getJsonContentFromFile(string fileName) returns json|error {
+    string path = check file:joinPath("tests", "resources", fileName);
+    return io:fileReadJson(path);
 }

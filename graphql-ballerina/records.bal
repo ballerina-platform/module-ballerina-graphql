@@ -126,7 +126,7 @@ public type __EnumValue record {|
 public type __Field record {|
     string name;
     string description?;
-    __InputValue[] args?;
+    __InputValue[] args;
     __Type 'type;
     boolean isDeprecated = false;
     string deprecationReason?;
@@ -152,7 +152,9 @@ public enum __TypeKind {
     ENUM,
     NON_NULL,
     LIST,
-    UNION
+    UNION,
+    INTERFACE,
+    INPUT_OBJECT
 }
 
 # Represents a directive in a GraphQL schema.
@@ -180,8 +182,6 @@ public enum __DirectiveLocation {
   SCHEMA,
   FIELD_DEFINITION,
   ARGUMENT_DEFINITION,
-  INTERFACE,
   ENUM_VALUE,
-  INPUT_OBJECT,
   INPUT_FIELD_DEFINITION
 }

@@ -6,6 +6,8 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 ### Changed
 - [[#1329] Improve Introspection Validation and Execution](https://github.com/ballerina-platform/ballerina-standard-library/issues/1329)
 - [[#1330] Added Missing Fields of GraphQL Schema-Related Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1330)
+- [[#1339] Improve Input Parameter Validation Logic in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1339)
+- [[#1344] Improve Return Type Validation Logic in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1344)
 
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
@@ -17,6 +19,8 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1268] Fix Incorrect Validation for Fields in Service Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1268)
 - [[#1266] Fix Incorrect Validation for Input Parameters with Default Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/1266)
 - [[#1244] Add Inline Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1244)
+- [[#1321] Fix Invalid Wrapping of List Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1321)
+- [[#1332] Add Missing Arguments for Introspection Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1332)
 
 ## [0.2.0-alpha8] - 2021-04-23
 

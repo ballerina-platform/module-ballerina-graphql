@@ -354,7 +354,7 @@ isolated function testEnumValueIntrospection() returns error? {
     json expectedResult = {
         errors: [
             {
-                message: string`Field "enumValues" of type "[__EnumValue]" must have a selection of subfields. Did you mean "enumValues { ... }"?`,
+                message: string`Field "enumValues" of type "[__EnumValue!]" must have a selection of subfields. Did you mean "enumValues { ... }"?`,
                 locations: [
                     {
                         line: 1,

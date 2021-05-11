@@ -1,0 +1,148 @@
+{
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "__TypeKind",
+                    "enumValues": [
+                        {
+                            "name": "INPUT_OBJECT"
+                        },
+                        {
+                            "name": "INTERFACE"
+                        },
+                        {
+                            "name": "UNION"
+                        },
+                        {
+                            "name": "LIST"
+                        },
+                        {
+                            "name": "NON_NULL"
+                        },
+                        {
+                            "name": "ENUM"
+                        },
+                        {
+                            "name": "OBJECT"
+                        },
+                        {
+                            "name": "SCALAR"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Field",
+                    "enumValues": null
+                },
+                {
+                    "name": "Query",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Schema",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Type",
+                    "enumValues": null
+                },
+                {
+                    "name": "__EnumValue",
+                    "enumValues": null
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "enumValues": [
+                        {
+                            "name": "INPUT_FIELD_DEFINITION"
+                        },
+                        {
+                            "name": "ENUM_VALUE"
+                        },
+                        {
+                            "name": "ARGUMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FIELD_DEFINITION"
+                        },
+                        {
+                            "name": "SCHEMA"
+                        },
+                        {
+                            "name": "INLINE_FRAGMENT"
+                        },
+                        {
+                            "name": "FRAGMENT_SPREAD"
+                        },
+                        {
+                            "name": "FRAGMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FIELD"
+                        },
+                        {
+                            "name": "SUBSCRIPTION"
+                        },
+                        {
+                            "name": "MUTATION"
+                        },
+                        {
+                            "name": "QUERY"
+                        }
+                    ]
+                },
+                {
+                    "name": "Time",
+                    "enumValues": null
+                },
+                {
+                    "name": "String",
+                    "enumValues": null
+                },
+                {
+                    "name": "Int",
+                    "enumValues": null
+                },
+                {
+                    "name": "Weekday",
+                    "enumValues": [
+                        {
+                            "name": "SATURDAY"
+                        },
+                        {
+                            "name": "FRIDAY"
+                        },
+                        {
+                            "name": "THURSDAY"
+                        },
+                        {
+                            "name": "WEDNESDAY"
+                        },
+                        {
+                            "name": "TUESDAY"
+                        },
+                        {
+                            "name": "MONDAY"
+                        },
+                        {
+                            "name": "SUNDAY"
+                        }
+                    ]
+                },
+                {
+                    "name": "__InputValue",
+                    "enumValues": null
+                },
+                {
+                    "name": "Boolean",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Directive",
+                    "enumValues": null
+                }
+            ]
+        }
+    }
+}

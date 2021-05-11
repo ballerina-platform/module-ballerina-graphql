@@ -23,8 +23,10 @@ import io.ballerina.runtime.api.types.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class represents a Type in GraphQL schema.
@@ -35,7 +37,7 @@ public class SchemaType {
     private final String name;
     private final Map<String, SchemaField> fields;
     private final List<Object> enumValues;
-    private final List<SchemaType> possibleTypes;
+    private final Set<SchemaType> possibleTypes;
     private SchemaType ofType;
     private final Type balType;
 
@@ -47,9 +49,9 @@ public class SchemaType {
         this.name = name;
         this.kind = kind;
         this.balType = balType;
-        this.fields = new HashMap<>();
-        this.enumValues = new ArrayList<>();
-        this.possibleTypes = new ArrayList<>();
+        this.fields = (kind == TypeKind.OBJECT) ? new HashMap<>() : null;
+        this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
+        this.possibleTypes = (kind == TypeKind.UNION) ? new LinkedHashSet<>() : null;
     }
 
     public String getName() {
@@ -80,6 +82,13 @@ public class SchemaType {
         this.fields.put(field.getName(), field);
     }
 
+    public SchemaField getField(String name) {
+        if (this.fields.containsKey(name)) {
+            return this.fields.get(name);
+        }
+        return null;
+    }
+
     public void addEnumValue(Object o) {
         this.enumValues.add(o);
     }
@@ -92,10 +101,7 @@ public class SchemaType {
         this.possibleTypes.add(schemaType);
     }
 
-    public List<SchemaType> getPossibleTypes() {
-        if (this.possibleTypes.size() == 0) {
-            return null;
-        }
+    public Set<SchemaType> getPossibleTypes() {
         return this.possibleTypes;
     }
 }
