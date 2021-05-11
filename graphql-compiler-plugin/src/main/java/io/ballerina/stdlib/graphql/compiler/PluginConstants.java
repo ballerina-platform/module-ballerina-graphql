@@ -59,7 +59,9 @@ public class PluginConstants {
                 "GRAPHQL_109", DiagnosticSeverity.ERROR),
         INVALID_LISTENER_INIT("Invalid arguments passed for the listener. " +
                 "http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_110",
-                DiagnosticSeverity.ERROR);
+                DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_MULTIPLE_SERVICES("Invalid return type with multiple indistinct services",
+                "GRAPHQL_111", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;
