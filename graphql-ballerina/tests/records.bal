@@ -88,3 +88,9 @@ type Edge record {|
     readonly string liftId;
     readonly string trailId;
 |};
+
+enum Status {
+    OPEN,
+    CLOSE,
+    HOLD
+}

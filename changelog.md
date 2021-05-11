@@ -3,6 +3,9 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 
 ## [Unreleased]
 
+## Added
+- [[#1265] Support Optional Type Input Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1265)
+
 ### Changed
 - [[#1329] Improve Introspection Validation and Execution](https://github.com/ballerina-platform/ballerina-standard-library/issues/1329)
 - [[#1330] Added Missing Fields of GraphQL Schema-Related Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1330)

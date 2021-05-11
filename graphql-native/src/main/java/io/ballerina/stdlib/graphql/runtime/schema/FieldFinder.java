@@ -182,7 +182,9 @@ public class FieldFinder {
                 schemaField.setType(fieldType);
             }
             if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
-                schemaField.addArg(new InputValue(KEY, this.typeMap.get(STRING)));
+                SchemaType nonNullType = getNonNullType();
+                nonNullType.setOfType(this.typeMap.get(STRING));
+                schemaField.addArg(new InputValue(KEY, nonNullType));
             }
             schemaType.addField(schemaField);
         }
@@ -223,9 +225,17 @@ public class FieldFinder {
         Type[] paramTypes = resourceMethod.getParameterTypes();
         Boolean[] paramDefaultability = resourceMethod.getParamDefaultability();
         for (int i = 0; i < paramNames.length; i++) {
-            SchemaType inputValueType = this.typeMap.get(getTypeNameFromType(paramTypes[i]));
+            SchemaType inputValueType;
+            if (paramTypes[i].isNilable()) {
+                Type inputType = getInputTypeFromNilableType((UnionType) paramTypes[i]);
+                inputValueType = this.typeMap.get(getTypeNameFromType(inputType));
+            } else {
+                inputValueType = this.typeMap.get(getTypeNameFromType(paramTypes[i]));
+            }
             InputValue inputValue;
-            if (paramDefaultability[i]) {
+            if (paramTypes[i].isNilable()) {
+                inputValue = new InputValue(paramNames[i], inputValueType);
+            } else if (paramDefaultability[i]) {
                 inputValue = new InputValue(paramNames[i], inputValueType, paramTypes[i].getZeroValue().toString());
             } else {
                 SchemaType nonNullType = getNonNullType();
@@ -238,5 +248,16 @@ public class FieldFinder {
 
     private static SchemaType getNonNullType() {
         return new SchemaType(null, TypeKind.NON_NULL);
+    }
+
+    private static Type getInputTypeFromNilableType(UnionType unionType) {
+        Type result = unionType;
+        for (Type memberType : unionType.getOriginalMemberTypes()) {
+            if (memberType.getTag() == TypeTags.NULL_TAG) {
+                continue;
+            }
+            result = memberType;
+        }
+        return result;
     }
 }
