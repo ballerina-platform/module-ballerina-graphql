@@ -29,13 +29,13 @@ service graphql:Service on new graphql:Listener(4000) {
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get name() returns FirstName|Age? {
+    isolated resource function get details() returns FirstName|Age? {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get name() returns FirstName|CivilStatus {
+    isolated resource function get details() returns FirstName|CivilStatus {
         return new FirstName();
     }
 }
