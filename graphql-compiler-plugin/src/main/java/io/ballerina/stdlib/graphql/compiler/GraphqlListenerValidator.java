@@ -27,7 +27,6 @@ import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ListenerDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
-import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
@@ -47,8 +46,7 @@ public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysis
         Node node = context.node();
         if (node.kind() == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
             ExplicitNewExpressionNode expressionNode = (ExplicitNewExpressionNode) node;
-            QualifiedNameReferenceNode nameRef = (QualifiedNameReferenceNode) expressionNode.typeDescriptor();
-            Optional<Symbol> symbolOpt = context.semanticModel().symbol(nameRef);
+            Optional<Symbol> symbolOpt = context.semanticModel().symbol(expressionNode.typeDescriptor());
             if (symbolOpt.isPresent() && symbolOpt.get() instanceof TypeReferenceTypeSymbol) {
                 TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) symbolOpt.get()).typeDescriptor();
                 String identifier = typeSymbol.getName().orElse("");
@@ -65,8 +63,7 @@ public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysis
                 ListenerDeclarationNode parentNode = (ListenerDeclarationNode) expressionNode.parent();
                 Optional<TypeDescriptorNode> parentTypeOpt = parentNode.typeDescriptor();
                 if (parentTypeOpt.isPresent()) {
-                    QualifiedNameReferenceNode parentType = (QualifiedNameReferenceNode) parentTypeOpt.get();
-                    Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentType);
+                    Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentTypeOpt.get());
                     if (parentSymbolOpt.isPresent() && parentSymbolOpt.get() instanceof TypeReferenceTypeSymbol) {
                         TypeSymbol typeDescriptor = ((TypeReferenceTypeSymbol) parentSymbolOpt.get()).typeDescriptor();
                         if (isGraphqlListener(typeDescriptor) && expressionNode.parenthesizedArgList().isPresent()) {

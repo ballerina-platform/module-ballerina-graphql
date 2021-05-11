@@ -101,38 +101,8 @@ public class GraphqlFunctionValidator {
             if (returnTypeDesc.isPresent()) {
                 // if return type is a union
                 if (returnTypeDesc.get().typeKind() == TypeDescKind.UNION) {
-                    List<TypeSymbol> returnTypeMembers =
-                            ((UnionTypeSymbol) returnTypeDesc.get()).memberTypeDescriptors();
-
-                    // for cases like returning (float|decimal) - only one scalar type is allowed
-                    int primitiveType = 0;
-                    // for cases with only error?
-                    int type = 0;
-
-                    for (TypeSymbol returnType : returnTypeMembers) {
-                        if (returnType.typeKind() != TypeDescKind.NIL && returnType.typeKind() != TypeDescKind.ERROR) {
-                            if (hasInvalidReturnType(returnType)) {
-                                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
-                                        , functionDefinitionNode.location());
-                            }
-                            if (hasPrimitiveType(returnType)) {
-                                primitiveType++;
-                            } else {
-                                type++;
-                            }
-                        } // nil in a union in valid, no validation
-                    }
-                    if (type == 0 && primitiveType == 0) { // error? - invalid
-                        PluginUtils.updateContext(context,
-                                                  CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL,
-                                                  functionDefinitionNode.location());
-                    } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
-                                , functionDefinitionNode.location());
-                    } else if (primitiveType > 1) { // string|int - invalid
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE
-                                , functionDefinitionNode.location());
-                    } // type > 1 is valid - Person|Student
+                    validateReturnTypeUnion(context,
+                            ((UnionTypeSymbol) returnTypeDesc.get()).memberTypeDescriptors(), functionDefinitionNode);
                 } else {
                     // if return type not a union
                     // nil alone is invalid - must have a return type
@@ -212,7 +182,8 @@ public class GraphqlFunctionValidator {
                     hasInvalidReturnType = true;
                 }
             } else if (((TypeReferenceTypeSymbol) returnTypeSymbol).definition().kind() == SymbolKind.CLASS) {
-                if (!isValidServiceType(returnTypeSymbol)) {
+                ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
+                if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
                     hasInvalidReturnType = true;
                 }
             }
@@ -236,8 +207,68 @@ public class GraphqlFunctionValidator {
                returnType.typeKind() == TypeDescKind.DECIMAL;
     }
 
-    private boolean isValidServiceType(TypeSymbol returnTypeSymbol) {
-        ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
-        return classSymbol.qualifiers().contains(Qualifier.SERVICE) && classSymbol.getName().isPresent();
+    private void validateReturnTypeUnion(SyntaxNodeAnalysisContext context, List<TypeSymbol> returnTypeMembers,
+                                         FunctionDefinitionNode functionDefinitionNode) {
+        // for cases like returning (float|decimal) - only one scalar type is allowed
+        int primitiveType = 0;
+        // for cases with only error?
+        int type = 0;
+        // for union types with multiple services
+        int serviceTypes = 0;
+        // only validated if serviceTypes > 1
+        boolean distinctServices = true;
+
+        for (TypeSymbol returnType : returnTypeMembers) {
+            if (returnType.typeKind() != TypeDescKind.NIL && returnType.typeKind() != TypeDescKind.ERROR) {
+                if (returnType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                    // only service object types and records are allowed
+                    if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
+                        if (!isRecordType(returnType)) {
+                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
+                                    functionDefinitionNode.location());
+                        }
+                    } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
+                        ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
+                        if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
+                                    functionDefinitionNode.location());
+                        } else {
+                            // if distinctServices is false (one of the services is not distinct), skip setting it again
+                            if (distinctServices) {
+                                distinctServices = classSymbol.qualifiers().contains(Qualifier.DISTINCT);
+                            }
+                            serviceTypes++;
+                        }
+                    }
+                } else {
+                    if (hasInvalidReturnType(returnType)) {
+                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
+                                functionDefinitionNode.location());
+                    }
+                }
+
+                if (hasPrimitiveType(returnType)) {
+                    primitiveType++;
+                } else {
+                    type++;
+                }
+            } // nil in a union in valid, no validation
+        }
+
+        // has multiple services and if at least one of them are not distinct
+        if (serviceTypes > 1 && !distinctServices) {
+            PluginUtils.updateContext(context,
+                    CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, functionDefinitionNode.location());
+        }
+        if (type == 0 && primitiveType == 0) { // error? - invalid
+            PluginUtils.updateContext(context,
+                    CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL, functionDefinitionNode.location());
+        } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
+                    functionDefinitionNode.location());
+        } else if (primitiveType > 1) { // string|int - invalid
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
+                    functionDefinitionNode.location());
+        } // type > 1 is valid - Person|Student
     }
 }
