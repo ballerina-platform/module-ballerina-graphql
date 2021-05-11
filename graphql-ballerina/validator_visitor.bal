@@ -192,14 +192,17 @@ class ValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>data;
         __Type argType = getOfType(schemaArg.'type);
-        string typeName = argType.kind == ENUM ? "String" : argType?.name.toString();
+        string typeName = argType?.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
-        string expectedTypeName = getTypeName(argumentNode);
-        if (typeName != expectedTypeName) {
-            string message = string`${typeName} cannot represent non ${typeName} value: ${value.value.toString()}`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
-            self.errors.push(errorDetail);
-            return;
+        if (argType.kind == ENUM) {
+            self.validateEnumArgument(argType, argumentNode, schemaArg);
+        } else {
+            string expectedTypeName = getTypeName(argumentNode);
+            if (typeName != expectedTypeName) {
+                string message = string`${typeName} cannot represent non ${typeName} value: ${value.value.toString()}`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+                self.errors.push(errorDetail);
+            }
         }
     }
 
@@ -281,6 +284,25 @@ class ValidatorVisitor {
             }
             return fragmentOnType;
         }
+    }
+
+    isolated function validateEnumArgument(__Type argType, parser:ArgumentNode argNode, __InputValue inputValue) {
+        parser:ArgumentValue value = argNode.getValue();
+        if (argNode.getKind() != parser:T_IDENTIFIER) {
+            string message = string`Enum "${getTypeNameFromType(argType)}" cannot represent non-enum value: "${value.value}"`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+            self.errors.push(errorDetail);
+            return;
+        }
+       __EnumValue[] enumValues = <__EnumValue[]>argType?.enumValues;
+        foreach __EnumValue enumValue in enumValues {
+            if (enumValue.name == value.value) {
+                return;
+            }
+        }
+        string message = string`Value "${value.value}" does not exist in "${inputValue.name}" enum.`;
+        ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+        self.errors.push(errorDetail);
     }
 }
 

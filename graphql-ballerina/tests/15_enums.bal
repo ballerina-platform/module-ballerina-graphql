@@ -67,6 +67,13 @@ service /graphql on new Listener(9107) {
             time: "22:10:33"
         };
     }
+
+    isolated resource function get isHoliday(Weekday weekday) returns boolean {
+        if (weekday == SATURDAY || weekday == SUNDAY) {
+            return true;
+        }
+        return false;
+    }
 }
 
 @test:Config {
@@ -127,6 +134,68 @@ isolated function testEnumWithUnion() returns error? {
                     {
                         line: 1,
                         column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["enum", "unit"]
+}
+isolated function testEnumInputParameter() returns error? {
+    string document = "query { isHoliday(weekday: SUNDAY) }";
+    string url = "http://localhost:9107/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            isHoliday: true
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["enum", "unit"]
+}
+isolated function testEnumInvalidInputParameter() returns error? {
+    string document = "query { isHoliday(weekday: FUNDAY) }";
+    string url = "http://localhost:9107/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Value "FUNDAY" does not exist in "weekday" enum.`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 28
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+
+@test:Config {
+    groups: ["enum", "unit"]
+}
+isolated function testEnumInputParameterAsString() returns error? {
+    string document = string`query { isHoliday(weekday: "SUNDAY") }`;
+    string url = "http://localhost:9107/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Enum "Weekday" cannot represent non-enum value: "SUNDAY"`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 28
                     }
                 ]
             }
