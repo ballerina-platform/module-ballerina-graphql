@@ -85,7 +85,7 @@ public class SchemaRecordGenerator {
             typeRecord.put(NAME_FIELD, StringUtils.fromString(schemaType.getName()));
             typeRecord.put(KIND_FIELD, StringUtils.fromString(schemaType.getKind().toString()));
             if (schemaType.getKind() == TypeKind.OBJECT) {
-                typeRecord.put(INTERFACES_FIELD, getInterfacesArray(schemaType));
+                typeRecord.put(INTERFACES_FIELD, getInterfacesArray());
             }
             this.typeRecords.put(schemaType.getName(), typeRecord);
         }
@@ -121,9 +121,6 @@ public class SchemaRecordGenerator {
     }
 
     private BArray getEnumValuesArray(SchemaType schemaType) {
-        if (schemaType.getEnumValues() == null) {
-            return null;
-        }
         BArray enumValuesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD));
         for (Object enumValue : schemaType.getEnumValues()) {
             BMap<BString, Object> enumValueRecord = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD);
@@ -134,9 +131,6 @@ public class SchemaRecordGenerator {
     }
 
     private BArray getPossibleTypesArray(SchemaType schemaType) {
-        if (schemaType.getPossibleTypes() == null) {
-            return null;
-        }
         BArray possibleTypesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
         for (SchemaType possibleType : schemaType.getPossibleTypes()) {
             possibleTypesArray.append(getTypeRecord(possibleType));
@@ -144,11 +138,8 @@ public class SchemaRecordGenerator {
         return possibleTypesArray;
     }
 
-    private BArray getInterfacesArray(SchemaType schemaType) {
-        if (schemaType.getKind() == TypeKind.OBJECT) {
-            return getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
-        }
-        return null;
+    private BArray getInterfacesArray() {
+        return getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
     }
 
     private BArray getFieldsArray(SchemaType schemaType) {
