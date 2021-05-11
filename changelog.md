@@ -10,10 +10,9 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1344] Improve Return Type Validation Logic in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1344)
 
 ### Fixed
-- [[#1331] Incorrect Location in Fragment Error Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1331)
-- [[#1307] Returning Union of Service Types from a Resource](https://github.com/ballerina-platform/ballerina-standard-library/issues/1307)
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
 - [[#1250] Fix Hanging the Service when Returning Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1250)
+- [[#1307] Returning Union of Service Types from a Resource](https://github.com/ballerina-platform/ballerina-standard-library/issues/1307)
 - [[#1274] Fix Recursive Type Reference Causing Stack Overflow](https://github.com/ballerina-platform/ballerina-standard-library/issues/1274)
 - [[#1252] Fix Incorrect Behaviour in Validation EnumValues Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/1251)
 - [[#1269] Fix Validating Incorrect Arguments as Valid](https://github.com/ballerina-platform/ballerina-standard-library/issues/1269)
@@ -22,6 +21,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1244] Add Inline Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1244)
 - [[#1321] Fix Invalid Wrapping of List Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1321)
 - [[#1332] Add Missing Arguments for Introspection Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1332)
+- [[#1331] Incorrect Location in Fragment Error Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1331)
 
 ## [0.2.0-alpha8] - 2021-04-23
 

@@ -96,7 +96,7 @@ class ValidatorVisitor {
                     self.visitFragment(fragmentNode, fragmentParent);
                 } else {
                     string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
-                    self.errors.push(getErrorDetailRecord(message, selection?.ellipsisLocation ?: selection.location));
+                    self.errors.push(getErrorDetailRecord(message, selection?.spreadLocation ?: selection.location));
                 }
             }
             return;
@@ -276,7 +276,7 @@ class ValidatorVisitor {
             __Type ofType = getOfType(schemaType);
             if (fragmentOnType != ofType) {
                 string message = getFragmetCannotSpreadError(fragmentNode, fragment.name, ofType);
-                ErrorDetail errorDetail = getErrorDetailRecord(message, fragment?.ellipsisLocation ?: fragment.location);
+                ErrorDetail errorDetail = getErrorDetailRecord(message, fragment?.spreadLocation ?: fragment.location);
                 self.errors.push(errorDetail);
             }
             return fragmentOnType;

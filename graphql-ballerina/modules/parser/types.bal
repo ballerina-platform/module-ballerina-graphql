@@ -54,5 +54,5 @@ public type Selection record {|
     boolean isFragment;
     ParentNode node?;
     Location location;
-    Location ellipsisLocation?;
+    Location spreadLocation?;
 |};
