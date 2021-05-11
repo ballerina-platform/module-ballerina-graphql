@@ -174,14 +174,27 @@ public class GraphqlFunctionValidator {
     }
 
     private boolean hasInvalidInputParamType(TypeSymbol inputTypeSymbol) {
+        if (inputTypeSymbol.typeKind() == TypeDescKind.UNION) {
+            List<TypeSymbol> members = ((UnionTypeSymbol) inputTypeSymbol).memberTypeDescriptors();
+            boolean hasInvalidMember = false;
+            int hasType = 0;
+            for (TypeSymbol member: members) {
+                if (member.typeKind() != TypeDescKind.NIL) {
+                    hasInvalidMember = hasInvalidInputParamType(member);
+                    hasType++;
+                }
+            }
+            if (hasType > 1) {
+                hasInvalidMember = true;
+            }
+            return hasInvalidMember;
+        }
         if (inputTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             if ((((TypeReferenceTypeSymbol) inputTypeSymbol).definition()).kind() == SymbolKind.ENUM) {
                 return false;
             }
-        } else {
-            return !hasPrimitiveType(inputTypeSymbol);
         }
-        return true;
+        return !hasPrimitiveType(inputTypeSymbol);
     }
 
     private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
