@@ -17,8 +17,8 @@
 import ballerina/test;
 
 service /graphql on new Listener(9111) {
-    resource function get allLifts(string status) returns Lift {
-        string status2 = status;
+    resource function get allLifts(Status? status) returns Lift {
+        Status status2 = status is Status ? status : OPEN;
         TLift[] tLifts = from var l in liftTable where l.status == status2 select l;
         return new Lift(tLifts[0]);
     }
@@ -106,7 +106,7 @@ isolated function testReturningRecursiveServiceTypes() returns error? {
 isolated function testRequestInvalidFieldFromServiceTypes() returns error? {
     string document = string
 `query {
-    allLifts(status: "OPEN") {
+    allLifts(status: OPEN) {
         name
         id
         shafreen
@@ -130,6 +130,50 @@ isolated function testRequestInvalidFieldFromServiceTypes() returns error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "recursive_service", "schema_generation"]
+}
+isolated function testWithoutOptionalArgument() returns error? {
+    string document = string
+`query {
+    allLifts {
+        name
+    }
+}`;
+    string url = "http://localhost:9111/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            allLifts: {
+                name: "Astra Express"
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "recursive_service", "schema_generation"]
+}
+isolated function testWithOptionalArgument() returns error? {
+    string document = string
+`query {
+    allLifts(status: OPEN) {
+        name
+    }
+}`;
+    string url = "http://localhost:9111/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            allLifts: {
+                name: "Astra Express"
+            }
+        }
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
