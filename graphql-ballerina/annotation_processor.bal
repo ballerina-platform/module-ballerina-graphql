@@ -33,8 +33,7 @@ isolated function getListenerAuthConfig(Service serviceObject) returns ListenerA
     GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(serviceObject);
     if (serviceConfig is GraphqlServiceConfiguration) {
         if (serviceConfig?.auth is ListenerAuthConfig[]) {
-            ListenerAuthConfig[] auth = <ListenerAuthConfig[]>serviceConfig?.auth;
-            return auth;
+            return <ListenerAuthConfig[]>serviceConfig?.auth;
         }
     }
     return;

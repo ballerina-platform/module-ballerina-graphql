@@ -35,7 +35,9 @@ service /noAuth on securedEP1 {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testNoAuthServiceSuccess() {
     assertSuccess(sendBearerTokenRequest(9401, "/noAuth", JWT1));
     assertSuccess(sendJwtRequest(9401, "/noAuth"));
@@ -66,17 +68,23 @@ service /basicAuth on securedEP2 {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testBasicAuthServiceAuthSuccess() {
     assertSuccess(sendBasicTokenRequest(9402, "/basicAuth", "alice", "xxx"));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testBasicAuthServiceAuthzFailure() {
     assertForbidden(sendBasicTokenRequest(9402, "/basicAuth", "bob", "yyy"));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testBasicAuthServiceAuthnFailure() {
     assertUnauthorized(sendBasicTokenRequest(9402, "/basicAuth", "peter", "123"));
     assertUnauthorized(sendNoTokenRequest(9402, "/basicAuth"));
@@ -120,18 +128,24 @@ service /jwtAuth on securedEP3 {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testJwtAuthServiceAuthSuccess() {
     assertSuccess(sendBearerTokenRequest(9403, "/jwtAuth", JWT1));
     assertSuccess(sendJwtRequest(9403, "/jwtAuth"));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testJwtAuthServiceAuthzFailure() {
     assertForbidden(sendBearerTokenRequest(9403, "/jwtAuth", JWT2));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testJwtAuthServiceAuthnFailure() {
     assertUnauthorized(sendBearerTokenRequest(9403, "/jwtAuth", JWT3));
     assertUnauthorized(sendNoTokenRequest(9403, "/jwtAuth"));
@@ -174,18 +188,24 @@ service /oauth2 on securedEP4 {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testOAuth2ServiceAuthSuccess() {
     assertSuccess(sendBearerTokenRequest(9404, "/oauth2", ACCESS_TOKEN_1));
     assertSuccess(sendOAuth2TokenRequest(9404, "/oauth2"));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testOAuth2ServiceAuthzFailure() {
     assertForbidden(sendBearerTokenRequest(9404, "/oauth2", ACCESS_TOKEN_2));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testOAuth2ServiceAuthnFailure() {
     assertUnauthorized(sendBearerTokenRequest(9404, "/oauth2", ACCESS_TOKEN_3));
     assertUnauthorized(sendNoTokenRequest(9404, "/oauth2"));
@@ -250,19 +270,25 @@ service /multipleAuth on securedEP5 {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testMultipleServiceAuthSuccess() {
     assertSuccess(sendBearerTokenRequest(9405, "/multipleAuth", JWT1));
     assertSuccess(sendJwtRequest(9405, "/multipleAuth"));
 
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testMultipleServiceAuthzFailure() {
     assertForbidden(sendBearerTokenRequest(9405, "/multipleAuth", JWT2));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testMultipleServiceAuthnFailure() {
     assertUnauthorized(sendBearerTokenRequest(9405, "/multipleAuth", JWT3));
     assertUnauthorized(sendNoTokenRequest(9405, "/multipleAuth"));
@@ -304,14 +330,18 @@ service /noScopes on securedEP6 {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testServiceAuthWithoutScopesAuthSuccess() {
     assertSuccess(sendBearerTokenRequest(9406, "/noScopes", JWT1));
     assertSuccess(sendBearerTokenRequest(9406, "/noScopes", JWT2));
     assertSuccess(sendJwtRequest(9406, "/noScopes"));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["auth"]
+}
 isolated function testServiceAuthWithoutScopesAuthnFailure() {
     assertUnauthorized(sendBearerTokenRequest(9406, "/noScopes", JWT3));
     assertUnauthorized(sendNoTokenRequest(9406, "/noScopes"));

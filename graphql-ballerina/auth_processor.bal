@@ -21,13 +21,13 @@ import ballerina/oauth2;
 
 // Uses for declarative auth design, where the authentication decision is taken by reading the auth annotations
 // provided in service and the `Authorization` header of request.
-isolated function authenticateService(ListenerAuthConfig[]? authConfig, http:Request req) returns http:Response? {
-    if (authConfig is ()) {
+isolated function authenticateService(ListenerAuthConfig[]? authConfigs, http:Request req) returns http:Response? {
+    if (authConfigs is ()) {
         return;
     }
     string|http:HeaderNotFoundError header = req.getHeader("Authorization");
     if (header is string) {
-        http:Unauthorized|http:Forbidden? result = tryAuthenticate(<ListenerAuthConfig[]>authConfig, header);
+        http:Unauthorized|http:Forbidden? result = tryAuthenticate(<ListenerAuthConfig[]>authConfigs, header);
         if (result is http:Unauthorized) {
             return create401Response();
         } else if (result is http:Forbidden) {
