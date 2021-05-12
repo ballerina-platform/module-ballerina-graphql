@@ -4,6 +4,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 ## [Unreleased]
 
 ## Added
+- [[#1336] Implement declarative auth design for GraphQL module](https://github.com/ballerina-platform/ballerina-standard-library/issues/1336)
 - [[#1265] Support Optional Type Input Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1265)
 
 ### Changed

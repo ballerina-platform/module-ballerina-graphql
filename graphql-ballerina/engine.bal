@@ -21,6 +21,7 @@ class Engine {
     private __Schema? schema;
     private Service? graphqlService;
     private int maxQueryDepth;
+    ListenerAuthConfig[]? auth = ();
 
     public isolated function init(Listener 'listener) returns Error? {
         self.'listener = 'listener;
@@ -62,6 +63,7 @@ class Engine {
         self.schema = check createSchema(s);
         GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
         self.maxQueryDepth = check getMaxQueryDepth(s);
+        self.auth = getListenerAuthConfig(s);
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
