@@ -65,7 +65,7 @@ public class GraphqlFunctionValidator {
                 // object methods are valid, object methods that are remote functions are invalid
                 if (PluginUtils.isRemoteFunction(context, functionDefinitionNode)) {
                     PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION,
-                            functionDefinitionNode.location());
+                                              functionDefinitionNode.location());
                 }
             }
         }
@@ -104,18 +104,14 @@ public class GraphqlFunctionValidator {
             if (returnTypeDesc.get().typeKind() == TypeDescKind.UNION) {
                 validateReturnTypeUnion(context,
                         ((UnionTypeSymbol) returnTypeDesc.get()).memberTypeDescriptors(), location);
-            } else {
-                // if return type not a union
+            } else if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
                 // nil alone is invalid - must have a return type
-                if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL, location);
-                } else if (returnTypeDesc.get().typeKind() == TypeDescKind.ERROR) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR, location);
-                } else {
-                    if (hasInvalidReturnType(returnTypeDesc.get(), location, context)) {
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
-                    }
-                }
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL, location);
+            } else if (returnTypeDesc.get().typeKind() == TypeDescKind.ERROR) {
+                // error alone is invalid
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR, location);
+            } else if (hasInvalidReturnType(returnTypeDesc.get(), location, context)) {
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
             }
         }
     }
