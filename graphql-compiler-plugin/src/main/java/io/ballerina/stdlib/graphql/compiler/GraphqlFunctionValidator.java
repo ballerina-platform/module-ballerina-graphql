@@ -40,15 +40,18 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
 import io.ballerina.tools.diagnostics.Location;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Validates functions in Ballerina GraphQL services.
  */
 public class GraphqlFunctionValidator {
+    private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
 
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
@@ -188,16 +191,19 @@ public class GraphqlFunctionValidator {
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location,
                                                 SyntaxNodeAnalysisContext context) {
-        Map<String, MethodSymbol> methods = classSymbol.methods();
-        for (Map.Entry<String, MethodSymbol> method : methods.entrySet()) {
-            MethodSymbol methodSymbol = method.getValue();
-            if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
-                validateResourceAccessorName(methodSymbol, location, context);
-                validateReturnType(methodSymbol, location, context);
-                validateInputParamType(methodSymbol, location, context);
-            } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION, location);
+        if (!visitedClassSymbols.contains(classSymbol)) {
+            Map<String, MethodSymbol> methods = classSymbol.methods();
+            for (Map.Entry<String, MethodSymbol> method : methods.entrySet()) {
+                MethodSymbol methodSymbol = method.getValue();
+                if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
+                    validateResourceAccessorName(methodSymbol, location, context);
+                    validateReturnType(methodSymbol, location, context);
+                    validateInputParamType(methodSymbol, location, context);
+                } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
+                    PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION, location);
+                }
             }
+            visitedClassSymbols.add(classSymbol);
         }
     }
 

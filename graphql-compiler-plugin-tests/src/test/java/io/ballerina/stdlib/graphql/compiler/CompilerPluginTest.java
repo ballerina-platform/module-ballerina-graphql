@@ -245,6 +245,45 @@ public class CompilerPluginTest {
         }
     }
 
+    @Test
+    public void testInvalidService13() {
+        Package currentPackage = loadPackage("invalid_service_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
+        }
+    }
+
+    @Test
+    public void testInvalidService14() {
+        Package currentPackage = loadPackage("invalid_service_14");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
+        }
+    }
+
+    @Test
+    public void testInvalidService15() {
+        Package currentPackage = loadPackage("invalid_service_15");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
+        }
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
