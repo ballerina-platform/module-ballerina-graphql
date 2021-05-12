@@ -142,7 +142,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_4");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 7);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 8);
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;

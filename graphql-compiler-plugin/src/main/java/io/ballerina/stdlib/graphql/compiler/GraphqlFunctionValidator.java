@@ -229,6 +229,8 @@ public class GraphqlFunctionValidator {
         int type = 0;
         // for union types with multiple services
         int serviceTypes = 0;
+        // for union types with multiple records
+        int recordTypes = 0;
         // only validated if serviceTypes > 1
         boolean distinctServices = true;
 
@@ -239,6 +241,8 @@ public class GraphqlFunctionValidator {
                     if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
                         if (!isRecordType(returnType)) {
                             PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+                        } else {
+                            recordTypes++;
                         }
                     } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
                         ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
@@ -269,18 +273,17 @@ public class GraphqlFunctionValidator {
 
         // has multiple services and if at least one of them are not distinct
         if (serviceTypes > 1 && !distinctServices) {
-            PluginUtils.updateContext(context,
-                    CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
+        }
+        if (recordTypes > 1) {
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
         }
         if (type == 0 && primitiveType == 0) { // error? - invalid
-            PluginUtils.updateContext(context,
-                    CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
         } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
-                    location);
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
         } else if (primitiveType > 1) { // string|int - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE,
-                    location);
-        } // type > 1 is valid - Person|Student
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+        }
     }
 }

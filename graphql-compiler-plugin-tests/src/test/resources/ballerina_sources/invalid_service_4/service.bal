@@ -20,6 +20,10 @@ type Person record {
     string name;
 };
 
+type Student record {
+    int age;
+};
+
 service graphql:Service on new graphql:Listener(4000) {
     isolated resource function get greeting() returns map<int>  {
         return {sam: 50, jon: 60};
@@ -56,6 +60,12 @@ service graphql:Service on new graphql:Listener(4000) {
 service graphql:Service on new graphql:Listener(4000) {
     resource function get id() returns Person|string {  // Union of two types
         return "1234";
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get profile() returns Person|Student { // union of two records
+        return {name: "John"};
     }
 }
 
