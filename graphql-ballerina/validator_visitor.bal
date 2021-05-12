@@ -259,7 +259,7 @@ class ValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if (inputValue?.defaultValue == ()) {
+            if (inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is ()) {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }

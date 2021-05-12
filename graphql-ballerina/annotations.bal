@@ -14,12 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-
 # Provides a set of configurations for the GraphQL service.
 #
 # + maxQueryDepth - The maximum depth allowed for a query
+# + auth - Listener authenticaton configurations
 public type GraphqlServiceConfiguration record {|
     int maxQueryDepth?;
+    ListenerAuthConfig[] auth?;
 |};
 
 # The annotation to configure a GraphQL service.
