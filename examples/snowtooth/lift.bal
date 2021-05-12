@@ -74,4 +74,3 @@ distinct service class Lift {
         return new Trail(trails[0]);
     }
 }
-
