@@ -42,6 +42,7 @@ import io.ballerina.tools.diagnostics.Location;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -70,7 +71,7 @@ public class GraphqlFunctionValidator {
     private void validateResourceFunction(FunctionDefinitionNode functionDefinitionNode,
                                           SyntaxNodeAnalysisContext context) {
         MethodSymbol methodSymbol = PluginUtils.getMethodSymbol(context, functionDefinitionNode);
-        if (methodSymbol != null) {
+        if (Objects.nonNull(methodSymbol)) {
             validateResourceAccessorName(methodSymbol, functionDefinitionNode.location(), context);
             validateReturnType(methodSymbol, functionDefinitionNode.location(), context);
             validateInputParamType(methodSymbol, functionDefinitionNode.location(), context);
