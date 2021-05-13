@@ -169,4 +169,35 @@ isolated function testFragmentQueryExceedingMaxDepth() returns error? {
     test:assertEquals(actualPayload, expectedPayload);
 }
 
+@test:Config {
+    groups: ["configs", "unit"]
+}
+isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? {
+    string document = string
+`query getData {
+    people {
+        name
+        address {
+            city
+        }
+    }
+}`;
+    string url = "http://localhost:9103/depthLimitService";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Query has depth of 3, which exceeds max depth of 2 on getData",
+                locations: [
+                    {
+                        line: 1,
+                        column: 1
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
 

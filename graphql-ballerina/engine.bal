@@ -77,7 +77,7 @@ class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
-        if (self.maxQueryDepth != 0) {
+        if (self.maxQueryDepth > 0) {
             QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, self.maxQueryDepth);
             ErrorDetail[]? errors = queryDepthValidator.validate();
             if (errors is ErrorDetail[]) {

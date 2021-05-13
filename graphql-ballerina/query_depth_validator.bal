@@ -18,7 +18,7 @@ import graphql.parser;
 
 class QueryDepthValidator{
     private parser:DocumentNode documentNode;
-    private int queryDepth = 1;
+    private int queryDepth = 0;
     private int maxQueryDepth = 0;
     private int queryDepthLimit;
     private ErrorDetail[] errors;
@@ -41,59 +41,57 @@ class QueryDepthValidator{
         foreach parser:OperationNode operationNode in operations {
             self.visitOperation(operationNode);
             if (self.maxQueryDepth > self.queryDepthLimit) {
-                string message = string
-                `Query has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit}`;
-                self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
-                return;
+                if (operationNode.getName() != parser:ANONYMOUS_OPERATION) {
+                    string message = string
+                    `Query has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit} on ${
+                        operationNode.getName()}`;
+                    self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
+                } else {
+                    string message = string
+                    `Query has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit}`;
+                    self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
+                }
             }
+            self.queryDepth = 0;
+            self.maxQueryDepth = 0;
         }
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
         foreach parser:Selection selection in operationNode.getSelections() {
             self.visitSelection(selection);
-            if (self.queryDepth > self.maxQueryDepth) {
-                self.maxQueryDepth = self.queryDepth;
-            }
-            self.queryDepth = 0;
         }
     }
 
     public isolated function visitSelection(parser:Selection selection) {
         if (selection.isFragment) {
             parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-            if (fragmentNode.getFields().length() != 0 || fragmentNode.getFragments().length() != 0) {
-                self.visitFragment(fragmentNode);
-            }
+            self.visitFragment(fragmentNode);
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            if (fieldNode.getFields().length() != 0 || fieldNode.getFragments().length() != 0) {
-                self.queryDepth += 1;
-                self.visitField(fieldNode);
-            }
+            self.visitField(fieldNode);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode) {
-        parser:Selection[] selections = fieldNode.getSelections();
-        int i = self.queryDepth;
-        foreach parser:Selection subSelection in selections {
-            self.visitSelection(subSelection);
+        self.queryDepth += 1;
+        if (fieldNode.getSelections().length() > 0) {
+            parser:Selection[] selections = fieldNode.getSelections();
+            foreach parser:Selection subSelection in selections {
+                self.visitSelection(subSelection);
+            }
+            self.queryDepth -= 1;
+        } else {
             if (self.queryDepth > self.maxQueryDepth) {
                 self.maxQueryDepth = self.queryDepth;
             }
-            self.queryDepth = i;
+            self.queryDepth -= 1;
         }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode) {
-        int i = self.queryDepth;
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
-            if (self.queryDepth > self.maxQueryDepth) {
-                self.maxQueryDepth = self.queryDepth;
-            }
-            self.queryDepth = i;
         }
     }
 
