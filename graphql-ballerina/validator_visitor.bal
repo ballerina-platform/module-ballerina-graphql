@@ -22,6 +22,7 @@ class ValidatorVisitor {
     private __Schema schema;
     private parser:DocumentNode documentNode;
     private int maxQueryDepth;
+    private int queryDepth = 0;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
 
@@ -35,6 +36,13 @@ class ValidatorVisitor {
 
     public isolated function validate() returns ErrorDetail[]? {
         FragmentVisitor fragmentVisitor = new();
+        if(self.maxQueryDepth != 0) {
+            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(self.documentNode, self.maxQueryDepth);
+            queryDepthValidator.validate();
+            foreach ErrorDetail errorDetail in queryDepthValidator.getErrors() {
+                self.errors.push(errorDetail);
+            }
+        }
         fragmentVisitor.visitDocument(self.documentNode);
         foreach ErrorDetail errorDetail in fragmentVisitor.getErrors() {
             self.errors.push(errorDetail);
@@ -63,11 +71,6 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        if (self.maxQueryDepth > 0 && operationNode.getMaxDepth() > self.maxQueryDepth) {
-            string message = string`Query has depth of ${operationNode.getMaxDepth()}, which exceeds max depth of ${self.maxQueryDepth.toString()}`;
-            self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
-            return;
-        }
         Parent parent = {
             parentType: self.schema.queryType,
             name: QUERY_TYPE_NAME
