@@ -29,9 +29,11 @@ class QueryDepthValidator{
         self.errors = [];
     }
 
-    public isolated function validate() {
+    public isolated function validate() returns ErrorDetail[]? {
         self.visitDocument(self.documentNode);
-        return;
+        if (self.errors.length() > 0) {
+            return self.errors;
+        }
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode) {
