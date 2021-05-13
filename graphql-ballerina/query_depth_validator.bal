@@ -40,7 +40,7 @@ class QueryDepthValidator{
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
             self.visitOperation(operationNode);
-            if(self.maxQueryDepth > self.queryDepthLimit) {
+            if (self.maxQueryDepth > self.queryDepthLimit) {
                 string message = string
                 `Query has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit}`;
                 self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
@@ -52,7 +52,7 @@ class QueryDepthValidator{
     public isolated function visitOperation(parser:OperationNode operationNode) {
         foreach parser:Selection selection in operationNode.getSelections() {
             self.visitSelection(selection);
-            if(self.queryDepth > self.maxQueryDepth) {
+            if (self.queryDepth > self.maxQueryDepth) {
                 self.maxQueryDepth = self.queryDepth;
             }
             self.queryDepth = 0;
@@ -60,14 +60,14 @@ class QueryDepthValidator{
     }
 
     public isolated function visitSelection(parser:Selection selection) {
-        if(selection.isFragment) {
+        if (selection.isFragment) {
             parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-            if(fragmentNode.getFields().length() != 0 || fragmentNode.getFragments().length() != 0) {
+            if (fragmentNode.getFields().length() != 0 || fragmentNode.getFragments().length() != 0) {
                 self.visitFragment(fragmentNode);
             }
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            if(fieldNode.getFields().length() != 0 || fieldNode.getFragments().length() != 0) {
+            if (fieldNode.getFields().length() != 0 || fieldNode.getFragments().length() != 0) {
                 self.queryDepth += 1;
                 self.visitField(fieldNode);
             }
@@ -79,7 +79,7 @@ class QueryDepthValidator{
         int i = self.queryDepth;
         foreach parser:Selection subSelection in selections {
             self.visitSelection(subSelection);
-            if(self.queryDepth > self.maxQueryDepth ) {
+            if (self.queryDepth > self.maxQueryDepth) {
                 self.maxQueryDepth = self.queryDepth;
             }
             self.queryDepth = i;
@@ -90,7 +90,7 @@ class QueryDepthValidator{
         int i = self.queryDepth;
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
-            if(self.queryDepth > self.maxQueryDepth ) {
+            if (self.queryDepth > self.maxQueryDepth) {
                 self.maxQueryDepth = self.queryDepth;
             }
             self.queryDepth = i;
