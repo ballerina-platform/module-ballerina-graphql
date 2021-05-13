@@ -41,7 +41,8 @@ class QueryDepthValidator{
         foreach parser:OperationNode operationNode in operations {
             self.visitOperation(operationNode);
             if(self.maxQueryDepth > self.queryDepthLimit) {
-                string message = string`Query has depth of ${self.maxQueryDepth.toString()}, which exceeds max depth of ${self.queryDepthLimit.toString()}`;
+                string message = string
+                `Query has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit}`;
                 self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
                 return;
             }
