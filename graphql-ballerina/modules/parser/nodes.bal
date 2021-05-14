@@ -15,7 +15,7 @@
 // under the License.
 
 public type Node object {
-    public isolated function accept(Visitor v);
+
 };
 
 public type ArgumentName record {|

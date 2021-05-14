@@ -53,10 +53,6 @@ public class OperationNode {
         return self.location;
     }
 
-    public isolated function accept(Visitor v) {
-        var result = v.visitOperation(self);
-    }
-
     public isolated function addField(FieldNode fieldNode) {
         self.fields.push(fieldNode);
     }
