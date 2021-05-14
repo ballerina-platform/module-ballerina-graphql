@@ -80,9 +80,9 @@ public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysis
     private void verifyListenerArgType(SyntaxNodeAnalysisContext context,
                                        SeparatedNodeList<FunctionArgumentNode> functionArgs) {
         // two args are valid only if the first arg is numeric (i.e, port and config)
-        if (functionArgs.size() == 2) {
+        if (functionArgs.size() > 1) {
             PositionalArgumentNode firstArg = (PositionalArgumentNode) functionArgs.get(0);
-            PositionalArgumentNode secondArg = (PositionalArgumentNode) functionArgs.get(1);
+            FunctionArgumentNode secondArg = functionArgs.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
                 PluginUtils.updateContext(context, PluginConstants.CompilationErrors.INVALID_LISTENER_INIT,
