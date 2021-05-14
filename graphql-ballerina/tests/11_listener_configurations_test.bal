@@ -73,20 +73,6 @@ isolated function testTimeoutResponse() returns error? {
 @test:Config {
     groups: ["negative", "configs", "unit"]
 }
-function testConfigurationsWithHttpListener() returns error? {
-    http:Listener httpListener = check new(91021);
-    var graphqlListener = new Listener(httpListener, configs);
-    if (graphqlListener is Error) {
-        string message = "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
-        test:assertEquals(message, graphqlListener.message());
-    } else {
-        test:assertFail("This must throw an error");
-    }
-}
-
-@test:Config {
-    groups: ["negative", "configs", "unit"]
-}
 function testInvalidMaxDepth() returns error? {
     Listener graphqlListener = check new Listener(91022);
     var result = graphqlListener.attach(InvalidDepthLimitService);

@@ -13,6 +13,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1339] Improve Input Parameter Validation Logic in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1339)
 - [[#1344] Improve Return Type Validation Logic in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1344)
 - [[#1348] Add Validation to Return Type Service Class Definitions in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1348)
+- [[#998] Use Included Record Parameters for Listener Config](https://github.com/ballerina-platform/ballerina-standard-library/issues/998)
 
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
