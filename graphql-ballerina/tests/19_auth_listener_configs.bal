@@ -19,17 +19,7 @@
 import ballerina/test;
 
 // Unsecured service
-
-listener Listener securedEP1 = new(9401, {
-    secureSocket: {
-        key: {
-            path: KEYSTORE_PATH,
-            password: "ballerina"
-        }
-    }
-});
-
-service /noAuth on securedEP1 {
+service /noAuth on new Listener(9401, secureSocket = { key: { path: KEYSTORE_PATH, password: "ballerina" } }) {
     isolated resource function get greeting() returns string {
         return "Hello World!";
     }

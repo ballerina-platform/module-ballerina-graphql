@@ -38,8 +38,4 @@ public class ArgumentNode {
     public isolated function getKind() returns ArgumentType {
         return self.kind;
     }
-
-    public isolated function accept(Visitor v) {
-        var result = v.visitArgument(self);
-    }
 }

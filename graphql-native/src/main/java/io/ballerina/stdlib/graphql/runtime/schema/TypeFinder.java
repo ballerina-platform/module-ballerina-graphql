@@ -41,6 +41,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECO
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getUnionTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
@@ -150,7 +151,8 @@ public class TypeFinder {
             if (memberTypes.size() == 1) {
                 getSchemaTypeFromBalType(memberTypes.get(0));
             } else {
-                this.createSchemaType(unionType.getName(), TypeKind.UNION, unionType);
+                String typeName = getUnionTypeName(unionType);
+                this.createSchemaType(typeName, TypeKind.UNION, unionType);
             }
             for (Type type : memberTypes) {
                 if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
