@@ -193,7 +193,6 @@ allprojects {
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 subprojects {
-    apply plugin: 'java'
 
     configurations {
         ballerinaStdLibs
