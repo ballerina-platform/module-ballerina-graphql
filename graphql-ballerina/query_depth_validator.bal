@@ -18,13 +18,15 @@ import graphql.parser;
 
 class QueryDepthValidator{
     private parser:DocumentNode documentNode;
-    private int queryDepth = 0;
-    private int maxQueryDepth = 0;
+    private int queryDepth;
+    private int maxQueryDepth;
     private int queryDepthLimit;
     private ErrorDetail[] errors;
 
     public isolated function init(parser:DocumentNode documentNode, int queryDepthLimit){
         self.documentNode = documentNode;
+        self.queryDepth = 0;
+        self.maxQueryDepth = 0;
         self.queryDepthLimit = queryDepthLimit;
         self.errors = [];
     }
@@ -51,7 +53,6 @@ class QueryDepthValidator{
                     self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
                 }
             }
-            self.queryDepth = 0;
             self.maxQueryDepth = 0;
         }
     }

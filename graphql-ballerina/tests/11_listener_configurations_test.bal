@@ -140,7 +140,7 @@ isolated function testQueryExceedingMaxDepth() returns error? {
 }
 isolated function testFragmentQueryExceedingMaxDepth() returns error? {
     string document = string
-`query {
+`query getAll {
     ...on Query {
         people {
             ... on Person {
@@ -148,27 +148,30 @@ isolated function testFragmentQueryExceedingMaxDepth() returns error? {
                     city
                 }
             }
+            ... on Student {
+                name
+            }
         }
     }
- }
- query {
+}
+query getPerson {
     Person {
         Address {
             city
         }
     }
- }
- query {
+}
+query getStudent {
     Student {
         name
     }
- }`;
+}`;
     string url = "http://localhost:9103/depthLimitService";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
-                message: "Query has depth of 3, which exceeds max depth of 2",
+                message: "Query \"getAll\" has depth of 3, which exceeds max depth of 2",
                 locations: [
                     {
                         line: 1,
@@ -177,11 +180,11 @@ isolated function testFragmentQueryExceedingMaxDepth() returns error? {
                 ]
             },
             {
-                message: "Query has depth of 3, which exceeds max depth of 2",
+                message: "Query \"getPerson\" has depth of 3, which exceeds max depth of 2",
                 locations: [
                     {
-                        line: 12,
-                        column: 2
+                        line: 15,
+                        column: 1
                     }
                 ]
             }

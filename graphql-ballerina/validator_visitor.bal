@@ -21,7 +21,6 @@ class ValidatorVisitor {
 
     private __Schema schema;
     private parser:DocumentNode documentNode;
-    private int queryDepth = 0;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
 
