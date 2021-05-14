@@ -38,6 +38,19 @@ service /depthLimitService on depthLimitListener {
     isolated resource function get greet() returns string {
         return "Hello";
     }
+
+    resource function get people() returns Person[] {
+        return people;
+    }
+
+    resource function get students() returns Student[] {
+        return students;
+    }
+
+    isolated resource function get profile() returns Profile {
+        return new;
+    }
+
 }
 
 service object {} InvalidDepthLimitService =
@@ -73,20 +86,6 @@ isolated function testTimeoutResponse() returns error? {
 @test:Config {
     groups: ["negative", "configs", "unit"]
 }
-function testConfigurationsWithHttpListener() returns error? {
-    http:Listener httpListener = check new(91021);
-    var graphqlListener = new Listener(httpListener, configs);
-    if (graphqlListener is Error) {
-        string message = "Provided `HttpConfiguration` will be overridden by the given http listener configurations";
-        test:assertEquals(message, graphqlListener.message());
-    } else {
-        test:assertFail("This must throw an error");
-    }
-}
-
-@test:Config {
-    groups: ["negative", "configs", "unit"]
-}
 function testInvalidMaxDepth() returns error? {
     Listener graphqlListener = check new Listener(91022);
     var result = graphqlListener.attach(InvalidDepthLimitService);
@@ -110,6 +109,95 @@ isolated function testQueryExceedingMaxDepth() returns error? {
         errors: [
             {
                 message: "Query has depth of 5, which exceeds max depth of 2",
+                locations: [
+                    {
+                        line: 1,
+                        column: 1
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["configs", "unit"]
+}
+isolated function testFragmentQueryExceedingMaxDepth() returns error? {
+    string document = string
+`query getAll {
+    ...on Query {
+        people {
+            ... on Person {
+                address {
+                    city
+                }
+            }
+            ... on Student {
+                name
+            }
+        }
+    }
+}
+query getPerson {
+    Person {
+        Address {
+            city
+        }
+    }
+}
+query getStudent {
+    Student {
+        name
+    }
+}`;
+    string url = "http://localhost:9103/depthLimitService";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Query \"getAll\" has depth of 3, which exceeds max depth of 2",
+                locations: [
+                    {
+                        line: 1,
+                        column: 1
+                    }
+                ]
+            },
+            {
+                message: "Query \"getPerson\" has depth of 3, which exceeds max depth of 2",
+                locations: [
+                    {
+                        line: 15,
+                        column: 1
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["configs", "unit"]
+}
+isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? {
+    string document = string
+`query getData {
+    people {
+        name
+        address {
+            city
+        }
+    }
+}`;
+    string url = "http://localhost:9103/depthLimitService";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Query \"getData\" has depth of 3, which exceeds max depth of 2",
                 locations: [
                     {
                         line: 1,

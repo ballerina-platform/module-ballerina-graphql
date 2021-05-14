@@ -21,14 +21,12 @@ class ValidatorVisitor {
 
     private __Schema schema;
     private parser:DocumentNode documentNode;
-    private int maxQueryDepth;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
 
-    public isolated function init(__Schema schema, parser:DocumentNode documentNode, int maxQueryDepth) {
+    public isolated function init(__Schema schema, parser:DocumentNode documentNode) {
         self.schema = schema;
         self.documentNode = documentNode;
-        self.maxQueryDepth = maxQueryDepth;
         self.errors = [];
         self.usedFragments = {};
     }
@@ -63,11 +61,6 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        if (self.maxQueryDepth > 0 && operationNode.getMaxDepth() > self.maxQueryDepth) {
-            string message = string`Query has depth of ${operationNode.getMaxDepth()}, which exceeds max depth of ${self.maxQueryDepth.toString()}`;
-            self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
-            return;
-        }
         Parent parent = {
             parentType: self.schema.queryType,
             name: QUERY_TYPE_NAME
@@ -259,7 +252,7 @@ class ValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if (inputValue?.defaultValue == ()) {
+            if (inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is ()) {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }

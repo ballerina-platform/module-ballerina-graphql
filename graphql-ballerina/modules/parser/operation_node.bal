@@ -19,7 +19,6 @@ public class OperationNode {
     private RootOperationType kind;
     private Location location;
     private FieldNode[] fields;
-    private int maxDepth;
     private string[] fragments;
     private Selection[] selections;
 
@@ -30,15 +29,6 @@ public class OperationNode {
         self.fields = [];
         self.fragments = [];
         self.selections = [];
-        self.maxDepth = 0;
-    }
-
-    public isolated function getMaxDepth() returns int {
-        return self.maxDepth;
-    }
-
-    public isolated function setMaxDepth(int depth) {
-        self.maxDepth = depth;
     }
 
     public isolated function getName() returns string {
@@ -51,10 +41,6 @@ public class OperationNode {
 
     public isolated function getLocation() returns Location {
         return self.location;
-    }
-
-    public isolated function accept(Visitor v) {
-        var result = v.visitOperation(self);
     }
 
     public isolated function addField(FieldNode fieldNode) {

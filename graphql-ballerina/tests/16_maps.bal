@@ -122,7 +122,7 @@ isolated function testMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers { name } } }`;
     string url = "http://localhost:9109/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    string message = string`Field "workers" argument "key" of type "String" is required, but it was not provided.`;
+    string message = string`Field "workers" argument "key" of type "String!" is required, but it was not provided.`;
     json expectedPayload = {
         errors: [
             {
@@ -146,7 +146,7 @@ isolated function testNestedMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers(key: "w1") { contacts } } }`;
     string url = "http://localhost:9109/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    string message1 = string`Field "contacts" argument "key" of type "String" is required, but it was not provided.`;
+    string message1 = string`Field "contacts" argument "key" of type "String!" is required, but it was not provided.`;
     string message2 = string`Field "contacts" of type "Contact!" must have a selection of subfields. Did you mean "contacts { ... }"?`;
     json expectedPayload = {
         errors: [

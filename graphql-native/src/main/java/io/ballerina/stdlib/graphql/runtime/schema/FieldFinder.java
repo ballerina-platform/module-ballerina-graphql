@@ -49,6 +49,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getUnionTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isRequired;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
@@ -140,7 +141,7 @@ public class FieldFinder {
             if (memberTypes.size() == 1) {
                 return getSchemaTypeFromType(memberTypes.get(0));
             } else {
-                SchemaType schemaType = this.getType(unionType.getName());
+                SchemaType schemaType = this.getType(getUnionTypeName(unionType));
                 for (Type memberType : memberTypes) {
                     SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
                     schemaType.addPossibleType(possibleType);
@@ -182,7 +183,9 @@ public class FieldFinder {
                 schemaField.setType(fieldType);
             }
             if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
-                schemaField.addArg(new InputValue(KEY, this.typeMap.get(STRING)));
+                SchemaType nonNullType = getNonNullType();
+                nonNullType.setOfType(this.typeMap.get(STRING));
+                schemaField.addArg(new InputValue(KEY, nonNullType));
             }
             schemaType.addField(schemaField);
         }
@@ -223,9 +226,17 @@ public class FieldFinder {
         Type[] paramTypes = resourceMethod.getParameterTypes();
         Boolean[] paramDefaultability = resourceMethod.getParamDefaultability();
         for (int i = 0; i < paramNames.length; i++) {
-            SchemaType inputValueType = this.typeMap.get(getTypeNameFromType(paramTypes[i]));
+            SchemaType inputValueType;
+            if (paramTypes[i].isNilable()) {
+                Type inputType = getInputTypeFromNilableType((UnionType) paramTypes[i]);
+                inputValueType = this.typeMap.get(getTypeNameFromType(inputType));
+            } else {
+                inputValueType = this.typeMap.get(getTypeNameFromType(paramTypes[i]));
+            }
             InputValue inputValue;
-            if (paramDefaultability[i]) {
+            if (paramTypes[i].isNilable()) {
+                inputValue = new InputValue(paramNames[i], inputValueType);
+            } else if (paramDefaultability[i]) {
                 inputValue = new InputValue(paramNames[i], inputValueType, paramTypes[i].getZeroValue().toString());
             } else {
                 SchemaType nonNullType = getNonNullType();
@@ -238,5 +249,16 @@ public class FieldFinder {
 
     private static SchemaType getNonNullType() {
         return new SchemaType(null, TypeKind.NON_NULL);
+    }
+
+    private static Type getInputTypeFromNilableType(UnionType unionType) {
+        Type result = unionType;
+        for (Type memberType : unionType.getOriginalMemberTypes()) {
+            if (memberType.getTag() == TypeTags.NULL_TAG) {
+                continue;
+            }
+            result = memberType;
+        }
+        return result;
     }
 }

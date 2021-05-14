@@ -34,6 +34,7 @@ import io.ballerina.runtime.api.values.BString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DECIMAL;
@@ -45,6 +46,10 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
  * Utility methods for the Ballerina GraphQL schema generator.
  */
 public class Utils {
+    private static final String UNION_TYPE_NAME_DELIMITER = "|";
+
+    private Utils() {}
+
     public static boolean isEnum(UnionType unionType) {
         return SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM);
     }
@@ -110,5 +115,12 @@ public class Utils {
     public static BArray getArrayTypeFromBMap(BMap<BString, Object> recordValue) {
         ArrayType arrayType = TypeCreator.createArrayType(recordValue.getType());
         return ValueCreator.createArrayValue(arrayType);
+    }
+
+    public static String getUnionTypeName(UnionType unionType) {
+        List<Type> memberTypes = getMemberTypes(unionType);
+        return unionType.getName().isBlank() ?
+                memberTypes.stream().map(Type::getName).collect(Collectors.joining(UNION_TYPE_NAME_DELIMITER)) :
+                unionType.getName();
     }
 }

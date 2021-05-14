@@ -35,3 +35,9 @@ service graphql:Service on listener1 {
             return "John";
     }
 }
+
+service graphql:Service on new graphql:Listener(4000, timeout = 5, server = "0.0.0.0") {
+    resource function get name() returns string {
+            return "John";
+    }
+}
