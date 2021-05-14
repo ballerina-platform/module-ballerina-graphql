@@ -29,6 +29,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1332] Add Missing Arguments for Introspection Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1332)
 - [[#1331] Incorrect Location in Fragment Error Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1331)
 - [[#1347] Fix Incorrect Behavior when Input Value is an Enum](https://github.com/ballerina-platform/ballerina-standard-library/issues/1347)
+- [[#1312] Query Depth Ignores the Depth of Fragments in GraphQL Documents ](https://github.com/ballerina-platform/ballerina-standard-library/issues/1312)
 
 ## [0.2.0-alpha8] - 2021-04-23
 
