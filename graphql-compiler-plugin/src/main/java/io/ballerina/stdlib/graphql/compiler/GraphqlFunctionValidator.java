@@ -136,12 +136,22 @@ public class GraphqlFunctionValidator {
         if (inputTypeSymbol.typeKind() == TypeDescKind.UNION) {
             List<TypeSymbol> members = ((UnionTypeSymbol) inputTypeSymbol).memberTypeDescriptors();
             boolean hasInvalidMember = false;
+            int singletonCounter = 0;
+            boolean isSingleton = true;
             int hasType = 0;
             for (TypeSymbol member : members) {
                 if (member.typeKind() != TypeDescKind.NIL) {
-                    hasInvalidMember = hasInvalidInputParamType(member);
-                    hasType++;
+                    if (member.typeKind() != TypeDescKind.SINGLETON) {
+                        hasInvalidMember = hasInvalidInputParamType(member);
+                        hasType++;
+                        isSingleton = false;
+                    } else {
+                        singletonCounter++;
+                    }
                 }
+            }
+            if (singletonCounter > 1 && !isSingleton) {
+                hasInvalidMember = true;
             }
             if (hasType > 1) {
                 hasInvalidMember = true;
