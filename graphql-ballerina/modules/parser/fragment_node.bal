@@ -44,10 +44,6 @@ public class FragmentNode {
         return self.location;
     }
 
-    public isolated function accept(Visitor v) {
-        anydata|error result = v.visitFragment(self);
-    }
-
     public isolated function addField(FieldNode fieldNode) {
         self.fields.push(fieldNode);
     }

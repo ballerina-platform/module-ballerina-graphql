@@ -57,10 +57,6 @@ public class DocumentNode {
         }
     }
 
-    public isolated function accept(Visitor v) {
-        var result = v.visitDocument(self);
-    }
-
     public isolated function getOperations() returns OperationNode[] {
         return self.operations;
     }
