@@ -17,8 +17,6 @@
 public class Parser {
     private Lexer lexer;
     private DocumentNode document;
-    private int depth = 0;
-    private int operationMaxDepth = 0;
 
     public isolated function init(string text) {
         self.lexer = new(text);
@@ -105,17 +103,13 @@ public class Parser {
 
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
     returns OperationNode|Error {
-        self.depth = 0;
-        self.operationMaxDepth = 0;
         OperationNode operation = new(name, kind, location);
         check self.addSelections(operation);
-        operation.setMaxDepth(self.operationMaxDepth);
         return operation;
     }
 
     isolated function addSelections(ParentNode parentNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
-        self.depth += 1; // TODO: Calculate depth with fragments depth.
         while (token.kind != T_CLOSE_BRACE) {
             token = check self.peekNextNonSeparatorToken();
             if (token.kind == T_ELLIPSIS) {
@@ -154,10 +148,6 @@ public class Parser {
             }
             token = check self.peekNextNonSeparatorToken();
         }
-        if (self.operationMaxDepth < self.depth) {
-            self.operationMaxDepth = self.depth;
-        }
-        self.depth -= 1;
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
         token = check self.readNextNonSeparatorToken();
     }
