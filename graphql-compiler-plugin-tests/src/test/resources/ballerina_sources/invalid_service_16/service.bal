@@ -17,26 +17,11 @@
 import ballerina/graphql;
 import ballerina/http;
 
-http:Listener httpListener = check new(91021);
-listener graphql:Listener listener1 = new(httpListener);
+http:Listener httpListener = check new(4000);
 
-graphql:ListenerConfiguration configs = {
-    timeout: 1.0
-};
-
-service graphql:Service on new graphql:Listener(4000, configs) {
-    resource function get name() returns string {
-            return "John";
-    }
-}
+listener graphql:Listener listener1 = new(httpListener, timeout = 1000, server = "0.0.0.0");
 
 service graphql:Service on listener1 {
-    resource function get name() returns string {
-            return "John";
-    }
-}
-
-service graphql:Service on new graphql:Listener(4000, timeout = 5, server = "0.0.0.0") {
     resource function get name() returns string {
             return "John";
     }
