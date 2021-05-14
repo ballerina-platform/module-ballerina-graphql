@@ -43,8 +43,7 @@ class QueryDepthValidator{
             if (self.maxQueryDepth > self.queryDepthLimit) {
                 if (operationNode.getName() != parser:ANONYMOUS_OPERATION) {
                     string message = string
-                    `Query has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit} on ${
-                        operationNode.getName()}`;
+                    `Query "${operationNode.getName()}" has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit}`;
                     self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
                 } else {
                     string message = string
@@ -80,13 +79,12 @@ class QueryDepthValidator{
             foreach parser:Selection subSelection in selections {
                 self.visitSelection(subSelection);
             }
-            self.queryDepth -= 1;
         } else {
             if (self.queryDepth > self.maxQueryDepth) {
                 self.maxQueryDepth = self.queryDepth;
             }
-            self.queryDepth -= 1;
         }
+        self.queryDepth -= 1;
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode) {
