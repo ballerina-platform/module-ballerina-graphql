@@ -28,7 +28,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.ballerina:plugin-gradle:0.8.1-SNAPSHOT"
+        classpath "io.ballerina:plugin-gradle:${project.pluginVersion}"
     }
 }
 
@@ -64,6 +64,7 @@ apply plugin: 'io.ballerina.plugin'
 ballerina{
     module = packageName
     langVersion = ballerinaLangVersion
+    testCoverageParam = "--code-coverage --jacoco-xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
 }
 
 task updateTomlVersions {
