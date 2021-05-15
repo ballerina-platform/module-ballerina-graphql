@@ -155,7 +155,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_5");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 3);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 4);
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
