@@ -134,7 +134,7 @@ public class GraphqlFunctionValidator {
 
     private boolean hasInvalidInputParamType(TypeSymbol inputTypeSymbol) {
         if (inputTypeSymbol.typeKind() == TypeDescKind.UNION) {
-            List<TypeSymbol> members = ((UnionTypeSymbol) inputTypeSymbol).memberTypeDescriptors();
+            List<TypeSymbol> members = ((UnionTypeSymbol) inputTypeSymbol).userSpecifiedMemberTypes();
             boolean hasInvalidMember = false;
             int hasType = 0;
             for (TypeSymbol member : members) {
