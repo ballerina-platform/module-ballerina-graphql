@@ -77,7 +77,14 @@ class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
-        ValidatorVisitor validator = new(<__Schema>self.schema, document, self.maxQueryDepth);
+        if (self.maxQueryDepth > 0) {
+            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, self.maxQueryDepth);
+            ErrorDetail[]? errors = queryDepthValidator.validate();
+            if (errors is ErrorDetail[]) {
+                return getOutputObjectFromErrorDetail(errors);
+            }
+        }
+        ValidatorVisitor validator = new(<__Schema>self.schema, document);
         ErrorDetail[]? errors = validator.validate();
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);

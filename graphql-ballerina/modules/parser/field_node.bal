@@ -39,10 +39,6 @@ public class FieldNode {
         return self.location;
     }
 
-    public isolated function accept(Visitor v) {
-        anydata|error result = v.visitField(self);
-    }
-
     public isolated function addArgument(ArgumentNode argument) {
         self.arguments.push(argument);
     }

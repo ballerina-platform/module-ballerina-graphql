@@ -1,4 +1,4 @@
-// Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -14,16 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Node object {
+import ballerina/graphql;
+import ballerina/http;
 
-};
+http:Listener httpListener = check new(4000);
 
-public type ArgumentName record {|
-    string value;
-    Location location;
-|};
+listener graphql:Listener listener1 = new(httpListener, timeout = 1000, server = "0.0.0.0");
 
-public type ArgumentValue record {|
-    Scalar value;
-    Location location;
-|};
+service graphql:Service on listener1 {
+    resource function get name() returns string {
+            return "John";
+    }
+}
