@@ -33,3 +33,14 @@ service graphql:Service on new graphql:Listener(4000) {
         return "Hello";
     }
 }
+
+const RED = "RED";
+const GREEN = "GREEN";
+const BLUE = "BLUE";
+type Color RED|GREEN|BLUE;
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get color(Color color) returns string {
+        return "Hello, world";
+    }
+}
