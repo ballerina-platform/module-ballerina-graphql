@@ -21,8 +21,12 @@ plugins {
 }
 
 rootProject.name = 'graphql'
-include(':build-config:checkstyle')
-include ':graphql-native', 'graphql-compiler-plugin', ':graphql-ballerina', 'graphql-compiler-plugin-tests'
+include ':build-config:checkstyle'
+include ':graphql-native'
+include ':graphql-compiler-plugin'
+include ':graphql-ballerina'
+include ':graphql-compiler-plugin-tests'
+include ':graphql-examples'
 
 gradleEnterprise {
    buildScan {
