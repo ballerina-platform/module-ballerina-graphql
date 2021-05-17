@@ -16,26 +16,26 @@
 
 import ballerina/graphql;
 
-enum Color {
-  RED,
-  GREEN,
-  BLUE
-}
-
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get color(Color color) returns Color {
-        return RED;
+    isolated resource function get greeting() returns First {
+        return new;
     }
 }
 
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get color(Color? color) returns Color {
-        return RED;
+distinct service class First {
+    isolated resource function get civilStatus() returns Second {
+        return new;
     }
 }
 
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get color() returns Color[] {
-        return [];
+distinct service class Second {
+    isolated resource function get firstName() returns Third {
+        return new;
+    }
+}
+
+distinct service class Third {
+    isolated resource function get firstName() returns string {
+        return "Finally!";
     }
 }
