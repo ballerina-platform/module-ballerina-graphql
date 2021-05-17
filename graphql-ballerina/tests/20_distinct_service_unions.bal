@@ -17,7 +17,7 @@
 import ballerina/test;
 
 service /graphql on new Listener(9113) {
-    resource function get profile(int id) returns StudentService|TeacherService {
+    isolated resource function get profile(int id) returns StudentService|TeacherService {
         if (id < 100) {
             return new StudentService(1, "Jesse Pinkman");
         } else {
@@ -30,16 +30,16 @@ distinct service class StudentService {
     private int id;
     private string name;
 
-    public function init(int id, string name) {
+    public isolated function init(int id, string name) {
         self.id = id;
         self.name = name;
     }
 
-    resource function get id() returns int {
+    isolated resource function get id() returns int {
         return self.id;
     }
 
-    resource function get name() returns string {
+    isolated resource function get name() returns string {
         return self.name;
     }
 }
@@ -49,21 +49,21 @@ distinct service class TeacherService {
     private string name;
     private string subject;
 
-    public function init(int id, string name, string subject) {
+    public isolated function init(int id, string name, string subject) {
         self.id = id;
         self.name = name;
         self.subject = subject;
     }
 
-    resource function get id() returns int {
+    isolated resource function get id() returns int {
         return self.id;
     }
 
-    resource function get name() returns string {
+    isolated resource function get name() returns string {
         return self.name;
     }
 
-    resource function get subject() returns string {
+    isolated resource function get subject() returns string {
         return self.subject;
     }
 }
