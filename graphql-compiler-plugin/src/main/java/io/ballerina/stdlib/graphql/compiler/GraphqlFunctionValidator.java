@@ -76,7 +76,9 @@ public class GraphqlFunctionValidator {
         MethodSymbol methodSymbol = PluginUtils.getMethodSymbol(context, functionDefinitionNode);
         if (Objects.nonNull(methodSymbol)) {
             validateResourceAccessorName(methodSymbol, functionDefinitionNode.location(), context);
-            validateReturnType(methodSymbol, functionDefinitionNode.location(), context);
+            Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
+            returnTypeDesc.ifPresent
+                    (typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location(), context));
             validateInputParamType(methodSymbol, functionDefinitionNode.location(), context);
         }
     }
@@ -96,23 +98,38 @@ public class GraphqlFunctionValidator {
         }
     }
 
-    private void validateReturnType(MethodSymbol methodSymbol,
+    private void validateReturnType(TypeSymbol returnTypeDesc,
                                     Location location, SyntaxNodeAnalysisContext context) {
-        Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
-        if (returnTypeDesc.isPresent()) {
-            // if return type is a union
-            if (returnTypeDesc.get().typeKind() == TypeDescKind.UNION) {
-                validateReturnTypeUnion(context,
-                        ((UnionTypeSymbol) returnTypeDesc.get()).memberTypeDescriptors(), location);
-            } else if (returnTypeDesc.get().typeKind() == TypeDescKind.NIL) {
-                // nil alone is invalid - must have a return type
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL, location);
-            } else if (returnTypeDesc.get().typeKind() == TypeDescKind.ERROR) {
-                // error alone is invalid
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR, location);
-            } else if (hasInvalidReturnType(returnTypeDesc.get(), location, context)) {
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+        // if return type is a union
+        if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
+            validateReturnTypeUnion(context,
+                    ((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
+        } else if (returnTypeDesc.typeKind() == TypeDescKind.ARRAY) {
+            // check member type
+            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) returnTypeDesc;
+            validateReturnType(arrayTypeSymbol.memberTypeDescriptor(), location, context);
+        } else if (returnTypeDesc.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            TypeReferenceTypeSymbol typeReferenceTypeSymbol = (TypeReferenceTypeSymbol) returnTypeDesc;
+            if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.TYPE_DEFINITION) {
+                TypeDefinitionSymbol typeDefinitionSymbol =
+                        (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
+                validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
+            } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
+                ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
+                if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+                } else {
+                    validateServiceClassDefinition(classSymbol, location, context);
+                }
             }
+        } else if (returnTypeDesc.typeKind() == TypeDescKind.NIL) {
+            // nil alone is invalid - must have a return type
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL, location);
+        } else if (returnTypeDesc.typeKind() == TypeDescKind.ERROR) {
+            // error alone is invalid
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR, location);
+        } else if (hasInvalidReturnType(returnTypeDesc)) {
+            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
         }
     }
 
@@ -156,50 +173,28 @@ public class GraphqlFunctionValidator {
         return !hasPrimitiveType(inputTypeSymbol);
     }
 
-    private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol, Location location,
-                                         SyntaxNodeAnalysisContext context) {
-        boolean hasInvalidReturnType = false;
-        if (returnTypeSymbol.typeKind() == TypeDescKind.MAP || returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
-                returnTypeSymbol.typeKind() == TypeDescKind.BYTE) {
-            return true;
-        } else if (returnTypeSymbol.typeKind() == TypeDescKind.ARRAY) {
-            // check member type
-            return hasInvalidReturnType(((ArrayTypeSymbol) returnTypeSymbol).memberTypeDescriptor(), location, context);
-        } else if (returnTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            // only service object types and records are allowed
-            if ((((TypeReferenceTypeSymbol) returnTypeSymbol).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
-                if (!isRecordType(returnTypeSymbol)) {
-                    hasInvalidReturnType = true;
-                }
-            } else if (((TypeReferenceTypeSymbol) returnTypeSymbol).definition().kind() == SymbolKind.CLASS) {
-                ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnTypeSymbol).definition();
-                if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                    hasInvalidReturnType = true;
-                } else {
-                    validateServiceClassDefinition(classSymbol, location, context);
-                }
-            }
-        } else if (returnTypeSymbol.typeKind() == TypeDescKind.OBJECT) {
-            hasInvalidReturnType = true;
-        }
-        return hasInvalidReturnType;
+    private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
+        return returnTypeSymbol.typeKind() == TypeDescKind.MAP || returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
+                returnTypeSymbol.typeKind() == TypeDescKind.BYTE || returnTypeSymbol.typeKind() == TypeDescKind.OBJECT;
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location,
                                                 SyntaxNodeAnalysisContext context) {
         if (!visitedClassSymbols.contains(classSymbol)) {
+            visitedClassSymbols.add(classSymbol);
             Map<String, MethodSymbol> methods = classSymbol.methods();
             for (Map.Entry<String, MethodSymbol> method : methods.entrySet()) {
                 MethodSymbol methodSymbol = method.getValue();
                 if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
                     validateResourceAccessorName(methodSymbol, location, context);
-                    validateReturnType(methodSymbol, location, context);
+                    Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
+                    returnTypeDesc.ifPresent
+                            (typeSymbol -> validateReturnType(typeSymbol, location, context));
                     validateInputParamType(methodSymbol, location, context);
                 } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
                     PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION, location);
                 }
             }
-            visitedClassSymbols.add(classSymbol);
         }
     }
 
@@ -254,7 +249,7 @@ public class GraphqlFunctionValidator {
                         }
                     }
                 } else {
-                    if (hasInvalidReturnType(returnType, location, context)) {
+                    if (hasInvalidReturnType(returnType)) {
                         PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
                     }
                 }
