@@ -30,6 +30,20 @@
                     ]
                 },
                 {
+                    "name": "address",
+                    "fields": [
+                        {
+                            "name": "number"
+                        },
+                        {
+                            "name": "city"
+                        },
+                        {
+                            "name": "street"
+                        }
+                    ]
+                },
+                {
                     "name": "Query",
                     "fields": [
                         {
@@ -114,6 +128,9 @@
                     "name": "profile",
                     "fields": [
                         {
+                            "name": "address"
+                        },
+                        {
                             "name": "name"
                         },
                         {
@@ -132,6 +149,9 @@
                 {
                     "name": "name",
                     "fields": [
+                        {
+                            "name": "address"
+                        },
                         {
                             "name": "last"
                         },
