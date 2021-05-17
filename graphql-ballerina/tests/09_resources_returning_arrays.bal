@@ -29,19 +29,23 @@ service /graphql on new Listener(9100) {
         return students;
     }
 
-    isolated resource function get allVehicles(string status) returns Vehicle[] {
-            return [new Vehicle()];
-        }
+    isolated resource function get allVehicles() returns Vehicle[] {
+        return [new Vehicle()];
     }
 
-    service class Vehicle {
-        isolated resource function get id () returns string|error {
-            return "v1";
-        }
+    isolated resource function get searchVehicles(string keyword) returns Vehicle[]? {
+        return [new Vehicle()];
+    }
+}
 
-        isolated resource function get name () returns string|error {
-            return "vehicle1";
-        }
+service class Vehicle {
+    isolated resource function get id () returns string|error {
+        return "v1";
+    }
+
+    isolated resource function get name () returns string|error {
+        return "vehicle1";
+    }
 }
 
 @test:Config {
@@ -98,33 +102,12 @@ isolated function testResourcesReturningArrays() returns error? {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-isolated function testResourceReturningServiceObjectArray() returns error? {
-    string graphqlUrl = "http://localhost:9100/graphql";
-    string document = string `{ allVehicles(status:"OPEN") { name } }`;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-
-    json expectedPayload = {
-        data: {
-            allVehicles: [
-                {
-                    name: "vehicle1"
-                }
-            ]
-        }
-    };
-    test:assertEquals(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["array", "service", "unit"]
-}
 isolated function testResourcesReturningArraysMissingFields() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ people }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
 
-    string expectedMessage = "Field \"people\" of type \"[Person!]\" must have a selection of subfields. Did you mean "
-                            + "\"people { ... }\"?";
+    string expectedMessage = string`Field "people" of type "[Person!]!" must have a selection of subfields. Did you mean "people { ... }"?`;
     json expectedResult = {
         errors: [
             {
@@ -248,4 +231,68 @@ isolated function testComplexArraySample() returns error? {
         }
     };
     test:assertEquals(actualResult, expectedResult);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+isolated function testResourceReturningServiceObjectArray() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ allVehicles { name } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            allVehicles: [
+                {
+                    name: "vehicle1"
+                }
+            ]
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+isolated function testOptionalArray() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ searchVehicles(keyword: "vehicle") { name } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            searchVehicles: [
+                {
+                    name: "vehicle1"
+                }
+            ]
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit", "test"]
+}
+isolated function testOptionalArrayInvalidQuery() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ searchVehicles(keyword: "vehicle") }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Field "searchVehicles" of type "[Vehicle!]" must have a selection of subfields. Did you mean "searchVehicles { ... }"?`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
 }

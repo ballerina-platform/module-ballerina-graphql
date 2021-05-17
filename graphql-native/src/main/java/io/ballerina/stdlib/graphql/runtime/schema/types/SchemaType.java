@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,32 +16,42 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema;
+package io.ballerina.stdlib.graphql.runtime.schema.types;
+
+import io.ballerina.runtime.api.types.Type;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class represents a Type in GraphQL schema.
  */
 public class SchemaType {
 
-    private TypeKind kind;
-    private String name;
-    private Map<String, SchemaField> fields;
-    private List<Object> enumValues;
-    private List<SchemaType> possibleTypes;
-    SchemaType ofType;
+    private final TypeKind kind;
+    private final String name;
+    private final Map<String, SchemaField> fields;
+    private final List<Object> enumValues;
+    private final Set<SchemaType> possibleTypes;
+    private SchemaType ofType;
+    private final Type balType;
 
     public SchemaType(String name, TypeKind kind) {
+        this(name, kind, null);
+    }
+
+    public SchemaType(String name, TypeKind kind, Type balType) {
         this.name = name;
         this.kind = kind;
-        this.fields = new HashMap<>();
-        this.enumValues = new ArrayList<>();
-        this.possibleTypes = new ArrayList<>();
+        this.balType = balType;
+        this.fields = (kind == TypeKind.OBJECT) ? new HashMap<>() : null;
+        this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
+        this.possibleTypes = (kind == TypeKind.UNION) ? new LinkedHashSet<>() : null;
     }
 
     public String getName() {
@@ -56,12 +66,8 @@ public class SchemaType {
         return this.fields.values();
     }
 
-    public SchemaField getField(String name) {
-        return this.fields.get(name);
-    }
-
-    public boolean hasField(String name) {
-        return this.fields.containsKey(name);
+    public Type getBalType() {
+        return this.balType;
     }
 
     public List<Object> getEnumValues() {
@@ -76,6 +82,13 @@ public class SchemaType {
         this.fields.put(field.getName(), field);
     }
 
+    public SchemaField getField(String name) {
+        if (this.fields.containsKey(name)) {
+            return this.fields.get(name);
+        }
+        return null;
+    }
+
     public void addEnumValue(Object o) {
         this.enumValues.add(o);
     }
@@ -88,10 +101,7 @@ public class SchemaType {
         this.possibleTypes.add(schemaType);
     }
 
-    public List<SchemaType> getPossibleTypes() {
-        if (this.possibleTypes.size() == 0) {
-            return null;
-        }
+    public Set<SchemaType> getPossibleTypes() {
         return this.possibleTypes;
     }
 }

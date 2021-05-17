@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema;
+package io.ballerina.stdlib.graphql.runtime.schema.types;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +38,10 @@ public class Schema {
 
     public Map<String, SchemaType> getTypes() {
         return this.types;
+    }
+
+    public void setTypes(Map<String, SchemaType> types) {
+        this.types = types;
     }
 
     public void setQueryType(SchemaType queryType) {

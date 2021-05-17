@@ -44,7 +44,7 @@ public class CompilerPluginTest {
             .toAbsolutePath();
 
     @Test
-    public void testValidService1() {
+    public void testValidResourceReturnTypes() {
         Package currentPackage = loadPackage("valid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -52,7 +52,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testValidService2() {
+    public void testValidResourceInputTypes() {
         Package currentPackage = loadPackage("valid_service_2");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -60,7 +60,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testValidService3() {
+    public void testValidServiceConfigurationAnnotation() {
         Package currentPackage = loadPackage("valid_service_3");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -68,7 +68,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testValidService4() {
+    public void testResourceReturningEnum() {
         Package currentPackage = loadPackage("valid_service_4");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -76,7 +76,39 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService1() {
+    public void testEnumAsResourceInputParameter() {
+        Package currentPackage = loadPackage("valid_service_5");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testValidListenerConfigurations() {
+        Package currentPackage = loadPackage("valid_service_6");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testOptionalInputParametersInResources() {
+        Package currentPackage = loadPackage("valid_service_7");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testReturningUnionOfDistinctServiceObjects() {
+        Package currentPackage = loadPackage("valid_service_8");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -86,7 +118,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService2() {
+    public void testRemoteFunctionsInService() {
         Package currentPackage = loadPackage("invalid_service_2");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -96,7 +128,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService3() {
+    public void testInvalidResourceAccessor() {
         Package currentPackage = loadPackage("invalid_service_3");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -106,11 +138,11 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService4() {
+    public void testInvalidResourceReturnTypes() {
         Package currentPackage = loadPackage("invalid_service_4");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 7);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 8);
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
@@ -119,11 +151,11 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService5() {
+    public void testInvalidResourceInputParameterTypes() {
         Package currentPackage = loadPackage("invalid_service_5");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 3);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 4);
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
@@ -132,7 +164,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService6() {
+    public void testInvalidMaxQueryDepthValue() {
         Package currentPackage = loadPackage("invalid_service_6");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -145,7 +177,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService7() {
+    public void testReturningOnlyErrorOrNil() {
         Package currentPackage = loadPackage("invalid_service_7");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -155,7 +187,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService8() {
+    public void testReturningOnlyNil() {
         Package currentPackage = loadPackage("invalid_service_8");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -165,13 +197,104 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidService9() {
+    public void testReturningOnlyError() {
         Package currentPackage = loadPackage("invalid_service_9");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
         assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR);
+    }
+
+    @Test
+    public void testListenerInitParameters() {
+        Package currentPackage = loadPackage("invalid_service_10");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
+        }
+    }
+
+    @Test
+    public void testInvalidInputParameterUnions() {
+        Package currentPackage = loadPackage("invalid_service_11");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 4);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
+        }
+    }
+
+    @Test
+    public void testInvalidResourceReturnTypeUnions() {
+        Package currentPackage = loadPackage("invalid_service_12");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 3);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
+        }
+    }
+
+    @Test
+    public void testInvalidAccessorsInServicesReturningFromResources() {
+        Package currentPackage = loadPackage("invalid_service_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
+        }
+    }
+
+    @Test
+    public void testInvalidReturnTypesInServicesReturningFromResources() {
+        Package currentPackage = loadPackage("invalid_service_14");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
+        }
+    }
+
+    @Test
+    public void testInvalidInputParametersInServicesReturningFromResources() {
+        Package currentPackage = loadPackage("invalid_service_15");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
+        }
+    }
+
+    @Test
+    public void testInvalidListenerInitParameters() {
+        Package currentPackage = loadPackage("invalid_service_16");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
+        }
     }
 
     private Package loadPackage(String path) {

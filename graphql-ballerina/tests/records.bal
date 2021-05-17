@@ -64,3 +64,33 @@ type Time record {|
     Weekday weekday;
     string time;
 |};
+
+type TLift record {|
+    readonly string id;
+    string name;
+    string status;
+    int capacity;
+    boolean night;
+    int elevationgain;
+|};
+
+type TTrail record {|
+    readonly string id;
+    string name;
+    string status;
+    string difficulty;
+    boolean groomed;
+    boolean trees;
+    boolean night;
+|};
+
+type Edge record {|
+    readonly string liftId;
+    readonly string trailId;
+|};
+
+enum Status {
+    OPEN,
+    CLOSE,
+    HOLD
+}

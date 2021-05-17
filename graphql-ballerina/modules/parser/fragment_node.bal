@@ -21,14 +21,16 @@ public class FragmentNode {
     private string name;
     private Location location;
     private string onType;
+    private boolean inlineFragment;
     private FieldNode[] fields;
     private string[] fragments;
     private Selection[] selections;
 
-    public isolated function init(string name, Location location, string onType) {
+    public isolated function init(string name, Location location, string onType, boolean inlineFragment) {
         self.name = name;
         self.location = location;
         self.onType = onType;
+        self.inlineFragment = inlineFragment;
         self.fields = [];
         self.fragments = [];
         self.selections = [];
@@ -40,10 +42,6 @@ public class FragmentNode {
 
     public isolated function getLocation() returns Location {
         return self.location;
-    }
-
-    public isolated function accept(Visitor v) {
-        anydata|error result = v.visitFragment(self);
     }
 
     public isolated function addField(FieldNode fieldNode) {
@@ -72,5 +70,9 @@ public class FragmentNode {
 
     public isolated function getSelections() returns Selection[] {
         return self.selections;
+    }
+
+    public isolated function isInlineFragment() returns boolean {
+        return self.inlineFragment;
     }
 }

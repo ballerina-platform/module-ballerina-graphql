@@ -21,6 +21,7 @@ class Engine {
     private __Schema? schema;
     private Service? graphqlService;
     private int maxQueryDepth;
+    ListenerAuthConfig[]? auth = ();
 
     public isolated function init(Listener 'listener) returns Error? {
         self.'listener = 'listener;
@@ -62,7 +63,7 @@ class Engine {
         self.schema = check createSchema(s);
         GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
         self.maxQueryDepth = check getMaxQueryDepth(s);
-        self.populateSchemaType();
+        self.auth = getListenerAuthConfig(s);
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
@@ -76,7 +77,14 @@ class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
-        ValidatorVisitor validator = new(<__Schema>self.schema, document, self.maxQueryDepth);
+        if (self.maxQueryDepth > 0) {
+            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, self.maxQueryDepth);
+            ErrorDetail[]? errors = queryDepthValidator.validate();
+            if (errors is ErrorDetail[]) {
+                return getOutputObjectFromErrorDetail(errors);
+            }
+        }
+        ValidatorVisitor validator = new(<__Schema>self.schema, document);
         ErrorDetail[]? errors = validator.validate();
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);
@@ -95,26 +103,5 @@ class Engine {
         ExecutorVisitor executor = new(s, <__Schema>self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         return outputObject;
-    }
-
-    isolated function populateSchemaType() {
-        __Schema schema = <__Schema>self.schema;
-        __Type schemaType = {
-            kind: OBJECT,
-            name: SCHEMA_TYPE_NAME
-        };
-
-        __Type typesType = {
-            kind: NON_NULL,
-			name: (),
-			ofType: <__Type>schema.types[TYPE_TYPE_NAME]
-        };
-        __Field typesField = {
-            name: TYPES_FIELD,
-            'type: typesType
-        };
-        __Field[] fields = [typesField];
-        schemaType.fields = fields;
-        schema.types[SCHEMA_TYPE_NAME] = schemaType;
     }
 }

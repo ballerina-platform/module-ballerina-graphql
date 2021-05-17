@@ -21,8 +21,13 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
+import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
@@ -67,5 +72,29 @@ public class PluginUtils {
                 errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
         context.reportDiagnostic(diagnostic);
+    }
+
+    public static boolean isGraphqlListener(TypeSymbol listenerType) {
+        if (listenerType.typeKind() == TypeDescKind.UNION) {
+            return ((UnionTypeSymbol) listenerType).memberTypeDescriptors().stream()
+                    .filter(typeDescriptor -> typeDescriptor instanceof TypeReferenceTypeSymbol)
+                    .map(typeReferenceTypeSymbol -> (TypeReferenceTypeSymbol) typeReferenceTypeSymbol)
+                    .anyMatch(typeReferenceTypeSymbol ->
+                            typeReferenceTypeSymbol.getModule().isPresent()
+                                    && validateModuleId(typeReferenceTypeSymbol.getModule().get()
+                            ));
+        }
+
+        if (listenerType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            Optional<ModuleSymbol> moduleOpt = ((TypeReferenceTypeSymbol) listenerType).typeDescriptor().getModule();
+            return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
+        }
+
+        if (listenerType.typeKind() == TypeDescKind.OBJECT) {
+            Optional<ModuleSymbol> moduleOpt = ((ObjectTypeSymbol) listenerType).getModule();
+            return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
+        }
+
+        return false;
     }
 }
