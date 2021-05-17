@@ -7,13 +7,16 @@ Ballerina GraphQL Library
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
   [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-graphql/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-graphql)
   
-The GraphQL package is one of the standard library packages of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
+The GraphQL library is one of the standard library modules of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
 
-This package provides an implementation for connecting and interacting with GraphQL endpoints over the network.
-
-For more information, go to [The GraphQL Module](https://ballerina.io/learn/api-docs/ballerina/graphql/index.html).
+This provides an implementation for connecting and interacting with GraphQL endpoints over the network. For more information, go to [The GraphQL Module](https://docs.central.ballerina.io/ballerina/graphql/latest).
 
 For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
+
+## Issues and Projects
+
+Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina Standard Library [parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
+This repository only contains the source code for the module.
 
 ## Building from the Source
 

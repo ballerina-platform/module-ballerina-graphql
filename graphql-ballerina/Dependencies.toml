@@ -26,7 +26,7 @@ version = "@stdlib.jwt.version@"
 [[dependency]]
 org = "ballerina"
 name = "oauth"
-version = "@stdlib.oauth.version@"
+version = "@stdlib.oauth2.version@"
 
 [[dependency]]
 org = "ballerina"

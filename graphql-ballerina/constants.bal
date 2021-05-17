@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const DEFAULT_PATH = "/graphql";
-
 const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
 
@@ -23,13 +21,5 @@ const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
 
 const SCHEMA_FIELD = "__schema";
-const TYPES_FIELD = "types";
 const SCHEMA_TYPE_NAME = "__Schema";
-const TYPE_TYPE_NAME = "__Type";
 const QUERY_TYPE_NAME = "Query";
-const QUERY_TYPE_FIELD = "queryType";
-const FIELDS_FIELD = "fields";
-const NAME_FIELD = "name";
-const KIND_FIELD = "kind";
-const ENUM_VALUES_FIELD = "enumValues";
-const OF_TYPE_FIELD = "ofType";

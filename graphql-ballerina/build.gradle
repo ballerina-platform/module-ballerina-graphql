@@ -109,7 +109,7 @@ task updateTomlFiles {
         def stdlibDependentHttpVersion = stripBallerinaExtensionVersion(project.stdlibHttpVersion)
         def stdlibDependentIoVersion = stripBallerinaExtensionVersion(project.stdlibIoVersion)
         def stdlibDependentJwtVersion = stripBallerinaExtensionVersion(project.stdlibJwtVersion)
-        def stdlibDependentOAuthVersion = stripBallerinaExtensionVersion(project.stdlibOAuthVersion)
+        def stdlibDependentOAuth2Version = stripBallerinaExtensionVersion(project.stdlibOAuth2Version)
         def stdlibDependentRegexVersion = stripBallerinaExtensionVersion(project.stdlibRegexVersion)
         def stdlibDependentUrlVersion = stripBallerinaExtensionVersion(project.stdlibUrlVersion)
 
@@ -122,7 +122,7 @@ task updateTomlFiles {
         newDependenciesToml = newDependenciesToml.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newDependenciesToml = newDependenciesToml.replace("@stdlib.io.version@", stdlibDependentIoVersion)
         newDependenciesToml = newDependenciesToml.replace("@stdlib.jwt.version@", stdlibDependentJwtVersion)
-        newDependenciesToml = newDependenciesToml.replace("@stdlib.oauth.version@", stdlibDependentOAuthVersion)
+        newDependenciesToml = newDependenciesToml.replace("@stdlib.oauth2.version@", stdlibDependentOAuth2Version)
         newDependenciesToml = newDependenciesToml.replace("@stdlib.regex.version@", stdlibDependentRegexVersion)
         newDependenciesToml = newDependenciesToml.replace("@stdlib.url.version@", stdlibDependentUrlVersion)
         dependenciesTomlFile.text = newDependenciesToml

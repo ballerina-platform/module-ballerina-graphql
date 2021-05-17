@@ -24,7 +24,7 @@ class ValidatorVisitor {
     private ErrorDetail[] errors;
     private map<string> usedFragments;
 
-    public isolated function init(__Schema schema, parser:DocumentNode documentNode) {
+    isolated function init(__Schema schema, parser:DocumentNode documentNode) {
         self.schema = schema;
         self.documentNode = documentNode;
         self.errors = [];
@@ -207,7 +207,7 @@ class ValidatorVisitor {
         }
     }
 
-    public isolated function getErrors() returns ErrorDetail[] {
+    isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
         // TODO: Sort the error records by line and column
     }
