@@ -100,8 +100,16 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testReturningUnionOfDistinctServiceObjects() {
+    public void testReturningDistinctServiceObjects() {
         Package currentPackage = loadPackage("valid_service_8");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testReturningServiceTypesRecursively() {
+        Package currentPackage = loadPackage("valid_service_9");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
