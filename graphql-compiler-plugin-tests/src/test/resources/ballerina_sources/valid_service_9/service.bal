@@ -35,7 +35,7 @@ distinct service class Second {
 }
 
 distinct service class Third {
-    isolated resource function get firstName() returns string {
-        return "Finally!";
+    isolated resource function get firstName() returns First {
+        return new;
     }
 }
