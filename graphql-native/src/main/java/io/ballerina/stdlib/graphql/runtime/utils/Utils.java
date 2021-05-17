@@ -35,7 +35,6 @@ public class Utils {
     static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
 
     public static final String NOT_SUPPORTED_ERROR = "NotSupportedError";
-    public static final String INVALID_TYPE_ERROR = "InvalidTypeError";
 
     public static final StrandMetadata STRAND_METADATA = new StrandMetadata(getModule().getOrg(), getModule().getName(),
                                                                             getModule().getVersion(),
