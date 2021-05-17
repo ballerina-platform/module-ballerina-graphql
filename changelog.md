@@ -14,6 +14,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1344] Improve Return Type Validation Logic in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1344)
 - [[#1348] Add Validation to Return Type Service Class Definitions in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1348)
 - [[#998] Use Included Record Parameters for Listener Config](https://github.com/ballerina-platform/ballerina-standard-library/issues/998)
+- [[#1350] Allow Optional Enums to be Resource Function Input Parameters](https://github.com/ballerina-platform/ballerina-standard-library/issues/1350)
 
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
@@ -30,6 +31,8 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1331] Incorrect Location in Fragment Error Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1331)
 - [[#1347] Fix Incorrect Behavior when Input Value is an Enum](https://github.com/ballerina-platform/ballerina-standard-library/issues/1347)
 - [[#1312] Query Depth Ignores the Depth of Fragments in GraphQL Documents ](https://github.com/ballerina-platform/ballerina-standard-library/issues/1312)
+- [[#1368] Fix Crashing the Schema Generation when a Union Type not Having a Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/1368)
+- [[#1370] Fix Service Hanging When Returning an Enum Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1370)
 
 ## [0.2.0-alpha8] - 2021-04-23
 

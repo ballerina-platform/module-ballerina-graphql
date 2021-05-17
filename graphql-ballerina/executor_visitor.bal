@@ -31,7 +31,7 @@ class ExecutorVisitor {
         self.errors = [];
     }
 
-    public isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
+    isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
         self.visitOperation(operationNode);
         return getOutputObject(self.data, self.errors);
     }

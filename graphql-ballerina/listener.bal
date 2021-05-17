@@ -25,8 +25,8 @@ public class Listener {
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
     #
-    # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service
-    # + configuration - Configurations for the GraphQL service listener
+    # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service endpoint
+    # + configuration - The additional configurations for the GraphQL listener
     # + return - A `graphql:Error` if the listener initialization is failed, otherwise nil
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration configuration)
     returns Error? {
@@ -46,7 +46,7 @@ public class Listener {
 
     # Attaches the provided service to the Listener.
     #
-    # + s - The `graphql:Service` object to attach
+    # + s - The `graphql:Service` object to attach to the listener
     # + name - The path of the service to be hosted
     # + return - A `graphql:Error`, if an error occurred during the service attaching process or the schema
     #            generation process, otherwise nil
@@ -60,7 +60,7 @@ public class Listener {
 
     # Detaches the provided service from the Listener.
     #
-    # + s - The service to be detached
+    # + s - The service to be detached from the listener
     # + return - A `graphql:Error`, if an error occurred during the service detaching process, otherwise nil
     public isolated function detach(Service s) returns Error? {
         error? result = self.httpListener.detach(self.httpService);
@@ -89,7 +89,7 @@ public class Listener {
         }
     }
 
-    # Stops the service listener immediately. It is not implemented yet.
+    # Stops the service listener immediately.
     #
     # + return - A `graphql:Error`, if an error occurred during the service stopping process, otherwise nil
     public isolated function immediateStop() returns Error? {

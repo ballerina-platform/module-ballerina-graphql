@@ -39,38 +39,24 @@ public type RequestLimitConfigs record {|
     *http:RequestLimitConfigs;
 |};
 
-# Represents the data in an output object for a GraphQL query.
-public type Data record {
+type Data record {
     // Intentionally kept empty
 };
 
-# Represents a location in a GraphQL document.
-public type Location record {|
+type Location record {|
     *parser:Location;
 |};
 
-# Represents the details of an error occurred during parsing, validating, or executing a GraphQL document.
-public type ErrorDetail record {|
+type ErrorDetail record {|
     *parser:ErrorDetail;
 |};
 
-# Represents a GraphQL output object.
-#
-# + data - The corresponding data for a GraphQL request
-# + errors - The errors occurred while processing a GraphQL request
-public type OutputObject record {
+type OutputObject record {
     Data data?;
     ErrorDetail[] errors?;
 };
 
-# Represents a GraphQL schema. This will be auto-generated when a service is attached to the GraphQL listener.
-#
-# + types - The types defined in the GraphQL schema
-# + queryType - The root query operation type of the GraphQL service
-# + mutationType - The mutation type of the GraphQL service
-# + subscriptionType - The subscription type of the GraphQL service
-# + directives - The set of directives used in the GraphQL schema
-public type __Schema record {|
+type __Schema record {|
     __Type[] types;
     __Type queryType;
     __Type mutationType?;
@@ -78,19 +64,7 @@ public type __Schema record {|
     __Directive[] directives = [];
 |};
 
-# Represents a GraphQL type.
-#
-# + kind - The `graphql:__TypeKind` type of the type
-# + name - The name of the type
-# + description - The description of the type
-# + fields - The fields of the given type, if the type qaulifies to have fields (OBJECT and INTERFACE kinds only)
-# + interfaces - The interface types of the type (INTERFACE kind only)
-# + possibleTypes - The list of types that can be represented from this type. Only applies for the Union types, and
-#                   the the list can only contain object types
-# + enumValues - The possible set of values, if the type is an enum (ENUM kind only)
-# + inputFields - The set of input values (INPUT_OBJECT kind only)
-# + ofType - If the type is a `NON_NULL` or a `LIST`, the `__Type` of the wrapped type
-public type __Type record {|
+type __Type record {|
     __TypeKind kind;
     string name?;
     string description?;
@@ -102,28 +76,14 @@ public type __Type record {|
     __Type ofType?;
 |};
 
-# Represents a GraphQL enum.
-#
-# + name - The name of the enum
-# + description - The desciption of the enum
-# + isDeprecated - Whether the enum is deprecated or not
-# + deprecationReason - The reason for deprecation
-public type __EnumValue record {|
+type __EnumValue record {|
     string name;
     string description?;
     boolean isDeprecated = false;
     string deprecationReason?;
 |};
 
-# Represents a GraphQL field.
-#
-# + name - Name of the field
-# + description - The description of the field
-# + args - The arguments needed to query the field
-# + type - The type of the field
-# + isDeprecated - Whether the field is deprecated or not
-# + deprecationReason - The reason for deprecation
-public type __Field record {|
+type __Field record {|
     string name;
     string description?;
     __InputValue[] args;
@@ -132,21 +92,14 @@ public type __Field record {|
     string deprecationReason?;
 |};
 
-# Represents an input value for a GraphQL field.
-#
-# + name - Name of the input argument
-# + description - The description of the input value
-# + type - The type of the input argument
-# + defaultValue - The string reperesentation of the default value of the input argument
-public type __InputValue record {|
+type __InputValue record {|
 	string name;
 	string description?;
 	__Type 'type;
 	string defaultValue?;
 |};
 
-# Represents the type kind of a GraphQL type.
-public enum __TypeKind {
+enum __TypeKind {
     SCALAR,
     OBJECT,
     ENUM,
@@ -157,21 +110,14 @@ public enum __TypeKind {
     INPUT_OBJECT
 }
 
-# Represents a directive in a GraphQL schema.
-#
-# + name - The name of the directive
-# + description - The description of the directive
-# + locations - The locations of the directive is used
-# + args - The set of `__Inputvalue`s for the directive
-public type __Directive record {|
+type __Directive record {|
     string name;
     string description?;
     __DirectiveLocation[] locations?;
     __InputValue[] args = [];
 |};
 
-# Set of locations the directives can be applied.
-public enum __DirectiveLocation {
+enum __DirectiveLocation {
   QUERY,
   MUTATION,
   SUBSCRIPTION,

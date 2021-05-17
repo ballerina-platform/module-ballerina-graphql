@@ -49,6 +49,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getUnionTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isRequired;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
@@ -140,7 +141,7 @@ public class FieldFinder {
             if (memberTypes.size() == 1) {
                 return getSchemaTypeFromType(memberTypes.get(0));
             } else {
-                SchemaType schemaType = this.getType(unionType.getName());
+                SchemaType schemaType = this.getType(getUnionTypeName(unionType));
                 for (Type memberType : memberTypes) {
                     SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
                     schemaType.addPossibleType(possibleType);

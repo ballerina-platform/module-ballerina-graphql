@@ -16,6 +16,8 @@
 
 import ballerina/graphql;
 
+type MultiService FirstName|CivilStatus;
+
 service graphql:Service on new graphql:Listener(4000) {
     isolated resource function get greet() returns CivilStatus? {
         return new CivilStatus();
@@ -37,6 +39,28 @@ service graphql:Service on new graphql:Listener(4000) {
 service graphql:Service on new graphql:Listener(4000) {
     isolated resource function get details() returns FirstName|CivilStatus {
         return new FirstName();
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get greet() returns FirstName[]? {
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get greet() returns MultiService? {
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get greet() returns MultiService {
+        return new FirstName();
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get greet() returns MultiService[] {
+        return [];
     }
 }
 

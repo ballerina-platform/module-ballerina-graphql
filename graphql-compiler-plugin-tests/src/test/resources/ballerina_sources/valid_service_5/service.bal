@@ -27,3 +27,15 @@ service graphql:Service on new graphql:Listener(4000) {
         return RED;
     }
 }
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get color(Color? color) returns Color {
+        return RED;
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    isolated resource function get color() returns Color[] {
+        return [];
+    }
+}
