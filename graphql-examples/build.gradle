@@ -58,10 +58,11 @@ task copyPackageBala {
 
 task buildExamples {
     doLast {
+        def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")
         examples.each { example ->
             def dependenciesTomlFile = new File("${project.projectDir}/${example}/Dependencies.toml")
             def originalDependenciesText = dependenciesTomlFile.text
-            def newDependenciesTomlText = dependenciesTomlFile.text.replace("@project.version@", project.version)
+            def newDependenciesTomlText = dependenciesTomlFile.text.replace("@project.version@", moduleVersion)
             dependenciesTomlFile.text = newDependenciesTomlText
             try {
                 exec {
