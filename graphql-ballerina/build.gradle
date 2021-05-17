@@ -32,7 +32,6 @@ buildscript {
     }
 }
 
-
 description = 'Ballerina - GraphQl Ballerina'
 
 def packageName = "graphql"
@@ -61,7 +60,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
 
 apply plugin: 'io.ballerina.plugin'
 
-ballerina{
+ballerina {
     module = packageName
     langVersion = ballerinaLangVersion
     testCoverageParam = "--code-coverage --jacoco-xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
