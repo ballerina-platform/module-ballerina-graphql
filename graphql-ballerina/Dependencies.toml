@@ -1,5 +1,10 @@
 [[dependency]]
 org = "ballerina"
+name = "auth"
+version = "@stdlib.auth.version@"
+
+[[dependency]]
+org = "ballerina"
 name = "file"
 version = "@stdlib.file.version@"
 
@@ -12,6 +17,21 @@ version = "@stdlib.http.version@"
 org = "ballerina"
 name = "io"
 version = "@stdlib.io.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "jwt"
+version = "@stdlib.jwt.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "oauth"
+version = "@stdlib.oauth.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "regex"
+version = "@stdlib.regex.version@"
 
 [[dependency]]
 org = "ballerina"
