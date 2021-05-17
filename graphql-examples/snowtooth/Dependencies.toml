@@ -1,0 +1,5 @@
+[[dependency]]
+org = "ballerina"
+name = "graphql"
+version = "@project.verrsion@"
+repository = "local"
