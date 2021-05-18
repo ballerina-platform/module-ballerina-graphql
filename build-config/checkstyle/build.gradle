@@ -19,6 +19,8 @@ plugins {
     id 'de.undercouch.download'
 }
 
+apply plugin: 'java'
+
 task downloadMultipleFiles(type: Download) {
     src([
             'https://raw.githubusercontent.com/wso2/code-quality-tools/v1.3/checkstyle/checkstyle.xml',

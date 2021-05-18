@@ -18,6 +18,8 @@ import org.apache.tools.ant.taskdefs.condition.Os
  * under the License.
  */
 
+apply plugin: 'java'
+
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
 def ballerinaModulePath = "${project.rootDir}/graphql-ballerina/"
