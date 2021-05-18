@@ -28,6 +28,18 @@ service /graphql on new Listener(9104) {
     isolated resource function get profile/age() returns int {
         return 40;
     }
+
+    isolated resource function get profile/address/city() returns string {
+        return "London";
+    }
+
+    isolated resource function get profile/address/street() returns string {
+        return "Baker Street";
+    }
+
+    isolated resource function get profile/name/address/number() returns string {
+        return "221/B";
+    }
 }
 
 @test:Config {
@@ -87,6 +99,25 @@ isolated function testHierarchicalResourcePathsComplete() returns error? {
                     last: "Holmes"
                 },
                 age: 40
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? {
+    string document = "{ profile { name { address { street } } } }";
+    string url = "http://localhost:9104/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: {
+                    address: {
+                        street: "Baker Street"
+                    }
+                }
             }
         }
     };

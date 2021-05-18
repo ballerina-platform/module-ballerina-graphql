@@ -74,6 +74,10 @@ service /graphql on new Listener(9107) {
         }
         return false;
     }
+
+    isolated resource function get holidays() returns Weekday[] {
+        return [SATURDAY, SUNDAY];
+    }
 }
 
 @test:Config {
@@ -152,6 +156,25 @@ isolated function testEnumInputParameter() returns error? {
     json expectedPayload = {
         data: {
             isHoliday: true
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+
+@test:Config {
+    groups: ["enum", "array", "unit"]
+}
+isolated function testReturningEnumArray() returns error? {
+    string document = "query { holidays }";
+    string url = "http://localhost:9107/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            holidays: [
+                "SATURDAY",
+                "SUNDAY"
+            ]
         }
     };
     test:assertEquals(actualPayload, expectedPayload);
