@@ -10,24 +10,25 @@ The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
 
 The `graphql:Listener` is used to listen to a given IP/Port. To create a `graphql:Listener`, an `http:Listener` or a port number can be used.
 
-#### Create a `graphql:Listener` using an `http:Listener`
-```ballerina
-import ballerina/http;
-import ballerina/graphql;
-
-http:Listener httpListener = check new(4000);
-listener graphql:Listener graphqlListener = new(httpListener);
-``` 
-
-#### Create a `graphql:Listener` using port number
+#### Create a standalone `graphql:Listener`
 ```ballerina
 import ballerina/graphql;
 
 listener graphql:Listener graphqlListener = new(4000);
-``` 
+```
+
+#### Create a `graphql:Listener` using an `http:Listener`
+```ballerina
+import ballerina/graphql;
+import ballerina/http;
+
+listener http:Listener httpListener = check new(4000);
+listener graphql:Listener graphqlListener = new(httpListener);
+```
 
 #### Additional Configurations
 When initializing the Ballerina GraphQL listener, a set of additional configurations can be provided to configure the listener including security and resiliency settings.
+The configurations that can be passed here are defined in the `graphql:ListenerConfiguration` record.
 
 ```ballerina
 import ballrina/graphql;
