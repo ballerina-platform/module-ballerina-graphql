@@ -58,12 +58,13 @@ def stripBallerinaExtensionVersion(String extVersion) {
 apply plugin: 'io.ballerina.plugin'
 
 ballerina {
+    packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
     testCoverageParam = "--code-coverage --jacoco-xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
 }
 
-task updateTomlVersions {
+task updateTomlFiles {
     doLast {
         def stdlibDependentAuthVersion = stripBallerinaExtensionVersion(project.stdlibAuthVersion)
         def stdlibDependentFileVersion = stripBallerinaExtensionVersion(project.stdlibFileVersion)
@@ -93,7 +94,7 @@ task updateTomlVersions {
     }
 }
 
-task revertTomlFile {
+task revertTomlFiles {
     doLast {
         ballerinaTomlFile.text = originalBallerinaToml
         dependenciesTomlFile.text = originalDependenciesToml
@@ -119,7 +120,7 @@ publishing {
     }
 }
 
-updateTomlVersions.dependsOn copyStdlibs
+updateTomlFiles.dependsOn copyStdlibs
 
 build.dependsOn ":${packageName}-native:build"
 build.dependsOn ":${packageName}-compiler-plugin:build"
