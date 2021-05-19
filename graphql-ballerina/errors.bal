@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents any error related to the Ballerina GraphQL module
+# Represents any error related to the Ballerina GraphQL module.
 public type Error distinct error;
 
 # Represents an error occurred due to providing an incorrect configuration to the service.

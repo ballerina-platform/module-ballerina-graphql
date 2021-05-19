@@ -25,9 +25,9 @@ public class Listener {
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
     #
-    # + listenTo - An `http:Listener` or a port number to listen for the GraphQL service endpoint
+    # + listenTo - An `http:Listener` or a port number to listen to the GraphQL service endpoint
     # + configuration - The additional configurations for the GraphQL listener
-    # + return - A `graphql:Error` if the listener initialization is failed, otherwise nil
+    # + return - A `graphql:Error` if the listener initialization is failed or else `()`
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration configuration)
     returns Error? {
         if (listenTo is int) {
@@ -48,7 +48,7 @@ public class Listener {
     #
     # + s - The `graphql:Service` object to attach to the listener
     # + name - The path of the service to be hosted
-    # + return - A `graphql:Error`, if an error occurred during the service attaching process or the schema
+    # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
     #            generation process, otherwise nil
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         error? result = self.httpListener.attach(self.httpService, name);
@@ -61,7 +61,7 @@ public class Listener {
     # Detaches the provided service from the Listener.
     #
     # + s - The service to be detached from the listener
-    # + return - A `graphql:Error`, if an error occurred during the service detaching process, otherwise nil
+    # + return - A `graphql:Error` if an error occurred during the service detaching process or else `()`
     public isolated function detach(Service s) returns Error? {
         error? result = self.httpListener.detach(self.httpService);
         if (result is error) {
@@ -91,7 +91,7 @@ public class Listener {
 
     # Stops the service listener immediately.
     #
-    # + return - A `graphql:Error`, if an error occurred during the service stopping process, otherwise nil
+    # + return - A `graphql:Error` if an error occurred during the service stopping process or else `()`
     public isolated function immediateStop() returns Error? {
         error? result = self.httpListener.immediateStop();
         if (result is error) {
