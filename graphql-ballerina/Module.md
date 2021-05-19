@@ -2,7 +2,7 @@
 
 This module provides an implementation for connecting and interacting with GraphQL endpoints.
 
-GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required, and the same structure of the data is returned from the server, therefore preventing the returning of excessively large amounts of data.
+GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required and the same structure of the data is returned from the server preventing the returning of excessively large amounts of data.
 
 The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
 
@@ -10,14 +10,14 @@ The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
 
 The `graphql:Listener` is used to listen to a given IP/Port. To create a `graphql:Listener`, an `http:Listener` or a port number can be used.
 
-#### Create a standalone `graphql:Listener`
+#### Create a Standalone `graphql:Listener`
 ```ballerina
 import ballerina/graphql;
 
 listener graphql:Listener graphqlListener = new(4000);
 ```
 
-#### Create a `graphql:Listener` using an `http:Listener`
+#### Create a `graphql:Listener` Using an `http:Listener`
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -28,7 +28,7 @@ listener graphql:Listener graphqlListener = new(httpListener);
 
 #### Additional Configurations
 When initializing the Ballerina GraphQL listener, a set of additional configurations can be provided to configure the listener including security and resiliency settings.
-The configurations that can be passed here are defined in the `graphql:ListenerConfiguration` record.
+The configurations that can be passed for this are defined in the `graphql:ListenerConfiguration` record.
 
 ```ballerina
 import ballrina/graphql;
@@ -40,7 +40,7 @@ listener graphql:Listener graphqlListener = new (4000, timeout = 10, secureSocke
 The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated. The resource functions inside the service represent the resolvers of the root type.
 Then, the GraphQL listener will handle all the incoming requests and dispatch them to the relevant resource function.
 
-Since the GraphQL endpoints are exposed through a single endpoint, the endpoint URL of the GraphQL service can be provided after the service declaration, as shown in the following code snippet, where the endpoint URL is `/graphql`.
+Since the GraphQL endpoints are exposed through a single endpoint, the endpoint URL of the GraphQL service can be provided after the service declaration as shown in the following code snippet in which the endpoint URL is `/graphql`.
 
 The accessor of the resource function should always be `get`. The resource function name will become the name of the particular field in the GraphQL schema. The return type of the resource function will be the type of the corresponding field.
 
@@ -74,7 +74,7 @@ The result will be the following JSON.
 
 
 #### Additional Configurations
-Additional configurations to a Ballerina GraphQL service can be provided using the `graphql:ServiceConfiguration`.
+Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfiguration`.
 These configurations include security-related configurations for the GraphQL service.
 
 ##### Security Configurations
@@ -191,7 +191,7 @@ Result:
 ##### Record types
 
 When a resource is returning a record type, each field of the record can be queried separately.
-Each record type is mapped to a GraphQL `OBJECT` type, and the field of the record type are mapped to the fields of the `OBJECT` type.
+Each record type is mapped to a GraphQL `OBJECT` type and the fields of the record type are mapped to the fields of the `OBJECT` type.
 
 ```ballerina
 public type Person record {|
@@ -204,7 +204,7 @@ resource function get profile() returns Person {
 }
 ```
 
-This will generate the following schema
+This will generate the following schema.
 ```
 type Query {
     profile: Person!
@@ -259,9 +259,9 @@ Result:
 ```
 
 #### Service Objects
-When a resource function returns a service object, the Service type is mapped to a GraphQL `OBJECT` type, and the resource functions of the service type will be mapped as the fields of the `OBJECT`.
+When a resource function returns a service object, the service type is mapped to a GraphQL `OBJECT` type and the resource functions of the service type will be mapped as the fields of the `OBJECT`.
 
-When a service type is returned from a `graphql:Service`, the returning service type should also follow the rules of the `graphql:Service`, explained above.
+When a service type is returned from a `graphql:Service`, the returning service type should also follow the rules of the `graphql:Service` explained above.
 
 ```ballerina
 import ballerina/graphql;
@@ -314,7 +314,7 @@ query getProfile {
 }
 ```
 
-Which will result in the following JSON:
+The above will result in the following JSON:
 
 ```json
 {
@@ -644,7 +644,7 @@ Result:
 
 #### Hierarchical Resource Paths
 A resource inside a GraphQL service can have hierarchical paths.
-When a hierarchical path is present, each level of the hierarchical path maps to the GraphQL field of the same name, and the type of that field will be mapped to an `OBJECT` type, with the same name.
+When a hierarchical path is present, each level of the hierarchical path maps to the GraphQL field of the same name, and the type of that field will be mapped to an `OBJECT` type with the same name.
 
 ```ballerina
 import ballerina/graphql;
@@ -682,4 +682,4 @@ type name {
 }
 ```
 
-Note the field name, and the type names are equal.
+Note: The field name, and the type names are equal.
