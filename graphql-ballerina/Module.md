@@ -458,7 +458,7 @@ This will be the result:
 #### Union Types
 The Ballerina GraphQL service can return a union of distinct service types. This will be mapped to a GraphQL `UNION` type.
 
-Since Ballerina supports the union types by nature, directly returning a union type is also allowed, but not recommended. The recommended way is to define a union type name separately and then use that type name, as shown in the following example. If a union type is returned directly without providing a type name, the type name will be `T1|T2|T3|...|Tn`.
+Since Ballerina supports the union types by nature, directly returning a union type is also allowed (but not recommended). The recommended way is to define a union type name separately and then use that type name as shown in the following example. If a union type is returned directly without providing a type name, the type name will be `T1|T2|T3|...|Tn`.
 
 ```ballerina
 import ballerina/graphql;
@@ -599,7 +599,7 @@ The result will be:
 #### Errors (With union)
 A Ballerina GraphQL resource can return an `error` with the union of the types mentioned above.
 
-Note: A resource cannot return `error` or any subtype of `error` alone or, `error?` which will results in a compilation error.
+Note: A resource cannot return an `error`, any subtype of an `error`, or, an `error?`, which will result in a compilation error.
 
 ```ballerina
 public type Person record {|
