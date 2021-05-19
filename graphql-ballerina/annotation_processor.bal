@@ -30,7 +30,6 @@ isolated function getListenerAuthConfig(Service serviceObject) returns ListenerA
             return <ListenerAuthConfig[]>serviceConfig?.auth;
         }
     }
-    return;
 }
 
 isolated function getServiceConfiguration(Service serviceObject) returns GraphqlServiceConfiguration? {

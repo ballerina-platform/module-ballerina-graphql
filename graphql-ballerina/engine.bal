@@ -17,10 +17,10 @@
 import graphql.parser;
 
 class Engine {
-    private __Schema schema;
-    private Service graphqlService;
-    private int? maxQueryDepth;
-    ListenerAuthConfig[]? auth = ();
+    private final __Schema schema;
+    private final Service graphqlService;
+    private final int? maxQueryDepth;
+    private final ListenerAuthConfig[]? auth;
 
     public isolated function init(Service s) returns Error? {
         self.schema = check createSchema(s);
@@ -87,5 +87,9 @@ class Engine {
         ExecutorVisitor executor = new(self.graphqlService, self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         return outputObject;
+    }
+
+    isolated function getAuthConfigs() returns ListenerAuthConfig[]? {
+        return self.auth;
     }
 }

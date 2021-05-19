@@ -17,14 +17,14 @@
 import ballerina/http;
 
 service class HttpService {
-    private Engine engine;
+    private final Engine engine;
 
     isolated function init(Engine engine) {
         self.engine = engine;
     }
 
     isolated resource function get .(http:Request request) returns http:Response {
-        http:Response? authResult = authenticateService(self.engine.auth, request);
+        http:Response? authResult = authenticateService(self.engine.getAuthConfigs(), request);
         if (authResult is http:Response) {
             return authResult;
         }
@@ -32,7 +32,7 @@ service class HttpService {
     }
 
     isolated resource function post .(http:Request request) returns http:Response {
-        http:Response? authResult = authenticateService(self.engine.auth, request);
+        http:Response? authResult = authenticateService(self.engine.getAuthConfigs(), request);
         if (authResult is http:Response) {
             return authResult;
         }
