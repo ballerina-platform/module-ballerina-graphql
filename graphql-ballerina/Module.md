@@ -385,7 +385,7 @@ Result:
 }
 ```
 
-Note that each element in the array consists only of the required `name` field.
+Note: Each element in the array consists only of the required `name` field.
 
 
 #### Optional Types
