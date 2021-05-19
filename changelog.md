@@ -15,6 +15,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1348] Add Validation to Return Type Service Class Definitions in Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/1348)
 - [[#998] Use Included Record Parameters for Listener Config](https://github.com/ballerina-platform/ballerina-standard-library/issues/998)
 - [[#1350] Allow Optional Enums to be Resource Function Input Parameters](https://github.com/ballerina-platform/ballerina-standard-library/issues/1350)
+- [[#1382] Decouple the Engine and the Listener](https://github.com/ballerina-platform/ballerina-standard-library/issues/1382)
 
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)

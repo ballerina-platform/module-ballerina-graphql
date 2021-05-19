@@ -53,16 +53,6 @@ service /depthLimitService on depthLimitListener {
 
 }
 
-service object {} InvalidDepthLimitService =
-@ServiceConfiguration {
-    maxQueryDepth: 0
-}
-service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
 @test:Config {
     groups: ["configs", "unit"]
 }
@@ -81,20 +71,6 @@ isolated function testTimeoutResponse() returns error? {
     string actualPaylaod = check response.getTextPayload();
     string expectedMessage = "Idle timeout triggered before initiating outbound response";
     test:assertEquals(actualPaylaod, expectedMessage);
-}
-
-@test:Config {
-    groups: ["negative", "configs", "unit"]
-}
-function testInvalidMaxDepth() returns error? {
-    Listener graphqlListener = check new Listener(91022);
-    var result = graphqlListener.attach(InvalidDepthLimitService);
-    if (result is Error) {
-        string message = "Maximum query depth should be an integer greater than 0";
-        test:assertEquals(message, result.message());
-    } else {
-        test:assertFail("This must throw an error");
-    }
 }
 
 @test:Config {
