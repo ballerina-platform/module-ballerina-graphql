@@ -17,17 +17,17 @@
 import graphql.parser;
 
 class Engine {
-    private Listener 'listener;
-    private __Schema? schema;
-    private Service? graphqlService;
-    private int maxQueryDepth;
+    private __Schema schema;
+    private Service graphqlService;
+    private int? maxQueryDepth;
     ListenerAuthConfig[]? auth = ();
 
-    public isolated function init(Listener 'listener) returns Error? {
-        self.'listener = 'listener;
-        self.schema = ();
-        self.graphqlService = ();
-        self.maxQueryDepth = 0;
+    public isolated function init(Service s) returns Error? {
+        self.schema = check createSchema(s);
+        self.graphqlService = s;
+        GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
+        self.maxQueryDepth = getMaxQueryDepth(s);
+        self.auth = getListenerAuthConfig(s);
     }
 
     isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
@@ -36,7 +36,7 @@ class Engine {
             return result;
         }
         parser:DocumentNode document = <parser:DocumentNode>result;
-        var validationResult = self.validateDocument(document);
+        OutputObject? validationResult = self.validateDocument(document);
         if (validationResult is OutputObject) {
             return validationResult;
         } else {
@@ -58,14 +58,6 @@ class Engine {
         }
     }
 
-    isolated function registerService(Service s) returns Error? {
-        self.graphqlService = s;
-        self.schema = check createSchema(s);
-        GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
-        self.maxQueryDepth = check getMaxQueryDepth(s);
-        self.auth = getListenerAuthConfig(s);
-    }
-
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
         parser:Parser parser = new (documentString);
         parser:DocumentNode|parser:Error parseResult = parser.parse();
@@ -77,14 +69,14 @@ class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
-        if (self.maxQueryDepth > 0) {
-            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, self.maxQueryDepth);
+        if (self.maxQueryDepth is int) {
+            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, <int>self.maxQueryDepth);
             ErrorDetail[]? errors = queryDepthValidator.validate();
             if (errors is ErrorDetail[]) {
                 return getOutputObjectFromErrorDetail(errors);
             }
         }
-        ValidatorVisitor validator = new(<__Schema>self.schema, document);
+        ValidatorVisitor validator = new(self.schema, document);
         ErrorDetail[]? errors = validator.validate();
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);
@@ -92,15 +84,7 @@ class Engine {
     }
 
     isolated function execute(parser:OperationNode operationNode) returns OutputObject {
-        if (self.graphqlService is ()) {
-            ErrorDetail errorDetail = {
-                message: "Internal Error: GraphQL service is not available.",
-                locations: []
-            };
-            return getOutputObjectFromErrorDetail(errorDetail);
-        }
-        Service s = <Service>self.graphqlService;
-        ExecutorVisitor executor = new(s, <__Schema>self.schema);
+        ExecutorVisitor executor = new(self.graphqlService, self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         return outputObject;
     }

@@ -19,8 +19,7 @@ import ballerina/http;
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
-    private HttpService httpService;
-    private Engine engine;
+    private HttpService? httpService;
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
@@ -40,8 +39,7 @@ public class Listener {
         } else {
             self.httpListener = listenTo;
         }
-        self.engine = check new(self);
-        self.httpService = new(self.engine);
+        self.httpService = ();
     }
 
     # Attaches the provided service to the Listener.
@@ -51,11 +49,13 @@ public class Listener {
     # + return - A `graphql:Error`, if an error occurred during the service attaching process or the schema
     #            generation process, otherwise nil
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
-        error? result = self.httpListener.attach(self.httpService, name);
+        Engine engine = check new(s);
+        HttpService httpService = new(engine);
+        error? result = self.httpListener.attach(httpService, name);
         if (result is error) {
             return error ServiceHandlingError("Error occurred while attaching the service", result);
         }
-        check self.engine.registerService(s);
+        self.httpService = httpService;
     }
 
     # Detaches the provided service from the Listener.
@@ -63,9 +63,11 @@ public class Listener {
     # + s - The service to be detached
     # + return - A `graphql:Error`, if an error occurred during the service detaching process, otherwise nil
     public isolated function detach(Service s) returns Error? {
-        error? result = self.httpListener.detach(self.httpService);
-        if (result is error) {
-            return error ServiceHandlingError("Error occurred while detaching the service", result);
+        if (self.httpService is HttpService) {
+            error? result = self.httpListener.detach(<HttpService>self.httpService);
+            if (result is error) {
+                return error ServiceHandlingError("Error occurred while detaching the service", result);
+            }
         }
     }
 

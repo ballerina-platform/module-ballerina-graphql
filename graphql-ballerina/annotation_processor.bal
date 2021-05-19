@@ -14,19 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-isolated function getMaxQueryDepth(Service serviceObject) returns int|InvalidConfigurationError {
+isolated function getMaxQueryDepth(Service serviceObject) returns int? {
     GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(serviceObject);
     if (serviceConfig is GraphqlServiceConfiguration) {
         if (serviceConfig?.maxQueryDepth is int) {
-            int maxQueryDepth = <int>serviceConfig?.maxQueryDepth;
-            if (maxQueryDepth < 1) {
-                string message = "Maximum query depth should be an integer greater than 0";
-                return error InvalidConfigurationError(message);
-            }
-            return maxQueryDepth;
+            return <int>serviceConfig?.maxQueryDepth;
         }
     }
-    return 0;
 }
 
 isolated function getListenerAuthConfig(Service serviceObject) returns ListenerAuthConfig[]? {
