@@ -14,20 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents any error related to the Ballerina GraphQL module
+# Represents any error related to the Ballerina GraphQL module.
 public type Error distinct error;
 
-# Represents a non-implemented feature error
-public type NotImplementedError distinct Error;
-
-# Represents an error due to invalid type in GraphQL service
-public type InvalidTypeError distinct Error;
-
-# Represents an unsupported functionality error
-public type NotSupportedError distinct Error;
-
-# Represents an error due to invalid configurations
+# Represents an error occurred due to providing an incorrect configuration to the service.
 public type InvalidConfigurationError distinct Error;
 
-# Represents an error occurred in the listener while handling a service
+# Represents an error occurred during attaching a service to the `graphql:Listener`.
 public type ServiceHandlingError distinct Error;
