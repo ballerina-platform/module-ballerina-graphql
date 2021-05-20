@@ -63,7 +63,7 @@ distinct service class Lift {
 
     # A list of trails that this `Lift` serves
     # + return - the trails
-    resource function get trailAccess () returns Trail {
+    resource function get trailAccess () returns Trail[] {
         ds:LiftRecord[] lifts = [self.lift];
         ds:EdgeRecord[] edges = from var edge in ds:edgeTable
                        join var lift in lifts on edge.liftId equals lift.id
@@ -71,6 +71,6 @@ distinct service class Lift {
         ds:TrailRecord[] trails = from var trail in ds:trailTable
                       join var edge in edges on trail.id equals edge.trailId
                       select trail;
-        return new Trail(trails[0]);
+        return trails.map(function (ds:TrailRecord trailRecord) returns Trail => new Trail(trailRecord));
     }
 }
