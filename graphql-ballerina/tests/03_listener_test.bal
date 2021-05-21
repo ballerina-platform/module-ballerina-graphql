@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/test;
 import ballerina/url;
+//import ballerina/io;
 
 listener Listener simpleResourceListener = new(9092);
 
@@ -58,6 +59,34 @@ isolated function testGetRequestResult() returns error? {
     http:Client httpClient = check new("http://localhost:9095");
     string path = "/graphql?query=" + encodedDocument;
     json actualPayload = check httpClient->get(path, targetType = json);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener", "negative"]
+}
+isolated function testInvalidJsonPayload() returns error? {
+    http:Client httpClient = check new("http://localhost:9092/graphql");
+    json|error result = httpClient->post("/", {}, targetType = json);
+    test:assertTrue(result is http:ClientRequestError);
+    http:ClientRequestError err = <http:ClientRequestError> result;
+    test:assertEquals(err.detail()?.statusCode, 400);
+    test:assertEquals(err.message(), "Bad request");
+}
+
+@test:Config {
+    groups: ["listener", "negative"]
+}
+isolated function testInvalidTextPayload() returns error? {
+    http:Client httpClient = check new("http://localhost:9092/graphql");
+    json actualPayload = check httpClient->post("/", "", targetType = json);
+    json expectedPayload = {
+        errors: [
+            {
+                massage: "Invalid 'Content-type' received"
+            }
+        ]
+    };
     test:assertEquals(actualPayload, expectedPayload);
 }
 
