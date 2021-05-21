@@ -72,8 +72,6 @@ public class CallableUnitCallback implements Callback {
         if (o instanceof BError) {
             BError bError = (BError) o;
             appendErrorToVisitor(bError);
-        } else if (o instanceof BObject) {
-            getDataFromService(this.environment, (BObject) o, this.visitor, this.node, this.data);
         } else {
             getDataFromResult(this.environment, this.visitor, this.node, o, this.data);
         }
