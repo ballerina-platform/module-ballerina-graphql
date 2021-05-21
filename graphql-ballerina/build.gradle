@@ -61,7 +61,7 @@ ballerina {
     packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
-    testCoverageParam = "--code-coverage --jacoco-xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
+    testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
 }
 
 task updateTomlFiles {
