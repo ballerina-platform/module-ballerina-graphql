@@ -62,10 +62,10 @@ task buildExamples {
     doLast {
         def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")
         examples.each { example ->
-            def dependenciesTomlFile = new File("${project.projectDir}/${example}/Dependencies.toml")
-            def originalDependenciesText = dependenciesTomlFile.text
+            def dependenciesTomlFile = new File("${project.projectDir}/resources/Dependencies.toml")
+            def dependenciesTomlFileInExample = new File("${project.projectDir}/${example}/Dependencies.toml")
             def newDependenciesTomlText = dependenciesTomlFile.text.replace("@project.version@", moduleVersion)
-            dependenciesTomlFile.text = newDependenciesTomlText
+            dependenciesTomlFileInExample.text = newDependenciesTomlText
             try {
                 exec {
                     workingDir project.projectDir
@@ -79,7 +79,7 @@ task buildExamples {
                 println("Example '${example}' Build failed: " + e.message)
                 throw e
             } finally {
-                dependenciesTomlFile.text = originalDependenciesText
+                dependenciesTomlFileInExample.text = ""
             }
         }
     }
