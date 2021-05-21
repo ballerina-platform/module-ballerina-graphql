@@ -16,18 +16,15 @@
 
 import graphql.parser;
 
-class Engine {
-    private final __Schema schema;
-    private final Service graphqlService;
+isolated class Engine {
+    private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final ListenerAuthConfig[]? auth;
+    private final readonly & ListenerAuthConfig[]? auth;
 
-    public isolated function init(Service s) returns Error? {
-        self.schema = check createSchema(s);
-        self.graphqlService = s;
-        GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
-        self.maxQueryDepth = getMaxQueryDepth(s);
-        self.auth = getListenerAuthConfig(s);
+    isolated function init(__Schema schema, GraphqlServiceConfiguration? serviceConfig) {
+        self.schema = schema.cloneReadOnly();
+        self.auth = getListenerAuthConfig(serviceConfig).cloneReadOnly();
+        self.maxQueryDepth = getMaxQueryDepth(serviceConfig);
     }
 
     isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
@@ -84,7 +81,7 @@ class Engine {
     }
 
     isolated function execute(parser:OperationNode operationNode) returns OutputObject {
-        ExecutorVisitor executor = new(self.graphqlService, self.schema);
+        ExecutorVisitor executor = new(self, self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         return outputObject;
     }

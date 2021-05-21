@@ -46,7 +46,8 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
-    private Engine() {}
+    private Engine() {
+    }
 
     public static Object createSchema(BObject service) {
         try {
@@ -64,7 +65,17 @@ public class Engine {
         return schemaGenerator.generate();
     }
 
-    public static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
+    public static void attachServiceToEngine(BObject service, BObject engine) {
+        engine.addNativeData("GRAPHQL_SERVICE_OBJECT", service);
+    }
+
+    public static void executeService(Environment environment, BObject engine, BObject visitor,
+                                       BObject node, BMap<BString, Object> data) {
+        BObject service = (BObject) engine.getNativeData("GRAPHQL_SERVICE_OBJECT");
+        executeResource(environment, service, visitor, node, data);
+    }
+
+    static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
                                        BMap<BString, Object> data) {
         ServiceType serviceType = (ServiceType) service.getType();
         String fieldName = node.getStringValue(NAME_FIELD).getValue();

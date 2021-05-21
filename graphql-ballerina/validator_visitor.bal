@@ -236,7 +236,7 @@ class ValidatorVisitor {
                 }
             }
         } else {
-            notFoundInputValues = inputValues.clone();
+            notFoundInputValues = copyInputValueArray(inputValues);
             foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName().value;
                 __InputValue? inputValue = getInputValueFromArray(inputValues, argName);
@@ -297,6 +297,14 @@ class ValidatorVisitor {
         ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
         self.errors.push(errorDetail);
     }
+}
+
+isolated function copyInputValueArray(__InputValue[] original) returns __InputValue[] {
+    __InputValue[] result = [];
+    foreach __InputValue inputValue in original {
+        result.push(inputValue);
+    }
+    return result;
 }
 
 isolated function getInputValueFromArray(__InputValue[] inputValues, string name) returns __InputValue? {

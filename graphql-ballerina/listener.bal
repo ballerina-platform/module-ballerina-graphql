@@ -47,9 +47,13 @@ public class Listener {
     # + s - The `graphql:Service` object to attach to the listener
     # + name - The path of the service to be hosted
     # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
-    #            generation process, otherwise nil
+    #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
-        Engine engine = check new(s);
+        __Schema schema = check createSchema(s);
+        GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
+        Engine engine = new(schema, serviceConfig);
+        attachServiceToEngine(s, engine);
+
         HttpService httpService = new(engine);
         error? result = self.httpListener.attach(httpService, name);
         if (result is error) {

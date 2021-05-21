@@ -274,7 +274,7 @@ isolated function testOptionalArray() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit", "test"]
+    groups: ["array", "service", "unit"]
 }
 isolated function testOptionalArrayInvalidQuery() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
