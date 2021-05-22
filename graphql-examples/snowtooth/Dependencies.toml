@@ -1,4 +1,0 @@
-[[dependency]]
-org = "ballerina"
-name = "graphql"
-version = "@project.version@"
