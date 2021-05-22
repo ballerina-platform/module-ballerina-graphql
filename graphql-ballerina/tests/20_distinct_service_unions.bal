@@ -98,7 +98,7 @@ isolated function testUnionOfDistinctServices() returns error? {
 }
 
 @test:Config {
-    groups: ["service", "union", "negative", "test"]
+    groups: ["service", "union", "negative"]
 }
 isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
     string document = string

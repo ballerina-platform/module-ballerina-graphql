@@ -100,9 +100,9 @@ isolated function getOfType(__Type schemaType) returns __Type {
 isolated function getTypeNameFromType(__Type schemaType) returns string {
     string typeName = getOfType(schemaType)?.name.toString();
     if (schemaType.kind == NON_NULL) {
-        return string`${getTypeNameFromType(<__Type>schemaType?.ofType)}!`;
+        return string`${getTypeNameFromType(<__Type & readonly>schemaType?.ofType)}!`;
     } else if (schemaType.kind == LIST) {
-        return string`[${getTypeNameFromType(<__Type>schemaType?.ofType)}]`;
+        return string`[${getTypeNameFromType(<__Type & readonly>schemaType?.ofType)}]`;
     }
     return schemaType?.name.toString();
 }
