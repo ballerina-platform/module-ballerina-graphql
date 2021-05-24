@@ -16,9 +16,3 @@
 
 # Represents any error related to the Ballerina GraphQL module.
 public type Error distinct error;
-
-# Represents an error occurred due to providing an incorrect configuration to the service.
-public type InvalidConfigurationError distinct Error;
-
-# Represents an error occurred during attaching a service to the `graphql:Listener`.
-public type ServiceHandlingError distinct Error;
