@@ -14,10 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents the supported Scalar types in Ballerina GraphQL module
+# Represents the supported Scalar types in Ballerina GraphQL module.
 public type Scalar boolean|int|float|string;
 
-# Represents a GraphQL service
+# Represents a GraphQL service.
 public type Service service object {
     // TODO: Complete the type validation
 };

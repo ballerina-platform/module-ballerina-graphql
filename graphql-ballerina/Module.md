@@ -1,6 +1,6 @@
 ## Overview
 
-This module provides an implementation for connecting and interacting with GraphQL endpoints.
+This module provides APIs for connecting and interacting with GraphQL endpoints.
 
 GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required and the same structure of the data is returned from the server preventing the returning of excessively large amounts of data.
 
