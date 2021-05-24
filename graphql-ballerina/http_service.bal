@@ -16,7 +16,7 @@
 
 import ballerina/http;
 
-service class HttpService {
+isolated service class HttpService {
     private final Engine engine;
 
     isolated function init(Engine engine) {

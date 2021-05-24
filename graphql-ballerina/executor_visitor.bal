@@ -19,13 +19,13 @@ import graphql.parser;
 class ExecutorVisitor {
     *parser:Visitor;
 
-    private Service serviceType;
+    private final __Schema schema;
+    private final Engine engine;
     private Data data;
     private ErrorDetail[] errors;
-    private __Schema schema;
 
-    isolated function init(Service serviceType, __Schema schema) {
-        self.serviceType = serviceType;
+    isolated function init(Engine engine, __Schema schema) {
+        self.engine = engine;
         self.schema = schema;
         self.data = {};
         self.errors = [];
@@ -75,6 +75,6 @@ class ExecutorVisitor {
     }
 
     isolated function executeResource(parser:FieldNode fieldNode) {
-        executeResource(self.serviceType, self, fieldNode, self.data);
+        executeService(self.engine, self, fieldNode, self.data);
     }
 }
