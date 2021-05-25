@@ -21,7 +21,7 @@ isolated class Engine {
     private final int? maxQueryDepth;
     private final readonly & ListenerAuthConfig[]? auth;
 
-    isolated function init(__Schema schema, GraphqlServiceConfiguration? serviceConfig) {
+    isolated function init(__Schema schema, GraphqlServiceConfig? serviceConfig) {
         self.schema = schema.cloneReadOnly();
         self.auth = getListenerAuthConfig(serviceConfig).cloneReadOnly();
         self.maxQueryDepth = getMaxQueryDepth(serviceConfig);

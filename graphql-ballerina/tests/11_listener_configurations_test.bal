@@ -31,7 +31,7 @@ service /timeoutService on timeoutListener {
     }
 }
 
-@ServiceConfiguration {
+@ServiceConfig {
     maxQueryDepth: 2
 }
 service /depthLimitService on depthLimitListener {

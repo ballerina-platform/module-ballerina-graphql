@@ -17,6 +17,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1350] Allow Optional Enums to be Resource Function Input Parameters](https://github.com/ballerina-platform/ballerina-standard-library/issues/1350)
 - [[#1382] Decouple the Engine and the Listener](https://github.com/ballerina-platform/ballerina-standard-library/issues/1382)
 - [[#1386] Make HttpService an Isolated Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1386)
+- [[#1398] Rename the ServiceConfiguration Record to ServiceConfig](https://github.com/ballerina-platform/ballerina-standard-library/issues/1398)
 
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
