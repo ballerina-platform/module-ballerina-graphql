@@ -101,6 +101,9 @@ public class EngineUtils {
     static final BString NODE_FIELD = StringUtils.fromString("node");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
 
+    // Native Data Fields
+    public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
+
     public static String getResourceName(ResourceMethodType resourceMethod) {
         String[] nameArray = resourceMethod.getResourcePath();
         int nameIndex = nameArray.length;
