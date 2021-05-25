@@ -133,7 +133,7 @@ isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
 
 
 @test:Config {
-    groups: ["service", "union", "test"]
+    groups: ["service", "union"]
 }
 isolated function testUnionOfDistinctServicesQueryOnSelectedTypes() returns error? {
     string document = string
@@ -155,7 +155,7 @@ isolated function testUnionOfDistinctServicesQueryOnSelectedTypes() returns erro
 }
 
 @test:Config {
-    groups: ["service", "union", "test"]
+    groups: ["service", "union"]
 }
 isolated function testUnionOfDistinctServicesArrayQueryOnSelectedTypes() returns error? {
     string document = string
@@ -163,6 +163,35 @@ isolated function testUnionOfDistinctServicesArrayQueryOnSelectedTypes() returns
     search {
         ... on TeacherService {
             name
+        }
+    }
+}`;
+    string url = "http://localhost:9113/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            search: [
+                {},
+                {
+                    name: "Walter White"
+                }
+            ]
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "union"]
+}
+isolated function testUnionOfDistinctServicesArrayQueryOnSelectedTypesFragmentOnRoot() returns error? {
+    string document = string
+`query {
+    ... on Query {
+        search {
+            ... on TeacherService {
+                name
+            }
         }
     }
 }`;

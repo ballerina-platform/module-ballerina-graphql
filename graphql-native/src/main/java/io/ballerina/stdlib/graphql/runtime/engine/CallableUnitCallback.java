@@ -57,7 +57,7 @@ public class CallableUnitCallback implements Callback {
     private final CountDownLatch latch;
     private final BObject visitor;
     private final BObject node;
-    private BMap<BString, Object> data;
+    private final BMap<BString, Object> data;
 
     public CallableUnitCallback(Environment environment, CountDownLatch latch, BObject visitor, BObject node,
                                 BMap<BString, Object> data) {
@@ -114,7 +114,9 @@ public class CallableUnitCallback implements Callback {
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+                if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
+                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+                }
             } else {
                 executeResource(environment, service, visitor, subNode, subData);
             }
