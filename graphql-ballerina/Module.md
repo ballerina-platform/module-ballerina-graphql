@@ -74,13 +74,13 @@ The result will be the following JSON.
 
 
 #### Additional Configurations
-Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfiguration`.
+Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfig`.
 These configurations include security-related configurations for the GraphQL service.
 
 ##### Security Configurations
 A GraphQL service
 ```ballerina
-@ServiceConfiguration {
+@graphql:SeviceConfig {
     auth: [
         {
             oauth2IntrospectionConfig: {
@@ -111,7 +111,7 @@ When a maximum query depth is provided, all the queries exceeding that limit wil
 ```ballerina
 import ballerina/graphql;
 
-@graphql:ServiceConfiguration {
+@graphql:ServiceConfig {
     maxQueryDepth: 2
 }
 service graphql:Service /graphql on new graphql:Listener(9090) {

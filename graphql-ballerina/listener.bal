@@ -50,7 +50,7 @@ public class Listener {
     #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         __Schema schema = check createSchema(s);
-        GraphqlServiceConfiguration? serviceConfig = getServiceConfiguration(s);
+        GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
         Engine engine = new(schema, serviceConfig);
         attachServiceToEngine(s, engine);
 

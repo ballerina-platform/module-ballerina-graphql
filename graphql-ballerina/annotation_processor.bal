@@ -14,24 +14,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-isolated function getMaxQueryDepth(GraphqlServiceConfiguration? serviceConfig) returns int? {
-    if (serviceConfig is GraphqlServiceConfiguration) {
-        if (serviceConfig?.maxQueryDepth is int) {
-            return <int>serviceConfig?.maxQueryDepth;
-        }
+isolated function getMaxQueryDepth(GraphqlServiceConfig? serviceConfig) returns int? {
+    if (serviceConfig is GraphqlServiceConfig) {
+        return serviceConfig?.maxQueryDepth;
     }
 }
 
-isolated function getListenerAuthConfig(GraphqlServiceConfiguration? serviceConfig) returns ListenerAuthConfig[]? {
-    if (serviceConfig is GraphqlServiceConfiguration) {
-        if (serviceConfig?.auth is ListenerAuthConfig[]) {
-            return <ListenerAuthConfig[]>serviceConfig?.auth;
-        }
+isolated function getListenerAuthConfig(GraphqlServiceConfig? serviceConfig) returns ListenerAuthConfig[]? {
+    if (serviceConfig is GraphqlServiceConfig) {
+        return serviceConfig?.auth;
     }
 }
 
-isolated function getServiceConfiguration(Service serviceObject) returns GraphqlServiceConfiguration? {
+isolated function getServiceConfig(Service serviceObject) returns GraphqlServiceConfig? {
     typedesc<any> serviceType = typeof serviceObject;
-    var serviceConfiguration = serviceType.@ServiceConfiguration;
-    return serviceConfiguration;
+    return serviceType.@ServiceConfig;
 }
