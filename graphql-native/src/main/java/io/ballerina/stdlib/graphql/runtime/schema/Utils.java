@@ -89,6 +89,8 @@ public class Utils {
             return getTypeNameFromType(((MapType) type).getConstrainedType());
         } else if (tag == TypeTags.TABLE_TAG) {
             return getTypeNameFromType(((TableType) type).getConstrainedType());
+        } else if (tag == TypeTags.UNION_TAG) {
+            return getUnionTypeName((UnionType) type);
         }
         return type.getName();
     }
