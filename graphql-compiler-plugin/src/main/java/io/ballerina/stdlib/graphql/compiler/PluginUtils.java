@@ -94,7 +94,14 @@ public class PluginUtils {
             Optional<ModuleSymbol> moduleOpt = ((ObjectTypeSymbol) listenerType).getModule();
             return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
         }
+        return false;
+    }
 
+    public static boolean isInvalidPath(String resourcePath) {
+        if (resourcePath.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
+                resourcePath.contains("/" + PluginConstants.DOUBLE_UNDERSCORES)) {
+            return true;
+        }
         return false;
     }
 }
