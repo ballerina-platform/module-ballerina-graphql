@@ -1,39 +1,39 @@
 [[dependency]]
 org = "ballerina"
 name = "auth"
-version = "1.1.0-beta.1"
+version = "@stdlib.auth.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "file"
-version = "0.7.0-beta.1"
+version = "@stdlib.file.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "http"
-version = "1.1.0-beta.1"
+version = "@stdlib.http.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "io"
-version = "0.6.0-beta.1"
+version = "@stdlib.io.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "jwt"
-version = "1.1.0-beta.1"
+version = "@stdlib.jwt.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "oauth"
-version = "1.1.0-beta.1"
+version = "@stdlib.oauth2.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "regex"
-version = "0.7.0-beta.1"
+version = "@stdlib.regex.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "url"
-version = "1.1.0-beta.1"
+version = "@stdlib.url.version@"
