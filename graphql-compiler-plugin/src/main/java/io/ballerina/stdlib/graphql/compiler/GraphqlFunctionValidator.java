@@ -105,12 +105,8 @@ public class GraphqlFunctionValidator {
     private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (resourceMethodSymbol.resourcePath().signature().isEmpty()) {
+            if (PluginUtils.isInvalid(resourceMethodSymbol.resourcePath().signature())) {
                 PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
-            } else {
-                if (PluginUtils.isInvalidPath(resourceMethodSymbol.resourcePath().signature())) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
-                }
             }
         }
     }
@@ -132,12 +128,12 @@ public class GraphqlFunctionValidator {
                         (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
                 if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
                     RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeReferenceTypeSymbol.typeDescriptor();
-                    Map<String, RecordFieldSymbol>  recordFieldSymbolMap =  recordTypeSymbol.fieldDescriptors();
+                    Map<String, RecordFieldSymbol>  recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
                     for (Map.Entry<String, RecordFieldSymbol> entry:recordFieldSymbolMap.entrySet()) {
-                        if (entry.getValue().typeDescriptor().typeKind().equals(TypeDescKind.TYPE_REFERENCE)) {
+                        if (entry.getValue().typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
                             validateReturnType(entry.getValue().typeDescriptor(), location, context);
                         } else {
-                            if (PluginUtils.isInvalidPath(entry.getKey())) {
+                            if (PluginUtils.isInvalid(entry.getKey())) {
                                 PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
                             }
                         }
