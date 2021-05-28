@@ -101,6 +101,9 @@ public class EngineUtils {
     static final BString NODE_FIELD = StringUtils.fromString("node");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
 
+    // Native Data Fields
+    public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
+
     public static String getResourceName(ResourceMethodType resourceMethod) {
         String[] nameArray = resourceMethod.getResourcePath();
         int nameIndex = nameArray.length;
@@ -130,5 +133,16 @@ public class EngineUtils {
             }
         }
         return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
+    }
+
+    // Temporary fix until https://github.com/ballerina-platform/ballerina-lang/issues/30728 is fixed
+    static String getNameFromRecordTypeMap(BMap<BString, Object> record) {
+        String name = record.getType().getName();
+        if (name.contains("&")) {
+            name = name.split("&")[0];
+            String[] typeNameArray = name.split(":");
+            name = typeNameArray[typeNameArray.length - 1].strip();
+        }
+        return name;
     }
 }

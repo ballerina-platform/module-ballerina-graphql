@@ -48,6 +48,10 @@ service /graphql on new Listener(9098) {
             return { information: a1 };
         }
     }
+
+    resource function get learningSources() returns (Book|Course)[] {
+        return [b1, b2, b3, b4, c1, c2, c3];
+    }
 }
 
 @test:Config {
@@ -335,6 +339,85 @@ fragment personFragment on Person {
                     city: "London"
                 }
             }
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testUnionTypesWithMissingTypesInDocument() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`
+query {
+    learningSources {
+        ...courseFragment
+    }
+}
+
+fragment courseFragment on Course {
+    name
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data: {
+            learningSources: [
+                {},
+                {},
+                {},
+                {},
+                {
+                    name: "Electronics"
+                },
+                {
+                    name: "Computer Science"
+                },
+                {
+                    name: "Mathematics"
+                }
+            ]
+        }
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+
+@test:Config {
+    groups: ["union", "unit"]
+}
+isolated function testUnionTypesWithMissingTypesInDocumentWithInlineFragments() returns error? {
+    string graphqlUrl = "http://localhost:9098/graphql";
+    string document = string`
+query {
+    learningSources {
+        ... on Book {
+            name
+        }
+    }
+}
+`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data: {
+            learningSources: [
+                {
+                    name: "The Art of Electronics"
+                },
+                {
+                    name: "Practical Electronics"
+                },
+                {
+                    name: "Algorithms to Live By"
+                },
+                {
+                    name: "Code: The Hidden Language"
+                },
+                {},
+                {},
+                {}
+            ]
         }
     };
     test:assertEquals(result, expectedPayload);

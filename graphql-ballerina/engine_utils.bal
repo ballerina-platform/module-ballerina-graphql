@@ -43,7 +43,7 @@ isolated function createSchema(Service s) returns __Schema|Error = @java:Method 
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeResource(Service s, ExecutorVisitor visitor, parser:FieldNode fieldNode, Data data) =
+isolated function executeService(Engine engine, ExecutorVisitor visitor, parser:FieldNode fieldNode, Data data) =
 @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
@@ -51,4 +51,8 @@ isolated function executeResource(Service s, ExecutorVisitor visitor, parser:Fie
 isolated function getDataFromResult(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata fieldRecord, Data data)
 = @java:Method {
 	'class: "io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback"
+} external;
+
+isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;

@@ -9,7 +9,7 @@ Ballerina GraphQL Library
   
 The `graphql` library is one of the standard library modules of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
 
-This provides an implementation for connecting and interacting with GraphQL endpoints over the network. For more information, go to the [`graphql` module](https://docs.central.ballerina.io/ballerina/graphql/latest).
+This provides APIs for connecting and interacting with GraphQL endpoints over the network. For more information, go to the [`graphql` module](https://docs.central.ballerina.io/ballerina/graphql/latest).
 
 For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 

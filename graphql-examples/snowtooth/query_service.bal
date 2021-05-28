@@ -25,14 +25,24 @@ service /graphql on new graphql:Listener(9000) {
     # A list of all `Lift` objects
     # + return - the lifts
     resource function get allLifts(ds:Status? status) returns Lift[] {
-        ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.status == status select lift;
+        ds:LiftRecord[] lifts;
+        if status is () {
+            lifts = from var lift in ds:liftTable select lift;
+        } else {
+            lifts = from var lift in ds:liftTable where lift.status == status select lift;
+        }
         return lifts.map(function (ds:LiftRecord liftRecord) returns Lift => new Lift(liftRecord));  
     }
 
     # A list of all `Trail` objects
     # + return - the trails
     resource function get allTrails(ds:Status? status) returns Trail[] {
-        ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.status == status select trail;
+        ds:TrailRecord[] trails;
+        if status is () {
+            trails = from var trail in ds:trailTable select trail;
+        } else {
+            trails = from var trail in ds:trailTable where trail.status == status select trail;
+        }
         return trails.map(function (ds:TrailRecord trailRecord) returns Trail => new Trail(trailRecord));  
     }
 

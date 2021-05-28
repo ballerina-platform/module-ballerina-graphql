@@ -37,6 +37,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
@@ -46,7 +47,8 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
-    private Engine() {}
+    private Engine() {
+    }
 
     public static Object createSchema(BObject service) {
         try {
@@ -64,8 +66,18 @@ public class Engine {
         return schemaGenerator.generate();
     }
 
-    public static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                       BMap<BString, Object> data) {
+    public static void attachServiceToEngine(BObject service, BObject engine) {
+        engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
+    }
+
+    public static void executeService(Environment environment, BObject engine, BObject visitor, BObject node,
+                                      BMap<BString, Object> data) {
+        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        executeResource(environment, service, visitor, node, data);
+    }
+
+    static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
+                                BMap<BString, Object> data) {
         ServiceType serviceType = (ServiceType) service.getType();
         String fieldName = node.getStringValue(NAME_FIELD).getValue();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {

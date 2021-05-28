@@ -79,20 +79,18 @@ public class Utils {
         return members;
     }
 
-    // TODO: This is a temporary fix for https://github.com/ballerina-platform/ballerina-lang/issues/30108
     public static String getTypeNameFromType(Type type) {
         int tag = type.getTag();
         if (type.getTag() < TypeTags.JSON_TAG) {
             return getScalarTypeName(tag);
-        } else if (tag == TypeTags.UNION_TAG) {
-            String[] splitName = type.getName().split(":");
-            return (splitName[splitName.length - 1]);
         } else if (tag == TypeTags.ARRAY_TAG) {
             return getTypeNameFromType(((ArrayType) type).getElementType());
         } else if (tag == TypeTags.MAP_TAG) {
             return getTypeNameFromType(((MapType) type).getConstrainedType());
         } else if (tag == TypeTags.TABLE_TAG) {
             return getTypeNameFromType(((TableType) type).getConstrainedType());
+        } else if (tag == TypeTags.UNION_TAG) {
+            return getUnionTypeName((UnionType) type);
         }
         return type.getName();
     }

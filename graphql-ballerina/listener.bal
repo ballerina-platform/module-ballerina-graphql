@@ -32,7 +32,7 @@ public class Listener {
         if (listenTo is int) {
             http:Listener|error httpListener = new(listenTo, configuration);
             if (httpListener is error) {
-                return error ServiceHandlingError("Listener initialization failed", httpListener);
+                return error Error("Listener initialization failed", httpListener);
             } else {
                 self.httpListener = httpListener;
             }
@@ -47,13 +47,17 @@ public class Listener {
     # + s - The `graphql:Service` object to attach to the listener
     # + name - The path of the service to be hosted
     # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
-    #            generation process, otherwise nil
+    #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
-        Engine engine = check new(s);
+        __Schema schema = check createSchema(s);
+        GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
+        Engine engine = new(schema, serviceConfig);
+        attachServiceToEngine(s, engine);
+
         HttpService httpService = new(engine);
         error? result = self.httpListener.attach(httpService, name);
         if (result is error) {
-            return error ServiceHandlingError("Error occurred while attaching the service", result);
+            return error Error("Error occurred while attaching the service", result);
         }
         self.httpService = httpService;
     }
@@ -66,7 +70,7 @@ public class Listener {
         if (self.httpService is HttpService) {
             error? result = self.httpListener.detach(<HttpService>self.httpService);
             if (result is error) {
-                return error ServiceHandlingError("Error occurred while detaching the service", result);
+                return error Error("Error occurred while detaching the service", result);
             }
         }
     }
@@ -77,7 +81,7 @@ public class Listener {
     public isolated function 'start() returns Error? {
         error? result = self.httpListener.'start();
         if (result is error) {
-            return error ServiceHandlingError("Error occurred while starting the service", result);
+            return error Error("Error occurred while starting the service", result);
         }
     }
 
@@ -87,7 +91,7 @@ public class Listener {
     public isolated function gracefulStop() returns Error? {
         error? result = self.httpListener.gracefulStop();
         if (result is error) {
-            return error ServiceHandlingError("Error occurred while stopping the service", result);
+            return error Error("Error occurred while stopping the service", result);
         }
     }
 
@@ -97,7 +101,7 @@ public class Listener {
     public isolated function immediateStop() returns Error? {
         error? result = self.httpListener.immediateStop();
         if (result is error) {
-            return error ServiceHandlingError("Error occurred while stopping the service", result);
+            return error Error("Error occurred while stopping the service", result);
         }
     }
 }

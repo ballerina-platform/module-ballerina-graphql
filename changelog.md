@@ -16,6 +16,8 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#998] Use Included Record Parameters for Listener Config](https://github.com/ballerina-platform/ballerina-standard-library/issues/998)
 - [[#1350] Allow Optional Enums to be Resource Function Input Parameters](https://github.com/ballerina-platform/ballerina-standard-library/issues/1350)
 - [[#1382] Decouple the Engine and the Listener](https://github.com/ballerina-platform/ballerina-standard-library/issues/1382)
+- [[#1386] Make HttpService an Isolated Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1386)
+- [[#1398] Rename the ServiceConfiguration Record to ServiceConfig](https://github.com/ballerina-platform/ballerina-standard-library/issues/1398)
 
 ### Fixed
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
@@ -34,6 +36,7 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 - [[#1312] Query Depth Ignores the Depth of Fragments in GraphQL Documents ](https://github.com/ballerina-platform/ballerina-standard-library/issues/1312)
 - [[#1368] Fix Crashing the Schema Generation when a Union Type not Having a Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/1368)
 - [[#1370] Fix Service Hanging When Returning an Enum Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1370)
+- [[#1391] Fix Union of Service Types Returning all the Members](https://github.com/ballerina-platform/ballerina-standard-library/issues/1391)
 
 ## [0.2.0-alpha8] - 2021-04-23
 

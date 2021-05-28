@@ -44,7 +44,7 @@ listener Listener securedEP2 = new(9402, {
     }
 });
 
-@ServiceConfiguration {
+@ServiceConfig {
     auth: [
         {
             fileUserStoreConfig: {},
@@ -91,7 +91,7 @@ listener Listener securedEP3 = new(9403, {
     }
 });
 
-@ServiceConfiguration {
+@ServiceConfig {
     auth: [
         {
             jwtValidatorConfig: {
@@ -152,7 +152,7 @@ listener Listener securedEP4 = new(9404, {
     }
 });
 
-@ServiceConfiguration {
+@ServiceConfig {
     auth: [
         {
             oauth2IntrospectionConfig: {
@@ -213,7 +213,7 @@ listener Listener securedEP5 = new(9405, {
     }
 });
 
-@ServiceConfiguration {
+@ServiceConfig {
     auth: [
         {
             oauth2IntrospectionConfig: {
@@ -295,7 +295,7 @@ listener Listener securedEP6 = new(9406, {
     }
 });
 
-@ServiceConfiguration {
+@ServiceConfig {
     auth: [
         {
             jwtValidatorConfig: {

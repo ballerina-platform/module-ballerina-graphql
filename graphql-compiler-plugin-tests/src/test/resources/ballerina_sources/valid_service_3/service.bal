@@ -16,7 +16,7 @@
 
 import ballerina/graphql;
 
-@graphql:ServiceConfiguration {
+@graphql:ServiceConfig {
     maxQueryDepth: 2
 }
 service graphql:Service on new graphql:Listener(4000) {

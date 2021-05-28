@@ -46,6 +46,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getNameFromRecordTypeMap;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 
 /**
@@ -56,7 +57,7 @@ public class CallableUnitCallback implements Callback {
     private final CountDownLatch latch;
     private final BObject visitor;
     private final BObject node;
-    private BMap<BString, Object> data;
+    private final BMap<BString, Object> data;
 
     public CallableUnitCallback(Environment environment, CountDownLatch latch, BObject visitor, BObject node,
                                 BMap<BString, Object> data) {
@@ -72,8 +73,6 @@ public class CallableUnitCallback implements Callback {
         if (o instanceof BError) {
             BError bError = (BError) o;
             appendErrorToVisitor(bError);
-        } else if (o instanceof BObject) {
-            getDataFromService(this.environment, (BObject) o, this.visitor, this.node, this.data);
         } else {
             getDataFromResult(this.environment, this.visitor, this.node, o, this.data);
         }
@@ -87,7 +86,7 @@ public class CallableUnitCallback implements Callback {
     }
 
     public static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
-                                          BMap<BString, Object> data) {
+                                         BMap<BString, Object> data) {
         if (result instanceof BMap) {
             BMap<BString, Object> map = (BMap<BString, Object>) result;
             if (map.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
@@ -115,7 +114,9 @@ public class CallableUnitCallback implements Callback {
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+                if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
+                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+                }
             } else {
                 executeResource(environment, service, visitor, subNode, subData);
             }
@@ -148,7 +149,7 @@ public class CallableUnitCallback implements Callback {
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(record.getType().getName())) {
+                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getNameFromRecordTypeMap(record))) {
                     processFragmentNodes(environment, visitor, subNode, record, subData);
                 }
             } else {

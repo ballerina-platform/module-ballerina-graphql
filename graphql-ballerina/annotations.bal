@@ -18,10 +18,10 @@
 #
 # + maxQueryDepth - The maximum depth allowed for a query
 # + auth - Listener authenticaton configurations
-public type GraphqlServiceConfiguration record {|
+public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
 |};
 
 # The annotation to configure a GraphQL service.
-public annotation GraphqlServiceConfiguration ServiceConfiguration on service;
+public annotation GraphqlServiceConfig ServiceConfig on service;
