@@ -97,9 +97,9 @@ public class PluginUtils {
         return false;
     }
 
-    public static boolean isInvalid(String resource) {
-        if (resource.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
-                resource.contains("/" + PluginConstants.DOUBLE_UNDERSCORES)) {
+    public static boolean isInvalidFieldName(String fieldName) {
+        if (fieldName.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
+                fieldName.contains("/" + PluginConstants.DOUBLE_UNDERSCORES)) {
             return true;
         }
         return false;

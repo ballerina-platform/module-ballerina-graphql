@@ -105,7 +105,7 @@ public class GraphqlFunctionValidator {
     private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (PluginUtils.isInvalid(resourceMethodSymbol.resourcePath().signature())) {
+            if (PluginUtils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
                 PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
             }
         }
@@ -133,7 +133,7 @@ public class GraphqlFunctionValidator {
                         if (entry.getValue().typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
                             validateReturnType(entry.getValue().typeDescriptor(), location, context);
                         } else {
-                            if (PluginUtils.isInvalid(entry.getKey())) {
+                            if (PluginUtils.isInvalidFieldName(entry.getKey())) {
                                 PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
                             }
                         }
