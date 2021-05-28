@@ -314,7 +314,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_PATH);
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
         }
     }
 

@@ -106,7 +106,7 @@ public class GraphqlFunctionValidator {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
             if (PluginUtils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, location);
             }
         }
     }
@@ -134,7 +134,7 @@ public class GraphqlFunctionValidator {
                             validateReturnType(entry.getValue().typeDescriptor(), location, context);
                         } else {
                             if (PluginUtils.isInvalidFieldName(entry.getKey())) {
-                                PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_PATH, location);
+                                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, location);
                             }
                         }
                     }

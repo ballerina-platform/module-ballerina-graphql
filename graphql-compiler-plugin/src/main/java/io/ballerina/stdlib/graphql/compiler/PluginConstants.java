@@ -63,7 +63,7 @@ public class PluginConstants {
                 DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_MULTIPLE_SERVICES("Invalid return type with multiple indistinct services",
                 "GRAPHQL_111", DiagnosticSeverity.ERROR),
-        INVALID_RESOURCE_PATH("Invalid field name. GraphQL field Name must not begin with \"__\", " +
+        INVALID_FIELD_NAME("Invalid field name. A GraphQL field Name must not begin with \"__\", " +
                 "which is reserved by GraphQL introspection.", "GRAPHQL_112", DiagnosticSeverity.ERROR);
 
         private final String error;
