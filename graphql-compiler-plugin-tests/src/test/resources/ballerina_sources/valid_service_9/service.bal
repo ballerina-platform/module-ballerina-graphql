@@ -22,19 +22,19 @@ service graphql:Service on new graphql:Listener(4000) {
     }
 }
 
-distinct service class First {
+distinct service isolated class First {
     isolated resource function get civilStatus() returns Second {
         return new;
     }
 }
 
-distinct service class Second {
+distinct service isolated class Second {
     isolated resource function get firstName() returns Third {
         return new;
     }
 }
 
-distinct service class Third {
+distinct service isolated class Third {
     isolated resource function get firstName() returns First {
         return new;
     }
