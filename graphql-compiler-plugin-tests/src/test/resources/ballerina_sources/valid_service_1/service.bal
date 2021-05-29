@@ -80,7 +80,7 @@ service graphql:Service on new graphql:Listener(4000) {
     }
 }
 
-service class GeneralGreeting {
+service isolated class GeneralGreeting {
     isolated resource function get generalGreeting() returns string {
         return "Hello, world";
     }
