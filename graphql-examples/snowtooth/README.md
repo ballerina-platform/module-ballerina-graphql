@@ -1,6 +1,6 @@
 # Overview
  
-This is an implementation of the popular [snowtooth example](https://snowtooth.moonhighway.com/) in Ballerina. Snowtooth Mountain is a fake ski resort which includes a bunch of chairlifts and trails. A GraphQL API is built around this for a mobile application.
+This is an implementation of the popular [snowtooth example](https://snowtooth.moonhighway.com/) in Ballerina. Snowtooth is a fake ski resort which includes a bunch of chairlifts and trails. A GraphQL API is built around this for a mobile application.
  
 Unlike the original example this implementation only supports Query operations. This is a limitation coming from the Ballerina GraphQL package as it only supports query operations at the moment. Support for Mutations and Subscriptions are planned in near future releases.
  
