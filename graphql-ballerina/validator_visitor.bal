@@ -339,7 +339,7 @@ isolated function hasFields(__Type fieldType) returns boolean {
     if (fieldType.kind == NON_NULL || fieldType.kind == LIST) {
         __Type? ofType = fieldType?.ofType;
         if (ofType is __Type) {
-            return ofType.kind == OBJECT;
+            return hasFields(ofType);
         }
     }
     return false;
