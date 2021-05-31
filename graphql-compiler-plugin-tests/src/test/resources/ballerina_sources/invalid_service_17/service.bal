@@ -49,13 +49,13 @@ service /graphql on new graphql:Listener(4000) {
 
     isolated resource function get lift() returns Lift {
         return {
-                   __id:"L1",
-                   getStatus: {
-                       capacity:10,
-                       __elevationgain:20,
-                       night:false
-                   }
-               };
+            __id:"L1",
+            getStatus: {
+                capacity:10,
+                __elevationgain:20,
+                night:false
+            }
+        };
     }
 
     isolated resource function get mountain/name/__first() returns string {
