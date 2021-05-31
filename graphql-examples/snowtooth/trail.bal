@@ -17,7 +17,7 @@
 import snowtooth.datasource as ds;
 
 # A `Trail` is a run at a ski resort
-distinct isolated  service class Trail {
+distinct isolated service class Trail {
 
     private final readonly & ds:TrailRecord trail;
 
