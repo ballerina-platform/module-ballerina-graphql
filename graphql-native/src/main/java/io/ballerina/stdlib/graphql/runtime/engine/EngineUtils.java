@@ -136,9 +136,14 @@ public class EngineUtils {
     static String getNameFromRecordTypeMap(BMap<BString, Object> record) {
         String name = record.getType().getName();
         if (name.contains("&")) {
-            name = name.split("&")[0];
-            String[] typeNameArray = name.split(":");
-            name = typeNameArray[typeNameArray.length - 1].strip();
+            String[] intersectionMemberTypeNames = name.split("&");
+            for (String intersectionTypeName : intersectionMemberTypeNames) {
+                intersectionTypeName = intersectionTypeName.strip();
+                if (!intersectionTypeName.equals("readonly")) {
+                    String[] typeNameSegments = intersectionTypeName.split(":");
+                    return typeNameSegments[typeNameSegments.length - 1].strip();
+                }
+            }
         }
         return name;
     }

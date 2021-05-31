@@ -42,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1370] Fix Service Hanging When Returning an Enum Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1370)
 - [[#1391] Fix Union of Service Types Returning all the Members](https://github.com/ballerina-platform/ballerina-standard-library/issues/1391)
 - [[#1378] Fix Hierarchical Paths With Same Leaf Fields Returning Incorrect Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/1378)
+- [[#1407] Fix Returning Incorrect Type Names for Intersection Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1407)
 
 ## [0.2.0-alpha8] - 2021-04-23
 

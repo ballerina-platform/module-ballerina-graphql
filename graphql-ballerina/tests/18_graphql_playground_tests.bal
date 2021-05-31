@@ -132,7 +132,7 @@ fragment TypeRef on __Type {
         }
     }
 }`;
-    json expectedPayload = check getJsonContentFromFile("playground_introspection_query_result.json");
+    json expectedPayload = check getJsonContentFromFile("graphql_playground_introspection_query.json");
     string url = "http://localhost:9111/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
     test:assertEquals(actualPayload, expectedPayload);
@@ -242,7 +242,7 @@ fragment TypeRef on __Type {
         }
     }
 }`;
-    json expectedPayload = check getJsonContentFromFile("greet_and_person_introspection_result.json");
+    json expectedPayload = check getJsonContentFromFile("introspection_for_person_and_greet.json");
     string url = "http://localhost:9112/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
     test:assertEquals(actualPayload, expectedPayload);
