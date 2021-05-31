@@ -32,6 +32,9 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
@@ -104,12 +107,6 @@ public class EngineUtils {
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
 
-    public static String getResourceName(ResourceMethodType resourceMethod) {
-        String[] nameArray = resourceMethod.getResourcePath();
-        int nameIndex = nameArray.length;
-        return nameArray[nameIndex - 1];
-    }
-
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
@@ -144,5 +141,25 @@ public class EngineUtils {
             name = typeNameArray[typeNameArray.length - 1].strip();
         }
         return name;
+    }
+
+    static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
+        String[] resourcePath = resourceMethod.getResourcePath();
+        if (resourcePath.length != paths.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < resourcePath.length; i++) {
+            if (!resourcePath[i].equals(paths.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static List<String> copyAndUpdateResourcePathsList(List<String> paths, BObject node) {
+        List<String> updatedPaths = new ArrayList<>(paths);
+        updatedPaths.add(node.getStringValue(NAME_FIELD).getValue());
+        return updatedPaths;
     }
 }

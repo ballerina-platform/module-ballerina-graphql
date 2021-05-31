@@ -16,7 +16,9 @@
 
 import ballerina/test;
 
-service /graphql on new Listener(9104) {
+listener Listener hierarchicalPathListener = new Listener(9104);
+
+service /graphql on hierarchicalPathListener {
     isolated resource function get profile/name/first() returns string {
         return "Sherlock";
     }
@@ -42,8 +44,18 @@ service /graphql on new Listener(9104) {
     }
 }
 
+service /snowtooth on hierarchicalPathListener {
+    isolated resource function get lift/name() returns string {
+        return "Lift1";
+    }
+
+    isolated resource function get mountain/trail/getLift/name() returns string {
+        return "Lift2";
+    }
+}
+
 @test:Config {
-    groups: ["hierarchicalPaths", "unit"]
+    groups: ["hierarchical_paths", "unit"]
 }
 isolated function testHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first } } }";
@@ -63,7 +75,7 @@ isolated function testHierarchicalResourcePaths() returns error? {
 }
 
 @test:Config {
-    groups: ["hierarchicalPaths", "unit"]
+    groups: ["hierarchical_paths", "unit"]
 }
 isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
     string document = "{ profile { name { first last } } }";
@@ -84,7 +96,7 @@ isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
 }
 
 @test:Config {
-    groups: ["hierarchicalPaths", "unit"]
+    groups: ["hierarchical_paths", "unit"]
 }
 isolated function testHierarchicalResourcePathsComplete() returns error? {
     string document = "{ profile { name { first last } age } }";
@@ -125,7 +137,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
 }
 
 @test:Config {
-    groups: ["negative", "hierarchicalPaths", "unit"]
+    groups: ["negative", "hierarchical_paths", "unit"]
 }
 isolated function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";
@@ -150,12 +162,50 @@ isolated function testInvalidHierarchicalResourcePaths() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "hierarchicalPaths", "unit"]
+    groups: ["introspection", "hierarchical_paths", "unit"]
 }
 isolated function testHierarchicalResourcePathsIntrospection() returns error? {
     string document = "{ __schema { types { name fields { name } } } }";
     string url = "http://localhost:9104/graphql";
     json expectedPayload = check getJsonContentFromFile("hierarchical_resource_path_introspection_result.json");
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["hierarchical_paths", "unit"]
+}
+isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns error? {
+    string document = "{ mountain { trail { getLift { name } } } }";
+    string url = "http://localhost:9104/snowtooth";
+    json expectedPayload = {
+        data: {
+            mountain: {
+                trail: {
+                    getLift: {
+                        name: "Lift2"
+                    }
+                }
+            }
+        }
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["hierarchical_paths", "unit"]
+}
+isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns error? {
+    string document = "{ lift { name } }";
+    string url = "http://localhost:9104/snowtooth";
+    json expectedPayload = {
+        data: {
+            lift: {
+                name: "Lift1"
+            }
+        }
+    };
     json actualPayload = check getJsonPayloadFromService(url, document);
     test:assertEquals(actualPayload, expectedPayload);
 }
