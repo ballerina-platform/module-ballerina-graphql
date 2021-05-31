@@ -383,71 +383,7 @@ fragment types on __Schema {
     string url = "http://localhost:9106/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
-    json expectedPayload = {
-        data: {
-            __schema: {
-                types: [
-                    {
-                        "name": "__TypeKind"
-                    },
-                    {
-                        "name": "__Field"
-                    },
-                    {
-                        "name": "Query"
-                    },
-                    {
-                        "name": "Address"
-                    },
-                    {
-                        "name": "__Schema"
-                    },
-                    {
-                        "name": "__Type"
-                    },
-                    {
-                        "name": "__EnumValue"
-                    },
-                    {
-                        "name": "__DirectiveLocation"
-                    },
-                    {
-                        "name": "String"
-                    },
-                    {
-                        "name": "Student"
-                    },
-                    {
-                        "name": "Int"
-                    },
-                    {
-                        "name": "Profile"
-                    },
-                    {
-                        "name": "Name"
-                    },
-                    {
-                        "name": "Book"
-                    },
-                    {
-                        "name": "__InputValue"
-                    },
-                    {
-                        "name": "Course"
-                    },
-                    {
-                        "name": "Boolean"
-                    },
-                    {
-                        "name": "Person"
-                    },
-                    {
-                        "name": "__Directive"
-                    }
-                ]
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile("fragment_with_introspection.json");
     test:assertEquals(actualPayload, expectedPayload);
 }
 

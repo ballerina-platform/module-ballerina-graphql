@@ -28,6 +28,6 @@ returns json|error {
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
-    string path = check file:joinPath("tests", "resources", fileName);
+    string path = check file:joinPath("tests", "resources", "expected_results", fileName);
     return io:fileReadJson(path);
 }

@@ -118,7 +118,7 @@ isolated function testEnumInsideRecord() returns error? {
 isolated function testEnumIntrospection() returns error? {
     string document = "{ __schema { types { name enumValues { name } } } }";
     string url = "http://localhost:9107/graphql";
-    json expectedPayload = check getJsonContentFromFile("enum_type_introspection_result.json");
+    json expectedPayload = check getJsonContentFromFile("enum_introspection.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
     test:assertEquals(actualPayload, expectedPayload);
 }
