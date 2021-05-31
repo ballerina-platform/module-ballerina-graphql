@@ -27,7 +27,7 @@ type Lift record {
     Status getStatus;
 };
 
-service class Trail {
+isolated service class Trail {
 
     isolated resource function get id() returns string {
         return "T1";
