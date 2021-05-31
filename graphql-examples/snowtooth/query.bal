@@ -26,10 +26,10 @@ service /graphql on new graphql:Listener(9000) {
     # + return - the lifts
     resource function get allLifts(ds:Status? status) returns Lift[] {
         ds:LiftRecord[] lifts;
-        if status is () {
-            lifts = from var lift in ds:liftTable select lift;
-        } else {
+        if status is ds:Status {
             lifts = from var lift in ds:liftTable where lift.status == status select lift;
+        } else {
+            lifts = from var lift in ds:liftTable select lift;
         }
         return lifts.map(function (ds:LiftRecord liftRecord) returns Lift => new Lift(liftRecord));  
     }
@@ -38,10 +38,10 @@ service /graphql on new graphql:Listener(9000) {
     # + return - the trails
     resource function get allTrails(ds:Status? status) returns Trail[] {
         ds:TrailRecord[] trails;
-        if status is () {
-            trails = from var trail in ds:trailTable select trail;
+        if status is ds:Status {
+            trails = from var trail in ds:trailTable where trail.status == status select trail;   
         } else {
-            trails = from var trail in ds:trailTable where trail.status == status select trail;
+            trails = from var trail in ds:trailTable select trail;
         }
         return trails.map(function (ds:TrailRecord trailRecord) returns Trail => new Trail(trailRecord));  
     }

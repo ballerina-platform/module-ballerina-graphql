@@ -64,19 +64,19 @@ service graphql:Service on new graphql:Listener(4000) {
     }
 }
 
-distinct service class CivilStatus {
+distinct service isolated class CivilStatus {
     isolated resource function get civilStatus() returns boolean {
         return false;
     }
 }
 
-distinct service class FirstName {
+distinct service isolated class FirstName {
     isolated resource function get firstName() returns string {
         return "Bugs";
     }
 }
 
-distinct service class Age {
+distinct service isolated class Age {
     isolated resource function get age() returns int {
         return 15;
     }

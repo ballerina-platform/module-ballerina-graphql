@@ -41,21 +41,21 @@ service graphql:Service on new graphql:Listener(4000) {
     }
 }
 
-distinct service class GeneralGreeting {
+distinct service isolated class GeneralGreeting {
     // invalid post - 1
     isolated resource function post generalGreeting() returns string {
         return "Hello, world";
     }
 }
 
-distinct service class Status {
+distinct service isolated class Status {
     // invalid post - 2
     isolated resource function post status() returns boolean {
         return true;
     }
 }
 
-distinct service class FirstName {
+distinct service isolated class FirstName {
     // valid
     isolated resource function get name() returns string {
         return "James";

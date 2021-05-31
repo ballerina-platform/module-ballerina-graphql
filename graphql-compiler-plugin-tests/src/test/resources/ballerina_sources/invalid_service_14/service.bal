@@ -41,7 +41,7 @@ service graphql:Service on new graphql:Listener(4000) {
     }
 }
 
-distinct service class GeneralGreeting {
+distinct service isolated class GeneralGreeting {
     // invalid json - 1
     isolated resource function get greeting() returns json {
         json j1 = "Apple";
@@ -49,7 +49,7 @@ distinct service class GeneralGreeting {
     }
 }
 
-distinct service class Status {
+distinct service isolated class Status {
     // invalid byte - 2
     isolated resource function get greeting() returns byte {
          byte a = 12;
@@ -57,7 +57,7 @@ distinct service class Status {
     }
 }
 
-distinct service class FirstName {
+distinct service isolated class FirstName {
     // valid
     isolated resource function get name() returns string {
         return "James";
