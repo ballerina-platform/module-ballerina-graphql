@@ -17,12 +17,12 @@
 import snowtooth.datasource as ds;
 
 # A `Trail` is a run at a ski resort
-distinct service class Trail {
+distinct isolated  service class Trail {
 
-    private ds:TrailRecord trail;
+    private final readonly & ds:TrailRecord trail;
 
     function init(ds:TrailRecord trail) {
-        self.trail = trail;
+        self.trail = trail.cloneReadOnly();
     }
 
     # A unique identifier for a `Trail` (id: 'hemmed-slacks')

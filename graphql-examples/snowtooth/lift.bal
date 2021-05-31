@@ -17,12 +17,12 @@
 import snowtooth.datasource as ds;
 
 # A `Lift` is a chairlift, gondola, tram, funicular, pulley, rope tow, or other means of ascending a mountain.
-distinct service class Lift {
+distinct isolated service class Lift {
 
-    private ds:LiftRecord lift;
+    private final readonly & ds:LiftRecord lift;
 
     function init(ds:LiftRecord lift) {
-        self.lift = lift;
+        self.lift = lift.cloneReadOnly();
     }
 
     # The unique identifier for a `Lift` (id: "panorama")
