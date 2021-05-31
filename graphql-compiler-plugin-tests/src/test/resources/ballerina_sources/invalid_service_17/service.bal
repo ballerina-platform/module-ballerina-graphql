@@ -34,9 +34,8 @@ service class Trail {
     }
 
     isolated resource function get __name() returns string {
-            return "Trail1";
-        }
-
+        return "Trail1";
+    }
 }
 
 service /graphql on new graphql:Listener(4000) {
