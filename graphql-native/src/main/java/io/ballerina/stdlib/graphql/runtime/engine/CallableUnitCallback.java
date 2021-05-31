@@ -46,6 +46,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpdateResourcePathsList;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getNameFromRecordTypeMap;
@@ -120,10 +121,8 @@ public class CallableUnitCallback implements Callback {
                     executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
                 }
             } else {
-                List<String> updatedPaths = new ArrayList<>(paths);
-                updatedPaths.add(subNode.getStringValue(NAME_FIELD).getValue());
+                List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, subNode);
                 executeResource(environment, service, visitor, subNode, subData, updatedPaths);
-                paths.remove(subNode.getStringValue(NAME_FIELD).getValue());
             }
             data.put(node.getStringValue(NAME_FIELD), subData);
         }
@@ -202,8 +201,7 @@ public class CallableUnitCallback implements Callback {
             if (isFragment) {
                 executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
             } else {
-                List<String> updatedPaths = new ArrayList<>(paths);
-                updatedPaths.add(subNode.getStringValue(NAME_FIELD).getValue());
+                List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, subNode);
                 executeResource(environment, service, visitor, subNode, subData, updatedPaths);
                 data.put(subNode.getStringValue(NAME_FIELD), subData.get(subNode.getStringValue(NAME_FIELD)));
             }

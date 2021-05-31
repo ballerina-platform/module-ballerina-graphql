@@ -32,6 +32,7 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
@@ -106,12 +107,6 @@ public class EngineUtils {
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
 
-    public static String getResourceName(ResourceMethodType resourceMethod) {
-        String[] nameArray = resourceMethod.getResourcePath();
-        int nameIndex = nameArray.length;
-        return nameArray[nameIndex - 1];
-    }
-
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
@@ -160,5 +155,11 @@ public class EngineUtils {
             }
         }
         return true;
+    }
+
+    static List<String> copyAndUpdateResourcePathsList(List<String> paths, BObject node) {
+        List<String> updatedPaths = new ArrayList<>(paths);
+        updatedPaths.add(node.getStringValue(NAME_FIELD).getValue());
+        return updatedPaths;
     }
 }
