@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - [[#1336] Implement declarative auth design for GraphQL module](https://github.com/ballerina-platform/ballerina-standard-library/issues/1336)
 - [[#1265] Support Optional Type Input Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1265)
+- [[#1270] Add Compile Time Validation for Resource Function Names](https://github.com/ballerina-platform/ballerina-standard-library/issues/1270)
 
 ### Changed
 - [[#1329] Improve Introspection Validation and Execution](https://github.com/ballerina-platform/ballerina-standard-library/issues/1329)

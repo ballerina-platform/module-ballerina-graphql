@@ -32,8 +32,9 @@ public class PluginConstants {
     // resource function constants
     public static final String RESOURCE_FUNCTION_GET = "get";
     public static final String MAX_QUERY_DEPTH = "maxQueryDepth";
-    public  static final String LISTENER_IDENTIFIER = "Listener";
+    public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String UNARY_NEGATIVE = "-";
+    public static final String DOUBLE_UNDERSCORES = "__";
 
     /**
      * Compilation errors.
@@ -61,7 +62,9 @@ public class PluginConstants {
                 "http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_110",
                 DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_MULTIPLE_SERVICES("Invalid return type with multiple indistinct services",
-                "GRAPHQL_111", DiagnosticSeverity.ERROR);
+                "GRAPHQL_111", DiagnosticSeverity.ERROR),
+        INVALID_FIELD_NAME("Invalid field name. A GraphQL field Name must not begin with \"__\", " +
+                "which is reserved by GraphQL introspection.", "GRAPHQL_112", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

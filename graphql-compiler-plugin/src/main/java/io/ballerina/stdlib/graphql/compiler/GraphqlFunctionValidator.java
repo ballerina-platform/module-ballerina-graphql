@@ -24,6 +24,8 @@ import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
+import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
+import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
@@ -73,9 +75,11 @@ public class GraphqlFunctionValidator {
 
     private void validateResourceFunction(FunctionDefinitionNode functionDefinitionNode,
                                           SyntaxNodeAnalysisContext context) {
+
         MethodSymbol methodSymbol = PluginUtils.getMethodSymbol(context, functionDefinitionNode);
         if (Objects.nonNull(methodSymbol)) {
             validateResourceAccessorName(methodSymbol, functionDefinitionNode.location(), context);
+            validateResourcePath(methodSymbol, functionDefinitionNode.location(), context);
             Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
             returnTypeDesc.ifPresent
                     (typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location(), context));
@@ -98,6 +102,15 @@ public class GraphqlFunctionValidator {
         }
     }
 
+    private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
+        if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
+            ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
+            if (PluginUtils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, location);
+            }
+        }
+    }
+
     private void validateReturnType(TypeSymbol returnTypeDesc,
                                     Location location, SyntaxNodeAnalysisContext context) {
         // if return type is a union
@@ -113,6 +126,19 @@ public class GraphqlFunctionValidator {
             if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.TYPE_DEFINITION) {
                 TypeDefinitionSymbol typeDefinitionSymbol =
                         (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
+                if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+                    RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeReferenceTypeSymbol.typeDescriptor();
+                    Map<String, RecordFieldSymbol>  recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
+                    for (Map.Entry<String, RecordFieldSymbol> entry:recordFieldSymbolMap.entrySet()) {
+                        if (entry.getValue().typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                            validateReturnType(entry.getValue().typeDescriptor(), location, context);
+                        } else {
+                            if (PluginUtils.isInvalidFieldName(entry.getKey())) {
+                                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, location);
+                            }
+                        }
+                    }
+                }
                 validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
             } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
                 ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
@@ -187,6 +213,7 @@ public class GraphqlFunctionValidator {
                 MethodSymbol methodSymbol = method.getValue();
                 if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
                     validateResourceAccessorName(methodSymbol, location, context);
+                    validateResourcePath(methodSymbol, location, context);
                     Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
                     returnTypeDesc.ifPresent
                             (typeSymbol -> validateReturnType(typeSymbol, location, context));

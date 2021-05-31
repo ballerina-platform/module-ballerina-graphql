@@ -305,6 +305,19 @@ public class CompilerPluginTest {
         }
     }
 
+    @Test
+    public void testInvalidResourcePath() {
+        Package currentPackage = loadPackage("invalid_service_17");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 7);
+        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
+        for (Object obj : diagnostics) {
+            Diagnostic diagnostic = (Diagnostic) obj;
+            assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
+        }
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
