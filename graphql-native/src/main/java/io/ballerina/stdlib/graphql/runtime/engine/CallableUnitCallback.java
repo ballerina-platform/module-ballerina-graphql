@@ -120,8 +120,10 @@ public class CallableUnitCallback implements Callback {
                     executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
                 }
             } else {
-                paths.add(subNode.getStringValue(NAME_FIELD).getValue());
-                executeResource(environment, service, visitor, subNode, subData, paths);
+                List<String> updatedPaths = new ArrayList<>(paths);
+                updatedPaths.add(subNode.getStringValue(NAME_FIELD).getValue());
+                executeResource(environment, service, visitor, subNode, subData, updatedPaths);
+                paths.remove(subNode.getStringValue(NAME_FIELD).getValue());
             }
             data.put(node.getStringValue(NAME_FIELD), subData);
         }
@@ -200,8 +202,9 @@ public class CallableUnitCallback implements Callback {
             if (isFragment) {
                 executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
             } else {
-                paths.add(subNode.getStringValue(NAME_FIELD).getValue());
-                executeResource(environment, service, visitor, subNode, subData, paths);
+                List<String> updatedPaths = new ArrayList<>(paths);
+                updatedPaths.add(subNode.getStringValue(NAME_FIELD).getValue());
+                executeResource(environment, service, visitor, subNode, subData, updatedPaths);
                 data.put(subNode.getStringValue(NAME_FIELD), subData.get(subNode.getStringValue(NAME_FIELD)));
             }
         }
