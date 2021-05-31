@@ -33,6 +33,8 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTable;
 import io.ballerina.runtime.api.values.BValue;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
@@ -99,14 +101,14 @@ public class CallableUnitCallback implements Callback {
         } else if (result instanceof BTable) {
             getDataFromTable(environment, visitor, node, (BTable) result, data);
         } else if (result instanceof BObject) {
-            getDataFromService(environment, (BObject) result, visitor, node, data);
+            getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>());
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
         }
     }
 
     static void getDataFromService(Environment environment, BObject service, BObject visitor, BObject node,
-                                   BMap<BString, Object> data) {
+                                   BMap<BString, Object> data, List<String> paths) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
@@ -115,10 +117,11 @@ public class CallableUnitCallback implements Callback {
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
                 if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
-                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
                 }
             } else {
-                executeResource(environment, service, visitor, subNode, subData);
+                paths.add(subNode.getStringValue(NAME_FIELD).getValue());
+                executeResource(environment, service, visitor, subNode, subData, paths);
             }
             data.put(node.getStringValue(NAME_FIELD), subData);
         }
@@ -187,7 +190,7 @@ public class CallableUnitCallback implements Callback {
     }
 
     private static void executeResourceForFragmentNodes(Environment environment, BObject service, BObject visitor,
-                                                        BObject node, BMap<BString, Object> data) {
+                                                        BObject node, BMap<BString, Object> data, List<String> paths) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
@@ -195,9 +198,10 @@ public class CallableUnitCallback implements Callback {
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData);
+                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
             } else {
-                executeResource(environment, service, visitor, subNode, subData);
+                paths.add(subNode.getStringValue(NAME_FIELD).getValue());
+                executeResource(environment, service, visitor, subNode, subData, paths);
                 data.put(subNode.getStringValue(NAME_FIELD), subData.get(subNode.getStringValue(NAME_FIELD)));
             }
         }

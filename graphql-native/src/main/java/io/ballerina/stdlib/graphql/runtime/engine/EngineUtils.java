@@ -32,6 +32,8 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.List;
+
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
@@ -144,5 +146,19 @@ public class EngineUtils {
             name = typeNameArray[typeNameArray.length - 1].strip();
         }
         return name;
+    }
+
+    static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
+        String[] resourcePath = resourceMethod.getResourcePath();
+        if (resourcePath.length != paths.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < resourcePath.length; i++) {
+            if (!resourcePath[i].equals(paths.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }

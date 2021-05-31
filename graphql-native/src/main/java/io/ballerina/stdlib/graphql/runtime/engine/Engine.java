@@ -32,6 +32,8 @@ import io.ballerina.stdlib.graphql.runtime.schema.SchemaGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
@@ -40,7 +42,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_F
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getResourceName;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
@@ -73,22 +75,22 @@ public class Engine {
     public static void executeService(Environment environment, BObject engine, BObject visitor, BObject node,
                                       BMap<BString, Object> data) {
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
-        executeResource(environment, service, visitor, node, data);
+        List<String> paths = new ArrayList<>();
+        paths.add(node.getStringValue(NAME_FIELD).getValue());
+        executeResource(environment, service, visitor, node, data, paths);
     }
 
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                BMap<BString, Object> data) {
+                                BMap<BString, Object> data, List<String> paths) {
         ServiceType serviceType = (ServiceType) service.getType();
-        String fieldName = node.getStringValue(NAME_FIELD).getValue();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            String resourceName = getResourceName(resourceMethod);
-            if (resourceName.equals(fieldName)) {
+            if (isPathsMatching(resourceMethod, paths)) {
                 getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data);
                 return;
             }
         }
         // Won't hit here if the exact resource is already found, hence must be hierarchical resource
-        getDataFromService(environment, service, visitor, node, data);
+        getDataFromService(environment, service, visitor, node, data, paths);
     }
 
     private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
