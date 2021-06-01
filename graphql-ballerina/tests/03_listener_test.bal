@@ -71,7 +71,7 @@ isolated function testInvalidJsonPayload() returns error? {
     test:assertTrue(result is http:ClientRequestError);
     http:ClientRequestError err = <http:ClientRequestError> result;
     test:assertEquals(err.detail()?.statusCode, 400);
-    test:assertEquals(err.message(), "Bad request");
+    test:assertEquals(err.message(), "Bad Request");
 }
 
 @test:Config {

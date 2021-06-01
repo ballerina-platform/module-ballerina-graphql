@@ -199,16 +199,16 @@ isolated function assertSuccess(http:Response|http:ClientError response) {
 }
 
 isolated function assertForbidden(http:Response|http:ClientError response) {
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 403);
+    if (response is http:ClientRequestError) {
+        test:assertEquals(response.detail().statusCode, 403);
     } else {
         test:assertFail(msg = "Test Failed!");
     }
 }
 
 isolated function assertUnauthorized(http:Response|http:ClientError response) {
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 401);
+    if (response is http:ClientRequestError) {
+        test:assertEquals(response.detail().statusCode, 401);
     } else {
         test:assertFail(msg = "Test Failed!");
     }
