@@ -56,6 +56,9 @@ isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type union
 isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
 returns string {
     string fragmentOnTypeName = fragmentNode.getOnType();
+    if (fragmentNode.isInlineFragment()) {
+        return string`Fragment cannot be spread here as objects of type "${ofType?.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+    }
     return string`Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType?.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
 }
 
