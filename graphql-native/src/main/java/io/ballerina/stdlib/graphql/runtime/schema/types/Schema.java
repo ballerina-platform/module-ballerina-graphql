@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.graphql.runtime.schema.types;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,30 +25,12 @@ import java.util.Map;
  */
 public class Schema {
     private Map<String, SchemaType> types;
-    private SchemaType queryType;
 
-    public Schema() {
-        this.types = new HashMap();
-    }
-
-    public void addType(SchemaType type) {
-        this.types.put(type.getName(), type);
+    public Schema(Map<String, SchemaType> types) {
+        this.types = types;
     }
 
     public Map<String, SchemaType> getTypes() {
         return this.types;
-    }
-
-    public void setTypes(Map<String, SchemaType> types) {
-        this.types = types;
-    }
-
-    public void setQueryType(SchemaType queryType) {
-        this.addType(queryType);
-        this.queryType = queryType;
-    }
-
-    public SchemaType getQueryType() {
-        return this.queryType;
     }
 }
