@@ -13,19 +13,42 @@
 
 public class DocumentNode {
     // TODO: Make this a map
-    private OperationNode[] operations;
+    private map<OperationNode> operations;
     private map<FragmentNode> fragments;
     private ErrorDetail[] errors;
+    private boolean isFirstAnonymousOperationErrorPushed;
 
     public isolated function init() {
-        self.operations = [];
+        self.operations = {};
         self.fragments = {};
         self.errors = [];
+        self.isFirstAnonymousOperationErrorPushed = false;
     }
 
     public isolated function addOperation(OperationNode operation) {
-        // TODO: Validate operation name for duplicates
-        self.operations.push(operation);
+        if self.operations.hasKey(ANONYMOUS_OPERATION) {
+            if !self.isFirstAnonymousOperationErrorPushed {
+                OperationNode originalOperation = <OperationNode>self.operations[ANONYMOUS_OPERATION];
+                self.errors.push(getAnonymousOperationInMultipleOperationsError(originalOperation));
+                self.isFirstAnonymousOperationErrorPushed = true;
+            }
+            if operation.getName() == ANONYMOUS_OPERATION {
+                self.errors.push(getAnonymousOperationInMultipleOperationsError(operation));
+            }
+            return;
+        } else if operation.getName() == ANONYMOUS_OPERATION && self.operations.length() > 0 {
+            self.errors.push(getAnonymousOperationInMultipleOperationsError(operation));
+            self.isFirstAnonymousOperationErrorPushed = true;
+            return;
+        } else if self.operations.hasKey(operation.getName()) {
+            OperationNode originalOperation = <OperationNode>self.operations[operation.getName()];
+            string message = string`There can be only one operation named "${operation.getName()}".`;
+            Location l1 = originalOperation.getLocation();
+            Location l2 = operation.getLocation();
+            self.errors.push({message: message, locations: [l1, l2]});
+            return;
+        }
+        self.operations[operation.getName()] = operation;
     }
 
     public isolated function addFragment(FragmentNode fragment) returns SyntaxError? {
@@ -58,7 +81,7 @@ public class DocumentNode {
     }
 
     public isolated function getOperations() returns OperationNode[] {
-        return self.operations;
+        return self.operations.toArray();
     }
 
     public isolated function getErrors() returns ErrorDetail[] {

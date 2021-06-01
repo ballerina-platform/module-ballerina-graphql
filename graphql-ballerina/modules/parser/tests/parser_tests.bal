@@ -214,3 +214,272 @@ fragment on on Profile {
     string expectedMessage = string`Syntax Error: Unexpected Name "on".`;
     test:assertEquals(err.message(), expectedMessage);
 }
+
+@test:Config {
+    groups: ["operations", "parser"]
+}
+isolated function testMultipleAnonymousOperations() returns error? {
+    string document = string
+`{
+    profile {
+        name
+    }
+}
+
+{
+    profile {
+        age
+    }
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    ErrorDetail[] errors = documentNode.getErrors();
+    test:assertEquals(errors.length(), 2);
+    ErrorDetail e1 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 1,
+                column: 1
+            }
+        ]
+    };
+    ErrorDetail e2 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 7,
+                column: 1
+            }
+        ]
+    };
+    test:assertEquals(e1, errors[0]);
+    test:assertEquals(e2, errors[1]);
+}
+
+@test:Config {
+    groups: ["operations", "parser"]
+}
+isolated function testAnonymousOperationWithNamedOperation() returns error? {
+    string document = string
+`{
+    profile {
+        name
+    }
+}
+
+query getData {
+    profile {
+        age
+    }
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    ErrorDetail[] errors = documentNode.getErrors();
+    test:assertEquals(errors.length(), 1);
+    ErrorDetail e1 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 1,
+                column: 1
+            }
+        ]
+    };
+    test:assertEquals(e1, errors[0]);
+}
+
+@test:Config {
+    groups: ["operations", "parser"]
+}
+isolated function testNamedOperationWithAnonymousOperation() returns error? {
+    string document = string
+`query getData {
+    profile {
+        name
+    }
+}
+
+{
+    profile {
+        age
+    }
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    ErrorDetail[] errors = documentNode.getErrors();
+    test:assertEquals(errors.length(), 1);
+    ErrorDetail e1 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 7,
+                column: 1
+            }
+        ]
+    };
+    test:assertEquals(e1, errors[0]);
+}
+
+
+@test:Config {
+    groups: ["operations", "parser"]
+}
+isolated function testNamedOperationWithMultipleAnonymousOperations() returns error? {
+    string document = string
+`{
+    profile {
+        name
+    }
+}
+
+query getData {
+    profile {
+        age
+    }
+}
+
+{
+    profile {
+        age
+    }
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    ErrorDetail[] errors = documentNode.getErrors();
+    test:assertEquals(errors.length(), 2);
+    ErrorDetail e1 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 1,
+                column: 1
+            }
+        ]
+    };
+    ErrorDetail e2 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 13,
+                column: 1
+            }
+        ]
+    };
+    test:assertEquals(e1, errors[0]);
+    test:assertEquals(e2, errors[1]);
+}
+
+@test:Config {
+    groups: ["operations", "parser"]
+}
+isolated function testThreeAnonymousOperations() returns error? {
+    string document = string
+`{
+    profile {
+        name
+    }
+}
+
+{
+    profile {
+        age
+    }
+}
+
+{
+    profile {
+        age
+    }
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    ErrorDetail[] errors = documentNode.getErrors();
+    test:assertEquals(errors.length(), 3);
+    ErrorDetail e1 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 1,
+                column: 1
+            }
+        ]
+    };
+    ErrorDetail e2 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 7,
+                column: 1
+            }
+        ]
+    };
+    ErrorDetail e3 = {
+        message: "This anonymous operation must be the only defined operation.",
+        locations: [
+            {
+                line: 13,
+                column: 1
+            }
+        ]
+    };
+    test:assertEquals(e1, errors[0]);
+    test:assertEquals(e2, errors[1]);
+    test:assertEquals(e3, errors[2]);
+}
+
+@test:Config {
+    groups: ["operations", "parser"]
+}
+isolated function testMultipleOperationsWithSameName() returns error? {
+    string document = string
+`query getData {
+    profile {
+        name
+    }
+}
+
+query getData {
+    profile {
+        age
+    }
+}
+
+query getData {
+    profile {
+        age
+    }
+}`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    ErrorDetail[] errors = documentNode.getErrors();
+    test:assertEquals(errors.length(), 2);
+    ErrorDetail e1 = {
+        message: string`There can be only one operation named "getData".`,
+        locations: [
+            {
+                line: 1,
+                column: 1
+            },
+            {
+                line: 7,
+                column: 1
+            }
+        ]
+    };
+    ErrorDetail e2 = {
+        message: string`There can be only one operation named "getData".`,
+        locations: [
+            {
+                line: 1,
+                column: 1
+            },
+            {
+                line: 13,
+                column: 1
+            }
+        ]
+    };
+    test:assertEquals(e1, errors[0]);
+    test:assertEquals(e2, errors[1]);
+}

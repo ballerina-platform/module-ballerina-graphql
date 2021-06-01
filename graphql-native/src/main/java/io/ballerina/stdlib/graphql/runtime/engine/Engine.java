@@ -28,8 +28,9 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.stdlib.graphql.runtime.schema.SchemaGenerator;
+import io.ballerina.stdlib.graphql.runtime.schema.FieldFinder;
 import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
+import io.ballerina.stdlib.graphql.runtime.schema.TypeFinder;
 import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
@@ -64,8 +65,13 @@ public class Engine {
     }
 
     private static Schema createSchema(ServiceType serviceType) {
-        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceType);
-        return schemaGenerator.generate();
+        TypeFinder typeFinder = new TypeFinder(serviceType);
+        typeFinder.populateTypes();
+
+        FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
+        fieldFinder.populateFields();
+
+        return new Schema(fieldFinder.getTypeMap());
     }
 
     public static void attachServiceToEngine(BObject service, BObject engine) {

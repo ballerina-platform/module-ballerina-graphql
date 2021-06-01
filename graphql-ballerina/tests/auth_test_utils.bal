@@ -85,8 +85,6 @@ const string ACCESS_TOKEN_1 = "2YotnFZFEjr1zCsicMWpAA";
 const string ACCESS_TOKEN_2 = "1zCsicMWpAA2YotnFZFEjr";
 const string ACCESS_TOKEN_3 = "invalid-token";
 
-const string APPLICATION_JSON = "application/json";
-
 isolated function sendNoTokenRequest(int port, string path) returns http:Response|http:ClientError {
     http:Client clientEP = checkpanic new("https://localhost:" + port.toString(), {
         secureSocket: {
@@ -97,7 +95,7 @@ isolated function sendNoTokenRequest(int port, string path) returns http:Respons
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload);
 }
 
 isolated function sendBasicTokenRequest(int port, string path, string username, string password) returns http:Response|http:ClientError {
@@ -114,7 +112,7 @@ isolated function sendBasicTokenRequest(int port, string path, string username, 
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload);
 }
 
 isolated function sendBearerTokenRequest(int port, string path, string token) returns http:Response|http:ClientError {
@@ -130,7 +128,7 @@ isolated function sendBearerTokenRequest(int port, string path, string token) re
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload);
 }
 
 isolated function sendJwtRequest(int port, string path) returns http:Response|http:ClientError {
@@ -161,7 +159,7 @@ isolated function sendJwtRequest(int port, string path) returns http:Response|ht
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload);
 }
 
 isolated function sendOAuth2TokenRequest(int port, string path) returns http:Response|http:ClientError {
@@ -187,7 +185,7 @@ isolated function sendOAuth2TokenRequest(int port, string path) returns http:Res
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload);
 }
 
 isolated function assertSuccess(http:Response|http:ClientError response) {

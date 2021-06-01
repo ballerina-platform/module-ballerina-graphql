@@ -37,6 +37,12 @@ isolated function getExpectedCharError(Token token, string char) returns Invalid
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
+isolated function getAnonymousOperationInMultipleOperationsError(OperationNode operationNode) returns ErrorDetail {
+    string message = "This anonymous operation must be the only defined operation.";
+    Location[] locations = [operationNode.getLocation()];
+    return {message: message, locations: locations};
+}
+
 isolated function getScalarTypeNameForError(Scalar value) returns string {
     string result = "";
     if (value is int) {
