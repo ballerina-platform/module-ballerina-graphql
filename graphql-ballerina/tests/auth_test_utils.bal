@@ -97,7 +97,7 @@ isolated function sendNoTokenRequest(int port, string path) returns http:Respons
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
 }
 
 isolated function sendBasicTokenRequest(int port, string path, string username, string password) returns http:Response|http:ClientError {
@@ -114,7 +114,7 @@ isolated function sendBasicTokenRequest(int port, string path, string username, 
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
 }
 
 isolated function sendBearerTokenRequest(int port, string path, string token) returns http:Response|http:ClientError {
@@ -130,7 +130,7 @@ isolated function sendBearerTokenRequest(int port, string path, string token) re
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
 }
 
 isolated function sendJwtRequest(int port, string path) returns http:Response|http:ClientError {
@@ -161,7 +161,7 @@ isolated function sendJwtRequest(int port, string path) returns http:Response|ht
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
 }
 
 isolated function sendOAuth2TokenRequest(int port, string path) returns http:Response|http:ClientError {
@@ -187,7 +187,7 @@ isolated function sendOAuth2TokenRequest(int port, string path) returns http:Res
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload, APPLICATION_JSON);
+    return <@untainted> clientEP->post(path, payload, mediaType = APPLICATION_JSON);
 }
 
 isolated function assertSuccess(http:Response|http:ClientError response) {
@@ -199,16 +199,16 @@ isolated function assertSuccess(http:Response|http:ClientError response) {
 }
 
 isolated function assertForbidden(http:Response|http:ClientError response) {
-    if (response is http:ClientRequestError) {
-        test:assertEquals(response.detail().statusCode, 403);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 403);
     } else {
         test:assertFail(msg = "Test Failed!");
     }
 }
 
 isolated function assertUnauthorized(http:Response|http:ClientError response) {
-    if (response is http:ClientRequestError) {
-        test:assertEquals(response.detail().statusCode, 401);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 401);
     } else {
         test:assertFail(msg = "Test Failed!");
     }
