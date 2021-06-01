@@ -576,7 +576,7 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "Fragment \"Student\" cannot be spread here as objects of type \"__Type\" can never be of type \"Student\".",
+                message: "Fragment cannot be spread here as objects of type \"__Type\" can never be of type \"Student\".",
                 locations: [
                     {
                         "line": 4,
@@ -585,7 +585,7 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
                 ]
             },
             {
-                message: "Fragment \"Person\" cannot be spread here as objects of type \"__Type\" can never be of type \"Person\".",
+                message: "Fragment cannot be spread here as objects of type \"__Type\" can never be of type \"Person\".",
                 locations: [
                     {
                         "line": 7,
@@ -599,7 +599,7 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "unit", "inline", "test"]
+    groups: ["fragments", "unit", "inline"]
 }
 isolated function testInlineFragmentsOnSameTypeInDifferentPlaces() returns error? {
     string document = string
