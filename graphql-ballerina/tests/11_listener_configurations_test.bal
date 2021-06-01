@@ -65,11 +65,13 @@ isolated function testTimeoutResponse() returns error? {
     http:Request request = new;
     request.setPayload(payload);
 
-    http:Response response = check httpClient->post("/", request);
-    int statusCode = response.statusCode;
+    http:Response|http:ClientError response = httpClient->post("/", request, APPLICATION_JSON);
+    test:assertTrue(response is http:ClientRequestError);
+    http:ClientRequestError err = <http:ClientRequestError>response;
+    int statusCode = err.detail().statusCode;
     test:assertEquals(statusCode, 408, msg = "Unexpected status code received: " + statusCode.toString());
-    string actualPaylaod = check response.getTextPayload();
-    string expectedMessage = "Idle timeout triggered before initiating outbound response";
+    string actualPaylaod = err.message();
+    string expectedMessage = "Request Timeout";
     test:assertEquals(actualPaylaod, expectedMessage);
 }
 
