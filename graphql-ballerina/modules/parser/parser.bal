@@ -127,7 +127,7 @@ public class Parser {
                     };
                     parentNode.addSelection(selection);
                 } else {
-                    var [name, location] = check self.addFragmentToNode(parentNode);
+                    var [name, location] = check self.addNamedFragmentToNode(parentNode);
                     Selection selection = {
                         name: name,
                         isFragment: true,
@@ -169,7 +169,7 @@ public class Parser {
         return fieldNode;
     }
 
-    isolated function addFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
+    isolated function addNamedFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
         parentNode.addFragment(fragmentName);
@@ -181,7 +181,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         Location location = token.location;
         string onType = check getIdentifierTokenvalue(token);
-        string fragmentName = onType;
+        string fragmentName = string`${parentNode.getName()}_${onType}`;
         FragmentNode fragmentNode = new(fragmentName, location, onType, true);
         token = check self.peekNextNonSeparatorToken();
         if (token.kind != T_OPEN_BRACE) {

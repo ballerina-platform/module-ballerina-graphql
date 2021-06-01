@@ -32,6 +32,12 @@ Address a3 = {
     city: "Hogwarts"
 };
 
+Address a4 = {
+    number: "9809",
+    street: "Margo Street",
+    city: "Albuquerque"
+};
+
 Person p1 = {
     name: "Sherlock Holmes",
     age: 40,
@@ -48,6 +54,12 @@ Person p3 = {
     name: "Tom Marvolo Riddle",
     age: 100,
     address: a3
+};
+
+Person p4 = {
+    name: "Jesse Pinkman",
+    age: 25,
+    address: a4
 };
 
 Person[] people = [p1, p2, p3];

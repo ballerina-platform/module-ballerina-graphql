@@ -28,6 +28,14 @@ service /graphql on new Listener(9106) {
     isolated resource function get profile() returns Profile {
         return new;
     }
+
+    resource function get teacher() returns Person {
+        return p2;
+    }
+
+    resource function get student() returns Person {
+        return p4;
+    }
 }
 
 @test:Config {
@@ -586,6 +594,38 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
                 ]
             }
         ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit", "inline", "test"]
+}
+isolated function testInlineFragmentsOnSameTypeInDifferentPlaces() returns error? {
+    string document = string
+`query {
+    teacher {
+        ... on Person {
+            name
+        }
+    }
+    student {
+        ... on Person {
+            age
+        }
+    }
+}`;
+    string url = "http://localhost:9106/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            teacher: {
+                name: "Walter White"
+            },
+            student: {
+                age: 25
+            }
+        }
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
