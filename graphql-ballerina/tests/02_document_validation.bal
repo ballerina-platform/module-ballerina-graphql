@@ -123,3 +123,31 @@ query getId {
     test:assertEquals(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
+
+@test:Config {
+    groups: ["listener", "unit"],
+    dependsOn: [testDocumentWithMultipleOperationsSecondOperation]
+}
+function testDocumentWithMultipleOperationsInvalidOperation() returns error? {
+    check gqlListener.attach(serviceWithMultipleResources, "graphql_service_3");
+    string document = string
+`query getName {
+    name
+}
+query getId {
+    id
+}
+`;
+    string url = "http://localhost:9091/graphql_service_3";
+    json actualPayload = check getJsonPayloadFromService(url, document, "invalid");
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Unknown operation named \"invalid\".",
+                locations: []
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+    check gqlListener.detach(serviceWithMultipleResources);
+}

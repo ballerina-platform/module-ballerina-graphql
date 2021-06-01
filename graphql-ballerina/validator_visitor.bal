@@ -45,19 +45,13 @@ class ValidatorVisitor {
 
     public isolated function visitDocument(parser:DocumentNode documentNode) {
         parser:OperationNode[] operations = documentNode.getOperations();
-        parser:OperationNode[] anonymousOperations = [];
-
         foreach ErrorDetail errorDetail in documentNode.getErrors() {
             self.errors.push(errorDetail);
         }
 
         foreach parser:OperationNode operationNode in operations {
-            if (operationNode.getName() == parser:ANONYMOUS_OPERATION) {
-                anonymousOperations.push(operationNode);
-            }
             self.visitOperation(operationNode);
         }
-        self.checkAnonymousOperations(anonymousOperations);
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
@@ -210,15 +204,6 @@ class ValidatorVisitor {
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
         // TODO: Sort the error records by line and column
-    }
-
-    isolated function checkAnonymousOperations(parser:OperationNode[] anonymousOperations) {
-        if (anonymousOperations.length() > 1) {
-            string message = "This anonymous operation must be the only defined operation.";
-            foreach parser:OperationNode operation in anonymousOperations {
-                self.errors.push(getErrorDetailRecord(message, operation.getLocation()));
-            }
-        }
     }
 
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {

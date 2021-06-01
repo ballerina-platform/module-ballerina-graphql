@@ -46,7 +46,7 @@ isolated class Engine {
                 }
             }
             string name = operationName == parser:ANONYMOUS_OPERATION ? "" : operationName;
-            string message = "Operation \"" + name + "\" is not present in the provided GraphQL document.";
+            string message = string`Unknown operation named "${name}".`;
             ErrorDetail errorDetail = {
                 message: message,
                 locations: []
