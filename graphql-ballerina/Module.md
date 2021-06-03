@@ -78,7 +78,8 @@ Additional configurations of a Ballerina GraphQL service can be provided using t
 These configurations include security-related configurations for the GraphQL service.
 
 ##### Security Configurations
-A GraphQL service
+A GraphQL service can be secured by setting `auth` field in the `graphql:ServiceConfig`. Ballerina GraphQL services supports Basic Authentication, JWT Authentication and OAuth2 Authentication. 
+
 ```ballerina
 @graphql:SeviceConfig {
     auth: [
