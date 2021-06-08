@@ -78,6 +78,8 @@ isolated class Engine {
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);
         }
+        DuplicateFieldRemover duplicateFieldRemover = new(document);
+        duplicateFieldRemover.remove();
     }
 
     isolated function execute(parser:OperationNode operationNode) returns OutputObject {
