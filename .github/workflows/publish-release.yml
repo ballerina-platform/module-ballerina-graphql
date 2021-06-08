@@ -50,7 +50,7 @@ jobs:
                     publishPAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
                     ./gradlew release -Prelease.useAutomaticVersion=true
-                    ./gradlew -Pversion=${VERSION} publish -x test
+                    ./gradlew -Pversion=${VERSION} publish -x test -PpublishToCentral=true
 
             -   name: Create Github Release
                 run: |
