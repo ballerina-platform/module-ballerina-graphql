@@ -60,7 +60,7 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
         }
     }
 }`;
-    string url = "http://localhost:9094/graphql";
+    string url = "http://localhost:9114/graphql";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
