@@ -17,16 +17,16 @@
 import ballerina/test;
 
 service /graphql on new Listener(9114) {
+    resource function get profile() returns Person {
+        return p1;
+    }
+
     resource function get people() returns Person[] {
         return people;
     }
 
     resource function get students() returns Student[] {
         return students;
-    }
-
-    isolated resource function get profile() returns Profile {
-        return new;
     }
 
     resource function get teacher() returns Person {
@@ -45,18 +45,16 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
     string document = string
 `query getPerson {
     profile {
-        name,
+        name
         address {
             city
+        }
+        address {
             street
         }
         address {
-            number
-            street
-        }
-        address {
-            number
             city
+            number
         }
     }
 }`;
@@ -71,49 +69,6 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
                     city: "London",
                     street: "Baker Street",
                     number: "221/B"
-                }
-            }
-        }
-    };
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["duplicate", "fragments", "unit"]
-}
-isolated function testDuplicateFieldWithResourcesReturningServices() returns error? {
-    string document = string
-`query {
-    ...greetingFragment
-}
-
-fragment greetingFragment on Query {
-    profile {
-        name {
-            ...firstNameFragment
-        }
-        name {
-            ...lastNameFragment
-        }
-    }
-}
-
-fragment firstNameFragment on Name {
-    first
-}
-
-fragment lastNameFragment on Name {
-    last
-}`;
-    string url = "http://localhost:9114/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock",
-                    last: "Holmes"
                 }
             }
         }
@@ -146,13 +101,10 @@ fragment people on Person {
     }
     address {
         street
+        city
     }
     address {
-        city
         number
-    }
-    address {
-        city
     }
 }
 
@@ -216,13 +168,13 @@ isolated function testDuplicateInlineFragment() returns error? {
                    street
                }
                address {
-                  number
-                  street
+                   number
+                   street
                }
                address {
-                 number
-                 street
-                 city
+                   number
+                   street
+                   city
               }
            }
        }
