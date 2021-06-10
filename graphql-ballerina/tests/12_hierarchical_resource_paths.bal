@@ -54,6 +54,22 @@ service /snowtooth on hierarchicalPathListener {
     }
 }
 
+distinct service class HierarchicalName {
+    isolated resource function get name/first() returns string {
+        return "Sherlock";
+    }
+
+    isolated resource function get name/last() returns string {
+        return "Holmes";
+    }
+}
+
+service /hierarchical on hierarchicalPathListener {
+    isolated resource function get profile/personal() returns HierarchicalName {
+        return new();
+    }
+}
+
 @test:Config {
     groups: ["hierarchical_paths", "unit"]
 }
@@ -207,5 +223,27 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns
         }
     };
     json actualPayload = check getJsonPayloadFromService(url, document);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["hierarchical_paths", "unit"]
+}
+isolated function testHierarchicalResourcePathsReturningServicesWithHierarchicalResourcePath() returns error? {
+    string document = "{ profile { personal { name { first } } } }";
+    string url = "http://localhost:9104/hierarchical";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            profile: {
+                personal: {
+                    name: {
+                        first: "Sherlock"
+                    }
+                }
+            }
+        }
+    };
     test:assertEquals(actualPayload, expectedPayload);
 }
