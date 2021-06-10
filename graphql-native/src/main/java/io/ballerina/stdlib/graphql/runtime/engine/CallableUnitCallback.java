@@ -199,7 +199,8 @@ public class CallableUnitCallback implements Callback {
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
+                getDataFromService(environment, service, visitor, subNode, subData, paths);
+                data.merge(subData.getMapValue(subNode.getStringValue(NAME_FIELD)), false);
             } else {
                 List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, subNode);
                 executeResource(environment, service, visitor, subNode, subData, updatedPaths);
