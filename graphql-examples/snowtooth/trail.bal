@@ -77,6 +77,6 @@ distinct isolated service class Trail {
         ds:LiftRecord[] lifts = from var lift in ds:liftTable
                       join var edge in edges on lift.id equals edge.liftId
                       select lift;
-        return lifts.map(function (ds:LiftRecord liftRecord) returns Lift => new Lift(liftRecord));
+        return lifts.map(liftRecord => new Lift(liftRecord));
     }
 }
