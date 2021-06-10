@@ -54,7 +54,6 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
         }
         address {
             city
-            number
         }
     }
 }`;
@@ -67,8 +66,7 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
                 name: "Sherlock Holmes",
                 address: {
                     city: "London",
-                    street: "Baker Street",
-                    number: "221/B"
+                    street: "Baker Street"
                 }
             }
         }

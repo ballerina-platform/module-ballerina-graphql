@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+- [[#1277] Fix Fields Missing when a Query Having Duplicate Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1277)
+
+## [0.2.0-beta.1] - 2021-06-02
+
+### Added
 - [[#1307] Returning Union of Service Types from a Resource](https://github.com/ballerina-platform/ballerina-standard-library/issues/1307)
 - [[#1244] Add Inline Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1244)
 - [[#1336] Implement declarative auth design for GraphQL module](https://github.com/ballerina-platform/ballerina-standard-library/issues/1336)
@@ -45,7 +54,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1407] Fix Returning Incorrect Type Names for Intersection Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1407)
 - [[#1410] Fix Inline Fragments Returning Non-requested Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1410)
 - [[#1413] Fix Incorrectly validating Duplicate Operations](https://github.com/ballerina-platform/ballerina-standard-library/issues/1413)
-- [[#1277] Fix Fields Missing when a Query Having Duplicate Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1277)
 
 ## [0.2.0-alpha8] - 2021-04-23
 

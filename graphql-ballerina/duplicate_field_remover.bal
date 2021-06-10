@@ -17,6 +17,8 @@
 import graphql.parser;
 
 class DuplicateFieldRemover {
+    *parser:Visitor;
+
     private parser:DocumentNode documentNode;
 
     public isolated function init(parser:DocumentNode documentNode) {
@@ -35,110 +37,121 @@ class DuplicateFieldRemover {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
-        self.visitSelection(operationNode.getSelections());
-        self.visitField(operationNode.getFields());
-        self.visitFragment(operationNode.getFragments());
-    }
-
-    public isolated function visitSelection(parser:Selection[] selections) {
-        self.removeDuplicateSelections(selections);
-        foreach parser:Selection selection in selections {
-            if (selection.isFragment) {
-                parser:FragmentNode subFragmentNode = self.documentNode.getFragments().get(selection.name);
-                self.visitSelection(subFragmentNode.getSelections());
-            } else {
-                parser:FieldNode subFieldNode = <parser:FieldNode>selection?.node;
-                self.visitSelection(subFieldNode.getSelections());
-            }
+        self.removeDuplicateSelections(operationNode.getSelections());
+        self.removeDuplicateFields(operationNode.getFields());
+        self.removeDuplicateFragments(operationNode.getFragments());
+        foreach parser:Selection selection in operationNode.getSelections() {
+            self.visitSelection(selection);
         }
     }
 
-    public isolated function visitField(parser:FieldNode[] fields) {
-        self.removeDuplicateFields(fields);
-        foreach parser:FieldNode fieldNode in fields {
-            self.visitField(fieldNode.getFields());
-            self.visitFragment(fieldNode.getFragments());
+    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+        if (selection.isFragment) {
+            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
+            self.visitFragment(fragmentNode);
+        } else {
+            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
+            self.visitField(fieldNode);
         }
     }
 
-    public isolated function visitFragment(string[] fragments) {
-        self.removeDuplicateFragments(fragments);
-        foreach string fragment in fragments {
-            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(fragment);
-            self.visitFragment(fragmentNode.getFragments());
-            self.visitField(fragmentNode.getFields());
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
+        self.removeDuplicateSelections(fieldNode.getSelections());
+        self.removeDuplicateFields(fieldNode.getFields());
+        self.removeDuplicateFragments(fieldNode.getFragments());
+        foreach parser:Selection selection in fieldNode.getSelections() {
+            self.visitSelection(selection);
         }
+    }
+
+    public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        self.removeDuplicateSelections(fragmentNode.getSelections());
+        self.removeDuplicateFields(fragmentNode.getFields());
+        self.removeDuplicateFragments(fragmentNode.getFragments());
+        foreach parser:Selection selection in fragmentNode.getSelections() {
+            self.visitSelection(selection);
+        }
+    }
+
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+        // Do nothing
     }
 
     private isolated function removeDuplicateSelections(parser:Selection[] selections) {
         map<parser:Selection> visitedSelections = {};
         map<parser:Selection> visitedFragmentOnTypes = {};
-        int[] duplicateIndexes = [];
-        int i = 0;
-        while (i < selections.length()) {
-            parser:Selection subSelection = selections[i];
-            if(subSelection.isFragment) {
-                parser:FragmentNode subFragmentNode = self.documentNode.getFragments().get(subSelection.name);
-                if (visitedFragmentOnTypes.hasKey(subFragmentNode.getOnType())) {
-                    if (subFragmentNode.isInlineFragment()) {
-                        duplicateIndexes.push(i);
+        parser:Selection[] duplicateSelections = [];
+        foreach parser:Selection selection in selections {
+            if(selection.isFragment) {
+                parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
+                if (visitedFragmentOnTypes.hasKey(fragmentNode.getOnType())) {
+                    if (fragmentNode.isInlineFragment()) {
+                        duplicateSelections.push(selection);
                     } else {
-                        self.appendDuplicateSelections(selections[i], visitedFragmentOnTypes.get(subFragmentNode.getOnType()));
+                        self.appendDuplicateSelections(selection, visitedFragmentOnTypes.get(fragmentNode.getOnType()));
                     }
                 } else {
-                    visitedFragmentOnTypes[subFragmentNode.getOnType()] = selections[i];
+                    visitedFragmentOnTypes[fragmentNode.getOnType()] = selection;
                 }
             } else {
-                if (visitedSelections.hasKey(subSelection.name)) {
-                    self.appendDuplicateSelections(selections[i], visitedSelections.get(subSelection.name));
-                    duplicateIndexes.push(i);
+                if (visitedSelections.hasKey(selection.name)) {
+                    self.appendDuplicateSelections(selection, visitedSelections.get(selection.name));
+                    duplicateSelections.push(selection);
                 } else {
-                    visitedSelections[subSelection.name] = selections[i];
+                    visitedSelections[selection.name] = selection;
+                }
+            }
+        }
+        int i = 0;
+        while (i < selections.length()) {
+            foreach parser:Selection duplicate in  duplicateSelections {
+                if (selections[i] === duplicate) {
+                    parser:Selection remove = selections.remove(i);
+                    i -= 1;
                 }
             }
             i += 1;
-        }
-        foreach int index in duplicateIndexes.reverse() {
-            var remove = selections.remove(index);
         }
     }
 
     private isolated function removeDuplicateFields(parser:FieldNode[] fields) {
         string[] visitedFields = [];
-        int[] duplicateIndexes = [];
+        parser:FieldNode[] duplicateFields = [];
+        foreach parser:FieldNode fieldNode in fields {
+            if (visitedFields.indexOf(fieldNode.getName()) == ()) {
+                visitedFields.push(fieldNode.getName());
+            } else {
+                duplicateFields.push(fieldNode);
+            }
+        }
         int i = 0;
         while (i < fields.length()) {
-            parser:FieldNode subField = fields[i];
-            if (visitedFields.indexOf(subField.getName()) == ()) {
-                visitedFields.push(subField.getName());
-            } else {
-                duplicateIndexes.push(i);
+            foreach parser:FieldNode duplicate in  duplicateFields {
+                if (fields[i] === duplicate) {
+                    parser:FieldNode remove = fields.remove(i);
+                    i -= 1;
+                }
             }
             i += 1;
-        }
-        foreach int index in duplicateIndexes.reverse() {
-            var remove = fields.remove(index);
         }
     }
 
     private isolated function removeDuplicateFragments(string[] fragments) {
         string[] visitedFragmentOnTypes = [];
-        int[] duplicateIndexes = [];
-        int i = 0;
-        while (i < fragments.length()) {
-            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(fragments[i]);
+        string[] duplicateFragments = [];
+        foreach string fragment in fragments {
+            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(fragment);
             if (visitedFragmentOnTypes.indexOf(fragmentNode.getOnType()) == ()) {
                 visitedFragmentOnTypes.push(fragmentNode.getOnType());
             } else {
                 if (!fragmentNode.isInlineFragment()) {
-                   var remove = self.documentNode.getFragments().remove(fragments[i]);
+                   parser:FragmentNode removed = self.documentNode.getFragments().remove(fragment);
                 }
-                duplicateIndexes.push(i);
+                duplicateFragments.push(fragment);
             }
-            i += 1;
         }
-        foreach int index in duplicateIndexes.reverse() {
-            var remove = fragments.remove(index);
+        foreach string duplicate in duplicateFragments {
+            string removed = fragments.remove(<int>fragments.indexOf(duplicate));
         }
     }
 
