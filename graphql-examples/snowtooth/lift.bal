@@ -21,7 +21,7 @@ distinct isolated service class Lift {
 
     private final readonly & ds:LiftRecord lift;
 
-    function init(ds:LiftRecord lift) {
+    isolated function init(ds:LiftRecord lift) {
         self.lift = lift.cloneReadOnly();
     }
 

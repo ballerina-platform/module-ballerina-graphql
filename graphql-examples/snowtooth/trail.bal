@@ -21,7 +21,7 @@ distinct isolated service class Trail {
 
     private final readonly & ds:TrailRecord trail;
 
-    function init(ds:TrailRecord trail) {
+    isolated function init(ds:TrailRecord trail) {
         self.trail = trail.cloneReadOnly();
     }
 
