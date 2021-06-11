@@ -8,14 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#1447] Fix Returning Empty Values when Fragments Inside Fragments Querying Service Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1447)
-
-## [0.2.0-beta.1] - 2021-06-02
-
-### Added
-
-### Changed
-
-### Fixed
 - [[#1277] Fix Fields Missing when a Query Having Duplicate Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1277)
 
 ## [0.2.0-beta.1] - 2021-06-02

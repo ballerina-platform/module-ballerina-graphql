@@ -89,6 +89,7 @@ class DuplicateFieldRemover {
                         duplicateSelections.push(selection);
                     } else {
                         self.appendDuplicateSelections(selection, visitedFragmentOnTypes.get(fragmentNode.getOnType()));
+                        duplicateSelections.push(selection);
                     }
                 } else {
                     visitedFragmentOnTypes[fragmentNode.getOnType()] = selection;
@@ -104,7 +105,7 @@ class DuplicateFieldRemover {
         }
         int i = 0;
         while (i < selections.length()) {
-            foreach parser:Selection duplicate in  duplicateSelections {
+            foreach parser:Selection duplicate in duplicateSelections {
                 if (selections[i] === duplicate) {
                     parser:Selection remove = selections.remove(i);
                     i -= 1;
@@ -145,7 +146,7 @@ class DuplicateFieldRemover {
                 visitedFragmentOnTypes.push(fragmentNode.getOnType());
             } else {
                 if (!fragmentNode.isInlineFragment()) {
-                   parser:FragmentNode removed = self.documentNode.getFragments().remove(fragment);
+                    parser:FragmentNode removed = self.documentNode.getFragments().remove(fragment);
                 }
                 duplicateFragments.push(fragment);
             }
@@ -166,28 +167,28 @@ class DuplicateFieldRemover {
     }
 
     private isolated function appendDuplicateFields(parser:FieldNode duplicate, parser:FieldNode original) {
-        foreach var fields in duplicate.getFields() {
+        foreach parser:FieldNode fields in duplicate.getFields() {
             original.addField(fields);
         }
-        foreach var fragments in duplicate.getFragments() {
+        foreach string fragments in duplicate.getFragments() {
             original.addFragment(fragments);
         }
-        foreach var selections in duplicate.getSelections() {
+        foreach parser:Selection selections in duplicate.getSelections() {
             original.addSelection(selections);
         }
-        foreach var arguments in duplicate.getArguments() {
+        foreach parser:ArgumentNode arguments in duplicate.getArguments() {
             original.addArgument(arguments);
         }
     }
 
     private isolated function appendDuplicateFragments(parser:FragmentNode duplicate, parser:FragmentNode original) {
-        foreach var fields in duplicate.getFields() {
+        foreach parser:FieldNode fields in duplicate.getFields() {
             original.addField(fields);
         }
-        foreach var fragments in duplicate.getFragments() {
+        foreach string fragments in duplicate.getFragments() {
             original.addFragment(fragments);
         }
-        foreach var selections in duplicate.getSelections() {
+        foreach parser:Selection selections in duplicate.getSelections() {
             original.addSelection(selections);
         }
     }

@@ -85,7 +85,8 @@ isolated function testNamedFragmentsWithDuplicateFields() returns error? {
 
 fragment data on Query {
     people {
-        ...people
+        ...p1
+        ...p2
     }
 
     students {
@@ -93,12 +94,18 @@ fragment data on Query {
     }
 }
 
-fragment people on Person {
+fragment p1 on Person {
     address {
         city
     }
     address {
         street
+        city
+    }
+}
+
+fragment p2 on Person {
+    address {
         city
     }
     address {
