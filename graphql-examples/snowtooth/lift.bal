@@ -21,7 +21,7 @@ distinct isolated service class Lift {
 
     private final readonly & ds:LiftRecord lift;
 
-    function init(ds:LiftRecord lift) {
+    isolated function init(ds:LiftRecord lift) {
         self.lift = lift.cloneReadOnly();
     }
 
@@ -71,6 +71,6 @@ distinct isolated service class Lift {
         ds:TrailRecord[] trails = from var trail in ds:trailTable
                       join var edge in edges on trail.id equals edge.trailId
                       select trail;
-        return trails.map(function (ds:TrailRecord trailRecord) returns Trail => new Trail(trailRecord));
+        return trails.map(trailRecord => new Trail(trailRecord));
     }
 }
