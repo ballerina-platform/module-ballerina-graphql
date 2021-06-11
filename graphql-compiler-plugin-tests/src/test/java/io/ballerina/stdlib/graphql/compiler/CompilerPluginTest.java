@@ -116,7 +116,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidFieldsInListener() {
+    public void testFieldsInServiceObject() {
         Package currentPackage = loadPackage("valid_service_10");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
