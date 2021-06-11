@@ -59,11 +59,12 @@ public class GraphqlFunctionValidator {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         NodeList<Node> memberNodes = serviceDeclarationNode.members();
         for (Node node : memberNodes) {
-            FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
-            if (functionDefinitionNode.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION) {
+            if (node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION) {
+                FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
                 // resource functions are valid - validate function signature
                 validateResourceFunction(functionDefinitionNode, context);
-            } else if (functionDefinitionNode.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION) {
+            } else if (node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION) {
+                FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
                 // object methods are valid, object methods that are remote functions are invalid
                 if (PluginUtils.isRemoteFunction(context, functionDefinitionNode)) {
                     PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION,

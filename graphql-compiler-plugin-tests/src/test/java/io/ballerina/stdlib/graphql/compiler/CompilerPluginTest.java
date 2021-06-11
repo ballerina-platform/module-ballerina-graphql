@@ -116,6 +116,14 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testFieldsInServiceObject() {
+        Package currentPackage = loadPackage("valid_service_10");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
