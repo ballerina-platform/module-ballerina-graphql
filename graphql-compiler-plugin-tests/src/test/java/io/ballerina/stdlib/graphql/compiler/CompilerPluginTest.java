@@ -120,7 +120,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_10");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 3);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
     }
 
     @Test

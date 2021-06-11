@@ -16,28 +16,15 @@
 
 import ballerina/graphql;
 
-type Person record {
-    string name;
-    int age;
-};
-
 service graphql:Service on new graphql:Listener(4000) {
-    string name = "Sherlock Holmes";
-    int age = 54;
-    Person person = {
-        name : "Walter White",
-        age : 60
-    };
+    private final string name = "Sherlock Holmes";
+    private final int age = 54;
 
     isolated resource function get name(string name) returns string {
-        return name;
+        return self.name;
     }
 
     isolated resource function get age() returns int {
         return self.age;
-    }
-
-    isolated resource function get person() returns Person {
-        return self.person;
     }
 }
