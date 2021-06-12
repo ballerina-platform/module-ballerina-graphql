@@ -53,7 +53,7 @@ isolated function tryAuthenticate(ListenerAuthConfig[] authConfig, string header
                 return;
             }
         } else if (config is LdapUserStoreConfigWithScopes) {
-            http:ListenerLdapUserStoreBasicAuthProvider handler = new(config.ldapUserStoreConfig);
+            http:ListenerLdapUserStoreBasicAuthHandler handler = new(config.ldapUserStoreConfig);
             auth:UserDetails|http:Unauthorized authn = handler->authenticate(header);
             string|string[]? scopes = config?.scopes;
             if (authn is auth:UserDetails) {
