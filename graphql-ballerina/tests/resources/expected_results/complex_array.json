@@ -1,0 +1,98 @@
+{
+    "data": {
+        "students": [
+            {
+                "name": "John Doe",
+                "courses": [
+                    {
+                        "name": "Electronics",
+                        "books": [
+                            {
+                                "name": "The Art of Electronics"
+                            },
+                            {
+                                "name": "Practical Electronics"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Computer Science",
+                        "books": [
+                            {
+                                "name": "Algorithms to Live By"
+                            },
+                            {
+                                "name": "Code: The Hidden Language"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Jane Doe",
+                "courses": [
+                    {
+                        "name": "Computer Science",
+                        "books": [
+                            {
+                                "name": "Algorithms to Live By"
+                            },
+                            {
+                                "name": "Code: The Hidden Language"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Mathematics",
+                        "books": [
+                            {
+                                "name": "Calculus Made Easy"
+                            },
+                            {
+                                "name": "Calculus"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Jonny Doe",
+                "courses": [
+                    {
+                        "name": "Electronics",
+                        "books": [
+                            {
+                                "name": "The Art of Electronics"
+                            },
+                            {
+                                "name": "Practical Electronics"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Computer Science",
+                        "books": [
+                            {
+                                "name": "Algorithms to Live By"
+                            },
+                            {
+                                "name": "Code: The Hidden Language"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Mathematics",
+                        "books": [
+                            {
+                                "name": "Calculus Made Easy"
+                            },
+                            {
+                                "name": "Calculus"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
