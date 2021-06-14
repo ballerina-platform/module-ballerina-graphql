@@ -70,7 +70,7 @@ public class ResponseGenerator {
                 getDataFromTable(environment, visitor, node, (BTable) result, data);
             } else if (tag == TypeTags.SERVICE_TAG) {
                 getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>());
-            }
+            } // Here `else` should not be reached.
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
         }
@@ -89,26 +89,9 @@ public class ResponseGenerator {
                     executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
                 }
             } else {
-                List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, subNode);
-                executeResource(environment, service, visitor, subNode, subData, updatedPaths);
+                executeResourceWithPath(environment, visitor, subNode, service, subData, paths);
             }
             data.put(node.getStringValue(NAME_FIELD), subData);
-        }
-    }
-
-    static void getDataFromArray(Environment environment, BObject visitor, BObject node, BArray result,
-                                 BMap<BString, Object> data) {
-        if (isScalarType(result.getElementType())) {
-            data.put(node.getStringValue(NAME_FIELD), result);
-        } else {
-            BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
-            for (int i = 0; i < result.size(); i++) {
-                Object resultElement = result.get(i);
-                BMap<BString, Object> subData = createDataRecord();
-                getDataFromResult(environment, visitor, node, resultElement, subData);
-                resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
-            }
-            data.put(node.getStringValue(NAME_FIELD), resultArray);
         }
     }
 
@@ -141,6 +124,30 @@ public class ResponseGenerator {
         getDataFromResult(environment, visitor, node, result, data);
     }
 
+    static void getDataFromArray(Environment environment, BObject visitor, BObject node, BArray result,
+                                 BMap<BString, Object> data) {
+        if (isScalarType(result.getElementType())) {
+            data.put(node.getStringValue(NAME_FIELD), result);
+        } else {
+            BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
+            for (int i = 0; i < result.size(); i++) {
+                Object resultElement = result.get(i);
+                BMap<BString, Object> subData = createDataRecord();
+                getDataFromResult(environment, visitor, node, resultElement, subData);
+                resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
+            }
+            data.put(node.getStringValue(NAME_FIELD), resultArray);
+        }
+    }
+
+    private static void getDataFromTable(Environment environment, BObject visitor, BObject node, BTable table,
+                                         BMap<BString, Object> data) {
+        Object[] valueArray = table.values().toArray();
+        ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
+        BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
+        getDataFromArray(environment, visitor, node, valueBArray, data);
+    }
+
     static void processFragmentNodes(Environment environment, BObject visitor, BObject node,
                                      BMap<BString, Object> record, BMap<BString, Object> data) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
@@ -170,19 +177,16 @@ public class ResponseGenerator {
                 getDataFromService(environment, service, visitor, subNode, subData, paths);
                 data.merge(subData.getMapValue(subNode.getStringValue(NAME_FIELD)), false);
             } else {
-                List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, subNode);
-                executeResource(environment, service, visitor, subNode, subData, updatedPaths);
+                executeResourceWithPath(environment, visitor, subNode, service, subData, paths);
                 data.put(subNode.getStringValue(NAME_FIELD), subData.get(subNode.getStringValue(NAME_FIELD)));
             }
         }
     }
 
-    private static void getDataFromTable(Environment environment, BObject visitor, BObject node, BTable table,
-                                         BMap<BString, Object> data) {
-        Object[] valueArray = table.values().toArray();
-        ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
-        BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        getDataFromArray(environment, visitor, node, valueBArray, data);
+    private static void executeResourceWithPath(Environment environment, BObject visitor, BObject node, BObject service,
+                                                BMap<BString, Object> data, List<String> paths) {
+        List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, node);
+        executeResource(environment, service, visitor, node, data, updatedPaths);
     }
 
     private static ArrayType getDataRecordArrayType() {
