@@ -168,17 +168,14 @@ public class ResponseGenerator {
     private static void executeResourceForFragmentNodes(Environment environment, BObject service, BObject visitor,
                                                         BObject node, BMap<BString, Object> data, List<String> paths) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
-        BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                getDataFromService(environment, service, visitor, subNode, subData, paths);
-                data.merge(subData.getMapValue(subNode.getStringValue(NAME_FIELD)), false);
+                executeResourceForFragmentNodes(environment, service, visitor, subNode, data, paths);
             } else {
-                executeResourceWithPath(environment, visitor, subNode, service, subData, paths);
-                data.put(subNode.getStringValue(NAME_FIELD), subData.get(subNode.getStringValue(NAME_FIELD)));
+                executeResourceWithPath(environment, visitor, subNode, service, data, paths);
             }
         }
     }
