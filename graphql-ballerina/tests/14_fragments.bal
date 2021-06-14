@@ -16,7 +16,9 @@
 
 import ballerina/test;
 
-service /graphql on new Listener(9106) {
+listener Listener fragmentsTestListener = new(9106);
+
+service /graphql on fragmentsTestListener {
     resource function get people() returns Person[] {
         return people;
     }
@@ -35,6 +37,12 @@ service /graphql on new Listener(9106) {
 
     resource function get student() returns Person {
         return p4;
+    }
+}
+
+service /fragments on fragmentsTestListener {
+    resource function get teacher() returns TeacherService {
+        return new TeacherService(737, "Walter White", "Chemistry");
     }
 }
 
@@ -624,6 +632,76 @@ isolated function testInlineFragmentsOnSameTypeInDifferentPlaces() returns error
             },
             student: {
                 age: 25
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testFragmentsInsideFragmentsWhenReturningServices() returns error? {
+    string document = string
+    `query {
+        ... QueryFragment
+    }
+
+    fragment QueryFragment on Query {
+        teacher {
+            ...TeacherFragment
+        }
+    }
+
+    fragment TeacherFragment on TeacherService {
+        ...NameFragment
+    }
+
+    fragment NameFragment on TeacherService {
+        name
+    }`;
+    string url = "http://localhost:9106/fragments";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            teacher: {
+                name: "Walter White"
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "unit"]
+}
+isolated function testFragmentsInsideFragmentsWhenReturningServicesMultipleFields() returns error? {
+    string document = string
+    `query {
+        ... QueryFragment
+    }
+
+    fragment QueryFragment on Query {
+        teacher {
+            ...TeacherFragment
+        }
+    }
+
+    fragment TeacherFragment on TeacherService {
+        ...NameFragment
+    }
+
+    fragment NameFragment on TeacherService {
+        name,
+        subject
+    }`;
+    string url = "http://localhost:9106/fragments";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            teacher: {
+                name: "Walter White",
+                subject: "Chemistry"
             }
         }
     };
