@@ -145,7 +145,7 @@ public class ResponseGenerator {
         Object[] valueArray = table.values().toArray();
         ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
         BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        getDataFromArray(environment, visitor, node, valueBArray, data);
+        getDataFromResult(environment, visitor, node, valueBArray, data);
     }
 
     static void processFragmentNodes(Environment environment, BObject visitor, BObject node,
