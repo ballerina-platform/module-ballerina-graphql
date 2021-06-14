@@ -80,16 +80,24 @@ class DuplicateFieldRemover {
     private isolated function removeDuplicateSelections(parser:Selection[] selections) {
         map<parser:Selection> visitedSelections = {};
         map<parser:Selection> visitedFragmentOnTypes = {};
-        parser:Selection[] duplicateSelections = [];
+        map<parser:Selection[]> duplicateSelections = {};
         foreach parser:Selection selection in selections {
             if(selection.isFragment) {
                 parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
                 if (visitedFragmentOnTypes.hasKey(fragmentNode.getOnType())) {
                     if (fragmentNode.isInlineFragment()) {
-                        duplicateSelections.push(selection);
+                        if (duplicateSelections.hasKey(selection.name)) {
+                            duplicateSelections.get(selection.name).push(selection);
+                        } else {
+                            duplicateSelections[selection.name] = [selection];
+                        }
                     } else {
                         self.appendDuplicateSelections(selection, visitedFragmentOnTypes.get(fragmentNode.getOnType()));
-                        duplicateSelections.push(selection);
+                        if (duplicateSelections.hasKey(selection.name)) {
+                            duplicateSelections.get(selection.name).push(selection);
+                        } else {
+                            duplicateSelections[selection.name] = [selection];
+                        }
                     }
                 } else {
                     visitedFragmentOnTypes[fragmentNode.getOnType()] = selection;
@@ -97,43 +105,61 @@ class DuplicateFieldRemover {
             } else {
                 if (visitedSelections.hasKey(selection.name)) {
                     self.appendDuplicateSelections(selection, visitedSelections.get(selection.name));
-                    duplicateSelections.push(selection);
+                    if (duplicateSelections.hasKey(selection.name)) {
+                        duplicateSelections.get(selection.name).push(selection);
+                    } else {
+                        duplicateSelections[selection.name] = [selection];
+                    }
                 } else {
                     visitedSelections[selection.name] = selection;
                 }
             }
         }
         int i = 0;
-        while (i < selections.length()) {
-            foreach parser:Selection duplicate in duplicateSelections {
-                if (selections[i] === duplicate) {
-                    parser:Selection remove = selections.remove(i);
-                    i -= 1;
+        if (duplicateSelections.length() > 0) {
+            while (i < selections.length()) {
+                if (duplicateSelections.hasKey(selections[i].name)) {
+                    foreach parser:Selection duplicate in duplicateSelections.get(selections[i].name) {
+                        if (selections[i] === duplicate) {
+                            parser:Selection remove = selections.remove(i);
+                            i -= 1;
+                            break;
+                        }
+                    }
                 }
+                i += 1;
             }
-            i += 1;
         }
     }
 
     private isolated function removeDuplicateFields(parser:FieldNode[] fields) {
         string[] visitedFields = [];
-        parser:FieldNode[] duplicateFields = [];
-        foreach parser:FieldNode fieldNode in fields {
-            if (visitedFields.indexOf(fieldNode.getName()) == ()) {
-                visitedFields.push(fieldNode.getName());
+        map<parser:FieldNode[]> duplicateFields = {};
+        foreach parser:FieldNode node in fields {
+            if (visitedFields.indexOf(node.getName()) == ()) {
+                visitedFields.push(node.getName());
             } else {
-                duplicateFields.push(fieldNode);
+                if (duplicateFields.hasKey(node.getName())) {
+                    duplicateFields.get(node.getName()).push(node);
+                } else {
+                    duplicateFields[node.getName()] = [node];
+                }
             }
         }
         int i = 0;
-        while (i < fields.length()) {
-            foreach parser:FieldNode duplicate in  duplicateFields {
-                if (fields[i] === duplicate) {
-                    parser:FieldNode remove = fields.remove(i);
-                    i -= 1;
+        if (duplicateFields.length() > 0) {
+            while (i < fields.length()) {
+                if (duplicateFields.hasKey(fields[i].getName())) {
+                    foreach parser:FieldNode duplicate in duplicateFields.get(fields[i].getName()) {
+                        if (fields[i] === duplicate) {
+                            parser:FieldNode remove = fields.remove(i);
+                            i -= 1;
+                            break;
+                        }
+                    }
                 }
+                i += 1;
             }
-            i += 1;
         }
     }
 
