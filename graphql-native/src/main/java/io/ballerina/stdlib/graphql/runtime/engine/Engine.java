@@ -38,12 +38,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromResult;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
@@ -86,6 +87,11 @@ public class Engine {
         executeResource(environment, service, visitor, node, data, paths);
     }
 
+    public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
+                                 BMap<BString, Object> data) {
+        getDataFromResult(environment, visitor, node, result, data);
+    }
+
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
                                 BMap<BString, Object> data, List<String> paths) {
         ServiceType serviceType = (ServiceType) service.getType();
@@ -95,7 +101,7 @@ public class Engine {
                 return;
             }
         }
-        // Won't hit here if the exact resource is already found, hence must be hierarchical resource
+        // The resource not found. This should be a resource with hierarchical paths
         getDataFromService(environment, service, visitor, node, data, paths);
     }
 
@@ -105,7 +111,7 @@ public class Engine {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
         CountDownLatch latch = new CountDownLatch(1);
-        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, node, data);
+        ResourceCallback callback = new ResourceCallback(environment, latch, visitor, node, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
         try {

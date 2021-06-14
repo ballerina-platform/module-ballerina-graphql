@@ -20,13 +20,11 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
-import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
@@ -35,11 +33,9 @@ import io.ballerina.runtime.api.values.BValue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getArgumentsFromField;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -48,61 +44,33 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpdateResourcePathsList;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getNameFromRecordTypeMap;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 
 /**
- * This class is used as a callback class for Ballerina resource execution.
+ * Used to generate the response for a GraphQL request in Ballerina.
  */
-public class CallableUnitCallback implements Callback {
-    private final Environment environment;
-    private final CountDownLatch latch;
-    private final BObject visitor;
-    private final BObject node;
-    private final BMap<BString, Object> data;
-
-    public CallableUnitCallback(Environment environment, CountDownLatch latch, BObject visitor, BObject node,
-                                BMap<BString, Object> data) {
-        this.environment = environment;
-        this.latch = latch;
-        this.visitor = visitor;
-        this.node = node;
-        this.data = data;
+public class ResponseGenerator {
+    private ResponseGenerator() {
     }
 
-    @Override
-    public void notifySuccess(Object o) {
-        if (o instanceof BError) {
-            BError bError = (BError) o;
-            appendErrorToVisitor(bError);
-        } else {
-            getDataFromResult(this.environment, this.visitor, this.node, o, this.data);
-        }
-        this.latch.countDown();
-    }
-
-    @Override
-    public void notifyFailure(BError bError) {
-        appendErrorToVisitor(bError);
-        this.latch.countDown();
-    }
-
-    public static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
-                                         BMap<BString, Object> data) {
-        if (result instanceof BMap) {
-            BMap<BString, Object> map = (BMap<BString, Object>) result;
-            if (map.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
-                getDataFromRecord(environment, visitor, node, map, data);
-            } else if (map.getType().getTag() == TypeTags.MAP_TAG) {
-                getDataFromMap(environment, visitor, node, map, data);
+    static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
+                                  BMap<BString, Object> data) {
+        if (result instanceof BValue) {
+            int tag = ((BValue) result).getType().getTag();
+            if (tag < TypeTags.JSON_TAG) {
+                data.put(node.getStringValue(NAME_FIELD), result);
+            } else if (tag == TypeTags.RECORD_TYPE_TAG) {
+                getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) result, data);
+            } else if (tag == TypeTags.MAP_TAG) {
+                getDataFromMap(environment, visitor, node, (BMap<BString, Object>) result, data);
+            } else if (tag == TypeTags.ARRAY_TAG) {
+                getDataFromArray(environment, visitor, node, (BArray) result, data);
+            } else if (tag == TypeTags.TABLE_TAG) {
+                getDataFromTable(environment, visitor, node, (BTable) result, data);
+            } else if (tag == TypeTags.SERVICE_TAG) {
+                getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>());
             }
-        } else if (result instanceof BArray) {
-            getDataFromArray(environment, visitor, node, (BArray) result, data);
-        } else if (result instanceof BTable) {
-            getDataFromTable(environment, visitor, node, (BTable) result, data);
-        } else if (result instanceof BObject) {
-            getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>());
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
         }
@@ -215,11 +183,6 @@ public class CallableUnitCallback implements Callback {
         ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
         BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
         getDataFromArray(environment, visitor, node, valueBArray, data);
-    }
-
-    private void appendErrorToVisitor(BError bError) {
-        BArray errors = this.visitor.getArrayValue(ERRORS_FIELD);
-        errors.append(getErrorDetailRecord(bError, this.node));
     }
 
     private static ArrayType getDataRecordArrayType() {
