@@ -37,14 +37,18 @@ public class CallbackHandler {
         this.callbacks = Collections.synchronizedList(new ArrayList<>());
     }
 
-    public synchronized void addCallback(ResourceCallback callback) {
-        this.callbacks.add(callback);
+    public void addCallback(ResourceCallback callback) {
+        synchronized (this.callbacks) {
+            this.callbacks.add(callback);
+        }
     }
 
-    public synchronized void markComplete(ResourceCallback callback) {
-        this.callbacks.remove(callback);
-        if (this.callbacks.size() == 0) {
-            this.future.complete(null);
+    public void markComplete(ResourceCallback callback) {
+        synchronized (this.callbacks) {
+            this.callbacks.remove(callback);
+            if (this.callbacks.size() == 0) {
+                this.future.complete(null);
+            }
         }
     }
 }
