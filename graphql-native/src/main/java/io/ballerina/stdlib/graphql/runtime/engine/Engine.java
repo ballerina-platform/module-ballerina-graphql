@@ -112,7 +112,7 @@ public class Engine {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
         ResourceCallback callback = new ResourceCallback(environment, visitor, node, data, callbackHandler);
-        callbackHandler.addCallback(callback);
+        callbackHandler.addCallback();
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
     }

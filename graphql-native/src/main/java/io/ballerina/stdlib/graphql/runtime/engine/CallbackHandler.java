@@ -20,35 +20,27 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Future;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * This class keeps track of the all the async calls done in a single process and returns when all the calls completed.
  */
 
 public class CallbackHandler {
     private final Future future;
-    private final List<ResourceCallback> callbacks;
+    private int callbackCount;
 
     public CallbackHandler(Future future) {
         this.future = future;
-        this.callbacks = Collections.synchronizedList(new ArrayList<>());
+        this.callbackCount = 0;
     }
 
-    public void addCallback(ResourceCallback callback) {
-        synchronized (this.callbacks) {
-            this.callbacks.add(callback);
-        }
+    public synchronized void addCallback() {
+        this.callbackCount++;
     }
 
-    public void markComplete(ResourceCallback callback) {
-        synchronized (this.callbacks) {
-            this.callbacks.remove(callback);
-            if (this.callbacks.size() == 0) {
-                this.future.complete(null);
-            }
+    public synchronized void markComplete() {
+        this.callbackCount--;
+        if (this.callbackCount == 0) {
+            this.future.complete(null);
         }
     }
 }
