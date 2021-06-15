@@ -27,10 +27,12 @@ import io.ballerina.runtime.api.Future;
 public class CallbackHandler {
     private final Future future;
     private int callbackCount;
+    private boolean isExecuting;
 
     public CallbackHandler(Future future) {
         this.future = future;
         this.callbackCount = 0;
+        this.isExecuting = true;
     }
 
     public synchronized void addCallback() {
@@ -39,8 +41,10 @@ public class CallbackHandler {
 
     public synchronized void markComplete() {
         this.callbackCount--;
-        if (this.callbackCount == 0) {
+        // TODO: Improve this to find the exact time to complete without `isExecuting`
+        if (this.isExecuting && this.callbackCount == 0) {
             this.future.complete(null);
+            this.isExecuting = false;
         }
     }
 }
