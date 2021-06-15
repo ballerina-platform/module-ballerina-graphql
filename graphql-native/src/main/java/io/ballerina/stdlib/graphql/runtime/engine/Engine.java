@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -35,7 +36,6 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
@@ -80,44 +80,44 @@ public class Engine {
 
     public static void executeService(Environment environment, BObject engine, BObject visitor, BObject node,
                                       BMap<BString, Object> data) {
+        Future future = environment.markAsync();
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         List<String> paths = new ArrayList<>();
         paths.add(node.getStringValue(NAME_FIELD).getValue());
-        executeResource(environment, service, visitor, node, data, paths);
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        executeResource(environment, service, visitor, node, data, paths, callbackHandler);
     }
 
     public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
                                  BMap<BString, Object> data) {
-        getDataFromResult(environment, visitor, node, result, data);
+        Future future = environment.markAsync();
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        getDataFromResult(environment, visitor, node, result, data, callbackHandler);
+        future.complete(null);
     }
 
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                BMap<BString, Object> data, List<String> paths) {
+                                BMap<BString, Object> data, List<String> paths, CallbackHandler callbackHandler) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data);
+                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler);
                 return;
             }
         }
         // The resource not found. This should be a resource with hierarchical paths
-        getDataFromService(environment, service, visitor, node, data, paths);
+        getDataFromService(environment, service, visitor, node, data, paths, callbackHandler);
     }
 
     private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
                                                    BObject node, ResourceMethodType resourceMethod,
-                                                   BMap<BString, Object> data) {
+                                                   BMap<BString, Object> data, CallbackHandler callbackHandler) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
-        CountDownLatch latch = new CountDownLatch(1);
-        ResourceCallback callback = new ResourceCallback(environment, latch, visitor, node, data);
+        ResourceCallback callback = new ResourceCallback(environment, visitor, node, data, callbackHandler);
+        callbackHandler.addCallback(callback);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            // Ignore
-        }
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {

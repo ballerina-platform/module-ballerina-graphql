@@ -55,21 +55,22 @@ public class ResponseGenerator {
     }
 
     static void getDataFromResult(Environment environment, BObject visitor, BObject node, Object result,
-                                  BMap<BString, Object> data) {
+                                  BMap<BString, Object> data, CallbackHandler callbackHandler) {
         if (result instanceof BValue) {
             int tag = ((BValue) result).getType().getTag();
             if (tag < TypeTags.JSON_TAG) {
                 data.put(node.getStringValue(NAME_FIELD), result);
             } else if (tag == TypeTags.RECORD_TYPE_TAG) {
-                getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) result, data);
+                getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) result, data, callbackHandler);
             } else if (tag == TypeTags.MAP_TAG) {
-                getDataFromMap(environment, visitor, node, (BMap<BString, Object>) result, data);
+                getDataFromMap(environment, visitor, node, (BMap<BString, Object>) result, data, callbackHandler);
             } else if (tag == TypeTags.ARRAY_TAG) {
-                getDataFromArray(environment, visitor, node, (BArray) result, data);
+                getDataFromArray(environment, visitor, node, (BArray) result, data, callbackHandler);
             } else if (tag == TypeTags.TABLE_TAG) {
-                getDataFromTable(environment, visitor, node, (BTable) result, data);
+                getDataFromTable(environment, visitor, node, (BTable) result, data, callbackHandler);
             } else if (tag == TypeTags.SERVICE_TAG) {
-                getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>());
+                getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>(),
+                                   callbackHandler);
             } // Here, `else` should not be reached.
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
@@ -77,7 +78,7 @@ public class ResponseGenerator {
     }
 
     static void getDataFromService(Environment environment, BObject service, BObject visitor, BObject node,
-                                   BMap<BString, Object> data, List<String> paths) {
+                                   BMap<BString, Object> data, List<String> paths, CallbackHandler callbackHandler) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
@@ -86,17 +87,18 @@ public class ResponseGenerator {
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
                 if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
-                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths);
+                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths,
+                                                    callbackHandler);
                 }
             } else {
-                executeResourceWithPath(environment, visitor, subNode, service, subData, paths);
+                executeResourceWithPath(environment, visitor, subNode, service, subData, paths, callbackHandler);
             }
             data.put(node.getStringValue(NAME_FIELD), subData);
         }
     }
 
     static void getDataFromRecord(Environment environment, BObject visitor, BObject node, BMap<BString, Object> record,
-                                  BMap<BString, Object> data) {
+                                  BMap<BString, Object> data, CallbackHandler callbackHandler) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
@@ -105,27 +107,27 @@ public class ResponseGenerator {
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
                 if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getNameFromRecordTypeMap(record))) {
-                    processFragmentNodes(environment, visitor, subNode, record, subData);
+                    processFragmentNodes(environment, visitor, subNode, record, subData, callbackHandler);
                 }
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
-                getDataFromResult(environment, visitor, subNode, fieldValue, subData);
+                getDataFromResult(environment, visitor, subNode, fieldValue, subData, callbackHandler);
             }
         }
         data.put(node.getStringValue(NAME_FIELD), subData);
     }
 
     static void getDataFromMap(Environment environment, BObject visitor, BObject node, BMap<BString, Object> map,
-                               BMap<BString, Object> data) {
+                               BMap<BString, Object> data, CallbackHandler callbackHandler) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         BString key = arguments.getStringValue(StringUtils.fromString(KEY));
         Object result = map.get(key);
-        getDataFromResult(environment, visitor, node, result, data);
+        getDataFromResult(environment, visitor, node, result, data, callbackHandler);
     }
 
     static void getDataFromArray(Environment environment, BObject visitor, BObject node, BArray result,
-                                 BMap<BString, Object> data) {
+                                 BMap<BString, Object> data, CallbackHandler callbackHandler) {
         if (isScalarType(result.getElementType())) {
             data.put(node.getStringValue(NAME_FIELD), result);
         } else {
@@ -133,7 +135,7 @@ public class ResponseGenerator {
             for (int i = 0; i < result.size(); i++) {
                 Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
-                getDataFromResult(environment, visitor, node, resultElement, subData);
+                getDataFromResult(environment, visitor, node, resultElement, subData, callbackHandler);
                 resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
             data.put(node.getStringValue(NAME_FIELD), resultArray);
@@ -141,49 +143,52 @@ public class ResponseGenerator {
     }
 
     private static void getDataFromTable(Environment environment, BObject visitor, BObject node, BTable table,
-                                         BMap<BString, Object> data) {
+                                         BMap<BString, Object> data, CallbackHandler callbackHandler) {
         Object[] valueArray = table.values().toArray();
         ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
         BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        getDataFromResult(environment, visitor, node, valueBArray, data);
+        getDataFromResult(environment, visitor, node, valueBArray, data, callbackHandler);
     }
 
     static void processFragmentNodes(Environment environment, BObject visitor, BObject node,
-                                     BMap<BString, Object> record, BMap<BString, Object> data) {
+                                     BMap<BString, Object> record, BMap<BString, Object> data,
+                                     CallbackHandler callbackHandler) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                processFragmentNodes(environment, visitor, subNode, record, data);
+                processFragmentNodes(environment, visitor, subNode, record, data, callbackHandler);
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
-                getDataFromResult(environment, visitor, subNode, fieldValue, data);
+                getDataFromResult(environment, visitor, subNode, fieldValue, data, callbackHandler);
             }
         }
     }
 
     private static void executeResourceForFragmentNodes(Environment environment, BObject service, BObject visitor,
-                                                        BObject node, BMap<BString, Object> data, List<String> paths) {
+                                                        BObject node, BMap<BString, Object> data, List<String> paths,
+                                                        CallbackHandler callbackHandler) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                executeResourceForFragmentNodes(environment, service, visitor, subNode, data, paths);
+                executeResourceForFragmentNodes(environment, service, visitor, subNode, data, paths, callbackHandler);
             } else {
-                executeResourceWithPath(environment, visitor, subNode, service, data, paths);
+                executeResourceWithPath(environment, visitor, subNode, service, data, paths, callbackHandler);
             }
         }
     }
 
     private static void executeResourceWithPath(Environment environment, BObject visitor, BObject node, BObject service,
-                                                BMap<BString, Object> data, List<String> paths) {
+                                                BMap<BString, Object> data, List<String> paths,
+                                                CallbackHandler callbackHandler) {
         List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, node);
-        executeResource(environment, service, visitor, node, data, updatedPaths);
+        executeResource(environment, service, visitor, node, data, updatedPaths, callbackHandler);
     }
 
     private static ArrayType getDataRecordArrayType() {
