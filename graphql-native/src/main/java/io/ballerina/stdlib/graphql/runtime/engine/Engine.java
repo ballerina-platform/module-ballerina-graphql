@@ -90,10 +90,7 @@ public class Engine {
 
     public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
                                  BMap<BString, Object> data) {
-        Future future = environment.markAsync();
-        CallbackHandler callbackHandler = new CallbackHandler(future);
-        getDataFromResult(environment, visitor, node, result, data, callbackHandler);
-        future.complete(null);
+        getDataFromResult(environment, visitor, node, result, data, null);
     }
 
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,

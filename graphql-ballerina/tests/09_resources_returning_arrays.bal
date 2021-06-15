@@ -179,7 +179,7 @@ isolated function testResourceReturningServiceObjectArray() returns error? {
 }
 isolated function testResourceReturningOptionalServiceObjectsArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
-    string document = string `{ searchVehicles(keyword: "vehicle") { id } }`;
+    string document = string `{ searchVehicles(keyword: "vehicle") { ...on Vehicle { id } } }`;
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         data: {

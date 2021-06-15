@@ -72,6 +72,8 @@ public class ResourceCallback implements Callback {
     }
 
     private void markComplete() {
-        this.handler.markComplete(this);
+        if (this.handler != null) {
+            this.handler.markComplete(this);
+        }
     }
 }
