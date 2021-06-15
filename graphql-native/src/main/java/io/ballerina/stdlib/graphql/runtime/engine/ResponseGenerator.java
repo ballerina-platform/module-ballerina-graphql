@@ -70,7 +70,7 @@ public class ResponseGenerator {
                 getDataFromTable(environment, visitor, node, (BTable) result, data);
             } else if (tag == TypeTags.SERVICE_TAG) {
                 getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>());
-            } // Here `else` should not be reached.
+            } // Here, `else` should not be reached.
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
         }

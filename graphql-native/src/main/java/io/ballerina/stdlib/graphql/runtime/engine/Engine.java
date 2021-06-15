@@ -35,7 +35,6 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
@@ -139,12 +138,12 @@ public class Engine {
         String[] paramNames = resourceMethod.getParamNames();
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
-            if (Objects.nonNull(arguments.get(StringUtils.fromString(paramNames[i])))) {
-                result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
-                result[j + 1] = true;
-            } else {
+            if (arguments.get(StringUtils.fromString(paramNames[i])) == null) {
                 result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
                 result[j + 1] = false;
+            } else {
+                result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
+                result[j + 1] = true;
             }
         }
         return result;
