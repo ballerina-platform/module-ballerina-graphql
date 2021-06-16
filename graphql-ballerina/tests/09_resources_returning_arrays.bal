@@ -30,21 +30,35 @@ service /graphql on new Listener(9100) {
     }
 
     isolated resource function get allVehicles() returns Vehicle[] {
-        return [new Vehicle()];
+        Vehicle v1 = new("V1", "Benz");
+        Vehicle v2 = new("V2", "BMW");
+        Vehicle v3 = new("V3", "Ford");
+        return [v1, v2, v3];
     }
 
     isolated resource function get searchVehicles(string keyword) returns Vehicle[]? {
-        return [new Vehicle()];
+        Vehicle v1 = new("V1", "Benz");
+        Vehicle v2 = new("V2", "BMW");
+        Vehicle v3 = new("V3", "Ford");
+        return [v1, v2, v3];
     }
 }
 
 service class Vehicle {
-    isolated resource function get id () returns string|error {
-        return "v1";
+    private final string id;
+    private final string name;
+
+    isolated function init(string id, string name) {
+        self.id = id;
+        self.name = name;
     }
 
-    isolated resource function get name () returns string|error {
-        return "vehicle1";
+    isolated resource function get id() returns string {
+        return self.id;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
     }
 }
 
@@ -127,109 +141,11 @@ isolated function testResourcesReturningArraysMissingFields() returns error? {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-isolated function testComplexArraySample() returns error? {
+isolated function testComplexArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ students { name courses { name books { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-
-    json expectedResult = {
-        data: {
-            students: [
-                {
-                    name: "John Doe",
-                    courses: [
-                        {
-                            name: "Electronics",
-                            books: [
-                                {
-                                    name: "The Art of Electronics"
-                                },
-                                {
-                                    name: "Practical Electronics"
-                                }
-                            ]
-                        },
-                        {
-                            name: "Computer Science",
-                            books: [
-                                {
-                                    name: "Algorithms to Live By"
-                                },
-                                {
-                                    name: "Code: The Hidden Language"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    name: "Jane Doe",
-                    courses: [
-                        {
-                            name: "Computer Science",
-                            books: [
-                                {
-                                    name: "Algorithms to Live By"
-                                },
-                                {
-                                    name: "Code: The Hidden Language"
-                                }
-                            ]
-                        },
-                        {
-                            name: "Mathematics",
-                            books: [
-                                {
-                                    name: "Calculus Made Easy"
-                                },
-                                {
-                                    name: "Calculus"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    name: "Jonny Doe",
-                    courses: [
-                        {
-                            name: "Electronics",
-                            books: [
-                                {
-                                    name: "The Art of Electronics"
-                                },
-                                {
-                                    name: "Practical Electronics"
-                                }
-                            ]
-                        },
-                        {
-                            name: "Computer Science",
-                            books: [
-                                {
-                                    name: "Algorithms to Live By"
-                                },
-                                {
-                                    name: "Code: The Hidden Language"
-                                }
-                            ]
-                        },
-                        {
-                            name: "Mathematics",
-                            books: [
-                                {
-                                    name: "Calculus Made Easy"
-                                },
-                                {
-                                    name: "Calculus"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    };
+    json expectedResult = check getJsonContentFromFile("complex_array.json");
     test:assertEquals(actualResult, expectedResult);
 }
 
@@ -240,12 +156,17 @@ isolated function testResourceReturningServiceObjectArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = string `{ allVehicles { name } }`;
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-
     json expectedPayload = {
         data: {
             allVehicles: [
                 {
-                    name: "vehicle1"
+                    name: "Benz"
+                },
+                {
+                    name: "BMW"
+                },
+                {
+                    name: "Ford"
                 }
             ]
         }
@@ -256,16 +177,21 @@ isolated function testResourceReturningServiceObjectArray() returns error? {
 @test:Config {
     groups: ["array", "service", "unit"]
 }
-isolated function testOptionalArray() returns error? {
+isolated function testResourceReturningOptionalServiceObjectsArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
-    string document = string `{ searchVehicles(keyword: "vehicle") { name } }`;
+    string document = string `{ searchVehicles(keyword: "vehicle") { ...on Vehicle { id } } }`;
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-
     json expectedPayload = {
         data: {
             searchVehicles: [
                 {
-                    name: "vehicle1"
+                    id: "V1"
+                },
+                {
+                    id: "V2"
+                },
+                {
+                    id: "V3"
                 }
             ]
         }

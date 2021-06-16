@@ -58,7 +58,7 @@ class ExecutorVisitor {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         if (fieldNode.getName() == SCHEMA_FIELD) {
-            getDataFromResult(self, fieldNode, self.schema, self.data);
+            getResult(self, fieldNode, self.schema, self.data);
         } else {
             self.executeResource(fieldNode);
         }
