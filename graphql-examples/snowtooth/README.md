@@ -1,3 +1,5 @@
+# Snowtooth: A Fake Ski Resort
+
 # Overview
  
 This is an implementation of the popular [snowtooth example](https://snowtooth.moonhighway.com/) in Ballerina. Snowtooth is a fake ski resort which includes a bunch of chairlifts and trails. A GraphQL API is built around this for a mobile application.
@@ -22,7 +24,7 @@ It will build the snowtooth Ballerina project and then run it.
  
 # Querying the Service
  
-For this any GraphQL compliant tool can be used. Enter the URL `http://localhost:9000/graphql` to connect to the service. Then the service can be queried with any query compliant with the written GraphQL service.
+Any GraphQL compliant tool can be used to query the service. Enter the URL `http://localhost:9000/graphql` to connect to the service. Then the service can be queried with any query compliant with the written GraphQL service.
  
 **Example Query**
  
