@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -36,14 +35,15 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromResult;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
@@ -80,41 +80,39 @@ public class Engine {
 
     public static void executeService(Environment environment, BObject engine, BObject visitor, BObject node,
                                       BMap<BString, Object> data) {
-        Future future = environment.markAsync();
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         List<String> paths = new ArrayList<>();
         paths.add(node.getStringValue(NAME_FIELD).getValue());
-        CallbackHandler callbackHandler = new CallbackHandler(future);
-        executeResource(environment, service, visitor, node, data, paths, callbackHandler);
-    }
-
-    public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
-                                 BMap<BString, Object> data) {
-        getDataFromResult(environment, visitor, node, result, data, null);
+        executeResource(environment, service, visitor, node, data, paths);
     }
 
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                BMap<BString, Object> data, List<String> paths, CallbackHandler callbackHandler) {
+                                BMap<BString, Object> data, List<String> paths) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler);
+                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data);
                 return;
             }
         }
-        // The resource not found. This should be a resource with hierarchical paths
-        getDataFromService(environment, service, visitor, node, data, paths, callbackHandler);
+        // Won't hit here if the exact resource is already found, hence must be hierarchical resource
+        getDataFromService(environment, service, visitor, node, data, paths);
     }
 
     private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
                                                    BObject node, ResourceMethodType resourceMethod,
-                                                   BMap<BString, Object> data, CallbackHandler callbackHandler) {
+                                                   BMap<BString, Object> data) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
-        ResourceCallback callback = new ResourceCallback(environment, visitor, node, data, callbackHandler);
-        callbackHandler.addCallback();
+        CountDownLatch latch = new CountDownLatch(1);
+        CallableUnitCallback callback = new CallableUnitCallback(environment, latch, visitor, node, data);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // Ignore
+        }
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
@@ -135,12 +133,12 @@ public class Engine {
         String[] paramNames = resourceMethod.getParamNames();
         Object[] result = new Object[paramNames.length * 2];
         for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
-            if (arguments.get(StringUtils.fromString(paramNames[i])) == null) {
-                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
-                result[j + 1] = false;
-            } else {
+            if (Objects.nonNull(arguments.get(StringUtils.fromString(paramNames[i])))) {
                 result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
                 result[j + 1] = true;
+            } else {
+                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
+                result[j + 1] = false;
             }
         }
         return result;
