@@ -24,7 +24,7 @@ It will build the snowtooth Ballerina project and then run it.
  
 # Querying the Service
  
-To query any GraphQL compliant tool can be used. Enter the URL `http://localhost:9000/graphql` to connect to the service. Then the service can be queried with any query compliant with the written GraphQL service.
+Any GraphQL compliant tool can be used to query the service. Enter the URL `http://localhost:9000/graphql` to connect to the service. Then the service can be queried with any query compliant with the written GraphQL service.
  
 **Example Query**
  
