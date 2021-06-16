@@ -20,7 +20,6 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Future;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,13 +31,10 @@ import java.util.List;
 public class CallbackHandler {
     private final Future future;
     private List<ResourceCallback> callbackList;
-    private boolean isExecuting;
-    private static PrintStream out = System.out;
 
     public CallbackHandler(Future future) {
         this.future = future;
         this.callbackList = Collections.synchronizedList(new ArrayList<>());
-        this.isExecuting = true;
     }
 
     public synchronized void addCallback(ResourceCallback callback) {
@@ -47,14 +43,8 @@ public class CallbackHandler {
 
     public synchronized void markComplete(ResourceCallback callback) {
         this.callbackList.remove(callback);
-        // TODO: Improve this to find the exact time to complete without `isExecuting`
-        if (this.isExecuting && this.callbackList.size() == 0) {
+        if (this.callbackList.size() == 0) {
             this.future.complete(null);
-            this.isExecuting = false;
-        } else if (!this.isExecuting && this.callbackList.size() == 0) {
-            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                out.println(element);
-            }
         }
     }
 }
