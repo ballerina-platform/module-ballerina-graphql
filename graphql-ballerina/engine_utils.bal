@@ -48,9 +48,9 @@ isolated function executeService(Engine engine, ExecutorVisitor visitor, parser:
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function getResult(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata fieldRecord, Data data)
+isolated function getDataFromResult(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata fieldRecord, Data data)
 = @java:Method {
-	'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+	'class: "io.ballerina.stdlib.graphql.runtime.engine.CallableUnitCallback"
 } external;
 
 isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
