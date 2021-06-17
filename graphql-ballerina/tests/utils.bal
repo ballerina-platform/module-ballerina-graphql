@@ -22,9 +22,11 @@ isolated function getJsonPayloadFromService(string url, string document, string?
 returns json|error {
     http:Client httpClient = check new(url);
     if (operationName is string) {
-        return check httpClient->post("/", { query: document, operationName: operationName }, targetType = json);
+        http:Response response = check httpClient->post("/", { query: document, operationName: operationName });
+        return response.getJsonPayload();
     }
-    return check httpClient->post("/", { query: document }, targetType = json);
+    http:Response response = check httpClient->post("/", { query: document });
+    return response.getJsonPayload();
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {

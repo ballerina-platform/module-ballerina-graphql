@@ -27,22 +27,23 @@ isolated class Engine {
         self.maxQueryDepth = getMaxQueryDepth(serviceConfig);
     }
 
-    isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
+    isolated function getOutputObjectForQuery(string documentString, string operationName) returns
+                                                                                        [OutputObject, string] {
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if (result is OutputObject) {
-            return result;
+            return [result, "SyntaxError"];
         }
         parser:DocumentNode document = <parser:DocumentNode>result;
         OutputObject? validationResult = self.validateDocument(document);
         if (validationResult is OutputObject) {
-            return validationResult;
+            return [validationResult, "DocumentError"];
         } else {
             if (document.getOperations().length() == 1) {
-                return self.execute(document.getOperations()[0]);
+                return [self.execute(document.getOperations()[0]), ""];
             }
             foreach parser:OperationNode operationNode in document.getOperations() {
                 if (operationName == operationNode.getName()) {
-                    return self.execute(operationNode);
+                    return [self.execute(operationNode), ""];
                 }
             }
             string name = operationName == parser:ANONYMOUS_OPERATION ? "" : operationName;
@@ -51,7 +52,7 @@ isolated class Engine {
                 message: message,
                 locations: []
             };
-            return getOutputObjectFromErrorDetail(errorDetail);
+            return [getOutputObjectFromErrorDetail(errorDetail), "DocumentError"];
         }
     }
 

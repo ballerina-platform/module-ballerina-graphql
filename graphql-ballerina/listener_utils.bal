@@ -26,7 +26,10 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
         setResponseForBadRequest(response);
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
-        OutputObject outputObject = engine.getOutputObjectForQuery(query, operationName);
+        [OutputObject, string] [outputObject, errorType] = engine.getOutputObjectForQuery(query, operationName);
+        if (errorType == "SyntaxError" || errorType == "DocumentError") {
+            response.statusCode = 400;
+        }
         response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
     }
     return response;
@@ -65,7 +68,10 @@ isolated function processJsonPayload(Engine engine, json payload, http:Response 
         operationName = resolveOperationName(operationNameInPayload);
     }
     if (documentString is string) {
-        OutputObject outputObject = engine.getOutputObjectForQuery(documentString, operationName);
+        [OutputObject, string] [outputObject, errorType] = engine.getOutputObjectForQuery(documentString, operationName);
+        if (errorType == "SyntaxError" || errorType == "DocumentError") {
+            response.statusCode = 400;
+        }
         response.setJsonPayload(checkpanic outputObject.cloneWithType(json));
     } else {
         setResponseForBadRequest(response);
