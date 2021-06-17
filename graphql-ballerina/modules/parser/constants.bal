@@ -55,8 +55,8 @@ enum Digit {
 }
 
 enum Exp {
-    POWER_SIMPLE = "e",
-    POWER_CAPITAL = "E"
+    EXP_SIMPLE = "e",
+    EXP_CAPITAL = "E"
 }
 
 enum WhiteSpace {
