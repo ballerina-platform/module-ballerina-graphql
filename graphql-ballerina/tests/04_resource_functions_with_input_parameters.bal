@@ -15,8 +15,11 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/lang.value;
 
 listener Listener functionWithArgumentsListener = new(9093);
+
+const float CONVERSION_KG_TO_LBS = 2.205;
 
 service /graphql on functionWithArgumentsListener {
     isolated resource function get greet(string name) returns string {
@@ -38,6 +41,10 @@ service /graphql on functionWithArgumentsListener {
         if (id < people.length()) {
             return people[id];
         }
+    }
+
+    resource function get weightInPounds(float weightInKg) returns float {
+        return weightInKg * CONVERSION_KG_TO_LBS;
     }
 }
 
@@ -134,4 +141,20 @@ isolated function testQueryWithDefaultParameter() returns error? {
         }
     };
     test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_types", "float_to_int_coerce"]
+}
+isolated function testCoerceIntInputToFloat() returns error? {
+    string document = "{ weightInPounds(weightInKg: 1) }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    json expectedPayload = {
+        data: {
+            weightInPounds: <float>2.205
+        }
+    };
+    test:assertEquals(payloadWithFloatValues, expectedPayload);
 }

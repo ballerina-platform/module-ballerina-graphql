@@ -23,3 +23,9 @@ const PARAM_OPERATION_NAME = "operationName";
 const SCHEMA_FIELD = "__schema";
 const SCHEMA_TYPE_NAME = "__Schema";
 const QUERY_TYPE_NAME = "Query";
+
+// Scalar type names used in GraphQL
+const INT = "Int";
+const STRING = "String";
+const FLOAT = "Float";
+const BOOLEAN = "Boolean";

@@ -81,13 +81,13 @@ isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) retur
 isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
     parser:ArgumentType kind = argumentNode.getKind();
     if (kind == parser:T_INT) {
-        return "Int";
+        return INT;
     } else if (kind == parser:T_FLOAT) {
-        return "Float";
+        return FLOAT;
     } else if (kind == parser:T_BOOLEAN) {
-        return "Boolean";
+        return BOOLEAN;
     } else {
-        return "String";
+        return STRING;
     }
 }
 

@@ -179,17 +179,22 @@ class ValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>data;
         __Type argType = getOfType(schemaArg.'type);
-        string typeName = argType?.name.toString();
+        string expectedTypeName = argType?.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
         if (argType.kind == ENUM) {
             self.validateEnumArgument(argType, argumentNode, schemaArg);
         } else {
-            string expectedTypeName = getTypeName(argumentNode);
-            if (typeName != expectedTypeName) {
-                string message = string`${typeName} cannot represent non ${typeName} value: ${value.value.toString()}`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
-                self.errors.push(errorDetail);
+            string actualTypeName = getTypeName(argumentNode);
+            if (expectedTypeName == actualTypeName) {
+                return;
             }
+            if (expectedTypeName == FLOAT && actualTypeName == INT) {
+                self.coerceInputIntToFloat(argumentNode);
+                return;
+            }
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value.value.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+            self.errors.push(errorDetail);
         }
     }
 
@@ -199,6 +204,11 @@ class ValidatorVisitor {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, parent);
         }
+    }
+
+    isolated function coerceInputIntToFloat(parser:ArgumentNode argument) {
+        parser:ArgumentValue argumentValue = argument.getValue();
+        argumentValue.value = <float>argument.getValue().value;
     }
 
     isolated function getErrors() returns ErrorDetail[] {
