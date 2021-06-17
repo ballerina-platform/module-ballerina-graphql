@@ -147,6 +147,7 @@ public class Lexer {
         string separator = self.readNextChar();
         boolean isExpExpected = separator == DOT;
         boolean isDashExpected = !isExpExpected;
+        boolean isDigitExpected = true;
 
         string numeral = initialString + separator;
         while (!self.charReader.isEof()) {
@@ -155,19 +156,19 @@ public class Lexer {
                 value = self.readNextChar();
                 numeral += value;
                 isDashExpected = false;
-            } else if (value is Exp && isExpExpected) {
+                isDigitExpected = false;
+            } else if (value is Exp && isExpExpected && !isDigitExpected) {
                 value = self.readNextChar();
                 numeral += value;
                 isExpExpected = false;
                 isDashExpected = true;
+                isDigitExpected = true;
             } else if (value == DASH && isDashExpected) {
                 value = self.readNextChar();
                 numeral += value;
                 isDashExpected = false;
-            } else if ((value is Separator || value is SpecialCharacter) && !isDashExpected) {
-                // Here if `isDashExpected == true` that means the final character parsed is an exp character.
-                // Therefore, the next char should be a digit. If it is a separator or other char, this should return
-                // an error, instead of breaking the loop.
+                isDigitExpected = true;
+            } else if ((value is Separator || value is SpecialCharacter) && !isDigitExpected) {
                 break;
             } else {
                 string message = string`Syntax Error: Invalid number, expected digit but got: "${value}".`;

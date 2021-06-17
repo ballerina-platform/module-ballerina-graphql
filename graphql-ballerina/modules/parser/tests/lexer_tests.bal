@@ -435,6 +435,61 @@ isolated function readInvalidFloatRepeatedDecimalPoint() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
+isolated function readInvalidFloatMissingDigitAfterDecimalPoint() returns error? {
+    string s = "4.e45";
+    Lexer lexer = new(s);
+    Token|SyntaxError result = lexer.read();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: "e".`;
+    string message = err.message();
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
+    test:assertEquals(message, expectedMessage);
+    test:assertEquals(line, 1);
+    test:assertEquals(column, 3);
+}
+
+@test:Config {
+    groups: ["numeral", "lexer"]
+}
+isolated function readInvalidFloatDecimalPointAfterExp() returns error? {
+    string s = "4.3e.45";
+    Lexer lexer = new(s);
+    Token|SyntaxError result = lexer.read();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ".".`;
+    string message = err.message();
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
+    test:assertEquals(message, expectedMessage);
+    test:assertEquals(line, 1);
+    test:assertEquals(column, 5);
+}
+
+
+@test:Config {
+    groups: ["numeral", "lexer"]
+}
+isolated function readInvalidFloatDecimalPointAsExp() returns error? {
+    string s = "4.3e2.45";
+    Lexer lexer = new(s);
+    Token|SyntaxError result = lexer.read();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ".".`;
+    string message = err.message();
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
+    test:assertEquals(message, expectedMessage);
+    test:assertEquals(line, 1);
+    test:assertEquals(column, 6);
+}
+
+@test:Config {
+    groups: ["numeral", "lexer"]
+}
 isolated function readFloatNegativeExp() returns error? {
     string s = "4.451e-34";
     Lexer lexer = new(s);
