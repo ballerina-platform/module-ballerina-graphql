@@ -26,10 +26,8 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
         setResponseForBadRequest(response);
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
-        [OutputObject, string] [outputObject, errorType] = engine.getOutputObjectForQuery(query, operationName);
-        if (errorType == "SyntaxError" || errorType == "DocumentError") {
-            response.statusCode = 400;
-        }
+        [OutputObject, string?] [outputObject, errorType] = engine.getOutputObjectForQuery(query, operationName);
+        setResponseStatusCode(response, errorType);
         response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
     }
     return response;
@@ -68,18 +66,16 @@ isolated function processJsonPayload(Engine engine, json payload, http:Response 
         operationName = resolveOperationName(operationNameInPayload);
     }
     if (documentString is string) {
-        [OutputObject, string] [outputObject, errorType] = engine.getOutputObjectForQuery(documentString, operationName);
-        if (errorType == "SyntaxError" || errorType == "DocumentError") {
-            response.statusCode = 400;
-        }
-        response.setJsonPayload(checkpanic outputObject.cloneWithType(json));
+        [OutputObject, string?] [outputObject, errorType] = engine.getOutputObjectForQuery(documentString, operationName);
+        setResponseStatusCode(response, errorType);
+        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
     } else {
         setResponseForBadRequest(response);
     }
 }
 
 isolated function setResponseForBadRequest(http:Response response) {
-    response.statusCode = 400;
+    response.statusCode = http:STATUS_BAD_REQUEST;
     string message = "Bad request";
     response.setPayload(message);
 }
@@ -99,5 +95,11 @@ isolated function resolveOperationName(string? operationName) returns string {
         return operationName;
     } else {
         return parser:ANONYMOUS_OPERATION;
+    }
+}
+
+isolated function setResponseStatusCode(http:Response response, string? errorType) {
+    if (errorType == SYNTAX_ERROR || errorType == DOCUMENT_ERROR) {
+        response.statusCode = http:STATUS_BAD_REQUEST;
     }
 }

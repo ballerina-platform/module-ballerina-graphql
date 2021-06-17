@@ -28,22 +28,22 @@ isolated class Engine {
     }
 
     isolated function getOutputObjectForQuery(string documentString, string operationName) returns
-                                                                                        [OutputObject, string] {
+                                                                                        [OutputObject, string?] {
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if (result is OutputObject) {
-            return [result, "SyntaxError"];
+            return [result, SYNTAX_ERROR];
         }
         parser:DocumentNode document = <parser:DocumentNode>result;
         OutputObject? validationResult = self.validateDocument(document);
         if (validationResult is OutputObject) {
-            return [validationResult, "DocumentError"];
+            return [validationResult, DOCUMENT_ERROR];
         } else {
             if (document.getOperations().length() == 1) {
-                return [self.execute(document.getOperations()[0]), ""];
+                return [self.execute(document.getOperations()[0]), ()];
             }
             foreach parser:OperationNode operationNode in document.getOperations() {
                 if (operationName == operationNode.getName()) {
-                    return [self.execute(operationNode), ""];
+                    return [self.execute(operationNode), ()];
                 }
             }
             string name = operationName == parser:ANONYMOUS_OPERATION ? "" : operationName;
@@ -52,7 +52,7 @@ isolated class Engine {
                 message: message,
                 locations: []
             };
-            return [getOutputObjectFromErrorDetail(errorDetail), "DocumentError"];
+            return [getOutputObjectFromErrorDetail(errorDetail), DOCUMENT_ERROR];
         }
     }
 

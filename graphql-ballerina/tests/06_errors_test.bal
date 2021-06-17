@@ -16,6 +16,7 @@
 
 import ballerina/test;
 import ballerina/http;
+import ballerina/url;
 
 service /graphql on new Listener(9095) {
     resource function get profile(int id) returns Person {
@@ -29,10 +30,7 @@ service /graphql on new Listener(9095) {
 isolated function testMissingArgumentValueQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: ) { name age }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
@@ -56,10 +54,7 @@ isolated function testMissingArgumentValueQuery() returns error? {
 isolated function testEmptyQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
@@ -83,10 +78,7 @@ isolated function testEmptyQuery() returns error? {
 isolated function testObjectWithNoSelectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage = "Field \"profile\" of type \"Person!\" must have a selection of subfields." +
                              " Did you mean \"profile { ... }\"?";
@@ -112,10 +104,7 @@ isolated function testObjectWithNoSelectionQuery() returns error? {
 isolated function testObjectWithNoSelectionQueryWithArguments() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage = "Field \"profile\" of type \"Person!\" must have a selection of subfields." +
                              " Did you mean \"profile { ... }\"?";
@@ -141,10 +130,7 @@ isolated function testObjectWithNoSelectionQueryWithArguments() returns error? {
 isolated function testObjectWithInvalidSelectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile(id: 4) { status } }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage = "Cannot query field \"status\" on type \"Person\".";
     json expectedPayload = {
@@ -169,10 +155,7 @@ isolated function testObjectWithInvalidSelectionQuery() returns error? {
 isolated function testObjectWithMissingRequiredArgument() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile { status } }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage1 =
         "Field \"profile\" argument \"id\" of type \"Int!\" is required, but it was not provided.";
@@ -208,10 +191,7 @@ isolated function testObjectWithMissingRequiredArgument() returns error? {
 isolated function testRequestSubtypeFromPrimitiveType() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile (id: 2) { age { name } } }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage = "Field \"age\" must not have a selection since type \"Int\" has no subfields.";
     json expectedPayload = {
@@ -236,10 +216,7 @@ isolated function testRequestSubtypeFromPrimitiveType() returns error? {
 isolated function testInvalidArgument() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
     string document = "{ profile (name: \"name\", id: 3) { name } }";
-    http:Client httpClient = check new(graphqlUrl);
-    http:Response response = check httpClient->post("/", { query: document });
-    test:assertEquals(response.statusCode, 400);
-    json actualPayload = check response.getJsonPayload();
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage = "Unknown argument \"name\" on field \"Query.profile\".";
     json expectedPayload = {
@@ -266,6 +243,36 @@ isolated function testRuntimeError() returns error? {
     string document = "{ profile (id: 10) { name } }";
     http:Client httpClient = check new(graphqlUrl);
     http:Response response = check httpClient->post("/", { query: document });
+    test:assertEquals(response.statusCode, 200);
+    json actualPayload = check response.getJsonPayload();
+
+    string expectedMessage = "{ballerina/lang.array}IndexOutOfRange";
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["negative", "listener", "unit"]
+}
+isolated function testRuntimeErrorWithGetRequest() returns error? {
+    string graphqlUrl = "http://localhost:9095";
+    string document = "{ profile (id: 10) { name } }";
+    string encodedDocument = check url:encode(document, "UTF-8");
+    http:Client httpClient = check new(graphqlUrl);
+    string path = "/graphql?query=" + encodedDocument;
+    http:Response response = check httpClient->get(path);
     test:assertEquals(response.statusCode, 200);
     json actualPayload = check response.getJsonPayload();
 

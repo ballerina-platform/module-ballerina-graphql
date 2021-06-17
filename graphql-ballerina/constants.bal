@@ -23,3 +23,6 @@ const PARAM_OPERATION_NAME = "operationName";
 const SCHEMA_FIELD = "__schema";
 const SCHEMA_TYPE_NAME = "__Schema";
 const QUERY_TYPE_NAME = "Query";
+
+const SYNTAX_ERROR = "syntaxError";
+const DOCUMENT_ERROR = "documentError";
