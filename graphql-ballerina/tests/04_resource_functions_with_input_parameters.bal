@@ -144,6 +144,22 @@ isolated function testQueryWithDefaultParameter() returns error? {
 }
 
 @test:Config {
+    groups: ["input_types"]
+}
+isolated function testFloatAsInput() returns error? {
+    string document = "{ weightInPounds(weightInKg: 1.3) }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    json expectedPayload = {
+        data: {
+            weightInPounds: <float>2.8665000000000003 // Floating point multiplication
+        }
+    };
+    test:assertEquals(payloadWithFloatValues, expectedPayload);
+}
+
+@test:Config {
     groups: ["input_types", "float_to_int_coerce"]
 }
 isolated function testCoerceIntInputToFloat() returns error? {

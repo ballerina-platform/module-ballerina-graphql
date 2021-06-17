@@ -443,6 +443,24 @@ isolated function readFloatNegativeExp() returns error? {
     test:assertEquals(token, expectedToken);
 }
 
+@test:Config {
+    groups: ["numeral", "lexer"]
+}
+isolated function readIntInvalidCharacter() returns error? {
+    string s = "431v";
+    Lexer lexer = new(s);
+    Token|SyntaxError result = lexer.read();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: "v".`;
+    string message = err.message();
+    int line = err.detail()["line"];
+    int column = err.detail()["column"];
+    test:assertEquals(message, expectedMessage);
+    test:assertEquals(line, 1);
+    test:assertEquals(column, 4);
+}
+
 isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {
     return {
         value: value,
