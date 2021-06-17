@@ -31,7 +31,7 @@ service /graphql on new graphql:Listener(9000) {
         } else {
             lifts = from var lift in ds:liftTable select lift;
         }
-        return lifts.map(function (ds:LiftRecord liftRecord) returns Lift => new Lift(liftRecord));  
+        return lifts.map(liftRecord => new Lift(liftRecord));  
     }
 
     # A list of all `Trail` objects
@@ -43,7 +43,7 @@ service /graphql on new graphql:Listener(9000) {
         } else {
             trails = from var trail in ds:trailTable select trail;
         }
-        return trails.map(function (ds:TrailRecord trailRecord) returns Trail => new Trail(trailRecord));  
+        return trails.map(trailRecord => new Trail(trailRecord));  
     }
 
     # Returns a `Lift` by `id` (id: "panorama")
@@ -52,9 +52,7 @@ service /graphql on new graphql:Listener(9000) {
         ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.id == id select lift;
         if array:length(lifts) > 0 {
             return new Lift(lifts[0]);
-        } else {
-            return ();
-        }
+        } 
     }
 
     # Returns a `Trail` by `id` (id: "old-witch")
@@ -63,9 +61,7 @@ service /graphql on new graphql:Listener(9000) {
         ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.id == id select trail;
         if array:length(trails) > 0 {
             return new Trail(trails[0]);
-        } else {
-            return ();
-        }
+        } 
     }
 
     # Returns an `Int` of `Lift` objects with optional `LiftStatus` filter
@@ -86,10 +82,10 @@ service /graphql on new graphql:Listener(9000) {
     # + return - the search result
     resource function get search (ds:Status status) returns SearchResult[] {
         ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.status == status select trail;
-        SearchResult[] searchResults = trails.map(function (ds:TrailRecord trail) returns Trail => new Trail(trail));
+        SearchResult[] searchResults = trails.map(trail => new Trail(trail));
 
         ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.status == status select lift;
-        lifts.forEach(function (ds:LiftRecord lift) returns () => searchResults.push(new Lift(lift)));
+        lifts.forEach(lift => searchResults.push(new Lift(lift)));
 
         return searchResults;
     }

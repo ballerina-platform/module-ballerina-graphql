@@ -54,6 +54,11 @@ enum Digit {
     NINE = "9"
 }
 
+enum Exp {
+    EXP_SIMPLE = "e",
+    EXP_CAPITAL = "E"
+}
+
 enum WhiteSpace {
     SPACE = " ",
     TAB = "\t"

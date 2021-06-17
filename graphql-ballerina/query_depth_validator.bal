@@ -17,6 +17,8 @@
 import graphql.parser;
 
 class QueryDepthValidator{
+    *parser:Visitor;
+
     private parser:DocumentNode documentNode;
     private int queryDepth;
     private int maxQueryDepth;
@@ -63,7 +65,7 @@ class QueryDepthValidator{
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection) {
+    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if (selection.isFragment) {
             parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
             self.visitFragment(fragmentNode);
@@ -73,7 +75,7 @@ class QueryDepthValidator{
         }
     }
 
-    public isolated function visitField(parser:FieldNode fieldNode) {
+    public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         self.queryDepth += 1;
         if (fieldNode.getSelections().length() > 0) {
             parser:Selection[] selections = fieldNode.getSelections();
@@ -88,10 +90,14 @@ class QueryDepthValidator{
         self.queryDepth -= 1;
     }
 
-    public isolated function visitFragment(parser:FragmentNode fragmentNode) {
+    public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
         }
+    }
+
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+        // Do nothing
     }
 
     isolated function getErrors() returns ErrorDetail[] {

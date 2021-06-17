@@ -14,18 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const CONTENT_TYPE_JSON = "application/json";
-const CONTENT_TYPE_GQL = "application/graphql";
+import ballerina/http;
 
-const PARAM_QUERY = "query";
-const PARAM_OPERATION_NAME = "operationName";
+http:Client httpClient = checkpanic new("http://localhost:9000/graphql");
 
-const SCHEMA_FIELD = "__schema";
-const SCHEMA_TYPE_NAME = "__Schema";
-const QUERY_TYPE_NAME = "Query";
-
-// Scalar type names used in GraphQL
-const INT = "Int";
-const STRING = "String";
-const FLOAT = "Float";
-const BOOLEAN = "Boolean";
+function getJsonPayloadFromService(string document, string? operationName = ()) returns json|error {
+    if (operationName is string) {
+        return check httpClient->post("/", { query: document, operationName: operationName });
+    }
+    return check httpClient->post("/", { query: document });
+}

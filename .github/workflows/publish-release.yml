@@ -15,9 +15,10 @@ jobs:
                 uses: actions/checkout@v2
 
             -   name: Set up JDK 11
-                uses: actions/setup-java@v1
+                uses: actions/setup-java@v2
                 with:
-                    java-version: 11
+                    distribution: 'adopt'
+                    java-version: '11'
 
             -   name: Get Release Version
                 run: echo "VERSION=$((grep -w 'version' | cut -d= -f2) < gradle.properties | rev | cut --complement -d- -f1 | rev)" >> $GITHUB_ENV
@@ -50,7 +51,7 @@ jobs:
                     publishPAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
                     ./gradlew release -Prelease.useAutomaticVersion=true
-                    ./gradlew -Pversion=${VERSION} publish -x test
+                    ./gradlew -Pversion=${VERSION} publish -x test -PpublishToCentral=true
 
             -   name: Create Github Release
                 run: |

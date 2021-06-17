@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+- [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
+
+### Fixed
+- [[#1447] Fix Returning Empty Values when Fragments Inside Fragments Querying Service Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1447)
+- [[#1429] Fix Compiler Plugin Crashes when a Service has a Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/1429)
+- [[#1277] Fix Fields Missing when a Query Having Duplicate Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1277)
+- [[#1497] Fix GraphQL Parser not Parsing Float Values with Exp Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/1497)
+- [[#1489] Fix Input Value Coercion When Int Values Passed to Float Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1489)
+
+## [0.2.0-beta.1] - 2021-06-02
+
 ### Added
 - [[#1307] Returning Union of Service Types from a Resource](https://github.com/ballerina-platform/ballerina-standard-library/issues/1307)
 - [[#1244] Add Inline Fragment Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1244)
@@ -44,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1378] Fix Hierarchical Paths With Same Leaf Fields Returning Incorrect Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/1378)
 - [[#1407] Fix Returning Incorrect Type Names for Intersection Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1407)
 - [[#1410] Fix Inline Fragments Returning Non-requested Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1410)
+- [[#1413] Fix Incorrectly validating Duplicate Operations](https://github.com/ballerina-platform/ballerina-standard-library/issues/1413)
 
 ## [0.2.0-alpha8] - 2021-04-23
 
@@ -60,9 +73,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#1191] Support Ballerina Decimal Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/1191)
-
-### Fixed
-- [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
 
 ## [0.2.0-alpha5] - 2021-03-19
 

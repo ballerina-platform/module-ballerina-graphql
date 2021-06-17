@@ -58,6 +58,12 @@ task copyPackageBala {
     }
 }
 
+clean {
+    examples.forEach { example ->
+        delete "${projectDir}/${example}/target"
+    }
+}
+
 task buildExamples {
     doLast {
         def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")

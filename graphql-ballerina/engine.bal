@@ -46,7 +46,7 @@ isolated class Engine {
                 }
             }
             string name = operationName == parser:ANONYMOUS_OPERATION ? "" : operationName;
-            string message = "Operation \"" + name + "\" is not present in the provided GraphQL document.";
+            string message = string`Unknown operation named "${name}".`;
             ErrorDetail errorDetail = {
                 message: message,
                 locations: []
@@ -78,6 +78,8 @@ isolated class Engine {
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);
         }
+        DuplicateFieldRemover duplicateFieldRemover = new(document);
+        duplicateFieldRemover.remove();
     }
 
     isolated function execute(parser:OperationNode operationNode) returns OutputObject {

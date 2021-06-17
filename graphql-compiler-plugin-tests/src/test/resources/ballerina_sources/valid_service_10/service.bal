@@ -1,4 +1,4 @@
-// Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -14,18 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const CONTENT_TYPE_JSON = "application/json";
-const CONTENT_TYPE_GQL = "application/graphql";
+import ballerina/graphql;
 
-const PARAM_QUERY = "query";
-const PARAM_OPERATION_NAME = "operationName";
+service graphql:Service on new graphql:Listener(4000) {
+    private final string name = "Sherlock Holmes";
+    private final int age = 54;
 
-const SCHEMA_FIELD = "__schema";
-const SCHEMA_TYPE_NAME = "__Schema";
-const QUERY_TYPE_NAME = "Query";
+    isolated resource function get name(string name) returns string {
+        return self.name;
+    }
 
-// Scalar type names used in GraphQL
-const INT = "Int";
-const STRING = "String";
-const FLOAT = "Float";
-const BOOLEAN = "Boolean";
+    isolated resource function get age() returns int {
+        return self.age;
+    }
+}

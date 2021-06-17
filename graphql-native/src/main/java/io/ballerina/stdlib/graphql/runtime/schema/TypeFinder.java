@@ -64,7 +64,7 @@ public class TypeFinder {
         return this.typeMap;
     }
 
-    public void find() {
+    public void populateTypes() {
         this.getTypesFromService(QUERY, this.serviceType);
         this.getDefaultTypes();
     }

@@ -45,19 +45,13 @@ class ValidatorVisitor {
 
     public isolated function visitDocument(parser:DocumentNode documentNode) {
         parser:OperationNode[] operations = documentNode.getOperations();
-        parser:OperationNode[] anonymousOperations = [];
-
         foreach ErrorDetail errorDetail in documentNode.getErrors() {
             self.errors.push(errorDetail);
         }
 
         foreach parser:OperationNode operationNode in operations {
-            if (operationNode.getName() == parser:ANONYMOUS_OPERATION) {
-                anonymousOperations.push(operationNode);
-            }
             self.visitOperation(operationNode);
         }
-        self.checkAnonymousOperations(anonymousOperations);
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode) {
@@ -185,17 +179,22 @@ class ValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>data;
         __Type argType = getOfType(schemaArg.'type);
-        string typeName = argType?.name.toString();
+        string expectedTypeName = argType?.name.toString();
         parser:ArgumentValue value = argumentNode.getValue();
         if (argType.kind == ENUM) {
             self.validateEnumArgument(argType, argumentNode, schemaArg);
         } else {
-            string expectedTypeName = getTypeName(argumentNode);
-            if (typeName != expectedTypeName) {
-                string message = string`${typeName} cannot represent non ${typeName} value: ${value.value.toString()}`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
-                self.errors.push(errorDetail);
+            string actualTypeName = getTypeName(argumentNode);
+            if (expectedTypeName == actualTypeName) {
+                return;
             }
+            if (expectedTypeName == FLOAT && actualTypeName == INT) {
+                self.coerceInputIntToFloat(argumentNode);
+                return;
+            }
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value.value.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+            self.errors.push(errorDetail);
         }
     }
 
@@ -207,18 +206,14 @@ class ValidatorVisitor {
         }
     }
 
+    isolated function coerceInputIntToFloat(parser:ArgumentNode argument) {
+        parser:ArgumentValue argumentValue = argument.getValue();
+        argumentValue.value = <float>argument.getValue().value;
+    }
+
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
         // TODO: Sort the error records by line and column
-    }
-
-    isolated function checkAnonymousOperations(parser:OperationNode[] anonymousOperations) {
-        if (anonymousOperations.length() > 1) {
-            string message = "This anonymous operation must be the only defined operation.";
-            foreach parser:OperationNode operation in anonymousOperations {
-                self.errors.push(getErrorDetailRecord(message, operation.getLocation()));
-            }
-        }
     }
 
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
