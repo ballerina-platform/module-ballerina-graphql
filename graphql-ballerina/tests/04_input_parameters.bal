@@ -174,3 +174,26 @@ isolated function testCoerceIntInputToFloat() returns error? {
     };
     test:assertEquals(payloadWithFloatValues, expectedPayload);
 }
+
+@test:Config {
+    groups: ["input_types"]
+}
+isolated function testPassingFloatForIntArguments() returns error? {
+    string document = "{ isLegal(age: 20.5) }";
+    string url = "http://localhost:9093/graphql";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Int cannot represent non Int value: 20.5`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 16
+                    }
+                ]
+            }
+        ]
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
