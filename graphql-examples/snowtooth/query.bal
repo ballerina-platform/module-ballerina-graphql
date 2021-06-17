@@ -53,7 +53,7 @@ service /graphql on new graphql:Listener(9000) {
         if array:length(lifts) > 0 {
             return new Lift(lifts[0]);
         } else {
-            return ();
+            return;
         }
     }
 
@@ -64,7 +64,7 @@ service /graphql on new graphql:Listener(9000) {
         if array:length(trails) > 0 {
             return new Trail(trails[0]);
         } else {
-            return ();
+            return;
         }
     }
 
