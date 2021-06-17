@@ -52,9 +52,7 @@ service /graphql on new graphql:Listener(9000) {
         ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.id == id select lift;
         if array:length(lifts) > 0 {
             return new Lift(lifts[0]);
-        } else {
-            return;
-        }
+        } 
     }
 
     # Returns a `Trail` by `id` (id: "old-witch")
@@ -63,9 +61,7 @@ service /graphql on new graphql:Listener(9000) {
         ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.id == id select trail;
         if array:length(trails) > 0 {
             return new Trail(trails[0]);
-        } else {
-            return;
-        }
+        } 
     }
 
     # Returns an `Int` of `Lift` objects with optional `LiftStatus` filter
