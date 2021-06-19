@@ -22,8 +22,7 @@ import ballerina/test;
 isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
 returns json|error {
     http:Client httpClient = check new(url);
-    http:Response response = check httpClient->post("/", { query: document, operationName: operationName });
-    return response.getJsonPayload();
+    return  check httpClient->post("/", { query: document, operationName: operationName });
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
@@ -31,9 +30,9 @@ isolated function getJsonContentFromFile(string fileName) returns json|error {
     return io:fileReadJson(path);
 }
 
-isolated function getJsonPayloadFromBadRequest(string url, string document) returns json|error {
+isolated function getJsonPayloadFromBadRequest(string url, string document, string? operationName = ()) returns json|error {
     http:Client httpClient = check new(url);
-    http:Response response = check httpClient->post("/", { query: document });
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName });
     test:assertEquals(response.statusCode, 400);
     return response.getJsonPayload();
 }

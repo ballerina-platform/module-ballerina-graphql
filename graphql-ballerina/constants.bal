@@ -24,5 +24,8 @@ const SCHEMA_FIELD = "__schema";
 const SCHEMA_TYPE_NAME = "__Schema";
 const QUERY_TYPE_NAME = "Query";
 
-const SYNTAX_ERROR = "syntaxError";
-const DOCUMENT_ERROR = "documentError";
+// Scalar type names used in GraphQL
+const INT = "Int";
+const STRING = "String";
+const FLOAT = "Float";
+const BOOLEAN = "Boolean";

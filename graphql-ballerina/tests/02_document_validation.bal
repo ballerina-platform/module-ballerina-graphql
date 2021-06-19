@@ -32,7 +32,7 @@ function testDocumentValidation() returns error? {
     Voldemort
 }`;
     string url = "http://localhost:9091/graphql_service_1";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     json expectedPayload = {
         errors:[
@@ -89,11 +89,14 @@ query getId {
 }
 `;
     string url = "http://localhost:9091/graphql_service_2";
-    json actualPayload = check getJsonPayloadFromService(url, document, "getName");
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
-        data: {
-            name: "John Doe"
-        }
+        errors: [
+            {
+                message: "Must provide operation name if query contains multiple operations.",
+                locations: []
+            }
+        ]
     };
     test:assertEquals(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
@@ -139,7 +142,7 @@ query getId {
 }
 `;
     string url = "http://localhost:9091/graphql_service_3";
-    json actualPayload = check getJsonPayloadFromService(url, document, "invalid");
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, "invalid");
     json expectedPayload = {
         errors: [
             {

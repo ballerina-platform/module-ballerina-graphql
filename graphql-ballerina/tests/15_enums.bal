@@ -186,7 +186,7 @@ isolated function testReturningEnumArray() returns error? {
 isolated function testEnumInvalidInputParameter() returns error? {
     string document = "query { isHoliday(weekday: FUNDAY) }";
     string url = "http://localhost:9107/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -210,7 +210,7 @@ isolated function testEnumInvalidInputParameter() returns error? {
 isolated function testEnumInputParameterAsString() returns error? {
     string document = string`query { isHoliday(weekday: "SUNDAY") }`;
     string url = "http://localhost:9107/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {

@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1447] Fix Returning Empty Values when Fragments Inside Fragments Querying Service Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1447)
 - [[#1429] Fix Compiler Plugin Crashes when a Service has a Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/1429)
 - [[#1277] Fix Fields Missing when a Query Having Duplicate Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1277)
+- [[#1497] Fix GraphQL Parser not Parsing Float Values with Exp Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/1497)
+- [[#1489] Fix Input Value Coercion When Int Values Passed to Float Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1489)
 
 ## [0.2.0-beta.1] - 2021-06-02
 

@@ -55,7 +55,7 @@ isolated function testUnknownFragment() returns error? {
     ...friend
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string message = string`Unknown fragment "friend".`;
     json expectedPayload = {
@@ -96,7 +96,7 @@ fragment details on Student {
     }
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string message = string`Unknown fragment "fail".`;
     json expectedPayload = {
@@ -128,7 +128,7 @@ fragment data on Person {
     name
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string message = string`Fragment "data" cannot be spread here as objects of type "Query" can never be of type "Person".`;
     json expectedPayload = {
@@ -162,7 +162,7 @@ fragment data on Query {
     }
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string message = string`Cannot query field "invalid" on type "Person".`;
     json expectedPayload = {
@@ -354,7 +354,7 @@ fragment types on __Schema {
     }
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     json expectedPayload = {
         errors: [
@@ -457,7 +457,7 @@ fragment fullNameFragment on Name {
     first
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     json expectedPayload = {
         errors: [
@@ -545,7 +545,7 @@ isolated function testUnknownInlineFragments() returns error? {
     }
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -580,7 +580,7 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
     }
 }`;
     string url = "http://localhost:9106/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {

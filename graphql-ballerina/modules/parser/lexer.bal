@@ -122,7 +122,6 @@ public class Lexer {
     }
 
     isolated function readNumericLiteral(string fisrtChar) returns Token|SyntaxError {
-        boolean isFloat = false;
         Location location = self.currentLocation.clone();
         string numeral = self.readNextChar();
         while (!self.charReader.isEof()) {
@@ -130,10 +129,8 @@ public class Lexer {
             if (value is Digit) {
                 value = self.readNextChar();
                 numeral += value.toString();
-            } else if (value == DOT && !isFloat) {
-                value = self.readNextChar();
-                numeral += value;
-                isFloat = true;
+            } else if (value == DOT || value is Exp) {
+                return self.readFloatLiteral(numeral, location);
             } else if (value is Separator || value is SpecialCharacter) {
                 break;
             } else {
@@ -142,9 +139,45 @@ public class Lexer {
                                                column = self.currentLocation.column);
             }
         }
-        int|float number = check getNumber(numeral, isFloat, location);
-        TokenType kind = isFloat? T_FLOAT:T_INT;
-        return getToken(number, kind, location);
+        int number = check getInt(numeral, location);
+        return getToken(number, T_INT, location);
+    }
+
+    isolated function readFloatLiteral(string initialString, Location location) returns Token|SyntaxError {
+        string separator = self.readNextChar();
+        boolean isExpExpected = separator == DOT;
+        boolean isDashExpected = !isExpExpected;
+        boolean isDigitExpected = true;
+
+        string numeral = initialString + separator;
+        while (!self.charReader.isEof()) {
+            string value = self.charReader.peek();
+            if (value is Digit) {
+                value = self.readNextChar();
+                numeral += value;
+                isDashExpected = false;
+                isDigitExpected = false;
+            } else if (value is Exp && isExpExpected && !isDigitExpected) {
+                value = self.readNextChar();
+                numeral += value;
+                isExpExpected = false;
+                isDashExpected = true;
+                isDigitExpected = true;
+            } else if (value == DASH && isDashExpected) {
+                value = self.readNextChar();
+                numeral += value;
+                isDashExpected = false;
+                isDigitExpected = true;
+            } else if ((value is Separator || value is SpecialCharacter) && !isDigitExpected) {
+                break;
+            } else {
+                string message = string`Syntax Error: Invalid number, expected digit but got: "${value}".`;
+                return error InvalidTokenError(message, line = self.currentLocation.line,
+                                               column = self.currentLocation.column);
+            }
+        }
+        float number = check getFloat(numeral, location);
+        return getToken(number, T_FLOAT, location);
     }
 
     isolated function readCommentToken() returns Token|SyntaxError {
@@ -277,21 +310,21 @@ isolated function getWordTokenType(string value) returns TokenType {
     return T_IDENTIFIER;
 }
 
-isolated function getNumber(string value, boolean isFloat, Location location) returns int|float|InternalError {
-    if (isFloat) {
-        var number = 'float:fromString(value);
-        if (number is error) {
-            return getInternalError(value, "float", location);
-        } else {
-            return number;
-        }
+isolated function getInt(string value, Location location) returns int|InternalError {
+    var number = 'int:fromString(value);
+    if (number is error) {
+        return getInternalError(value, "Int", location);
     } else {
-        var number = 'int:fromString(value);
-        if (number is error) {
-            return getInternalError(value, "int", location);
-        } else {
-            return number;
-        }
+        return number;
+    }
+}
+
+isolated function getFloat(string value, Location location) returns float|InternalError {
+    var number = 'float:fromString(value);
+    if (number is error) {
+        return getInternalError(value, "Float", location);
+    } else {
+        return number;
     }
 }
 

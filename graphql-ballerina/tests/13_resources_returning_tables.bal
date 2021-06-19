@@ -54,7 +54,7 @@ isolated function testResourceReturningTables() returns error? {
 isolated function testQueryingTableWithoutSelections() returns error? {
     string document = "{ employees }";
     string url = "http://localhost:9105/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string message = string`Field "employees" of type "[Employee]" must have a selection of subfields. Did you mean "employees { ... }"?`;
     json expectedPayload = {

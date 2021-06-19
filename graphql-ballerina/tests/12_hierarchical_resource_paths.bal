@@ -158,7 +158,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
 isolated function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";
     string url = "http://localhost:9104/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string expectedErrorMessage = "Cannot query field \"middle\" on type \"name\".";
     json expectedPayload = {

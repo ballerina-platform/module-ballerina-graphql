@@ -26,9 +26,8 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
         setResponseForBadRequest(response);
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
-        [OutputObject, string?] [outputObject, errorType] = engine.getOutputObjectForQuery(query, operationName);
-        setResponseStatusCode(response, errorType);
-        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
+        parser:OperationNode|OutputObject validationResult = engine.validate(query, operationName);
+        setResponse(engine, response, validationResult);
     }
     return response;
 }
@@ -66,9 +65,8 @@ isolated function processJsonPayload(Engine engine, json payload, http:Response 
         operationName = resolveOperationName(operationNameInPayload);
     }
     if (documentString is string) {
-        [OutputObject, string?] [outputObject, errorType] = engine.getOutputObjectForQuery(documentString, operationName);
-        setResponseStatusCode(response, errorType);
-        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
+        parser:OperationNode|OutputObject validationResult = engine.validate(documentString, operationName);
+        setResponse(engine, response, validationResult);
     } else {
         setResponseForBadRequest(response);
     }
@@ -98,8 +96,25 @@ isolated function resolveOperationName(string? operationName) returns string {
     }
 }
 
-isolated function setResponseStatusCode(http:Response response, string? errorType) {
-    if (errorType == SYNTAX_ERROR || errorType == DOCUMENT_ERROR) {
-        response.statusCode = http:STATUS_BAD_REQUEST;
+isolated function setResponse(Engine engine, http:Response response, parser:OperationNode|OutputObject validationResult) {
+    if (validationResult is OutputObject) {
+        OutputObject outputObject = <OutputObject> validationResult;
+        json|error payload  = outputObject.cloneWithType();
+        if (payload is error) {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            response.setJsonPayload(<json> payload.message());
+        } else {
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            response.setJsonPayload(<json> payload);
+        }
+    } else {
+        OutputObject outputObject = engine.execute(<parser:OperationNode> validationResult);
+        json|error payload  = outputObject.cloneWithType();
+        if (payload is error) {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            response.setJsonPayload(<json> payload.message());
+        } else {
+            response.setJsonPayload(<json> payload);
+        }
     }
 }

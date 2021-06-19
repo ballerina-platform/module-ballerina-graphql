@@ -175,7 +175,7 @@ isolated function testComplexIntrospectionQuery() returns error? {
 isolated function testInvalidIntrospectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema { greet } }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     string expectedMessage = "Cannot query field \"greet\" on type \"__Schema\".";
     json expectedResult = {
         errors: [
@@ -199,7 +199,7 @@ isolated function testInvalidIntrospectionQuery() returns error? {
 isolated function testIntrospectionQueryWithMissingSelection() returns error? {
     string graphqlUrl = "http://localhost:9101/graphql";
     string document = "{ __schema }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     string expectedMessage = "Field \"__schema\" of type \"__Schema\" must have a selection of subfields." +
                              " Did you mean \"__schema { ... }\"?";
     json expectedResult = {
@@ -350,7 +350,7 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
 isolated function testEnumValueIntrospection() returns error? {
     string graphqlUrl ="http://localhost:9101/graphql";
     string document = "{ __schema { types { enumValues } } }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedResult = {
         errors: [
             {

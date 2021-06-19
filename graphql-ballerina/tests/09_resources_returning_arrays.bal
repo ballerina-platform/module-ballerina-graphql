@@ -119,7 +119,7 @@ isolated function testResourcesReturningArrays() returns error? {
 isolated function testResourcesReturningArraysMissingFields() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ people }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     string expectedMessage = string`Field "people" of type "[Person!]!" must have a selection of subfields. Did you mean "people { ... }"?`;
     json expectedResult = {
@@ -205,7 +205,7 @@ isolated function testResourceReturningOptionalServiceObjectsArray() returns err
 isolated function testOptionalArrayInvalidQuery() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = string `{ searchVehicles(keyword: "vehicle") }`;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
