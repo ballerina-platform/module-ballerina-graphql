@@ -40,7 +40,7 @@ class QueryDepthValidator{
         }
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode) {
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
             self.visitOperation(operationNode);
@@ -59,7 +59,7 @@ class QueryDepthValidator{
         }
     }
 
-    public isolated function visitOperation(parser:OperationNode operationNode) {
+    public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:Selection selection in operationNode.getSelections() {
             self.visitSelection(selection);
         }

@@ -15,7 +15,6 @@
 // under the License.
 
 public type Node object {
-
 };
 
 public type ArgumentName record {|
