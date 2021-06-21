@@ -15,13 +15,13 @@
 // under the License.
 
 isolated function getMaxQueryDepth(GraphqlServiceConfig? serviceConfig) returns int? {
-    if (serviceConfig is GraphqlServiceConfig) {
+    if serviceConfig is GraphqlServiceConfig {
         return serviceConfig?.maxQueryDepth;
     }
 }
 
 isolated function getListenerAuthConfig(GraphqlServiceConfig? serviceConfig) returns ListenerAuthConfig[]? {
-    if (serviceConfig is GraphqlServiceConfig) {
+    if serviceConfig is GraphqlServiceConfig {
         return serviceConfig?.auth;
     }
 }
