@@ -17,17 +17,22 @@
 import ballerina/file;
 import ballerina/http;
 import ballerina/io;
+import ballerina/test;
 
 isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
 returns json|error {
     http:Client httpClient = check new(url);
-    if (operationName is string) {
-        return check httpClient->post("/", { query: document, operationName: operationName }, targetType = json);
-    }
-    return check httpClient->post("/", { query: document }, targetType = json);
+    return httpClient->post("/", { query: document, operationName: operationName });
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
     string path = check file:joinPath("tests", "resources", "expected_results", fileName);
     return io:fileReadJson(path);
+}
+
+isolated function getJsonPayloadFromBadRequest(string url, string document, string? operationName = ()) returns json|error {
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName });
+    test:assertEquals(response.statusCode, 400);
+    return response.getJsonPayload();
 }

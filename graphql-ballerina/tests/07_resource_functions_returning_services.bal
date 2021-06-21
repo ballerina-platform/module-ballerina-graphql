@@ -74,7 +74,7 @@ isolated function testResourceReturningServiceObject() returns error? {
 isolated function testInvalidQueryFromServiceObjectResource() returns error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { nonExisting } } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [

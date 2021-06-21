@@ -146,7 +146,7 @@ fragment personFragment on Person {
     name
 }
 `;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {
@@ -179,7 +179,7 @@ fragment personFragment on Person {
     name
 }
 `;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {
@@ -212,7 +212,7 @@ fragment personFragment on Person {
     name
 }
 `;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {
@@ -235,7 +235,7 @@ fragment personFragment on Person {
 isolated function testQueryUnionTypeWithoutSelection() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ information(id: 2) }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     string message = string`Field "information" of type "Information!" must have a selection of subfields. Did you mean "information { ... }"?`;
     json expectedPayload = {
         errors: [
@@ -259,7 +259,7 @@ isolated function testQueryUnionTypeWithoutSelection() returns error? {
 isolated function testQueryUnionTypeWithSelection() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
     string document = "{ information(id: 2) { name } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     string message = string`Cannot query field "name" on type "Information". Did you mean to use a fragment on "Address" or "Person"?`;
     json expectedPayload = {
         errors: [
@@ -291,7 +291,7 @@ query {
     }
 }
 `;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {

@@ -114,7 +114,7 @@ isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
     }
 }`;
     string url = "http://localhost:9113/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {

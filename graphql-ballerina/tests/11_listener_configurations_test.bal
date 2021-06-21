@@ -79,7 +79,7 @@ isolated function testTimeoutResponse() returns error? {
 isolated function testQueryExceedingMaxDepth() returns error? {
     string document = "{ book { author { books { author { books } } } } }";
     string url = "http://localhost:9103/depthLimitService";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     json expectedPayload = {
         errors: [
@@ -129,7 +129,7 @@ query getStudent {
     }
 }`;
     string url = "http://localhost:9103/depthLimitService";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -169,7 +169,7 @@ isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? 
     }
 }`;
     string url = "http://localhost:9103/depthLimitService";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {

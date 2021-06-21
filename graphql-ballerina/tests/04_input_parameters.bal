@@ -89,7 +89,7 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
 isolated function testInvalidParameter() returns error? {
     string document = "{ person(id: 4) { name } }";
     string url = "http://localhost:9093/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     json expectedPayload = {
         errors: [
@@ -181,7 +181,7 @@ isolated function testCoerceIntInputToFloat() returns error? {
 isolated function testPassingFloatForIntArguments() returns error? {
     string document = "{ isLegal(age: 20.5) }";
     string url = "http://localhost:9093/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {
