@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
+- [[#1218] Set `BAD_REQUEST` status code for responses with document validation errors](https://github.com/ballerina-platform/ballerina-standard-library/issues/1218)
 
 ### Fixed
 - [[#1447] Fix Returning Empty Values when Fragments Inside Fragments Querying Service Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1447)
@@ -15,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1277] Fix Fields Missing when a Query Having Duplicate Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1277)
 - [[#1497] Fix GraphQL Parser not Parsing Float Values with Exp Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/1497)
 - [[#1489] Fix Input Value Coercion When Int Values Passed to Float Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1489)
+- [[#1508] Fix Incorrectly Validating Invalid Operation Names when a Single Operation is Present in the Document](https://github.com/ballerina-platform/ballerina-standard-library/issues/1508)
 
 ## [0.2.0-beta.1] - 2021-06-02
 

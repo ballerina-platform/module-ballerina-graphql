@@ -26,8 +26,8 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
         setResponseForBadRequest(response);
     } else {
         string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
-        OutputObject outputObject = engine.getOutputObjectForQuery(query, operationName);
-        response.setJsonPayload(<json> checkpanic outputObject.cloneWithType(json));
+        parser:OperationNode|OutputObject validationResult = engine.validate(query, operationName);
+        setResponse(engine, response, validationResult);
     }
     return response;
 }
@@ -65,15 +65,15 @@ isolated function processJsonPayload(Engine engine, json payload, http:Response 
         operationName = resolveOperationName(operationNameInPayload);
     }
     if (documentString is string) {
-        OutputObject outputObject = engine.getOutputObjectForQuery(documentString, operationName);
-        response.setJsonPayload(checkpanic outputObject.cloneWithType(json));
+        parser:OperationNode|OutputObject validationResult = engine.validate(documentString, operationName);
+        setResponse(engine, response, validationResult);
     } else {
         setResponseForBadRequest(response);
     }
 }
 
 isolated function setResponseForBadRequest(http:Response response) {
-    response.statusCode = 400;
+    response.statusCode = http:STATUS_BAD_REQUEST;
     string message = "Bad request";
     response.setPayload(message);
 }
@@ -93,5 +93,28 @@ isolated function resolveOperationName(string? operationName) returns string {
         return operationName;
     } else {
         return parser:ANONYMOUS_OPERATION;
+    }
+}
+
+isolated function setResponse(Engine engine, http:Response response, parser:OperationNode|OutputObject validationResult) {
+    if (validationResult is OutputObject) {
+        OutputObject outputObject = <OutputObject> validationResult;
+        json|error payload  = outputObject.cloneWithType();
+        if (payload is error) {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            response.setJsonPayload(<json> payload.message());
+        } else {
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            response.setJsonPayload(payload);
+        }
+    } else {
+        OutputObject outputObject = engine.execute(<parser:OperationNode> validationResult);
+        json|error payload  = outputObject.cloneWithType();
+        if (payload is error) {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            response.setJsonPayload(<json> payload.message());
+        } else {
+            response.setJsonPayload(payload);
+        }
     }
 }

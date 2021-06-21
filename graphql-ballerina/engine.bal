@@ -27,7 +27,7 @@ isolated class Engine {
         self.maxQueryDepth = getMaxQueryDepth(serviceConfig);
     }
 
-    isolated function getOutputObjectForQuery(string documentString, string operationName) returns OutputObject {
+    isolated function validate(string documentString, string operationName) returns parser:OperationNode|OutputObject {
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if (result is OutputObject) {
             return result;
@@ -37,22 +37,14 @@ isolated class Engine {
         if (validationResult is OutputObject) {
             return validationResult;
         } else {
-            if (document.getOperations().length() == 1) {
-                return self.execute(document.getOperations()[0]);
-            }
-            foreach parser:OperationNode operationNode in document.getOperations() {
-                if (operationName == operationNode.getName()) {
-                    return self.execute(operationNode);
-                }
-            }
-            string name = operationName == parser:ANONYMOUS_OPERATION ? "" : operationName;
-            string message = string`Unknown operation named "${name}".`;
-            ErrorDetail errorDetail = {
-                message: message,
-                locations: []
-            };
-            return getOutputObjectFromErrorDetail(errorDetail);
+            return self.getOperation(document, operationName);
         }
+    }
+
+    isolated function execute(parser:OperationNode operationNode) returns OutputObject {
+        ExecutorVisitor executor = new(self, self.schema);
+        OutputObject outputObject = executor.getExecutorResult(operationNode);
+        return outputObject;
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
@@ -82,10 +74,31 @@ isolated class Engine {
         duplicateFieldRemover.remove();
     }
 
-    isolated function execute(parser:OperationNode operationNode) returns OutputObject {
-        ExecutorVisitor executor = new(self, self.schema);
-        OutputObject outputObject = executor.getExecutorResult(operationNode);
-        return outputObject;
+    isolated function getOperation(parser:DocumentNode document, string operationName) returns parser:OperationNode|OutputObject {
+        if (operationName == parser:ANONYMOUS_OPERATION) {
+            if (document.getOperations().length() == 1) {
+                return document.getOperations()[0];
+            } else {
+                string message = string`Must provide operation name if query contains multiple operations.`;
+                ErrorDetail errorDetail = {
+                    message: message,
+                    locations: []
+                };
+                return getOutputObjectFromErrorDetail(errorDetail);
+            }
+        } else {
+            foreach parser:OperationNode operationNode in document.getOperations() {
+                if (operationName == operationNode.getName()) {
+                    return operationNode;
+                }
+            }
+            string message = string`Unknown operation named "${operationName}".`;
+            ErrorDetail errorDetail = {
+                message: message,
+                locations: []
+            };
+            return getOutputObjectFromErrorDetail(errorDetail);
+        }
     }
 
     isolated function getAuthConfigs() returns ListenerAuthConfig[]? {
