@@ -105,7 +105,7 @@ isolated function setResponse(Engine engine, http:Response response, parser:Oper
             response.setJsonPayload(<json> payload.message());
         } else {
             response.statusCode = http:STATUS_BAD_REQUEST;
-            response.setJsonPayload(<json> payload);
+            response.setJsonPayload(payload);
         }
     } else {
         OutputObject outputObject = engine.execute(<parser:OperationNode> validationResult);
@@ -114,7 +114,7 @@ isolated function setResponse(Engine engine, http:Response response, parser:Oper
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
             response.setJsonPayload(<json> payload.message());
         } else {
-            response.setJsonPayload(<json> payload);
+            response.setJsonPayload(payload);
         }
     }
 }

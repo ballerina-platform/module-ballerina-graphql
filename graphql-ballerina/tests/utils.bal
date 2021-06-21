@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
 returns json|error {
     http:Client httpClient = check new(url);
-    return  check httpClient->post("/", { query: document, operationName: operationName });
+    return httpClient->post("/", { query: document, operationName: operationName });
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
