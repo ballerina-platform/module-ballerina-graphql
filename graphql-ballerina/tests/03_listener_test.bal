@@ -29,7 +29,7 @@ service /graphql on new Listener(9092) {
 }
 
 @test:Config {
-    groups: ["listener", "unit"]
+    groups: ["listener"]
 }
 isolated function testGetRequest() returns error? {
     string document = "query getPerson { profile(id: 1) { address { city } } }";
@@ -50,7 +50,7 @@ isolated function testGetRequest() returns error? {
 }
 
 @test:Config {
-    groups: ["listener", "unit"]
+    groups: ["listener"]
 }
 isolated function testInvalidGetRequestWithoutQuery() returns error? {
     http:Client httpClient = check new("http://localhost:9095");

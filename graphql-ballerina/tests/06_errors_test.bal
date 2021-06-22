@@ -25,7 +25,7 @@ service /graphql on new Listener(9095) {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testMissingArgumentValueQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -49,7 +49,7 @@ isolated function testMissingArgumentValueQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testEmptyQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -73,7 +73,7 @@ isolated function testEmptyQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testObjectWithNoSelectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -99,7 +99,7 @@ isolated function testObjectWithNoSelectionQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testObjectWithNoSelectionQueryWithArguments() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -125,7 +125,7 @@ isolated function testObjectWithNoSelectionQueryWithArguments() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testObjectWithInvalidSelectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -150,7 +150,7 @@ isolated function testObjectWithInvalidSelectionQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testObjectWithMissingRequiredArgument() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -186,7 +186,7 @@ isolated function testObjectWithMissingRequiredArgument() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testRequestSubtypeFromPrimitiveType() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -211,7 +211,7 @@ isolated function testRequestSubtypeFromPrimitiveType() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testInvalidArgument() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -236,7 +236,7 @@ isolated function testInvalidArgument() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testRuntimeError() returns error? {
     string graphqlUrl = "http://localhost:9095/graphql";
@@ -264,7 +264,7 @@ isolated function testRuntimeError() returns error? {
 }
 
 @test:Config {
-    groups: ["negative", "listener", "unit"]
+    groups: ["negative", "listener"]
 }
 isolated function testRuntimeErrorWithGetRequest() returns error? {
     string graphqlUrl = "http://localhost:9095";

@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["service"]
 }
 isolated function testGetFieldFromRecordResource() returns error? {
     string document = "query getPerson { profile { name, address { street } } }";

@@ -49,7 +49,7 @@ service /graphql on functionWithArgumentsListener {
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testFunctionsWithInputParameter() returns error? {
     string document = string
@@ -68,7 +68,7 @@ isolated function testFunctionsWithInputParameter() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testInputParameterTypeNotPresentInReturnTypes() returns error? {
     string document = "{ isLegal(age: 21) }";
@@ -84,7 +84,7 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testInvalidParameter() returns error? {
     string document = "{ person(id: 4) { name } }";
@@ -108,7 +108,7 @@ isolated function testInvalidParameter() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testQueryWithoutDefaultParameter() returns error? {
     string document = "{ personById { name } }";
@@ -126,7 +126,7 @@ isolated function testQueryWithoutDefaultParameter() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testQueryWithDefaultParameter() returns error? {
     string document = "{ personById(id: 2) { name } }";

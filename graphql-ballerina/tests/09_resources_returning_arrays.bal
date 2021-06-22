@@ -63,7 +63,7 @@ service class Vehicle {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourcesReturningScalarArrays() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -79,7 +79,7 @@ isolated function testResourcesReturningScalarArrays() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourcesReturningArrays() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -114,7 +114,7 @@ isolated function testResourcesReturningArrays() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourcesReturningArraysMissingFields() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -139,7 +139,7 @@ isolated function testResourcesReturningArraysMissingFields() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testComplexArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -150,7 +150,7 @@ isolated function testComplexArray() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourceReturningServiceObjectArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -175,7 +175,7 @@ isolated function testResourceReturningServiceObjectArray() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourceReturningOptionalServiceObjectsArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -200,7 +200,7 @@ isolated function testResourceReturningOptionalServiceObjectsArray() returns err
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testOptionalArrayInvalidQuery() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";

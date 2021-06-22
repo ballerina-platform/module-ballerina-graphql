@@ -51,7 +51,7 @@ service /graphql on serviceTypeListener {
 }
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["service"]
 }
 isolated function testResourceReturningServiceObject() returns error? {
     string graphqlUrl = "http://localhost:9097/graphql";
@@ -69,7 +69,7 @@ isolated function testResourceReturningServiceObject() returns error? {
 }
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["service"]
 }
 isolated function testInvalidQueryFromServiceObjectResource() returns error? {
     string graphqlUrl = "http://localhost:9097/graphql";
@@ -90,7 +90,7 @@ isolated function testInvalidQueryFromServiceObjectResource() returns error? {
 }
 
 @test:Config {
-    groups: ["service", "unit"]
+    groups: ["service"]
 }
 isolated function testComplexService() returns error? {
     string graphqlUrl = "http://localhost:9097/graphql";

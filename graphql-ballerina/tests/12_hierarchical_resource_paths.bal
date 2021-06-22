@@ -71,7 +71,7 @@ service /hierarchical on hierarchicalPathListener {
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first } } }";
@@ -91,7 +91,7 @@ isolated function testHierarchicalResourcePaths() returns error? {
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
     string document = "{ profile { name { first last } } }";
@@ -112,7 +112,7 @@ isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsComplete() returns error? {
     string document = "{ profile { name { first last } age } }";
@@ -153,7 +153,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
 }
 
 @test:Config {
-    groups: ["negative", "hierarchical_paths", "unit"]
+    groups: ["negative", "hierarchical_paths"]
 }
 isolated function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";
@@ -178,7 +178,7 @@ isolated function testInvalidHierarchicalResourcePaths() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "hierarchical_paths", "unit"]
+    groups: ["introspection", "hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsIntrospection() returns error? {
     string document = "{ __schema { types { name fields { name } } } }";
@@ -189,7 +189,7 @@ isolated function testHierarchicalResourcePathsIntrospection() returns error? {
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns error? {
     string document = "{ mountain { trail { getLift { name } } } }";
@@ -210,7 +210,7 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns 
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns error? {
     string document = "{ lift { name } }";
@@ -227,7 +227,7 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsReturningServicesWithHierarchicalResourcePath() returns error? {
     string document = "{ profile { personal { name { first } } } }";

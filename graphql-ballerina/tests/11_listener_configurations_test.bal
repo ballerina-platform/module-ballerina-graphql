@@ -54,7 +54,7 @@ service /depthLimitService on depthLimitListener {
 }
 
 @test:Config {
-    groups: ["configs", "unit"]
+    groups: ["configs"]
 }
 isolated function testTimeoutResponse() returns error? {
     string document = "{ greet }";
@@ -74,7 +74,7 @@ isolated function testTimeoutResponse() returns error? {
 }
 
 @test:Config {
-    groups: ["configs", "unit"]
+    groups: ["configs"]
 }
 isolated function testQueryExceedingMaxDepth() returns error? {
     string document = "{ book { author { books { author { books } } } } }";
@@ -98,7 +98,7 @@ isolated function testQueryExceedingMaxDepth() returns error? {
 }
 
 @test:Config {
-    groups: ["configs", "unit"]
+    groups: ["configs"]
 }
 isolated function testFragmentQueryExceedingMaxDepth() returns error? {
     string document = string
@@ -156,7 +156,7 @@ query getStudent {
 }
 
 @test:Config {
-    groups: ["configs", "unit"]
+    groups: ["configs"]
 }
 isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? {
     string document = string

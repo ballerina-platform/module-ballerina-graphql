@@ -21,7 +21,7 @@ http:Listener httpListener = checkpanic new(9091);
 listener Listener gqlListener = new(httpListener);
 
 @test:Config {
-    groups: ["listener", "unit"]
+    groups: ["listener"]
 }
 function testDocumentValidation() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_1");
@@ -52,8 +52,7 @@ function testDocumentValidation() returns error? {
 }
 
 @test:Config {
-    groups: ["listener", "unit"],
-    dependsOn: [testDocumentValidation]
+    groups: ["listener"]
 }
 function testQueryResult() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
@@ -75,8 +74,7 @@ function testQueryResult() returns error? {
 }
 
 @test:Config {
-    groups: ["listener", "unit"],
-    dependsOn: [testDocumentValidation]
+    groups: ["listener"]
 }
 function testDocumentWithMultipleOperations() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
@@ -103,8 +101,7 @@ query getId {
 }
 
 @test:Config {
-    groups: ["listener", "unit"],
-    dependsOn: [testDocumentValidation]
+    groups: ["listener"]
 }
 function testDocumentWithMultipleOperationsSecondOperation() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_2");
@@ -128,8 +125,7 @@ query getId {
 }
 
 @test:Config {
-    groups: ["listener", "unit"],
-    dependsOn: [testDocumentWithMultipleOperationsSecondOperation]
+    groups: ["listener"]
 }
 function testDocumentWithMultipleOperationsInvalidOperation() returns error? {
     check gqlListener.attach(serviceWithMultipleResources, "graphql_service_3");

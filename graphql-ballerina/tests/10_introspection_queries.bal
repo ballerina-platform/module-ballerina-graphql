@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testSimpleIntrospectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9101/graphql";
@@ -79,7 +79,7 @@ isolated function testSimpleIntrospectionQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testComplexIntrospectionQuery() returns error? {
     // Using 9100 endpoint since it has more complex schema
@@ -170,7 +170,7 @@ isolated function testComplexIntrospectionQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testInvalidIntrospectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9101/graphql";
@@ -194,7 +194,7 @@ isolated function testInvalidIntrospectionQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testIntrospectionQueryWithMissingSelection() returns error? {
     string graphqlUrl = "http://localhost:9101/graphql";
@@ -219,7 +219,7 @@ isolated function testIntrospectionQueryWithMissingSelection() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testQueryTypeIntrospection() returns error? {
     string graphqlUrl ="http://localhost:9101/graphql";
@@ -243,7 +243,7 @@ isolated function testQueryTypeIntrospection() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testComplexIntrospectionQueryWithOtherFields() returns error? {
     // Using 9100 endpoint since it has more complex schema
@@ -345,7 +345,7 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
 }
 
 @test:Config {
-    groups: ["introspection", "unit"]
+    groups: ["introspection"]
 }
 isolated function testEnumValueIntrospection() returns error? {
     string graphqlUrl ="http://localhost:9101/graphql";
