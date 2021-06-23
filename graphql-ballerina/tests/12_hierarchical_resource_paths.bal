@@ -87,7 +87,7 @@ isolated function testHierarchicalResourcePaths() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -108,7 +108,7 @@ isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -130,7 +130,7 @@ isolated function testHierarchicalResourcePathsComplete() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? {
@@ -149,7 +149,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -174,7 +174,7 @@ isolated function testInvalidHierarchicalResourcePaths() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -185,7 +185,7 @@ isolated function testHierarchicalResourcePathsIntrospection() returns error? {
     string url = "http://localhost:9104/graphql";
     json expectedPayload = check getJsonContentFromFile("hierarchical_resource_paths_introspection.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -206,7 +206,7 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns 
         }
     };
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -223,7 +223,7 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns
         }
     };
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -245,5 +245,5 @@ isolated function testHierarchicalResourcePathsReturningServicesWithHierarchical
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

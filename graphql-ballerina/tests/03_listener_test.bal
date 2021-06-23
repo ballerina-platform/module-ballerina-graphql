@@ -46,7 +46,7 @@ isolated function testGetRequest() returns error? {
     http:Client httpClient = check new("http://localhost:9095");
     string path = "/graphql?query=" + encodedDocument;
     json actualPayload = check httpClient->get(path);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {

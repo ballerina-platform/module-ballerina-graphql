@@ -47,7 +47,7 @@ function testDocumentValidation() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
 
@@ -69,7 +69,7 @@ function testQueryResult() returns error? {
             id: 1
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
 
@@ -96,7 +96,7 @@ query getId {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
 
@@ -120,7 +120,7 @@ query getId {
             id: 1
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }
 
@@ -147,6 +147,6 @@ query getId {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
     check gqlListener.detach(serviceWithMultipleResources);
 }

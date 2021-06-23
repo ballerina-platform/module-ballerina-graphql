@@ -64,7 +64,7 @@ isolated function testFunctionsWithInputParameter() returns error? {
             greet: "Hello, Thisaru"
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -80,7 +80,7 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
             isLegal: true
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -104,7 +104,7 @@ isolated function testInvalidParameter() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -122,7 +122,7 @@ isolated function testQueryWithoutDefaultParameter() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -140,7 +140,7 @@ isolated function testQueryWithDefaultParameter() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -156,7 +156,7 @@ isolated function testFloatAsInput() returns error? {
             weightInPounds: <float>2.8665000000000003 // Floating point multiplication
         }
     };
-    test:assertEquals(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
 
 @test:Config {
@@ -172,7 +172,7 @@ isolated function testCoerceIntInputToFloat() returns error? {
             weightInPounds: <float>2.205
         }
     };
-    test:assertEquals(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
 
 @test:Config {
@@ -195,5 +195,5 @@ isolated function testPassingFloatForIntArguments() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

@@ -75,7 +75,7 @@ isolated function testResourcesReturningScalarArrays() returns error? {
             ids: [0, 1, 2]
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -110,7 +110,7 @@ isolated function testResourcesReturningArrays() returns error? {
             ]
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -135,7 +135,7 @@ isolated function testResourcesReturningArraysMissingFields() returns error? {
             }
         ]
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -146,7 +146,7 @@ isolated function testComplexArray() returns error? {
     string document = "{ students { name courses { name books { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("complex_array.json");
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -171,7 +171,7 @@ isolated function testResourceReturningServiceObjectArray() returns error? {
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -196,7 +196,7 @@ isolated function testResourceReturningOptionalServiceObjectsArray() returns err
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -220,5 +220,5 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }

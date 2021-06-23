@@ -94,40 +94,14 @@ isolated function testQueryExceedingMaxDepth() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
     groups: ["configs"]
 }
 isolated function testFragmentQueryExceedingMaxDepth() returns error? {
-    string document = string
-`query getAll {
-    ...on Query {
-        people {
-            ... on Person {
-                address {
-                    city
-                }
-            }
-            ... on Student {
-                name
-            }
-        }
-    }
-}
-query getPerson {
-    Person {
-        Address {
-            city
-        }
-    }
-}
-query getStudent {
-    Student {
-        name
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("fragment_query_exceeding_max_depth.txt");
     string url = "http://localhost:9103/depthLimitService";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
@@ -152,7 +126,7 @@ query getStudent {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -183,7 +157,7 @@ isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? 
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 

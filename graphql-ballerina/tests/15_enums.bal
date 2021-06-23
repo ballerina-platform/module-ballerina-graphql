@@ -94,7 +94,7 @@ isolated function testEnum() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -109,7 +109,7 @@ isolated function testEnumInsideRecord() returns error? {
             weekday: "WEDNESDAY"
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -120,7 +120,7 @@ isolated function testEnumIntrospection() returns error? {
     string url = "http://localhost:9107/graphql";
     json expectedPayload = check getJsonContentFromFile("enum_introspection.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -143,7 +143,7 @@ isolated function testEnumWithUnion() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -158,7 +158,7 @@ isolated function testEnumInputParameter() returns error? {
             isHoliday: true
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 
@@ -177,7 +177,7 @@ isolated function testReturningEnumArray() returns error? {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -200,7 +200,7 @@ isolated function testEnumInvalidInputParameter() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 
@@ -224,5 +224,5 @@ isolated function testEnumInputParameterAsString() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

@@ -16,6 +16,20 @@
 
 import ballerina/test;
 
+service /graphql on new Listener(9094) {
+    isolated resource function get profile() returns Person {
+        return {
+            name: "Sherlock Holmes",
+            age: 40,
+            address: {
+                number: "221/B",
+                street: "Baker Street",
+                city: "London"
+            }
+        };
+    }
+}
+
 @test:Config {
     groups: ["service"]
 }
@@ -34,19 +48,5 @@ isolated function testGetFieldFromRecordResource() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-service /graphql on new Listener(9094) {
-    isolated resource function get profile() returns Person {
-        return {
-            name: "Sherlock Holmes",
-            age: 40,
-            address: {
-                number: "221/B",
-                street: "Baker Street",
-                city: "London"
-            }
-        };
-    }
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

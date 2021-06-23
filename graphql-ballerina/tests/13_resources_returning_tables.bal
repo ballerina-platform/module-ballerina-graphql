@@ -45,7 +45,7 @@ isolated function testResourceReturningTables() returns error? {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -70,5 +70,5 @@ isolated function testQueryingTableWithoutSelections() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

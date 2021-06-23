@@ -75,7 +75,7 @@ isolated function testResourceReturningUnionTypes() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -91,7 +91,7 @@ isolated function testResourceReturningUnionWithNull() returns error? {
             profile: null
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -123,7 +123,7 @@ fragment personFragment on Person {
             }
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -160,7 +160,7 @@ fragment personFragment on Person {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -193,7 +193,7 @@ fragment personFragment on Person {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -226,7 +226,7 @@ fragment personFragment on Person {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -250,7 +250,7 @@ isolated function testQueryUnionTypeWithoutSelection() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -274,7 +274,7 @@ isolated function testQueryUnionTypeWithSelection() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -305,7 +305,7 @@ query {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -341,7 +341,7 @@ fragment personFragment on Person {
             }
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -380,7 +380,7 @@ fragment courseFragment on Course {
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 
@@ -420,5 +420,5 @@ query {
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }

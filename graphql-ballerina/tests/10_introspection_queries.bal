@@ -75,7 +75,7 @@ isolated function testSimpleIntrospectionQuery() returns error? {
             }
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -166,7 +166,7 @@ isolated function testComplexIntrospectionQuery() returns error? {
             }
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -190,7 +190,7 @@ isolated function testInvalidIntrospectionQuery() returns error? {
             }
         ]
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -215,7 +215,7 @@ isolated function testIntrospectionQueryWithMissingSelection() returns error? {
             }
         ]
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -239,7 +239,7 @@ isolated function testQueryTypeIntrospection() returns error? {
             }
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -250,98 +250,8 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ __schema { types { name kind } } people { name } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedResult = {
-        data: {
-            __schema: {
-                types: [
-                   {
-                       "name": "__TypeKind",
-                       "kind": "ENUM"
-                   },
-                   {
-                       "name": "__Field",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "Query",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "Address",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "__Schema",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "__Type",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "__EnumValue",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "__DirectiveLocation",
-                       "kind": "ENUM"
-                   },
-                   {
-                       "name": "String",
-                       "kind": "SCALAR"
-                   },
-                   {
-                       "name": "Student",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "Int",
-                       "kind": "SCALAR"
-                   },
-                   {
-                       "name": "Vehicle",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "Book",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "__InputValue",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "Course",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "Boolean",
-                       "kind": "SCALAR"
-                   },
-                   {
-                       "name": "Person",
-                       "kind": "OBJECT"
-                   },
-                   {
-                       "name": "__Directive",
-                       "kind": "OBJECT"
-                   }
-               ]
-            },
-            people: [
-                {
-                    name: "Sherlock Holmes"
-                },
-                {
-                    name: "Walter White"
-                },
-                {
-                    name: "Tom Marvolo Riddle"
-                }
-            ]
-        }
-    };
-    test:assertEquals(actualResult, expectedResult);
+    json expectedResult = check getJsonContentFromFile("complex_introspection_query_with_other_fields.json");
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
@@ -364,7 +274,7 @@ isolated function testEnumValueIntrospection() returns error? {
             }
         ]
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 service /graphql on new Listener(9101) {

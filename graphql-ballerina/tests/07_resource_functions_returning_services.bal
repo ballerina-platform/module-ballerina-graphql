@@ -65,7 +65,7 @@ isolated function testResourceReturningServiceObject() returns error? {
             }
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
@@ -74,19 +74,22 @@ isolated function testResourceReturningServiceObject() returns error? {
 isolated function testInvalidQueryFromServiceObjectResource() returns error? {
     string graphqlUrl = "http://localhost:9097/graphql";
     string document = "{ profile { name { nonExisting } } }";
-    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
 
     json expectedPayload = {
         errors: [
             {
-                maessage: "Cannot query field \"nonExisting\" on type \"Name\"",
-                location: {
-                    line: 1,
-                    column: 9
-                }
+                message: "Cannot query field \"nonExisting\" on type \"Name\".",
+                locations: [
+                    {
+                        line: 1,
+                        column: 20
+                    }
+                ]
             }
         ]
     };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -107,5 +110,5 @@ isolated function testComplexService() returns error? {
             }
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
