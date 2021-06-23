@@ -30,9 +30,33 @@ isolated function getJsonContentFromFile(string fileName) returns json|error {
     return io:fileReadJson(path);
 }
 
-isolated function getJsonPayloadFromBadRequest(string url, string document, string? operationName = ()) returns json|error {
+isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
+    string path = check file:joinPath("tests", "resources", "documents", fileName);
+    return io:fileReadString(path);
+}
+
+isolated function getJsonPayloadFromBadRequest(string url, string document, string? operationName = ())
+returns json|error {
     http:Client httpClient = check new(url);
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName });
-    test:assertEquals(response.statusCode, 400);
+    assertResponseForBadRequest(response);
     return response.getJsonPayload();
+}
+
+isolated function getTextPayloadFromBadRequest(string url, http:Request request) returns string|error {
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->post("/", request);
+    assertResponseForBadRequest(response);
+    return response.getTextPayload();
+}
+
+isolated function assertResponseForBadRequest(http:Response response) {
+    test:assertEquals(response.statusCode, http:STATUS_BAD_REQUEST);
+    test:assertEquals(response.reasonPhrase, "Bad Request");
+}
+
+isolated function assertJsonValuesWithOrder(json actualPayload, json expectedPayload) {
+    string actual = actualPayload.toJsonString();
+    string expected = expectedPayload.toJsonString();
+    test:assertEquals(actual, expected);
 }

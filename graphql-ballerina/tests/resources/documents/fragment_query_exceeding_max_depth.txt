@@ -1,0 +1,26 @@
+query getAll {
+    ...on Query {
+        people {
+            ... on Person {
+                address {
+                    city
+                }
+            }
+            ... on Student {
+                name
+            }
+        }
+    }
+}
+query getPerson {
+    Person {
+        Address {
+            city
+        }
+    }
+}
+query getStudent {
+    Student {
+        name
+    }
+}

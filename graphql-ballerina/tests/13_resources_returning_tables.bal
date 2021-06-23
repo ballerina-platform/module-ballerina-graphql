@@ -23,7 +23,7 @@ service /graphql on new Listener(9105) {
 }
 
 @test:Config {
-    groups: ["tables", "unit"]
+    groups: ["tables"]
 }
 isolated function testResourceReturningTables() returns error? {
     string document = "{ employees { name } }";
@@ -45,11 +45,11 @@ isolated function testResourceReturningTables() returns error? {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["negative", "tables", "unit"]
+    groups: ["negative", "tables"]
 }
 isolated function testQueryingTableWithoutSelections() returns error? {
     string document = "{ employees }";
@@ -70,5 +70,5 @@ isolated function testQueryingTableWithoutSelections() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

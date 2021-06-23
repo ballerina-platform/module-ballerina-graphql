@@ -47,7 +47,7 @@ service /fragments on fragmentsTestListener {
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testUnknownFragment() returns error? {
     string document = string
@@ -71,11 +71,11 @@ isolated function testUnknownFragment() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testUnknownNestedFragments() returns error? {
     string document = string
@@ -112,11 +112,11 @@ fragment details on Student {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragmentOnInvalidType() returns error? {
     string document = string
@@ -144,11 +144,11 @@ fragment data on Person {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragmentWithInvalidField() returns error? {
     string document = string
@@ -178,11 +178,11 @@ fragment data on Query {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragments() returns error? {
     string document = string
@@ -213,11 +213,11 @@ fragment data on Query {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testNestedFragments() returns error? {
     string document = string
@@ -260,11 +260,11 @@ fragment address on Person {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
     string document = string
@@ -326,11 +326,11 @@ fragment student on Student {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "introspection", "unit"]
+    groups: ["fragments", "introspection"]
 }
 isolated function testFragmentsWithInvalidIntrospection() returns error? {
     string document = string
@@ -369,11 +369,11 @@ fragment types on __Schema {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "introspection", "unit"]
+    groups: ["fragments", "introspection"]
 }
 isolated function testFragmentsWithIntrospection() returns error? {
     string document = string
@@ -400,11 +400,11 @@ fragment types on __Schema {
     json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = check getJsonContentFromFile("fragment_with_introspection.json");
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragmentsWithResourcesReturningServices() returns error? {
     string document = string
@@ -439,11 +439,11 @@ fragment fullNameFragment on Name {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testUnusedFragmentError() returns error? {
     string document = string
@@ -472,11 +472,11 @@ fragment fullNameFragment on Name {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit", "inline"]
+    groups: ["fragments", "inline"]
 }
 isolated function testInlineFragment() returns error? {
     string document = string
@@ -531,11 +531,11 @@ isolated function testInlineFragment() returns error? {
              ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit", "inline"]
+    groups: ["fragments", "inline"]
 }
 isolated function testUnknownInlineFragments() returns error? {
     string document = string
@@ -559,11 +559,11 @@ isolated function testUnknownInlineFragments() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit", "inline"]
+    groups: ["fragments", "inline"]
 }
 isolated function testInvalidSpreadInlineFragments() returns error? {
     string document = string
@@ -603,11 +603,11 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit", "inline"]
+    groups: ["fragments", "inline"]
 }
 isolated function testInlineFragmentsOnSameTypeInDifferentPlaces() returns error? {
     string document = string
@@ -635,11 +635,11 @@ isolated function testInlineFragmentsOnSameTypeInDifferentPlaces() returns error
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragmentsInsideFragmentsWhenReturningServices() returns error? {
     string document = string
@@ -669,11 +669,11 @@ isolated function testFragmentsInsideFragmentsWhenReturningServices() returns er
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["fragments", "unit"]
+    groups: ["fragments"]
 }
 isolated function testFragmentsInsideFragmentsWhenReturningServicesMultipleFields() returns error? {
     string document = string
@@ -705,5 +705,5 @@ isolated function testFragmentsInsideFragmentsWhenReturningServicesMultipleField
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

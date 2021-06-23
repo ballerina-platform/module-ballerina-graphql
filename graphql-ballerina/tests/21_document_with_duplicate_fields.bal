@@ -39,7 +39,7 @@ service /graphql on new Listener(9114) {
 }
 
 @test:Config {
-    groups: ["duplicate", "service", "unit"]
+    groups: ["duplicate", "service"]
 }
 isolated function testDuplicateFieldWithResourceReturningRecord() returns error? {
     string document = string
@@ -75,7 +75,7 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
 }
 
 @test:Config {
-    groups: ["duplicate", "fragments", "unit"]
+    groups: ["duplicate", "fragments"]
 }
 isolated function testNamedFragmentsWithDuplicateFields() returns error? {
     string document = string
@@ -161,7 +161,7 @@ fragment student on Student {
 }
 
 @test:Config {
-    groups: ["duplicate", "fragments", "unit", "inline"]
+    groups: ["duplicate", "fragments", "inline"]
 }
 isolated function testDuplicateInlineFragment() returns error? {
     string document = string

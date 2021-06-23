@@ -55,7 +55,7 @@ service /graphql on new Listener(9098) {
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testResourceReturningUnionTypes() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -75,11 +75,11 @@ isolated function testResourceReturningUnionTypes() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testResourceReturningUnionWithNull() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -91,11 +91,11 @@ isolated function testResourceReturningUnionWithNull() returns error? {
             profile: null
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testQueryUnionType() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -123,11 +123,11 @@ fragment personFragment on Person {
             }
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testQueryUnionTypeWithIncorrectFragment() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -160,11 +160,11 @@ fragment personFragment on Person {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testQueryUnionTypeWithFieldAndFragment() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -193,11 +193,11 @@ fragment personFragment on Person {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testQueryUnionTypeWithFragmentAndField() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -226,11 +226,11 @@ fragment personFragment on Person {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testQueryUnionTypeWithoutSelection() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -250,11 +250,11 @@ isolated function testQueryUnionTypeWithoutSelection() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testQueryUnionTypeWithSelection() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -274,11 +274,11 @@ isolated function testQueryUnionTypeWithSelection() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testUnionTypeAsRecordFieldWithoutFragment() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -305,11 +305,11 @@ query {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testUnionTypeAsRecordField() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -341,11 +341,11 @@ fragment personFragment on Person {
             }
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testUnionTypesWithMissingTypesInDocument() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -380,12 +380,12 @@ fragment courseFragment on Course {
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 
 @test:Config {
-    groups: ["union", "unit"]
+    groups: ["union"]
 }
 isolated function testUnionTypesWithMissingTypesInDocumentWithInlineFragments() returns error? {
     string graphqlUrl = "http://localhost:9098/graphql";
@@ -420,5 +420,5 @@ query {
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }

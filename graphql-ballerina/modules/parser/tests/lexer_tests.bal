@@ -267,7 +267,7 @@ isolated function testComplexString() returns error? {
 @test:Config {
     groups: ["fragments", "lexer"]
 }
-isolated function readFragmentToken() returns error? {
+isolated function testReadFragmentToken() returns error? {
     string s = "...friends { name }";
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -280,7 +280,7 @@ isolated function readFragmentToken() returns error? {
 @test:Config {
     groups: ["fragments", "lexer"]
 }
-isolated function readFragmentTokenWithSpace() returns error? {
+isolated function testReadFragmentTokenWithSpace() returns error? {
     string s = "... friends { name }";
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -293,7 +293,7 @@ isolated function readFragmentTokenWithSpace() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readFloatWithSimplePowerCharacter() returns error? {
+isolated function testReadFloatWithSimplePowerCharacter() returns error? {
     string s = "4e45";
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -304,7 +304,7 @@ isolated function readFloatWithSimplePowerCharacter() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readFloatWithDeciamlPoint() returns error? {
+isolated function testReadFloatWithDeciamlPoint() returns error? {
     string s = "4.2e45";
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -315,7 +315,7 @@ isolated function readFloatWithDeciamlPoint() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readFloatWithCapitalPowerCharacter() returns error? {
+isolated function testReadFloatWithCapitalPowerCharacter() returns error? {
     string s = "4e45";
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -326,7 +326,7 @@ isolated function readFloatWithCapitalPowerCharacter() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatDotAferExp() returns error? {
+isolated function testReadInvalidFloatDotAferExp() returns error? {
     string s = "4e45.1";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -344,7 +344,7 @@ isolated function readInvalidFloatDotAferExp() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatDashInMiddle() returns error? {
+isolated function testReadInvalidFloatDashInMiddle() returns error? {
     string s = "4e451-";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -362,7 +362,7 @@ isolated function readInvalidFloatDashInMiddle() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatNoValueAfterExp() returns error? {
+isolated function testReadInvalidFloatNoValueAfterExp() returns error? {
     string s = "4e)";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -381,7 +381,7 @@ isolated function readInvalidFloatNoValueAfterExp() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatNoValueAfterExp2() returns error? {
+isolated function testReadInvalidFloatNoValueAfterExp2() returns error? {
     string s = "4.5e)";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -399,7 +399,7 @@ isolated function readInvalidFloatNoValueAfterExp2() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatRepeatedExp() returns error? {
+isolated function testReadInvalidFloatRepeatedExp() returns error? {
     string s = "4e451e";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -417,7 +417,7 @@ isolated function readInvalidFloatRepeatedExp() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatRepeatedDecimalPoint() returns error? {
+isolated function testReadInvalidFloatRepeatedDecimalPoint() returns error? {
     string s = "4.451.34";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -435,7 +435,7 @@ isolated function readInvalidFloatRepeatedDecimalPoint() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatMissingDigitAfterDecimalPoint() returns error? {
+isolated function testReadInvalidFloatMissingDigitAfterDecimalPoint() returns error? {
     string s = "4.e45";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -453,7 +453,7 @@ isolated function readInvalidFloatMissingDigitAfterDecimalPoint() returns error?
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatDecimalPointAfterExp() returns error? {
+isolated function testReadInvalidFloatDecimalPointAfterExp() returns error? {
     string s = "4.3e.45";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -472,7 +472,7 @@ isolated function readInvalidFloatDecimalPointAfterExp() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readInvalidFloatDecimalPointAsExp() returns error? {
+isolated function testReadInvalidFloatDecimalPointAsExp() returns error? {
     string s = "4.3e2.45";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -490,7 +490,7 @@ isolated function readInvalidFloatDecimalPointAsExp() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readFloatNegativeExp() returns error? {
+isolated function testReadFloatNegativeExp() returns error? {
     string s = "4.451e-34";
     Lexer lexer = new(s);
     Token token = check lexer.read();
@@ -501,7 +501,7 @@ isolated function readFloatNegativeExp() returns error? {
 @test:Config {
     groups: ["numeral", "lexer"]
 }
-isolated function readIntInvalidCharacter() returns error? {
+isolated function testReadIntInvalidCharacter() returns error? {
     string s = "431v";
     Lexer lexer = new(s);
     Token|SyntaxError result = lexer.read();
@@ -514,6 +514,110 @@ isolated function readIntInvalidCharacter() returns error? {
     test:assertEquals(message, expectedMessage);
     test:assertEquals(line, 1);
     test:assertEquals(column, 4);
+}
+
+@test:Config {
+    groups: ["lexer"]
+}
+isolated function testReadCommentToken() returns error? {
+    string document = string
+`{
+    name # Get Name
+    # New Line
+    address,age # Get Age
+}`;
+    Lexer lexer = new(document);
+    Token token = check lexer.read();
+    Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("\n", T_NEW_LINE, 1, 2);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 2, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 2, 2);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 2, 3);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 2, 4);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("name", T_IDENTIFIER, 2, 5);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 2, 9);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("# Get Name", T_COMMENT, 2, 10);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("\n", T_NEW_LINE, 2, 20);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 3, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 3, 2);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 3, 3);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 3, 4);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("# New Line", T_COMMENT, 3, 5);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("\n", T_NEW_LINE, 3, 15);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 4, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 4, 2);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 4, 3);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 4, 4);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("address", T_IDENTIFIER, 4, 5);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(",", T_COMMA, 4, 12);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("age", T_IDENTIFIER, 4, 13);
+    test:assertEquals(token, expectedToken);
 }
 
 isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {

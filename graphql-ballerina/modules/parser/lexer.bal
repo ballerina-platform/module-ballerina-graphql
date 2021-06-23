@@ -181,10 +181,10 @@ public class Lexer {
     }
 
     isolated function readCommentToken() returns Token|SyntaxError {
-        string word = HASH;
         Location location = self.currentLocation.clone();
+        string word = self.readNextChar();
         while (!self.charReader.isEof()) {
-            string char = self.readNextChar();
+            string char = self.charReader.peek();
             if (char is LineTerminator) {
                 break;
             } else {

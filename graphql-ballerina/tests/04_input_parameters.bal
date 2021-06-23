@@ -49,7 +49,7 @@ service /graphql on functionWithArgumentsListener {
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testFunctionsWithInputParameter() returns error? {
     string document = string
@@ -64,11 +64,11 @@ isolated function testFunctionsWithInputParameter() returns error? {
             greet: "Hello, Thisaru"
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testInputParameterTypeNotPresentInReturnTypes() returns error? {
     string document = "{ isLegal(age: 21) }";
@@ -80,11 +80,11 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
             isLegal: true
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testInvalidParameter() returns error? {
     string document = "{ person(id: 4) { name } }";
@@ -104,11 +104,11 @@ isolated function testInvalidParameter() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testQueryWithoutDefaultParameter() returns error? {
     string document = "{ personById { name } }";
@@ -122,11 +122,11 @@ isolated function testQueryWithoutDefaultParameter() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["input_types", "unit"]
+    groups: ["input_types"]
 }
 isolated function testQueryWithDefaultParameter() returns error? {
     string document = "{ personById(id: 2) { name } }";
@@ -140,7 +140,7 @@ isolated function testQueryWithDefaultParameter() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -156,7 +156,7 @@ isolated function testFloatAsInput() returns error? {
             weightInPounds: <float>2.8665000000000003 // Floating point multiplication
         }
     };
-    test:assertEquals(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
 
 @test:Config {
@@ -172,7 +172,7 @@ isolated function testCoerceIntInputToFloat() returns error? {
             weightInPounds: <float>2.205
         }
     };
-    test:assertEquals(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
 
 @test:Config {
@@ -195,5 +195,5 @@ isolated function testPassingFloatForIntArguments() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

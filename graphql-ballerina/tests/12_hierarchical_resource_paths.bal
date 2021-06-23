@@ -71,7 +71,7 @@ service /hierarchical on hierarchicalPathListener {
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first } } }";
@@ -87,11 +87,11 @@ isolated function testHierarchicalResourcePaths() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
     string document = "{ profile { name { first last } } }";
@@ -108,11 +108,11 @@ isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsComplete() returns error? {
     string document = "{ profile { name { first last } age } }";
@@ -130,7 +130,7 @@ isolated function testHierarchicalResourcePathsComplete() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? {
@@ -149,11 +149,11 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["negative", "hierarchical_paths", "unit"]
+    groups: ["negative", "hierarchical_paths"]
 }
 isolated function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";
@@ -174,22 +174,22 @@ isolated function testInvalidHierarchicalResourcePaths() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["introspection", "hierarchical_paths", "unit"]
+    groups: ["introspection", "hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsIntrospection() returns error? {
     string document = "{ __schema { types { name fields { name } } } }";
     string url = "http://localhost:9104/graphql";
     json expectedPayload = check getJsonContentFromFile("hierarchical_resource_paths_introspection.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns error? {
     string document = "{ mountain { trail { getLift { name } } } }";
@@ -206,11 +206,11 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns 
         }
     };
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns error? {
     string document = "{ lift { name } }";
@@ -223,11 +223,11 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns
         }
     };
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "unit"]
+    groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePathsReturningServicesWithHierarchicalResourcePath() returns error? {
     string document = "{ profile { personal { name { first } } } }";
@@ -245,5 +245,5 @@ isolated function testHierarchicalResourcePathsReturningServicesWithHierarchical
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
