@@ -73,14 +73,19 @@ class ResponseCoerceVisitor {
         Data original = outputData.original;
         Data coerced = outputData.coerced;
 
-        anydata subOriginal = original[fieldNode.getName()];
-        if subOriginal is Data {
-            Data subCoerced = {};
-            OutputData subOutputData = { original: subOriginal, coerced: subCoerced };
-            foreach parser:Selection selection in fieldNode.getSelections() {
-                self.visitSelection(selection, subOutputData);
+        anydata|anydata[] subOriginal = original[fieldNode.getName()];
+        if subOriginal is anydata[] {
+            anydata[] subCoercedArray = [];
+            foreach anydata element in subOriginal {
+                if element is Data {
+                    subCoercedArray.push(self.orderData(element, fieldNode));
+                } else {
+                    subCoercedArray.push(element);
+                }
             }
-            coerced[fieldNode.getName()] = subCoerced;
+            coerced[fieldNode.getName()] = subCoercedArray;
+        } else if subOriginal is Data {
+            coerced[fieldNode.getName()] = self.orderData(subOriginal, fieldNode);
         } else {
             if original.hasKey(fieldNode.getName()) {
                 coerced[fieldNode.getName()] = subOriginal;
@@ -97,6 +102,15 @@ class ResponseCoerceVisitor {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
+    }
+
+    isolated function orderData(Data original, parser:FieldNode fieldNode) returns Data {
+        Data coerced = {};
+        OutputData outputData = { original: original, coerced: coerced };
+        foreach parser:Selection selection in fieldNode.getSelections() {
+            self.visitSelection(selection, outputData);
+        }
+        return coerced;
     }
 }
 
