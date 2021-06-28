@@ -50,8 +50,9 @@ public class PluginConstants {
                 "GRAPHQL_104", DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ERROR_OR_NIL("Invalid return type error or nil. " +
                 "Resource function must have a return data type", "GRAPHQL_105", DiagnosticSeverity.ERROR),
-        INVALID_RESOURCE_FUNCTION_ACCESSOR("Invalid resource function accessor. Only get is allowed",
-                "GRAPHQL_106", DiagnosticSeverity.ERROR),
+        INVALID_RESOURCE_FUNCTION_ACCESSOR(
+                "Invalid resource function accessor. Only get is allowed in GraphQL resources", "GRAPHQL_106",
+                DiagnosticSeverity.ERROR),
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one graphql:Listener is allowed",
                 "GRAPHQL_107", DiagnosticSeverity.ERROR),
         INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value must be a positive integer",
