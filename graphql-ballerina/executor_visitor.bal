@@ -36,11 +36,11 @@ class ExecutorVisitor {
         return getOutputObject(self.data, self.errors);
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode) {
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         // Do nothing
     }
 
-    public isolated function visitOperation(parser:OperationNode operationNode) {
+    public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:Selection selection in operationNode.getSelections() {
             self.visitSelection(selection);
         }

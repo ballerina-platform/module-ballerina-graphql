@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1497] Fix GraphQL Parser not Parsing Float Values with Exp Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/1497)
 - [[#1489] Fix Input Value Coercion When Int Values Passed to Float Arguments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1489)
 - [[#1508] Fix Incorrectly Validating Invalid Operation Names when a Single Operation is Present in the Document](https://github.com/ballerina-platform/ballerina-standard-library/issues/1508)
+- [[#1505] Fix Field Order Not Maintained in the GraphQL Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1505)
+- [[#1526] Fix Parser Skipping Some Characters from Comments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1526)
 
 ## [0.2.0-beta.1] - 2021-06-02
 

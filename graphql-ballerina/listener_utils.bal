@@ -19,102 +19,72 @@ import ballerina/http;
 import graphql.parser;
 
 isolated function handleGetRequests(Engine engine, http:Request request) returns http:Response {
-    http:Response response = new;
-    var query = request.getQueryParamValue(PARAM_QUERY);
-    if (query is ()) {
-        // TODO: Use default bad request response when it is implemented
-        setResponseForBadRequest(response);
+    string? query = request.getQueryParamValue(PARAM_QUERY);
+    if query is string {
+        string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
+        return getResponseFromQuery(engine, query, operationName);
     } else {
-        string operationName = resolveOperationName(request.getQueryParamValue(PARAM_OPERATION_NAME));
-        parser:OperationNode|OutputObject validationResult = engine.validate(query, operationName);
-        setResponse(engine, response, validationResult);
+        return createResponse("Query not found", http:STATUS_BAD_REQUEST);
     }
-    return response;
 }
 
 isolated function handlePostRequests(Engine engine, http:Request request) returns http:Response {
-    http:Response response = new;
     string contentType = request.getContentType();
-    if (contentType == CONTENT_TYPE_JSON) {
-        processRequestWithJsonPayload(engine, request, response);
-    } else if (contentType == CONTENT_TYPE_GQL) {
-        json payload = getErrorJson("Content-Type 'application/graphql' is not yet supported");
-        response.setPayload(payload);
+    if contentType == CONTENT_TYPE_JSON {
+        return getResponseFromJsonPayload(engine, request);
+    } else if contentType == CONTENT_TYPE_GQL {
+        return createResponse("Content-Type 'application/graphql' is not yet supported", http:STATUS_BAD_REQUEST);
     } else {
-        json payload = getErrorJson("Invalid 'Content-type' received");
-        response.setPayload(payload);
+        return createResponse("Invalid 'Content-type' received", http:STATUS_BAD_REQUEST);
     }
+}
+
+isolated function getResponseFromJsonPayload(Engine engine, http:Request request) returns http:Response {
+    var payload = request.getJsonPayload();
+    if payload is json {
+        var document = payload.query;
+        if document is string {
+            return getResponseFromQuery(engine, document, getOperationName(payload));
+        }
+    }
+    return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
+}
+
+isolated function getResponseFromQuery(Engine engine, string document, string? operationName) returns http:Response {
+    parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName);
+    if validationResult is parser:OperationNode {
+        return getResponseFromExecution(engine, validationResult);
+    } else {
+        return getResponseFromOutputObject(validationResult, http:STATUS_BAD_REQUEST);
+    }
+}
+
+isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode) returns http:Response {
+    OutputObject outputObject = engine.execute(operationNode);
+    return getResponseFromOutputObject(outputObject);
+}
+
+isolated function getResponseFromOutputObject(OutputObject outputObject, int? statusCode = ()) returns http:Response {
+    json|error payload  = outputObject.cloneWithType();
+    if payload is error {
+        return createResponse(payload.message(), http:STATUS_INTERNAL_SERVER_ERROR);
+    } else {
+        return createResponse(payload, statusCode);
+    }
+}
+
+isolated function createResponse(json payload, int? statusCode = ()) returns http:Response {
+    http:Response response = new;
+    if statusCode is int {
+        response.statusCode = statusCode;
+    }
+    response.setPayload(payload);
     return response;
 }
 
-isolated function processRequestWithJsonPayload(Engine engine, http:Request request, http:Response response) {
-    var payload = request.getJsonPayload();
-    if (payload is json) {
-        return processJsonPayload(engine, payload, response);
-    } else {
-        string message = "Error occurred while retriving the payload from the request.";
-        response.setJsonPayload(getErrorJson(message));
-    }
-}
-
-isolated function processJsonPayload(Engine engine, json payload, http:Response response) {
-    var documentString = payload.query;
-    string operationName = parser:ANONYMOUS_OPERATION;
-    var operationNameInPayload = payload.operationName;
-    if (operationNameInPayload is string?) {
-        operationName = resolveOperationName(operationNameInPayload);
-    }
-    if (documentString is string) {
-        parser:OperationNode|OutputObject validationResult = engine.validate(documentString, operationName);
-        setResponse(engine, response, validationResult);
-    } else {
-        setResponseForBadRequest(response);
-    }
-}
-
-isolated function setResponseForBadRequest(http:Response response) {
-    response.statusCode = http:STATUS_BAD_REQUEST;
-    string message = "Bad request";
-    response.setPayload(message);
-}
-
-isolated function getErrorJson(string message) returns json {
-    return {
-        errors: [
-            {
-                massage: message
-            }
-        ]
-    };
-}
-
-isolated function resolveOperationName(string? operationName) returns string {
-    if (operationName is string) {
+isolated function getOperationName(json payload) returns string? {
+    var operationName = payload.operationName;
+    if operationName is string {
         return operationName;
-    } else {
-        return parser:ANONYMOUS_OPERATION;
-    }
-}
-
-isolated function setResponse(Engine engine, http:Response response, parser:OperationNode|OutputObject validationResult) {
-    if (validationResult is OutputObject) {
-        OutputObject outputObject = <OutputObject> validationResult;
-        json|error payload  = outputObject.cloneWithType();
-        if (payload is error) {
-            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            response.setJsonPayload(<json> payload.message());
-        } else {
-            response.statusCode = http:STATUS_BAD_REQUEST;
-            response.setJsonPayload(payload);
-        }
-    } else {
-        OutputObject outputObject = engine.execute(<parser:OperationNode> validationResult);
-        json|error payload  = outputObject.cloneWithType();
-        if (payload is error) {
-            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            response.setJsonPayload(<json> payload.message());
-        } else {
-            response.setJsonPayload(payload);
-        }
     }
 }

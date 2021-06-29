@@ -27,7 +27,7 @@ isolated class Engine {
         self.maxQueryDepth = getMaxQueryDepth(serviceConfig);
     }
 
-    isolated function validate(string documentString, string operationName) returns parser:OperationNode|OutputObject {
+    isolated function validate(string documentString, string? operationName) returns parser:OperationNode|OutputObject {
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if (result is OutputObject) {
             return result;
@@ -44,7 +44,8 @@ isolated class Engine {
     isolated function execute(parser:OperationNode operationNode) returns OutputObject {
         ExecutorVisitor executor = new(self, self.schema);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
-        return outputObject;
+        ResponseCoerceVisitor responseCoerceVisitor = new(self.schema, outputObject);
+        return responseCoerceVisitor.getCoercedOutputObject(operationNode);
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
@@ -74,8 +75,9 @@ isolated class Engine {
         duplicateFieldRemover.remove();
     }
 
-    isolated function getOperation(parser:DocumentNode document, string operationName) returns parser:OperationNode|OutputObject {
-        if (operationName == parser:ANONYMOUS_OPERATION) {
+    isolated function getOperation(parser:DocumentNode document, string? operationName)
+    returns parser:OperationNode|OutputObject {
+        if (operationName == ()) {
             if (document.getOperations().length() == 1) {
                 return document.getOperations()[0];
             } else {

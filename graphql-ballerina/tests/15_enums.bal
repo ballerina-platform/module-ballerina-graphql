@@ -81,7 +81,7 @@ service /graphql on new Listener(9107) {
 }
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnum() returns error? {
     string document = "query { time { weekday } }";
@@ -94,11 +94,11 @@ isolated function testEnum() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnumInsideRecord() returns error? {
     string document = "query { weekday(number: 3) }";
@@ -109,22 +109,22 @@ isolated function testEnumInsideRecord() returns error? {
             weekday: "WEDNESDAY"
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnumIntrospection() returns error? {
     string document = "{ __schema { types { name enumValues { name } } } }";
     string url = "http://localhost:9107/graphql";
     json expectedPayload = check getJsonContentFromFile("enum_introspection.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnumWithUnion() returns error? {
     string document = "query { day(number: 10) }";
@@ -144,11 +144,11 @@ isolated function testEnumWithUnion() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnumInputParameter() returns error? {
     string document = "query { isHoliday(weekday: SUNDAY) }";
@@ -159,12 +159,12 @@ isolated function testEnumInputParameter() returns error? {
             isHoliday: true
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 
 @test:Config {
-    groups: ["enum", "array", "unit"]
+    groups: ["enum", "array"]
 }
 isolated function testReturningEnumArray() returns error? {
     string document = "query { holidays }";
@@ -178,11 +178,11 @@ isolated function testReturningEnumArray() returns error? {
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnumInvalidInputParameter() returns error? {
     string document = "query { isHoliday(weekday: FUNDAY) }";
@@ -201,12 +201,12 @@ isolated function testEnumInvalidInputParameter() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 
 @test:Config {
-    groups: ["enum", "unit"]
+    groups: ["enum"]
 }
 isolated function testEnumInputParameterAsString() returns error? {
     string document = string`query { isHoliday(weekday: "SUNDAY") }`;
@@ -225,5 +225,5 @@ isolated function testEnumInputParameterAsString() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

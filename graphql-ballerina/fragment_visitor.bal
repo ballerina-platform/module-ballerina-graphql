@@ -29,7 +29,7 @@ class FragmentVisitor {
         self.documentNode = ();
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode) {
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         self.documentNode = documentNode;
         foreach parser:OperationNode operation in documentNode.getOperations() {
             self.visitOperation(operation);
@@ -44,7 +44,7 @@ class FragmentVisitor {
         }
     }
 
-    public isolated function visitOperation(parser:OperationNode operationNode) {
+    public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:Selection selection in operationNode.getSelections() {
             self.visitSelection(selection);
         }

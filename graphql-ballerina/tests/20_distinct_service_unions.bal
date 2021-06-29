@@ -100,7 +100,7 @@ isolated function testUnionOfDistinctServices() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -128,7 +128,7 @@ isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 
@@ -151,7 +151,7 @@ isolated function testUnionOfDistinctServicesQueryOnSelectedTypes() returns erro
             profile: {}
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -178,7 +178,7 @@ isolated function testUnionOfDistinctServicesArrayQueryOnSelectedTypes() returns
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -207,5 +207,5 @@ isolated function testUnionOfDistinctServicesArrayQueryOnSelectedTypesFragmentOn
             ]
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

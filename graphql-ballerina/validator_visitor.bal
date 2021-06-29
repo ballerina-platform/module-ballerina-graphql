@@ -43,7 +43,7 @@ class ValidatorVisitor {
         }
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode) {
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach ErrorDetail errorDetail in documentNode.getErrors() {
             self.errors.push(errorDetail);
@@ -54,7 +54,7 @@ class ValidatorVisitor {
         }
     }
 
-    public isolated function visitOperation(parser:OperationNode operationNode) {
+    public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         Parent parent = {
             parentType: self.schema.queryType,
             name: QUERY_TYPE_NAME

@@ -98,7 +98,10 @@ public class GraphqlFunctionValidator {
                     PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR, location);
                 }
             } else {
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR, location);
+                Location accessorLocation = resourceMethodSymbol.getLocation().isPresent() ?
+                        resourceMethodSymbol.getLocation().get() : location;
+                PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
+                                          accessorLocation);
             }
         }
     }
@@ -117,7 +120,7 @@ public class GraphqlFunctionValidator {
         // if return type is a union
         if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
             validateReturnTypeUnion(context,
-                    ((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
+                                    ((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ARRAY) {
             // check member type
             ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) returnTypeDesc;
@@ -129,8 +132,8 @@ public class GraphqlFunctionValidator {
                         (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
                 if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
                     RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeReferenceTypeSymbol.typeDescriptor();
-                    Map<String, RecordFieldSymbol>  recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
-                    for (Map.Entry<String, RecordFieldSymbol> entry:recordFieldSymbolMap.entrySet()) {
+                    Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
+                    for (Map.Entry<String, RecordFieldSymbol> entry : recordFieldSymbolMap.entrySet()) {
                         if (entry.getValue().typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
                             validateReturnType(entry.getValue().typeDescriptor(), location, context);
                         } else {

@@ -64,7 +64,7 @@ clean {
     }
 }
 
-task buildExamples {
+task testExamples {
     doLast {
         def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")
         examples.each { example ->
@@ -91,7 +91,42 @@ task buildExamples {
     }
 }
 
+task buildExamples {
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(":graphql-examples:test")) {
+            buildExamples.enabled = false
+        } else {
+            testExamples.enabled = false
+        }
+    }
+    doLast {
+        def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")
+        examples.each { example ->
+            def dependenciesTomlFile = new File("${project.projectDir}/resources/Dependencies.toml")
+            def dependenciesTomlFileInExample = new File("${project.projectDir}/${example}/Dependencies.toml")
+            def newDependenciesTomlText = dependenciesTomlFile.text.replace("@project.version@", moduleVersion)
+            dependenciesTomlFileInExample.text = newDependenciesTomlText
+            try {
+                exec {
+                    workingDir project.projectDir
+                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                        commandLine 'cmd', '/c', "${ballerinaDist}/bin/bal.bat build --skip-tests ${example} && exit %%ERRORLEVEL%%"
+                    } else {
+                        commandLine 'sh', '-c', "${ballerinaDist}/bin/bal build --skip-tests ${example}"
+                    }
+                }
+            } catch (Exception e) {
+                println("Example '${example}' Build failed: " + e.message)
+                throw e
+            } finally {
+                dependenciesTomlFileInExample.text = ""
+            }
+        }
+    }
+}
+
 copyDistribution.dependsOn ":graphql-ballerina:build"
 copyPackageBala.dependsOn copyDistribution
 buildExamples.dependsOn copyPackageBala
+test.dependsOn testExamples
 build.dependsOn buildExamples

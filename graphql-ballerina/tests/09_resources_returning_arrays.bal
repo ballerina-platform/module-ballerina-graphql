@@ -73,7 +73,7 @@ service class Vehicle {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourcesReturningScalarArrays() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -85,11 +85,11 @@ isolated function testResourcesReturningScalarArrays() returns error? {
             ids: [0, 1, 2]
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourcesReturningArrays() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -120,11 +120,11 @@ isolated function testResourcesReturningArrays() returns error? {
             ]
         }
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourcesReturningArraysMissingFields() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -145,22 +145,22 @@ isolated function testResourcesReturningArraysMissingFields() returns error? {
             }
         ]
     };
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testComplexArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
     string document = "{ students { name courses { name books { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("complex_array.json");
-    test:assertEquals(actualResult, expectedResult);
+    assertJsonValuesWithOrder(actualResult, expectedResult);
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourceReturningServiceObjectArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -181,11 +181,11 @@ isolated function testResourceReturningServiceObjectArray() returns error? {
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testResourceReturningOptionalServiceObjectsArray() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -206,11 +206,11 @@ isolated function testResourceReturningOptionalServiceObjectsArray() returns err
             ]
         }
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
 isolated function testOptionalArrayInvalidQuery() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
@@ -230,7 +230,7 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
 
 @test:Config {

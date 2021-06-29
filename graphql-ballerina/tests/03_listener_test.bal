@@ -17,34 +17,21 @@
 import ballerina/http;
 import ballerina/test;
 import ballerina/url;
-//import ballerina/io;
 
-listener Listener simpleResourceListener = new(9092);
+service /graphql on new Listener(9092) {
+    isolated resource function get name() returns string {
+        return "James Moriarty";
+    }
 
-@test:Config {
-    groups: ["listener", "unit"]
-}
-isolated function testShortHandQueryResult() returns error? {
-    string document = string
-    `{
-    name
-    birthdate
-}`;
-    string url = "http://localhost:9092/graphql";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            name: "James Moriarty",
-            birthdate: "15-05-1848"
-        }
-    };
-    test:assertEquals(actualPayload, expectedPayload);
+    isolated resource function get birthdate() returns string {
+        return "15-05-1848";
+    }
 }
 
 @test:Config {
-    groups: ["listener", "unit"]
+    groups: ["listener"]
 }
-isolated function testGetRequestResult() returns error? {
+isolated function testGetRequest() returns error? {
     string document = "query getPerson { profile(id: 1) { address { city } } }";
     string encodedDocument = check url:encode(document, "UTF-8");
     json expectedPayload = {
@@ -58,44 +45,58 @@ isolated function testGetRequestResult() returns error? {
     };
     http:Client httpClient = check new("http://localhost:9095");
     string path = "/graphql?query=" + encodedDocument;
-    json actualPayload = check httpClient->get(path, targetType = json);
-    test:assertEquals(actualPayload, expectedPayload);
+    json actualPayload = check httpClient->get(path);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener"]
+}
+isolated function testInvalidGetRequestWithoutQuery() returns error? {
+    http:Client httpClient = check new("http://localhost:9095");
+    http:Response response = check httpClient->get("/graphql");
+    assertResponseForBadRequest(response);
+    test:assertEquals(response.getTextPayload(), "Query not found");
 }
 
 @test:Config {
     groups: ["listener", "negative"]
 }
 isolated function testInvalidJsonPayload() returns error? {
-    http:Client httpClient = check new("http://localhost:9092/graphql");
-    json|error result = httpClient->post("/", {}, targetType = json);
-    test:assertTrue(result is http:ClientRequestError);
-    http:ClientRequestError err = <http:ClientRequestError> result;
-    test:assertEquals(err.detail()?.statusCode, 400);
-    test:assertEquals(err.message(), "Bad Request");
+    http:Request request = new;
+    request.setJsonPayload({});
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9092/graphql", request);
+    test:assertEquals(payload, "Invalid request body");
 }
 
 @test:Config {
     groups: ["listener", "negative"]
 }
-isolated function testInvalidTextPayload() returns error? {
-    http:Client httpClient = check new("http://localhost:9092/graphql");
-    json actualPayload = check httpClient->post("/", "", targetType = json);
-    json expectedPayload = {
-        errors: [
-            {
-                massage: "Invalid 'Content-type' received"
-            }
-        ]
-    };
-    test:assertEquals(actualPayload, expectedPayload);
+isolated function testInvalidContentType() returns error? {
+    http:Request request= new;
+    request.setPayload("invalid");
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9092/graphql", request);
+    test:assertEquals(payload, "Invalid 'Content-type' received");
 }
 
-service /graphql on simpleResourceListener {
-    isolated resource function get name() returns string {
-        return "James Moriarty";
-    }
+@test:Config {
+    groups: ["listener", "negative"]
+}
+isolated function testContentTypeGraphql() returns error? {
+    http:Request request = new;
+    request.setHeader("Content-Type", "application/graphql");
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9092/graphql", request);
+    test:assertEquals(payload, "Content-Type 'application/graphql' is not yet supported");
+}
 
-    isolated resource function get birthdate() returns string {
-        return "15-05-1848";
-    }
+@test:Config {
+    groups: ["listener", "negative"]
+}
+isolated function testInvalidRequestBody() returns error? {
+    http:Client httpClient = check new("http://localhost:9092/graphql");
+    http:Request request = new;
+    request.setTextPayload("Invalid");
+    request.setHeader("Content-Type", "application/json");
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9092/graphql", request);
+    test:assertEquals(payload, "Invalid request body");
 }

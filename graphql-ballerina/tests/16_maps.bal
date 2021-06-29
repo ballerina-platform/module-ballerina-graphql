@@ -76,7 +76,7 @@ service /graphql on new Listener(9109) {
 }
 
 @test:Config {
-    groups: ["map", "unit"]
+    groups: ["map"]
 }
 isolated function testMap() returns error? {
     string document = string`query { company { workers(key: "id1") { name } } }`;
@@ -91,11 +91,11 @@ isolated function testMap() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["map", "unit"]
+    groups: ["map"]
 }
 isolated function testNestedMap() returns error? {
     string document = string`query { company { workers(key: "id3") { contacts(key: "home") { number } } } }`;
@@ -112,11 +112,11 @@ isolated function testNestedMap() returns error? {
             }
         }
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["map", "unit"]
+    groups: ["map"]
 }
 isolated function testMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers { name } } }`;
@@ -136,11 +136,11 @@ isolated function testMapWithoutKeyInput() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["map", "unit"]
+    groups: ["map"]
 }
 isolated function testNestedMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers(key: "w1") { contacts } } }`;
@@ -170,5 +170,5 @@ isolated function testNestedMapWithoutKeyInput() returns error? {
             }
         ]
     };
-    test:assertEquals(actualPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
