@@ -139,7 +139,8 @@ isolated function testEnumWithUnion() returns error? {
                         line: 1,
                         column: 9
                     }
-                ]
+                ],
+                path: ["day"]
             }
         ]
     };

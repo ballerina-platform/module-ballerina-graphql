@@ -71,7 +71,8 @@ isolated function testResourceReturningUnionTypes() returns error? {
                         line: 1,
                         column: 3
                     }
-                ]
+                ],
+                path: ["profile"]
             }
         ]
     };

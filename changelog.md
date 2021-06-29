@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 - [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
 - [[#1218] Set `BAD_REQUEST` status code for responses with document validation errors](https://github.com/ballerina-platform/ballerina-standard-library/issues/1218)
+- [[#1507] Add Path Entry to the Error Detail](https://github.com/ballerina-platform/ballerina-standard-library/issues/1507)
 
 ### Fixed
 - [[#1447] Fix Returning Empty Values when Fragments Inside Fragments Querying Service Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/1447)

@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
@@ -71,6 +72,7 @@ public class EngineUtils {
     public static final BString POSSIBLE_TYPES_FIELD = StringUtils.fromString("possibleTypes");
     public static final BString INTERFACES_FIELD = StringUtils.fromString("interfaces");
 
+
     // Schema related values
     public static final String INCLUDE_DEPRECATED = "includeDeprecated";
     public static final String FALSE = "false";
@@ -96,6 +98,7 @@ public class EngineUtils {
     // Record fields
     static final BString LOCATION_FIELD = StringUtils.fromString("location");
     static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
+    static final BString PATH_FIELD = StringUtils.fromString("path");
     static final BString MESSAGE_FIELD = StringUtils.fromString("message");
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
@@ -107,14 +110,18 @@ public class EngineUtils {
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
 
-    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node) {
+    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);
+        ArrayType segmentArrayType = TypeCreator
+                .createArrayType(TypeCreator.createUnionType(PredefinedTypes.TYPE_INT, PredefinedTypes.TYPE_STRING));
+        BArray pathSegmentArray = ValueCreator.createArrayValue(pathSegments.toArray(), segmentArrayType);
         BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(), ERROR_DETAIL_RECORD);
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);
+        errorDetail.put(PATH_FIELD, pathSegmentArray);
         return errorDetail;
     }
 
@@ -166,5 +173,11 @@ public class EngineUtils {
         List<String> updatedPaths = new ArrayList<>(paths);
         updatedPaths.add(node.getStringValue(NAME_FIELD).getValue());
         return updatedPaths;
+    }
+
+    static List<Object> updatePathSegments(List<Object> pathSegments, Object segment) {
+        List<Object> updatedPathSegments = new ArrayList<>(pathSegments);
+        updatedPathSegments.add(segment);
+        return updatedPathSegments;
     }
 }

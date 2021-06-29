@@ -26,9 +26,11 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.List;
+
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromResult;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateDocument;
 
 /**
  * Callback class for the async invocation of the Ballerina resources.
@@ -39,24 +41,22 @@ public class ResourceCallback implements Callback {
     private final BObject node;
     private final BMap<BString, Object> data;
     private final CallbackHandler handler;
+    private final List<Object> pathSegments;
 
     public ResourceCallback(Environment environment, BObject visitor, BObject node, BMap<BString, Object> data,
-                            CallbackHandler handler) {
+                            CallbackHandler handler, List<Object> pathSegments) {
         this.environment = environment;
         this.visitor = visitor;
         this.node = node;
         this.data = data;
         this.handler = handler;
+        this.pathSegments = pathSegments;
     }
 
     @Override
     public void notifySuccess(Object result) {
-        if (result instanceof BError) {
-            BError bError = (BError) result;
-            appendErrorToVisitor(bError);
-        } else {
-            getDataFromResult(this.environment, this.visitor, this.node, result, this.data, this.handler);
-        }
+        populateDocument(this.environment, this.visitor, this.node, result, this.data, this.pathSegments,
+                this.handler);
         markComplete();
     }
 
@@ -68,7 +68,7 @@ public class ResourceCallback implements Callback {
 
     private void appendErrorToVisitor(BError bError) {
         BArray errors = this.visitor.getArrayValue(ERRORS_FIELD);
-        errors.append(getErrorDetailRecord(bError, this.node));
+        errors.append(getErrorDetailRecord(bError, this.node, this.pathSegments));
     }
 
     private void markComplete() {

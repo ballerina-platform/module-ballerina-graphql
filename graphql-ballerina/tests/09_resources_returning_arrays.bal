@@ -30,8 +30,8 @@ service /graphql on new Listener(9100) {
     }
 
     isolated resource function get allVehicles() returns Vehicle[] {
-        Vehicle v1 = new("V1", "Benz");
-        Vehicle v2 = new("V2", "BMW");
+        Vehicle v1 = new("V1", "Benz", "2005");
+        Vehicle v2 = new("V2", "BMW", "2010");
         Vehicle v3 = new("V3", "Ford");
         return [v1, v2, v3];
     }
@@ -47,10 +47,12 @@ service /graphql on new Listener(9100) {
 service class Vehicle {
     private final string id;
     private final string name;
+    private string registeredYear;
 
-    isolated function init(string id, string name) {
+    isolated function init(string id, string name, string registeredYear = "") {
         self.id = id;
         self.name = name;
+        self.registeredYear = registeredYear;
     }
 
     isolated resource function get id() returns string {
@@ -59,6 +61,14 @@ service class Vehicle {
 
     isolated resource function get name() returns string {
         return self.name;
+    }
+
+    isolated resource function get registeredYear() returns string|error {
+        if (self.registeredYear == "") {
+            return error("Registered Year is Not Found");
+        } else {
+            return self.registeredYear;
+        }
     }
 }
 
@@ -217,6 +227,45 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
                         column: 3
                     }
                 ]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service", "unit"]
+}
+isolated function testResourceReturningServiceArrayObjectWithQueryReturnsErrors() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string `{ allVehicles { name registeredYear } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data: {
+            allVehicles: [
+                {
+                    name: "Benz",
+                    registeredYear: "2005"
+                },
+                {
+                    name: "BMW",
+                    registeredYear: "2010"
+                },
+                {
+                    name: "Ford"
+                }
+            ]
+        },
+        errors: [
+            {
+                message: "Registered Year is Not Found",
+                locations: [
+                    {
+                        line: 1,
+                        column: 22
+                    }
+                ],
+                path: ["allVehicles", 2, "registeredYear"]
             }
         ]
     };
