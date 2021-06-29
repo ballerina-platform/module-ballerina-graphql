@@ -30,7 +30,7 @@ import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateDocument;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
 
 /**
  * Callback class for the async invocation of the Ballerina resources.
@@ -55,8 +55,7 @@ public class ResourceCallback implements Callback {
 
     @Override
     public void notifySuccess(Object result) {
-        populateDocument(this.environment, this.visitor, this.node, result, this.data, this.pathSegments,
-                this.handler);
+        populateResponse(this.environment, this.visitor, this.node, result, this.data, this.pathSegments, this.handler);
         markComplete();
     }
 

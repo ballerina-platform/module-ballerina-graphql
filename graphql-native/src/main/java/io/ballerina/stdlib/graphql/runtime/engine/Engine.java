@@ -43,7 +43,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateDocument;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
@@ -94,7 +94,7 @@ public class Engine {
                                  BMap<BString, Object> data) {
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        populateDocument(environment, visitor, node, result, data, pathSegments, null);
+        populateResponse(environment, visitor, node, result, data, pathSegments, null);
     }
 
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
@@ -121,8 +121,8 @@ public class Engine {
         ResourceCallback callback =
                 new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
-        environment.getRuntime()
-                .invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA, callback, args);
+        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
+                callback, args);
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {

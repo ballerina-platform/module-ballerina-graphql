@@ -72,7 +72,6 @@ public class EngineUtils {
     public static final BString POSSIBLE_TYPES_FIELD = StringUtils.fromString("possibleTypes");
     public static final BString INTERFACES_FIELD = StringUtils.fromString("interfaces");
 
-
     // Schema related values
     public static final String INCLUDE_DEPRECATED = "includeDeprecated";
     public static final String FALSE = "false";
@@ -115,9 +114,9 @@ public class EngineUtils {
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);
-        ArrayType segmentArrayType = TypeCreator
+        ArrayType pathSegmentArrayType = TypeCreator
                 .createArrayType(TypeCreator.createUnionType(PredefinedTypes.TYPE_INT, PredefinedTypes.TYPE_STRING));
-        BArray pathSegmentArray = ValueCreator.createArrayValue(pathSegments.toArray(), segmentArrayType);
+        BArray pathSegmentArray = ValueCreator.createArrayValue(pathSegments.toArray(), pathSegmentArrayType);
         BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(), ERROR_DETAIL_RECORD);
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
         errorDetail.put(LOCATIONS_FIELD, locations);

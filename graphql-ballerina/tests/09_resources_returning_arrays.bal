@@ -47,9 +47,9 @@ service /graphql on new Listener(9100) {
 service class Vehicle {
     private final string id;
     private final string name;
-    private string registeredYear;
+    private final string? registeredYear;
 
-    isolated function init(string id, string name, string registeredYear = "") {
+    isolated function init(string id, string name, string? registeredYear = ()) {
         self.id = id;
         self.name = name;
         self.registeredYear = registeredYear;
@@ -63,8 +63,9 @@ service class Vehicle {
         return self.name;
     }
 
-    isolated resource function get registeredYear() returns string|error {
-        if (self.registeredYear == "") {
+    isolated resource function get registeredYear() returns string?|error {
+        string? registeredYear = self.registeredYear;
+        if (registeredYear == ()) {
             return error("Registered Year is Not Found");
         } else {
             return self.registeredYear;
@@ -234,11 +235,20 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service", "unit"]
+    groups: ["array", "service"]
 }
-isolated function testResourceReturningServiceArrayObjectWithQueryReturnsErrors() returns error? {
+isolated function testResourceReturningServiceArrayObjectWithFragmentReturnsError() returns error? {
     string graphqlUrl = "http://localhost:9100/graphql";
-    string document = string `{ allVehicles { name registeredYear } }`;
+    string document = string
+    `{
+        allVehicles {
+            ...Details
+        }
+    }
+    fragment Details on Vehicle {
+        name,
+        registeredYear
+    }`;
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         data: {
@@ -261,13 +271,13 @@ isolated function testResourceReturningServiceArrayObjectWithQueryReturnsErrors(
                 message: "Registered Year is Not Found",
                 locations: [
                     {
-                        line: 1,
-                        column: 22
+                        line: 8,
+                        column: 9
                     }
                 ],
                 path: ["allVehicles", 2, "registeredYear"]
             }
         ]
     };
-    test:assertEquals(result, expectedPayload);
+    assertJsonValuesWithOrder(result, expectedPayload);
 }
