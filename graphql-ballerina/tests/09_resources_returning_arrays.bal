@@ -63,12 +63,12 @@ service class Vehicle {
         return self.name;
     }
 
-    isolated resource function get registeredYear() returns string?|error {
+    isolated resource function get registeredYear() returns string|error {
         string? registeredYear = self.registeredYear;
         if (registeredYear == ()) {
             return error("Registered Year is Not Found");
         } else {
-            return self.registeredYear;
+            return <string> self.registeredYear;
         }
     }
 }
@@ -251,6 +251,54 @@ isolated function testResourceReturningServiceArrayObjectWithFragmentReturnsErro
     }`;
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
+        errors: [
+            {
+                message: "Registered Year is Not Found",
+                locations: [
+                    {
+                        line: 8,
+                        column: 9
+                    }
+                ],
+                path: ["allVehicles", 2, "registeredYear"]
+            }
+        ],
+        data: {
+            allVehicles: [
+                {
+                    name: "Benz",
+                    registeredYear: "2005"
+                },
+                {
+                    name: "BMW",
+                    registeredYear: "2010"
+                },
+                {
+                    name: "Ford"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service"]
+}
+isolated function testResourceReturningServiceArrayObjectWithInvalidResponseOrder() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string
+    `{
+        allVehicles {
+            ...Details
+        }
+    }
+    fragment Details on Vehicle {
+        name,
+        registeredYear
+    }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
         data: {
             allVehicles: [
                 {
@@ -279,5 +327,8 @@ isolated function testResourceReturningServiceArrayObjectWithFragmentReturnsErro
             }
         ]
     };
-    assertJsonValuesWithOrder(result, expectedPayload);
+    test:assertEquals(result, expectedPayload);
+    string actualPayloadString = result.toString();
+    string expectedPayloadString = expectedPayload.toString();
+    test:assertNotEquals(actualPayloadString, expectedPayloadString);
 }

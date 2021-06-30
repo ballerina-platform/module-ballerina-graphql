@@ -52,8 +52,8 @@ type ErrorDetail record {|
 |};
 
 type OutputObject record {
-    Data data?;
     ErrorDetail[] errors?;
+    Data data?;
 };
 
 type __Schema record {|

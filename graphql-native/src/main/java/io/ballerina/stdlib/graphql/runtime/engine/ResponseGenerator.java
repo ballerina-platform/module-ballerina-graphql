@@ -70,17 +70,17 @@ public class ResponseGenerator {
                 data.put(node.getStringValue(NAME_FIELD), result);
             } else if (tag == TypeTags.RECORD_TYPE_TAG) {
                 getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) result, data, pathSegments,
-                        callbackHandler);
+                                  callbackHandler);
             } else if (tag == TypeTags.MAP_TAG) {
                 getDataFromMap(environment, visitor, node, (BMap<BString, Object>) result, data, pathSegments,
-                        callbackHandler);
+                               callbackHandler);
             } else if (tag == TypeTags.ARRAY_TAG) {
                 getDataFromArray(environment, visitor, node, (BArray) result, data, pathSegments, callbackHandler);
             } else if (tag == TypeTags.TABLE_TAG) {
                 getDataFromTable(environment, visitor, node, (BTable) result, data, pathSegments, callbackHandler);
             } else if (tag == TypeTags.SERVICE_TAG) {
                 getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>(),
-                        pathSegments, callbackHandler);
+                                   pathSegments, callbackHandler);
             } // Here, `else` should not be reached.
         } else {
             data.put(node.getStringValue(NAME_FIELD), result);
@@ -103,11 +103,11 @@ public class ResponseGenerator {
             if (isFragment) {
                 if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
                     executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths,
-                            pathSegments, handler);
+                                                    pathSegments, handler);
                 }
             } else {
                 executeResourceWithPath(environment, visitor, subNode, service, subData, paths, pathSegments,
-                        handler, i);
+                                        handler, i);
             }
             data.put(node.getStringValue(NAME_FIELD), subData);
         }
@@ -133,7 +133,7 @@ public class ResponseGenerator {
                 List<Object> updatedPathSegments =
                         updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
                 populateResponse(environment, visitor, subNode, fieldValue, subData, updatedPathSegments,
-                        callbackHandler);
+                                 callbackHandler);
             }
         }
         data.put(node.getStringValue(NAME_FIELD), subData);
@@ -160,7 +160,7 @@ public class ResponseGenerator {
                 Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
                 populateResponse(environment, visitor, node, resultElement, subData, updatedPathSegments,
-                        callbackHandler);
+                                 callbackHandler);
                 resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
             data.put(node.getStringValue(NAME_FIELD), resultArray);
@@ -193,7 +193,7 @@ public class ResponseGenerator {
                 List<Object> updatedPathSegments =
                         updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
                 populateResponse(environment, visitor, subNode, fieldValue, data, updatedPathSegments,
-                        callbackHandler);
+                                 callbackHandler);
             }
         }
     }
@@ -208,10 +208,10 @@ public class ResponseGenerator {
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
                 executeResourceForFragmentNodes(environment, service, visitor, subNode, data, paths, pathSegments,
-                        callbackHandler);
+                                                callbackHandler);
             } else {
                 executeResourceWithPath(environment, visitor, subNode, service, data, paths, pathSegments,
-                        callbackHandler, i);
+                                        callbackHandler, i);
             }
         }
     }

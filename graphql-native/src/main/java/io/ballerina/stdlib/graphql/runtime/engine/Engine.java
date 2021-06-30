@@ -104,7 +104,7 @@ public class Engine {
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
                 getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
-                        paths, pathSegments);
+                                           paths, pathSegments);
                 return;
             }
         }
@@ -122,7 +122,7 @@ public class Engine {
                 new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
-                callback, args);
+                                                   callback, args);
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
