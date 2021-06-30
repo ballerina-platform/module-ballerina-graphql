@@ -128,5 +128,6 @@ task buildExamples {
 copyDistribution.dependsOn ":graphql-ballerina:build"
 copyPackageBala.dependsOn copyDistribution
 buildExamples.dependsOn copyPackageBala
+testExamples.dependsOn copyPackageBala
 test.dependsOn testExamples
 build.dependsOn buildExamples
