@@ -68,7 +68,7 @@ service class Vehicle {
         if (registeredYear == ()) {
             return error("Registered Year is Not Found");
         } else {
-            return <string> self.registeredYear;
+            return registeredYear;
         }
     }
 }
