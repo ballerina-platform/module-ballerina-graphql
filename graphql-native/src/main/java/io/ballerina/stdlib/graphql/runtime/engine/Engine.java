@@ -42,8 +42,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SER
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromResult;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
 
 /**
@@ -84,34 +84,42 @@ public class Engine {
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         List<String> paths = new ArrayList<>();
         paths.add(node.getStringValue(NAME_FIELD).getValue());
+        List<Object> pathSegments = new ArrayList<>();
+        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
         CallbackHandler callbackHandler = new CallbackHandler(future);
-        executeResource(environment, service, visitor, node, data, paths, callbackHandler);
+        executeResource(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
     }
 
     public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
                                  BMap<BString, Object> data) {
-        getDataFromResult(environment, visitor, node, result, data, null);
+        List<Object> pathSegments = new ArrayList<>();
+        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
+        populateResponse(environment, visitor, node, result, data, pathSegments, null);
     }
 
     static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                BMap<BString, Object> data, List<String> paths, CallbackHandler callbackHandler) {
+                                BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
+                                CallbackHandler callbackHandler) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler);
+                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
+                                           paths, pathSegments);
                 return;
             }
         }
         // The resource not found. This should be a resource with hierarchical paths
-        getDataFromService(environment, service, visitor, node, data, paths, callbackHandler);
+        getDataFromService(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
     }
 
     private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
                                                    BObject node, ResourceMethodType resourceMethod,
-                                                   BMap<BString, Object> data, CallbackHandler callbackHandler) {
+                                                   BMap<BString, Object> data, CallbackHandler callbackHandler,
+                                                   List<String> paths, List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForResource(resourceMethod, arguments);
-        ResourceCallback callback = new ResourceCallback(environment, visitor, node, data, callbackHandler);
+        ResourceCallback callback =
+                new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
                                                    callback, args);

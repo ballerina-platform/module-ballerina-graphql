@@ -30,8 +30,8 @@ service /graphql on new Listener(9100) {
     }
 
     isolated resource function get allVehicles() returns Vehicle[] {
-        Vehicle v1 = new("V1", "Benz");
-        Vehicle v2 = new("V2", "BMW");
+        Vehicle v1 = new("V1", "Benz", "2005");
+        Vehicle v2 = new("V2", "BMW", "2010");
         Vehicle v3 = new("V3", "Ford");
         return [v1, v2, v3];
     }
@@ -47,10 +47,12 @@ service /graphql on new Listener(9100) {
 service class Vehicle {
     private final string id;
     private final string name;
+    private final string? registeredYear;
 
-    isolated function init(string id, string name) {
+    isolated function init(string id, string name, string? registeredYear = ()) {
         self.id = id;
         self.name = name;
+        self.registeredYear = registeredYear;
     }
 
     isolated resource function get id() returns string {
@@ -59,6 +61,15 @@ service class Vehicle {
 
     isolated resource function get name() returns string {
         return self.name;
+    }
+
+    isolated resource function get registeredYear() returns string|error {
+        string? registeredYear = self.registeredYear;
+        if (registeredYear == ()) {
+            return error("Registered Year is Not Found");
+        } else {
+            return registeredYear;
+        }
     }
 }
 
@@ -221,4 +232,103 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
         ]
     };
     assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service"]
+}
+isolated function testResourceReturningServiceArrayObjectWithFragmentReturnsError() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string
+    `{
+        allVehicles {
+            ...Details
+        }
+    }
+    fragment Details on Vehicle {
+        name,
+        registeredYear
+    }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Registered Year is Not Found",
+                locations: [
+                    {
+                        line: 8,
+                        column: 9
+                    }
+                ],
+                path: ["allVehicles", 2, "registeredYear"]
+            }
+        ],
+        data: {
+            allVehicles: [
+                {
+                    name: "Benz",
+                    registeredYear: "2005"
+                },
+                {
+                    name: "BMW",
+                    registeredYear: "2010"
+                },
+                {
+                    name: "Ford"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["array", "service"]
+}
+isolated function testResourceReturningServiceArrayObjectWithInvalidResponseOrder() returns error? {
+    string graphqlUrl = "http://localhost:9100/graphql";
+    string document = string
+    `{
+        allVehicles {
+            ...Details
+        }
+    }
+    fragment Details on Vehicle {
+        name,
+        registeredYear
+    }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data: {
+            allVehicles: [
+                {
+                    name: "Benz",
+                    registeredYear: "2005"
+                },
+                {
+                    name: "BMW",
+                    registeredYear: "2010"
+                },
+                {
+                    name: "Ford"
+                }
+            ]
+        },
+        errors: [
+            {
+                message: "Registered Year is Not Found",
+                locations: [
+                    {
+                        line: 8,
+                        column: 9
+                    }
+                ],
+                path: ["allVehicles", 2, "registeredYear"]
+            }
+        ]
+    };
+    test:assertEquals(result, expectedPayload);
+    string actualPayloadString = result.toString();
+    string expectedPayloadString = expectedPayload.toString();
+    test:assertNotEquals(actualPayloadString, expectedPayloadString);
 }

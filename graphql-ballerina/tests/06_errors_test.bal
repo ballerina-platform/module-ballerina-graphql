@@ -256,7 +256,8 @@ isolated function testRuntimeError() returns error? {
                         line: 1,
                         column: 3
                     }
-                ]
+                ],
+                path: ["profile"]
             }
         ]
     };
@@ -286,7 +287,8 @@ isolated function testRuntimeErrorWithGetRequest() returns error? {
                         line: 1,
                         column: 3
                     }
-                ]
+                ],
+                path: ["profile"]
             }
         ]
     };
