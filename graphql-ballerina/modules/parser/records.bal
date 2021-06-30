@@ -36,6 +36,6 @@ public type Location record {|
 # + path - The GraphQL resource path of the error
 public type ErrorDetail record {|
     string message;
-    Location[] locations;
+    Location[] locations?;
     (int|string)[] path?;
 |};

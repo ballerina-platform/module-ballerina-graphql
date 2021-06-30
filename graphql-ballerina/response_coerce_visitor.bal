@@ -115,7 +115,12 @@ class ResponseCoerceVisitor {
 }
 
 isolated function sortErrorDetail(ErrorDetail errorDetail) returns int {
-    return errorDetail.locations[0].line;
+    Location[]? locations = errorDetail?.locations;
+    if (locations == ()) {
+        return 0;
+    } else {
+        return locations[0].line;
+    }
 }
 
 isolated function getOutputDataRecord(OutputObject outputObject, Data coerced) returns OutputData? {

@@ -51,10 +51,10 @@ type ErrorDetail record {|
     *parser:ErrorDetail;
 |};
 
-type OutputObject record {
+type OutputObject record {|
     ErrorDetail[] errors?;
     Data data?;
-};
+|};
 
 type __Schema record {|
     __Type[] types;
