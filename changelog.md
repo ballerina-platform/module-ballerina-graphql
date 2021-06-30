@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1505] Fix Field Order Not Maintained in the GraphQL Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1505)
 - [[#1526] Fix Parser Skipping Some Characters from Comments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1526)
 - [[#1576] Fix Incorrect Response Order in GraphQL Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1576)
+- [[#1566] Make Locations Field an Optional Field in Error Details](https://github.com/ballerina-platform/ballerina-standard-library/issues/1566)
 
 ## [0.2.0-beta.1] - 2021-06-02
 
