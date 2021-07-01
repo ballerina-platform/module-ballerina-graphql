@@ -16,7 +16,24 @@
 
 import ballerina/graphql;
 
-service graphql:Service on new graphql:Listener(4000) {
-    remote function someFunction(string name) {
+public isolated service class Lift {
+    isolated resource function get name() returns string {
+        return "L1";
+    }
+}
+
+isolated service class Trail {
+    isolated resource function get id() returns string {
+        return "T1";
+    }
+
+    remote function lifts() returns Lift[] {
+        return [new];
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    isolated resource function get lift() returns Trail {
+        return new;
     }
 }

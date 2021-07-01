@@ -40,12 +40,12 @@ public class PluginConstants {
      * Compilation errors.
      */
     enum CompilationErrors {
-        INVALID_FUNCTION("Invalid method. Remote methods are not allowed",
+        INVALID_FUNCTION("Invalid method. Remote methods are not allowed in GraphQL service objects",
                 "GRAPHQL_101", DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE("Invalid return type for resource function", "GRAPHQL_102",
                 DiagnosticSeverity.ERROR),
-        INVALID_RESOURCE_INPUT_PARAM("Invalid resource input parameter type", "GRAPHQL_103",
-                DiagnosticSeverity.ERROR),
+        INVALID_INPUT_PARAM("Invalid input parameter type", "GRAPHQL_103",
+                            DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_NIL("Invalid return type nil. Resource function must have a return type",
                 "GRAPHQL_104", DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ERROR_OR_NIL("Invalid return type error or nil. " +
@@ -57,7 +57,7 @@ public class PluginConstants {
                 "GRAPHQL_107", DiagnosticSeverity.ERROR),
         INVALID_MAX_QUERY_DEPTH("Invalid maxQueryDepth value. Value must be a positive integer",
                 "GRAPHQL_108", DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_ERROR("Invalid return type error. Resource function must have a return data type",
+        INVALID_RETURN_TYPE_ERROR("Invalid return type error. Function must have a return data type",
                 "GRAPHQL_109", DiagnosticSeverity.ERROR),
         INVALID_LISTENER_INIT("Invalid arguments passed for the listener. " +
                 "http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_110",
@@ -65,7 +65,9 @@ public class PluginConstants {
         INVALID_RETURN_TYPE_MULTIPLE_SERVICES("Invalid return type with multiple indistinct services",
                 "GRAPHQL_111", DiagnosticSeverity.ERROR),
         INVALID_FIELD_NAME("Invalid field name. A GraphQL field Name must not begin with \"__\", " +
-                "which is reserved by GraphQL introspection.", "GRAPHQL_112", DiagnosticSeverity.ERROR);
+                "which is reserved by GraphQL introspection.", "GRAPHQL_112", DiagnosticSeverity.ERROR),
+        INVALID_INPUT_PARAMETER_TYPE("Invalid input parameter type. Remote function must have inputs", "GRAPHQL_113",
+                                     DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

@@ -16,7 +16,12 @@
 
 import ballerina/graphql;
 
-service graphql:Service on new graphql:Listener(4000) {
-    remote function someFunction(string name) {
+service /graphql on new graphql:Listener(4000) {
+    isolated resource function get lift() returns string {
+        return "Lift";
+    }
+
+    remote function updateName() returns string {
+        return "";
     }
 }

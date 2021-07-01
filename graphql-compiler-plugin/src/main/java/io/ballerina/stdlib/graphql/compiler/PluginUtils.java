@@ -98,10 +98,7 @@ public class PluginUtils {
     }
 
     public static boolean isInvalidFieldName(String fieldName) {
-        if (fieldName.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
-                fieldName.contains("/" + PluginConstants.DOUBLE_UNDERSCORES)) {
-            return true;
-        }
-        return false;
+        return fieldName.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
+                fieldName.contains("/" + PluginConstants.DOUBLE_UNDERSCORES);
     }
 }
