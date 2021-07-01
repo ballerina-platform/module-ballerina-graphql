@@ -109,6 +109,9 @@ task copyPackageBala {
 test {
     systemProperty "ballerina.offline.flag", "true"
     useTestNG()
+    testLogging {
+        exceptionFormat = "full"
+    }
 }
 
 copyDistribution.dependsOn ":graphql-ballerina:build"
