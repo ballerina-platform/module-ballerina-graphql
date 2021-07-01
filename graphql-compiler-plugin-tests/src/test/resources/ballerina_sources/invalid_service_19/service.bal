@@ -17,7 +17,7 @@
 import ballerina/graphql;
 
 service /graphql on new graphql:Listener(4000) {
-    isolated resource function get lift() returns string {
+    resource function get lift() returns string {
         return "Lift";
     }
 

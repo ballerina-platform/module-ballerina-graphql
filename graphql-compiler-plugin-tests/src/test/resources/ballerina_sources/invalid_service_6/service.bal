@@ -20,7 +20,7 @@ import ballerina/graphql;
     maxQueryDepth: -1
 }
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns string {
+    resource function get greeting() returns string {
         return "Hello";
     }
 }
@@ -29,7 +29,7 @@ service graphql:Service on new graphql:Listener(4000) {
     maxQueryDepth: 0
 }
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns string {
+    resource function get greeting() returns string {
         return "Hello";
     }
 }

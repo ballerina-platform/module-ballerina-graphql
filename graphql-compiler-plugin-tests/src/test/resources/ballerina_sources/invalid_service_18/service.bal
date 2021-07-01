@@ -16,14 +16,14 @@
 
 import ballerina/graphql;
 
-public isolated service class Lift {
-    isolated resource function get name() returns string {
+public service class Lift {
+    resource function get name() returns string {
         return "L1";
     }
 }
 
-isolated service class Trail {
-    isolated resource function get id() returns string {
+service class Trail {
+    resource function get id() returns string {
         return "T1";
     }
 
@@ -33,7 +33,7 @@ isolated service class Trail {
 }
 
 service /graphql on new graphql:Listener(4000) {
-    isolated resource function get lift() returns Trail {
+    resource function get lift() returns Trail {
         return new;
     }
 }

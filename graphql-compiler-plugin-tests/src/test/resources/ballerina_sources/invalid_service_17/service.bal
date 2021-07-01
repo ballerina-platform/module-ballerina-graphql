@@ -27,27 +27,27 @@ type Lift record {
     Status getStatus;
 };
 
-isolated service class Trail {
+service class Trail {
 
-    isolated resource function get id() returns string {
+    resource function get id() returns string {
         return "T1";
     }
 
-    isolated resource function get __name() returns string {
+    resource function get __name() returns string {
         return "Trail1";
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
-    isolated resource function get __liftCount() returns int{
+    resource function get __liftCount() returns int{
         return 3;
     }
 
-    isolated resource function get trailCount() returns int {
+    resource function get trailCount() returns int {
         return 3;
     }
 
-    isolated resource function get lift() returns Lift {
+    resource function get lift() returns Lift {
         return {
             __id:"L1",
             getStatus: {
@@ -58,7 +58,7 @@ service /graphql on new graphql:Listener(4000) {
         };
     }
 
-    isolated resource function get mountain/name/__first() returns string {
+    resource function get mountain/name/__first() returns string {
         return "MountainFirst";
     }
 

@@ -18,40 +18,40 @@
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting {
+    resource function get greet() returns GeneralGreeting {
         return new;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting|Status {
+    resource function get greet() returns GeneralGreeting|Status {
         return new GeneralGreeting();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName|Status {
+    resource function get greet() returns FirstName|Status {
         return new Status();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName {
+    resource function get greet() returns FirstName {
         return new;
     }
 }
 
-distinct service isolated class GeneralGreeting {
+distinct service class GeneralGreeting {
     // invalid json - 1
-    isolated resource function get greeting() returns json {
+    resource function get greeting() returns json {
         json j1 = "Apple";
         return j1;
     }
 }
 
-distinct service isolated class Status {
+distinct service class Status {
     // invalid byte - 2
-    isolated resource function get greeting() returns byte {
+    resource function get greeting() returns byte {
          byte a = 12;
          return a;
     }

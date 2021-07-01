@@ -440,7 +440,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_18");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnosticCount(), 1);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertDiagnostic(diagnostic, CompilationErrors.INVALID_FUNCTION);
         assertLocation(30, diagnostic.location());

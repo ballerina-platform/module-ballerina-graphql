@@ -17,37 +17,37 @@
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|Age|CivilStatus|error {
+    resource function get details() returns FirstName|Age|CivilStatus|error {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|Age? {
+    resource function get details() returns FirstName|Age? {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns CivilStatus|FirstName {
+    resource function get details() returns CivilStatus|FirstName {
         return new FirstName();
     }
 }
 
-service isolated class CivilStatus {
-    isolated resource function get civilStatus() returns boolean {
+service class CivilStatus {
+    resource function get civilStatus() returns boolean {
         return false;
     }
 }
 
-distinct service isolated class FirstName {
-    isolated resource function get firstName() returns string {
+distinct service class FirstName {
+    resource function get firstName() returns string {
         return "Bugs";
     }
 }
 
-service isolated class Age {
-    isolated resource function get age() returns int {
+service class Age {
+    resource function get age() returns int {
         return 15;
     }
 }
