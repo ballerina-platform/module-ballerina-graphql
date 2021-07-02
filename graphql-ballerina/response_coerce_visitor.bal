@@ -30,12 +30,14 @@ class ResponseCoerceVisitor {
         self.coercedOutputObject = {};
     }
 
-    isolated function getCoercedOutputObject(parser:OperationNode operationNode) returns OutputObject {
+    isolated function getCoercedOutputObject(parser:OperationNode? operationNode = ()) returns OutputObject {
         ErrorDetail[]? errors = self.outputObject?.errors;
         if errors != () {
             self.coerceErrors(errors);
         }
-        self.visitOperation(operationNode);
+        if (operationNode is parser:OperationNode) {
+            self.visitOperation(operationNode);
+        }
         return self.coercedOutputObject;
     }
 

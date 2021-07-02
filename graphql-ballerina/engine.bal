@@ -35,7 +35,8 @@ isolated class Engine {
         parser:DocumentNode document = <parser:DocumentNode>result;
         OutputObject? validationResult = self.validateDocument(document);
         if (validationResult is OutputObject) {
-            return validationResult;
+            ResponseCoerceVisitor responseCoerceVisitor = new(self.schema, validationResult);
+            return responseCoerceVisitor.getCoercedOutputObject();
         } else {
             return self.getOperation(document, operationName);
         }
