@@ -41,7 +41,7 @@ import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
+import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.HashSet;
@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import static io.ballerina.stdlib.graphql.compiler.PluginUtils.getLocation;
 
 /**
  * Validates functions in Ballerina GraphQL services.
@@ -97,7 +99,7 @@ public class GraphqlFunctionValidator {
                     (typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location(), context));
             SeparatedNodeList<ParameterNode> parameters = functionDefinitionNode.functionSignature().parameters();
             if (parameters.size() == 0) {
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_INPUT_PARAMETER_TYPE,
+                PluginUtils.updateContext(context, CompilationError.MISSING_INPUT_PARAMETER,
                                           functionDefinitionNode.location());
             }
             validateInputParamType(methodSymbol, functionDefinitionNode.location(), context);
@@ -111,15 +113,13 @@ public class GraphqlFunctionValidator {
             Optional<String> methodName = resourceMethodSymbol.getName();
             if (methodName.isPresent()) {
                 if (!methodName.get().equals(PluginConstants.RESOURCE_FUNCTION_GET)) {
-                    Location accessorLocation = resourceMethodSymbol.getLocation().isPresent() ?
-                            resourceMethodSymbol.getLocation().get() : location;
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
+                    Location accessorLocation = getLocation(resourceMethodSymbol, location);
+                    PluginUtils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR,
                                               accessorLocation);
                 }
             } else {
-                Location accessorLocation = resourceMethodSymbol.getLocation().isPresent() ?
-                        resourceMethodSymbol.getLocation().get() : location;
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
+                Location accessorLocation = getLocation(resourceMethodSymbol, location);
+                PluginUtils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR,
                                           accessorLocation);
             }
         }
@@ -129,9 +129,8 @@ public class GraphqlFunctionValidator {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
             if (PluginUtils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
-                Location methodLocation = resourceMethodSymbol.getLocation().isPresent() ?
-                        resourceMethodSymbol.getLocation().get() : location;
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, methodLocation);
+                Location methodLocation = getLocation(resourceMethodSymbol, location);
+                PluginUtils.updateContext(context, CompilationError.INVALID_FIELD_NAME, methodLocation);
             }
         }
     }
@@ -139,6 +138,7 @@ public class GraphqlFunctionValidator {
     private void validateReturnType(TypeSymbol returnTypeDesc,
                                     Location location, SyntaxNodeAnalysisContext context) {
         // if return type is a union
+        Location returnTypeLocation = getLocation(returnTypeDesc, location);
         if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
             validateReturnTypeUnion(context,
                                     ((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
@@ -159,34 +159,31 @@ public class GraphqlFunctionValidator {
                             validateReturnType(fieldSymbolEntry.getValue().typeDescriptor(), location, context);
                         } else {
                             if (PluginUtils.isInvalidFieldName(fieldSymbolEntry.getKey())) {
-                                Location fieldLocation = fieldSymbolEntry.getValue().getLocation().isPresent() ?
-                                        fieldSymbolEntry.getValue().getLocation().get() : location;
-                                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, fieldLocation);
+                                Location fieldLocation = getLocation(fieldSymbolEntry.getValue(), location);
+                                PluginUtils.updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
                             }
                         }
                     }
                 }
-                Location typeLocation = typeDefinitionSymbol.getLocation().isPresent() ?
-                        typeDefinitionSymbol.getLocation().get() : location;
+                Location typeLocation = getLocation(typeDefinitionSymbol, location);
                 validateReturnType(typeDefinitionSymbol.typeDescriptor(), typeLocation, context);
             } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
                 ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
-                Location classLocation =
-                        classSymbol.getLocation().isPresent() ? classSymbol.getLocation().get() : location;
+                Location classLocation = getLocation(classSymbol, location);
                 if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, classLocation);
+                    PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, classLocation);
                 } else {
                     validateServiceClassDefinition(classSymbol, classLocation, context);
                 }
             }
         } else if (returnTypeDesc.typeKind() == TypeDescKind.NIL) {
             // nil alone is invalid - must have a return type
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_NIL, returnTypeLocation);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ERROR) {
             // error alone is invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR, returnTypeLocation);
         } else if (hasInvalidReturnType(returnTypeDesc)) {
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, returnTypeLocation);
         }
     }
 
@@ -199,9 +196,8 @@ public class GraphqlFunctionValidator {
                 // can have any number of valid input params
                 for (ParameterSymbol param : parameterSymbols) {
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
-                        Location paramLocation = param.getLocation().isPresent() ?
-                                param.getLocation().get() : location;
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_INPUT_PARAM, paramLocation);
+                        Location paramLocation = getLocation(param, location);
+                        PluginUtils.updateContext(context, CompilationError.INVALID_INPUT_PARAM, paramLocation);
                     }
                 }
             }
@@ -242,19 +238,19 @@ public class GraphqlFunctionValidator {
         if (!visitedClassSymbols.contains(classSymbol)) {
             visitedClassSymbols.add(classSymbol);
             Map<String, MethodSymbol> methods = classSymbol.methods();
+
             for (Map.Entry<String, MethodSymbol> method : methods.entrySet()) {
                 MethodSymbol methodSymbol = method.getValue();
-                Location methodLocation = methodSymbol.getLocation().isPresent() ?
-                        methodSymbol.getLocation().get() : location;
+                Location methodLocation = getLocation(methodSymbol, location);
                 if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
+
                     validateResourceAccessorName(methodSymbol, location, context);
                     validateResourcePath(methodSymbol, location, context);
                     Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
-                    returnTypeDesc.ifPresent
-                            (typeSymbol -> validateReturnType(typeSymbol, methodLocation, context));
-                    validateInputParamType(methodSymbol, location, context);
+                    returnTypeDesc.ifPresent(typeSymbol -> validateReturnType(typeSymbol, methodLocation, context));
+                    validateInputParamType(methodSymbol, methodLocation, context);
                 } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION, methodLocation);
+                    PluginUtils.updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
             }
         }
@@ -293,18 +289,16 @@ public class GraphqlFunctionValidator {
                     // only service object types and records are allowed
                     if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
                         if (!isRecordType(returnType)) {
-                            Location typeLocation = returnType.getLocation().isPresent() ?
-                                    returnType.getLocation().get() : location;
-                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, typeLocation);
+                            Location typeLocation = getLocation(returnType, location);
+                            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, typeLocation);
                         } else {
                             recordTypes++;
                         }
                     } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
                         ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
                         if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                            Location classLocation = classSymbol.getLocation().isPresent() ?
-                                    classSymbol.getLocation().get() : location;
-                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, classLocation);
+                            Location classLocation = getLocation(classSymbol, location);
+                            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, classLocation);
                         } else {
                             validateServiceClassDefinition(classSymbol, location, context);
                             // if distinctServices is false (one of the services is not distinct), skip setting it again
@@ -316,9 +310,8 @@ public class GraphqlFunctionValidator {
                     }
                 } else {
                     if (hasInvalidReturnType(returnType)) {
-                        Location typeLocation = returnType.getLocation().isPresent() ?
-                                returnType.getLocation().get() : location;
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, typeLocation);
+                        Location typeLocation = getLocation(returnType, location);
+                        PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, typeLocation);
                     }
                 }
 
@@ -332,17 +325,17 @@ public class GraphqlFunctionValidator {
 
         // has multiple services and if at least one of them are not distinct
         if (serviceTypes > 1 && !distinctServices) {
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
         }
         if (recordTypes > 1) {
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         }
         if (type == 0 && primitiveType == 0) { // error? - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
         } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         } else if (primitiveType > 1) { // string|int - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            PluginUtils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         }
     }
 }

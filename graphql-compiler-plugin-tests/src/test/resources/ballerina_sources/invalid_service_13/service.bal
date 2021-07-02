@@ -50,14 +50,14 @@ distinct service class GeneralGreeting {
 
 distinct service class Status {
     // invalid post - 2
-    isolated resource function post status() returns boolean {
+    resource function post status() returns boolean {
         return true;
     }
 }
 
-distinct service isolated class FirstName {
+distinct service class FirstName {
     // valid
-    isolated resource function get name() returns string {
+    resource function get name() returns string {
         return "James";
     }
 }

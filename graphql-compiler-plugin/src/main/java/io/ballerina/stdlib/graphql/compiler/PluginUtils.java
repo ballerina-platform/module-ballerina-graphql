@@ -30,7 +30,7 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
+import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
@@ -66,7 +66,7 @@ public class PluginUtils {
         return methodSymbol.qualifiers().contains(Qualifier.REMOTE);
     }
 
-    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationErrors errorCode,
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
                                      Location location) {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
                 errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
@@ -100,5 +100,12 @@ public class PluginUtils {
     public static boolean isInvalidFieldName(String fieldName) {
         return fieldName.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
                 fieldName.contains("/" + PluginConstants.DOUBLE_UNDERSCORES);
+    }
+
+    static Location getLocation(Symbol typeSymbol, Location alternateLocation) {
+        if (typeSymbol.getLocation().isPresent()) {
+            return typeSymbol.getLocation().get();
+        }
+        return alternateLocation;
     }
 }

@@ -25,9 +25,9 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
+import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
-import io.ballerina.tools.diagnostics.Location;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -132,8 +132,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_MULTIPLE_LISTENERS);
-        assertLocation(19, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_MULTIPLE_LISTENERS, 19, 1);
     }
 
     @Test
@@ -143,8 +142,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_NIL);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 20, 5);
     }
 
     @Test
@@ -154,8 +152,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 20, 23);
     }
 
     @Test
@@ -165,37 +162,30 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(28, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 28, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(34, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 34, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(41, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 41, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(48, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 48, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(55, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 55, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(61, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 61, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(67, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 67, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(74, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 74, 5);
     }
 
     @Test
@@ -207,20 +197,16 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 20, 38);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(26, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 26, 45);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(32, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 32, 40);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(43, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 43, 39);
     }
 
     @Test
@@ -232,12 +218,10 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_MAX_QUERY_DEPTH);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_MAX_QUERY_DEPTH, 20, 20);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_MAX_QUERY_DEPTH);
-        assertLocation(29, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_MAX_QUERY_DEPTH, 29, 5);
     }
 
     @Test
@@ -247,8 +231,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 20, 5);
     }
 
     @Test
@@ -258,8 +241,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_NIL);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 20, 5);
     }
 
     @Test
@@ -269,8 +251,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 20, 5);
     }
 
     @Test
@@ -282,12 +263,10 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
-        assertLocation(26, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 26, 57);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
-        assertLocation(28, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 28, 63);
     }
 
     @Test
@@ -299,20 +278,16 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 20, 48);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(26, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 26, 39);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(32, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 32, 46);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(38, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 38, 41);
     }
 
     @Test
@@ -324,16 +299,13 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
-        assertLocation(20, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 20, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
-        assertLocation(26, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 26, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
-        assertLocation(32, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 32, 5);
     }
 
     @Test
@@ -345,12 +317,10 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
-        assertLocation(46, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 46, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
-        assertLocation(53, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 53, 23);
     }
 
     @Test
@@ -362,12 +332,10 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(46, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 46, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        assertLocation(54, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 54, 23);
     }
 
     @Test
@@ -379,12 +347,10 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(46, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 46, 48);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAM);
-        assertLocation(53, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 53, 46);
     }
 
     @Test
@@ -394,8 +360,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
-        assertLocation(22, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 22, 57);
     }
 
     @Test
@@ -407,32 +372,25 @@ public class CompilerPluginTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(42, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 42, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(26, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 26, 12);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(21, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 21, 9);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(61, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 61, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(65, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 65, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(69, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 69, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        assertLocation(36, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 36, 23);
     }
 
     @Test
@@ -442,8 +400,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FUNCTION);
-        assertLocation(30, diagnostic.location());
+        assertError(diagnostic, CompilationError.INVALID_FUNCTION, 30, 21);
     }
 
     @Test
@@ -451,10 +408,9 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_19");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnosticCount(), 1);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_INPUT_PARAMETER_TYPE);
-        assertLocation(24, diagnostic.location());
+        assertError(diagnostic, CompilationError.MISSING_INPUT_PARAMETER, 24, 5);
     }
 
     private Package loadPackage(String path) {
@@ -463,19 +419,15 @@ public class CompilerPluginTest {
         return project.currentPackage();
     }
 
-    private void assertDiagnostic(Diagnostic diagnostic, CompilationErrors error) {
-        Assert.assertEquals(diagnostic.diagnosticInfo().code(), error.getErrorCode());
-        Assert.assertEquals(diagnostic.diagnosticInfo().messageFormat(),
-                            error.getError());
-    }
-
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
     }
 
-    private static void assertLocation(int expectedLine, Location actual) {
-        int correctedLineNumber = expectedLine - 1;
-        Assert.assertEquals(actual.lineRange().startLine().line(), correctedLineNumber, "Line Number Mismatch");
+    private void assertError(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.message(), compilationError.getError());
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().line() + 1), line);
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().offset() + 1), column);
     }
 }

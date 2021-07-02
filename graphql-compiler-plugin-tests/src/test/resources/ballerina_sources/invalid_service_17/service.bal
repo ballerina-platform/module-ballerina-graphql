@@ -62,15 +62,15 @@ service /graphql on new graphql:Listener(4000) {
         return "MountainFirst";
     }
 
-    isolated resource function get mountain/__name/last() returns string {
+    resource function get mountain/__name/last() returns string {
         return "MountainLast";
     }
 
-    isolated resource function get __mountain/id() returns string {
+    resource function get __mountain/id() returns string {
         return "M1";
     }
 
-    isolated resource function get mountain/getTrail() returns Trail {
+    resource function get mountain/getTrail() returns Trail {
         return new;
     }
 }

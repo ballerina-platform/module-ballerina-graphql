@@ -70,14 +70,14 @@ distinct service class CivilStatus {
     }
 }
 
-distinct service isolated class FirstName {
-    isolated resource function get firstName() returns string {
+distinct service class FirstName {
+    resource function get firstName() returns string {
         return "Bugs";
     }
 }
 
-distinct service isolated class Age {
-    isolated resource function get age() returns int {
+distinct service class Age {
+    resource function get age() returns int {
         return 15;
     }
 }

@@ -85,8 +85,8 @@ public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysis
             FunctionArgumentNode secondArg = functionArgs.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                PluginUtils.updateContext(context, PluginConstants.CompilationErrors.INVALID_LISTENER_INIT,
-                        secondArg.location());
+                PluginUtils.updateContext(context, PluginConstants.CompilationError.INVALID_LISTENER_INIT,
+                                          secondArg.location());
             }
         }
     }

@@ -57,9 +57,9 @@ distinct service class Status {
     }
 }
 
-distinct service isolated class FirstName {
+distinct service class FirstName {
     // valid
-    isolated resource function get name() returns string {
+    resource function get name() returns string {
         return "James";
     }
 }
