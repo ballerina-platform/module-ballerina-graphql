@@ -423,6 +423,26 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 24, 5);
     }
 
+    @Test
+    public void testRemoteFunctionWithInvalidInputParameter() {
+        Package currentPackage = loadPackage("invalid_service_21");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_INPUT_PARAM, 24, 37);
+    }
+
+    @Test
+    public void testRemoteFunctionWithInvalidReturnType() {
+        Package currentPackage = loadPackage("invalid_service_22");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 24, 5);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
