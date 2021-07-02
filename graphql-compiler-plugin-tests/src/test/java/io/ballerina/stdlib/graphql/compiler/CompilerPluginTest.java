@@ -136,13 +136,13 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testRemoteFunctionsReturningNull() {
+    public void testServiceWithoutResourceFunctions() {
         Package currentPackage = loadPackage("invalid_service_2");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 20, 5);
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
     }
 
     @Test
@@ -411,6 +411,16 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_INPUT_PARAMETER, 24, 5);
+    }
+
+    @Test
+    public void testRemoteFunctionWithoutReturnType() {
+        Package currentPackage = loadPackage("invalid_service_20");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 24, 5);
     }
 
     private Package loadPackage(String path) {

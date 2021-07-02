@@ -52,6 +52,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.PluginUtils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.PluginUtils.updateContext;
 
 /**
  * Validates functions in Ballerina GraphQL services.
@@ -62,8 +63,10 @@ public class GraphqlFunctionValidator {
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         NodeList<Node> memberNodes = serviceDeclarationNode.members();
+        boolean resourceFunctionFound = false;
         for (Node node : memberNodes) {
             if (node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION) {
+                resourceFunctionFound = true;
                 FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
                 // resource functions are valid - validate function signature
                 validateResourceFunction(functionDefinitionNode, context);
@@ -74,6 +77,9 @@ public class GraphqlFunctionValidator {
                     validateRemoteFunction(functionDefinitionNode, context);
                 }
             }
+        }
+        if (!resourceFunctionFound) {
+            updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
     }
 
