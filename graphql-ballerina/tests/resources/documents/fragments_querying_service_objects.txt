@@ -1,0 +1,19 @@
+query {
+    ...greetingFragment
+}
+
+fragment greetingFragment on Query {
+    profile {
+        ...nameFragment
+    }
+}
+
+fragment nameFragment on Profile {
+    name {
+        ...fullNameFragment
+    }
+}
+
+fragment fullNameFragment on Name {
+    first
+}

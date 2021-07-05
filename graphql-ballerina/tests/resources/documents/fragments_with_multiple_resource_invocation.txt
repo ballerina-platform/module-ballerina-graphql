@@ -1,0 +1,23 @@
+query {
+    ...data
+}
+
+fragment data on Query {
+    people {
+        ...people
+    }
+
+    students {
+        ...student
+    }
+}
+
+fragment people on Person {
+    address {
+        city
+    }
+}
+
+fragment student on Student {
+    name
+}

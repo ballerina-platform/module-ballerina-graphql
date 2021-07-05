@@ -1,0 +1,20 @@
+{
+    "data": {
+        "__schema": {
+            "queryType": {
+                "kind": "OBJECT",
+                "fields": [
+                    {
+                        "name": "birthdate"
+                    },
+                    {
+                        "name": "name"
+                    },
+                    {
+                        "name": "ids"
+                    }
+                ]
+            }
+        }
+    }
+}

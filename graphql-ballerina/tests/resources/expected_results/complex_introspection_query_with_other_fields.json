@@ -11,11 +11,11 @@
                     "kind": "OBJECT"
                 },
                 {
-                    "name": "Query",
+                    "name": "TeacherService",
                     "kind": "OBJECT"
                 },
                 {
-                    "name": "Address",
+                    "name": "Query",
                     "kind": "OBJECT"
                 },
                 {
@@ -39,10 +39,6 @@
                     "kind": "SCALAR"
                 },
                 {
-                    "name": "Student",
-                    "kind": "OBJECT"
-                },
-                {
                     "name": "Int",
                     "kind": "SCALAR"
                 },
@@ -51,15 +47,7 @@
                     "kind": "OBJECT"
                 },
                 {
-                    "name": "Book",
-                    "kind": "OBJECT"
-                },
-                {
                     "name": "__InputValue",
-                    "kind": "OBJECT"
-                },
-                {
-                    "name": "Course",
                     "kind": "OBJECT"
                 },
                 {
@@ -67,24 +55,20 @@
                     "kind": "SCALAR"
                 },
                 {
-                    "name": "Person",
-                    "kind": "OBJECT"
-                },
-                {
                     "name": "__Directive",
                     "kind": "OBJECT"
                 }
             ]
         },
-        "people": [
+        "allVehicles": [
             {
-                "name": "Sherlock Holmes"
+                "name": "Benz"
             },
             {
-                "name": "Walter White"
+                "name": "BMW"
             },
             {
-                "name": "Tom Marvolo Riddle"
+                "name": "Ford"
             }
         ]
     }

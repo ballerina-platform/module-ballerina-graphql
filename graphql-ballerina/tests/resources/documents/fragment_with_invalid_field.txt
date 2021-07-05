@@ -1,0 +1,9 @@
+query {
+    ...data
+}
+
+fragment data on Query {
+    people {
+        invalid
+    }
+}

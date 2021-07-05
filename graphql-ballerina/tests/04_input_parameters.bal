@@ -17,48 +17,15 @@
 import ballerina/test;
 import ballerina/lang.value;
 
-listener Listener functionWithArgumentsListener = new(9093);
-
 const float CONVERSION_KG_TO_LBS = 2.205;
 
-service /graphql on functionWithArgumentsListener {
-    isolated resource function get greet(string name) returns string {
-        return "Hello, " + name;
-    }
-
-    isolated resource function get isLegal(int age) returns boolean {
-        if (age < 21) {
-            return false;
-        }
-        return true;
-    }
-
-    resource function get person() returns Person {
-        return people[0];
-    }
-
-    resource function get personById(int id = 0) returns Person? {
-        if (id < people.length()) {
-            return people[id];
-        }
-    }
-
-    resource function get weightInPounds(float weightInKg) returns float {
-        return weightInKg * CONVERSION_KG_TO_LBS;
-    }
-}
-
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs"]
 }
 isolated function testFunctionsWithInputParameter() returns error? {
-    string document = string
-    `{
-    greet (name: "Thisaru")
-}`;
-    string url = "http://localhost:9093/graphql";
+    string document = string`{ greet (name: "Thisaru") }`;
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
             greet: "Hello, Thisaru"
@@ -68,13 +35,12 @@ isolated function testFunctionsWithInputParameter() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs"]
 }
 isolated function testInputParameterTypeNotPresentInReturnTypes() returns error? {
     string document = "{ isLegal(age: 21) }";
-    string url = "http://localhost:9093/graphql";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
             isLegal: true
@@ -84,21 +50,20 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
 }
 
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs", "validation"]
 }
-isolated function testInvalidParameter() returns error? {
-    string document = "{ person(id: 4) { name } }";
-    string url = "http://localhost:9093/graphql";
+isolated function testInvalidArgument() returns error? {
+    string document = "{ quote(id: 4) }";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-
     json expectedPayload = {
         errors: [
             {
-                message: string`Unknown argument "id" on field "Query.person".`,
+                message: string`Unknown argument "id" on field "Query.quote".`,
                 locations: [
                     {
                         line: 1,
-                        column: 10
+                        column: 9
                     }
                 ]
             }
@@ -108,47 +73,41 @@ isolated function testInvalidParameter() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs"]
 }
 isolated function testQueryWithoutDefaultParameter() returns error? {
-    string document = "{ personById { name } }";
-    string url = "http://localhost:9093/graphql";
+    string document = "{ quoteById }";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
-            personById: {
-                name: "Sherlock Holmes"
-            }
+            quoteById: "I am a high-functioning sociapath!"
         }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs"]
 }
 isolated function testQueryWithDefaultParameter() returns error? {
-    string document = "{ personById(id: 2) { name } }";
-    string url = "http://localhost:9093/graphql";
+    string document = "{ quoteById(id: 2) }";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
-            personById: {
-                name: "Tom Marvolo Riddle"
-            }
+            quoteById: "I can make them hurt if I want to!"
         }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs"]
 }
 isolated function testFloatAsInput() returns error? {
     string document = "{ weightInPounds(weightInKg: 1.3) }";
-    string url = "http://localhost:9093/graphql";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
     json expectedPayload = {
@@ -160,11 +119,11 @@ isolated function testFloatAsInput() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types", "float_to_int_coerce"]
+    groups: ["inputs", "inpout_coerce"]
 }
 isolated function testCoerceIntInputToFloat() returns error? {
     string document = "{ weightInPounds(weightInKg: 1) }";
-    string url = "http://localhost:9093/graphql";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
     json expectedPayload = {
@@ -176,11 +135,11 @@ isolated function testCoerceIntInputToFloat() returns error? {
 }
 
 @test:Config {
-    groups: ["input_types"]
+    groups: ["inputs", "validation"]
 }
 isolated function testPassingFloatForIntArguments() returns error? {
     string document = "{ isLegal(age: 20.5) }";
-    string url = "http://localhost:9093/graphql";
+    string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
@@ -194,6 +153,85 @@ isolated function testPassingFloatForIntArguments() returns error? {
                 ]
             }
         ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "validation"]
+}
+isolated function testInvalidArgumentWithValidArgument() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = string`{ greet (name: "name", id: 3) }`;
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    string expectedMessage = string`Unknown argument "id" on field "Query.greet".`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 24
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "validation"]
+}
+isolated function testObjectWithMissingRequiredArgument() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = "{ greet }";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+
+    string expectedMessage = string`Field "greet" argument "name" of type "String!" is required, but it was not provided.`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "enums"]
+}
+isolated function testOptionalEnumArgumentWithoutValue() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = "{ isHoliday }";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            isHoliday: false
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "enums"]
+}
+isolated function testOptionalEnumArgumentWithValue() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = "{ isHoliday(weekday: SUNDAY) }";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            isHoliday: true
+        }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

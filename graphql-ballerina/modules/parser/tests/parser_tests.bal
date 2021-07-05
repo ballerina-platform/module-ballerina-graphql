@@ -429,3 +429,31 @@ isolated function testParseNamedMutation() returns error? {
     test:assertEquals(fieldNode.getFields()[0].getName(), "name");
     test:assertEquals(fieldNode.getFields()[1].getName(), "age");
 }
+
+@test:Config {
+    groups: ["validation", "parser"]
+}
+isolated function testMissingArgumentValue() returns error? {
+    string document = "{ profile(id: ) { name age }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), string`Syntax Error: Unexpected ")".`);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 15);
+}
+
+@test:Config {
+    groups: ["validation", "parser"]
+}
+isolated function testEmptyDocument() returns error? {
+    string document = "{ }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found "}".`);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 3);
+}

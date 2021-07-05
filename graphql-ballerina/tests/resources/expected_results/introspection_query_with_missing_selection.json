@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"__schema\" of type \"__Schema\" must have a selection of subfields. Did you mean \"__schema { ... }\"?",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 3
+                }
+            ]
+        }
+    ]
+}

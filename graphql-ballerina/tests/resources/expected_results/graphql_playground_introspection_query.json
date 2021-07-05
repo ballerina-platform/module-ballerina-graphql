@@ -22,7 +22,7 @@
                             "deprecationReason": null
                         },
                         {
-                            "name": "CLOSE",
+                            "name": "CLOSED",
                             "description": null,
                             "isDeprecated": false,
                             "deprecationReason": null
@@ -219,9 +219,51 @@
                     "description": null,
                     "fields": [
                         {
+                            "name": "trail",
+                            "description": null,
+                            "args": [
+                                {
+                                    "name": "id",
+                                    "description": null,
+                                    "type": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "SCALAR",
+                                            "name": "String",
+                                            "ofType": null
+                                        }
+                                    },
+                                    "defaultValue": null
+                                }
+                            ],
+                            "type": {
+                                "kind": "OBJECT",
+                                "name": "Trail",
+                                "ofType": null
+                            },
+                            "isDeprecated": false,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "search",
                             "description": null,
-                            "args": [],
+                            "args": [
+                                {
+                                    "name": "status",
+                                    "description": null,
+                                    "type": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "ENUM",
+                                            "name": "Status",
+                                            "ofType": null
+                                        }
+                                    },
+                                    "defaultValue": null
+                                }
+                            ],
                             "type": {
                                 "kind": "NON_NULL",
                                 "name": null,
@@ -239,13 +281,36 @@
                             "deprecationReason": null
                         },
                         {
-                            "name": "Trail",
+                            "name": "allTrails",
                             "description": null,
-                            "args": [],
+                            "args": [
+                                {
+                                    "name": "status",
+                                    "description": null,
+                                    "type": {
+                                        "kind": "ENUM",
+                                        "name": "Status",
+                                        "ofType": null
+                                    },
+                                    "defaultValue": null
+                                }
+                            ],
                             "type": {
-                                "kind": "OBJECT",
-                                "name": "Trail",
-                                "ofType": null
+                                "kind": "NON_NULL",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "OBJECT",
+                                            "name": "Trail",
+                                            "ofType": null
+                                        }
+                                    }
+                                }
                             },
                             "isDeprecated": false,
                             "deprecationReason": null
@@ -261,8 +326,8 @@
                                         "kind": "NON_NULL",
                                         "name": null,
                                         "ofType": {
-                                            "kind": "SCALAR",
-                                            "name": "String",
+                                            "kind": "ENUM",
+                                            "name": "Status",
                                             "ofType": null
                                         }
                                     },
@@ -300,47 +365,24 @@
                                 "kind": "NON_NULL",
                                 "name": null,
                                 "ofType": {
-                                    "kind": "OBJECT",
-                                    "name": "Lift",
-                                    "ofType": null
-                                }
-                            },
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
-                            "name": "trailCount",
-                            "description": null,
-                            "args": [
-                                {
-                                    "name": "status",
-                                    "description": null,
-                                    "type": {
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
                                         "kind": "NON_NULL",
                                         "name": null,
                                         "ofType": {
-                                            "kind": "SCALAR",
-                                            "name": "String",
+                                            "kind": "OBJECT",
+                                            "name": "Lift",
                                             "ofType": null
                                         }
-                                    },
-                                    "defaultValue": null
-                                }
-                            ],
-                            "type": {
-                                "kind": "NON_NULL",
-                                "name": null,
-                                "ofType": {
-                                    "kind": "SCALAR",
-                                    "name": "Int",
-                                    "ofType": null
+                                    }
                                 }
                             },
                             "isDeprecated": false,
                             "deprecationReason": null
                         },
                         {
-                            "name": "Lift",
+                            "name": "lift",
                             "description": null,
                             "args": [
                                 {
@@ -362,6 +404,37 @@
                                 "kind": "OBJECT",
                                 "name": "Lift",
                                 "ofType": null
+                            },
+                            "isDeprecated": false,
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "trailCount",
+                            "description": null,
+                            "args": [
+                                {
+                                    "name": "status",
+                                    "description": null,
+                                    "type": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "ENUM",
+                                            "name": "Status",
+                                            "ofType": null
+                                        }
+                                    },
+                                    "defaultValue": null
+                                }
+                            ],
+                            "type": {
+                                "kind": "NON_NULL",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "SCALAR",
+                                    "name": "Int",
+                                    "ofType": null
+                                }
                             },
                             "isDeprecated": false,
                             "deprecationReason": null
@@ -860,9 +933,17 @@
                                 "kind": "NON_NULL",
                                 "name": null,
                                 "ofType": {
-                                    "kind": "OBJECT",
-                                    "name": "Trail",
-                                    "ofType": null
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "OBJECT",
+                                            "name": "Trail",
+                                            "ofType": null
+                                        }
+                                    }
                                 }
                             },
                             "isDeprecated": false,
@@ -995,9 +1076,17 @@
                                 "kind": "NON_NULL",
                                 "name": null,
                                 "ofType": {
-                                    "kind": "OBJECT",
-                                    "name": "Lift",
-                                    "ofType": null
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "OBJECT",
+                                            "name": "Lift",
+                                            "ofType": null
+                                        }
+                                    }
                                 }
                             },
                             "isDeprecated": false,

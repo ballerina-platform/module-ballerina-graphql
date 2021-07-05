@@ -212,16 +212,6 @@ isolated function assertUnauthorized(http:Response|http:ClientError response) {
     }
 }
 
-// The mock authorization server, based with https://hub.docker.com/repository/docker/ldclakmal/ballerina-sts
-listener http:Listener sts = new(9445, {
-    secureSocket: {
-        key: {
-            path: KEYSTORE_PATH,
-            password: "ballerina"
-        }
-    }
-});
-
 service /oauth2 on sts {
     isolated resource function post token() returns json {
         json response = {

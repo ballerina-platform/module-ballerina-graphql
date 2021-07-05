@@ -1,0 +1,38 @@
+{
+    "data": {
+        "people": [
+            {
+                "address": {
+                    "city": "London",
+                    "street":"Baker Street",
+                    "number":"221/B"
+                }
+            },
+            {
+                "address": {
+                    "city": "Albuquerque",
+                    "street":"Negra Arroyo Lane",
+                    "number":"308"
+                }
+            },
+            {
+                "address": {
+                    "city": "Hogwarts",
+                    "street": "Unknown",
+                    "number":"Uknown"
+                }
+            }
+        ],
+        "students": [
+            {
+                "name": "John Doe"
+            },
+            {
+                "name": "Jane Doe"
+            },
+            {
+                "name": "Jonny Doe"
+            }
+        ]
+    }
+}

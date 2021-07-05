@@ -1,0 +1,25 @@
+query {
+   ...on Query {
+       people {
+           ... on Person {
+               address {
+                   street
+               }
+               address {
+                   number
+                   street
+               }
+               address {
+                   number
+                   street
+                   city
+              }
+           }
+       }
+   }
+   ... on Query {
+       students {
+           name
+       }
+   }
+}

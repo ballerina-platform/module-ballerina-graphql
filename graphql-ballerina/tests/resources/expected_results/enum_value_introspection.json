@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"enumValues\" of type \"[__EnumValue!]\" must have a selection of subfields. Did you mean \"enumValues { ... }\"?",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 22
+                }
+            ]
+        }
+    ]
+}
