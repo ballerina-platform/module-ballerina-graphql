@@ -14,6 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+const string quote1 = "I am a high-functioning sociapath!";
+const string quote2 = "I am the one who knocks!";
+const string quote3 = "I can make them hurt if I want to!";
+
 Address a1 = {
     number: "221/B",
     street: "Baker Street",
@@ -135,18 +139,60 @@ EmployeeTable employees = table[
     { id: 3, name: "Johnny Roe", salary: 500.00 }
 ];
 
-table<TLift> key(id) liftTable = table [
-    { id: "astra-express", name: "Astra Express", status: "OPEN", capacity: 10, night: false, elevationgain: 20},
-    { id: "jazz-cat", name: "Jazz Cat", status: "CLOSED", capacity: 5, night: true, elevationgain: 30},
-    { id: "jolly-roger", name: "Jolly Roger", status: "CLOSED", capacity: 8, night: true, elevationgain: 10}
+public final readonly & table<LiftRecord> key(id) liftTable = table [
+    { id: "astra-express", name: "Astra Express", status: OPEN, capacity: 10, night: false, elevationgain: 20},
+    { id: "jazz-cat", name: "Jazz Cat", status: CLOSED, capacity: 5, night: true, elevationgain: 30},
+    { id: "jolly-roger", name: "Jolly Roger", status: CLOSED, capacity: 8, night: true, elevationgain: 10}
 ];
 
-table<TTrail> key(id) trailTabel = table [
-    {id: "blue-bird", name: "Blue Bird", status: "OPEN", difficulty: "intermediate", groomed: true, trees: false, night: false},
-    {id: "blackhawk", name: "Blackhawk", status: "OPEN", difficulty: "intermediate", groomed: true, trees: false, night: false},
-    {id: "ducks-revenge", name: "Duck's Revenge", status: "CLOSED", difficulty: "expert", groomed: true, trees: false, night: false}
+public final readonly & table<TrailRecord> key(id) trailTable = table [
+    {id: "blue-bird", name: "Blue Bird", status: OPEN, difficulty: "intermediate", groomed: true, trees: false, night: false},
+    {id: "blackhawk", name: "Blackhawk", status: OPEN, difficulty: "intermediate", groomed: true, trees: false, night: false},
+    {id: "ducks-revenge", name: "Duck's Revenge", status: CLOSED, difficulty: "expert", groomed: true, trees: false, night: false}
 ];
 
-table<Edge> key(liftId, trailId) edgeTable = table [
-    {liftId: "astra-express", trailId: "blue-bird"}
+public final readonly & table<EdgeRecord> key(liftId, trailId) edgeTable = table [
+    {liftId: "astra-express", trailId: "blue-bird"},
+    {liftId: "astra-express", trailId: "ducks-revenge"},
+    {liftId: "jazz-cat", trailId: "blue-bird"},
+    {liftId: "jolly-roger", trailId: "blackhawk"},
+    {liftId: "jolly-roger", trailId: "ducks-revenge"}
 ];
+
+Contact contact1 = {
+    number: "+94112233445"
+};
+
+Contact contact2 = {
+    number: "+94717171717"
+};
+
+Contact contact3 = {
+    number: "+94771234567"
+};
+
+Worker w1 = {
+    id: "id1",
+    name: "John Doe",
+    contacts: { home: contact1 }
+};
+
+Worker w2 = {
+    id: "id2",
+    name: "Jane Doe",
+    contacts: { home: contact2 }
+};
+
+Worker w3 = {
+    id: "id3",
+    name: "Jonny Doe",
+    contacts: { home: contact3 }
+};
+
+map<Worker> workers = { id1: w1, id2: w2, id3: w3 };
+map<Contact> contacts = { home1: contact1, home2: contact2, home3: contact3 };
+
+Company company = {
+    workers: workers,
+    contacts: contacts
+};

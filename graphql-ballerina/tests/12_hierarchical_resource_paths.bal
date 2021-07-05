@@ -16,66 +16,12 @@
 
 import ballerina/test;
 
-listener Listener hierarchicalPathListener = new Listener(9104);
-
-service /graphql on hierarchicalPathListener {
-    isolated resource function get profile/name/first() returns string {
-        return "Sherlock";
-    }
-
-    isolated resource function get profile/name/last() returns string {
-        return "Holmes";
-    }
-
-    isolated resource function get profile/age() returns int {
-        return 40;
-    }
-
-    isolated resource function get profile/address/city() returns string {
-        return "London";
-    }
-
-    isolated resource function get profile/address/street() returns string {
-        return "Baker Street";
-    }
-
-    isolated resource function get profile/name/address/number() returns string {
-        return "221/B";
-    }
-}
-
-service /snowtooth on hierarchicalPathListener {
-    isolated resource function get lift/name() returns string {
-        return "Lift1";
-    }
-
-    isolated resource function get mountain/trail/getLift/name() returns string {
-        return "Lift2";
-    }
-}
-
-distinct service class HierarchicalName {
-    isolated resource function get name/first() returns string {
-        return "Sherlock";
-    }
-
-    isolated resource function get name/last() returns string {
-        return "Holmes";
-    }
-}
-
-service /hierarchical on hierarchicalPathListener {
-    isolated resource function get profile/personal() returns HierarchicalName {
-        return new();
-    }
-}
-
 @test:Config {
     groups: ["hierarchical_paths"]
 }
 isolated function testHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first } } }";
-    string url = "http://localhost:9104/graphql";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
@@ -95,9 +41,8 @@ isolated function testHierarchicalResourcePaths() returns error? {
 }
 isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
     string document = "{ profile { name { first last } } }";
-    string url = "http://localhost:9104/graphql";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
             profile: {
@@ -116,7 +61,7 @@ isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
 }
 isolated function testHierarchicalResourcePathsComplete() returns error? {
     string document = "{ profile { name { first last } age } }";
-    string url = "http://localhost:9104/graphql";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {
@@ -133,18 +78,18 @@ isolated function testHierarchicalResourcePathsComplete() returns error? {
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
+@test:Config {
+    groups: ["hierarchical_paths"]
+}
 isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? {
     string document = "{ profile { name { address { street } } } }";
-    string url = "http://localhost:9104/graphql";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
-
     json expectedPayload = {
         data: {
             profile: {
                 name: {
-                    address: {
-                        street: "Baker Street"
-                    }
+                    address: {}
                 }
             }
         }
@@ -157,7 +102,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
 }
 isolated function testInvalidHierarchicalResourcePaths() returns error? {
     string document = "{ profile { name { first middle } } }";
-    string url = "http://localhost:9104/graphql";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
 
     string expectedErrorMessage = "Cannot query field \"middle\" on type \"name\".";
@@ -182,7 +127,7 @@ isolated function testInvalidHierarchicalResourcePaths() returns error? {
 }
 isolated function testHierarchicalResourcePathsIntrospection() returns error? {
     string document = "{ __schema { types { name fields { name } } } }";
-    string url = "http://localhost:9104/graphql";
+    string url = "http://localhost:9094/profiles";
     json expectedPayload = check getJsonContentFromFile("hierarchical_resource_paths_introspection.json");
     json actualPayload = check getJsonPayloadFromService(url, document);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -193,7 +138,7 @@ isolated function testHierarchicalResourcePathsIntrospection() returns error? {
 }
 isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns error? {
     string document = "{ mountain { trail { getLift { name } } } }";
-    string url = "http://localhost:9104/snowtooth";
+    string url = "http://localhost:9094/snowtooth";
     json expectedPayload = {
         data: {
             mountain: {
@@ -214,7 +159,7 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns 
 }
 isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns error? {
     string document = "{ lift { name } }";
-    string url = "http://localhost:9104/snowtooth";
+    string url = "http://localhost:9094/snowtooth";
     json expectedPayload = {
         data: {
             lift: {
@@ -231,7 +176,7 @@ isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns
 }
 isolated function testHierarchicalResourcePathsReturningServicesWithHierarchicalResourcePath() returns error? {
     string document = "{ profile { personal { name { first } } } }";
-    string url = "http://localhost:9104/hierarchical";
+    string url = "http://localhost:9094/hierarchical";
     json actualPayload = check getJsonPayloadFromService(url, document);
 
     json expectedPayload = {

@@ -1,0 +1,12 @@
+query {
+    __schema {
+        types {
+            ...on Student {
+                name
+            }
+            ...on Person {
+                name
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "data": {
+        "learningSources": [
+            {},
+            {},
+            {},
+            {},
+            {
+                "name": "Electronics"
+            },
+            {
+                "name": "Computer Science"
+            },
+            {
+                "name": "Mathematics"
+            }
+        ]
+    }
+}

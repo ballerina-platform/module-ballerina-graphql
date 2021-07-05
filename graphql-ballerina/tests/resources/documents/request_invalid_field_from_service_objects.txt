@@ -1,0 +1,11 @@
+query {
+    allLifts(status: OPEN) {
+        name
+        id
+        invalid
+        trailAccess {
+            name
+            difficulty
+        }
+    }
+}

@@ -20,7 +20,7 @@ import graphql.parser;
 
 isolated function handleGetRequests(Engine engine, http:Request request) returns http:Response {
     string? query = request.getQueryParamValue(PARAM_QUERY);
-    if query is string {
+    if query is string && query != "" {
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
         return getResponseFromQuery(engine, query, operationName);
     } else {
@@ -43,7 +43,7 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
     var payload = request.getJsonPayload();
     if payload is json {
         var document = payload.query;
-        if document is string {
+        if document is string && document != "" {
             return getResponseFromQuery(engine, document, getOperationName(payload));
         }
     }

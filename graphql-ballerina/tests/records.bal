@@ -48,6 +48,21 @@ type Employee record {|
     decimal salary;
 |};
 
+public type Contact record {
+    string number;
+};
+
+public type Worker record {|
+    string id;
+    string name;
+    map<Contact> contacts;
+|};
+
+public type Company record {|
+    map<Worker> workers;
+    map<Contact> contacts;
+|};
+
 type EmployeeTable table<Employee> key(id);
 
 public enum Weekday {
@@ -65,32 +80,32 @@ type Time record {|
     string time;
 |};
 
-type TLift record {|
+public enum Status {
+    OPEN,
+    CLOSED,
+    HOLD
+}
+
+public type LiftRecord readonly & record {|
     readonly string id;
     string name;
-    string status;
+    Status status;
     int capacity;
     boolean night;
     int elevationgain;
 |};
 
-type TTrail record {|
+public type TrailRecord readonly & record {|
     readonly string id;
     string name;
-    string status;
+    Status status;
     string difficulty;
     boolean groomed;
     boolean trees;
     boolean night;
 |};
 
-type Edge record {|
+public type EdgeRecord readonly & record {|
     readonly string liftId;
     readonly string trailId;
 |};
-
-enum Status {
-    OPEN,
-    CLOSE,
-    HOLD
-}

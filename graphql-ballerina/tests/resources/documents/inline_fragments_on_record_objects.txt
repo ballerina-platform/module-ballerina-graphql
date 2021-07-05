@@ -1,0 +1,12 @@
+query {
+    teacher {
+        ... on Person {
+            name
+        }
+    }
+    student {
+        ... on Person {
+            age
+        }
+    }
+}

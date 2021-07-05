@@ -1,0 +1,10 @@
+{
+    allVehicles {
+        ...Details
+    }
+}
+
+fragment Details on Vehicle {
+    name,
+    registeredYear
+}

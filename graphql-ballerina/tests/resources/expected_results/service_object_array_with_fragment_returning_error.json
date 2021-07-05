@@ -1,0 +1,29 @@
+{
+    "errors": [
+        {
+            "message": "Registered Year is Not Found",
+            "locations": [
+                {
+                    "line": 9,
+                    "column": 5
+                }
+            ],
+            "path": ["allVehicles", 2, "registeredYear"]
+        }
+    ],
+    "data": {
+        "allVehicles": [
+            {
+                "name": "Benz",
+                "registeredYear": 2005
+            },
+            {
+                "name": "BMW",
+                "registeredYear": 2010
+            },
+            {
+                "name": "Ford"
+            }
+        ]
+    }
+}

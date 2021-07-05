@@ -1,0 +1,32 @@
+{
+    "data": {
+        "people": [
+            {
+                "address": {
+                    "city": "London"
+                }
+            },
+            {
+                "address": {
+                    "city": "Albuquerque"
+                }
+            },
+            {
+                "address": {
+                    "city": "Hogwarts"
+                }
+            }
+        ],
+        "students": [
+            {
+                "name": "John Doe"
+            },
+            {
+                "name": "Jane Doe"
+            },
+            {
+                "name": "Jonny Doe"
+            }
+        ]
+    }
+}

@@ -1,0 +1,11 @@
+query {
+    profile(id: 200) {
+        ... on StudentService {
+            name
+        }
+        ... on TeacherService {
+            name
+            subject
+        }
+    }
+}
