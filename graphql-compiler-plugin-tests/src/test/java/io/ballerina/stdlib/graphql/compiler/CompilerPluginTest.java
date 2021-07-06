@@ -25,7 +25,7 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
+import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -130,7 +130,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_MULTIPLE_LISTENERS);
+        assertDiagnostic(diagnostic, CompilationError.INVALID_MULTIPLE_LISTENERS);
     }
 
     @Test
@@ -140,7 +140,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FUNCTION);
+        assertDiagnostic(diagnostic, CompilationError.INVALID_FUNCTION);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
+        assertDiagnostic(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR);
     }
 
     @Test
@@ -162,7 +162,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RETURN_TYPE);
         }
     }
 
@@ -175,7 +175,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM);
         }
     }
 
@@ -188,7 +188,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_MAX_QUERY_DEPTH);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_MAX_QUERY_DEPTH);
         }
     }
 
@@ -199,7 +199,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL);
+        assertDiagnostic(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL);
     }
 
     @Test
@@ -209,7 +209,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_NIL);
+        assertDiagnostic(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL);
     }
 
     @Test
@@ -219,7 +219,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR);
+        assertDiagnostic(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_LISTENER_INIT);
         }
     }
 
@@ -244,7 +244,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM);
         }
     }
 
@@ -257,7 +257,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
         }
     }
 
@@ -270,7 +270,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR);
         }
     }
 
@@ -283,7 +283,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RETURN_TYPE);
         }
     }
 
@@ -296,7 +296,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM);
         }
     }
 
@@ -309,7 +309,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_LISTENER_INIT);
         }
     }
 
@@ -322,7 +322,7 @@ public class CompilerPluginTest {
         Object[] diagnostics = diagnosticResult.diagnostics().toArray();
         for (Object obj : diagnostics) {
             Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
+            assertDiagnostic(diagnostic, CompilationError.INVALID_FIELD_NAME);
         }
     }
 
@@ -332,7 +332,7 @@ public class CompilerPluginTest {
         return project.currentPackage();
     }
 
-    private void assertDiagnostic(Diagnostic diagnostic, CompilationErrors error) {
+    private void assertDiagnostic(Diagnostic diagnostic, CompilationError error) {
         Assert.assertEquals(diagnostic.diagnosticInfo().code(), error.getErrorCode());
         Assert.assertEquals(diagnostic.diagnosticInfo().messageFormat(),
                 error.getError());

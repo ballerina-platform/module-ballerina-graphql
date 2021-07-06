@@ -39,7 +39,7 @@ public class PluginConstants {
     /**
      * Compilation errors.
      */
-    enum CompilationErrors {
+    enum CompilationError {
         INVALID_FUNCTION("Invalid method. Remote methods are not allowed",
                 "GRAPHQL_101", DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE("Invalid return type for resource function", "GRAPHQL_102",
@@ -71,7 +71,7 @@ public class PluginConstants {
         private final String errorCode;
         private final DiagnosticSeverity diagnosticSeverity;
 
-        CompilationErrors(String error, String errorCode, DiagnosticSeverity diagnosticSeverity) {
+        CompilationError(String error, String errorCode, DiagnosticSeverity diagnosticSeverity) {
             this.error = error;
             this.errorCode = errorCode;
             this.diagnosticSeverity = diagnosticSeverity;
