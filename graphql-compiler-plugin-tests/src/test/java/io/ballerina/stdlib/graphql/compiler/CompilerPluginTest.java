@@ -180,19 +180,6 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidMaxQueryDepthValue() {
-        Package currentPackage = loadPackage("invalid_service_6");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationError.INVALID_MAX_QUERY_DEPTH);
-        }
-    }
-
-    @Test
     public void testReturningOnlyErrorOrNil() {
         Package currentPackage = loadPackage("invalid_service_7");
         PackageCompilation compilation = currentPackage.getCompilation();

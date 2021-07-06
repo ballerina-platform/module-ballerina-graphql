@@ -25,18 +25,7 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
-import io.ballerina.compiler.syntax.tree.AnnotationNode;
-import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
-import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
-import io.ballerina.compiler.syntax.tree.MappingFieldNode;
-import io.ballerina.compiler.syntax.tree.MetadataNode;
-import io.ballerina.compiler.syntax.tree.NodeList;
-import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
-import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
-import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.compiler.syntax.tree.Token;
-import io.ballerina.compiler.syntax.tree.UnaryExpressionNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
@@ -62,42 +51,6 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
             return;
         }
         this.functionValidator.validate(context);
-        validateAnnotation(context);
-    }
-
-    private void validateAnnotation(SyntaxNodeAnalysisContext context) {
-        ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
-        if (serviceDeclarationNode.metadata().isPresent()) {
-            MetadataNode metadataNode = serviceDeclarationNode.metadata().get();
-            NodeList<AnnotationNode> annotationNodes = metadataNode.annotations();
-            AnnotationNode annotationNode = annotationNodes.get(0);
-            if (annotationNode.annotValue().isPresent()) {
-                MappingConstructorExpressionNode constructorExpressionNode = annotationNode.annotValue().get();
-                SeparatedNodeList<MappingFieldNode> mappingFieldNodes = constructorExpressionNode.fields();
-                for (MappingFieldNode mappingNode : mappingFieldNodes) {
-                    SpecificFieldNode specificFieldNode = (SpecificFieldNode) mappingNode;
-                    if (specificFieldNode.fieldName().toString().contains(PluginConstants.MAX_QUERY_DEPTH) &&
-                            specificFieldNode.valueExpr().isPresent()) {
-                        if (specificFieldNode.valueExpr().get().kind() == SyntaxKind.UNARY_EXPRESSION) {
-                            UnaryExpressionNode queryDepthValueNode =
-                                    (UnaryExpressionNode) specificFieldNode.valueExpr().get();
-                            Token unaryOp = queryDepthValueNode.unaryOperator();
-                            // check 0
-                            if (unaryOp.text().equals(PluginConstants.UNARY_NEGATIVE)) {
-                                PluginUtils.updateContext(context, CompilationError.INVALID_MAX_QUERY_DEPTH,
-                                                          queryDepthValueNode.location());
-                            }
-                        } else if (specificFieldNode.valueExpr().get().kind() == SyntaxKind.NUMERIC_LITERAL) {
-                            BasicLiteralNode basicLiteralNode = (BasicLiteralNode) specificFieldNode.valueExpr().get();
-                            if (Integer.parseInt(basicLiteralNode.literalToken().text()) == 0) {
-                                PluginUtils.updateContext(context, CompilationError.INVALID_MAX_QUERY_DEPTH,
-                                                          specificFieldNode.location());
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private boolean isGraphQlService(SyntaxNodeAnalysisContext context) {
