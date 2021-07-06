@@ -27,11 +27,11 @@ import java.util.Arrays;
 /**
  * The {@code CodeAnalyzer} for Ballerina GraphQL services.
  */
-public class GraphqlServiceAnalyzer extends CodeAnalyzer {
+public class ServiceAnalyzer extends CodeAnalyzer {
     @Override
     public void init(CodeAnalysisContext codeAnalysisContext) {
-        codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlServiceValidator(), SyntaxKind.SERVICE_DECLARATION);
-        codeAnalysisContext.addSyntaxNodeAnalysisTask(new GraphqlListenerValidator(),
+        codeAnalysisContext.addSyntaxNodeAnalysisTask(new ServiceValidator(), SyntaxKind.SERVICE_DECLARATION);
+        codeAnalysisContext.addSyntaxNodeAnalysisTask(new ListenerValidator(),
                 Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION, SyntaxKind.EXPLICIT_NEW_EXPRESSION));
 
     }

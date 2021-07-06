@@ -30,7 +30,7 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.Constants.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
@@ -41,12 +41,11 @@ import java.util.Optional;
 /**
  * Util class for the compiler plugin.
  */
-public class PluginUtils {
+public class Utils {
     public static boolean validateModuleId(ModuleSymbol moduleSymbol) {
         String moduleName = moduleSymbol.id().moduleName();
         String orgName = moduleSymbol.id().orgName();
-        return moduleName.equals(PluginConstants.PACKAGE_PREFIX) &&
-                orgName.equals(PluginConstants.PACKAGE_ORG);
+        return moduleName.equals(Constants.PACKAGE_PREFIX) && orgName.equals(Constants.PACKAGE_ORG);
     }
 
     public static MethodSymbol getMethodSymbol(SyntaxNodeAnalysisContext context,
@@ -98,10 +97,7 @@ public class PluginUtils {
     }
 
     public static boolean isInvalidFieldName(String fieldName) {
-        if (fieldName.startsWith(PluginConstants.DOUBLE_UNDERSCORES) ||
-                fieldName.contains("/" + PluginConstants.DOUBLE_UNDERSCORES)) {
-            return true;
-        }
-        return false;
+        return fieldName.startsWith(Constants.DOUBLE_UNDERSCORES) ||
+                fieldName.contains("/" + Constants.DOUBLE_UNDERSCORES);
     }
 }

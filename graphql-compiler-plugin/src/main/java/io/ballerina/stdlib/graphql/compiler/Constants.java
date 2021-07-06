@@ -23,7 +23,7 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 /**
  * GraphQl compiler plugin constants.
  */
-public class PluginConstants {
+public class Constants {
 
     // compiler plugin constants
     public static final String PACKAGE_PREFIX = "graphql";
@@ -84,6 +84,6 @@ public class PluginConstants {
         }
     }
 
-    private PluginConstants() {
+    private Constants() {
     }
 }

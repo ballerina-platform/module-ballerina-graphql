@@ -27,6 +27,6 @@ import io.ballerina.projects.plugins.CompilerPluginContext;
 public class GraphqlCompilerPlugin extends CompilerPlugin {
     @Override
     public void init(CompilerPluginContext compilerPluginContext) {
-        compilerPluginContext.addCodeAnalyzer(new GraphqlServiceAnalyzer());
+        compilerPluginContext.addCodeAnalyzer(new ServiceAnalyzer());
     }
 }

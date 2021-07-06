@@ -28,21 +28,21 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.Constants.CompilationError;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.ballerina.stdlib.graphql.compiler.PluginUtils.validateModuleId;
+import static io.ballerina.stdlib.graphql.compiler.Utils.validateModuleId;
 
 /**
  * Validates a Ballerina GraphQL Service.
  */
-public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
-    private final GraphqlFunctionValidator functionValidator;
+public class ServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
+    private final FunctionValidator functionValidator;
 
-    public GraphqlServiceValidator() {
-        this.functionValidator = new GraphqlFunctionValidator();
+    public ServiceValidator() {
+        this.functionValidator = new FunctionValidator();
     }
 
     @Override
@@ -62,8 +62,8 @@ public class GraphqlServiceValidator implements AnalysisTask<SyntaxNodeAnalysisC
             ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
             List<TypeSymbol> listeners = serviceDeclarationSymbol.listenerTypes();
             if (listeners.size() > 1 && hasGraphqlListener(listeners)) {
-                PluginUtils.updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS,
-                                          serviceDeclarationNode.location());
+                Utils.updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS,
+                                    serviceDeclarationNode.location());
             } else {
                 if (listeners.get(0).typeKind() == TypeDescKind.UNION) {
                     UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listeners.get(0);

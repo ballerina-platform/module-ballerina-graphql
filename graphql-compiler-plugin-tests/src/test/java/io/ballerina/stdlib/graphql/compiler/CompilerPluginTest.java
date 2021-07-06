@@ -25,7 +25,7 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.Constants.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import org.testng.Assert;
 import org.testng.annotations.Test;
