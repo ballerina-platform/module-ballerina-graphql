@@ -1,0 +1,10 @@
+{
+    "data": {
+        "teacher": {
+            "name": "Walter White"
+        },
+        "student": {
+            "age": 25
+        }
+    }
+}

@@ -3,6 +3,10 @@
         "__schema": {
             "types": [
                 {
+                    "name": "Company",
+                    "enumValues": null
+                },
+                {
                     "name": "__TypeKind",
                     "enumValues": [
                         {
@@ -105,6 +109,10 @@
                     "enumValues": null
                 },
                 {
+                    "name": "Contact",
+                    "enumValues": null
+                },
+                {
                     "name": "Weekday",
                     "enumValues": [
                         {
@@ -129,6 +137,10 @@
                             "name": "SUNDAY"
                         }
                     ]
+                },
+                {
+                    "name": "Worker",
+                    "enumValues": null
                 },
                 {
                     "name": "__InputValue",

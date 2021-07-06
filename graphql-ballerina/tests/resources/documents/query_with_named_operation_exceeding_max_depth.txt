@@ -1,0 +1,8 @@
+query getData {
+    people {
+        name
+        address {
+            city
+        }
+    }
+}

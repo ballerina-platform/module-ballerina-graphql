@@ -381,3 +381,79 @@ query getData {
     test:assertEquals(e1, errors[0]);
     test:assertEquals(e2, errors[1]);
 }
+
+@test:Config {
+    groups: ["operations", "parser", "mutation"]
+}
+isolated function testParseAnonymousMutation() returns error? {
+    string document = "mutation { setAge(newAge: 24) { name, age } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    OperationNode[] operations = documentNode.getOperations();
+    test:assertEquals(operations.length(), 1);
+    OperationNode operationNode = operations[0];
+    test:assertEquals(operationNode.getKind(), MUTATION);
+    test:assertEquals(operationNode.getName(), ANONYMOUS_OPERATION);
+    test:assertEquals(operationNode.getFields().length(), 1);
+    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getName(), "setAge");
+    test:assertEquals(fieldNode.getArguments().length(), 1);
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName().value, "newAge");
+    test:assertEquals(argumentNode.getValue().value, 24);
+    test:assertEquals(fieldNode.getFields().length(), 2);
+    test:assertEquals(fieldNode.getFields()[0].getName(), "name");
+    test:assertEquals(fieldNode.getFields()[1].getName(), "age");
+}
+
+@test:Config {
+    groups: ["operations", "parser", "mutation"]
+}
+isolated function testParseNamedMutation() returns error? {
+    string document = "mutation SetAge { setAge(newAge: 24) { name, age } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    OperationNode[] operations = documentNode.getOperations();
+    test:assertEquals(operations.length(), 1);
+    OperationNode operationNode = operations[0];
+    test:assertEquals(operationNode.getKind(), MUTATION);
+    test:assertEquals(operationNode.getName(), "SetAge");
+    test:assertEquals(operationNode.getFields().length(), 1);
+    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getName(), "setAge");
+    test:assertEquals(fieldNode.getArguments().length(), 1);
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName().value, "newAge");
+    test:assertEquals(argumentNode.getValue().value, 24);
+    test:assertEquals(fieldNode.getFields().length(), 2);
+    test:assertEquals(fieldNode.getFields()[0].getName(), "name");
+    test:assertEquals(fieldNode.getFields()[1].getName(), "age");
+}
+
+@test:Config {
+    groups: ["validation", "parser"]
+}
+isolated function testMissingArgumentValue() returns error? {
+    string document = "{ profile(id: ) { name age }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), string`Syntax Error: Unexpected ")".`);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 15);
+}
+
+@test:Config {
+    groups: ["validation", "parser"]
+}
+isolated function testEmptyDocument() returns error? {
+    string document = "{ }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found "}".`);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 3);
+}

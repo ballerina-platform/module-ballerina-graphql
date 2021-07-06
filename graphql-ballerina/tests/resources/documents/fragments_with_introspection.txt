@@ -1,0 +1,19 @@
+query {
+    ...data
+}
+
+fragment data on Query {
+    ...schema
+}
+
+fragment schema on Query {
+    __schema {
+        ...types
+    }
+}
+
+fragment types on __Schema {
+    types {
+        name
+    }
+}

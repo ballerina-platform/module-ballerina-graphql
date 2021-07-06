@@ -1,0 +1,10 @@
+query {
+    information(id: 3) {
+        name
+        ...personFragment
+    }
+}
+
+fragment personFragment on Person {
+    name
+}

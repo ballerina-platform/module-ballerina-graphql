@@ -1,0 +1,9 @@
+query {
+    learningSources {
+        ...courseFragment
+    }
+}
+
+fragment courseFragment on Course {
+    name
+}

@@ -1,0 +1,15 @@
+query {
+    ...data
+}
+
+fragment data on Query {
+    people {
+        ...address
+    }
+}
+
+fragment address on Person {
+    address {
+        city
+    }
+}

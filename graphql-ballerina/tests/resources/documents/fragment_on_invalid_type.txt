@@ -1,0 +1,7 @@
+query {
+    ...data
+}
+
+fragment data on Person {
+    name
+}

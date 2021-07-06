@@ -1,0 +1,17 @@
+query {
+    ... QueryFragment
+}
+
+fragment QueryFragment on Query {
+    teacher {
+        ...TeacherFragment
+    }
+}
+
+fragment TeacherFragment on TeacherService {
+    ...NameFragment
+}
+
+fragment NameFragment on TeacherService {
+    name
+}

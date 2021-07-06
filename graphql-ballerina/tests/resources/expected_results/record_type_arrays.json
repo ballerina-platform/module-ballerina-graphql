@@ -1,0 +1,24 @@
+{
+    "data": {
+        "people": [
+            {
+                "name": "Sherlock Holmes",
+                "address": {
+                    "city": "London"
+                }
+            },
+            {
+                "name": "Walter White",
+                "address": {
+                    "city": "Albuquerque"
+                }
+            },
+            {
+                "name": "Tom Marvolo Riddle",
+                "address": {
+                    "city": "Hogwarts"
+                }
+            }
+        ]
+    }
+}

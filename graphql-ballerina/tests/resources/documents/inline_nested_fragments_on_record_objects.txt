@@ -1,0 +1,22 @@
+query {
+    teacher {
+        ... on Person {
+            name
+            address {
+                ... on Address {
+                    city
+                }
+            }
+        }
+    }
+    student {
+        ... on Person {
+            age
+            address {
+                ... on Address {
+                    city
+                }
+            }
+        }
+    }
+}

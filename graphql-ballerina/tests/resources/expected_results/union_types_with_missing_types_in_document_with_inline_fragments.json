@@ -1,0 +1,21 @@
+{
+    "data": {
+        "learningSources": [
+            {
+                "name": "The Art of Electronics"
+            },
+            {
+                "name": "Practical Electronics"
+            },
+            {
+                "name": "Algorithms to Live By"
+            },
+            {
+                "name": "Code: The Hidden Language"
+            },
+            {},
+            {},
+            {}
+        ]
+    }
+}

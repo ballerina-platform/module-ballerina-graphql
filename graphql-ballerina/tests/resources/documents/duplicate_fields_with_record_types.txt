@@ -1,0 +1,14 @@
+query getPerson {
+    profile {
+        name
+        address {
+            city
+        }
+        address {
+            street
+        }
+        address {
+            city
+        }
+    }
+}
