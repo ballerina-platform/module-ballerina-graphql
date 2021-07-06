@@ -21,10 +21,14 @@ isolated class Engine {
     private final int? maxQueryDepth;
     private final readonly & ListenerAuthConfig[]? auth;
 
-    isolated function init(__Schema schema, GraphqlServiceConfig? serviceConfig) {
+    isolated function init(__Schema schema, GraphqlServiceConfig? serviceConfig) returns Error? {
         self.schema = schema.cloneReadOnly();
         self.auth = getListenerAuthConfig(serviceConfig).cloneReadOnly();
-        self.maxQueryDepth = getMaxQueryDepth(serviceConfig);
+        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
+        if maxQueryDepth is int && maxQueryDepth < 1 {
+            return error Error("Max query depth value must be a positive integer");
+        }
+        self.maxQueryDepth = maxQueryDepth;
     }
 
     isolated function validate(string documentString, string? operationName) returns parser:OperationNode|OutputObject {

@@ -51,7 +51,7 @@ public class Listener {
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         __Schema schema = check createSchema(s);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        Engine engine = new(schema, serviceConfig);
+        Engine engine = check new(schema, serviceConfig);
         attachServiceToEngine(s, engine);
 
         HttpService httpService = new(engine);
