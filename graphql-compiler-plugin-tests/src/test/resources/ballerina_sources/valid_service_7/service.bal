@@ -17,13 +17,13 @@
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get birthdate(string? format) returns string {
+    resource function get birthdate(string? format) returns string {
         return "01-01-1980";
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get isLegal(int? age) returns boolean {
+    resource function get isLegal(int? age) returns boolean {
         if (age is int) {
             if (age < 21) {
                 return false;

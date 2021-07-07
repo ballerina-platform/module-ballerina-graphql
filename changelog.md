@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Changed
+- [[1597] Validate Max Query Depth at Runtime](https://github.com/ballerina-platform/ballerina-standard-library/issues/1597)
+
+## [0.2.0.beta.2]  - 2021-07-06
+
+### Changed
 - [[#1190] Make GraphQL Resource Execution Non-Blocking](https://github.com/ballerina-platform/ballerina-standard-library/issues/1190)
 - [[#1218] Set `BAD_REQUEST` status code for responses with document validation errors](https://github.com/ballerina-platform/ballerina-standard-library/issues/1218)
 - [[#1507] Add Path Entry to the Error Detail](https://github.com/ballerina-platform/ballerina-standard-library/issues/1507)

@@ -17,6 +17,6 @@
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns error? {
+    resource function get greeting() {
     }
 }

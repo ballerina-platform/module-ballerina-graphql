@@ -25,13 +25,15 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
+import io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin.
@@ -48,7 +50,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -56,7 +58,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_2");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -64,7 +66,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_3");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -72,7 +74,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_4");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -80,7 +82,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_5");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -88,7 +90,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_6");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -96,7 +98,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_7");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -104,7 +106,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_8");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -112,7 +114,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_9");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -120,7 +122,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("valid_service_10");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
@@ -128,9 +130,9 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_MULTIPLE_LISTENERS);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_MULTIPLE_LISTENERS, 19, 1);
     }
 
     @Test
@@ -138,9 +140,9 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_2");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_FUNCTION);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_FUNCTION, 23, 5);
     }
 
     @Test
@@ -148,9 +150,9 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_3");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 20, 23);
     }
 
     @Test
@@ -158,12 +160,32 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_4");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 8);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 8);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 28, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 34, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 41, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 48, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 55, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 61, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 67, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 74, 5);
     }
 
     @Test
@@ -171,159 +193,192 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_5");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 4);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
-        }
-    }
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
-    @Test
-    public void testInvalidMaxQueryDepthValue() {
-        Package currentPackage = loadPackage("invalid_service_6");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_MAX_QUERY_DEPTH);
-        }
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 20, 38);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 26, 45);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 32, 40);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 43, 39);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 49, 49);
     }
 
     @Test
     public void testReturningOnlyErrorOrNil() {
-        Package currentPackage = loadPackage("invalid_service_7");
+        Package currentPackage = loadPackage("invalid_service_6");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 20, 5);
     }
 
     @Test
     public void testReturningOnlyNil() {
-        Package currentPackage = loadPackage("invalid_service_8");
+        Package currentPackage = loadPackage("invalid_service_7");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_NIL);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 20, 5);
     }
 
     @Test
     public void testReturningOnlyError() {
-        Package currentPackage = loadPackage("invalid_service_9");
+        Package currentPackage = loadPackage("invalid_service_8");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
-        assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_ERROR);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 20, 5);
     }
 
     @Test
     public void testListenerInitParameters() {
-        Package currentPackage = loadPackage("invalid_service_10");
+        Package currentPackage = loadPackage("invalid_service_9");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 26, 57);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 28, 63);
     }
 
     @Test
     public void testInvalidInputParameterUnions() {
-        Package currentPackage = loadPackage("invalid_service_11");
+        Package currentPackage = loadPackage("invalid_service_10");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 4);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 20, 48);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 26, 39);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 32, 46);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 38, 41);
     }
 
     @Test
     public void testInvalidResourceReturnTypeUnions() {
-        Package currentPackage = loadPackage("invalid_service_12");
+        Package currentPackage = loadPackage("invalid_service_11");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 3);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 20, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 26, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 32, 5);
     }
 
     @Test
     public void testInvalidAccessorsInServicesReturningFromResources() {
-        Package currentPackage = loadPackage("invalid_service_13");
+        Package currentPackage = loadPackage("invalid_service_12");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 46, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 53, 23);
     }
 
     @Test
     public void testInvalidReturnTypesInServicesReturningFromResources() {
-        Package currentPackage = loadPackage("invalid_service_14");
+        Package currentPackage = loadPackage("invalid_service_13");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RETURN_TYPE);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 46, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 54, 23);
     }
 
     @Test
     public void testInvalidInputParametersInServicesReturningFromResources() {
-        Package currentPackage = loadPackage("invalid_service_15");
+        Package currentPackage = loadPackage("invalid_service_14");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 2);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 46, 48);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 53, 46);
     }
 
     @Test
     public void testInvalidListenerInitParameters() {
-        Package currentPackage = loadPackage("invalid_service_16");
+        Package currentPackage = loadPackage("invalid_service_15");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_LISTENER_INIT);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 22, 57);
     }
 
     @Test
     public void testInvalidResourcePath() {
-        Package currentPackage = loadPackage("invalid_service_17");
+        Package currentPackage = loadPackage("invalid_service_16");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.diagnostics().size(), 7);
-        Object[] diagnostics = diagnosticResult.diagnostics().toArray();
-        for (Object obj : diagnostics) {
-            Diagnostic diagnostic = (Diagnostic) obj;
-            assertDiagnostic(diagnostic, CompilationErrors.INVALID_FIELD_NAME);
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 7);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 42, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 26, 12);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 21, 9);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 61, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 65, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 69, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 36, 23);
     }
 
     private Package loadPackage(String path) {
@@ -332,14 +387,16 @@ public class CompilerPluginTest {
         return project.currentPackage();
     }
 
-    private void assertDiagnostic(Diagnostic diagnostic, CompilationErrors error) {
-        Assert.assertEquals(diagnostic.diagnosticInfo().code(), error.getErrorCode());
-        Assert.assertEquals(diagnostic.diagnosticInfo().messageFormat(),
-                error.getError());
-    }
-
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
+    }
+
+    private void assertError(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.message(), compilationError.getError());
+        // Compiler counts lines and columns from zero
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().line() + 1), line);
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().offset() + 1), column);
     }
 }

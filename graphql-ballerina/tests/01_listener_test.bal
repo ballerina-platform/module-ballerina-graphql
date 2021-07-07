@@ -35,3 +35,13 @@ function testDetachAndAttach() returns error? {
     string expectedCausingErrorMessage = string`Service registration failed: two services have the same basePath : '/graphql'`;
     test:assertEquals(causingError.message(), expectedCausingErrorMessage);
 }
+
+@test:Config {
+    groups: ["listener", "configs"]
+}
+function testInvalidMaxQueryDepth() returns error? {
+    Error? result = wrappedListener.attach(invalidMaxQueryDepthService, "invalid");
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), "Max query depth value must be a positive integer");
+}
