@@ -100,4 +100,11 @@ public class Utils {
         return fieldName.startsWith(Constants.DOUBLE_UNDERSCORES) ||
                 fieldName.contains("/" + Constants.DOUBLE_UNDERSCORES);
     }
+
+    static Location getLocation(Symbol typeSymbol, Location alternateLocation) {
+        if (typeSymbol.getLocation().isPresent()) {
+            return typeSymbol.getLocation().get();
+        }
+        return alternateLocation;
+    }
 }

@@ -49,6 +49,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
+
 /**
  * Validate functions in Ballerina GraphQL services.
  */
@@ -95,13 +97,12 @@ public class FunctionValidator {
             Optional<String> methodName = resourceMethodSymbol.getName();
             if (methodName.isPresent()) {
                 if (!methodName.get().equals(Constants.RESOURCE_FUNCTION_GET)) {
-                    Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, location);
+                    Location accessorLocation = getLocation(resourceMethodSymbol, location);
+                    Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
                 }
             } else {
-                Location accessorLocation = resourceMethodSymbol.getLocation().isPresent() ?
-                        resourceMethodSymbol.getLocation().get() : location;
-                Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR,
-                                    accessorLocation);
+                Location accessorLocation = getLocation(resourceMethodSymbol, location);
+                Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
             }
         }
     }
@@ -131,17 +132,7 @@ public class FunctionValidator {
                 TypeDefinitionSymbol typeDefinitionSymbol =
                         (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
                 if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                    RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeReferenceTypeSymbol.typeDescriptor();
-                    Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
-                    for (Map.Entry<String, RecordFieldSymbol> entry : recordFieldSymbolMap.entrySet()) {
-                        if (entry.getValue().typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                            validateReturnType(entry.getValue().typeDescriptor(), location, context);
-                        } else {
-                            if (Utils.isInvalidFieldName(entry.getKey())) {
-                                Utils.updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
-                            }
-                        }
-                    }
+                    validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
                 }
                 validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
             } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
@@ -172,7 +163,8 @@ public class FunctionValidator {
                 // can have any number of valid input params
                 for (ParameterSymbol param : parameterSymbols) {
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
-                        Utils.updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, location);
+                        Location inputLocation = getLocation(param, location);
+                        Utils.updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
                     }
                 }
             }
@@ -213,17 +205,17 @@ public class FunctionValidator {
         if (!visitedClassSymbols.contains(classSymbol)) {
             visitedClassSymbols.add(classSymbol);
             Map<String, MethodSymbol> methods = classSymbol.methods();
-            for (Map.Entry<String, MethodSymbol> method : methods.entrySet()) {
-                MethodSymbol methodSymbol = method.getValue();
+            for (MethodSymbol methodSymbol : methods.values()) {
+                Location methodLocation = getLocation(methodSymbol, location);
                 if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
-                    validateResourceAccessorName(methodSymbol, location, context);
-                    validateResourcePath(methodSymbol, location, context);
+                    validateResourceAccessorName(methodSymbol, methodLocation, context);
+                    validateResourcePath(methodSymbol, methodLocation, context);
                     Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
                     returnTypeDesc.ifPresent
-                            (typeSymbol -> validateReturnType(typeSymbol, location, context));
-                    validateInputParamType(methodSymbol, location, context);
+                            (typeSymbol -> validateReturnType(typeSymbol, methodLocation, context));
+                    validateInputParamType(methodSymbol, methodLocation, context);
                 } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
-                    Utils.updateContext(context, CompilationError.INVALID_FUNCTION, location);
+                    Utils.updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
             }
         }
@@ -306,6 +298,21 @@ public class FunctionValidator {
             Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         } else if (primitiveType > 1) { // string|int - invalid
             Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+        }
+    }
+
+    private void validateRecordFields(SyntaxNodeAnalysisContext context, RecordTypeSymbol recordTypeSymbol,
+                                      Location location) {
+        Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
+        for (RecordFieldSymbol recordField : recordFieldSymbolMap.values()) {
+            if (recordField.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                validateReturnType(recordField.typeDescriptor(), location, context);
+            } else {
+                if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
+                    Location fieldLocation = getLocation(recordField, location);
+                    Utils.updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
+                }
+            }
         }
     }
 }
