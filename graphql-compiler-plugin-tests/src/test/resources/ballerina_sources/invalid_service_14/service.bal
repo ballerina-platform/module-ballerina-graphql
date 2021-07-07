@@ -14,52 +14,50 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// tests for invalid return types in return type service class definitions - 2 errors expected
+// tests for invalid input parameters in return type service class definitions - 2 errors expected
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting {
+    resource function get greet() returns GeneralGreeting {
         return new;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting|Status {
+    resource function get greet() returns GeneralGreeting|Status {
         return new GeneralGreeting();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName|Status {
+    resource function get greet() returns FirstName|Status {
         return new Status();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName {
+    resource function get greet() returns FirstName {
         return new;
     }
 }
 
-distinct service isolated class GeneralGreeting {
-    // invalid json - 1
-    isolated resource function get greeting() returns json {
-        json j1 = "Apple";
-        return j1;
+distinct service class GeneralGreeting {
+    // invalid input param json - 1
+    resource function get generalGreeting(json name) returns string {
+        return "Hello, world";
     }
 }
 
-distinct service isolated class Status {
-    // invalid byte - 2
-    isolated resource function get greeting() returns byte {
-         byte a = 12;
-         return a;
+distinct service class Status {
+    // invalid input param map<json> - 2
+    resource function get status(map<string> name) returns boolean {
+        return true;
     }
 }
 
-distinct service isolated class FirstName {
+distinct service class FirstName {
     // valid
-    isolated resource function get name() returns string {
+    resource function get name() returns string {
         return "James";
     }
 }

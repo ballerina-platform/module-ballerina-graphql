@@ -35,12 +35,13 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 
 import java.util.Optional;
 
-import static io.ballerina.stdlib.graphql.compiler.PluginUtils.isGraphqlListener;
+import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 
 /**
  * Validates Ballerina GraphQL Listener Initializations.
  */
-public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
+public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
     @Override
     public void perform(SyntaxNodeAnalysisContext context) {
         Node node = context.node();
@@ -50,7 +51,7 @@ public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysis
             if (symbolOpt.isPresent() && symbolOpt.get() instanceof TypeReferenceTypeSymbol) {
                 TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) symbolOpt.get()).typeDescriptor();
                 String identifier = typeSymbol.getName().orElse("");
-                if (PluginConstants.LISTENER_IDENTIFIER.equals(identifier) && isGraphqlListener(typeSymbol)) {
+                if (Utils.LISTENER_IDENTIFIER.equals(identifier) && isGraphqlListener(typeSymbol)) {
                     SeparatedNodeList<FunctionArgumentNode> functionArgs =
                             expressionNode.parenthesizedArgList().arguments();
                     verifyListenerArgType(context, functionArgs);
@@ -85,8 +86,7 @@ public class GraphqlListenerValidator implements AnalysisTask<SyntaxNodeAnalysis
             FunctionArgumentNode secondArg = functionArgs.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                PluginUtils.updateContext(context, PluginConstants.CompilationErrors.INVALID_LISTENER_INIT,
-                        secondArg.location());
+                Utils.updateContext(context, CompilationError.INVALID_LISTENER_INIT, secondArg.location());
             }
         }
     }

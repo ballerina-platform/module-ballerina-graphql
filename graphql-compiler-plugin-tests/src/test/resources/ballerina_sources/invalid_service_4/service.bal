@@ -25,27 +25,27 @@ type Student record {
 };
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns map<int>  {
+    resource function get greeting() returns map<int>  {
         return {sam: 50, jon: 60};
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns json {
+    resource function get greeting() returns json {
         json j1 = "Apple";
         return j1;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns byte {
+    resource function get greeting() returns byte {
          byte a = 12;
          return a;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns byte[] {
+    resource function get greeting() returns byte[] {
         byte[] arr1 = [5, 24, 56, 243];
         return arr1;
     }
@@ -71,7 +71,7 @@ service graphql:Service on new graphql:Listener(4000) {
 
 service graphql:Service on new graphql:Listener(4000) {
     // Invalid - Returning dynamic service object
-    isolated resource function get foo() returns service object {} {
+    resource function get foo() returns service object {} {
         return service object {
             resource function get name() returns string {
                 return "name";

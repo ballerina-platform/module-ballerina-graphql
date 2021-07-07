@@ -14,50 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// tests for invalid input parameters in return type service class definitions - 2 errors expected
 import ballerina/graphql;
+import ballerina/http;
 
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting {
-        return new;
-    }
-}
+http:Listener httpListener = check new(4000);
 
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting|Status {
-        return new GeneralGreeting();
-    }
-}
+listener graphql:Listener listener1 = new(httpListener, timeout = 1000, server = "0.0.0.0");
 
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName|Status {
-        return new Status();
-    }
-}
-
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName {
-        return new;
-    }
-}
-
-distinct service isolated class GeneralGreeting {
-    // invalid input param json - 1
-    isolated resource function get generalGreeting(json name) returns string {
-        return "Hello, world";
-    }
-}
-
-distinct service isolated class Status {
-    // invalid input param map<json> - 2
-    isolated resource function get status(map<string> name) returns boolean {
-        return true;
-    }
-}
-
-distinct service isolated class FirstName {
-    // valid
-    isolated resource function get name() returns string {
-        return "James";
+service graphql:Service on listener1 {
+    resource function get name() returns string {
+            return "John";
     }
 }

@@ -15,9 +15,24 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/http;
 
-service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns error {
-         return error("SAM");
+http:Listener httpListener = check new(91021);
+
+graphql:ListenerConfiguration configs = {
+    timeout: 1.0
+};
+
+listener graphql:Listener listener1 = new(httpListener, configs);
+
+service graphql:Service on new graphql:Listener(httpListener, configs) {
+    resource function get name() returns string {
+            return "John";
+    }
+}
+
+service graphql:Service on listener1 {
+    resource function get name() returns string {
+            return "John";
     }
 }

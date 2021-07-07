@@ -26,6 +26,16 @@ Service simpleService = service object {
     }
 };
 
+Service invalidMaxQueryDepthService =
+@ServiceConfig {
+    maxQueryDepth: 0
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
 service /validation on basicListener {
     isolated resource function get name() returns string {
         return "James Moriarty";

@@ -39,7 +39,6 @@ import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.PluginConstants.CompilationErrors;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.HashSet;
@@ -49,10 +48,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
+
 /**
- * Validates functions in Ballerina GraphQL services.
+ * Validate functions in Ballerina GraphQL services.
  */
-public class GraphqlFunctionValidator {
+public class FunctionValidator {
     private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
 
     public void validate(SyntaxNodeAnalysisContext context) {
@@ -66,9 +69,9 @@ public class GraphqlFunctionValidator {
             } else if (node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION) {
                 FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
                 // object methods are valid, object methods that are remote functions are invalid
-                if (PluginUtils.isRemoteFunction(context, functionDefinitionNode)) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION,
-                                              functionDefinitionNode.location());
+                if (Utils.isRemoteFunction(context, functionDefinitionNode)) {
+                    Utils.updateContext(context, CompilationError.INVALID_FUNCTION,
+                                        functionDefinitionNode.location());
                 }
             }
         }
@@ -77,7 +80,7 @@ public class GraphqlFunctionValidator {
     private void validateResourceFunction(FunctionDefinitionNode functionDefinitionNode,
                                           SyntaxNodeAnalysisContext context) {
 
-        MethodSymbol methodSymbol = PluginUtils.getMethodSymbol(context, functionDefinitionNode);
+        MethodSymbol methodSymbol = Utils.getMethodSymbol(context, functionDefinitionNode);
         if (Objects.nonNull(methodSymbol)) {
             validateResourceAccessorName(methodSymbol, functionDefinitionNode.location(), context);
             validateResourcePath(methodSymbol, functionDefinitionNode.location(), context);
@@ -94,14 +97,13 @@ public class GraphqlFunctionValidator {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
             Optional<String> methodName = resourceMethodSymbol.getName();
             if (methodName.isPresent()) {
-                if (!methodName.get().equals(PluginConstants.RESOURCE_FUNCTION_GET)) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR, location);
+                if (!methodName.get().equals(RESOURCE_FUNCTION_GET)) {
+                    Location accessorLocation = getLocation(resourceMethodSymbol, location);
+                    Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
                 }
             } else {
-                Location accessorLocation = resourceMethodSymbol.getLocation().isPresent() ?
-                        resourceMethodSymbol.getLocation().get() : location;
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_FUNCTION_ACCESSOR,
-                                          accessorLocation);
+                Location accessorLocation = getLocation(resourceMethodSymbol, location);
+                Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
             }
         }
     }
@@ -109,8 +111,8 @@ public class GraphqlFunctionValidator {
     private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (PluginUtils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
-                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, location);
+            if (Utils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
+                Utils.updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
             }
         }
     }
@@ -131,35 +133,25 @@ public class GraphqlFunctionValidator {
                 TypeDefinitionSymbol typeDefinitionSymbol =
                         (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
                 if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                    RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeReferenceTypeSymbol.typeDescriptor();
-                    Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
-                    for (Map.Entry<String, RecordFieldSymbol> entry : recordFieldSymbolMap.entrySet()) {
-                        if (entry.getValue().typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                            validateReturnType(entry.getValue().typeDescriptor(), location, context);
-                        } else {
-                            if (PluginUtils.isInvalidFieldName(entry.getKey())) {
-                                PluginUtils.updateContext(context, CompilationErrors.INVALID_FIELD_NAME, location);
-                            }
-                        }
-                    }
+                    validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
                 }
                 validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
             } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
                 ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
                 if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+                    Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                 } else {
                     validateServiceClassDefinition(classSymbol, location, context);
                 }
             }
         } else if (returnTypeDesc.typeKind() == TypeDescKind.NIL) {
             // nil alone is invalid - must have a return type
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_NIL, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_NIL, location);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ERROR) {
             // error alone is invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR, location);
         } else if (hasInvalidReturnType(returnTypeDesc)) {
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         }
     }
 
@@ -172,7 +164,8 @@ public class GraphqlFunctionValidator {
                 // can have any number of valid input params
                 for (ParameterSymbol param : parameterSymbols) {
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RESOURCE_INPUT_PARAM, location);
+                        Location inputLocation = getLocation(param, location);
+                        Utils.updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
                     }
                 }
             }
@@ -213,17 +206,17 @@ public class GraphqlFunctionValidator {
         if (!visitedClassSymbols.contains(classSymbol)) {
             visitedClassSymbols.add(classSymbol);
             Map<String, MethodSymbol> methods = classSymbol.methods();
-            for (Map.Entry<String, MethodSymbol> method : methods.entrySet()) {
-                MethodSymbol methodSymbol = method.getValue();
+            for (MethodSymbol methodSymbol : methods.values()) {
+                Location methodLocation = getLocation(methodSymbol, location);
                 if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
-                    validateResourceAccessorName(methodSymbol, location, context);
-                    validateResourcePath(methodSymbol, location, context);
+                    validateResourceAccessorName(methodSymbol, methodLocation, context);
+                    validateResourcePath(methodSymbol, methodLocation, context);
                     Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
                     returnTypeDesc.ifPresent
-                            (typeSymbol -> validateReturnType(typeSymbol, location, context));
-                    validateInputParamType(methodSymbol, location, context);
+                            (typeSymbol -> validateReturnType(typeSymbol, methodLocation, context));
+                    validateInputParamType(methodSymbol, methodLocation, context);
                 } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
-                    PluginUtils.updateContext(context, CompilationErrors.INVALID_FUNCTION, location);
+                    Utils.updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
             }
         }
@@ -262,14 +255,14 @@ public class GraphqlFunctionValidator {
                     // only service object types and records are allowed
                     if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
                         if (!isRecordType(returnType)) {
-                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+                            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                         } else {
                             recordTypes++;
                         }
                     } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
                         ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
                         if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+                            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                         } else {
                             validateServiceClassDefinition(classSymbol, location, context);
                             // if distinctServices is false (one of the services is not distinct), skip setting it again
@@ -281,7 +274,7 @@ public class GraphqlFunctionValidator {
                     }
                 } else {
                     if (hasInvalidReturnType(returnType)) {
-                        PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+                        Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                     }
                 }
 
@@ -295,17 +288,32 @@ public class GraphqlFunctionValidator {
 
         // has multiple services and if at least one of them are not distinct
         if (serviceTypes > 1 && !distinctServices) {
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
         }
         if (recordTypes > 1) {
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         }
         if (type == 0 && primitiveType == 0) { // error? - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
         } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         } else if (primitiveType > 1) { // string|int - invalid
-            PluginUtils.updateContext(context, CompilationErrors.INVALID_RETURN_TYPE, location);
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+        }
+    }
+
+    private void validateRecordFields(SyntaxNodeAnalysisContext context, RecordTypeSymbol recordTypeSymbol,
+                                      Location location) {
+        Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
+        for (RecordFieldSymbol recordField : recordFieldSymbolMap.values()) {
+            if (recordField.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                validateReturnType(recordField.typeDescriptor(), location, context);
+            } else {
+                if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
+                    Location fieldLocation = getLocation(recordField, location);
+                    Utils.updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
+                }
+            }
         }
     }
 }

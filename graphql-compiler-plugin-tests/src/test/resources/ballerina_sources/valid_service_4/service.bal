@@ -23,7 +23,7 @@ enum Color {
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get color() returns Color {
+    resource function get color() returns Color {
         return RED;
     }
 }
