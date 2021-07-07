@@ -14,40 +14,50 @@
 // specific language governing permissions and limitations
 // under the License.
 
+// tests for invalid resource accessor name in return type service class definitions - 2 errors expected
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|Age|CivilStatus|error {
-        return new FirstName();
+    resource function get greet() returns GeneralGreeting {
+        return new;
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|Age? {
-        return new FirstName();
+    resource function get greet() returns GeneralGreeting|Status {
+        return new GeneralGreeting();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns CivilStatus|FirstName {
-        return new FirstName();
+    resource function get greet() returns FirstName|Status {
+        return new Status();
     }
 }
 
-service isolated class CivilStatus {
-    isolated resource function get civilStatus() returns boolean {
-        return false;
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet() returns FirstName {
+        return new;
     }
 }
 
-distinct service isolated class FirstName {
-    isolated resource function get firstName() returns string {
-        return "Bugs";
+distinct service class GeneralGreeting {
+    // invalid post - 1
+    resource function post generalGreeting() returns string {
+        return "Hello, world";
     }
 }
 
-service isolated class Age {
-    isolated resource function get age() returns int {
-        return 15;
+distinct service class Status {
+    // invalid post - 2
+    resource function post status() returns boolean {
+        return true;
+    }
+}
+
+distinct service class FirstName {
+    // valid
+    resource function get name() returns string {
+        return "James";
     }
 }

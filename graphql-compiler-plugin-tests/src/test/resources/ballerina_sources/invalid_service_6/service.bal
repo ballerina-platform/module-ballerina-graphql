@@ -16,14 +16,7 @@
 
 import ballerina/graphql;
 
-enum Color {
-  RED,
-  GREEN,
-  BLUE
-}
-
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get color() returns Color {
-        return RED;
+    resource function get greeting() returns error? {
     }
 }

@@ -15,24 +15,27 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/http;
 
-http:Listener httpListener = check new(91021);
-
-graphql:ListenerConfiguration configs = {
-    timeout: 1.0
-};
-
-listener graphql:Listener listener1 = new(httpListener, configs);
-
-service graphql:Service on new graphql:Listener(httpListener, configs) {
-    resource function get name() returns string {
-            return "John";
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greeting(int|string? something) returns string {
+        return "Hello";
     }
 }
 
-service graphql:Service on listener1 {
-    resource function get name() returns string {
-            return "John";
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(json? name) returns string {
+        return "Hello";
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(map<string>? name) returns string {
+        return "Hello";
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(byte[]? name) returns string {
+        return "Hello";
     }
 }

@@ -19,65 +19,65 @@ import ballerina/graphql;
 type MultiService FirstName|CivilStatus;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns CivilStatus? {
+    resource function get greet() returns CivilStatus? {
         return new CivilStatus();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|Age|CivilStatus|error {
+    resource function get details() returns FirstName|Age|CivilStatus|error {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|Age? {
+    resource function get details() returns FirstName|Age? {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get details() returns FirstName|CivilStatus {
+    resource function get details() returns FirstName|CivilStatus {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns FirstName[]? {
+    resource function get greet() returns FirstName[]? {
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns MultiService? {
+    resource function get greet() returns MultiService? {
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns MultiService {
+    resource function get greet() returns MultiService {
         return new FirstName();
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns MultiService[] {
+    resource function get greet() returns MultiService[] {
         return [];
     }
 }
 
-distinct service isolated class CivilStatus {
-    isolated resource function get civilStatus() returns boolean {
+distinct service class CivilStatus {
+    resource function get civilStatus() returns boolean {
         return false;
     }
 }
 
-distinct service isolated class FirstName {
-    isolated resource function get firstName() returns string {
+distinct service class FirstName {
+    resource function get firstName() returns string {
         return "Bugs";
     }
 }
 
-distinct service isolated class Age {
-    isolated resource function get age() returns int {
+distinct service class Age {
+    resource function get age() returns int {
         return 15;
     }
 }

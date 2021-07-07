@@ -17,19 +17,19 @@
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet(json name) returns string {
+    resource function get greet(json name) returns string {
         return "Hello";
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet(map<string> name) returns string {
+    resource function get greet(map<string> name) returns string {
         return "Hello";
     }
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet(byte[] name) returns string {
+    resource function get greet(byte[] name) returns string {
         return "Hello";
     }
 }
@@ -40,7 +40,13 @@ const BLUE = "BLUE";
 type Color RED|GREEN|BLUE;
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get color(Color color) returns string {
+    resource function get color(Color color) returns string {
         return "Hello, world";
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(int age, byte[] name) returns string {
+        return "Hello";
     }
 }

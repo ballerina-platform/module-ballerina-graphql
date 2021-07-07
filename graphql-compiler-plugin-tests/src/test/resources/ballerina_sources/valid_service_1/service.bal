@@ -21,7 +21,7 @@ type Person record {
 };
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greeting() returns string {
+    resource function get greeting() returns string {
         return "Hello";
     }
 }
@@ -75,13 +75,13 @@ service graphql:Service on new graphql:Listener(4000) {
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    isolated resource function get greet() returns GeneralGreeting {
+    resource function get greet() returns GeneralGreeting {
         return new;
     }
 }
 
-service isolated class GeneralGreeting {
-    isolated resource function get generalGreeting() returns string {
+service class GeneralGreeting {
+    resource function get generalGreeting() returns string {
         return "Hello, world";
     }
 }

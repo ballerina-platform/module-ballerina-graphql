@@ -15,14 +15,62 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/http;
 
-http:Listener httpListener = check new(4000);
+type Status record {
+    int capacity;
+    int __elevationgain;
+    boolean night;
+};
 
-listener graphql:Listener listener1 = new(httpListener, timeout = 1000, server = "0.0.0.0");
+type Lift record {
+    string __id;
+    Status getStatus;
+};
 
-service graphql:Service on listener1 {
-    resource function get name() returns string {
-            return "John";
+service class Trail {
+
+    resource function get id() returns string {
+        return "T1";
+    }
+
+    resource function get __name() returns string {
+        return "Trail1";
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get __liftCount() returns int{
+        return 3;
+    }
+
+    resource function get trailCount() returns int {
+        return 3;
+    }
+
+    resource function get lift() returns Lift {
+        return {
+            __id:"L1",
+            getStatus: {
+                capacity:10,
+                __elevationgain:20,
+                night:false
+            }
+        };
+    }
+
+    isolated resource function get mountain/name/__first() returns string {
+        return "MountainFirst";
+    }
+
+    isolated resource function get mountain/__name/last() returns string {
+        return "MountainLast";
+    }
+
+    isolated resource function get __mountain/id() returns string {
+        return "M1";
+    }
+
+    isolated resource function get mountain/getTrail() returns Trail {
+        return new;
     }
 }
