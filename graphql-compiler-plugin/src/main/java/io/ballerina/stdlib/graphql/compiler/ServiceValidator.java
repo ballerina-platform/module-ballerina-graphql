@@ -28,11 +28,11 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.Constants.CompilationError;
 
 import java.util.List;
 import java.util.Optional;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.validateModuleId;
 
 /**

@@ -35,6 +35,7 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 
 import java.util.Optional;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 
 /**
@@ -50,7 +51,7 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
             if (symbolOpt.isPresent() && symbolOpt.get() instanceof TypeReferenceTypeSymbol) {
                 TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) symbolOpt.get()).typeDescriptor();
                 String identifier = typeSymbol.getName().orElse("");
-                if (Constants.LISTENER_IDENTIFIER.equals(identifier) && isGraphqlListener(typeSymbol)) {
+                if (Utils.LISTENER_IDENTIFIER.equals(identifier) && isGraphqlListener(typeSymbol)) {
                     SeparatedNodeList<FunctionArgumentNode> functionArgs =
                             expressionNode.parenthesizedArgList().arguments();
                     verifyListenerArgType(context, functionArgs);
@@ -85,8 +86,7 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
             FunctionArgumentNode secondArg = functionArgs.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                Utils.updateContext(context, Constants.CompilationError.INVALID_LISTENER_INIT,
-                                    secondArg.location());
+                Utils.updateContext(context, CompilationError.INVALID_LISTENER_INIT, secondArg.location());
             }
         }
     }

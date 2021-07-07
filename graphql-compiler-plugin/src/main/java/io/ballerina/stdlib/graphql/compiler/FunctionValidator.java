@@ -39,7 +39,6 @@ import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.Constants.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.HashSet;
@@ -49,6 +48,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
 
 /**
@@ -96,7 +97,7 @@ public class FunctionValidator {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
             Optional<String> methodName = resourceMethodSymbol.getName();
             if (methodName.isPresent()) {
-                if (!methodName.get().equals(Constants.RESOURCE_FUNCTION_GET)) {
+                if (!methodName.get().equals(RESOURCE_FUNCTION_GET)) {
                     Location accessorLocation = getLocation(resourceMethodSymbol, location);
                     Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
                 }
