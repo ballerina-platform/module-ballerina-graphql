@@ -53,20 +53,9 @@ jobs:
                     ./gradlew release -Prelease.useAutomaticVersion=true
                     ./gradlew -Pversion=${VERSION} publish -x test -PpublishToCentral=true
 
-            -   name: Create Github Release
-                run: |
-                    curl --request POST 'https://api.github.com/repos/ballerina-platform/module-ballerina-graphql/releases' \
-                    --header 'Accept: application/vnd.github.v3+json' \
-                    --header 'Authorization: Bearer ${{ secrets.BALLERINA_BOT_TOKEN }}' \
-                    --header 'Content-Type: application/json' \
-                    --data-raw '{
-                        "tag_name": "v'"$VERSION"'",
-                        "name": "module-ballerina-graphql-v'"$VERSION"'"
-                    }'
-
-            -   name: Create Post release PR
+            -   name: GitHub Release and Release Sync PR
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
-                    curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.1
-                    bin/hub pull-request -m "[Automated] Sync master after "$VERSION" release"
+                    gh release create v$VERSION --title "module-ballerina-graphql-v$VERSION"
+                    gh pr create --title "[Automated] Sync master after $VERSION release" --body "Sync master after $VERSION release"
