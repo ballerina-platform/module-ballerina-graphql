@@ -120,7 +120,9 @@ public class FunctionValidator {
     private void validateReturnType(TypeSymbol returnTypeDesc,
                                     Location location, SyntaxNodeAnalysisContext context) {
         // if return type is a union
-        if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
+        if (returnTypeDesc.typeKind() == TypeDescKind.ANY || returnTypeDesc.typeKind() == TypeDescKind.ANYDATA) {
+            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ANY, location);
+        } else if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
             validateReturnTypeUnion(context,
                                     ((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ARRAY) {

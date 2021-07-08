@@ -42,7 +42,8 @@ import java.util.Optional;
  */
 public class Utils {
 
-    private Utils() {}
+    private Utils() {
+    }
 
     // compiler plugin constants
     public static final String PACKAGE_PREFIX = "graphql";
@@ -79,7 +80,10 @@ public class Utils {
                                               DiagnosticSeverity.ERROR),
         INVALID_FIELD_NAME("A GraphQL field name must not begin with \"" + DOUBLE_UNDERSCORES +
                                    "\", which is reserved by GraphQL introspection", "GRAPHQL_111",
-                           DiagnosticSeverity.ERROR);
+                           DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_ANY(
+                "A GraphQL resource function cannot return \"any\" or \"anydata\", instead use specific type names",
+                "GRAPHQL_112", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

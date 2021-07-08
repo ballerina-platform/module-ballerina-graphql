@@ -50,3 +50,15 @@ service graphql:Service on new graphql:Listener(4000) {
         return "Hello";
     }
 }
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(any name) returns string {
+        return "Hello";
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(anydata name) returns string {
+        return "Hello";
+    }
+}

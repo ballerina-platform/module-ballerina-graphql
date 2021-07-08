@@ -193,7 +193,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_5");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 5);
+        Assert.assertEquals(diagnosticResult.errorCount(), 7);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -210,6 +210,12 @@ public class CompilerPluginTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 49, 49);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 55, 37);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 61, 41);
     }
 
     @Test
@@ -379,6 +385,21 @@ public class CompilerPluginTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 36, 23);
+    }
+
+    @Test
+    public void testInvalidReturnTypeAny() {
+        Package currentPackage = loadPackage("invalid_service_17");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ANY, 20, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ANY, 24, 5);
     }
 
     private Package loadPackage(String path) {

@@ -46,8 +46,8 @@ distinct service class FirstName {
     }
 }
 
-service isolated class Age {
-    isolated resource function get age() returns int {
+service class Age {
+    resource function get age() returns int {
         return 15;
     }
 }
