@@ -38,12 +38,7 @@ isolated function testUnionOfDistinctServiceObjects() returns error? {
     groups: ["service", "union", "negative"]
 }
 isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
-    string document = string
-`query {
-    profile(id: 200) {
-        name
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("invalid_query_with_distinct_service_unions.txt");
     string url = "http://localhost:9092/unions";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {

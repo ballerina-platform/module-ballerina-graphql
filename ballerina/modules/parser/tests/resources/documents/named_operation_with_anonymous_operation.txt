@@ -1,0 +1,11 @@
+query getData {
+    profile {
+        name
+    }
+}
+
+{
+    profile {
+        age
+    }
+}

@@ -20,10 +20,7 @@ import ballerina/test;
     groups: ["fragments", "validation"]
 }
 isolated function testUnknownFragment() returns error? {
-    string document = string
-`query {
-    ...friend
-}`;
+    string document = check getGraphQLDocumentFromFile("unknown_fragment.txt");
     string url = "http://localhost:9091/validation";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     string message = string`Unknown fragment "friend".`;

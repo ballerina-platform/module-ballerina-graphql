@@ -117,18 +117,7 @@ fragment on on Profile {
     groups: ["operations", "parser"]
 }
 isolated function testMultipleAnonymousOperations() returns error? {
-    string document = string
-`{
-    profile {
-        name
-    }
-}
-
-{
-    profile {
-        age
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("multiple_anonymous_operations.txt");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -151,8 +140,8 @@ isolated function testMultipleAnonymousOperations() returns error? {
             }
         ]
     };
-    test:assertEquals(e1, errors[0]);
-    test:assertEquals(e2, errors[1]);
+    test:assertEquals(errors[0], e1);
+    test:assertEquals(errors[1], e2);
 }
 
 @test:Config {
@@ -184,25 +173,14 @@ query getData {
             }
         ]
     };
-    test:assertEquals(e1, errors[0]);
+    test:assertEquals(errors[0], e1);
 }
 
 @test:Config {
     groups: ["operations", "parser"]
 }
 isolated function testNamedOperationWithAnonymousOperation() returns error? {
-    string document = string
-`query getData {
-    profile {
-        name
-    }
-}
-
-{
-    profile {
-        age
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("named_operation_with_anonymous_operation.txt");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -216,7 +194,7 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
             }
         ]
     };
-    test:assertEquals(e1, errors[0]);
+    test:assertEquals(errors[0], e1);
 }
 
 
@@ -224,24 +202,7 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
     groups: ["operations", "parser"]
 }
 isolated function testNamedOperationWithMultipleAnonymousOperations() returns error? {
-    string document = string
-`{
-    profile {
-        name
-    }
-}
-
-query getData {
-    profile {
-        age
-    }
-}
-
-{
-    profile {
-        age
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("named_operation_with_multiple_anonymous_operations.txt");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -264,32 +225,15 @@ query getData {
             }
         ]
     };
-    test:assertEquals(e1, errors[0]);
-    test:assertEquals(e2, errors[1]);
+    test:assertEquals(errors[0], e1);
+    test:assertEquals(errors[1], e2);
 }
 
 @test:Config {
     groups: ["operations", "parser"]
 }
 isolated function testThreeAnonymousOperations() returns error? {
-    string document = string
-`{
-    profile {
-        name
-    }
-}
-
-{
-    profile {
-        age
-    }
-}
-
-{
-    profile {
-        age
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("three_anonymous_operations.txt");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -321,33 +265,16 @@ isolated function testThreeAnonymousOperations() returns error? {
             }
         ]
     };
-    test:assertEquals(e1, errors[0]);
-    test:assertEquals(e2, errors[1]);
-    test:assertEquals(e3, errors[2]);
+    test:assertEquals(errors[0], e1);
+    test:assertEquals(errors[1], e2);
+    test:assertEquals(errors[2], e3);
 }
 
 @test:Config {
     groups: ["operations", "parser"]
 }
 isolated function testMultipleOperationsWithSameName() returns error? {
-    string document = string
-`query getData {
-    profile {
-        name
-    }
-}
-
-query getData {
-    profile {
-        age
-    }
-}
-
-query getData {
-    profile {
-        age
-    }
-}`;
+    string document = check getGraphQLDocumentFromFile("multiple_operations_with_same_name.txt");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -378,8 +305,8 @@ query getData {
             }
         ]
     };
-    test:assertEquals(e1, errors[0]);
-    test:assertEquals(e2, errors[1]);
+    test:assertEquals(errors[0], e1);
+    test:assertEquals(errors[1], e2);
 }
 
 @test:Config {
