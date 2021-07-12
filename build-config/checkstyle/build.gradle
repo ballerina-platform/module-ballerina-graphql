@@ -21,7 +21,7 @@ plugins {
 
 apply plugin: 'java'
 
-task downloadMultipleFiles(type: Download) {
+task downloadCheckstyleRuleFiles(type: Download) {
     src([
             'https://raw.githubusercontent.com/wso2/code-quality-tools/v1.3/checkstyle/checkstyle.xml',
             'https://raw.githubusercontent.com/wso2/code-quality-tools/v1.3/checkstyle/suppressions.xml'
@@ -40,9 +40,9 @@ clean {
 }
 
 artifacts.add('default', file("$project.buildDir/checkstyle.xml")) {
-    builtBy('downloadMultipleFiles')
+    builtBy('downloadCheckstyleRuleFiles')
 }
 
 artifacts.add('default', file("$project.buildDir/suppressions.xml")) {
-    builtBy('downloadMultipleFiles')
+    builtBy('downloadCheckstyleRuleFiles')
 }
