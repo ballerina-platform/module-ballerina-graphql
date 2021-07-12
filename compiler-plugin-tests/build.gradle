@@ -24,7 +24,7 @@ plugins {
 
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
-def ballerinaModulePath = "${project.rootDir}/graphql-ballerina/"
+def ballerinaModulePath = "${project.rootDir}/ballerina/"
 def ballerinaDistPath = "${ballerinaModulePath}/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
 def ballerinaDist = "${buildDir}/target/ballerina-distribution"
 
