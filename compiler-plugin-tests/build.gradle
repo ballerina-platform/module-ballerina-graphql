@@ -24,12 +24,12 @@ plugins {
 
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
-def ballerinaModulePath = "${project.rootDir}/graphql-ballerina/"
+def ballerinaModulePath = "${project.rootDir}/ballerina/"
 def ballerinaDistPath = "${ballerinaModulePath}/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
 def ballerinaDist = "${buildDir}/target/ballerina-distribution"
 
 dependencies {
-    checkstyle project(':build-config:checkstyle')
+    checkstyle project(':checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstylePluginVersion}"
 
     testImplementation project(":graphql-compiler-plugin")
@@ -49,7 +49,7 @@ checkstyle {
     configProperties = ["suppressionFile" : file("${rootDir}/build-config/checkstyle/build/suppressions.xml")]
 }
 
-checkstyleTest.dependsOn(":build-config:checkstyle:downloadMultipleFiles")
+checkstyleTest.dependsOn(":checkstyle:downloadCheckstyleRuleFiles")
 
 spotbugsTest {
     effort "max"

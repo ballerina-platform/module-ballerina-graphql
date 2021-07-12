@@ -23,14 +23,6 @@ jobs:
                 run: |
                     ./gradlew build --no-daemon --scan
 
-            -   name: Archive Error Log
-                uses: actions/upload-artifact@v2
-                if: failure()
-                with:
-                    name: Ballerina Internal Log
-                    path: graphql-ballerina/ballerina-internal.log
-                    if-no-files-found: ignore
-
             -   name: Generate Codecov Report
                 if:  github.event_name == 'pull_request'
                 uses: codecov/codecov-action@v1

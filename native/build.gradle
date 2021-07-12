@@ -24,7 +24,7 @@ plugins {
 description = 'Ballerina - GraphQL Native'
 
 dependencies {
-    checkstyle project(':build-config:checkstyle')
+    checkstyle project(':checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstylePluginVersion}"
 
     implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
@@ -42,7 +42,7 @@ checkstyle {
     configProperties = ["suppressionFile" : file("${rootDir}/build-config/checkstyle/build/suppressions.xml")]
 }
 
-checkstyleMain.dependsOn(":build-config:checkstyle:downloadMultipleFiles")
+checkstyleMain.dependsOn(":checkstyle:downloadCheckstyleRuleFiles")
 
 spotbugsMain {
     effort "max"

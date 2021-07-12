@@ -1,0 +1,7 @@
+[package]
+org = "ballerina"
+name = "graphql"
+version = "@toml.version@"
+
+[[platform.java11.dependency]]
+path = "../native/build/libs/graphql-native-@project.version@.jar"
