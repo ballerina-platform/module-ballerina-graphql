@@ -520,12 +520,7 @@ isolated function testReadIntInvalidCharacter() returns error? {
     groups: ["lexer"]
 }
 isolated function testReadCommentToken() returns error? {
-    string document = string
-`{
-    name # Get Name
-    # New Line
-    address,age # Get Age
-}`;
+    string document = check getGraphQLDocumentFromFile("read_comment_token.txt");
     Lexer lexer = new(document);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);

@@ -1,0 +1,5 @@
+{
+    name # Get Name
+    # New Line
+    address,age # Get Age
+}
