@@ -37,6 +37,7 @@ import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getArgumentsFromField;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ALIAS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
@@ -67,7 +68,7 @@ public class ResponseGenerator {
         } else if (result instanceof BValue) {
             int tag = ((BValue) result).getType().getTag();
             if (tag < TypeTags.JSON_TAG) {
-                data.put(node.getStringValue(NAME_FIELD), result);
+                data.put(node.getStringValue(ALIAS_FIELD), result);
             } else if (tag == TypeTags.RECORD_TYPE_TAG) {
                 getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) result, data, pathSegments,
                                   callbackHandler);
@@ -83,7 +84,7 @@ public class ResponseGenerator {
                                    pathSegments, callbackHandler);
             } // Here, `else` should not be reached.
         } else {
-            data.put(node.getStringValue(NAME_FIELD), result);
+            data.put(node.getStringValue(ALIAS_FIELD), result);
         }
     }
 
@@ -109,7 +110,7 @@ public class ResponseGenerator {
                 executeResourceWithPath(environment, visitor, subNode, service, subData, paths, pathSegments,
                                         handler, i);
             }
-            data.put(node.getStringValue(NAME_FIELD), subData);
+            data.put(node.getStringValue(ALIAS_FIELD), subData);
         }
         handler.markComplete(callback);
     }
@@ -136,7 +137,7 @@ public class ResponseGenerator {
                                  callbackHandler);
             }
         }
-        data.put(node.getStringValue(NAME_FIELD), subData);
+        data.put(node.getStringValue(ALIAS_FIELD), subData);
     }
 
     static void getDataFromMap(Environment environment, BObject visitor, BObject node, BMap<BString, Object> map,
@@ -152,7 +153,7 @@ public class ResponseGenerator {
                                  BMap<BString, Object> data, List<Object> pathSegments,
                                  CallbackHandler callbackHandler) {
         if (isScalarType(result.getElementType())) {
-            data.put(node.getStringValue(NAME_FIELD), result);
+            data.put(node.getStringValue(ALIAS_FIELD), result);
         } else {
             BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
             for (int i = 0; i < result.size(); i++) {
@@ -163,7 +164,7 @@ public class ResponseGenerator {
                                  callbackHandler);
                 resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
-            data.put(node.getStringValue(NAME_FIELD), resultArray);
+            data.put(node.getStringValue(ALIAS_FIELD), resultArray);
         }
     }
 

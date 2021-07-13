@@ -1,0 +1,14 @@
+{
+    sherlock: profile(id: 0) {
+        name
+        residence: address {
+            apartment: number
+        }
+    }
+    walter: profile(id: 1) {
+        name
+        residence: address {
+            hometown: city
+        }
+    }
+}

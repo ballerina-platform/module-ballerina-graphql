@@ -117,7 +117,7 @@ public class Parser {
             } else {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
                 Selection selection = {
-                    name: fieldNode.getName(),
+                    name: fieldNode.getAlias(),
                     isFragment: false,
                     node: fieldNode,
                     location: fieldNode.getLocation()
