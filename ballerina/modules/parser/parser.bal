@@ -113,29 +113,7 @@ public class Parser {
         while (token.kind != T_CLOSE_BRACE) {
             token = check self.peekNextNonSeparatorToken();
             if (token.kind == T_ELLIPSIS) {
-                Location spreadLocation = token.location;
-                token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
-                token = check self.peekNextNonSeparatorToken();
-                string keyword = check getIdentifierTokenvalue(token);
-                if (keyword == ON) {
-                    var [name, location] = check self.addInlineFragmentToNode(parentNode);
-                    Selection selection = {
-                        name: name,
-                        isFragment: true,
-                        location: location,
-                        spreadLocation: spreadLocation
-                    };
-                    parentNode.addSelection(selection);
-                } else {
-                    var [name, location] = check self.addNamedFragmentToNode(parentNode);
-                    Selection selection = {
-                        name: name,
-                        isFragment: true,
-                        location: location,
-                        spreadLocation: spreadLocation
-                    };
-                    parentNode.addSelection(selection);
-                }
+                check self.addFragment(parentNode);
             } else {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
                 Selection selection = {
@@ -150,6 +128,32 @@ public class Parser {
         }
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
         token = check self.readNextNonSeparatorToken();
+    }
+
+    isolated function addFragment(ParentNode parentNode) returns Error? {
+        Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
+        Location spreadLocation = token.location;
+        token = check self.peekNextNonSeparatorToken();
+        string keyword = check getIdentifierTokenvalue(token);
+        if (keyword == ON) {
+            var [name, location] = check self.addInlineFragmentToNode(parentNode);
+            Selection selection = {
+                name: name,
+                isFragment: true,
+                location: location,
+                spreadLocation: spreadLocation
+            };
+            parentNode.addSelection(selection);
+        } else {
+            var [name, location] = check self.addNamedFragmentToNode(parentNode);
+            Selection selection = {
+                name: name,
+                isFragment: true,
+                location: location,
+                spreadLocation: spreadLocation
+            };
+            parentNode.addSelection(selection);
+        }
     }
 
     isolated function addSelectionToNode(ParentNode parentNode) returns FieldNode|Error {
