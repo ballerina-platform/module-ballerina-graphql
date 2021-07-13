@@ -18,15 +18,17 @@ public class FieldNode {
     *Node;
     *ParentNode;
 
-    private string name;
+    private final string name;
+    private final string alias;
     private Location location;
     private ArgumentNode[] arguments;
     private FieldNode[] fields;
     private string[] fragments;
     private Selection[] selections;
 
-    public isolated function init(string name, Location location) {
+    public isolated function init(string name, Location location, string alias) {
         self.name = name;
+        self.alias = alias;
         self.location = location;
         self.fields = [];
         self.arguments = [];
@@ -36,6 +38,10 @@ public class FieldNode {
 
     public isolated function getName() returns string {
         return self.name;
+    }
+
+    public isolated function getAlias() returns string {
+        return self.alias;
     }
 
     public isolated function getLocation() returns Location {

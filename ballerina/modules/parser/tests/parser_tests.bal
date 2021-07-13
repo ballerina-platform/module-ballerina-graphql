@@ -384,3 +384,105 @@ isolated function testEmptyDocument() returns error? {
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 3);
 }
+
+@test:Config {
+    groups: ["alias", "parser"]
+}
+isolated function testFieldAlias() returns error? {
+    string document = "{ firstName: name }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getFields().length(), 1);
+    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    string name = fieldNode.getName();
+    test:assertEquals(name, "name");
+    string alias = fieldNode.getAlias();
+    test:assertEquals(alias, "firstName");
+}
+
+@test:Config {
+    groups: ["alias", "parser"]
+}
+isolated function testFieldAliasWithNamedOperation() returns error? {
+    string document = "query getName { firstName: name }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getFields().length(), 1);
+    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    string name = fieldNode.getName();
+    test:assertEquals(name, "name");
+    string alias = fieldNode.getAlias();
+    test:assertEquals(alias, "firstName");
+}
+
+@test:Config {
+    groups: ["alias", "parser"]
+}
+isolated function testInvalidFieldAliasWithoutFieldName() returns error? {
+    string document = "query getName { firstName: }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found "}".`);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 28);
+}
+
+@test:Config {
+    groups: ["alias", "parser"]
+}
+isolated function testInvalidFieldAliasWithoutAlias() returns error? {
+    string document = "query getName { : name }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found ":".`);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 17);
+}
+
+@test:Config {
+    groups: ["alias", "parser"]
+}
+isolated function testFieldAliasInsideField() returns error? {
+    string document = "query getName { profile { firstName: name } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getFields().length(), 1);
+    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getFields().length(), 1);
+    fieldNode = <FieldNode>fieldNode.getFields()[0];
+    string name = fieldNode.getName();
+    test:assertEquals(name, "name");
+    string alias = fieldNode.getAlias();
+    test:assertEquals(alias, "firstName");
+}
+
+@test:Config {
+    groups: ["alias", "parser"]
+}
+isolated function testFieldAliasWithArguments() returns error? {
+    string document = "query getName { walt: profile(id: 1) }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getFields().length(), 1);
+    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    string name = fieldNode.getName();
+    test:assertEquals(name, "profile");
+    string alias = fieldNode.getAlias();
+    test:assertEquals(alias, "walt");
+    test:assertEquals(fieldNode.getArguments().length(), 1);
+    ArgumentNode argumentNode = <ArgumentNode>fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName().value, "id");
+    test:assertEquals(argumentNode.getValue().value, 1);
+}
