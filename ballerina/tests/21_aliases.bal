@@ -58,3 +58,47 @@ isolated function testSameFieldWithMultipleAliasDifferentSubFields() returns err
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
+@test:Config {
+    groups: ["alias", "records", "validation"]
+}
+isolated function testAliasWithInvalidFieldName() returns error? {
+    string document = check getGraphQLDocumentFromFile("alias_with_invalid_field_name.txt");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "firstName" on type "Person".`,
+                locations: [
+                    {
+                        line: 3,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["alias", "service", "unions"]
+}
+isolated function testAliasOnServiceObjectsUnion() returns error? {
+    string document = check getGraphQLDocumentFromFile("alias_on_service_objects_union.txt");
+    string url = "http://localhost:9092/unions";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("alias_on_service_objects_union.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["alias", "hierarchical_paths"]
+}
+isolated function testAliasOnHierarchicalResources() returns error? {
+    string document = check getGraphQLDocumentFromFile("alias_on_hierarchical_resources.txt");
+    string url = "http://localhost:9094/profiles";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("alias_on_hierarchical_resources.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

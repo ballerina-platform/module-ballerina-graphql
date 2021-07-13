@@ -1,0 +1,13 @@
+{
+    jesse: profile(id: 5) {
+        ... on StudentService {
+            characterName: name
+        }
+    }
+
+    walt: profile(id: 1000) {
+        ... on TeacherService {
+            ssn: id
+        }
+    }
+}
