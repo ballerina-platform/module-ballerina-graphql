@@ -63,6 +63,7 @@ public class EngineUtils {
     public static final BString TYPES_FIELD = StringUtils.fromString("types");
     public static final BString TYPE_FIELD = StringUtils.fromString("type");
     public static final BString NAME_FIELD = StringUtils.fromString("name");
+    public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     public static final BString ARGS_FIELD = StringUtils.fromString("args");

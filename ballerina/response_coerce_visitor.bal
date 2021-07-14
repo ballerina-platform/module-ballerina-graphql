@@ -73,7 +73,7 @@ class ResponseCoerceVisitor {
         Data original = outputData.original;
         Data coerced = outputData.coerced;
 
-        anydata|anydata[] subOriginal = original[fieldNode.getName()];
+        anydata|anydata[] subOriginal = original[fieldNode.getAlias()];
         if subOriginal is anydata[] {
             anydata[] subCoercedArray = [];
             foreach anydata element in subOriginal {
@@ -83,12 +83,12 @@ class ResponseCoerceVisitor {
                     subCoercedArray.push(element);
                 }
             }
-            coerced[fieldNode.getName()] = subCoercedArray;
+            coerced[fieldNode.getAlias()] = subCoercedArray;
         } else if subOriginal is Data {
-            coerced[fieldNode.getName()] = self.orderData(subOriginal, fieldNode);
+            coerced[fieldNode.getAlias()] = self.orderData(subOriginal, fieldNode);
         } else {
-            if original.hasKey(fieldNode.getName()) {
-                coerced[fieldNode.getName()] = subOriginal;
+            if original.hasKey(fieldNode.getAlias()) {
+                coerced[fieldNode.getAlias()] = subOriginal;
             }
         }
     }
