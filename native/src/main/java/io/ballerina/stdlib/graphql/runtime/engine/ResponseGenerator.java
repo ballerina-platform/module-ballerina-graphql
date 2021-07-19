@@ -108,7 +108,7 @@ public class ResponseGenerator {
                 }
             } else {
                 executeResourceWithPath(environment, visitor, subNode, service, subData, paths, pathSegments,
-                                        handler, i);
+                                        handler);
             }
             data.put(node.getStringValue(ALIAS_FIELD), subData);
         }
@@ -212,14 +212,14 @@ public class ResponseGenerator {
                                                 callbackHandler);
             } else {
                 executeResourceWithPath(environment, visitor, subNode, service, data, paths, pathSegments,
-                                        callbackHandler, i);
+                                        callbackHandler);
             }
         }
     }
 
     private static void executeResourceWithPath(Environment environment, BObject visitor, BObject node, BObject service,
                                                 BMap<BString, Object> data, List<String> paths,
-                                                List<Object> pathSegments, CallbackHandler callbackHandler, int index) {
+                                                List<Object> pathSegments, CallbackHandler callbackHandler) {
         List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, node);
         List<Object> updatedPathSegments = updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
         executeResource(environment, service, visitor, node, data, updatedPaths, updatedPathSegments, callbackHandler);
