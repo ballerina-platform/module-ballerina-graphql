@@ -275,6 +275,10 @@ isolated function getTokenType(string value) returns TokenType {
         return T_OPEN_PARENTHESES;
     } else if (value == CLOSE_PARENTHESES) {
         return T_CLOSE_PARENTHESES;
+    } else if (value == DOLLAR) {
+        return T_DOLLAR;
+    } else if (value == EQUAL) {
+        return T_EQUAL;
     } else if (value == COLON) {
         return T_COLON;
     } else if (value == COMMA) {

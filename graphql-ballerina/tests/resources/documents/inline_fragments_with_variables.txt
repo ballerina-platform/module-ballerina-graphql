@@ -1,0 +1,14 @@
+query getData($profileId:int){
+    ...on Query {
+        profile(id:$profileId) {
+            ...on Person {
+                name
+                address {
+                    ... on Address {
+                        city
+                    }
+                }
+            }
+        }
+    }
+}

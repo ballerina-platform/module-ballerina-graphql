@@ -116,9 +116,9 @@ isolated function getErrorDetailRecord(string message, Location|Location[] locat
             message: message,
             locations: location
         };
-    }
+    } 
     return {
         message: message,
         locations: [<Location>location]
-    };
+    };  
 }

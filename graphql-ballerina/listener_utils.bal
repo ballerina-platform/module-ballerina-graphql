@@ -22,7 +22,8 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     string? query = request.getQueryParamValue(PARAM_QUERY);
     if query is string && query != "" {
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
-        return getResponseFromQuery(engine, query, operationName);
+        json variables = request.getQueryParamValue(PARAM_VARIABLES);
+        return getResponseFromQuery(engine, query, operationName, getVariableMap(variables));    
     } else {
         return createResponse("Query not found", http:STATUS_BAD_REQUEST);
     }
@@ -44,14 +45,14 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
     if payload is json {
         var document = payload.query;
         if document is string && document != "" {
-            return getResponseFromQuery(engine, document, getOperationName(payload));
+            return getResponseFromQuery(engine, document, getOperationName(payload), getVariableMap(payload));
         }
     }
     return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
 }
 
-isolated function getResponseFromQuery(Engine engine, string document, string? operationName) returns http:Response {
-    parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName);
+isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables) returns http:Response {
+    parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
         return getResponseFromExecution(engine, validationResult);
     } else {
@@ -86,5 +87,12 @@ isolated function getOperationName(json payload) returns string? {
     var operationName = payload.operationName;
     if operationName is string {
         return operationName;
+    }
+}
+
+isolated function getVariableMap(json payload) returns map<json>? {
+    var variables = payload.variables;
+    if variables is json {
+        return <map<json>> variables;
     }
 }

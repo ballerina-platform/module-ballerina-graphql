@@ -31,13 +31,13 @@ isolated class Engine {
         self.maxQueryDepth = maxQueryDepth;
     }
 
-    isolated function validate(string documentString, string? operationName) returns parser:OperationNode|OutputObject {
+    isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if (result is OutputObject) {
             return result;
         }
         parser:DocumentNode document = <parser:DocumentNode>result;
-        OutputObject? validationResult = self.validateDocument(document);
+        OutputObject? validationResult = self.validateDocument(document, variables);
         if (validationResult is OutputObject) {
             return validationResult;
         } else {
@@ -62,7 +62,7 @@ isolated class Engine {
         return getOutputObjectFromErrorDetail(errorDetail);
     }
 
-    isolated function validateDocument(parser:DocumentNode document) returns OutputObject? {
+    isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
         if (self.maxQueryDepth is int) {
             QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, <int>self.maxQueryDepth);
             ErrorDetail[]? errors = queryDepthValidator.validate();
@@ -70,8 +70,13 @@ isolated class Engine {
                 return getOutputObjectFromErrorDetail(errors);
             }
         }
+        VariableValidator variableValidator = new(document, variables);
+        ErrorDetail[]? errors = variableValidator.validate();
+        if (errors is ErrorDetail[]) {
+            return getOutputObjectFromErrorDetail(errors);
+        }
         ValidatorVisitor validator = new(self.schema, document);
-        ErrorDetail[]? errors = validator.validate();
+        errors = validator.validate();
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);
         }

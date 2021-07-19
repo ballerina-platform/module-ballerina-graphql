@@ -1,0 +1,19 @@
+query A($profileId:int) {
+    ...data 
+}
+
+query B($profileId:string) {
+    ...data
+}
+
+fragment data on Query {
+    profile(id:$profileId) {
+        ...people
+    }
+}
+
+fragment people on Person {
+    address {
+        city
+    }
+}

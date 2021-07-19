@@ -91,5 +91,7 @@ const T_COMMA = 12;
 const T_NEW_LINE = 13;
 const T_WHITE_SPACE = 14;
 const T_ELLIPSIS = 15;
+const T_DOLLAR = 16;
+const T_EQUAL = 17;
 
 public const ANONYMOUS_OPERATION = "<anonymous>";

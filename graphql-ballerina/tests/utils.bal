@@ -19,10 +19,10 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/test;
 
-isolated function getJsonPayloadFromService(string url, string document, string? operationName = ())
+isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
     http:Client httpClient = check new(url);
-    return httpClient->post("/", { query: document, operationName: operationName });
+    return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
@@ -35,10 +35,10 @@ isolated function getGraphQLDocumentFromFile(string fileName) returns string|err
     return io:fileReadString(path);
 }
 
-isolated function getJsonPayloadFromBadRequest(string url, string document, string? operationName = ())
+isolated function getJsonPayloadFromBadRequest(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
     http:Client httpClient = check new(url);
-    http:Response response = check httpClient->post("/", { query: document, operationName: operationName });
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     assertResponseForBadRequest(response);
     return response.getJsonPayload();
 }

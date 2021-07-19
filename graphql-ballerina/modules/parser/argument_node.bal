@@ -20,11 +20,19 @@ public class ArgumentNode {
     private ArgumentName name;
     private ArgumentValue value;
     private ArgumentType kind;
+    private string? variableName;
+    private boolean variableDefinition;
 
-    public isolated function init(ArgumentName name, ArgumentValue value, ArgumentType kind) {
+    public isolated function init(ArgumentName name, ArgumentValue value, ArgumentType kind, boolean isVarDef = false) {
         self.name = name;
         self.value = value;
         self.kind = kind;
+        self.variableDefinition = isVarDef;
+        if (isVarDef) {
+            self.variableName = value.value.toString();
+        } else {
+            self.variableName = ();
+        }
     }
 
     public isolated function getName() returns ArgumentName {
@@ -35,7 +43,27 @@ public class ArgumentNode {
         return self.value;
     }
 
+    public isolated function setValue(Scalar value) {
+        self.value.value = value;
+    }
+
     public isolated function getKind() returns ArgumentType {
         return self.kind;
+    }
+
+    public isolated function setKind(ArgumentType kind) {
+        self.kind = kind;
+    }
+
+    public isolated function isVariableDefinition() returns boolean {
+        return self.variableDefinition;
+    }
+
+    public isolated function getVariableName() returns string {
+        return <string>self.variableName;
+    }
+
+    public isolated function setVariableName(string varName) {
+        self.variableName = varName;
     }
 }

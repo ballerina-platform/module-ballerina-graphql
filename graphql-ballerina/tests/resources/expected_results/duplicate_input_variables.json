@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "There can be only one variable named \"$userName\"",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 20
+                }
+            ]
+        }
+    ]
+}
