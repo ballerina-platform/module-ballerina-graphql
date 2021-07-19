@@ -1,0 +1,16 @@
+{
+    "data": {
+        "sherlock": {
+            "name": "Sherlock Holmes",
+            "residence": {
+                "apartment": "221/B"
+            }
+        },
+        "walter": {
+            "name": "Walter White",
+            "residence": {
+                "hometown": "Albuquerque"
+            }
+        }
+    }
+}

@@ -38,16 +38,7 @@ jobs:
                     packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                     publishUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
                     publishPAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                run: |
-                    ./gradlew publish --no-daemon --scan
-
-            -   name: Archive Error Log
-                uses: actions/upload-artifact@v2
-                if: failure()
-                with:
-                    name: Ballerina Internal Log
-                    path: graphql-ballerina/ballerina-internal.log
-                    if-no-files-found: ignore
+                run: ./gradlew publish --no-daemon --scan
 
             -   name: Generate CodeCov Report
                 uses: codecov/codecov-action@v1
