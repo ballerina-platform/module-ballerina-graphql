@@ -97,7 +97,7 @@ subprojects {
     }
 
     release {
-        buildTasks = []
+        buildTasks = ['build']
         failOnSnapshotDependencies = true
         versionPropertyFile = 'gradle.properties'
         tagTemplate = 'v${version}'
