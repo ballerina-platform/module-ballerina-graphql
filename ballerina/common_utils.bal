@@ -91,6 +91,20 @@ isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
     }
 }
 
+isolated function getArgumentTypeKind(string argType) returns parser:ArgumentType {
+    if argType.equalsIgnoreCaseAscii(INT) {
+        return parser:T_INT;
+    } else if argType.equalsIgnoreCaseAscii(STRING) {
+        return parser:T_STRING;
+    } else if argType.equalsIgnoreCaseAscii(FLOAT) {
+        return parser:T_FLOAT;
+    } else if argType.equalsIgnoreCaseAscii(BOOLEAN) {
+        return parser:T_BOOLEAN;
+    } else {
+        return parser:T_IDENTIFIER;
+    }
+}
+
 isolated function getOfType(__Type schemaType) returns __Type {
     __Type? ofType = schemaType?.ofType;
     if (ofType is ()) {

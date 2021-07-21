@@ -86,6 +86,13 @@ service /inputs on basicListener {
         }
         return false;
     }
+
+    isolated resource function get getDay(boolean isHoliday) returns Weekday[]{
+        if (isHoliday) {
+            return [SUNDAY, SATURDAY];
+        }
+        return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
+    }
 }
 
 service /records on basicListener {

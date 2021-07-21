@@ -1,0 +1,15 @@
+{
+    "data": {
+        "greet": "Hello, Thisaru",
+        "isLegal": true,
+        "weightInPounds": 154.35,
+        "isHoliday": false,
+        "getDay": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY"
+        ]
+    }
+}

@@ -42,7 +42,7 @@ isolated function testMultipleOperationsWithoutOperationNameInRequest() returns 
 isolated function testMultipleOperationsWithInvalidOperationInRequest() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.txt");
     string url = "http://localhost:9091/validation";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, "invalid");
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, operationName = "invalid");
     json expectedPayload = {
         errors: [
             {

@@ -250,7 +250,6 @@ public class Parser {
         while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
             ArgumentName name = check getArgumentName(token);
-
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);

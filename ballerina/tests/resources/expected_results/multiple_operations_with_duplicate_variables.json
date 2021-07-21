@@ -1,16 +1,7 @@
 {
     "errors": [
         {
-            "message": "Int cannot represent non Int value: 1",
-            "locations": [
-                {
-                    "line": 10,
-                    "column": 17
-                }
-            ]
-        },
-        {
-            "message": "Int cannot represent non Int value: 1",
+            "message": "Variable \"$profileId\" got invalid value 1;Expected type String. String cannot represent value: 1",
             "locations": [
                 {
                     "line": 10,

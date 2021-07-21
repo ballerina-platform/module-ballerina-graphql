@@ -1,0 +1,7 @@
+query ($name:string, $age:int, $weight:float, $day:Weekday, $holiday:boolean) {
+    greet (name:$name)
+    isLegal (age:$age)
+    weightInPounds (weightInKg:$weight)
+    isHoliday (weekday:$day)
+    getDay(isHoliday:$holiday)
+}

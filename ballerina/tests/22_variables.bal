@@ -16,7 +16,6 @@
 
 import ballerina/test;
 import ballerina/lang.value;
-import ballerina/io;
 @test:Config {
     groups: ["variables", "input"]
 }
@@ -60,7 +59,7 @@ isolated function testInputVariablesWithInvalidArgumentType() returns error? {
     string document = string`query Greeting($userName:string){ greet (name: $userName ) }`;
     json variables = { "userName": 4 };
     string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("invalid_arguments_type_with_input_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -97,7 +96,6 @@ isolated function testDuplicateVariablesWithMultipleOperations() returns error? 
     json variables = { "profileId": 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables, "B");
-    io:println(actualPayload.toJsonString());
     json expectedPayload = check getJsonContentFromFile("multiple_operations_with_duplicate_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -138,7 +136,7 @@ isolated function testVariablesWithDefaultValues() returns error? {
 }
 
 @test:Config {
-    groups: ["variables1", "inputs", "input_coerce"]
+    groups: ["variables", "inputs", "input_coerce"]
 }
 isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
     string document = "($weight:float){ weightInPounds(weightInKg:$weight) }";
@@ -157,10 +155,66 @@ isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
 @test:Config {
     groups: ["variables", "fragments", "input"]
 }
-isolated function testVariab() returns error? {
-    string document = check getGraphQLDocumentFromFile("variables_with_default_values.txt");
+isolated function testVariablesWithMissingRequiredArgument() returns error? {
+    string document = string`query Greeting($userName:string){ greet (name: $userName ) }`;
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variables_with_default_values.json");
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("variables_with_missing_required_argument.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testEnumTypeVariables() returns error? {
+    string document = "($day:Weekday){ isHoliday(weekday: $day) }";
+    json variables = { "day": MONDAY };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            isHoliday: false
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs"]
+}
+isolated function testMultipleVariableTypesWithSingleQuery() returns error? {
+    string document = check getGraphQLDocumentFromFile("multiple_variable_types.txt");
+    json variables = { 
+        "name": "Thisaru",
+        "age": 30,
+        "weight": 70.5,
+        "day": FRIDAY,
+        "holiday": false
+    };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("multiple_variable_types.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables","map"]
+}
+isolated function testVariablesWithNestedMap() returns error? {
+    string document = string`query ($workerKey:string, $contractKey:string ){ company { workers(key:$workerKey) { contacts(key:$contractKey) { number } } } }`;
+    json variables = { "workerKey": "id3", "contractKey": "home" };
+    string url = "http://localhost:9095/special_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            company: {
+                workers: {
+                    contacts: {
+                        number: "+94771234567"
+                    }
+                }
+            }
+        }
+    };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
