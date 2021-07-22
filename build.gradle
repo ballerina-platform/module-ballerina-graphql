@@ -95,16 +95,23 @@ subprojects {
         ballerinaStdLibs "io.ballerina.stdlib:url-ballerina:${stdlibUrlVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:uuid-ballerina:${stdlibUuidVersion}"
     }
-
-    release {
-        buildTasks = []
-        failOnSnapshotDependencies = true
-        versionPropertyFile = 'gradle.properties'
-        tagTemplate = 'v${version}'
-        git {
-            requireBranch = "release-${moduleVersion}"
-            pushToRemote = 'origin'
-        }
-    }
 }
 
+task build {
+    dependsOn(':graphql-native:build')
+    dependsOn(':graphql-compiler-plugin:build')
+    dependsOn(':graphql-ballerina:build')
+    dependsOn(':graphql-compiler-plugin-tests:test')
+    dependsOn(':graphql-examples:build')
+}
+
+release {
+    buildTasks = ['build']
+    failOnSnapshotDependencies = true
+    versionPropertyFile = 'gradle.properties'
+    tagTemplate = 'v${version}'
+    git {
+        requireBranch = "release-${moduleVersion}"
+        pushToRemote = 'origin'
+    }
+}
