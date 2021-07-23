@@ -28,11 +28,7 @@ public class ArgumentNode {
         self.value = value;
         self.kind = kind;
         self.variableDefinition = isVarDef;
-        if (isVarDef) {
-            self.variableName = value.value.toString();
-        } else {
-            self.variableName = ();
-        }
+        self.variableName = isVarDef ? value.value.toString() : ();
     }
 
     public isolated function getName() returns ArgumentName {
@@ -59,11 +55,7 @@ public class ArgumentNode {
         return self.variableDefinition;
     }
 
-    public isolated function getVariableName() returns string {
-        return <string>self.variableName;
-    }
-
-    public isolated function setVariableName(string varName) {
-        self.variableName = varName;
+    public isolated function getVariableName() returns string? {
+        return self.variableName;
     }
 }

@@ -1,4 +1,4 @@
-query ($name:string, $age:int, $weight:float, $day:Weekday, $holiday:boolean) {
+query ($name:String, $age:Int, $weight:Float, $day:Weekday, $holiday:Boolean) {
     greet (name:$name)
     isLegal (age:$age)
     weightInPounds (weightInKg:$weight)

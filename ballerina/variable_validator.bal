@@ -69,10 +69,8 @@ class VariableValidator{
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection.isFragment {
-            if self.documentNode.getFragments().keys().indexOf(selection.name) != () {
-                parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-                self.visitFragment(fragmentNode, data);
-            }
+            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
+            self.visitFragment(fragmentNode, data);
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             self.visitField(fieldNode, data);
@@ -101,7 +99,7 @@ class VariableValidator{
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         map<parser:VariableDefinition> variableDefinitions = <map<parser:VariableDefinition>> data;
-        string variableName = argumentNode.getVariableName();
+        string variableName = <string> argumentNode.getVariableName();
         parser:Location location = argumentNode.getValue().location;
         if variableDefinitions.hasKey(variableName) {
             parser:VariableDefinition variableDefinition = variableDefinitions.get(variableName);
@@ -132,12 +130,12 @@ class VariableValidator{
     public isolated function setArgumentValue(Scalar value, parser:ArgumentNode argument, parser:Location location) {
         if argument.getKind() == parser:T_IDENTIFIER {
             argument.setValue(value);
-        } else if (typeof value).toString().equalsIgnoreCaseAscii("typedesc " + getTypeName(argument)) {
+        } else if getTypeNameFromValue(value) == getTypeName(argument) {
             argument.setValue(value);
         } else if value is int && getTypeName(argument) == FLOAT {
             argument.setValue(<float> value);
         } else {
-            string message = string`Variable "$${argument.getVariableName()}" got invalid value ${value.toString()};` +
+            string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ${value.toString()};` +
             string`Expected type ${getTypeName(argument)}. ${getTypeName(argument)} cannot represent value: ${value.toString()}`;
             self.errors.push(getErrorDetailRecord(message, location)); 
         }

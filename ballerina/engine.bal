@@ -63,15 +63,20 @@ isolated class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
+        FragmentVisitor fragmentVisitor = new(document);
+        ErrorDetail[]? errors = fragmentVisitor.validate();
+        if (errors is ErrorDetail[]) {
+            return getOutputObjectFromErrorDetail(errors);
+        }
         if (self.maxQueryDepth is int) {
             QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, <int>self.maxQueryDepth);
-            ErrorDetail[]? errors = queryDepthValidator.validate();
+            errors = queryDepthValidator.validate();
             if (errors is ErrorDetail[]) {
                 return getOutputObjectFromErrorDetail(errors);
             }
         }
         VariableValidator variableValidator = new(document, variables);
-        ErrorDetail[]? errors = variableValidator.validate();
+        errors = variableValidator.validate();
         if (errors is ErrorDetail[]) {
             return getOutputObjectFromErrorDetail(errors);
         }

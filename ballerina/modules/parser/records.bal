@@ -29,7 +29,7 @@ public type Location record {|
     int column;
 |};
 
-# Store a Varibale definition in a GraphQL operation.
+# Store a Varibale defined in a GraphQL operation.
 #
 # + name - Name of the variable   
 # + kind - Type of the variable   

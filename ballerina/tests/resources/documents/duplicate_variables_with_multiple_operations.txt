@@ -1,8 +1,8 @@
-query A($profileId:int) {
+query A($profileId:Int) {
     ...data 
 }
 
-query B($profileId:string) {
+query B($profileId:Int) {
     ...data
 }
 

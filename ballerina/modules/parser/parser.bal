@@ -31,20 +31,20 @@ public class Parser {
     isolated function populateDocument() returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
 
-        while (token.kind != T_EOF) {
+        while token.kind != T_EOF {
             check self.parseRootOperation(token);
             token = check self.peekNextNonSeparatorToken();
         }
     }
 
     isolated function parseRootOperation(Token token) returns Error? {
-        if (token.kind == T_OPEN_PARENTHESES || token.kind == T_OPEN_BRACE) {
+        if token.kind == T_OPEN_PARENTHESES || token.kind == T_OPEN_BRACE {
             return self.parseAnonymousOperation();
-        } else if (token.kind == T_IDENTIFIER) {
+        } else if token.kind == T_IDENTIFIER {
             Scalar value = token.value;
-            if (value is RootOperationType) {
+            if value is RootOperationType {
                 return self.parseOperationWithType(value);
-            } else if (value == FRAGMENT) {
+            } else if value == FRAGMENT {
                 return self.parseFragment();
             }
         }
@@ -64,7 +64,7 @@ public class Parser {
         string operationName = check getOperationNameFromToken(self);
         token = check self.peekNextNonSeparatorToken();
         TokenType tokenType = token.kind;
-        if (tokenType == T_OPEN_PARENTHESES || tokenType == T_OPEN_BRACE) {
+        if tokenType == T_OPEN_PARENTHESES || tokenType == T_OPEN_BRACE {
             OperationNode operation = check self.createOperationNode(operationName, operationType, location);
             self.addOperationToDocument(operation);
         } else {
@@ -78,13 +78,13 @@ public class Parser {
 
         token = check self.readNextNonSeparatorToken();
         string name = check getIdentifierTokenvalue(token);
-        if (name == ON) {
+        if name == ON {
             return getUnexpectedTokenError(token);
         }
 
         token = check self.readNextNonSeparatorToken();
         string keyword = check getIdentifierTokenvalue(token);
-        if (keyword != ON) {
+        if keyword != ON {
             return getExpectedCharError(token, ON);
         }
 
@@ -93,7 +93,7 @@ public class Parser {
 
         FragmentNode fragmentNode = new(name, location, onType, false);
         token = check self.peekNextNonSeparatorToken();
-        if (token.kind != T_OPEN_BRACE) {
+        if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
@@ -104,7 +104,7 @@ public class Parser {
     returns OperationNode|Error {
         OperationNode operation = new(name, kind, location);
         Token token = check self.peekNextNonSeparatorToken();
-        if (token.kind == T_OPEN_PARENTHESES) {
+        if token.kind == T_OPEN_PARENTHESES {
             check self.addVariableDefinition(operation);
         }
         check self.addSelections(operation);
@@ -113,44 +113,46 @@ public class Parser {
 
     isolated function addVariableDefinition(OperationNode operationNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Read the open parantheses here
-        while (token.kind != T_CLOSE_PARENTHESES) {
+        while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
-            if (token.kind != T_DOLLAR) {
+            if token.kind != T_DOLLAR {
                 return getExpectedCharError(token, DOLLAR);
             }
             Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             string variableName = check getIdentifierTokenvalue(token);
             token = check self.readNextNonSeparatorToken();
-            if (token.kind != T_COLON) {
+            if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
             }
-
             token = check self.readNextNonSeparatorToken();
             string varType = check getIdentifierTokenvalue(token);
+            VariableDefinition varDefinition = {
+                name: variableName,
+                kind: varType,
+                location: location
+            };
             token = check self.peekNextNonSeparatorToken();
-            if (token.kind == T_EQUAL) {
-                token = check self.readNextNonSeparatorToken();// consume "=" sign here
-                token = check self.readNextNonSeparatorToken();
-                ArgumentValue value = check getArgumentValue(token);
-                VariableDefinition varDefinition = {
-                    name: variableName,
-                    kind: varType,
-                    defaultValue: value,
-                    location:location
-                };
-                operationNode.addVariableDefinition(variableName, varDefinition);
+            if token.kind == T_EQUAL {
+                varDefinition = check self.getVariableDefinitionWithDefaultValue(variableName, varType, location);
                 token = check self.peekNextNonSeparatorToken();
-            } else {
-                VariableDefinition varDefinition = {
-                    name: variableName,
-                    kind: varType,
-                    location: location
-                };
-                operationNode.addVariableDefinition(variableName, varDefinition);
             }
+            operationNode.addVariableDefinition(varDefinition);
         }
         token = check self.readNextNonSeparatorToken();
+    }
+
+    isolated function getVariableDefinitionWithDefaultValue(string varName, string varType, Location location) returns VariableDefinition|Error {
+        Token token = check self.readNextNonSeparatorToken();// consume "=" sign here
+        token = check self.readNextNonSeparatorToken();
+        ArgumentValue value = check getArgumentValue(token);
+        VariableDefinition varDefinition = {
+            name: varName,
+            kind: varType,
+            defaultValue: <ArgumentValue> value,
+            location:location
+        };
+        return varDefinition;
     }
 
     isolated function addSelections(ParentNode parentNode) returns Error? {
@@ -232,7 +234,7 @@ public class Parser {
         string fragmentName = string`${parentNode.getName()}_${onType}`;
         FragmentNode fragmentNode = new(fragmentName, location, onType, true);
         token = check self.peekNextNonSeparatorToken();
-        if (token.kind != T_OPEN_BRACE) {
+        if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
@@ -289,7 +291,7 @@ public class Parser {
 
     isolated function readNextNonSeparatorToken() returns Token|Error {
         Token token = check self.lexer.read();
-        if (token.kind is IgnoreType) {
+        if token.kind is IgnoreType {
             return self.readNextNonSeparatorToken();
         }
         return token;
@@ -298,8 +300,8 @@ public class Parser {
     isolated function peekNextNonSeparatorToken() returns Token|Error {
         int i = 1;
         Token token = check self.lexer.peek(i);
-        while (true) {
-            if (token.kind is LexicalType) {
+        while true {
+            if token.kind is LexicalType {
                 break;
             }
             i += 1;
@@ -312,14 +314,14 @@ public class Parser {
 
 isolated function getRootOperationType(Token token) returns RootOperationType|Error {
     string value = <string>token.value;
-    if (value is RootOperationType) {
+    if value is RootOperationType {
         return value;
     }
     return getUnexpectedTokenError(token);
 }
 
 isolated function getArgumentName(Token token) returns ArgumentName|Error {
-    if (token.kind == T_IDENTIFIER) {
+    if token.kind == T_IDENTIFIER {
         return {
             value: <string>token.value,
             location: token.location
@@ -330,7 +332,7 @@ isolated function getArgumentName(Token token) returns ArgumentName|Error {
 }
 
 isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
-    if (token.kind is ArgumentType) {
+    if token.kind is ArgumentType {
         return {
             value: token.value,
             location: token.location
@@ -342,18 +344,18 @@ isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
 
 isolated function getOperationNameFromToken(Parser parser) returns string|Error {
     Token token = check parser.peekNextNonSeparatorToken();
-    if (token.kind == T_IDENTIFIER) {
+    if token.kind == T_IDENTIFIER {
         // If this is a named operation, we should consume name token
         token = check parser.readNextNonSeparatorToken();
         return <string>token.value;
-    } else if (token.kind == T_OPEN_BRACE || token.kind == T_OPEN_PARENTHESES) {
+    } else if token.kind == T_OPEN_BRACE || token.kind == T_OPEN_PARENTHESES {
         return ANONYMOUS_OPERATION;
     }
     return getUnexpectedTokenError(token);
 }
 
 isolated function getIdentifierTokenvalue(Token token) returns string|Error {
-    if (token.kind == T_IDENTIFIER) {
+    if token.kind == T_IDENTIFIER {
         return <string>token.value;
     } else {
         return getExpectedNameError(token);

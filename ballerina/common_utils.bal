@@ -86,19 +86,21 @@ isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
         return FLOAT;
     } else if (kind == parser:T_BOOLEAN) {
         return BOOLEAN;
-    } else {
+    } else if (kind == parser:T_STRING) {
         return STRING;
+    } else {
+        return argumentNode.getKind().toString();
     }
 }
 
 isolated function getArgumentTypeKind(string argType) returns parser:ArgumentType {
-    if argType.equalsIgnoreCaseAscii(INT) {
+    if argType == INT {
         return parser:T_INT;
-    } else if argType.equalsIgnoreCaseAscii(STRING) {
+    } else if argType == STRING {
         return parser:T_STRING;
-    } else if argType.equalsIgnoreCaseAscii(FLOAT) {
+    } else if argType == FLOAT {
         return parser:T_FLOAT;
-    } else if argType.equalsIgnoreCaseAscii(BOOLEAN) {
+    } else if argType == BOOLEAN {
         return parser:T_BOOLEAN;
     } else {
         return parser:T_IDENTIFIER;
@@ -124,15 +126,27 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
     return schemaType?.name.toString();
 }
 
+isolated function getTypeNameFromValue(Scalar value) returns string {
+    if (typeof value).toString() == "typedesc int" {
+        return INT;
+    } else if (typeof value).toString() == "typedesc boolean" {
+        return BOOLEAN;
+    } else if (typeof value).toString() == "typedesc float" {
+        return BOOLEAN;
+    } else {
+        return STRING;
+    }
+}
+
 isolated function getErrorDetailRecord(string message, Location|Location[] location) returns ErrorDetail {
     if (location is Location[]) {
         return {
             message: message,
             locations: location
         };
-    } 
+    }
     return {
         message: message,
         locations: [<Location>location]
-    };  
+    };
 }

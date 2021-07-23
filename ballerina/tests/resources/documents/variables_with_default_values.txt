@@ -1,4 +1,4 @@
-query getData($profileId:int = 1){
+query getData($profileId:Int = 1){
     ...data
 }
 

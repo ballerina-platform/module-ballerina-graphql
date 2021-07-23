@@ -67,10 +67,8 @@ class QueryDepthValidator{
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if (selection.isFragment) {
-            if (self.documentNode.getFragments().keys().indexOf(selection.name) != ()) {
-                parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-                self.visitFragment(fragmentNode, data);
-            }
+            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
+            self.visitFragment(fragmentNode, data);
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             self.visitField(fieldNode);

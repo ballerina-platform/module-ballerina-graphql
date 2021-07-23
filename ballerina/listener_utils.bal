@@ -22,8 +22,12 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     string? query = request.getQueryParamValue(PARAM_QUERY);
     if query is string && query != "" {
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
-        json variables = request.getQueryParamValue(PARAM_VARIABLES);
-        return getResponseFromQuery(engine, query, operationName, getVariableMap(variables));    
+        json? variables = request.getQueryParamValue(PARAM_VARIABLES);
+        if variables is map<json> || variables == () {
+            return getResponseFromQuery(engine, query, operationName, <map<json>?> variables);
+        } else {
+            return createResponse("Invalid format in request variable", http:STATUS_BAD_REQUEST);
+        }
     } else {
         return createResponse("Query not found", http:STATUS_BAD_REQUEST);
     }
@@ -44,8 +48,13 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
     var payload = request.getJsonPayload();
     if payload is json {
         var document = payload.query;
+        json? variables = getVariableMap(payload);
         if document is string && document != "" {
-            return getResponseFromQuery(engine, document, getOperationName(payload), getVariableMap(payload));
+            if variables is map<json> || variables is () {
+                return getResponseFromQuery(engine, document, getOperationName(payload), <map<json>?> variables);
+            } else {
+                return createResponse("Invalid format in request variables", http:STATUS_BAD_REQUEST);
+            }
         }
     }
     return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
@@ -90,9 +99,9 @@ isolated function getOperationName(json payload) returns string? {
     }
 }
 
-isolated function getVariableMap(json payload) returns map<json>? {
+isolated function getVariableMap(json payload) returns json? {
     var variables = payload.variables;
-    if variables is json {
-        return <map<json>> variables;
+    if variables is map<json> {
+        return variables;
     }
 }
