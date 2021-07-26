@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
+import io.ballerina.runtime.api.Parameter;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -140,14 +141,14 @@ public class Engine {
     }
 
     private static Object[] getArgsForResource(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
-        String[] paramNames = resourceMethod.getParamNames();
-        Object[] result = new Object[paramNames.length * 2];
-        for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
-            if (arguments.get(StringUtils.fromString(paramNames[i])) == null) {
+        Parameter[] parameters = resourceMethod.getParameters();
+        Object[] result = new Object[parameters.length * 2];
+        for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
+            if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
                 result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
                 result[j + 1] = false;
             } else {
-                result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
+                result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
                 result[j + 1] = true;
             }
         }

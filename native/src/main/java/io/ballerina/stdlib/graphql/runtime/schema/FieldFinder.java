@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.schema;
 
+import io.ballerina.runtime.api.Parameter;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -222,10 +223,10 @@ public class FieldFinder {
     }
 
     private void addArgsToSchemaField(ResourceMethodType resourceMethod, SchemaField schemaField) {
-        String[] paramNames = resourceMethod.getParamNames();
+        Parameter[] parameters = resourceMethod.getParameters();
         Type[] paramTypes = resourceMethod.getParameterTypes();
-        Boolean[] paramDefaultability = resourceMethod.getParamDefaultability();
-        for (int i = 0; i < paramNames.length; i++) {
+
+        for (int i = 0; i < parameters.length; i++) {
             SchemaType inputValueType;
             if (paramTypes[i].isNilable()) {
                 Type inputType = getInputTypeFromNilableType((UnionType) paramTypes[i]);
@@ -235,13 +236,14 @@ public class FieldFinder {
             }
             InputValue inputValue;
             if (paramTypes[i].isNilable()) {
-                inputValue = new InputValue(paramNames[i], inputValueType);
-            } else if (paramDefaultability[i]) {
-                inputValue = new InputValue(paramNames[i], inputValueType, paramTypes[i].getZeroValue().toString());
+                inputValue = new InputValue(parameters[i].name, inputValueType);
+            } else if (parameters[i].isDefault) {
+                inputValue = new InputValue(parameters[i].name, inputValueType,
+                        paramTypes[i].getZeroValue().toString());
             } else {
                 SchemaType nonNullType = getNonNullType();
                 nonNullType.setOfType(inputValueType);
-                inputValue = new InputValue(paramNames[i], nonNullType);
+                inputValue = new InputValue(parameters[i].name, nonNullType);
             }
             schemaField.addArg(inputValue);
         }
