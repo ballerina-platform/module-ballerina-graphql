@@ -132,7 +132,7 @@ isolated function getTypeNameFromValue(Scalar value) returns string {
     } else if (typeof value).toString() == "typedesc boolean" {
         return BOOLEAN;
     } else if (typeof value).toString() == "typedesc float" {
-        return BOOLEAN;
+        return FLOAT;
     } else {
         return STRING;
     }

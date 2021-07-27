@@ -137,12 +137,7 @@ public class Parser {
                 token = check self.readNextNonSeparatorToken();// consume "=" sign here
                 token = check self.readNextNonSeparatorToken();
                 ArgumentValue value = check getArgumentValue(token);
-                varDefinition = {
-                    name: variableName,
-                    kind: varType,
-                    defaultValue: value,
-                    location:location
-                };
+                varDefinition.defaultValue = value;
                 token = check self.peekNextNonSeparatorToken();
             }
             operationNode.addVariableDefinition(varDefinition);

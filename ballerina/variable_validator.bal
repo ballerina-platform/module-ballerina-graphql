@@ -28,11 +28,7 @@ class VariableValidator{
         self.documentNode = documentNode;
         self.visitedVariableDefinitions = [];
         self.errors = [];
-        if variableValues == () {
-            self.variables = {};
-        } else {
-            self.variables = <map<json>> variableValues;
-        }
+        self.variables = variableValues == () ? {} : variableValues;
     }
 
     public isolated function validate() returns ErrorDetail[]? {
@@ -45,15 +41,15 @@ class VariableValidator{
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
-            foreach ErrorDetail errorDetail in operationNode.getErrors() {
-                self.errors.push(errorDetail);
-            }
             self.visitOperation(operationNode);
         }
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         map<parser:VariableDefinition> variableDefinitions = operationNode.getVaribleDefinitions();
+        foreach ErrorDetail errorDetail in operationNode.getErrors() {
+            self.errors.push(errorDetail);
+        }
         foreach parser:Selection selection in operationNode.getSelections() {
             self.visitSelection(selection, variableDefinitions);
         }
@@ -65,6 +61,7 @@ class VariableValidator{
                 self.errors.push(getErrorDetailRecord(message, location)); 
             }
         }
+        self.visitedVariableDefinitions = [];
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
