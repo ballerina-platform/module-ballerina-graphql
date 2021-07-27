@@ -16,11 +16,12 @@
 
 import ballerina/test;
 import ballerina/lang.value;
+
 @test:Config {
     groups: ["variables", "input"]
 }
 isolated function testDuplicateInputVariables() returns error? {
-    string document = string`($userName:string, $userName:int){ greet (name: $userName) }`;
+    string document = string`($userName:String, $userName:Int){ greet (name: $userName) }`;
     json variables = { userName:"Thisaru" };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -44,7 +45,7 @@ isolated function testUndefinedInputVariables() returns error? {
     groups: ["variables", "input"]
 }
 isolated function testUnusedInputVariables() returns error? {
-    string document = string`query ($userName:string, $extra:int){ greet (name: $userName) }`;
+    string document = string`query ($userName:String, $extra:Int){ greet (name: $userName) }`;
     json variables = { userName:"Thisaru" };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -60,7 +61,7 @@ isolated function testInputVariablesWithInvalidArgumentType() returns error? {
     json variables = { userName: 4 };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("invalid_arguments_type_with_input_variables.json");
+    json expectedPayload = check getJsonContentFromFile("input_variables_with_invalid_argument_type.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -156,7 +157,7 @@ isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testVariablesWithMissingRequiredArgument() returns error? {
-    string document = string`query Greeting($userName:string){ greet (name: $userName ) }`;
+    string document = string`query Greeting($userName:String){ greet (name: $userName ) }`;
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variables_with_missing_required_argument.json");
@@ -193,7 +194,7 @@ isolated function testMultipleVariableTypesWithSingleQuery() returns error? {
     };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("multiple_variable_types.json");
+    json expectedPayload = check getJsonContentFromFile("multiple_variable_types_with_single_query.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

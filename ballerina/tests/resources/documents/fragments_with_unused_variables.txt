@@ -1,4 +1,4 @@
-query getData($profileId:int, $extra:boolean){
+query getData($profileId:Int, $extra:Boolean){
     ...data
 }
 

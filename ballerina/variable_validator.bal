@@ -48,14 +48,14 @@ class VariableValidator{
             foreach ErrorDetail errorDetail in operationNode.getErrors() {
                 self.errors.push(errorDetail);
             }
-            self.visitOperation(operationNode, operationNode.getVaribleDefinitions());
+            self.visitOperation(operationNode);
         }
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        map<parser:VariableDefinition> variableDefinitions = <map<parser:VariableDefinition>> data;
+        map<parser:VariableDefinition> variableDefinitions = operationNode.getVaribleDefinitions();
         foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection, data);
+            self.visitSelection(selection, variableDefinitions);
         }
         string[] keys = variableDefinitions.keys();
         foreach string name in keys {
@@ -133,7 +133,7 @@ class VariableValidator{
         } else if getTypeNameFromValue(value) == getTypeName(argument) {
             argument.setValue(value);
         } else if value is int && getTypeName(argument) == FLOAT {
-            argument.setValue(<float> value);
+            argument.setValue(value);
         } else {
             string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ${value.toString()};` +
             string`Expected type ${getTypeName(argument)}. ${getTypeName(argument)} cannot represent value: ${value.toString()}`;

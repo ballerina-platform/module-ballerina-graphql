@@ -56,7 +56,7 @@ isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type union
 isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
 returns string {
     string fragmentOnTypeName = fragmentNode.getOnType();
-    if (fragmentNode.isInlineFragment()) {
+    if fragmentNode.isInlineFragment() {
         return string`Fragment cannot be spread here as objects of type "${ofType?.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
     }
     return string`Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType?.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
@@ -69,10 +69,10 @@ isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue
 
 isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
-    if (data.length() > 0) {
+    if data.length() > 0 {
         outputObject.data = <Data> checkpanic data.cloneWithType(Data);
     }
-    if (errors.length() > 0) {
+    if errors.length() > 0 {
         outputObject.errors = errors;
     }
     return outputObject;
@@ -80,13 +80,13 @@ isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) retur
 
 isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
     parser:ArgumentType kind = argumentNode.getKind();
-    if (kind == parser:T_INT) {
+    if kind == parser:T_INT {
         return INT;
-    } else if (kind == parser:T_FLOAT) {
+    } else if kind == parser:T_FLOAT {
         return FLOAT;
-    } else if (kind == parser:T_BOOLEAN) {
+    } else if kind == parser:T_BOOLEAN {
         return BOOLEAN;
-    } else if (kind == parser:T_STRING) {
+    } else if kind == parser:T_STRING {
         return STRING;
     } else {
         return argumentNode.getKind().toString();
@@ -109,7 +109,7 @@ isolated function getArgumentTypeKind(string argType) returns parser:ArgumentTyp
 
 isolated function getOfType(__Type schemaType) returns __Type {
     __Type? ofType = schemaType?.ofType;
-    if (ofType is ()) {
+    if ofType is () {
         return schemaType;
     } else {
         return getOfType(ofType);
@@ -118,9 +118,9 @@ isolated function getOfType(__Type schemaType) returns __Type {
 
 isolated function getTypeNameFromType(__Type schemaType) returns string {
     string typeName = getOfType(schemaType)?.name.toString();
-    if (schemaType.kind == NON_NULL) {
+    if schemaType.kind == NON_NULL {
         return string`${getTypeNameFromType(<__Type & readonly>schemaType?.ofType)}!`;
-    } else if (schemaType.kind == LIST) {
+    } else if schemaType.kind == LIST {
         return string`[${getTypeNameFromType(<__Type & readonly>schemaType?.ofType)}]`;
     }
     return schemaType?.name.toString();
@@ -139,7 +139,7 @@ isolated function getTypeNameFromValue(Scalar value) returns string {
 }
 
 isolated function getErrorDetailRecord(string message, Location|Location[] location) returns ErrorDetail {
-    if (location is Location[]) {
+    if location is Location[] {
         return {
             message: message,
             locations: location

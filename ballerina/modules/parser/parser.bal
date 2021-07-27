@@ -134,25 +134,20 @@ public class Parser {
             };
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
-                varDefinition = check self.getVariableDefinitionWithDefaultValue(variableName, varType, location);
+                token = check self.readNextNonSeparatorToken();// consume "=" sign here
+                token = check self.readNextNonSeparatorToken();
+                ArgumentValue value = check getArgumentValue(token);
+                varDefinition = {
+                    name: variableName,
+                    kind: varType,
+                    defaultValue: value,
+                    location:location
+                };
                 token = check self.peekNextNonSeparatorToken();
             }
             operationNode.addVariableDefinition(varDefinition);
         }
         token = check self.readNextNonSeparatorToken();
-    }
-
-    isolated function getVariableDefinitionWithDefaultValue(string varName, string varType, Location location) returns VariableDefinition|Error {
-        Token token = check self.readNextNonSeparatorToken();// consume "=" sign here
-        token = check self.readNextNonSeparatorToken();
-        ArgumentValue value = check getArgumentValue(token);
-        VariableDefinition varDefinition = {
-            name: varName,
-            kind: varType,
-            defaultValue: <ArgumentValue> value,
-            location:location
-        };
-        return varDefinition;
     }
 
     isolated function addSelections(ParentNode parentNode) returns Error? {
@@ -257,16 +252,18 @@ public class Parser {
                 return getExpectedCharError(token, COLON);
             }
             token = check self.readNextNonSeparatorToken();
-            if (token.kind == T_DOLLAR) {
+            if token.kind == T_DOLLAR {
                 token = check self.readNextNonSeparatorToken();
                 //send the variable name as argument value of the argument node
-                ArgumentValue varName = check getArgumentValue(token); 
-                ArgumentNode argument = new(name, varName, <ArgumentType>token.kind, true);
+                ArgumentValue varName = check getArgumentValue(token);
+                ArgumentType argType = <ArgumentType>token.kind;
+                ArgumentNode argument = new(name, varName, argType, true);
                 fieldNode.addArgument(argument);
                 token = check self.peekNextNonSeparatorToken();
             } else {
                 ArgumentValue value = check getArgumentValue(token);
-                ArgumentNode argument = new(name, value, <ArgumentType>token.kind);
+                ArgumentType argType = <ArgumentType>token.kind;
+                ArgumentNode argument = new(name, value, argType);
                 fieldNode.addArgument(argument);
                 token = check self.peekNextNonSeparatorToken();
             }    

@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable \"$userName\" of required type string was not provided.",
+            "message": "Variable \"$userName\" of required type String was not provided.",
             "locations": [
                 {
                     "line": 1,
