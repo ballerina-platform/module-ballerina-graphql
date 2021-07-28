@@ -21,12 +21,19 @@ class FragmentVisitor {
 
     private ErrorDetail[] errors;
     private map<string> usedFragments;
-    private parser:DocumentNode? documentNode;
+    private parser:DocumentNode documentNode;
 
-    public isolated function init() {
+    public isolated function init(parser:DocumentNode documentNode) {
         self.errors = [];
         self.usedFragments = {};
-        self.documentNode = ();
+        self.documentNode = documentNode;
+    }
+
+    public isolated function validate() returns ErrorDetail[]? {
+        self.visitDocument(self.documentNode);
+        if (self.errors.length() > 0) {
+            return self.errors;
+        }
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {

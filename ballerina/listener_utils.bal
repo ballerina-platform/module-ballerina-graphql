@@ -22,7 +22,12 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     string? query = request.getQueryParamValue(PARAM_QUERY);
     if query is string && query != "" {
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
-        return getResponseFromQuery(engine, query, operationName);
+        json? variables = request.getQueryParamValue(PARAM_VARIABLES);
+        if variables is map<json> || variables == () {
+            return getResponseFromQuery(engine, query, operationName, variables);
+        } else {
+            return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
+        }
     } else {
         return createResponse("Query not found", http:STATUS_BAD_REQUEST);
     }
@@ -43,15 +48,21 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
     var payload = request.getJsonPayload();
     if payload is json {
         var document = payload.query;
+        var variables = payload.variables;
+        variables = variables is error ? () : variables;
         if document is string && document != "" {
-            return getResponseFromQuery(engine, document, getOperationName(payload));
+            if variables is map<json> || variables is () {
+                return getResponseFromQuery(engine, document, getOperationName(payload), variables);
+            } else {
+                return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
+            }
         }
     }
     return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
 }
 
-isolated function getResponseFromQuery(Engine engine, string document, string? operationName) returns http:Response {
-    parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName);
+isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables) returns http:Response {
+    parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
         return getResponseFromExecution(engine, validationResult);
     } else {

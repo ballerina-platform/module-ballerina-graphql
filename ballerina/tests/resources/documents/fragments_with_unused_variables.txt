@@ -1,0 +1,15 @@
+query getData($profileId:Int, $extra:Boolean){
+    ...data
+}
+
+fragment data on Query {
+    profile(id:$profileId) {
+        ...people
+    }
+}
+
+fragment people on Person {
+    address {
+        city
+    }
+}

@@ -1,0 +1,15 @@
+query ($profileId:Int){
+    ...data
+}
+
+fragment data on Query {
+    profile(id:$profileId) {
+        ...people
+    }
+}
+
+fragment people on Person {
+    address {
+        city
+    }
+}

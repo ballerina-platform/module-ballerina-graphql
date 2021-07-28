@@ -19,6 +19,7 @@ const CONTENT_TYPE_GQL = "application/graphql";
 
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
+const PARAM_VARIABLES = "variables";
 
 const SCHEMA_FIELD = "__schema";
 const SCHEMA_TYPE_NAME = "__Schema";
