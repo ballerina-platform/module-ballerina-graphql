@@ -14,8 +14,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import ballerina/test;
 import ballerina/lang.value;
+
+@test:Config {
+    groups: ["variables", "request_validation"]
+}
+isolated function testInvalidRequestWithVariables() returns error? {
+    http:Request request = new;
+    string document = string`($userName:String){ greet (name: $userName) }`;
+    json variables = "Thisaru";
+    request.setJsonPayload({ query: document, variables: variables });
+    string url = "http://localhost:9091/inputs";
+    string actualPayload = check getTextPayloadFromBadRequest(url, request);
+    test:assertEquals(actualPayload, "Invalid format in request parameter: variables");
+}
 
 @test:Config {
     groups: ["variables", "input"]

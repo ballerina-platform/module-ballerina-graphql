@@ -16,7 +16,7 @@
 
 import graphql.parser;
 
-class VariableValidator{
+class VariableValidator {
     *parser:Visitor;
 
     private parser:DocumentNode documentNode;
@@ -136,9 +136,5 @@ class VariableValidator{
             string`Expected type ${getTypeName(argument)}. ${getTypeName(argument)} cannot represent value: ${value.toString()}`;
             self.errors.push(getErrorDetailRecord(message, location)); 
         }
-    }
-
-    isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
     }
 }
