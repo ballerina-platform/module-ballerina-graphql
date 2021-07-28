@@ -14,13 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-type Address record {
+public type Address record {
     string number;
     string street;
     string city;
 };
 
-type Person record {
+public type Person record {
     string name;
     int age;
     Address address;

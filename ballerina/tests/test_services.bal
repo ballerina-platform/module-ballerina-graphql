@@ -418,3 +418,15 @@ service /duplicates on basicListener {
         return p4;
     }
 }
+
+service /mutations on basicListener {
+    resource function get person() returns Person {
+        return p2;
+    }
+
+    remote function setName(string name) returns Person {
+        Person p = p2.clone();
+        p.name = name;
+        return p;
+    }
+}
