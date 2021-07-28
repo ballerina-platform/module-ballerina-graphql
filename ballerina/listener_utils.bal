@@ -24,7 +24,7 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
         json? variables = request.getQueryParamValue(PARAM_VARIABLES);
         if variables is map<json> || variables == () {
-            return getResponseFromQuery(engine, query, operationName, <map<json>?> variables);
+            return getResponseFromQuery(engine, query, operationName, variables);
         } else {
             return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
         }
@@ -52,7 +52,7 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
         variables = variables is error ? () : variables;
         if document is string && document != "" {
             if variables is map<json> || variables is () {
-                return getResponseFromQuery(engine, document, getOperationName(payload), <map<json>?> variables);
+                return getResponseFromQuery(engine, document, getOperationName(payload), variables);
             } else {
                 return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
             }
