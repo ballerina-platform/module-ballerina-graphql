@@ -32,11 +32,6 @@ class ValidatorVisitor {
     }
 
     public isolated function validate() returns ErrorDetail[]? {
-        FragmentVisitor fragmentVisitor = new();
-        fragmentVisitor.visitDocument(self.documentNode);
-        foreach ErrorDetail errorDetail in fragmentVisitor.getErrors() {
-            self.errors.push(errorDetail);
-        }
         self.visitDocument(self.documentNode);
         if (self.errors.length() > 0) {
             return self.errors;
@@ -45,10 +40,6 @@ class ValidatorVisitor {
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
-        foreach ErrorDetail errorDetail in documentNode.getErrors() {
-            self.errors.push(errorDetail);
-        }
-
         foreach parser:OperationNode operationNode in operations {
             self.visitOperation(operationNode);
         }

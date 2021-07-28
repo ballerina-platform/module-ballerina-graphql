@@ -24,6 +24,8 @@ public class OperationNode {
     private FieldNode[] fields;
     private string[] fragments;
     private Selection[] selections;
+    private map<VariableDefinition> variables;
+    private ErrorDetail[] errors;
 
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
@@ -32,6 +34,8 @@ public class OperationNode {
         self.fields = [];
         self.fragments = [];
         self.selections = [];
+        self.variables = {};
+        self.errors = [];
     }
 
     public isolated function getName() returns string {
@@ -68,5 +72,23 @@ public class OperationNode {
 
     public isolated function getSelections() returns Selection[] {
         return self.selections;
+    }
+
+    public isolated function addVariableDefinition(VariableDefinition varDef) {
+        if (self.variables.hasKey(varDef.name)) {
+            string message = string`There can be only one variable named "$${varDef.name}"`;
+            Location location = <Location> varDef?.location;
+            self.errors.push({message: message, locations:[location]});
+        } else { 
+            self.variables[varDef.name] = varDef;
+        }
+    }
+
+    public isolated function getVaribleDefinitions() returns map<VariableDefinition> {
+        return self.variables;
+    }
+
+    public isolated function getErrors() returns ErrorDetail[] {
+        return self.errors;
     }
 }

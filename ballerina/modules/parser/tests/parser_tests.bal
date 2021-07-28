@@ -486,3 +486,26 @@ isolated function testFieldAliasWithArguments() returns error? {
     test:assertEquals(argumentNode.getName().value, "id");
     test:assertEquals(argumentNode.getValue().value, 1);
 }
+
+@test:Config {
+    groups: ["variables", "parser"]
+}
+isolated function testVariables() returns error? {
+    string document = "query getName($profileId:Int = 3) { profile(id:$profileId) { name } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
+    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["profileId"];
+    test:assertEquals(variableDefinition.name, "profileId");
+    test:assertEquals(variableDefinition.kind, "Int");
+    ArgumentValue argValue = <ArgumentValue> variableDefinition?.defaultValue;
+    test:assertEquals(argValue.value, 3);
+    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName().value, "id");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
+    test:assertEquals(argumentNode.getVariableName(), "profileId");
+}

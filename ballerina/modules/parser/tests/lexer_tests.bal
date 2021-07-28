@@ -180,6 +180,49 @@ in multiple lines`;
 @test:Config {
     groups: ["lexer"]
 }
+isolated function testStringWithVariableDefinition() returns error? {
+    string s = string`getName($name : String = "walter")`;
+    Lexer lexer = new(s);
+    Token token = check lexer.read();
+    Token expectedToken = getExpectedToken("getName", T_IDENTIFIER, 1, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("(", T_OPEN_PARENTHESES, 1, 8);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("$", T_DOLLAR, 1, 9);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("name", T_IDENTIFIER, 1, 10);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();// Space
+    token = check lexer.read();
+    expectedToken = getExpectedToken(":", T_COLON, 1, 15);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();// Space
+    token = check lexer.read();
+    expectedToken = getExpectedToken("String", T_IDENTIFIER, 1, 17);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read(); // Space
+    token = check lexer.read();
+    expectedToken = getExpectedToken("=", T_EQUAL, 1, 24);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();// Space
+    token = check lexer.read();
+    expectedToken = getExpectedToken("walter", T_STRING, 1, 26);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["lexer"]
+}
 isolated function testComplexString() returns error? {
     string document = "\n\n\nquery getData {\n    picture(h: 128,,, w: 248)\n}";
     Lexer lexer = new(document);
