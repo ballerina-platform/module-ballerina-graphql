@@ -46,18 +46,17 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        Parent parent = {
-            parentType: self.schema.queryType,
-            name: QUERY_TYPE_NAME
-        };
-        foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection, parent);
+        __Field? schemaFieldForOperation = self.createSchemaFieldFromOperation(operationNode);
+        if schemaFieldForOperation is __Field {
+            foreach parser:Selection selection in operationNode.getSelections() {
+                self.visitSelection(selection, schemaFieldForOperation);
+            }
         }
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        Parent parent = <Parent>data;
-        __Type parentType = <__Type>getOfType(parent.parentType);
+        __Field parentField = <__Field>data;
+        __Type parentType = <__Type>getOfType(parentField.'type);
         if (parentType.kind == UNION) {
             if (!selection.isFragment) {
                 string message = getInvalidFieldOnUnionTypeError(selection.name, parentType);
@@ -67,11 +66,8 @@ class ValidatorVisitor {
                 parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
                 __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, fragmentNode.getOnType());
                 if (requiredType is __Type) {
-                    Parent fragmentParent = {
-                        parentType: requiredType,
-                        name: requiredType?.name.toString()
-                    };
-                    self.visitFragment(fragmentNode, fragmentParent);
+                    parentField = createField(requiredType?.name.toString(), requiredType);
+                    self.visitFragment(fragmentNode, parentField);
                 } else {
                     string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
                     self.errors.push(getErrorDetailRecord(message, <Location>selection?.spreadLocation));
@@ -88,42 +84,36 @@ class ValidatorVisitor {
             }
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType?.name);
             if (fragmentOnType is __Type) {
-                Parent fragmentParent = {
-                    parentType: fragmentOnType,
-                    name: fragmentOnType?.name.toString()
-                };
+                parentField = createField(fragmentOnType?.name.toString(), fragmentOnType);
                 parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
-                self.visitFragment(fragmentNode, fragmentParent);
+                self.visitFragment(fragmentNode, parentField);
             }
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
             if (selection.name == SCHEMA_FIELD) {
                 __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
-                parent = {
-                    parentType: schemaType,
-                    name: selection.name
-                };
+                parentField = createField(selection.name, schemaType);
                 if (fieldNode.getSelections().length() == 0) {
                     string message = getMissingSubfieldsError(fieldNode.getName(), SCHEMA_TYPE_NAME);
                     self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
                     return;
                 }
                 foreach parser:Selection subSelection in fieldNode.getSelections() {
-                    self.visitSelection(subSelection, parent);
+                    self.visitSelection(subSelection, parentField);
                 }
             } else {
-                self.visitField(fieldNode, parent);
+                self.visitField(fieldNode, parentField);
             }
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        Parent parent = <Parent>data;
-        __Type parentType = getOfType(parent.parentType);
+        __Field parentField = <__Field>data;
+        __Type parentType = getOfType(parentField.'type);
 
         __Field[] fields = parentType?.fields == () ? [] : <__Field[]>parentType?.fields;
         if (fields.length() == 0) {
-            string message = getNoSubfieldsErrorMessage(parent.name, parent.parentType);
+            string message = getNoSubfieldsErrorMessage(parentField.name, parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
@@ -131,7 +121,7 @@ class ValidatorVisitor {
         string requiredFieldName = fieldNode.getName();
         __Field? schemaFieldValue = getFieldFromFieldArray(fields, requiredFieldName);
         if (schemaFieldValue is ()) {
-            string message = getFieldNotFoundErrorMessageFromType(requiredFieldName, parent.parentType);
+            string message = getFieldNotFoundErrorMessageFromType(requiredFieldName, parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
@@ -151,18 +141,10 @@ class ValidatorVisitor {
             if (fieldType.kind == LIST || fieldType.kind == NON_NULL) {
                 __Type? ofType = fieldType?.ofType;
                 if (ofType is __Type) {
-                    Parent subParent = {
-                        parentType: <__Type>fieldType?.ofType,
-                        name: fieldNode.getName()
-                    };
-                    self.visitSelection(subSelection, subParent);
+                    self.visitSelection(subSelection, schemaField);
                 }
             } else {
-                Parent subParent = {
-                    parentType: fieldType,
-                    name: fieldNode.getName()
-                };
-                self.visitSelection(subSelection, subParent);
+                self.visitSelection(subSelection, schemaField);
             }
         }
     }
@@ -190,10 +172,10 @@ class ValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        Parent parent = <Parent>data;
+        __Field parentField = <__Field>data;
         __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
         foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, parent);
+            self.visitSelection(selection, parentField);
         }
     }
 
@@ -283,6 +265,18 @@ class ValidatorVisitor {
         ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
         self.errors.push(errorDetail);
     }
+
+    isolated function createSchemaFieldFromOperation(parser:OperationNode operationNode) returns __Field? {
+        parser:RootOperationType operationType = operationNode.getKind();
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type? 'type = getTypeFromTypeArray(self.schema.types, operationTypeName);
+        if 'type == () {
+            string message = string`Schema is not configured for ${operationType.toString()}s.`;
+            self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
+        } else {
+            return createField(operationTypeName, 'type);
+        }
+    }
 }
 
 isolated function copyInputValueArray(__InputValue[] original) returns __InputValue[] {
@@ -325,7 +319,24 @@ isolated function hasFields(__Type fieldType) returns boolean {
     return false;
 }
 
-type Parent record {
-    __Type parentType;
-    string name;
-};
+isolated function getOperationTypeNameFromOperationType(parser:RootOperationType rootOperationType) returns string {
+    match rootOperationType {
+        parser:MUTATION => {
+            return SUBSCRIPTION_TYPE_NAME;
+        }
+        parser:SUBSCRIPTION => {
+            return MUTATION_TYPE_NAME;
+        }
+        _ => {
+            return QUERY_TYPE_NAME;
+        }
+    }
+}
+
+isolated function createField(string fieldName, __Type fieldType) returns __Field {
+    return {
+        name: fieldName,
+        'type: fieldType,
+        args: []
+    };
+}

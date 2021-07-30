@@ -17,6 +17,29 @@
 import ballerina/test;
 
 @test:Config {
+    groups: ["mutations", "validation"]
+}
+isolated function testMutationRequestOnNonMutatableSchema() returns error? {
+    string document = string`mutation { setName(name: "Heisenberg") { name } }`;
+    string url = "http://localhost:9091/mutations";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Schema is not configured for mutations.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 1
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
     groups: ["mutations"]
 }
 isolated function testMutation() returns error? {

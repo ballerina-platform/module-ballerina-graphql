@@ -24,6 +24,8 @@ const PARAM_VARIABLES = "variables";
 const SCHEMA_FIELD = "__schema";
 const SCHEMA_TYPE_NAME = "__Schema";
 const QUERY_TYPE_NAME = "Query";
+const MUTATION_TYPE_NAME = "Mutation";
+const SUBSCRIPTION_TYPE_NAME = "Subscription";
 
 // Scalar type names used in GraphQL
 const INT = "Int";
