@@ -66,3 +66,26 @@ isolated function testMultipleMutations() returns error? {
     json expectedPayload = check getJsonContentFromFile("multiple_mutations.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["mutations"]
+}
+isolated function testInvalidMutation() returns error? {
+    string document = string`mutation { setAge }`;
+    string url = "http://localhost:9091/mutations";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Cannot query field "setAge" on type "Mutation".`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 12
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

@@ -433,16 +433,16 @@ service /mutations on basicListener {
         self.p = p2.clone();
     }
 
-    resource function get person() returns Person {
+    isolated resource function get person() returns Person {
         return self.p;
     }
 
-    remote function setName(string name) returns Person {
+    isolated remote function setName(string name) returns Person {
         self.p.name = name;
         return self.p;
     }
 
-    remote function setCity(string city) returns Person {
+    isolated remote function setCity(string city) returns Person {
         self.p.address.city = city;
         return self.p;
     }
