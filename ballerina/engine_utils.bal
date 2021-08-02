@@ -48,6 +48,12 @@ isolated function executeService(Engine engine, ExecutorVisitor visitor, parser:
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
+
+isolated function executeMutation(Engine engine, ExecutorVisitor visitor, parser:FieldNode fieldNode, Data data) =
+@java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
 isolated function getResult(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata fieldRecord, Data data)
 = @java:Method {
 	'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"

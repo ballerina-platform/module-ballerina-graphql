@@ -60,6 +60,7 @@ public class EngineUtils {
 
     // Schema related record field names
     public static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
+    public static final BString MUTATION_TYPE_FIELD = StringUtils.fromString("mutationType");
     public static final BString TYPES_FIELD = StringUtils.fromString("types");
     public static final BString TYPE_FIELD = StringUtils.fromString("type");
     public static final BString NAME_FIELD = StringUtils.fromString("name");
@@ -84,6 +85,7 @@ public class EngineUtils {
     public static final String FLOAT = "Float";
     public static final String DECIMAL = "Decimal";
     public static final String QUERY = "Query";
+    public static final String MUTATION = "Mutation";
 
     // Input values
     public static final String KEY = "key";

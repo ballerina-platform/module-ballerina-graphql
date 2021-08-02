@@ -35,7 +35,7 @@ import io.ballerina.runtime.api.values.BValue;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResource;
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResourceMethod;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getArgumentsFromField;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ALIAS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
@@ -222,7 +222,8 @@ public class ResponseGenerator {
                                                 List<Object> pathSegments, CallbackHandler callbackHandler) {
         List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, node);
         List<Object> updatedPathSegments = updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
-        executeResource(environment, service, visitor, node, data, updatedPaths, updatedPathSegments, callbackHandler);
+        executeResourceMethod(environment, service, visitor, node, data, updatedPaths, updatedPathSegments,
+                              callbackHandler);
     }
 
     private static ArrayType getDataRecordArrayType() {

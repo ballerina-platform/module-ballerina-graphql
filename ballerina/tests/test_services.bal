@@ -427,13 +427,23 @@ service /duplicates on basicListener {
 }
 
 service /mutations on basicListener {
+    private Person p;
+
+    function init() {
+        self.p = p2.clone();
+    }
+
     resource function get person() returns Person {
-        return p2;
+        return self.p;
     }
 
     remote function setName(string name) returns Person {
-        Person p = p2.clone();
-        p.name = name;
-        return p;
+        self.p.name = name;
+        return self.p;
+    }
+
+    remote function setCity(string city) returns Person {
+        self.p.address.city = city;
+        return self.p;
     }
 }

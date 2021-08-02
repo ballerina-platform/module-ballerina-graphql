@@ -42,6 +42,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECOR
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERFACES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.OF_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.POSSIBLE_TYPES_FIELD;
@@ -76,6 +78,9 @@ public class SchemaRecordGenerator {
         }
         schemaRecord.put(TYPES_FIELD, typesArray);
         schemaRecord.put(QUERY_TYPE_FIELD, this.typeRecords.get(QUERY));
+        if (this.typeRecords.containsKey(MUTATION)) {
+            schemaRecord.put(MUTATION_TYPE_FIELD, this.typeRecords.get(MUTATION));
+        }
         return schemaRecord;
     }
 

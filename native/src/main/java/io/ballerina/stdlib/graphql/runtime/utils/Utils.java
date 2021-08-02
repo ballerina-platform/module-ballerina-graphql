@@ -29,16 +29,23 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
  * This class contains utility methods for the Ballerina GraphQL module.
  */
 public class Utils {
-    private Utils() {}
+    private Utils() {
+    }
 
     // Inter-op function names
-    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeSingleResource";
+    static final String EXECUTE_SINGLE_RESOURCE_FUNCTION = "executeService";
+    static final String EXECUTE_REMOTE_FUNCTION = "executeMutation";
 
     public static final String NOT_SUPPORTED_ERROR = "NotSupportedError";
 
-    public static final StrandMetadata STRAND_METADATA = new StrandMetadata(getModule().getOrg(), getModule().getName(),
-                                                                            getModule().getVersion(),
-                                                                            EXECUTE_SINGLE_RESOURCE_FUNCTION);
+    public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
+                                                                                     getModule().getName(),
+                                                                                     getModule().getVersion(),
+                                                                                     EXECUTE_SINGLE_RESOURCE_FUNCTION);
+    public static final StrandMetadata REMOTE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
+                                                                                  getModule().getName(),
+                                                                                  getModule().getVersion(),
+                                                                                  EXECUTE_REMOTE_FUNCTION);
 
     public static BError createError(String message, String errorTypeName) {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);

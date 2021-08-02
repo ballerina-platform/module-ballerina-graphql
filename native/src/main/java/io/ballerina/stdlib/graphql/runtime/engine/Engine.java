@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.Parameter;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -45,7 +46,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -88,7 +89,18 @@ public class Engine {
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
         CallbackHandler callbackHandler = new CallbackHandler(future);
-        executeResource(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
+        executeResourceMethod(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
+    }
+
+    public static void executeMutation(Environment environment, BObject engine, BObject visitor, BObject node,
+                                       BMap<BString, Object> data) {
+        Future future = environment.markAsync();
+        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        String fieldName = node.getStringValue(NAME_FIELD).getValue();
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        List<Object> pathSegments = new ArrayList<>();
+        pathSegments.add(fieldName);
+        executeRemoteMethod(environment, service, visitor, node, data, pathSegments, callbackHandler);
     }
 
     public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
@@ -98,14 +110,14 @@ public class Engine {
         populateResponse(environment, visitor, node, result, data, pathSegments, null);
     }
 
-    static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
-                                CallbackHandler callbackHandler) {
+    static void executeResourceMethod(Environment environment, BObject service, BObject visitor, BObject node,
+                                      BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
+                                      CallbackHandler callbackHandler) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
-                                           paths, pathSegments);
+                getExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
+                                   pathSegments);
                 return;
             }
         }
@@ -113,16 +125,42 @@ public class Engine {
         getDataFromService(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
     }
 
-    private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
-                                                   BObject node, ResourceMethodType resourceMethod,
-                                                   BMap<BString, Object> data, CallbackHandler callbackHandler,
-                                                   List<String> paths, List<Object> pathSegments) {
+    static void executeRemoteMethod(Environment environment, BObject service, BObject visitor, BObject node,
+                                    BMap<BString, Object> data, List<Object> pathSegments,
+                                    CallbackHandler callbackHandler) {
+        ServiceType serviceType = (ServiceType) service.getType();
+        BString fieldName = node.getStringValue(NAME_FIELD);
+        for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+            if (remoteMethod.getName().equals(fieldName.getValue())) {
+                getExecutionResult(environment, service, visitor, node, remoteMethod, data, callbackHandler,
+                                   pathSegments);
+                return;
+            }
+        }
+    }
+
+    private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
+                                           ResourceMethodType resourceMethod, BMap<BString, Object> data,
+                                           CallbackHandler callbackHandler, List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForResource(resourceMethod, arguments);
+        Object[] args = getArgsForMethod(resourceMethod, arguments);
         ResourceCallback callback =
                 new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
-        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
+        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, RESOURCE_STRAND_METADATA,
+                                                   callback, args);
+    }
+
+
+    private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
+                                           RemoteMethodType remoteMethod, BMap<BString, Object> data,
+                                           CallbackHandler callbackHandler, List<Object> pathSegments) {
+        BMap<BString, Object> arguments = getArgumentsFromField(node);
+        Object[] args = getArgsForMethod(remoteMethod, arguments);
+        ResourceCallback callback =
+                new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
+        callbackHandler.addCallback(callback);
+        environment.getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null, RESOURCE_STRAND_METADATA,
                                                    callback, args);
     }
 
@@ -140,12 +178,27 @@ public class Engine {
         return argumentsMap;
     }
 
-    private static Object[] getArgsForResource(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
+    private static Object[] getArgsForMethod(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
         Parameter[] parameters = resourceMethod.getParameters();
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
                 result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
+                result[j + 1] = false;
+            } else {
+                result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
+                result[j + 1] = true;
+            }
+        }
+        return result;
+    }
+
+    private static Object[] getArgsForMethod(RemoteMethodType remoteMethod, BMap<BString, Object> arguments) {
+        Parameter[] parameters = remoteMethod.getParameters();
+        Object[] result = new Object[parameters.length * 2];
+        for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
+            if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
+                result[j] = remoteMethod.getParameterTypes()[i].getZeroValue();
                 result[j + 1] = false;
             } else {
                 result[j] = arguments.get(StringUtils.fromString(parameters[i].name));

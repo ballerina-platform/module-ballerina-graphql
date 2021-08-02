@@ -1,0 +1,14 @@
+mutation {
+    setName(name: "Heisenberg") {
+        name
+        address {
+            city
+        }
+    }
+    setCity(city: "New Hampshire") {
+        name
+        address {
+            city
+        }
+    }
+}

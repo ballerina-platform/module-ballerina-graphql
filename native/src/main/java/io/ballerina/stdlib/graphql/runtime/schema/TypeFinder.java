@@ -23,7 +23,9 @@ import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
+import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.TableType;
@@ -36,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
@@ -65,13 +68,26 @@ public class TypeFinder {
     }
 
     public void populateTypes() {
-        this.getTypesFromService(QUERY, this.serviceType);
+        this.createTypesFromRootService();
         this.getDefaultTypes();
     }
 
     private void getDefaultTypes() {
         Type schemaRecordType = ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD).getType();
         getSchemaTypeFromBalType(schemaRecordType);
+    }
+
+    private void createTypesFromRootService() {
+        this.createSchemaType(QUERY, TypeKind.OBJECT, serviceType);
+        for (ResourceMethodType resourceMethod : this.serviceType.getResourceMethods()) {
+            getTypesFromResourceMethod(resourceMethod, resourceMethod.getResourcePath());
+        }
+        if (this.serviceType.getRemoteMethods().length > 0) {
+            this.createSchemaType(MUTATION, TypeKind.OBJECT, serviceType);
+            for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+                getTypesFromRemoteMethod(remoteMethod);
+            }
+        }
     }
 
     private void getTypesFromService(String name, ServiceType serviceType) {
@@ -85,9 +101,14 @@ public class TypeFinder {
         if (resourcePath.length > 1) {
             getTypesFromHierarchicalResource(resourceMethod, resourcePath);
         } else {
-            getInputTypesFromResourceMethod(resourceMethod);
+            getInputTypesFromMethod(resourceMethod);
             getSchemaTypeFromBalType(resourceMethod.getType().getReturnType());
         }
+    }
+
+    private void getTypesFromRemoteMethod(RemoteMethodType remoteMethod) {
+        getInputTypesFromMethod(remoteMethod);
+        getSchemaTypeFromBalType(remoteMethod.getType().getReturnType());
     }
 
     private void getTypesFromHierarchicalResource(ResourceMethodType resourceMethod, String[] resourcePath) {
@@ -97,8 +118,8 @@ public class TypeFinder {
         this.getTypesFromResourceMethod(resourceMethod, remainingPaths);
     }
 
-    private void getInputTypesFromResourceMethod(ResourceMethodType resourceMethod) {
-        Type[] inputTypes = resourceMethod.getParameterTypes();
+    private void getInputTypesFromMethod(MethodType methodType) {
+        Type[] inputTypes = methodType.getType().getParameterTypes();
         for (Type type : inputTypes) {
             getSchemaTypeFromBalType(type);
         }

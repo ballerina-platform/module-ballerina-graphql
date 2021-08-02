@@ -21,7 +21,7 @@ import ballerina/test;
 }
 isolated function testMutationRequestOnNonMutatableSchema() returns error? {
     string document = string`mutation { setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9091/mutations";
+    string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
@@ -48,13 +48,21 @@ isolated function testMutation() returns error? {
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
-            sherlock: {
-                name: "Sherlock Holmes",
-                address: {
-                    city: "London"
-                }
+            setName: {
+                name: "Heisenberg"
             }
         }
     };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["mutations"]
+}
+isolated function testMultipleMutations() returns error? {
+    string document = check getGraphQLDocumentFromFile("multiple_mutations.txt");
+    string url = "http://localhost:9091/mutations";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("multiple_mutations.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
