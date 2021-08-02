@@ -89,3 +89,14 @@ isolated function testInvalidMutation() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["mutations"]
+}
+isolated function testMultipleMutationsOnServiceObjects() returns error? {
+    string document = check getGraphQLDocumentFromFile("multiple_mutations_on_service_objects.txt");
+    string url = "http://localhost:9091/mutations";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("multiple_mutations_on_service_objects.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

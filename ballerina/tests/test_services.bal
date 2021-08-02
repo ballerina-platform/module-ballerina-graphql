@@ -582,9 +582,11 @@ service /noScopes on secureListener {
 
 service /mutations on basicListener {
     private Person p;
+    private TeacherService t;
 
     function init() {
         self.p = p2.clone();
+        self.t = new(1, "Walter Bishop", "Physics");
     }
 
     isolated resource function get person() returns Person {
@@ -599,5 +601,15 @@ service /mutations on basicListener {
     isolated remote function setCity(string city) returns Person {
         self.p.address.city = city;
         return self.p;
+    }
+
+    isolated remote function setTeacherName(string name) returns TeacherService {
+        self.t.setName(name);
+        return self.t;
+    }
+
+    isolated remote function setTeacherSubject(string subject) returns TeacherService {
+        self.t.setSubject(subject);
+        return self.t;
     }
 }
