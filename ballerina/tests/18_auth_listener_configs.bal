@@ -18,34 +18,12 @@
 
 import ballerina/test;
 
-// Unsecured service
-service /noAuth on secureListener {
-    isolated resource function get greeting() returns string {
-        return "Hello World!";
-    }
-}
-
 @test:Config {
     groups: ["auth"]
 }
 isolated function testNoAuthServiceSuccess() {
     assertSuccess(sendBearerTokenRequest(9096, "/noAuth", JWT1));
     assertSuccess(sendJwtRequest(9096, "/noAuth"));
-}
-
-// Basic auth secured service
-@ServiceConfig {
-    auth: [
-        {
-            fileUserStoreConfig: {},
-            scopes: ["write", "update"]
-        }
-    ]
-}
-service /basicAuth on secureListener {
-    isolated resource function get greeting() returns string {
-        return "Hello World!";
-    }
 }
 
 @test:Config {
@@ -68,34 +46,6 @@ isolated function testBasicAuthServiceAuthzFailure() {
 isolated function testBasicAuthServiceAuthnFailure() {
     assertUnauthorized(sendBasicTokenRequest(9096, "/basicAuth", "peter", "123"));
     assertUnauthorized(sendNoTokenRequest(9096, "/basicAuth"));
-}
-
-// JWT auth secured service
-@ServiceConfig {
-    auth: [
-        {
-            jwtValidatorConfig: {
-                issuer: "wso2",
-                audience: "ballerina",
-                signatureConfig: {
-                    trustStoreConfig: {
-                        trustStore: {
-                            path: TRUSTSTORE_PATH,
-                            password: "ballerina"
-                        },
-                        certAlias: "ballerina"
-                    }
-                },
-                scopeKey: "scp"
-            },
-            scopes: ["write", "update"]
-        }
-    ]
-}
-service /jwtAuth on secureListener {
-    isolated resource function get greeting() returns string {
-        return "Hello World!";
-    }
 }
 
 @test:Config {
@@ -121,33 +71,6 @@ isolated function testJwtAuthServiceAuthnFailure() {
     assertUnauthorized(sendNoTokenRequest(9096, "/jwtAuth"));
 }
 
-// OAuth2 auth secured service
-@ServiceConfig {
-    auth: [
-        {
-            oauth2IntrospectionConfig: {
-                url: "https://localhost:9445/oauth2/introspect",
-                tokenTypeHint: "access_token",
-                scopeKey: "scp",
-                clientConfig: {
-                    secureSocket: {
-                       cert: {
-                           path: TRUSTSTORE_PATH,
-                           password: "ballerina"
-                       }
-                    }
-                }
-            },
-            scopes: ["write", "update"]
-        }
-    ]
-}
-service /oauth2 on secureListener {
-    isolated resource function get greeting() returns string {
-        return "Hello World!";
-    }
-}
-
 @test:Config {
     groups: ["auth"]
 }
@@ -169,55 +92,6 @@ isolated function testOAuth2ServiceAuthzFailure() {
 isolated function testOAuth2ServiceAuthnFailure() {
     assertUnauthorized(sendBearerTokenRequest(9096, "/oauth2", ACCESS_TOKEN_3));
     assertUnauthorized(sendNoTokenRequest(9096, "/oauth2"));
-}
-
-// Testing multiple auth configurations support.
-// OAuth2, Basic auth & JWT auth secured service
-@ServiceConfig {
-    auth: [
-        {
-            oauth2IntrospectionConfig: {
-                url: "https://localhost:9445/oauth2/introspect",
-                tokenTypeHint: "access_token",
-                scopeKey: "scp",
-                clientConfig: {
-                    secureSocket: {
-                       cert: {
-                           path: TRUSTSTORE_PATH,
-                           password: "ballerina"
-                       }
-                    }
-                }
-            },
-            scopes: ["write", "update"]
-        },
-        {
-            fileUserStoreConfig: {},
-            scopes: ["write", "update"]
-        },
-        {
-            jwtValidatorConfig: {
-                issuer: "wso2",
-                audience: "ballerina",
-                signatureConfig: {
-                    trustStoreConfig: {
-                        trustStore: {
-                            path: TRUSTSTORE_PATH,
-                            password: "ballerina"
-                        },
-                        certAlias: "ballerina"
-                    }
-                },
-                scopeKey: "scp"
-            },
-            scopes: ["write", "update"]
-        }
-    ]
-}
-service /multipleAuth on secureListener {
-    isolated resource function get greeting() returns string {
-        return "Hello World!";
-    }
 }
 
 @test:Config {
@@ -242,32 +116,6 @@ isolated function testMultipleServiceAuthzFailure() {
 isolated function testMultipleServiceAuthnFailure() {
     assertUnauthorized(sendBearerTokenRequest(9096, "/multipleAuth", JWT3));
     assertUnauthorized(sendNoTokenRequest(9096, "/multipleAuth"));
-}
-
-// JWT auth secured service (without scopes)
-@ServiceConfig {
-    auth: [
-        {
-            jwtValidatorConfig: {
-                issuer: "wso2",
-                audience: "ballerina",
-                signatureConfig: {
-                    trustStoreConfig: {
-                        trustStore: {
-                            path: TRUSTSTORE_PATH,
-                            password: "ballerina"
-                        },
-                        certAlias: "ballerina"
-                    }
-                }
-            }
-        }
-    ]
-}
-service /noScopes on secureListener {
-    isolated resource function get greeting() returns string {
-        return "Hello World!";
-    }
 }
 
 @test:Config {
