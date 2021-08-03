@@ -41,8 +41,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
@@ -60,7 +63,13 @@ public class Engine {
     public static Object createSchema(BObject service) {
         try {
             ServiceType serviceType = (ServiceType) service.getType();
-            Schema schema = createSchema(serviceType);
+            TypeFinder typeFinder = new TypeFinder(serviceType);
+            typeFinder.populateTypes();
+
+            FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
+            fieldFinder.populateFields();
+            Schema schema = new Schema(fieldFinder.getTypeMap());
+
             SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
             return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
@@ -68,22 +77,13 @@ public class Engine {
         }
     }
 
-    private static Schema createSchema(ServiceType serviceType) {
-        TypeFinder typeFinder = new TypeFinder(serviceType);
-        typeFinder.populateTypes();
-
-        FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
-        fieldFinder.populateFields();
-
-        return new Schema(fieldFinder.getTypeMap());
-    }
-
     public static void attachServiceToEngine(BObject service, BObject engine) {
         engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
     }
 
-    public static void executeService(Environment environment, BObject engine, BObject visitor, BObject node,
-                                      BMap<BString, Object> data) {
+    public static void executeQuery(Environment environment, BObject visitor, BObject node) {
+        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
+        BMap<BString, Object> data = (BMap<BString, Object>) visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         List<String> paths = new ArrayList<>();
@@ -94,8 +94,9 @@ public class Engine {
         executeResourceMethod(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
     }
 
-    public static void executeMutation(Environment environment, BObject engine, BObject visitor, BObject node,
-                                       BMap<BString, Object> data) {
+    public static void executeMutation(Environment environment, BObject visitor, BObject node) {
+        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         String fieldName = node.getStringValue(NAME_FIELD).getValue();
@@ -105,11 +106,12 @@ public class Engine {
         executeRemoteMethod(environment, service, visitor, node, data, pathSegments, callbackHandler);
     }
 
-    public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
-                                 BMap<BString, Object> data) {
+    public static void executeIntrospection(Environment environment, BObject visitor, BObject node) {
+        BMap<BString, Object> schemaRecord = visitor.getMapValue(SCHEMA_FIELD);
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        populateResponse(environment, visitor, node, result, data, pathSegments, null);
+        populateResponse(environment, visitor, node, schemaRecord, data, pathSegments, null);
     }
 
     static void executeResourceMethod(Environment environment, BObject service, BObject visitor, BObject node,
@@ -152,7 +154,6 @@ public class Engine {
         environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, RESOURCE_STRAND_METADATA,
                                                    callback, args);
     }
-
 
     private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
                                            RemoteMethodType remoteMethod, BMap<BString, Object> data,

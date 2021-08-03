@@ -59,12 +59,12 @@ class ExecutorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         parser:RootOperationType operationType = <parser:RootOperationType>data;
         if (fieldNode.getName() == SCHEMA_FIELD) {
-            getResult(self, fieldNode, self.schema, self.data);
+            executeIntrospection(self, fieldNode);
         } else {
             if (operationType == parser:QUERY) {
-                self.executeResource(fieldNode);
+                executeQuery(self, fieldNode);
             } else if (operationType == parser:MUTATION) {
-                self.executeMutation(fieldNode);
+                executeMutation(self, fieldNode);
             }
         }
     }
@@ -77,13 +77,5 @@ class ExecutorVisitor {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
-    }
-
-    isolated function executeResource(parser:FieldNode fieldNode) {
-        executeService(self.engine, self, fieldNode, self.data);
-    }
-
-    isolated function executeMutation(parser:FieldNode fieldNode) {
-        executeMutation(self.engine, self, fieldNode, self.data);
     }
 }

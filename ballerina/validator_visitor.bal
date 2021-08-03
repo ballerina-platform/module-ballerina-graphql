@@ -186,7 +186,6 @@ class ValidatorVisitor {
 
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
-        // TODO: Sort the error records by line and column
     }
 
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {

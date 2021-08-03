@@ -94,7 +94,7 @@ public class FieldFinder {
 
     public void populateFieldsForQueryType() {
         for (SchemaType schemaType : this.typeMap.values()) {
-            populateFieldsOfSchemaQureyType(schemaType);
+            populateFieldsOfSchemaQueryType(schemaType);
         }
     }
 
@@ -129,17 +129,15 @@ public class FieldFinder {
         return this.typeMap.get(name);
     }
 
-    private void populateFieldsOfSchemaQureyType(SchemaType schemaType) {
-        if (schemaType.getKind() == TypeKind.SCALAR) {
-            // Do nothing
-        } else if (schemaType.getKind() == TypeKind.NON_NULL || schemaType.getKind() == TypeKind.LIST) {
-            populateFieldsOfSchemaQureyType(schemaType.getOfType());
+    private void populateFieldsOfSchemaQueryType(SchemaType schemaType) {
+        if (schemaType.getKind() == TypeKind.NON_NULL || schemaType.getKind() == TypeKind.LIST) {
+            populateFieldsOfSchemaQueryType(schemaType.getOfType());
         } else if (schemaType.getKind() == TypeKind.ENUM) {
             UnionType unionType = (UnionType) schemaType.getBalType();
             for (Type memberType : unionType.getMemberTypes()) {
                 schemaType.addEnumValue(memberType.getZeroValue());
             }
-        } else { // OBJECT
+        } else if (schemaType.getKind() == TypeKind.OBJECT) {
             findFieldsForObjectKindSchemaTypes(schemaType);
         }
     }

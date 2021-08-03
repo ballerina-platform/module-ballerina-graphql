@@ -92,6 +92,9 @@ public class EngineUtils {
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
+    static final BString ENGINE_FIELD = StringUtils.fromString("engine");
+    static final BString DATA_FIELD = StringUtils.fromString("data");
+    static final BString SCHEMA_FIELD = StringUtils.fromString("schema");
 
     // Record Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";

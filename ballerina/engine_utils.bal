@@ -43,18 +43,15 @@ isolated function createSchema(Service s) returns __Schema|Error = @java:Method 
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeService(Engine engine, ExecutorVisitor visitor, parser:FieldNode fieldNode, Data data) =
-@java:Method {
+isolated function executeQuery(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeMutation(Engine engine, ExecutorVisitor visitor, parser:FieldNode fieldNode, Data data) =
-@java:Method {
+isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function getResult(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata fieldRecord, Data data)
-= @java:Method {
+isolated function executeIntrospection(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
 	'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
