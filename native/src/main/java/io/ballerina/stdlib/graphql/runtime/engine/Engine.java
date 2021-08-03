@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -46,6 +47,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 
 /**
@@ -143,7 +145,7 @@ public class Engine {
                                            ResourceMethodType resourceMethod, BMap<BString, Object> data,
                                            CallbackHandler callbackHandler, List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(resourceMethod, arguments);
+        Object[] args = getArgsForMethod(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), arguments);
         ResourceCallback callback =
                 new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
@@ -156,11 +158,11 @@ public class Engine {
                                            RemoteMethodType remoteMethod, BMap<BString, Object> data,
                                            CallbackHandler callbackHandler, List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(remoteMethod, arguments);
+        Object[] args = getArgsForMethod(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), arguments);
         ResourceCallback callback =
                 new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
-        environment.getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null, RESOURCE_STRAND_METADATA,
+        environment.getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null, REMOTE_STRAND_METADATA,
                                                    callback, args);
     }
 
@@ -178,27 +180,11 @@ public class Engine {
         return argumentsMap;
     }
 
-    private static Object[] getArgsForMethod(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
-        Parameter[] parameters = resourceMethod.getParameters();
+    private static Object[] getArgsForMethod(Parameter[] parameters, Type[] types, BMap<BString, Object> arguments) {
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
-                result[j + 1] = false;
-            } else {
-                result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
-                result[j + 1] = true;
-            }
-        }
-        return result;
-    }
-
-    private static Object[] getArgsForMethod(RemoteMethodType remoteMethod, BMap<BString, Object> arguments) {
-        Parameter[] parameters = remoteMethod.getParameters();
-        Object[] result = new Object[parameters.length * 2];
-        for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
-            if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[j] = remoteMethod.getParameterTypes()[i].getZeroValue();
+                result[j] = types[i].getZeroValue();
                 result[j + 1] = false;
             } else {
                 result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
