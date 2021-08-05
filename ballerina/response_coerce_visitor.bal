@@ -60,7 +60,6 @@ class ResponseCoerceVisitor {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        OutputData outputData = <OutputData>data;
         if selection.isFragment {
             self.visitFragment(<parser:FragmentNode>selection?.node, data);
         } else {
@@ -98,7 +97,6 @@ class ResponseCoerceVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        OutputData outputData = <OutputData>data;
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }

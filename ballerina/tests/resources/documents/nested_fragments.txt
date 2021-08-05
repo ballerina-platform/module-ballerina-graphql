@@ -4,12 +4,20 @@ query {
 
 fragment data on Query {
     people {
-        ...address
+        ...AddressFragment
     }
 }
 
-fragment address on Person {
+fragment AddressFragment on Person {
     address {
-        city
+        ...CityFragment
     }
+}
+
+fragment CityFragment on Address {
+    ...CityFragmentDuplicate
+}
+
+fragment CityFragmentDuplicate on Address {
+    city
 }

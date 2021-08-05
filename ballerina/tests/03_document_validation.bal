@@ -40,7 +40,6 @@ isolated function testRequestSubtypeFromPrimitiveType() returns error? {
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-
 @test:Config {
     groups: ["validation"]
 }

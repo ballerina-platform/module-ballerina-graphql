@@ -105,7 +105,6 @@ public class SchemaRecordGenerator {
         }
     }
 
-    // TODO: Optimize
     private BMap<BString, Object> getTypeRecord(SchemaType schemaType) {
         BMap<BString, Object> typeRecord;
         if (this.typeRecords.containsKey(schemaType.getName())) {

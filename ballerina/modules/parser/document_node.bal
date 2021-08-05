@@ -15,7 +15,6 @@
 // under the License.
 
 public class DocumentNode {
-    // TODO: Make this a map
     private map<OperationNode> operations;
     private map<FragmentNode> fragments;
     private ErrorDetail[] errors;
