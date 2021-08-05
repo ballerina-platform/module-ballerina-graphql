@@ -51,6 +51,8 @@ import java.util.Set;
 import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
+import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
 
 /**
  * Validate functions in Ballerina GraphQL services.
@@ -61,32 +63,46 @@ public class FunctionValidator {
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         NodeList<Node> memberNodes = serviceDeclarationNode.members();
+        boolean resourceFunctionFound = false;
         for (Node node : memberNodes) {
             if (node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION) {
+                resourceFunctionFound = true;
                 FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
                 // resource functions are valid - validate function signature
                 validateResourceFunction(functionDefinitionNode, context);
             } else if (node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION) {
                 FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) node;
-                // object methods are valid, object methods that are remote functions are invalid
+                // Validate remote methods
                 if (Utils.isRemoteFunction(context, functionDefinitionNode)) {
-                    Utils.updateContext(context, CompilationError.INVALID_FUNCTION,
-                                        functionDefinitionNode.location());
+                    validateRemoteFunction(functionDefinitionNode, context);
                 }
             }
+        }
+        if (!resourceFunctionFound) {
+            updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
     }
 
     private void validateResourceFunction(FunctionDefinitionNode functionDefinitionNode,
                                           SyntaxNodeAnalysisContext context) {
-
-        MethodSymbol methodSymbol = Utils.getMethodSymbol(context, functionDefinitionNode);
+        MethodSymbol methodSymbol = getMethodSymbol(context, functionDefinitionNode);
         if (Objects.nonNull(methodSymbol)) {
             validateResourceAccessorName(methodSymbol, functionDefinitionNode.location(), context);
             validateResourcePath(methodSymbol, functionDefinitionNode.location(), context);
             Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
             returnTypeDesc.ifPresent
                     (typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location(), context));
+            validateInputParamType(methodSymbol, functionDefinitionNode.location(), context);
+        }
+    }
+
+    private void validateRemoteFunction(FunctionDefinitionNode functionDefinitionNode,
+                                        SyntaxNodeAnalysisContext context) {
+        MethodSymbol methodSymbol = getMethodSymbol(context, functionDefinitionNode);
+        if (Objects.nonNull(methodSymbol)) {
+            Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
+            returnTypeDesc.ifPresent(
+                    typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location(), context));
             validateInputParamType(methodSymbol, functionDefinitionNode.location(), context);
         }
     }
@@ -99,11 +115,11 @@ public class FunctionValidator {
             if (methodName.isPresent()) {
                 if (!methodName.get().equals(RESOURCE_FUNCTION_GET)) {
                     Location accessorLocation = getLocation(resourceMethodSymbol, location);
-                    Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
+                    updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
                 }
             } else {
                 Location accessorLocation = getLocation(resourceMethodSymbol, location);
-                Utils.updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
+                updateContext(context, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
             }
         }
     }
@@ -112,48 +128,51 @@ public class FunctionValidator {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
             if (Utils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
-                Utils.updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
+                updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
             }
         }
     }
 
     private void validateReturnType(TypeSymbol returnTypeDesc,
                                     Location location, SyntaxNodeAnalysisContext context) {
-        // if return type is a union
         if (returnTypeDesc.typeKind() == TypeDescKind.ANY || returnTypeDesc.typeKind() == TypeDescKind.ANYDATA) {
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ANY, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE_ANY, location);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
-            validateReturnTypeUnion(context,
-                                    ((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
+            validateReturnTypeUnion(((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location, context);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ARRAY) {
             // check member type
             ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) returnTypeDesc;
             validateReturnType(arrayTypeSymbol.memberTypeDescriptor(), location, context);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            TypeReferenceTypeSymbol typeReferenceTypeSymbol = (TypeReferenceTypeSymbol) returnTypeDesc;
-            if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.TYPE_DEFINITION) {
-                TypeDefinitionSymbol typeDefinitionSymbol =
-                        (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
-                if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                    validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
-                }
-                validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
-            } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
-                ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
-                if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                    Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
-                } else {
-                    validateServiceClassDefinition(classSymbol, location, context);
-                }
-            }
+            validateReturnTypeDefinitions((TypeReferenceTypeSymbol) returnTypeDesc, location, context);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.NIL) {
             // nil alone is invalid - must have a return type
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_NIL, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE_NIL, location);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ERROR) {
             // error alone is invalid
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR, location);
         } else if (hasInvalidReturnType(returnTypeDesc)) {
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+        }
+    }
+
+    private void validateReturnTypeDefinitions(TypeReferenceTypeSymbol typeReferenceTypeSymbol, Location location,
+                                               SyntaxNodeAnalysisContext context) {
+        if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.TYPE_DEFINITION) {
+            TypeDefinitionSymbol typeDefinitionSymbol =
+                    (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
+            if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+                validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
+            }
+            validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
+        } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
+            ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
+            Location classSymbolLocation = getLocation(classSymbol, location);
+            if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                updateContext(context, CompilationError.INVALID_RETURN_TYPE, classSymbolLocation);
+            } else {
+                validateServiceClassDefinition(classSymbol, classSymbolLocation, context);
+            }
         }
     }
 
@@ -167,7 +186,7 @@ public class FunctionValidator {
                 for (ParameterSymbol param : parameterSymbols) {
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
                         Location inputLocation = getLocation(param, location);
-                        Utils.updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
+                        updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
                     }
                 }
             }
@@ -207,10 +226,12 @@ public class FunctionValidator {
                                                 SyntaxNodeAnalysisContext context) {
         if (!visitedClassSymbols.contains(classSymbol)) {
             visitedClassSymbols.add(classSymbol);
+            boolean resourceMethodFound = false;
             Map<String, MethodSymbol> methods = classSymbol.methods();
             for (MethodSymbol methodSymbol : methods.values()) {
                 Location methodLocation = getLocation(methodSymbol, location);
                 if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
+                    resourceMethodFound = true;
                     validateResourceAccessorName(methodSymbol, methodLocation, context);
                     validateResourcePath(methodSymbol, methodLocation, context);
                     Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
@@ -218,8 +239,11 @@ public class FunctionValidator {
                             (typeSymbol -> validateReturnType(typeSymbol, methodLocation, context));
                     validateInputParamType(methodSymbol, methodLocation, context);
                 } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
-                    Utils.updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
+                    updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
+            }
+            if (!resourceMethodFound) {
+                updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
             }
         }
     }
@@ -238,8 +262,8 @@ public class FunctionValidator {
                 returnType.typeKind() == TypeDescKind.DECIMAL;
     }
 
-    private void validateReturnTypeUnion(SyntaxNodeAnalysisContext context, List<TypeSymbol> returnTypeMembers,
-                                         Location location) {
+    private void validateReturnTypeUnion(List<TypeSymbol> returnTypeMembers, Location location,
+                                         SyntaxNodeAnalysisContext context) {
         // for cases like returning (float|decimal) - only one scalar type is allowed
         int primitiveType = 0;
         // for cases with only error?
@@ -257,16 +281,17 @@ public class FunctionValidator {
                     // only service object types and records are allowed
                     if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
                         if (!isRecordType(returnType)) {
-                            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+                            updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                         } else {
                             recordTypes++;
                         }
                     } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
                         ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
+                        Location classSymbolLocation = getLocation(classSymbol, location);
                         if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+                            updateContext(context, CompilationError.INVALID_RETURN_TYPE, classSymbolLocation);
                         } else {
-                            validateServiceClassDefinition(classSymbol, location, context);
+                            validateServiceClassDefinition(classSymbol, classSymbolLocation, context);
                             // if distinctServices is false (one of the services is not distinct), skip setting it again
                             if (distinctServices) {
                                 distinctServices = classSymbol.qualifiers().contains(Qualifier.DISTINCT);
@@ -276,7 +301,7 @@ public class FunctionValidator {
                     }
                 } else {
                     if (hasInvalidReturnType(returnType)) {
-                        Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+                        updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                     }
                 }
 
@@ -290,17 +315,17 @@ public class FunctionValidator {
 
         // has multiple services and if at least one of them are not distinct
         if (serviceTypes > 1 && !distinctServices) {
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, location);
         }
         if (recordTypes > 1) {
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         }
         if (type == 0 && primitiveType == 0) { // error? - invalid
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, location);
         } else if (primitiveType > 0 && type > 0) { // Person|string - invalid
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         } else if (primitiveType > 1) { // string|int - invalid
-            Utils.updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
+            updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
         }
     }
 
@@ -313,7 +338,7 @@ public class FunctionValidator {
             } else {
                 if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
                     Location fieldLocation = getLocation(recordField, location);
-                    Utils.updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
+                    updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
                 }
             }
         }

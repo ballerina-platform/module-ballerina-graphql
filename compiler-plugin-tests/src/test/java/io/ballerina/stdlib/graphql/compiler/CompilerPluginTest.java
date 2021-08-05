@@ -136,13 +136,13 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testRemoteFunctionsInService() {
+    public void testMissingResourceFunctionInService() {
         Package currentPackage = loadPackage("invalid_service_2");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_FUNCTION, 23, 5);
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
     }
 
     @Test
@@ -400,6 +400,46 @@ public class CompilerPluginTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ANY, 24, 5);
+    }
+
+    @Test
+    public void testServiceWithOnlyRemoteMethods() {
+        Package currentPackage = loadPackage("invalid_service_18");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+    }
+
+    @Test
+    public void testRemoteMethodWithInvalidReturnType() {
+        Package currentPackage = loadPackage("invalid_service_19");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 23, 5);
+    }
+
+    @Test
+    public void testRemoteMethodInsideReturningServiceObject() {
+        Package currentPackage = loadPackage("invalid_service_20");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_FUNCTION, 36, 21);
+    }
+
+    @Test
+    public void testMissingResourceMethodFromReturningServiceClass() {
+        Package currentPackage = loadPackage("invalid_service_21");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
     }
 
     private Package loadPackage(String path) {

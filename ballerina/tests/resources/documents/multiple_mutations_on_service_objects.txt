@@ -1,0 +1,10 @@
+mutation {
+    setTeacherSubject(subject: "Chemistry") {
+        subject
+        name
+    }
+    setTeacherName(name: "Walter White") {
+        name
+        subject
+    }
+}

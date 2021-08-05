@@ -66,22 +66,13 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
     if validationResult is parser:OperationNode {
         return getResponseFromExecution(engine, validationResult);
     } else {
-        return getResponseFromOutputObject(validationResult, http:STATUS_BAD_REQUEST);
+        return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
 }
 
 isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode) returns http:Response {
     OutputObject outputObject = engine.execute(operationNode);
-    return getResponseFromOutputObject(outputObject);
-}
-
-isolated function getResponseFromOutputObject(OutputObject outputObject, int? statusCode = ()) returns http:Response {
-    json|error payload  = outputObject.cloneWithType();
-    if payload is error {
-        return createResponse(payload.message(), http:STATUS_INTERNAL_SERVER_ERROR);
-    } else {
-        return createResponse(payload, statusCode);
-    }
+    return createResponse(outputObject.toJson());
 }
 
 isolated function createResponse(json payload, int? statusCode = ()) returns http:Response {

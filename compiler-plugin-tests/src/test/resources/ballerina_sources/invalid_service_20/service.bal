@@ -16,12 +16,25 @@
 
 import ballerina/graphql;
 
-service graphql:Service on new graphql:Listener(4000) {
-    function hello() returns string {
-        return "Hello";
+service /graphql on new graphql:Listener(4000) {
+    resource function get profile() returns Person {
+        return new("Sam");
+    }
+}
+
+service class Person {
+    private string name;
+
+    function init(string name) {
+        self.name = name;
     }
 
-    remote function someFunction(string name) returns string {
+    resource function get name() returns string {
+        return self.name;
+    }
+
+    remote function setName(string name) returns string {
+        self.name = name;
         return name;
     }
 }

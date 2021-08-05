@@ -18,11 +18,14 @@
 
 package io.ballerina.stdlib.graphql.runtime.schema;
 
+import io.ballerina.runtime.api.Parameter;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.TableType;
@@ -44,6 +47,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIEL
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INCLUDE_DEPRECATED;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
@@ -68,10 +72,30 @@ public class FieldFinder {
 
     public void populateFields() {
         this.addSchemaTypeFields();
-        for (SchemaType schemaType : this.typeMap.values()) {
-            populateFieldsOfSchemaType(schemaType);
+        SchemaType mutationType = populateFieldsForMutationType();
+        populateFieldsForQueryType();
+        if (mutationType != null) {
+            this.typeMap.put(MUTATION, mutationType);
         }
         this.addAdditionalInputValuesToTypeFields();
+    }
+
+    public SchemaType populateFieldsForMutationType() {
+        SchemaType mutationType = null;
+        if (this.typeMap.containsKey(MUTATION)) {
+            mutationType = this.typeMap.remove(MUTATION);
+            ServiceType serviceType = (ServiceType) mutationType.getBalType();
+            for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+                mutationType.addField(getFieldsFromRemoteMethodType(remoteMethod));
+            }
+        }
+        return mutationType;
+    }
+
+    public void populateFieldsForQueryType() {
+        for (SchemaType schemaType : this.typeMap.values()) {
+            populateFieldsOfSchemaQueryType(schemaType);
+        }
     }
 
     private void addAdditionalInputValuesToTypeFields() {
@@ -105,17 +129,15 @@ public class FieldFinder {
         return this.typeMap.get(name);
     }
 
-    private void populateFieldsOfSchemaType(SchemaType schemaType) {
-        if (schemaType.getKind() == TypeKind.SCALAR) {
-            // Do nothing
-        } else if (schemaType.getKind() == TypeKind.NON_NULL || schemaType.getKind() == TypeKind.LIST) {
-            populateFieldsOfSchemaType(schemaType.getOfType());
+    private void populateFieldsOfSchemaQueryType(SchemaType schemaType) {
+        if (schemaType.getKind() == TypeKind.NON_NULL || schemaType.getKind() == TypeKind.LIST) {
+            populateFieldsOfSchemaQueryType(schemaType.getOfType());
         } else if (schemaType.getKind() == TypeKind.ENUM) {
             UnionType unionType = (UnionType) schemaType.getBalType();
             for (Type memberType : unionType.getMemberTypes()) {
                 schemaType.addEnumValue(memberType.getZeroValue());
             }
-        } else { // OBJECT
+        } else if (schemaType.getKind() == TypeKind.OBJECT) {
             findFieldsForObjectKindSchemaTypes(schemaType);
         }
     }
@@ -199,6 +221,13 @@ public class FieldFinder {
         }
     }
 
+    private SchemaField getFieldsFromRemoteMethodType(RemoteMethodType remoteMethod) {
+        SchemaField schemaField = new SchemaField(remoteMethod.getName());
+        addArgsToSchemaField(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), schemaField);
+        setTypeForField(remoteMethod, schemaField);
+        return schemaField;
+    }
+
     private SchemaField getFieldsFromResourceMethodType(ResourceMethodType resourceMethod, String[] resourcePath) {
         SchemaField schemaField = new SchemaField(resourcePath[0]);
         if (resourcePath.length > 1) {
@@ -207,25 +236,26 @@ public class FieldFinder {
             fieldType.addField(getFieldsFromResourceMethodType(resourceMethod, remainingPath));
             schemaField.setType(fieldType);
         } else {
-            Type resourceReturnType = resourceMethod.getType().getReturnType();
-            SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
-            if (resourceReturnType.isNilable()) {
-                schemaField.setType(fieldType);
-            } else {
-                SchemaType nonNullType = getNonNullType();
-                nonNullType.setOfType(fieldType);
-                schemaField.setType(nonNullType);
-            }
-            addArgsToSchemaField(resourceMethod, schemaField);
+            setTypeForField(resourceMethod, schemaField);
+            addArgsToSchemaField(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), schemaField);
         }
         return schemaField;
     }
 
-    private void addArgsToSchemaField(ResourceMethodType resourceMethod, SchemaField schemaField) {
-        String[] paramNames = resourceMethod.getParamNames();
-        Type[] paramTypes = resourceMethod.getParameterTypes();
-        Boolean[] paramDefaultability = resourceMethod.getParamDefaultability();
-        for (int i = 0; i < paramNames.length; i++) {
+    private void setTypeForField(MethodType method, SchemaField schemaField) {
+        Type resourceReturnType = method.getType().getReturnType();
+        SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
+        if (resourceReturnType.isNilable()) {
+            schemaField.setType(fieldType);
+        } else {
+            SchemaType nonNullType = getNonNullType();
+            nonNullType.setOfType(fieldType);
+            schemaField.setType(nonNullType);
+        }
+    }
+
+    private void addArgsToSchemaField(Parameter[] parameters, Type[] paramTypes, SchemaField schemaField) {
+        for (int i = 0; i < parameters.length; i++) {
             SchemaType inputValueType;
             if (paramTypes[i].isNilable()) {
                 Type inputType = getInputTypeFromNilableType((UnionType) paramTypes[i]);
@@ -235,13 +265,14 @@ public class FieldFinder {
             }
             InputValue inputValue;
             if (paramTypes[i].isNilable()) {
-                inputValue = new InputValue(paramNames[i], inputValueType);
-            } else if (paramDefaultability[i]) {
-                inputValue = new InputValue(paramNames[i], inputValueType, paramTypes[i].getZeroValue().toString());
+                inputValue = new InputValue(parameters[i].name, inputValueType);
+            } else if (parameters[i].isDefault) {
+                inputValue = new InputValue(parameters[i].name, inputValueType,
+                        paramTypes[i].getZeroValue().toString());
             } else {
                 SchemaType nonNullType = getNonNullType();
                 nonNullType.setOfType(inputValueType);
-                inputValue = new InputValue(paramNames[i], nonNullType);
+                inputValue = new InputValue(parameters[i].name, nonNullType);
             }
             schemaField.addArg(inputValue);
         }

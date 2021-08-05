@@ -32,7 +32,7 @@ class ExecutorVisitor {
     }
 
     isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
-        self.visitOperation(operationNode);
+        self.visitOperation(operationNode, operationNode.getKind());
         return getOutputObject(self.data, self.errors);
     }
 
@@ -42,25 +42,30 @@ class ExecutorVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection);
+            self.visitSelection(selection, data);
         }
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if (selection.isFragment) {
             parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
-            self.visitFragment(fragmentNode);
+            self.visitFragment(fragmentNode, data);
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode);
+            self.visitField(fieldNode, data);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
+        parser:RootOperationType operationType = <parser:RootOperationType>data;
         if (fieldNode.getName() == SCHEMA_FIELD) {
-            getResult(self, fieldNode, self.schema, self.data);
+            executeIntrospection(self, fieldNode);
         } else {
-            self.executeResource(fieldNode);
+            if (operationType == parser:QUERY) {
+                executeQuery(self, fieldNode);
+            } else if (operationType == parser:MUTATION) {
+                executeMutation(self, fieldNode);
+            }
         }
     }
 
@@ -70,11 +75,7 @@ class ExecutorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection);
+            self.visitSelection(selection, data);
         }
-    }
-
-    isolated function executeResource(parser:FieldNode fieldNode) {
-        executeService(self.engine, self, fieldNode, self.data);
     }
 }

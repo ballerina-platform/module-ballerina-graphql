@@ -58,21 +58,22 @@ public class Utils {
      * Compilation errors.
      */
     enum CompilationError {
-        INVALID_FUNCTION("Remote methods are not allowed in GraphQL services", "GRAPHQL_101", DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE("Invalid return type for GraphQL resource function", "GRAPHQL_102",
+        INVALID_FUNCTION("Remote methods are not allowed inside the service classes returned from GraphQL resources",
+                         "GRAPHQL_101", DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE("Invalid return type for GraphQL resource/remote function", "GRAPHQL_102",
                             DiagnosticSeverity.ERROR),
-        INVALID_RESOURCE_INPUT_PARAM("Invalid input parameter type for GraphQL resource function", "GRAPHQL_103",
+        INVALID_RESOURCE_INPUT_PARAM("Invalid input parameter type for GraphQL resource/remote function", "GRAPHQL_103",
                                      DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_NIL("A GraphQL resource function must have a return type", "GRAPHQL_104",
+        INVALID_RETURN_TYPE_NIL("A GraphQL resource/remote function must have a return type", "GRAPHQL_104",
                                 DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_ERROR_OR_NIL("A GraphQL resource function must have a return data type", "GRAPHQL_105",
-                                         DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_ERROR_OR_NIL("A GraphQL resource/remote function must have a return data type",
+                                         "GRAPHQL_105", DiagnosticSeverity.ERROR),
         INVALID_RESOURCE_FUNCTION_ACCESSOR(
                 "Only \"" + RESOURCE_FUNCTION_GET + "\" accessor is allowed for GraphQL resource function",
                 "GRAPHQL_106", DiagnosticSeverity.ERROR),
         INVALID_MULTIPLE_LISTENERS("A GraphQL service cannot be attached to multiple listeners", "GRAPHQL_107",
                                    DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_ERROR("A GraphQL resource function must have a return data type", "GRAPHQL_108",
+        INVALID_RETURN_TYPE_ERROR("A GraphQL resource/remote function must have a return data type", "GRAPHQL_108",
                                   DiagnosticSeverity.ERROR),
         INVALID_LISTENER_INIT("http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_109",
                               DiagnosticSeverity.ERROR),
@@ -82,8 +83,10 @@ public class Utils {
                                    "\", which is reserved by GraphQL introspection", "GRAPHQL_111",
                            DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ANY(
-                "A GraphQL resource function cannot return \"any\" or \"anydata\", instead use specific type names",
-                "GRAPHQL_112", DiagnosticSeverity.ERROR);
+                "A GraphQL resource/remote function cannot return \"any\" or \"anydata\", instead use specific type " +
+                        "names", "GRAPHQL_112", DiagnosticSeverity.ERROR),
+        MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
+                                   DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

@@ -20,9 +20,12 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
+import io.ballerina.runtime.api.Parameter;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -38,13 +41,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -56,7 +63,13 @@ public class Engine {
     public static Object createSchema(BObject service) {
         try {
             ServiceType serviceType = (ServiceType) service.getType();
-            Schema schema = createSchema(serviceType);
+            TypeFinder typeFinder = new TypeFinder(serviceType);
+            typeFinder.populateTypes();
+
+            FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
+            fieldFinder.populateFields();
+            Schema schema = new Schema(fieldFinder.getTypeMap());
+
             SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
             return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
@@ -64,22 +77,13 @@ public class Engine {
         }
     }
 
-    private static Schema createSchema(ServiceType serviceType) {
-        TypeFinder typeFinder = new TypeFinder(serviceType);
-        typeFinder.populateTypes();
-
-        FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
-        fieldFinder.populateFields();
-
-        return new Schema(fieldFinder.getTypeMap());
-    }
-
     public static void attachServiceToEngine(BObject service, BObject engine) {
         engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
     }
 
-    public static void executeService(Environment environment, BObject engine, BObject visitor, BObject node,
-                                      BMap<BString, Object> data) {
+    public static void executeQuery(Environment environment, BObject visitor, BObject node) {
+        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
+        BMap<BString, Object> data = (BMap<BString, Object>) visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         List<String> paths = new ArrayList<>();
@@ -87,24 +91,37 @@ public class Engine {
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
         CallbackHandler callbackHandler = new CallbackHandler(future);
-        executeResource(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
+        executeResourceMethod(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
     }
 
-    public static void getResult(Environment environment, BObject visitor, BObject node, Object result,
-                                 BMap<BString, Object> data) {
+    public static void executeMutation(Environment environment, BObject visitor, BObject node) {
+        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
+        Future future = environment.markAsync();
+        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        String fieldName = node.getStringValue(NAME_FIELD).getValue();
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        List<Object> pathSegments = new ArrayList<>();
+        pathSegments.add(fieldName);
+        executeRemoteMethod(environment, service, visitor, node, data, pathSegments, callbackHandler);
+    }
+
+    public static void executeIntrospection(Environment environment, BObject visitor, BObject node) {
+        BMap<BString, Object> schemaRecord = visitor.getMapValue(SCHEMA_FIELD);
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        populateResponse(environment, visitor, node, result, data, pathSegments, null);
+        populateResponse(environment, visitor, node, schemaRecord, data, pathSegments, null);
     }
 
-    static void executeResource(Environment environment, BObject service, BObject visitor, BObject node,
-                                BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
-                                CallbackHandler callbackHandler) {
+    static void executeResourceMethod(Environment environment, BObject service, BObject visitor, BObject node,
+                                      BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
+                                      CallbackHandler callbackHandler) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getResourceExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
-                                           paths, pathSegments);
+                getExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
+                                   pathSegments);
                 return;
             }
         }
@@ -112,16 +129,41 @@ public class Engine {
         getDataFromService(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
     }
 
-    private static void getResourceExecutionResult(Environment environment, BObject service, BObject visitor,
-                                                   BObject node, ResourceMethodType resourceMethod,
-                                                   BMap<BString, Object> data, CallbackHandler callbackHandler,
-                                                   List<String> paths, List<Object> pathSegments) {
+    static void executeRemoteMethod(Environment environment, BObject service, BObject visitor, BObject node,
+                                    BMap<BString, Object> data, List<Object> pathSegments,
+                                    CallbackHandler callbackHandler) {
+        ServiceType serviceType = (ServiceType) service.getType();
+        BString fieldName = node.getStringValue(NAME_FIELD);
+        for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+            if (remoteMethod.getName().equals(fieldName.getValue())) {
+                getExecutionResult(environment, service, visitor, node, remoteMethod, data, callbackHandler,
+                                   pathSegments);
+                return;
+            }
+        }
+    }
+
+    private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
+                                           ResourceMethodType resourceMethod, BMap<BString, Object> data,
+                                           CallbackHandler callbackHandler, List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForResource(resourceMethod, arguments);
+        Object[] args = getArgsForMethod(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), arguments);
         ResourceCallback callback =
                 new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
         callbackHandler.addCallback(callback);
-        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, STRAND_METADATA,
+        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, RESOURCE_STRAND_METADATA,
+                                                   callback, args);
+    }
+
+    private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
+                                           RemoteMethodType remoteMethod, BMap<BString, Object> data,
+                                           CallbackHandler callbackHandler, List<Object> pathSegments) {
+        BMap<BString, Object> arguments = getArgumentsFromField(node);
+        Object[] args = getArgsForMethod(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), arguments);
+        ResourceCallback callback =
+                new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
+        callbackHandler.addCallback(callback);
+        environment.getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null, REMOTE_STRAND_METADATA,
                                                    callback, args);
     }
 
@@ -139,15 +181,14 @@ public class Engine {
         return argumentsMap;
     }
 
-    private static Object[] getArgsForResource(ResourceMethodType resourceMethod, BMap<BString, Object> arguments) {
-        String[] paramNames = resourceMethod.getParamNames();
-        Object[] result = new Object[paramNames.length * 2];
-        for (int i = 0, j = 0; i < paramNames.length; i += 1, j += 2) {
-            if (arguments.get(StringUtils.fromString(paramNames[i])) == null) {
-                result[j] = resourceMethod.getParameterTypes()[i].getZeroValue();
+    private static Object[] getArgsForMethod(Parameter[] parameters, Type[] types, BMap<BString, Object> arguments) {
+        Object[] result = new Object[parameters.length * 2];
+        for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
+            if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
+                result[j] = types[i].getZeroValue();
                 result[j + 1] = false;
             } else {
-                result[j] = arguments.get(StringUtils.fromString(paramNames[i]));
+                result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
                 result[j + 1] = true;
             }
         }

@@ -1,0 +1,12 @@
+{
+    "data": {
+        "setTeacherSubject": {
+            "subject": "Chemistry",
+            "name": "Walter Bishop"
+        },
+        "setTeacherName": {
+            "name": "Walter White",
+            "subject": "Chemistry"
+        }
+    }
+}
