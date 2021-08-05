@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
-import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -36,26 +35,22 @@ import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.popul
  * Callback class for the async invocation of the Ballerina resources.
  */
 public class ResourceCallback implements Callback {
-    private final Environment environment;
-    private final BObject visitor;
+    private final ResultContext resultContext;
     private final BObject node;
     private final BMap<BString, Object> data;
-    private final CallbackHandler handler;
     private final List<Object> pathSegments;
 
-    public ResourceCallback(Environment environment, BObject visitor, BObject node, BMap<BString, Object> data,
-                            CallbackHandler handler, List<Object> pathSegments) {
-        this.environment = environment;
-        this.visitor = visitor;
+    public ResourceCallback(ResultContext resultContext, BObject node, BMap<BString, Object> data,
+                            List<Object> pathSegments) {
+        this.resultContext = resultContext;
         this.node = node;
         this.data = data;
-        this.handler = handler;
         this.pathSegments = pathSegments;
     }
 
     @Override
     public void notifySuccess(Object result) {
-        populateResponse(this.environment, this.visitor, this.node, result, this.data, this.pathSegments, this.handler);
+        populateResponse(this.resultContext, this.node, result, this.data, this.pathSegments);
         markComplete();
     }
 
@@ -66,13 +61,13 @@ public class ResourceCallback implements Callback {
     }
 
     private void appendErrorToVisitor(BError bError) {
-        BArray errors = this.visitor.getArrayValue(ERRORS_FIELD);
+        BArray errors = this.resultContext.getVisitor().getArrayValue(ERRORS_FIELD);
         errors.append(getErrorDetailRecord(bError, this.node, this.pathSegments));
     }
 
     private void markComplete() {
-        if (this.handler != null) {
-            this.handler.markComplete(this);
+        if (this.resultContext.getCallbackHandler() != null) {
+            this.resultContext.getCallbackHandler().markComplete(this);
         }
     }
 }
