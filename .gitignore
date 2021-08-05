@@ -32,6 +32,8 @@ hs_err_pid*
 # IDE-related files
 .idea
 .code
+.project
+.settings
 
 # Build Files
 .gradle
