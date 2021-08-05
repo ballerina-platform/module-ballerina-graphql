@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Cannot query field \"__type\" on type \"Person\".",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ]
+        }
+    ]
+}

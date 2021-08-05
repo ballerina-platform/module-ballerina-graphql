@@ -22,10 +22,16 @@ const PARAM_OPERATION_NAME = "operationName";
 const PARAM_VARIABLES = "variables";
 
 const SCHEMA_FIELD = "__schema";
+const TYPE_NAME_FIELD = "__typename";
+const TYPE_FIELD = "__type";
+
 const SCHEMA_TYPE_NAME = "__Schema";
+const TYPE_TYPE_NAME = "__Type";
 const QUERY_TYPE_NAME = "Query";
 const MUTATION_TYPE_NAME = "Mutation";
 const SUBSCRIPTION_TYPE_NAME = "Subscription";
+
+const NAME_ARGUMENT = "name";
 
 // Scalar type names used in GraphQL
 const INT = "Int";

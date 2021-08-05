@@ -1,0 +1,6 @@
+{
+    teacher {
+        name
+        __typename
+    }
+}
