@@ -197,7 +197,6 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
     test:assertEquals(errors[0], e1);
 }
 
-
 @test:Config {
     groups: ["operations", "parser"]
 }

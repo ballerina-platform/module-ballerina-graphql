@@ -57,7 +57,6 @@ isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-
 @test:Config {
     groups: ["service", "union"]
 }
