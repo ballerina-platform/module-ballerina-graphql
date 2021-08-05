@@ -420,7 +420,6 @@ isolated function testReadInvalidFloatNoValueAfterExp() returns error? {
     test:assertEquals(column, 3);
 }
 
-
 @test:Config {
     groups: ["numeral", "lexer"]
 }
@@ -510,7 +509,6 @@ isolated function testReadInvalidFloatDecimalPointAfterExp() returns error? {
     test:assertEquals(line, 1);
     test:assertEquals(column, 5);
 }
-
 
 @test:Config {
     groups: ["numeral", "lexer"]

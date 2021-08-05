@@ -26,7 +26,6 @@ public type ListenerConfiguration record {|
 # service.
 public type ListenerHttp1Settings record {|
     *http:ListenerHttp1Settings;
-    // TODO: KeepAlive settings?
 |};
 
 # Configures the SSL/TLS options to be used for the underlying HTTP service used in GraphQL service.

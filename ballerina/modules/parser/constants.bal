@@ -70,7 +70,6 @@ enum LineTerminator {
     EOF = ""
 }
 
-
 const TRUE = "true";
 const FALSE = "false";
 

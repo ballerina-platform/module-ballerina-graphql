@@ -98,7 +98,6 @@ isolated function testEnumInputParameter() returns error? {
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-
 @test:Config {
     groups: ["enums", "array"]
 }
@@ -139,7 +138,6 @@ isolated function testEnumInvalidInputParameter() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
-
 
 @test:Config {
     groups: ["enums"]

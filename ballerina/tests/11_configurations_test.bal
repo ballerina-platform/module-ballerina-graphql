@@ -92,5 +92,3 @@ isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? 
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
-
-
