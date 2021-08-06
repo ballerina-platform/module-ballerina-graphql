@@ -35,14 +35,14 @@ import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.popul
  * Callback class for the async invocation of the Ballerina resources.
  */
 public class ResourceCallback implements Callback {
-    private final ResultContext resultContext;
+    private final ExecutionContext executionContext;
     private final BObject node;
     private final BMap<BString, Object> data;
     private final List<Object> pathSegments;
 
-    public ResourceCallback(ResultContext resultContext, BObject node, BMap<BString, Object> data,
+    public ResourceCallback(ExecutionContext executionContext, BObject node, BMap<BString, Object> data,
                             List<Object> pathSegments) {
-        this.resultContext = resultContext;
+        this.executionContext = executionContext;
         this.node = node;
         this.data = data;
         this.pathSegments = pathSegments;
@@ -50,7 +50,7 @@ public class ResourceCallback implements Callback {
 
     @Override
     public void notifySuccess(Object result) {
-        populateResponse(this.resultContext, this.node, result, this.data, this.pathSegments);
+        populateResponse(this.executionContext, this.node, result, this.data, this.pathSegments);
         markComplete();
     }
 
@@ -61,13 +61,13 @@ public class ResourceCallback implements Callback {
     }
 
     private void appendErrorToVisitor(BError bError) {
-        BArray errors = this.resultContext.getVisitor().getArrayValue(ERRORS_FIELD);
+        BArray errors = this.executionContext.getVisitor().getArrayValue(ERRORS_FIELD);
         errors.append(getErrorDetailRecord(bError, this.node, this.pathSegments));
     }
 
     private void markComplete() {
-        if (this.resultContext.getCallbackHandler() != null) {
-            this.resultContext.getCallbackHandler().markComplete(this);
+        if (this.executionContext.getCallbackHandler() != null) {
+            this.executionContext.getCallbackHandler().markComplete(this);
         }
     }
 }

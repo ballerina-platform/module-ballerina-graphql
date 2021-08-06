@@ -26,13 +26,13 @@ import io.ballerina.runtime.api.values.BObject;
  *
  * @since 1.0.0
  */
-public class ResultContext {
+public class ExecutionContext {
     private final Environment environment;
     private final BObject visitor;
     private final CallbackHandler callbackHandler;
     private String typeName;
 
-    ResultContext(Environment environment, BObject visitor, CallbackHandler callbackHandler, String typeName) {
+    ExecutionContext(Environment environment, BObject visitor, CallbackHandler callbackHandler, String typeName) {
         this.environment = environment;
         this.visitor = visitor;
         this.callbackHandler = callbackHandler;
