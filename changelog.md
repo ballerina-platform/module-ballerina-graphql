@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1634] Add Alias Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1634)
 - [[#1361] Add Variable Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1361)
 - [[#1492] Add Mutation Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1492)
+- [[#1723] Add Type Name Introspection](https://github.com/ballerina-platform/ballerina-standard-library/issues/1723)
 
 ### Changed
 - [[#1597] Validate Max Query Depth at Runtime](https://github.com/ballerina-platform/ballerina-standard-library/issues/1597)
@@ -17,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#1622] Invalidate Returning any or anydata from GraphQL Resource Functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/1622)
 - [[#1688] Fix GraphQL Query Includes Unknown Fragments Returning an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1688)
+- [[#1728] Fix Introspection not Working for `__type`](https://github.com/ballerina-platform/ballerina-standard-library/issues/1728)
+- [[#1730] Fix Validating `__schema` Field Disregarding the Position](https://github.com/ballerina-platform/ballerina-standard-library/issues/1730)
 
 ## [0.2.0.beta.2]  - 2021-07-06
 

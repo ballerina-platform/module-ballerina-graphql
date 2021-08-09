@@ -32,6 +32,7 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.runtime.schema.FieldFinder;
 import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
 import io.ballerina.stdlib.graphql.runtime.schema.TypeFinder;
@@ -44,12 +45,13 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_F
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 
@@ -91,7 +93,8 @@ public class Engine {
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
         CallbackHandler callbackHandler = new CallbackHandler(future);
-        executeResourceMethod(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, QUERY);
+        executeResourceMethod(executionContext, service, node, data, paths, pathSegments);
     }
 
     public static void executeMutation(Environment environment, BObject visitor, BObject node) {
@@ -103,68 +106,68 @@ public class Engine {
         CallbackHandler callbackHandler = new CallbackHandler(future);
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(fieldName);
-        executeRemoteMethod(environment, service, visitor, node, data, pathSegments, callbackHandler);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, MUTATION);
+        executeRemoteMethod(executionContext, service, node, data, pathSegments);
     }
 
-    public static void executeIntrospection(Environment environment, BObject visitor, BObject node) {
-        BMap<BString, Object> schemaRecord = visitor.getMapValue(SCHEMA_FIELD);
+    public static void executeIntrospection(Environment environment, BObject visitor, BObject node, BValue result) {
+        Future future = environment.markAsync();
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        populateResponse(environment, visitor, node, schemaRecord, data, pathSegments, null);
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SCHEMA_RECORD);
+        ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
+        callbackHandler.addCallback(resourceCallback);
+        resourceCallback.notifySuccess(result);
     }
 
-    static void executeResourceMethod(Environment environment, BObject service, BObject visitor, BObject node,
-                                      BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
-                                      CallbackHandler callbackHandler) {
+    static void executeResourceMethod(ExecutionContext executionContext, BObject service, BObject node,
+                                      BMap<BString, Object> data, List<String> paths, List<Object> pathSegments) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getExecutionResult(environment, service, visitor, node, resourceMethod, data, callbackHandler,
-                                   pathSegments);
+                getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments);
                 return;
             }
         }
-        // The resource not found. This should be a resource with hierarchical paths
-        getDataFromService(environment, service, visitor, node, data, paths, pathSegments, callbackHandler);
+        // The resource not found. This should be a either a resource with hierarchical paths or introspection query
+        getDataFromService(executionContext, service, node, data, paths, pathSegments);
     }
 
-    static void executeRemoteMethod(Environment environment, BObject service, BObject visitor, BObject node,
-                                    BMap<BString, Object> data, List<Object> pathSegments,
-                                    CallbackHandler callbackHandler) {
+    static void executeRemoteMethod(ExecutionContext executionContext, BObject service, BObject node,
+                                    BMap<BString, Object> data, List<Object> pathSegments) {
         ServiceType serviceType = (ServiceType) service.getType();
         BString fieldName = node.getStringValue(NAME_FIELD);
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(fieldName.getValue())) {
-                getExecutionResult(environment, service, visitor, node, remoteMethod, data, callbackHandler,
-                                   pathSegments);
+                getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments);
                 return;
             }
         }
     }
 
-    private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
+    private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
                                            ResourceMethodType resourceMethod, BMap<BString, Object> data,
-                                           CallbackHandler callbackHandler, List<Object> pathSegments) {
+                                           List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForMethod(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), arguments);
         ResourceCallback callback =
-                new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
-        callbackHandler.addCallback(callback);
-        environment.getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null, RESOURCE_STRAND_METADATA,
-                                                   callback, args);
+                new ResourceCallback(executionContext, node, data, pathSegments);
+        executionContext.getCallbackHandler().addCallback(callback);
+        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null,
+                                                                         RESOURCE_STRAND_METADATA, callback, args);
     }
 
-    private static void getExecutionResult(Environment environment, BObject service, BObject visitor, BObject node,
+    private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
                                            RemoteMethodType remoteMethod, BMap<BString, Object> data,
-                                           CallbackHandler callbackHandler, List<Object> pathSegments) {
+                                           List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         Object[] args = getArgsForMethod(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), arguments);
-        ResourceCallback callback =
-                new ResourceCallback(environment, visitor, node, data, callbackHandler, pathSegments);
-        callbackHandler.addCallback(callback);
-        environment.getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null, REMOTE_STRAND_METADATA,
-                                                   callback, args);
+        ResourceCallback callback = new ResourceCallback(executionContext, node, data, pathSegments);
+        executionContext.getCallbackHandler().addCallback(callback);
+        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null,
+                                                                         REMOTE_STRAND_METADATA, callback, args);
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {

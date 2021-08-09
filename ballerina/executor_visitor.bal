@@ -58,12 +58,16 @@ class ExecutorVisitor {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         parser:RootOperationType operationType = <parser:RootOperationType>data;
-        if (fieldNode.getName() == SCHEMA_FIELD) {
-            executeIntrospection(self, fieldNode);
+        if fieldNode.getName() == SCHEMA_FIELD {
+            executeIntrospection(self, fieldNode, self.schema);
+        } else if fieldNode.getName() == TYPE_FIELD {
+            string requiredTypeName = fieldNode.getArguments()[0].getValue().value.toString();
+            __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
+            executeIntrospection(self, fieldNode, requiredType);
         } else {
-            if (operationType == parser:QUERY) {
+            if operationType == parser:QUERY {
                 executeQuery(self, fieldNode);
-            } else if (operationType == parser:MUTATION) {
+            } else if operationType == parser:MUTATION {
                 executeMutation(self, fieldNode);
             }
         }

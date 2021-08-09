@@ -25,9 +25,9 @@ isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string 
     return string`Cannot query field "${requiredFieldName}" on type "${rootType}".`;
 }
 
-isolated function getNoSubfieldsErrorMessage(string fieldName, __Type schemaType) returns string {
-    string typeName = getTypeNameFromType(schemaType);
-    return string`Field "${fieldName}" must not have a selection since type "${typeName}" has no subfields.`;
+isolated function getNoSubfieldsErrorMessage(__Field 'field) returns string {
+    string typeName = getTypeNameFromType('field.'type);
+    return string`Field "${'field.name}" must not have a selection since type "${typeName}" has no subfields.`;
 }
 
 isolated function getUnknownArgumentErrorMessage(string argName, string parentName, string fieldName)
@@ -35,9 +35,9 @@ returns string {
     return string`Unknown argument "${argName}" on field "${parentName}.${fieldName}".`;
 }
 
-isolated function getMissingSubfieldsErrorFromType(string fieldName, __Type schemaType) returns string {
-    string typeName = getTypeNameFromType(schemaType);
-    return getMissingSubfieldsError(fieldName, typeName);
+isolated function getMissingSubfieldsErrorFromType(__Field 'field) returns string {
+    string typeName = getTypeNameFromType('field.'type);
+    return getMissingSubfieldsError('field.name, typeName);
 }
 
 isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
@@ -117,7 +117,6 @@ isolated function getOfType(__Type schemaType) returns __Type {
 }
 
 isolated function getTypeNameFromType(__Type schemaType) returns string {
-    string typeName = getOfType(schemaType)?.name.toString();
     if schemaType.kind == NON_NULL {
         return string`${getTypeNameFromType(<__Type & readonly>schemaType?.ofType)}!`;
     } else if schemaType.kind == LIST {
