@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/lang.array;
 import snowtooth.datasource as ds;
 
 type SearchResult Lift|Trail;
@@ -50,7 +49,7 @@ service /graphql on new graphql:Listener(9000) {
     # + return - the lift
     resource function get Lift(string id) returns Lift? {
         ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.id == id select lift;
-        if array:length(lifts) > 0 {
+        if lifts.length() > 0 {
             return new Lift(lifts[0]);
         } 
     }
@@ -59,7 +58,7 @@ service /graphql on new graphql:Listener(9000) {
     # + return - the trail
     resource function get Trail(string id) returns Trail? {
         ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.id == id select trail;
-        if array:length(trails) > 0 {
+        if trails.length() > 0 {
             return new Trail(trails[0]);
         } 
     }
@@ -68,25 +67,29 @@ service /graphql on new graphql:Listener(9000) {
     # + return - the liftcount
     resource function get liftCount(ds:Status status) returns int {
         ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.status == status select lift;
-        return array:length(lifts);
+        return lifts.length();
     }
 
     # Returns an `Int` of `Trail` objects with optional `TrailStatus` filter
     # + return - the trailcount
     resource function get trailCount(ds:Status status) returns int {
         ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.status == status select trail;
-        return array:length(trails);
+        return trails.length();
     }
 
     # Returns a list of `SearchResult` objects based on `term` or `status`
     # + return - the search result
-    resource function get search (ds:Status status) returns SearchResult[] {
-        ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.status == status select trail;
-        SearchResult[] searchResults = trails.map(trail => new Trail(trail));
+    resource function get search(ds:Status status) returns SearchResult[] {
+        Trail[] trails = from var trail in ds:trailTable where trail.status == status select new(trail);
+        Lift[] lifts = from var lift in ds:liftTable where lift.status == status select new(lift);
 
-        ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.status == status select lift;
-        lifts.forEach(lift => searchResults.push(new Lift(lift)));
-
+        SearchResult[] searchResults = [];
+        foreach Trail trail in trails {
+            searchResults.push(trail);
+        }
+        foreach Lift lift in lifts {
+            searchResults.push(lift);
+        }
         return searchResults;
     }
 }
