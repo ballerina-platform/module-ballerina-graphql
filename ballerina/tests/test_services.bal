@@ -377,8 +377,12 @@ service /snowtooth on serviceTypeListener {
     }
 
     isolated resource function get search(Status status) returns SearchResult[] {
-        SearchResult[] searchResults = from var trail in trailTable where trail.status == status select new(trail);
+        SearchResult[] searchResults = [];
+        Trail[] trails = from var trail in trailTable where trail.status == status select new(trail);
         Lift[] lifts = from var lift in liftTable where lift.status == status select new(lift);
+        foreach Trail trail in trails {
+            searchResults.push(trail);
+        }
         foreach Lift lift in lifts {
             searchResults.push(lift);
         }
