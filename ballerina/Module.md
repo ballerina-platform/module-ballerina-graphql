@@ -37,10 +37,14 @@ listener graphql:Listener graphqlListener = new (4000, timeout = 10, secureSocke
 ```
 
 ### Service
-The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated. The resource functions inside the service represent the resolvers of the root type.
-Then, the GraphQL listener will handle all the incoming requests and dispatch them to the relevant resource function.
+The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated. 
 
-Since the GraphQL endpoints are exposed through a single endpoint, the endpoint URL of the GraphQL service can be provided after the service declaration as shown in the following code snippet in which the endpoint URL is `/graphql`.
+The GraphQL services are exposed through a single endpoint. The url of the GraphQL service can be provided when defining the service. (Check the next example, where the url is `/graphql`).
+
+#### Query Type
+The resource functions inside the service represent the resolvers of the `Query` root type.
+
+When a resource function is defined inside a GraphQL service, the generated schema will have a `Query` root type, and the resource function will be a field of the `Query` object.
 
 The accessor of the resource function should always be `get`. The resource function name will become the name of the particular field in the GraphQL schema. The return type of the resource function will be the type of the corresponding field.
 
@@ -72,6 +76,104 @@ The result will be the following JSON.
 }
 ```
 
+#### Mutation Type
+The remote functions inside the GraphQL service represent the resolvers of the `Mutation` root type.
+
+When a remote function is defined inside a GraphQL service, the schema will have a `Mutation` operation, and the remote function will be a field of the `Mutation` object.
+
+For an example, consider the following service, that has a `Person` record, `person`. It has a `Query` field named `profile`, which returns the person record. It also has two remote functions, named `updateName` and `updateCity`, which are used as mutations.
+
+```ballerina
+import ballerina/graphql;
+
+public type Person record {|
+    string name;
+    int age;
+    string city;
+|};
+
+service /graphql on new graphql:Listener(4000) {
+    private Person profile;
+    
+    function init() {
+        self.profile = { name: "Walter White", age: 50, city: "Albuquerque" };
+    }
+    
+    resource function get profile() returns Person {
+        return self.profile;
+    }
+    
+    remote function updateName(string name) returns Person {
+        self.profile.name = name;
+        return self.profile;
+    }
+    
+    remote function updateCity(string city) reutns Person {
+        self.profile.city = city;
+        return self.profile;
+    }
+}
+```
+
+This will generate the following schema:
+
+```schema
+type Query {
+    profile: Person!
+}
+
+type Mutation {
+    updateName(name: String!): Person!
+    updateCity(city: String!): Person!
+}
+
+type Person {
+    name: String!
+    age: Int!
+    city: String!
+}
+```
+
+Note: A GraphQL schema must have a root `Query` type. Therefore, a Ballerina GraphQL service must have at least one resource function defined. 
+
+We can mutate this using the following document:
+
+```
+mutation updatePerson {
+    updateName(name: "Mr. Lambert") {
+        ... ProfileFragment
+    }
+    updateCity(city: "New Hampshire") {
+        ... ProfileFragment
+    }
+}
+
+fragment ProfileFragment on Profile {
+    name
+    city
+}
+```
+
+Note: This document uses two mutations, and each mutation requests same fields from the service using a fragment (`ProfileFragment`).
+
+Result:
+
+```json
+{
+    "data": {
+        "updateName": {
+            "name": "Mr. Lambert",
+            "city": "Albuquerque"
+        },
+        "updateCity": {
+            "name": "Mr. Lambert",
+            "city": "New Hampshire"
+        }
+    }
+}
+```
+
+See how the result changes the `Person` record. The first mutation only changes the name, and it populates the result of the `updateName` field. Then it will execute the `updateCity` operation and populate the result. This is because the execution of mutation operations will be done serially, in the same order as they are specified in the document.
 
 #### Additional Configurations
 Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfig`.
