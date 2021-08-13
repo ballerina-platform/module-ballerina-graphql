@@ -38,7 +38,6 @@ def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
 def dependenciesTomlFile = new File("$project.projectDir/Dependencies.toml")
 def compilerPluginTomlFile = new File("$project.projectDir/CompilerPlugin.toml")
 def originalBallerinaToml = ballerinaTomlFile.text
-def originalDependenciesToml = dependenciesTomlFile.text
 def originalCompilerPluginToml = compilerPluginTomlFile.text
 
 def stripBallerinaExtensionVersion(String extVersion) {
@@ -97,7 +96,6 @@ task updateTomlFiles {
 task revertTomlFiles {
     doLast {
         ballerinaTomlFile.text = originalBallerinaToml
-        dependenciesTomlFile.text = originalDependenciesToml
         compilerPluginTomlFile.text = originalCompilerPluginToml
     }
 }
