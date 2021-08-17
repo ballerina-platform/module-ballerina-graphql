@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.Parameter;
+import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
@@ -39,6 +40,7 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
@@ -47,6 +49,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SER
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
@@ -168,17 +172,61 @@ public class Engine {
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
-        BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
+        getScalarTypeArgument(node, argumentsMap);
+        return argumentsMap;
+    }
+
+    public static void getScalarTypeArgument(BObject node, BMap<BString, Object> argumentsMap) {
+        BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
-            BMap<BString, Object> argNameRecord = (BMap<BString, Object>) argumentNode.getMapValue(NAME_FIELD);
-            BMap<BString, Object> argValueRecord = (BMap<BString, Object>) argumentNode.getMapValue(VALUE_FIELD);
-            BString argName = argNameRecord.getStringValue(VALUE_FIELD);
-            Object argValue = argValueRecord.get(VALUE_FIELD);
-            argumentsMap.put(argName, argValue);
+            BString argName = argumentNode.getStringValue(NAME_FIELD);
+            BMap<BString, Object> objectFields = argumentNode.getMapValue(VALUE_FIELD);
+            if (objectFields.isEmpty()) {
+                if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                    Object value = argumentNode.get(VARIABLE_VALUE_FIELD);
+                    argumentsMap.put(argName, value);
+                }
+            } else {
+                if (objectFields.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
+                    Object argValue = objectFields.get(VALUE_FIELD);
+                    argumentsMap.put(argName, argValue);
+                } else {
+                    BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
+                    getInputObjectTypeArgument(objectFields, inputObjectFieldMap);
+                    argumentsMap.put(argName, inputObjectFieldMap);
+                }
+            }
         }
-        return argumentsMap;
+    }
+
+    public static void getInputObjectTypeArgument(BMap<BString, Object> objectFields,
+                                                  BMap<BString, Object> inputObjectMap) {
+        for (Map.Entry<BString, Object> entry : objectFields.entrySet()) {
+            BString fieldName = entry.getKey();
+            if (entry.getValue() instanceof BMap) {
+                BMap<BString, Object> argumentValueRecord = (BMap<BString, Object>) entry.getValue();
+                Object argValue = argumentValueRecord.get(VALUE_FIELD);
+                inputObjectMap.put(fieldName, argValue);
+            } else {
+                BObject value = (BObject) entry.getValue();
+                BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
+                BMap<BString, Object> nestedObjectFields = value.getMapValue(VALUE_FIELD);
+                if (nestedObjectFields.isEmpty()) {
+                    if (value.getBooleanValue(VARIABLE_DEFINITION)) {
+                        Object fieldValue = value.get(VARIABLE_VALUE_FIELD);
+                        inputObjectMap.put(fieldName, fieldValue);
+                    }
+                } else if (nestedObjectFields.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
+                    Object argValue = objectFields.get(VALUE_FIELD);
+                    inputObjectMap.put(fieldName, argValue);
+                } else {
+                    getInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
+                    inputObjectMap.put(fieldName, nestedInputObjectFieldMap);
+                }
+            }
+        }
     }
 
     private static Object[] getArgsForMethod(Parameter[] parameters, Type[] types, BMap<BString, Object> arguments) {

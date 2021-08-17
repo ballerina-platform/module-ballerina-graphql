@@ -137,7 +137,7 @@ public class FieldFinder {
             for (Type memberType : unionType.getMemberTypes()) {
                 schemaType.addEnumValue(memberType.getZeroValue());
             }
-        } else if (schemaType.getKind() == TypeKind.OBJECT) {
+        } else if (schemaType.getKind() == TypeKind.OBJECT || schemaType.getKind() == TypeKind.INPUT_OBJECT) {
             findFieldsForObjectKindSchemaTypes(schemaType);
         }
     }
@@ -201,8 +201,14 @@ public class FieldFinder {
                 SchemaType wrapperType = getNonNullType();
                 wrapperType.setOfType(fieldType);
                 schemaField.setType(wrapperType);
+                if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
+                    schemaField.addArg(new InputValue(field.getFieldName(), wrapperType));
+                }
             } else {
                 schemaField.setType(fieldType);
+                if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
+                    schemaField.addArg(new InputValue(field.getFieldName(), fieldType));
+                }
             }
             if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
                 SchemaType nonNullType = getNonNullType();

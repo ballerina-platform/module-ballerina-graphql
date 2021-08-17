@@ -98,7 +98,7 @@ public class SchemaRecordGenerator {
 
     private void populateFieldsOfTypes() {
         for (SchemaType schemaType : this.schema.getTypes().values()) {
-            if (schemaType.getKind() == TypeKind.OBJECT) {
+            if (schemaType.getKind() == TypeKind.OBJECT || schemaType.getKind() == TypeKind.INPUT_OBJECT) {
                 BMap<BString, Object> typeRecord = this.typeRecords.get(schemaType.getName());
                 typeRecord.put(FIELDS_FIELD, getFieldsArray(schemaType));
             }

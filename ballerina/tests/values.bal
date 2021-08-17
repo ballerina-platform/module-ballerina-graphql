@@ -98,6 +98,36 @@ Book b6 = {
     author: "Michael Spivak"
 };
 
+Book b7 = {
+    name: "The Sign of Four",
+    author: "Athur Conan Doyle"
+};
+
+Book b8 = {
+    name: "The Valley of Fear",
+    author: "Athur Conan Doyle"
+};
+
+Book b9 = {
+    name: "Harry Potter and the Sorcerer's Stone",
+    author: "J.K Rowling"
+};
+
+Book b10 = {
+    name: "Harry Potter and the Chamber of Secrets",
+    author: "J.K Rowling"
+};
+
+Movie m1 =  {
+    movieName: "Harry Potter and the Sorcerer's Stone",
+    director: "Chris Columbus"
+};
+
+Movie m2 =  {
+    movieName: "Sherlock Holmes",
+    director: "Dexter Fletcher"
+};
+
 Course c1 = {
     name: "Electronics",
     code: 106,

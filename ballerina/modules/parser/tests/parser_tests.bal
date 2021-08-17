@@ -324,9 +324,9 @@ isolated function testParseAnonymousMutation() returns error? {
     FieldNode fieldNode = operationNode.getFields()[0];
     test:assertEquals(fieldNode.getName(), "setAge");
     test:assertEquals(fieldNode.getArguments().length(), 1);
-    ArgumentNode argumentNode = fieldNode.getArguments()[0];
-    test:assertEquals(argumentNode.getName().value, "newAge");
-    test:assertEquals(argumentNode.getValue().value, 24);
+    InputObjectNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "newAge");
+    test:assertEquals((<ArgumentValue>argumentNode.getValue()).value, 24);
     test:assertEquals(fieldNode.getFields().length(), 2);
     test:assertEquals(fieldNode.getFields()[0].getName(), "name");
     test:assertEquals(fieldNode.getFields()[1].getName(), "age");
@@ -348,9 +348,9 @@ isolated function testParseNamedMutation() returns error? {
     FieldNode fieldNode = operationNode.getFields()[0];
     test:assertEquals(fieldNode.getName(), "setAge");
     test:assertEquals(fieldNode.getArguments().length(), 1);
-    ArgumentNode argumentNode = fieldNode.getArguments()[0];
-    test:assertEquals(argumentNode.getName().value, "newAge");
-    test:assertEquals(argumentNode.getValue().value, 24);
+    InputObjectNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "newAge");
+    test:assertEquals((<ArgumentValue>argumentNode.getValue()).value, 24);
     test:assertEquals(fieldNode.getFields().length(), 2);
     test:assertEquals(fieldNode.getFields()[0].getName(), "name");
     test:assertEquals(fieldNode.getFields()[1].getName(), "age");
@@ -481,9 +481,9 @@ isolated function testFieldAliasWithArguments() returns error? {
     string alias = fieldNode.getAlias();
     test:assertEquals(alias, "walt");
     test:assertEquals(fieldNode.getArguments().length(), 1);
-    ArgumentNode argumentNode = <ArgumentNode>fieldNode.getArguments()[0];
-    test:assertEquals(argumentNode.getName().value, "id");
-    test:assertEquals(argumentNode.getValue().value, 1);
+    InputObjectNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "id");
+    test:assertEquals((<ArgumentValue>argumentNode.getValue()).value, 1);
 }
 
 @test:Config {
@@ -503,8 +503,46 @@ isolated function testVariables() returns error? {
     test:assertEquals(argValue.value, 3);
     FieldNode fieldNode = operationNode.getFields()[0];
     test:assertEquals(fieldNode.getName(), "profile");
-    ArgumentNode argumentNode = fieldNode.getArguments()[0];
-    test:assertEquals(argumentNode.getName().value, "id");
+    InputObjectNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "id");
     test:assertEquals(argumentNode.isVariableDefinition(), true);
     test:assertEquals(argumentNode.getVariableName(), "profileId");
+}
+
+@test:Config {
+    groups: ["input_objects", "parser"]
+}
+isolated function testInputObjects() returns error? {
+    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.txt");
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
+    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["bAuthor"];
+    test:assertEquals(variableDefinition.name, "bAuthor");
+    test:assertEquals(variableDefinition.kind, "ProfileDetail");
+    InputObjectNode argValue = <InputObjectNode> variableDefinition?.defaultValue;
+    test:assertEquals(argValue.getKind(), T_IDENTIFIER);
+    test:assertEquals(argValue.getName(), "bAuthor");
+    map<ArgumentValue|InputObjectNode> defaultValue = <map<ArgumentValue|InputObjectNode>> argValue.getValue();
+    test:assertEquals(defaultValue.hasKey("name"), true);
+    ArgumentValue defaultValueField = <ArgumentValue> defaultValue.get("name");
+    test:assertEquals(defaultValueField.value, "J.K Rowling");
+    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getName(), "book");
+    InputObjectNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "info");
+    map<ArgumentValue|InputObjectNode> inputObjectFields = <map<ArgumentValue|InputObjectNode>> argumentNode.getValue();
+    test:assertEquals(inputObjectFields.hasKey("bookName"), true);
+    test:assertEquals(inputObjectFields.hasKey("author"), true);
+    test:assertEquals(inputObjectFields.hasKey("movie"), true);
+    InputObjectNode fields1 = <InputObjectNode> inputObjectFields.get("author");
+    test:assertEquals(fields1.isVariableDefinition(), true);
+    test:assertEquals(fields1.getVariableName(), "bAuthor");
+    InputObjectNode fields2 = <InputObjectNode> inputObjectFields.get("movie");
+    map<ArgumentValue|InputObjectNode> nestedFields = <map<ArgumentValue|InputObjectNode>>fields2.getValue();
+    test:assertEquals(nestedFields.hasKey("movieName"), true);
+    ArgumentValue nestedValue = <ArgumentValue>nestedFields.get("movieName");
+    test:assertEquals(nestedValue.value, "End Game");
 }

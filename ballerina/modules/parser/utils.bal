@@ -37,6 +37,14 @@ isolated function getExpectedCharError(Token token, string char) returns Invalid
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
+isolated function getDuplicateFieldError(Token token) returns InvalidTokenError {
+    Scalar value = token.value;
+    string message = string`Syntax Error: Duplicate input object field "${value}", ` +
+    string`found ${getErrorMessageTypeNameForError(token)}.`;
+    Location l = token.location;
+    return error InvalidTokenError(message, line = l.line, column = l.column);
+}
+
 isolated function getAnonymousOperationInMultipleOperationsError(OperationNode operationNode) returns ErrorDetail {
     string message = "This anonymous operation must be the only defined operation.";
     Location[] locations = [operationNode.getLocation()];

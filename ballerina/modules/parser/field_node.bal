@@ -21,7 +21,7 @@ public class FieldNode {
     private final string name;
     private final string alias;
     private Location location;
-    private ArgumentNode[] arguments;
+    private InputObjectNode[] arguments;
     private FieldNode[] fields;
     private string[] fragments;
     private Selection[] selections;
@@ -48,7 +48,7 @@ public class FieldNode {
         return self.location;
     }
 
-    public isolated function addArgument(ArgumentNode argument) {
+    public isolated function addArgument(InputObjectNode argument) {
         self.arguments.push(argument);
     }
 
@@ -56,7 +56,7 @@ public class FieldNode {
         self.fields.push(fieldNode);
     }
 
-    public isolated function getArguments() returns ArgumentNode[] {
+    public isolated function getArguments() returns InputObjectNode[] {
         return self.arguments;
     }
 

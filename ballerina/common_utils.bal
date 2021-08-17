@@ -78,7 +78,7 @@ isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) retur
     return outputObject;
 }
 
-isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
+isolated function getTypeName(parser:InputObjectNode argumentNode) returns string {
     parser:ArgumentType kind = argumentNode.getKind();
     if kind == parser:T_INT {
         return INT;
@@ -126,13 +126,13 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
     return schemaType?.name.toString();
 }
 
-isolated function getTypeNameFromValue(Scalar value) returns string {
-    if (typeof value).toString() == "typedesc int" {
-        return INT;
-    } else if (typeof value).toString() == "typedesc boolean" {
-        return BOOLEAN;
-    } else if (typeof value).toString() == "typedesc float" {
+isolated function getTypeNameFromValue(anydata value) returns string {
+    if value is float {
         return FLOAT;
+    } else if value is boolean {
+        return BOOLEAN;
+    } else if value is int {
+        return INT;
     } else {
         return STRING;
     }

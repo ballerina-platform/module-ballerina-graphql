@@ -49,7 +49,7 @@ public class SchemaType {
         this.name = name;
         this.kind = kind;
         this.balType = balType;
-        this.fields = (kind == TypeKind.OBJECT) ? new HashMap<>() : null;
+        this.fields = (kind == TypeKind.OBJECT || kind == TypeKind.INPUT_OBJECT) ? new HashMap<>() : null;
         this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
         this.possibleTypes = (kind == TypeKind.UNION) ? new LinkedHashSet<>() : null;
     }

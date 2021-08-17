@@ -109,3 +109,23 @@ public type EdgeRecord readonly & record {|
     readonly string liftId;
     readonly string trailId;
 |};
+
+public type Movie record {
+    string movieName;
+    string director?;
+};
+public type ProfileDetail record {
+    string name;
+    int age?;
+};
+
+public type Info record {
+    string bookName;
+    int edition;
+    ProfileDetail author;
+    Movie movie?;
+};
+
+public type Date record {
+    Weekday day;
+};

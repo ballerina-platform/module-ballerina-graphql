@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"book\" argument \"movie\" of type \"Movie!\" is required, but it was not provided.",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 7
+                }
+            ]
+        }
+    ]
+}

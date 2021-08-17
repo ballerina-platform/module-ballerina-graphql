@@ -51,7 +51,7 @@ class VariableValidator {
             self.errors.push(errorDetail);
         }
         foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection, variableDefinitions);
+            self.visitSelection(selection, <anydata>variableDefinitions);
         }
         string[] keys = variableDefinitions.keys();
         foreach string name in keys {
@@ -75,10 +75,8 @@ class VariableValidator {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        foreach parser:ArgumentNode argument in fieldNode.getArguments() {
-            if argument.isVariableDefinition() {
-                self.visitArgument(argument, data);
-            }
+        foreach parser:InputObjectNode argument in fieldNode.getArguments() {
+            self.visitArgument(argument, data);
         }
         if fieldNode.getSelections().length() > 0 {
             parser:Selection[] selections = fieldNode.getSelections();
@@ -94,46 +92,62 @@ class VariableValidator {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+    public isolated function visitArgument(parser:InputObjectNode argumentNode, anydata data = ()) {
         map<parser:VariableDefinition> variableDefinitions = <map<parser:VariableDefinition>> data;
-        string variableName = <string> argumentNode.getVariableName();
-        parser:Location location = argumentNode.getValue().location;
-        if variableDefinitions.hasKey(variableName) {
-            parser:VariableDefinition variableDefinition = variableDefinitions.get(variableName);
-            self.visitedVariableDefinitions.push(variableName);
-            if self.variables.hasKey(variableName) {
-                argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
-                Scalar|error value= <Scalar> self.variables.get(variableName);
-                if value is error {
-                    string message = string`Variable "$${variableName}" got invalid value ${self.variables.get(variableName).toString()};`;
-                    self.errors.push(getErrorDetailRecord(message, location));
-                } else {
+        parser:Location location = argumentNode.getLocation();
+        if argumentNode.isVariableDefinition() {
+            string variableName = <string>argumentNode.getVariableName();
+            if variableDefinitions.hasKey(variableName) {
+                parser:VariableDefinition variableDefinition = variableDefinitions.get(variableName);
+                self.visitedVariableDefinitions.push(variableName);
+                if self.variables.hasKey(variableName) {
+                    argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
+                    anydata value = self.variables.get(variableName);
                     self.setArgumentValue(value, argumentNode, location);
+                } else if !(variableDefinition?.defaultValue is ()) {
+                    argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
+                    if variableDefinition?.defaultValue is parser:ArgumentValue {
+                        argumentNode.setValue(<parser:ArgumentValue>variableDefinition?.defaultValue);
+                        argumentNode.setVariableDefinition(false);
+                    } else {
+                        parser:InputObjectNode defaultValue = <parser:InputObjectNode>variableDefinition?.defaultValue;
+                        argumentNode.setValue(defaultValue.getValue());
+                        argumentNode.setVariableDefinition(false);
+                    }
+                } else {
+                    string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
+                    string`was not provided.`;
+                    self.errors.push(getErrorDetailRecord(message, location));
                 }
-            } else if variableDefinition?.defaultValue != () {
-                argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
-                Scalar defaultValue = <Scalar> (<parser:ArgumentValue> variableDefinitions.get(variableName)?.defaultValue).value;
-                self.setArgumentValue(defaultValue, argumentNode, location);
             } else {
-                string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} was not provided.`;
+                string message = string`Variable "$${variableName}" is not defined.`;
                 self.errors.push(getErrorDetailRecord(message, location)); 
             }
-        } else {
-            string message = string`Variable "$${variableName}" is not defined.`;
-            self.errors.push(getErrorDetailRecord(message, location)); 
+        } else if argumentNode.getValue() is map<parser:ArgumentValue|parser:InputObjectNode> {
+            map<parser:ArgumentValue|parser:InputObjectNode> fields =
+                <map<parser:ArgumentValue|parser:InputObjectNode>> argumentNode.getValue();
+            foreach string keys in fields.keys() {
+                if fields.get(keys) is parser:InputObjectNode {
+                    self.visitArgument(<parser:InputObjectNode>fields.get(keys), data);
+                }
+            }
         }
     }
 
-    public isolated function setArgumentValue(Scalar value, parser:ArgumentNode argument, parser:Location location) {
+    public isolated function setArgumentValue(anydata value, parser:InputObjectNode argument,
+                                              parser:Location location) {
         if argument.getKind() == parser:T_IDENTIFIER {
-            argument.setValue(value);
+            argument.setVariableValue(value);
         } else if getTypeNameFromValue(value) == getTypeName(argument) {
-            argument.setValue(value);
+            argument.setVariableValue(value);
+        } else if value is decimal && getTypeName(argument) == FLOAT {
+            argument.setVariableValue(<float>value);
         } else if value is int && getTypeName(argument) == FLOAT {
-            argument.setValue(value);
+            argument.setVariableValue(value);
         } else {
-            string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ${value.toString()};` +
-            string`Expected type ${getTypeName(argument)}. ${getTypeName(argument)} cannot represent value: ${value.toString()}`;
+            string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ` +
+            string`${value.toString()};Expected type ${getTypeName(argument)}. ${getTypeName(argument)}` +
+            string` cannot represent value: ${value.toString()}`;
             self.errors.push(getErrorDetailRecord(message, location)); 
         }
     }

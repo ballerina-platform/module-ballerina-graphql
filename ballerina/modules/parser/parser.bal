@@ -120,7 +120,7 @@ public class Parser {
             }
             Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
-            string variableName = check getIdentifierTokenvalue(token);
+            ArgumentName variableName = check getArgumentName(token);
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -128,16 +128,22 @@ public class Parser {
             token = check self.readNextNonSeparatorToken();
             string varType = check getIdentifierTokenvalue(token);
             VariableDefinition varDefinition = {
-                name: variableName,
+                name: variableName.value,
                 kind: varType,
                 location: location
             };
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
                 token = check self.readNextNonSeparatorToken();// consume "=" sign here
-                token = check self.readNextNonSeparatorToken();
-                ArgumentValue value = check getArgumentValue(token);
-                varDefinition.defaultValue = value;
+                token = check self.peekNextNonSeparatorToken();
+                if token.kind == T_OPEN_BRACE {
+                    InputObjectNode value = check self.getInputObjectTypeArgument(variableName);
+                    varDefinition.defaultValue = value;
+                } else {
+                    token = check self.readNextNonSeparatorToken();
+                    ArgumentValue value = check getArgumentValue(token);
+                    varDefinition.defaultValue = value;
+                }
                 token = check self.peekNextNonSeparatorToken();
             }
             operationNode.addVariableDefinition(varDefinition);
@@ -246,25 +252,76 @@ public class Parser {
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
             }
-            token = check self.readNextNonSeparatorToken();
-            if token.kind == T_DOLLAR {
-                token = check self.readNextNonSeparatorToken();
-                //send the variable name as argument value of the argument node
-                ArgumentValue varName = check getArgumentValue(token);
-                ArgumentType argType = <ArgumentType>token.kind;
-                ArgumentNode argument = new(name, varName, argType, true);
-                fieldNode.addArgument(argument);
-                token = check self.peekNextNonSeparatorToken();
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_OPEN_BRACE {
+                InputObjectNode inputObjectNode = check self.getInputObjectTypeArgument(name);
+                fieldNode.addArgument(inputObjectNode);
             } else {
-                ArgumentValue value = check getArgumentValue(token);
-                ArgumentType argType = <ArgumentType>token.kind;
-                ArgumentNode argument = new(name, value, argType);
+                InputObjectNode argument = check self.getScalarTypeArgument(name);
                 fieldNode.addArgument(argument);
-                token = check self.peekNextNonSeparatorToken();
-            }    
+            }
+            token = check self.peekNextNonSeparatorToken();
         }
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it
         token = check self.readNextNonSeparatorToken();
+    }
+
+    isolated function getInputObjectTypeArgument(ArgumentName name) returns InputObjectNode|Error {
+        InputObjectNode inputObjectNode = new(name.value, name.location, T_IDENTIFIER);
+        map<ArgumentValue|InputObjectNode> valueMap = {};
+        Token token = check self.readNextNonSeparatorToken();// consume open brace here
+        token = check self.peekNextNonSeparatorToken();
+        if token.kind != T_CLOSE_BRACE {
+            while token.kind != T_CLOSE_BRACE {
+                token = check self.readNextNonSeparatorToken();
+                ArgumentName fieldName = check getArgumentName(token);
+                if valueMap.hasKey(fieldName.value) {
+                    return getDuplicateFieldError(token);
+                }
+                token = check self.readNextNonSeparatorToken();
+                if token.kind != T_COLON {
+                    return getExpectedCharError(token, COLON);
+                }
+                token = check self.peekNextNonSeparatorToken();
+                if token.kind == T_OPEN_BRACE {
+                    InputObjectNode nestedInputObjectFields = check self.getInputObjectTypeArgument(fieldName);
+                    valueMap[fieldName.value] = nestedInputObjectFields;
+                } else if token.kind == T_DOLLAR {
+                    token = check self.readNextNonSeparatorToken();
+                    token = check self.readNextNonSeparatorToken();
+                    string varName = check getIdentifierTokenvalue(token);
+                    InputObjectNode nestedVariableFields = new(fieldName.value, token.location, T_IDENTIFIER, true);
+                    nestedVariableFields.addVariableName(varName);
+                    valueMap[fieldName.value] = nestedVariableFields;
+                } else {
+                    token = check self.readNextNonSeparatorToken();
+                    ArgumentValue fieldValue = check getArgumentValue(token);
+                    valueMap[fieldName.value] = fieldValue;
+                }
+                token = check self.peekNextNonSeparatorToken();
+            }
+            inputObjectNode.addValue(valueMap);
+        }
+        token = check self.readNextNonSeparatorToken(); // consume close brace here
+        return inputObjectNode;
+    }
+
+    isolated function getScalarTypeArgument(ArgumentName name) returns InputObjectNode|Error {
+        Token token = check self.readNextNonSeparatorToken();
+        if token.kind == T_DOLLAR {
+            token = check self.readNextNonSeparatorToken();
+            string varName = check getIdentifierTokenvalue(token);
+            ArgumentType argType = <ArgumentType>token.kind;
+            InputObjectNode argument = new(name.value, token.location, argType, true);
+            argument.addVariableName(varName);
+            return argument;
+        } else {
+            ArgumentValue value = check getArgumentValue(token);
+            ArgumentType argType = <ArgumentType>token.kind;
+            InputObjectNode argument = new(name.value, name.location, argType);
+            argument.addValue(value);
+            return argument;
+        }
     }
 
     isolated function getNameWhenAliasPresent(string alias) returns string|Error {
