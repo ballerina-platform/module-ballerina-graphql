@@ -1,0 +1,15 @@
+{
+    search {
+        __typename
+        ...StudentFragment
+        ...TeacherFragment
+    }
+}
+
+fragment StudentFragment on StudentService {
+    name
+}
+
+fragment TeacherFragment on TeacherService {
+    subject
+}

@@ -96,7 +96,6 @@ public class EngineUtils {
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
     static final BString ENGINE_FIELD = StringUtils.fromString("engine");
     static final BString DATA_FIELD = StringUtils.fromString("data");
-    static final BString SCHEMA_FIELD = StringUtils.fromString("schema");
 
     // Record Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
@@ -113,6 +112,9 @@ public class EngineUtils {
     static final BString IS_FRAGMENT_FIELD = StringUtils.fromString("isFragment");
     static final BString NODE_FIELD = StringUtils.fromString("node");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
+
+    // Query Fields
+    public static final String TYPENAME_FIELD = "__typename";
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";

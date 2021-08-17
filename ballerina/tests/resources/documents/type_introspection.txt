@@ -1,0 +1,8 @@
+{
+    __type(name: "Person") {
+        kind
+        fields {
+            name
+        }
+    }
+}

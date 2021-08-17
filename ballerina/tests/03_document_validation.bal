@@ -23,7 +23,7 @@ isolated function testRequestSubtypeFromPrimitiveType() returns error? {
     string graphqlUrl = "http://localhost:9091/validation";
     string document = "{ name { first } }";
     json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = string`Field "name" must not have a selection since type "String" has no subfields.`;
+    string expectedMessage = string`Field "name" must not have a selection since type "String!" has no subfields.`;
     json expectedPayload = {
         errors: [
             {
@@ -31,7 +31,7 @@ isolated function testRequestSubtypeFromPrimitiveType() returns error? {
                 locations: [
                     {
                         line: 1,
-                        column: 10
+                        column: 3
                     }
                 ]
             }

@@ -19,8 +19,8 @@ import graphql.parser;
 class ValidatorVisitor {
     *parser:Visitor;
 
-    private __Schema schema;
-    private parser:DocumentNode documentNode;
+    private final __Schema schema;
+    private final parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
 
@@ -57,95 +57,58 @@ class ValidatorVisitor {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = <__Type>getOfType(parentField.'type);
-        if (parentType.kind == UNION) {
-            if (!selection.isFragment) {
-                string message = getInvalidFieldOnUnionTypeError(selection.name, parentType);
-                self.errors.push(getErrorDetailRecord(message, selection.location));
-                return;
-            } else {
-                parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
-                __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes,
-                                                            fragmentNode.getOnType());
-                if (requiredType is __Type) {
-                    parentField = createField(requiredType?.name.toString(), requiredType);
-                    self.visitFragment(fragmentNode, parentField);
-                } else {
-                    string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
-                    self.errors.push(getErrorDetailRecord(message, <Location>selection?.spreadLocation));
-                }
-            }
+        if parentType.kind == UNION {
+            self.validateUnionTypeField(selection, parentType, parentField);
             return;
         }
-        if (selection.isFragment) {
+        if selection.isFragment {
             // This will be nil if the fragment is not found. The error is recorded in the fragment visitor.
             // Therefore nil value is ignored.
             var node = selection?.node;
-            if (node is ()) {
+            if node is () {
                 return;
             }
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType?.name);
-            if (fragmentOnType is __Type) {
+            if fragmentOnType is __Type {
                 parentField = createField(fragmentOnType?.name.toString(), fragmentOnType);
                 parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
                 self.visitFragment(fragmentNode, parentField);
             }
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            if (selection.name == SCHEMA_FIELD) {
-                __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
-                parentField = createField(selection.name, schemaType);
-                if (fieldNode.getSelections().length() == 0) {
-                    string message = getMissingSubfieldsError(fieldNode.getName(), SCHEMA_TYPE_NAME);
-                    self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
-                    return;
-                }
-                foreach parser:Selection subSelection in fieldNode.getSelections() {
-                    self.visitSelection(subSelection, parentField);
-                }
-            } else {
-                self.visitField(fieldNode, parentField);
-            }
+            self.visitField(fieldNode, parentField);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = getOfType(parentField.'type);
-
-        __Field[] fields = parentType?.fields == () ? [] : <__Field[]>parentType?.fields;
-        if (fields.length() == 0) {
-            string message = getNoSubfieldsErrorMessage(parentField.name, parentType);
+        __Field? requiredFieldValue = self.getRequierdFieldFromType(parentType, fieldNode);
+        if requiredFieldValue is () {
+            string message = getFieldNotFoundErrorMessageFromType(fieldNode.getName(), parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         }
+        __Field requiredField = <__Field>requiredFieldValue;
+        __Type fieldType = getOfType(requiredField.'type);
+        __Field[] subFields = getFieldsArrayFromType(fieldType);
+        self.checkArguments(parentType, fieldNode, requiredField);
 
-        string requiredFieldName = fieldNode.getName();
-        __Field? schemaFieldValue = getFieldFromFieldArray(fields, requiredFieldName);
-        if (schemaFieldValue is ()) {
-            string message = getFieldNotFoundErrorMessageFromType(requiredFieldName, parentType);
+        if !hasFields(fieldType) && fieldNode.getSelections().length() == 0 {
+            return;
+        } else if !hasFields(fieldType) && fieldNode.getSelections().length() > 0 {
+            string message = getNoSubfieldsErrorMessage(requiredField);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
-        }
-
-        __Field schemaField = <__Field>schemaFieldValue;
-        self.checkArguments(parentType, fieldNode, schemaField);
-
-        __Type fieldType = getOfType(schemaField.'type);
-        parser:Selection[] selections = fieldNode.getSelections();
-
-        if (hasFields(fieldType) && selections.length() == 0) {
-            string message = getMissingSubfieldsErrorFromType(requiredFieldName, schemaField.'type);
+        } else if hasFields(fieldType) && fieldNode.getSelections().length() == 0 {
+            // TODO: The location of this error should be the location of open brace after the field node.
+            // Currently, we use the field location for this.
+            string message = getMissingSubfieldsErrorFromType(requiredField);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
-        }
-
-        foreach parser:Selection subSelection in selections {
-            if (fieldType.kind == LIST || fieldType.kind == NON_NULL) {
-                __Type? ofType = fieldType?.ofType;
-                if (ofType is __Type) {
-                    self.visitSelection(subSelection, schemaField);
-                }
-            } else {
-                self.visitSelection(subSelection, schemaField);
+            return;
+        } else {
+            foreach parser:Selection selection in fieldNode.getSelections() {
+                self.visitSelection(selection, requiredField);
             }
         }
     }
@@ -160,7 +123,7 @@ class ValidatorVisitor {
             map<parser:ArgumentValue|parser:InputObjectNode> inputObjectValue =
                 <map<parser:ArgumentValue|parser:InputObjectNode>>value;
             string actualTypeName = getTypeName(argumentNode);
-            if argumentNode.isVariableDefinition() {//decimal
+            if argumentNode.isVariableDefinition() {
                 if argumentNode.getVariableValue() is Scalar {
                     parser:ArgumentValue argValue = <parser:ArgumentValue>
                         {value: <Scalar>argumentNode.getVariableValue(), location: argumentNode.getLocation()};
@@ -284,7 +247,30 @@ class ValidatorVisitor {
         __Field parentField = <__Field>data;
         __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
         foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, parentField);
+            self.visitSelection(selection, data);
+        }
+    }
+
+    isolated function validateUnionTypeField(parser:Selection selection, __Type parentType, __Field parentField) {
+        if !selection.isFragment {
+            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
+            __Field? subField = self.getRequierdFieldFromType(parentType, fieldNode);
+            if subField is __Field {
+                self.visitField(fieldNode, subField);
+            } else {
+                string message = getInvalidFieldOnUnionTypeError(selection.name, parentType);
+                self.errors.push(getErrorDetailRecord(message, selection.location));
+            }
+        } else {
+            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
+            __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, fragmentNode.getOnType());
+            if requiredType is __Type {
+                __Field subField = createField(parentField.name, requiredType);
+                self.visitFragment(fragmentNode, subField);
+            } else {
+                string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
+                self.errors.push(getErrorDetailRecord(message, <Location>selection?.spreadLocation));
+            }
         }
     }
 
@@ -387,7 +373,7 @@ class ValidatorVisitor {
             self.errors.push(errorDetail);
             return;
         }
-        __EnumValue[] enumValues = <__EnumValue[]>argType?.enumValues;
+       __EnumValue[] enumValues = <__EnumValue[]>argType?.enumValues;
         foreach __EnumValue enumValue in enumValues {
             if (enumValue.name == value.value) {
                 return;
@@ -409,6 +395,36 @@ class ValidatorVisitor {
             return createField(operationTypeName, 'type);
         }
     }
+
+    isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) returns __Field? {
+        foreach __Field schemaField in fields {
+            if schemaField.name == fieldName {
+                return schemaField;
+            }
+        }
+    }
+
+    isolated function getRequierdFieldFromType(__Type parentType, parser:FieldNode fieldNode) returns __Field? {
+        __Field[] fields = getFieldsArrayFromType(parentType);
+        __Field? requiredField = self.getFieldFromFieldArray(fields, fieldNode.getName());
+        if requiredField is () {
+            if fieldNode.getName() == SCHEMA_FIELD && parentType?.name == QUERY_TYPE_NAME {
+                __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
+                requiredField = createField(SCHEMA_FIELD, fieldType);
+            } else if fieldNode.getName() == TYPE_FIELD && parentType?.name == QUERY_TYPE_NAME {
+                __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
+                __Type argumentType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
+                __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
+                __InputValue[] args = [{ name: NAME_ARGUMENT, 'type: wrapperType }];
+                requiredField = createField(TYPE_FIELD, fieldType, args);
+            } else if fieldNode.getName() == TYPE_NAME_FIELD {
+                __Type ofType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
+                __Type wrappingType = { kind: NON_NULL, ofType: ofType };
+                requiredField = createField(TYPE_NAME_FIELD, wrappingType);
+            }
+        }
+        return requiredField;
+    }
 }
 
 isolated function copyInputValueArray(__InputValue[] original) returns __InputValue[] {
@@ -427,19 +443,11 @@ isolated function getInputValueFromArray(__InputValue[] inputValues, string name
     }
 }
 
-isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) returns __Field? {
-    foreach __Field schemaField in fields {
-        if (schemaField.name == fieldName) {
-            return schemaField;
-        }
-    }
-}
-
 isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
     foreach __Type schemaType in types {
         __Type ofType = getOfType(schemaType);
         if (ofType?.name.toString() == typeName) {
-            return schemaType;
+            return ofType;
         }
     }
 }
@@ -473,10 +481,15 @@ isolated function getOperationTypeNameFromOperationType(parser:RootOperationType
     }
 }
 
-isolated function createField(string fieldName, __Type fieldType) returns __Field {
+isolated function createField(string fieldName, __Type fieldType, __InputValue[] args = []) returns __Field {
     return {
         name: fieldName,
         'type: fieldType,
-        args: []
+        args: args
     };
+}
+
+isolated function getFieldsArrayFromType(__Type 'type) returns __Field[] {
+    __Field[]? fields = 'type?.fields;
+    return fields == () ? [] : fields;
 }

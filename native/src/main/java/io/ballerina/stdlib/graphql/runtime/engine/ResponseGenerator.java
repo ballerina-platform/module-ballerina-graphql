@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
-import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
@@ -45,6 +44,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPENAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpdateResourcePathsList;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
@@ -59,66 +59,65 @@ public class ResponseGenerator {
     private ResponseGenerator() {
     }
 
-    static void populateResponse(Environment environment, BObject visitor, BObject node, Object result,
-                                 BMap<BString, Object> data, List<Object> pathSegments,
-                                 CallbackHandler callbackHandler) {
-        if (result instanceof BError) {
+    static void populateResponse(ExecutionContext executionContext, BObject node, Object result,
+                                 BMap<BString, Object> data, List<Object> pathSegments) {
+        if (TYPENAME_FIELD.equals(node.getStringValue(NAME_FIELD).getValue())) {
+            data.put(node.getStringValue(ALIAS_FIELD), StringUtils.fromString(executionContext.getTypeName()));
+        } else if (result instanceof BError) {
             BError bError = (BError) result;
-            appendErrorToVisitor(bError, visitor, node, pathSegments);
+            appendErrorToVisitor(bError, executionContext.getVisitor(), node, pathSegments);
         } else if (result instanceof BValue) {
             int tag = ((BValue) result).getType().getTag();
             if (tag < TypeTags.JSON_TAG) {
                 data.put(node.getStringValue(ALIAS_FIELD), result);
             } else if (tag == TypeTags.RECORD_TYPE_TAG) {
-                getDataFromRecord(environment, visitor, node, (BMap<BString, Object>) result, data, pathSegments,
-                                  callbackHandler);
+                getDataFromRecord(executionContext, node, (BMap<BString, Object>) result, data, pathSegments);
             } else if (tag == TypeTags.MAP_TAG) {
-                getDataFromMap(environment, visitor, node, (BMap<BString, Object>) result, data, pathSegments,
-                               callbackHandler);
+                getDataFromMap(executionContext, node, (BMap<BString, Object>) result, data, pathSegments);
             } else if (tag == TypeTags.ARRAY_TAG) {
-                getDataFromArray(environment, visitor, node, (BArray) result, data, pathSegments, callbackHandler);
+                getDataFromArray(executionContext, node, (BArray) result, data, pathSegments);
             } else if (tag == TypeTags.TABLE_TAG) {
-                getDataFromTable(environment, visitor, node, (BTable) result, data, pathSegments, callbackHandler);
+                getDataFromTable(executionContext, node, (BTable) result, data, pathSegments);
             } else if (tag == TypeTags.SERVICE_TAG) {
-                getDataFromService(environment, (BObject) result, visitor, node, data, new ArrayList<>(),
-                                   pathSegments, callbackHandler);
+                getDataFromService(executionContext, (BObject) result, node, data, new ArrayList<>(), pathSegments);
             } // Here, `else` should not be reached.
         } else {
             data.put(node.getStringValue(ALIAS_FIELD), result);
         }
     }
 
-
-    static void getDataFromService(Environment environment, BObject service, BObject visitor, BObject node,
-                                   BMap<BString, Object> data, List<String> paths, List<Object> pathSegments,
-                                   CallbackHandler handler) {
-        ResourceCallback callback =
-                new ResourceCallback(environment, visitor, node, createDataRecord(), handler, pathSegments);
-        handler.addCallback(callback);
+    static void getDataFromService(ExecutionContext executionContext, BObject service, BObject node,
+                                   BMap<BString, Object> data, List<String> paths, List<Object> pathSegments) {
+        ResourceCallback callback = new ResourceCallback(executionContext, node, createDataRecord(), pathSegments);
+        executionContext.getCallbackHandler().addCallback(callback);
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         BMap<BString, Object> subData = createDataRecord();
-        for (int i = 0; i < selections.size(); i++) {
-            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
-            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
-            BObject subNode = selection.getObjectValue(NODE_FIELD);
-            if (isFragment) {
-                if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
-                    executeResourceForFragmentNodes(environment, service, visitor, subNode, subData, paths,
-                                                    pathSegments, handler);
+        if (TYPENAME_FIELD.equals(node.getStringValue(NAME_FIELD).getValue())) {
+            data.put(node.getStringValue(ALIAS_FIELD), StringUtils.fromString(executionContext.getTypeName()));
+        } else {
+            executionContext.setTypeName(service.getType().getName());
+            for (int i = 0; i < selections.size(); i++) {
+                BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
+                boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
+                BObject subNode = selection.getObjectValue(NODE_FIELD);
+                if (isFragment) {
+                    if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
+                        executeResourceForFragmentNodes(executionContext, service, subNode, subData, paths,
+                                                        pathSegments);
+                    }
+                } else {
+                    executeResourceWithPath(executionContext, subNode, service, subData, paths, pathSegments);
                 }
-            } else {
-                executeResourceWithPath(environment, visitor, subNode, service, subData, paths, pathSegments,
-                                        handler);
+                data.put(node.getStringValue(ALIAS_FIELD), subData);
             }
-            data.put(node.getStringValue(ALIAS_FIELD), subData);
         }
-        handler.markComplete(callback);
+        executionContext.getCallbackHandler().markComplete(callback);
     }
 
-    static void getDataFromRecord(Environment environment, BObject visitor, BObject node, BMap<BString, Object> record,
-                                  BMap<BString, Object> data, List<Object> pathSegments,
-                                  CallbackHandler callbackHandler) {
+    static void getDataFromRecord(ExecutionContext executionContext, BObject node, BMap<BString, Object> record,
+                                  BMap<BString, Object> data, List<Object> pathSegments) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
+        executionContext.setTypeName(record.getType().getName());
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
@@ -126,32 +125,29 @@ public class ResponseGenerator {
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
                 if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getNameFromRecordTypeMap(record))) {
-                    processFragmentNodes(environment, visitor, subNode, record, subData, pathSegments, callbackHandler);
+                    processFragmentNodes(executionContext, subNode, record, subData, pathSegments);
                 }
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
                 List<Object> updatedPathSegments =
                         updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
-                populateResponse(environment, visitor, subNode, fieldValue, subData, updatedPathSegments,
-                                 callbackHandler);
+                populateResponse(executionContext, subNode, fieldValue, subData, updatedPathSegments);
             }
         }
         data.put(node.getStringValue(ALIAS_FIELD), subData);
     }
 
-    static void getDataFromMap(Environment environment, BObject visitor, BObject node, BMap<BString, Object> map,
-                               BMap<BString, Object> data, List<Object> pathSegments,
-                               CallbackHandler callbackHandler) {
+    static void getDataFromMap(ExecutionContext executionContext, BObject node, BMap<BString, Object> map,
+                               BMap<BString, Object> data, List<Object> pathSegments) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
         BString key = arguments.getStringValue(StringUtils.fromString(KEY));
         Object result = map.get(key);
-        populateResponse(environment, visitor, node, result, data, pathSegments, callbackHandler);
+        populateResponse(executionContext, node, result, data, pathSegments);
     }
 
-    static void getDataFromArray(Environment environment, BObject visitor, BObject node, BArray result,
-                                 BMap<BString, Object> data, List<Object> pathSegments,
-                                 CallbackHandler callbackHandler) {
+    static void getDataFromArray(ExecutionContext executionContext, BObject node, BArray result,
+                                 BMap<BString, Object> data, List<Object> pathSegments) {
         if (isScalarType(result.getElementType())) {
             data.put(node.getStringValue(ALIAS_FIELD), result);
         } else {
@@ -160,70 +156,62 @@ public class ResponseGenerator {
                 List<Object> updatedPathSegments = updatePathSegments(pathSegments, i);
                 Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
-                populateResponse(environment, visitor, node, resultElement, subData, updatedPathSegments,
-                                 callbackHandler);
+                populateResponse(executionContext, node, resultElement, subData, updatedPathSegments);
                 resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
             }
             data.put(node.getStringValue(ALIAS_FIELD), resultArray);
         }
     }
 
-    private static void getDataFromTable(Environment environment, BObject visitor, BObject node, BTable table,
-                                         BMap<BString, Object> data, List<Object> pathSegments,
-                                         CallbackHandler callbackHandler) {
+    private static void getDataFromTable(ExecutionContext executionContext, BObject node, BTable table,
+                                         BMap<BString, Object> data, List<Object> pathSegments) {
         Object[] valueArray = table.values().toArray();
         ArrayType arrayType = TypeCreator.createArrayType(((BValue) valueArray[0]).getType());
         BArray valueBArray = ValueCreator.createArrayValue(valueArray, arrayType);
-        populateResponse(environment, visitor, node, valueBArray, data, pathSegments, callbackHandler);
+        populateResponse(executionContext, node, valueBArray, data, pathSegments);
     }
 
-    static void processFragmentNodes(Environment environment, BObject visitor, BObject node,
-                                     BMap<BString, Object> record, BMap<BString, Object> data,
-                                     List<Object> pathSegments,
-                                     CallbackHandler callbackHandler) {
+    static void processFragmentNodes(ExecutionContext executionContext, BObject node, BMap<BString, Object> record,
+                                     BMap<BString, Object> data, List<Object> pathSegments) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                processFragmentNodes(environment, visitor, subNode, record, data, pathSegments, callbackHandler);
+                processFragmentNodes(executionContext, subNode, record, data, pathSegments);
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
                 Object fieldValue = record.get(fieldName);
-                List<Object> updatedPathSegments =
-                        updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
-                populateResponse(environment, visitor, subNode, fieldValue, data, updatedPathSegments,
-                                 callbackHandler);
+                List<Object> updatedPathSegments = updatePathSegments(pathSegments,
+                                                                      node.getStringValue(NAME_FIELD).getValue());
+                populateResponse(executionContext, subNode, fieldValue, data, updatedPathSegments);
             }
         }
     }
 
-    private static void executeResourceForFragmentNodes(Environment environment, BObject service, BObject visitor,
+    private static void executeResourceForFragmentNodes(ExecutionContext executionContext, BObject service,
                                                         BObject node, BMap<BString, Object> data, List<String> paths,
-                                                        List<Object> pathSegments, CallbackHandler callbackHandler) {
+                                                        List<Object> pathSegments) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
             BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
             boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
             BObject subNode = selection.getObjectValue(NODE_FIELD);
             if (isFragment) {
-                executeResourceForFragmentNodes(environment, service, visitor, subNode, data, paths, pathSegments,
-                                                callbackHandler);
+                executeResourceForFragmentNodes(executionContext, service, subNode, data, paths, pathSegments);
             } else {
-                executeResourceWithPath(environment, visitor, subNode, service, data, paths, pathSegments,
-                                        callbackHandler);
+                executeResourceWithPath(executionContext, subNode, service, data, paths, pathSegments);
             }
         }
     }
 
-    private static void executeResourceWithPath(Environment environment, BObject visitor, BObject node, BObject service,
+    private static void executeResourceWithPath(ExecutionContext executionContext, BObject node, BObject service,
                                                 BMap<BString, Object> data, List<String> paths,
-                                                List<Object> pathSegments, CallbackHandler callbackHandler) {
+                                                List<Object> pathSegments) {
         List<String> updatedPaths = copyAndUpdateResourcePathsList(paths, node);
         List<Object> updatedPathSegments = updatePathSegments(pathSegments, node.getStringValue(NAME_FIELD).getValue());
-        executeResourceMethod(environment, service, visitor, node, data, updatedPaths, updatedPathSegments,
-                              callbackHandler);
+        executeResourceMethod(executionContext, service, node, data, updatedPaths, updatedPathSegments);
     }
 
     private static ArrayType getDataRecordArrayType() {
