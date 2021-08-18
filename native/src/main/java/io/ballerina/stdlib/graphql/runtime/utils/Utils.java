@@ -40,11 +40,11 @@ public class Utils {
 
     public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
                                                                                      getModule().getName(),
-                                                                                     getModule().getVersion(),
+                                                                                     getModule().getMajorVersion(),
                                                                                      EXECUTE_SERVICE_FUNCTION);
     public static final StrandMetadata REMOTE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
                                                                                    getModule().getName(),
-                                                                                   getModule().getVersion(),
+                                                                                   getModule().getMajorVersion(),
                                                                                    EXECUTE_MUTATION_FUNCTION);
 
     public static BError createError(String message, String errorTypeName) {
