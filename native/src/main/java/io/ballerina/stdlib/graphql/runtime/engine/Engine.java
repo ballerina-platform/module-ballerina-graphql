@@ -20,12 +20,13 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.Parameter;
+import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.MethodType;
+import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
-import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -127,7 +128,8 @@ public class Engine {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments);
+                getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
+                                   RESOURCE_STRAND_METADATA);
                 return;
             }
         }
@@ -141,33 +143,23 @@ public class Engine {
         BString fieldName = node.getStringValue(NAME_FIELD);
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(fieldName.getValue())) {
-                getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments);
+                getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments,
+                                   REMOTE_STRAND_METADATA);
                 return;
             }
         }
     }
 
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
-                                           ResourceMethodType resourceMethod, BMap<BString, Object> data,
-                                           List<Object> pathSegments) {
+                                           MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
+                                           StrandMetadata strandMetadata) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), arguments);
+        Object[] args = getArgsForMethod(method, arguments);
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null,
-                                                                         RESOURCE_STRAND_METADATA, callback, args);
-    }
-
-    private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
-                                           RemoteMethodType remoteMethod, BMap<BString, Object> data,
-                                           List<Object> pathSegments) {
-        BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), arguments);
-        ResourceCallback callback = new ResourceCallback(executionContext, node, data, pathSegments);
-        executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null,
-                                                                         REMOTE_STRAND_METADATA, callback, args);
+        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, method.getName(), null,
+                                                                         strandMetadata, callback, args);
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
@@ -184,11 +176,12 @@ public class Engine {
         return argumentsMap;
     }
 
-    private static Object[] getArgsForMethod(Parameter[] parameters, Type[] types, BMap<BString, Object> arguments) {
+    private static Object[] getArgsForMethod(MethodType method, BMap<BString, Object> arguments) {
+        Parameter[] parameters = method.getParameters();
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[j] = types[i].getZeroValue();
+                result[j] = parameters[i].type.getZeroValue();
                 result[j + 1] = false;
             } else {
                 result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
