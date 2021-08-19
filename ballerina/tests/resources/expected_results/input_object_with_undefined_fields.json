@@ -1,20 +1,20 @@
 {
     "errors": [
         {
-            "message": "Field \"year\" is not defined by type \"movie\".",
-            "locations": [
-                {
-                    "line": 2,
-                    "column": 139
-                }
-            ]
-        },
-        {
             "message": "Field \"address\" is not defined by type \"author\".",
             "locations": [
                 {
                     "line": 2,
                     "column": 93
+                }
+            ]
+        },
+        {
+            "message": "Field \"year\" is not defined by type \"movie\".",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 139
                 }
             ]
         }

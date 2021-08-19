@@ -113,15 +113,15 @@ class ValidatorVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:InputObjectNode argumentNode, anydata data = ()) {
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>(<map<anydata>>data).get("input");
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
         __Type argType = getOfType(schemaArg.'type);
         string expectedTypeName = argType?.name.toString();
-        parser:ArgumentValue|map<parser:ArgumentValue|parser:InputObjectNode> value = argumentNode.getValue();
+        parser:ArgumentValue|map<parser:ArgumentValue|parser:ArgumentNode> value = argumentNode.getValue();
         if isInputObject(value) {
-            map<parser:ArgumentValue|parser:InputObjectNode> inputObjectValue =
-                <map<parser:ArgumentValue|parser:InputObjectNode>>value;
+            map<parser:ArgumentValue|parser:ArgumentNode> inputObjectValue =
+                <map<parser:ArgumentValue|parser:ArgumentNode>>value;
             string actualTypeName = getTypeName(argumentNode);
             if argumentNode.isVariableDefinition() {
                 if argumentNode.getVariableValue() is Scalar {
@@ -145,31 +145,31 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function visitInputObject(parser:InputObjectNode inputObjectNode, anydata data = ()) {
+    isolated function visitInputObject(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue inputValue = <__InputValue>(<map<anydata>>data).get("input");
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
         __Type argType = getOfType(inputValue.'type);
         string expectedTypeName = argType?.name.toString();
-        __Field[] fields = <__Field[]>argType?.fields;
-        map<parser:ArgumentValue|parser:InputObjectNode> inputObjectFields =
-            <map<parser:ArgumentValue|parser:InputObjectNode>>inputObjectNode.getValue();
-        self.validateInputObjectFields(inputObjectNode, fields);
-        foreach __Field 'field in fields {
-            __Type subArgType = getOfType('field.'type);
+        __InputValue[] inputFields = <__InputValue[]>argType?.inputFields;
+        map<parser:ArgumentValue|parser:ArgumentNode> inputObjectFields =
+            <map<parser:ArgumentValue|parser:ArgumentNode>>argumentNode.getValue();
+        self.validateInputObjectFields(argumentNode, inputFields);
+        foreach __InputValue inputField in inputFields {
+            __Type subArgType = getOfType(inputField.'type);
             expectedTypeName = subArgType?.name.toString();
-            __InputValue subInputValue = <__InputValue> getInputValueFromArray('field?.args, 'field.name);
-            if inputObjectFields.hasKey('field.name) {
-                parser:ArgumentValue|parser:InputObjectNode fieldValue = inputObjectFields.get('field.name);
-                if fieldValue is parser:InputObjectNode {
+            __InputValue subInputValue = inputField;
+            if inputObjectFields.hasKey(inputField.name) {
+                parser:ArgumentValue|parser:ArgumentNode fieldValue = inputObjectFields.get(inputField.name);
+                if fieldValue is parser:ArgumentNode {
                     self.visitArgument(fieldValue, {input:subInputValue, fieldName:fieldName});
                 } else {
-                    self.validateArgumentValue(fieldValue, getTypeNameFromValue(fieldValue.value), subInputValue);
+                    self.validateArgumentValue(fieldValue, getTypeNameFromValue(<Scalar>fieldValue.value), subInputValue);
                 }
             } else {
                 if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
                     string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type ` +
                     string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
-                    self.errors.push(getErrorDetailRecord(message, inputObjectNode.getLocation()));
+                    self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                 }
             }
         }
@@ -195,17 +195,17 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateInputObjectVariableValue(map<anydata> value, __InputValue inputValue, Location location,
+    isolated function validateInputObjectVariableValue(map<anydata> variableValues, __InputValue inputValue, Location location,
                                                        string fieldName) {
         __Type argType = getOfType(inputValue.'type);
-        __Field[] fields = <__Field[]>argType?.fields;
+        __InputValue[] inputFields = <__InputValue[]>argType?.inputFields;
         string expectedTypeName = argType?.name.toString();
-        foreach __Field 'field in fields {
-            __Type subArgType = getOfType('field.'type);
+        foreach __InputValue inputField in inputFields {
+            __Type subArgType = getOfType(inputField.'type);
             expectedTypeName = subArgType?.name.toString();
-            __InputValue subInputValue = <__InputValue> getInputValueFromArray('field?.args, 'field.name);
-            if value.hasKey('field.name) {
-                anydata fieldValue = value.get('field.name);
+            __InputValue subInputValue = inputField;
+            if variableValues.hasKey(inputField.name) {
+                anydata fieldValue = variableValues.get(inputField.name);
                 if fieldValue is Scalar {
                     parser:ArgumentValue argValue = {value: <Scalar>fieldValue, location: location};
                     if subArgType.kind == ENUM {
@@ -218,7 +218,7 @@ class ValidatorVisitor {
                 } else if fieldValue is decimal {
                     if expectedTypeName == FLOAT {
                         parser:ArgumentValue argValue = {value: <float>fieldValue, location: location};
-                        self.validateArgumentValue(argValue, getTypeNameFromValue(fieldValue), subInputValue);
+                        self.validateArgumentValue(argValue, FLOAT, subInputValue);
                     } else {
                         string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: `+
                         string`${fieldValue.toString()}`;
@@ -227,11 +227,6 @@ class ValidatorVisitor {
                     }
                 } else if fieldValue is map<anydata> {
                     self.validateInputObjectVariableValue(<map<anydata>>fieldValue, subInputValue, location, fieldName);
-                } else {
-                    string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: `+
-                    string`${fieldValue.toString()}`;
-                    ErrorDetail errorDetail = getErrorDetailRecord(message, location);
-                    self.errors.push(errorDetail);
                 }
             } else {
                 if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
@@ -278,8 +273,8 @@ class ValidatorVisitor {
         argument.value = <float>argument.value;
     }
 
-    isolated function coerceInputVariableIntToFloat(string name, map<anydata> value) {
-        value[name] = <float>value.get(name);
+    isolated function coerceInputVariableIntToFloat(string name, map<anydata> inputValues) {
+        inputValues[name] = <float>inputValues.get(name);
     }
 
     isolated function getErrors() returns ErrorDetail[] {
@@ -287,13 +282,13 @@ class ValidatorVisitor {
     }
 
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
-        parser:InputObjectNode[] arguments = fieldNode.getArguments();
-        __InputValue[]? inputValues = schemaField?.args;
+        parser:ArgumentNode[] arguments = fieldNode.getArguments();
+        __InputValue[] inputValues = schemaField.args;
         __InputValue[] notFoundInputValues = [];
 
-        if (inputValues is ()) {
+        if (inputValues.length() == 0) {
             if (arguments.length() > 0) {
-                foreach parser:InputObjectNode argumentNode in arguments {
+                foreach parser:ArgumentNode argumentNode in arguments {
                     string argName = argumentNode.getName();
                     string parentName = parentType?.name is string ? <string>parentType?.name : "";
                     string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
@@ -302,7 +297,7 @@ class ValidatorVisitor {
             }
         } else {
             notFoundInputValues = copyInputValueArray(inputValues);
-            foreach parser:InputObjectNode argumentNode in arguments {
+            foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName();
                 __InputValue? inputValue = getInputValueFromArray(inputValues, argName);
                 if (inputValue is __InputValue) {
@@ -344,18 +339,18 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateInputObjectFields(parser:InputObjectNode node, __Field[] schemaFields) {
-        map<parser:ArgumentValue|parser:InputObjectNode> inputObjectFields =
-            <map<parser:ArgumentValue|parser:InputObjectNode>>node.getValue();
+    isolated function validateInputObjectFields(parser:ArgumentNode node, __InputValue[] schemaFields) {
+        map<parser:ArgumentValue|parser:ArgumentNode> inputObjectFields =
+            <map<parser:ArgumentValue|parser:ArgumentNode>>node.getValue();
         string[] undefinedFields = inputObjectFields.keys();
-        foreach __Field fields in schemaFields {
+        foreach __InputValue fields in schemaFields {
             if !(undefinedFields.indexOf(fields.name) is ()) {
                 _ = undefinedFields.remove(<int>undefinedFields.indexOf(fields.name));
             }
         }
         foreach string name in undefinedFields {
             string message = string`Field "${name}" is not defined by type "${node.getName()}".`;
-            parser:ArgumentValue|parser:InputObjectNode fieldValue = inputObjectFields.get(name);
+            parser:ArgumentValue|parser:ArgumentNode fieldValue = inputObjectFields.get(name);
             if fieldValue is parser:ArgumentValue {
                 self.errors.push(getErrorDetailRecord(message, fieldValue.location));
             } else {
@@ -459,9 +454,9 @@ isolated function hasFields(__Type fieldType) returns boolean {
     return false;
 }
 
-isolated function isInputObject(parser:ArgumentValue|map<parser:ArgumentValue|parser:InputObjectNode> argument)
+isolated function isInputObject(parser:ArgumentValue|map<parser:ArgumentValue|parser:ArgumentNode> argument)
     returns boolean {
-    if argument is map<parser:ArgumentValue|parser:InputObjectNode> {
+    if argument is map<parser:ArgumentValue|parser:ArgumentNode> {
         return true;
     }
     return false;

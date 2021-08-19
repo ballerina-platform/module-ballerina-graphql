@@ -455,22 +455,34 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_22");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 5);
+        Assert.assertEquals(diagnosticResult.errorCount(), 9);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM_INPUT_OBJECT, 35, 42);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 35, 42);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM_INPUT_OBJECT, 44, 37);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 44, 37);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, 57, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM_INPUT_OBJECT, 73, 50);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 73, 50);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM_INPUT_OBJECT, 79, 42);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 79, 42);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 91, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 106, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 118, 39);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 130, 40);
     }
 
     private Package loadPackage(String path) {

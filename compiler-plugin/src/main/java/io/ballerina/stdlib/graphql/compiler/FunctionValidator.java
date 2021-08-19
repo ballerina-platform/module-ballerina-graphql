@@ -60,8 +60,8 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
  */
 public class FunctionValidator {
     private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
-    private final List<TypeSymbol> existInputObjectTypes = new ArrayList<>();
-    private final List<TypeSymbol> existReturnTypes = new ArrayList<>();
+    private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
+    private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
 
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
@@ -81,8 +81,8 @@ public class FunctionValidator {
                 }
             }
         }
-        existInputObjectTypes.clear();
-        existReturnTypes.clear();
+        existingInputObjectTypes.clear();
+        existingReturnTypes.clear();
         if (!resourceFunctionFound) {
             updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
@@ -140,7 +140,7 @@ public class FunctionValidator {
 
     private void validateReturnType(TypeSymbol returnTypeDesc,
                                     Location location, SyntaxNodeAnalysisContext context) {
-        if (existInputObjectTypes.contains(returnTypeDesc)) {
+        if (existingInputObjectTypes.contains(returnTypeDesc)) {
             updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
         } else if (returnTypeDesc.typeKind() == TypeDescKind.ANY || returnTypeDesc.typeKind() == TypeDescKind.ANYDATA) {
             updateContext(context, CompilationError.INVALID_RETURN_TYPE_ANY, location);
@@ -169,10 +169,10 @@ public class FunctionValidator {
             TypeDefinitionSymbol typeDefinitionSymbol =
                     (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
             if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                if (existInputObjectTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
+                if (existingInputObjectTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
                     updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
                 } else {
-                    existReturnTypes.add(typeReferenceTypeSymbol.typeDescriptor());
+                    existingReturnTypes.add(typeReferenceTypeSymbol.typeDescriptor());
                 }
                 validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
             }
@@ -202,7 +202,7 @@ public class FunctionValidator {
                             TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol)
                                     ((TypeReferenceTypeSymbol) param.typeDescriptor()).definition();
                             if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM_INPUT_OBJECT,
+                                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM,
                                         inputLocation);
                             } else {
                                 updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
@@ -242,10 +242,10 @@ public class FunctionValidator {
                 if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
                     return true;
                 } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                    if (existReturnTypes.contains(typeDefinitionSymbol.typeDescriptor())) {
+                    if (existingReturnTypes.contains(typeDefinitionSymbol.typeDescriptor())) {
                         return true;
                     } else {
-                        existInputObjectTypes.add(typeDefinitionSymbol.typeDescriptor());
+                        existingInputObjectTypes.add(typeDefinitionSymbol.typeDescriptor());
                     }
                     Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
                             .typeDescriptor()).fieldDescriptors();
@@ -273,10 +273,10 @@ public class FunctionValidator {
 
     private boolean hasInvalidInputObjectField(TypeReferenceTypeSymbol typeSymbol) {
         if (typeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            if (existReturnTypes.contains(typeSymbol.typeDescriptor())) {
+            if (existingReturnTypes.contains(typeSymbol.typeDescriptor())) {
                 return true;
             }
-            existInputObjectTypes.add(typeSymbol.typeDescriptor());
+            existingInputObjectTypes.add(typeSymbol.typeDescriptor());
             return false;
         }
         return hasInvalidReturnType(typeSymbol.typeDescriptor());
@@ -343,12 +343,26 @@ public class FunctionValidator {
                         if (!isRecordType(returnType)) {
                             updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
                         } else {
-                            if (existInputObjectTypes.contains(returnType)) {
+                            if (existingInputObjectTypes.contains(returnType)) {
                                 updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
                             } else {
-                                existReturnTypes.add(returnType);
-                                recordTypes++;
+                                existingReturnTypes.add(returnType);
                             }
+                            TypeDefinitionSymbol typeDefinitionSymbol =
+                                    (TypeDefinitionSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
+                            Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
+                                    .typeDescriptor()).fieldDescriptors();
+                            for (RecordFieldSymbol fields : memberMap.values()) {
+                                if (fields.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                                    if (existingInputObjectTypes.contains(fields.typeDescriptor())) {
+                                        updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT,
+                                                      location);
+                                    } else {
+                                        existingReturnTypes.add(fields.typeDescriptor());
+                                    }
+                                }
+                            }
+                            recordTypes++;
                         }
                     } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
                         ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();

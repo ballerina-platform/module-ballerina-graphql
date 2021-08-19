@@ -176,11 +176,11 @@ public class Engine {
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
-        getScalarTypeArgument(node, argumentsMap);
+        getArgument(node, argumentsMap);
         return argumentsMap;
     }
 
-    public static void getScalarTypeArgument(BObject node, BMap<BString, Object> argumentsMap) {
+    public static void getArgument(BObject node, BMap<BString, Object> argumentsMap) {
         BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
@@ -197,14 +197,14 @@ public class Engine {
                     argumentsMap.put(argName, argValue);
                 } else {
                     BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
-                    getInputObjectTypeArgument(objectFields, inputObjectFieldMap);
+                    addInputObjectTypeArgument(objectFields, inputObjectFieldMap);
                     argumentsMap.put(argName, inputObjectFieldMap);
                 }
             }
         }
     }
 
-    public static void getInputObjectTypeArgument(BMap<BString, Object> objectFields,
+    public static void addInputObjectTypeArgument(BMap<BString, Object> objectFields,
                                                   BMap<BString, Object> inputObjectMap) {
         for (Map.Entry<BString, Object> entry : objectFields.entrySet()) {
             BString fieldName = entry.getKey();
@@ -225,7 +225,7 @@ public class Engine {
                     Object argValue = objectFields.get(VALUE_FIELD);
                     inputObjectMap.put(fieldName, argValue);
                 } else {
-                    getInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
+                    addInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
                     inputObjectMap.put(fieldName, nestedInputObjectFieldMap);
                 }
             }

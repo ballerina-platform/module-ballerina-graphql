@@ -78,7 +78,7 @@ class ExecutorVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:InputObjectNode argumentNode, anydata data = ()) {
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         // Do nothing
     }
 

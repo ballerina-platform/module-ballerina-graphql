@@ -73,7 +73,7 @@ class DuplicateFieldRemover {
         }
     }
 
-    public isolated function visitArgument(parser:InputObjectNode argumentNode, anydata data = ()) {
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         // Do nothing
     }
 
@@ -165,7 +165,7 @@ class DuplicateFieldRemover {
         foreach parser:Selection selections in duplicate.getSelections() {
             original.addSelection(selections);
         }
-        foreach parser:InputObjectNode arguments in duplicate.getArguments() {
+        foreach parser:ArgumentNode arguments in duplicate.getArguments() {
             original.addArgument(arguments);
         }
     }

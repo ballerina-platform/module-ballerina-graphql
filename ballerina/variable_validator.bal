@@ -75,7 +75,7 @@ class VariableValidator {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        foreach parser:InputObjectNode argument in fieldNode.getArguments() {
+        foreach parser:ArgumentNode argument in fieldNode.getArguments() {
             self.visitArgument(argument, data);
         }
         if fieldNode.getSelections().length() > 0 {
@@ -92,7 +92,7 @@ class VariableValidator {
         }
     }
 
-    public isolated function visitArgument(parser:InputObjectNode argumentNode, anydata data = ()) {
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         map<parser:VariableDefinition> variableDefinitions = <map<parser:VariableDefinition>> data;
         parser:Location location = argumentNode.getLocation();
         if argumentNode.isVariableDefinition() {
@@ -110,7 +110,7 @@ class VariableValidator {
                         argumentNode.setValue(<parser:ArgumentValue>variableDefinition?.defaultValue);
                         argumentNode.setVariableDefinition(false);
                     } else {
-                        parser:InputObjectNode defaultValue = <parser:InputObjectNode>variableDefinition?.defaultValue;
+                        parser:ArgumentNode defaultValue = <parser:ArgumentNode>variableDefinition?.defaultValue;
                         argumentNode.setValue(defaultValue.getValue());
                         argumentNode.setVariableDefinition(false);
                     }
@@ -123,22 +123,22 @@ class VariableValidator {
                 string message = string`Variable "$${variableName}" is not defined.`;
                 self.errors.push(getErrorDetailRecord(message, location)); 
             }
-        } else if argumentNode.getValue() is map<parser:ArgumentValue|parser:InputObjectNode> {
-            map<parser:ArgumentValue|parser:InputObjectNode> fields =
-                <map<parser:ArgumentValue|parser:InputObjectNode>> argumentNode.getValue();
+        } else if argumentNode.getValue() is map<parser:ArgumentValue|parser:ArgumentNode> {
+            map<parser:ArgumentValue|parser:ArgumentNode> fields =
+                <map<parser:ArgumentValue|parser:ArgumentNode>> argumentNode.getValue();
             foreach string keys in fields.keys() {
-                if fields.get(keys) is parser:InputObjectNode {
-                    self.visitArgument(<parser:InputObjectNode>fields.get(keys), data);
+                if fields.get(keys) is parser:ArgumentNode {
+                    self.visitArgument(<parser:ArgumentNode>fields.get(keys), data);
                 }
             }
         }
     }
 
-    public isolated function setArgumentValue(anydata value, parser:InputObjectNode argument,
+    public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,
                                               parser:Location location) {
         if argument.getKind() == parser:T_IDENTIFIER {
             argument.setVariableValue(value);
-        } else if getTypeNameFromValue(value) == getTypeName(argument) {
+        } else if getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);
         } else if value is decimal && getTypeName(argument) == FLOAT {
             argument.setVariableValue(<float>value);

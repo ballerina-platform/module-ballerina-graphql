@@ -86,3 +86,57 @@ service graphql:Service on new graphql:Listener(4000) {
         return;
     }
 }
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get details(Person? p) returns Person {
+        if p is () {
+            return {
+                name: "Walter",
+                age: 57
+            };
+        }
+        return {
+            name: "Jessie",
+            age: 27
+        };
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get details(Person? p) returns Person? {
+        if p is () {
+            return {
+                name: "Walter",
+                age: 57
+            };
+        }
+        return;
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Person p) returns Book {
+        return {
+           name: "Sherlock Holmes",
+           author: {
+               name: "Arthur",
+               age: 60
+           }
+        };
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Person? p) returns Book? {
+        if (p is ()) {
+            return;
+        }
+        return {
+           name: "Sherlock Holmes",
+           author: {
+               name: "Arthur",
+               age: 60
+           }
+        };
+    }
+}

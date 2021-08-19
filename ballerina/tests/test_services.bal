@@ -135,6 +135,15 @@ service /input_objects on basicListener {
         return false;
     }
 
+    isolated resource function get weightInPounds(Weight weight) returns float {
+        return weight.weightInKg * CONVERSION_KG_TO_LBS;
+    }
+
+    isolated resource function get convertKgToGram(WeightInKg weight) returns float {
+        return <float>weight.weight * 1000.00;
+    }
+
+
 }
 
 service /records on basicListener {

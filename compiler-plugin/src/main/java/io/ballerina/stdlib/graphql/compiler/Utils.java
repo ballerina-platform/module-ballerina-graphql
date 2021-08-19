@@ -79,7 +79,7 @@ public class Utils {
                               DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_MULTIPLE_SERVICES("GraphQL union type cannot consist non-distinct services", "GRAPHQL_110",
                                               DiagnosticSeverity.ERROR),
-        INVALID_FIELD_NAME("A GraphQL field name must not begin with \"" + DOUBLE_UNDERSCORES + 
+        INVALID_FIELD_NAME("A GraphQL field name must not begin with \"" + DOUBLE_UNDERSCORES +
                                    "\", which is reserved by GraphQL introspection", "GRAPHQL_111",
                            DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ANY(
@@ -87,11 +87,10 @@ public class Utils {
                         "names", "GRAPHQL_112", DiagnosticSeverity.ERROR),
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
                                    DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_INPUT_OBJECT(
-                "A GraphQL resource/remote function cannot return \"InputObject\", instead use specific type " +
-                        "names", "GRAPHQL_113", DiagnosticSeverity.ERROR),
-        INVALID_RESOURCE_INPUT_PARAM_INPUT_OBJECT(
-                "A GraphQL resource/remote function \"return type\" cannot use as the \"input object\" parameter",
+        INVALID_RETURN_TYPE_INPUT_OBJECT("A GraphQL resource/remote function cannot return an input type",
+                "GRAPHQL_113", DiagnosticSeverity.ERROR),
+        INVALID_RESOURCE_INPUT_OBJECT_PARAM(
+                "A GraphQL resource/remote function cannot use an output type as an input type",
                 "GRAPHQL_114", DiagnosticSeverity.ERROR);
 
         private final String error;

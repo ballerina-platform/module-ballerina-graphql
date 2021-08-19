@@ -14,12 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class InputObjectNode {
+public class ArgumentNode {
     *Node;
 
     private string name;
     private Location location;
-    private ArgumentValue|map<ArgumentValue|InputObjectNode> value;
+    private ArgumentValue|map<ArgumentValue|ArgumentNode> value;
     private ArgumentType kind;
     private string? variableName;
     private anydata? variableValue;
@@ -43,10 +43,6 @@ public class InputObjectNode {
         return self.location;
     }
 
-    public isolated function setValue(ArgumentValue|map<ArgumentValue|InputObjectNode> value) {
-        self.value = value;
-    }
-
     public isolated function getKind() returns ArgumentType {
         return self.kind;
     }
@@ -63,11 +59,11 @@ public class InputObjectNode {
         return self.variableName;
     }
 
-    public isolated function addValue(ArgumentValue|map<ArgumentValue|InputObjectNode> value) {
+    public isolated function setValue(ArgumentValue|map<ArgumentValue|ArgumentNode> value) {
         self.value = value;
     }
 
-    public isolated function getValue() returns ArgumentValue|map<ArgumentValue|InputObjectNode>{
+    public isolated function getValue() returns ArgumentValue|map<ArgumentValue|ArgumentNode>{
         return self.value;
     }
 

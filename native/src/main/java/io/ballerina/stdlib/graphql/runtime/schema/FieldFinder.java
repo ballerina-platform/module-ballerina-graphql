@@ -195,27 +195,36 @@ public class FieldFinder {
     private void getFieldsFromRecordType(SchemaType schemaType) {
         RecordType recordType = (RecordType) schemaType.getBalType();
         for (Field field : recordType.getFields().values()) {
-            SchemaField schemaField = new SchemaField(field.getFieldName());
-            SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
-            if (isRequired(field)) {
-                SchemaType wrapperType = getNonNullType();
-                wrapperType.setOfType(fieldType);
-                schemaField.setType(wrapperType);
-                if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
-                    schemaField.addArg(new InputValue(field.getFieldName(), wrapperType));
-                }
+            if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
+                getFieldsFromInputObjectType(schemaType, field);
             } else {
-                schemaField.setType(fieldType);
-                if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
-                    schemaField.addArg(new InputValue(field.getFieldName(), fieldType));
+                SchemaField schemaField = new SchemaField(field.getFieldName());
+                SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
+                if (isRequired(field)) {
+                    SchemaType wrapperType = getNonNullType();
+                    wrapperType.setOfType(fieldType);
+                    schemaField.setType(wrapperType);
+                } else {
+                    schemaField.setType(fieldType);
                 }
+                if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
+                    SchemaType nonNullType = getNonNullType();
+                    nonNullType.setOfType(this.typeMap.get(STRING));
+                    schemaField.addArg(new InputValue(KEY, nonNullType));
+                }
+                schemaType.addField(schemaField);
             }
-            if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
-                SchemaType nonNullType = getNonNullType();
-                nonNullType.setOfType(this.typeMap.get(STRING));
-                schemaField.addArg(new InputValue(KEY, nonNullType));
-            }
-            schemaType.addField(schemaField);
+        }
+    }
+
+    private void getFieldsFromInputObjectType(SchemaType schemaType, Field field) {
+        SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
+        if (isRequired(field)) {
+            SchemaType wrapperType = getNonNullType();
+            wrapperType.setOfType(fieldType);
+            schemaType.addInputField(new InputValue(field.getFieldName(), wrapperType));
+        } else {
+            schemaType.addInputField(new InputValue(field.getFieldName(), fieldType));
         }
     }
 

@@ -129,3 +129,11 @@ public type Info record {
 public type Date record {
     Weekday day;
 };
+
+public type Weight record {
+    float weightInKg;
+};
+
+public type WeightInKg record {
+    int weight;
+};

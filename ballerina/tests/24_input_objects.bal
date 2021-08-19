@@ -247,3 +247,51 @@ isolated function testInputObjectWithInlineFragmentsAndVaraibles() returns error
     json expectedPayload = check getJsonContentFromFile("input_object_with_inline_fragment_with_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["input_objects", "input"]
+}
+isolated function testInputObjectWithFloatTypeVariables() returns error? {
+    string document = "($weight:Weight){ weightInPounds (weight:$weight) }";
+    json variables = {
+        weight: { weightInKg: 70.5 }
+    };
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data:{
+            weightInPounds:155.45250000000001
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_objects", "input"]
+}
+isolated function testInputObjectWithInvalidTypeVariables() returns error? {
+    string document = "($weight:WeightInKg){ convertKgToGram (weight:$weight) }";
+    json variables = {
+        weight: { weight: 70.5 }
+    };
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_objects", "input"]
+}
+isolated function testInputObjectWithUnexpectedVaraibleValues() returns error? {
+    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.txt");
+    string url = "http://localhost:9091/input_objects";
+    json variables = {
+        bName: "Harry",
+        bAuthor: [{name:"arthur"},{name:"J.K Rowling"}],
+        dir: "Chris Columbus"
+    };
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("input_object_with_unexpected_variable_values.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

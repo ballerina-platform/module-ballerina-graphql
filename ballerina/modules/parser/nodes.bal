@@ -17,11 +17,6 @@
 public type Node object {
 };
 
-public type ArgumentName record {|
-    string value;
-    Location location;
-|};
-
 public type ArgumentValue record {|
     Scalar value;
     Location location;
