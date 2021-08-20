@@ -257,7 +257,7 @@ isolated function testBlockString() returns error? {
 
     token = check lexer.read(); // Space
     token = check lexer.read();
-    string expectedValue = "Hello,         \n        World!,\n\n            This is\n        GraphQL\n    Block String";
+    string expectedValue = "Hello,\n        World!,\n\n            This is\n        GraphQL\n    Block String";
     expectedToken = getExpectedToken(expectedValue, T_STRING, 1, 16);
     test:assertEquals(token, expectedToken);
 }
