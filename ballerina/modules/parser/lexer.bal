@@ -103,22 +103,62 @@ public class Lexer {
         string word = "";
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore first double quote character
-        while (true) {
+        string value = self.charReader.peek();
+        if value == DOUBLE_QUOTE {
+            value = self.readNextChar();
+            value = self.charReader.peek();
+            if value == DOUBLE_QUOTE {
+                return self.readBlockStringLiteral();
+            } else {
+                return  getToken(word, T_STRING, location);
+            }
+        } else {
+            while true {
+                value = self.charReader.peek();
+                if value is LineTerminator {
+                    string message = "Syntax Error: Unterminated string.";
+                    return error UnterminatedStringError(message, line = self.currentLocation.line,
+                                                         column = self.currentLocation.column);
+                } else if value == DOUBLE_QUOTE && previousChar != BACK_SLASH {
+                    value = self.readNextChar();
+                    break;
+                } else {
+                    value = self.readNextChar();
+                    word += value;
+                }
+                previousChar = value;
+            }
+            return getToken(word, T_STRING, location);
+        }
+    }
+
+    isolated function readBlockStringLiteral() returns Token|SyntaxError {
+        string previousChar = "";
+        string word = "";
+        Location location = self.currentLocation.clone();
+        _ = self.readNextChar(); // Ignore third double quote character
+        while true {
             string value = self.charReader.peek();
-            if (value is LineTerminator) {
-                string message = "Syntax Error: Unterminated string.";
-                return error UnterminatedStringError(message, line = self.currentLocation.line,
-                                                     column = self.currentLocation.column);
-            } else if (value == DOUBLE_QUOTE && previousChar != BACK_SLASH) {
-                value = self.readNextChar();
-                break;
+            if value == DOUBLE_QUOTE {
+                previousChar = self.readNextChar();
+                value = self.charReader.peek();
+                if value == DOUBLE_QUOTE {
+                    previousChar = self.readNextChar();
+                    value = self.charReader.peek();
+                    if value == DOUBLE_QUOTE {
+                        value = self.readNextChar();
+                        break;
+                    }
+                    word += previousChar;
+                }
+                word += previousChar;
             } else {
                 value = self.readNextChar();
                 word += value;
             }
             previousChar = value;
         }
-        return getToken(word, T_STRING, location);
+        return getToken(word.trim(), T_STRING, location);
     }
 
     isolated function readNumericLiteral(string fisrtChar) returns Token|SyntaxError {

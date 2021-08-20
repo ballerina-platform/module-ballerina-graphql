@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1361] Add Variable Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1361)
 - [[#1492] Add Mutation Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1492)
 - [[#1723] Add Type Name Introspection](https://github.com/ballerina-platform/ballerina-standard-library/issues/1723)
+- [[#1704] Add Block String Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1704)
 
 ### Changed
 - [[#1597] Validate Max Query Depth at Runtime](https://github.com/ballerina-platform/ballerina-standard-library/issues/1597)

@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"block\" included invalid characters.",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 25
+                }
+            ]
+        }
+    ]
+}

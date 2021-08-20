@@ -223,6 +223,48 @@ isolated function testStringWithVariableDefinition() returns error? {
 @test:Config {
     groups: ["lexer"]
 }
+isolated function testBlockString() returns error? {
+    string document = string`{ greet(msg: """
+    Hello,
+        World!,
+
+            This is
+        GraphQL
+    Block String
+    """)}`;
+    Lexer lexer = new(document);
+    Token token = check lexer.read();
+
+    Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read(); // Space
+    token = check lexer.read();
+    expectedToken = getExpectedToken("greet", T_IDENTIFIER, 1, 3);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("(", T_OPEN_PARENTHESES, 1, 8);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read(); // Space
+    expectedToken = getExpectedToken("msg", T_IDENTIFIER, 1, 9);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(":", T_COLON, 1, 12);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read(); // Space
+    token = check lexer.read();
+    string expectedValue = "Hello,         \n        World!,\n\n            This is\n        GraphQL\n    Block String";
+    expectedToken = getExpectedToken(expectedValue, T_STRING, 1, 16);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["lexer"]
+}
 isolated function testComplexString() returns error? {
     string document = "\n\n\nquery getData {\n    picture(h: 128,,, w: 248)\n}";
     Lexer lexer = new(document);

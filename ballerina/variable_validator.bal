@@ -128,13 +128,29 @@ class VariableValidator {
         if argument.getKind() == parser:T_IDENTIFIER {
             argument.setValue(value);
         } else if getTypeNameFromValue(value) == getTypeName(argument) {
-            argument.setValue(value);
+            if getTypeNameFromValue(value) == STRING {
+                if self.hasInvalidCharaters(<string>value) {
+                    string message = string`Variable "${<string> argument.getVariableName()}" included invalid characters.`;
+                    self.errors.push(getErrorDetailRecord(message, location));
+                } else {
+                    argument.setValue((<string>value).trim());
+                }
+            } else {
+                argument.setValue(value);
+            }
         } else if value is int && getTypeName(argument) == FLOAT {
             argument.setValue(value);
         } else {
             string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ${value.toString()};` +
             string`Expected type ${getTypeName(argument)}. ${getTypeName(argument)} cannot represent value: ${value.toString()}`;
-            self.errors.push(getErrorDetailRecord(message, location)); 
+            self.errors.push(getErrorDetailRecord(message, location));
         }
+    }
+
+    public isolated function hasInvalidCharaters(string value) returns boolean {
+        if value.includes(string`"""`) || value.includes(string`\"""`)  {
+            return true;
+        }
+        return false;
     }
 }
