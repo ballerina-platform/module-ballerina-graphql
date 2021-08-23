@@ -30,26 +30,6 @@ isolated function testBlockStrings() returns error? {
 }
 
 @test:Config {
-    groups: ["block_strings", "variables"]
-}
-isolated function testBlockStringsWithVariables() returns error? {
-    http:Request request = new;
-    string document = check getGraphQLDocumentFromFile("block_strings_with_variables.txt");
-    json variables = { 
-        block: string`
-        This,
-            is
-                Graphql
-                    Block
-                        Strings!` 
-    };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_variables.json");
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
     groups: ["block_strings"]
 }
 isolated function testBlockStringsWithVariableDefaultValue() returns error? {
@@ -62,21 +42,25 @@ isolated function testBlockStringsWithVariableDefaultValue() returns error? {
 }
 
 @test:Config {
-    groups: ["block_strings", "variables"]
+    groups: ["block_strings"]
 }
-isolated function testBlockStringsWithVariablesIncludedInvalidCharacters() returns error? {
+isolated function testBlockStringsWithInvalidCharacters() returns error? {
     http:Request request = new;
-    string document = check getGraphQLDocumentFromFile("block_strings_with_variables.txt");
-    json variables = { 
-        block: string`
-        Hello,
-            World!,
-\"""
-        Yours, """
-            GraphQL` 
-    };
+    string document = check getGraphQLDocumentFromFile("block_strings_with_invalid_characters.txt");
     string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_variables_included_invalid_characters.json");
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("block_strings_with_invalid_characters.json");
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["block_strings"]
+}
+isolated function testBlockStringsWithDoubleQuotes() returns error? {
+    http:Request request = new;
+    string document = check getGraphQLDocumentFromFile("block_strings_with_double_quotes.txt");
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("block_strings_with_double_quotes.json");
     test:assertEquals(actualPayload, expectedPayload);
 }

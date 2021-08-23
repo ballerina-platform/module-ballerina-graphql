@@ -1,3 +1,0 @@
-($block: String){
-    sendEmail(message: $block) 
-}
