@@ -191,11 +191,7 @@ public class Lexer {
             }
         }
         foreach string line in lines {
-            if line == NEW_LINE {
-                formatted += line;
-            } else {
-                formatted += line + "\n";
-            }
+            formatted += line + "\n";
         }
         return formatted;
     }

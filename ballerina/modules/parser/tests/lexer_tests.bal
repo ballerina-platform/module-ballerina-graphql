@@ -230,8 +230,7 @@ isolated function testBlockString() returns error? {
 
             This is
         GraphQL
-    Block String
-    """)}`;
+    Block String""")}`;
     Lexer lexer = new(document);
     Token token = check lexer.read();
 
