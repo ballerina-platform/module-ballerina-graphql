@@ -14,14 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/test;
 
 @test:Config {
     groups: ["block_strings"]
 }
 isolated function testBlockStrings() returns error? {
-    http:Request request = new;
     string document = check getGraphQLDocumentFromFile("block_strings.txt");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
@@ -33,8 +31,7 @@ isolated function testBlockStrings() returns error? {
     groups: ["block_strings"]
 }
 isolated function testBlockStringsWithVariableDefaultValue() returns error? {
-    http:Request request = new;
-    string document = check getGraphQLDocumentFromFile("block_string_with_variable_default_value.txt");
+    string document = check getGraphQLDocumentFromFile("block_strings_with_variable_default_value.txt");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("block_strings_with_variables_default_value.json");
@@ -44,12 +41,22 @@ isolated function testBlockStringsWithVariableDefaultValue() returns error? {
 @test:Config {
     groups: ["block_strings"]
 }
-isolated function testBlockStringsWithInvalidCharacters() returns error? {
-    http:Request request = new;
-    string document = check getGraphQLDocumentFromFile("block_strings_with_invalid_characters.txt");
+isolated function testInvalidBlockStrings() returns error? {
+    string document = check getGraphQLDocumentFromFile("invalid_block_strings.txt");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_invalid_characters.json");
+    json expectedPayload = check getJsonContentFromFile("invalid_block_strings.json");
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["block_strings"]
+}
+isolated function testBlockStringsWithEscapedCharacter() returns error? {
+    string document = check getGraphQLDocumentFromFile("block_strings_with_escaped_character.txt");
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("block_strings_with_escaped_character.json");
     test:assertEquals(actualPayload, expectedPayload);
 }
 
@@ -57,10 +64,39 @@ isolated function testBlockStringsWithInvalidCharacters() returns error? {
     groups: ["block_strings"]
 }
 isolated function testBlockStringsWithDoubleQuotes() returns error? {
-    http:Request request = new;
     string document = check getGraphQLDocumentFromFile("block_strings_with_double_quotes.txt");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("block_strings_with_double_quotes.json");
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["block_strings"]
+}
+isolated function testEmptyString() returns error? {
+    string document = string`{ sendEmail(message: "") }`;
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data:{
+            sendEmail:""
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["block_strings"]
+}
+isolated function testEmptyBlockString() returns error? {
+    string document = string`{ sendEmail(message: """""") }`;
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data:{
+            sendEmail:""
+        }
+    };
     test:assertEquals(actualPayload, expectedPayload);
 }

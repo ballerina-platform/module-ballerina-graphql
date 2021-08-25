@@ -108,9 +108,10 @@ public class Lexer {
             value = self.readNextChar();
             value = self.charReader.peek();
             if value == DOUBLE_QUOTE {
-                return self.readBlockStringLiteral();
+                word = self.readBlockStringLiteral();
+                return getToken(word.trim(), T_STRING, location);
             } else {
-                return  getToken(word, T_STRING, location);
+                return getToken(word, T_STRING, location);
             }
         } else {
             while true {
@@ -133,11 +134,10 @@ public class Lexer {
         }
     }
 
-    isolated function readBlockStringLiteral() returns Token|SyntaxError {
+    isolated function readBlockStringLiteral() returns string {
         string previousChar = "";
         string word = "";
         string[] lines = [];
-        Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore third double quote character
         while true {
             string value = self.charReader.peek();
@@ -146,27 +146,42 @@ public class Lexer {
                 word = "";
                 value = self.readNextChar();
             } else if value == DOUBLE_QUOTE {
-                previousChar = self.readNextChar();
-                value = self.charReader.peek();
-                if value == DOUBLE_QUOTE {
-                    previousChar = self.readNextChar();
-                    value = self.charReader.peek();
-                    if value == DOUBLE_QUOTE {
-                        value = self.readNextChar();
-                        lines.push(word);
-                        break;
-                    }
-                    word += previousChar;
+                string wordWithQuotes = self.readQuotesInBlockStrings(word);
+                if wordWithQuotes == word {
+                    lines.push(word);
+                    break;
+                } else {
+                    word = wordWithQuotes;
                 }
-                word += previousChar;
             } else {
                 value = self.readNextChar();
                 word += value;
             }
             previousChar = value;
         }
-        word = self.getBlockStringValue(lines);
-        return getToken(word.trim(), T_STRING, location);
+        return self.getBlockStringValue(lines);
+    }
+
+    isolated function readQuotesInBlockStrings(string word) returns string {
+        string previousChar = self.readNextChar();
+        string value = self.charReader.peek();
+        string returnString = word;
+        if value == DOUBLE_QUOTE {
+            previousChar = self.readNextChar();
+            value = self.charReader.peek();
+            if value == DOUBLE_QUOTE {
+                value = self.readNextChar();
+                if word.endsWith(BACK_SLASH) {
+                    returnString = word.substring(0, word.length()-1);
+                    returnString += value;
+                } else {
+                    return returnString;
+                }
+            }
+            returnString += previousChar;
+        }
+        returnString += previousChar;
+        return returnString;
     }
 
     isolated function getBlockStringValue(string[] lines) returns string {
@@ -176,9 +191,6 @@ public class Lexer {
             int indent  = self.getLeadingWhiteSpaceCount(line);
             if indent < line.length() && (commonIndent is () || indent < commonIndent) {
                 commonIndent = indent;
-                if commonIndent == 0 {
-                    break;
-                }
             }
         }
         if commonIndent is int {
