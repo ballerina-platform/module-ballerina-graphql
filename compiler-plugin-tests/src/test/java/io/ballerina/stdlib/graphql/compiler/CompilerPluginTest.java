@@ -126,6 +126,22 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testValidInterfaceTypes1() {
+        Package currentPackage = loadPackage("valid_service_11");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testValidInterfaceTypes2() {
+        Package currentPackage = loadPackage("valid_service_12");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -441,6 +457,37 @@ public class CompilerPluginTest {
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
     }
+
+    // todo
+//    @Test
+//    public void testInvalidInterfacesWithNoResourceFunction() {
+//        Package currentPackage = loadPackage("invalid_service_22");
+//        PackageCompilation compilation = currentPackage.getCompilation();
+//        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+//        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+//        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+//        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
+//    }
+//
+//    @Test
+//    public void testInvalidInterfacesWithNoDistinctService1() {
+//        Package currentPackage = loadPackage("invalid_service_23");
+//        PackageCompilation compilation = currentPackage.getCompilation();
+//        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+//        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+//        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+//        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
+//    }
+//
+//    @Test
+//    public void testInvalidInterfacesWithNoDistinctService2() {
+//        Package currentPackage = loadPackage("invalid_service_24");
+//        PackageCompilation compilation = currentPackage.getCompilation();
+//        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+//        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+//        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+//        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
+//    }
 
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);

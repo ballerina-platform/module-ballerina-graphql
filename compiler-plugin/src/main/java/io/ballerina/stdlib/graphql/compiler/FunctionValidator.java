@@ -41,6 +41,7 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.Location;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
  */
 public class FunctionValidator {
     private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
+    private final Map<String, Boolean> eligibleInterfaces = new HashMap<>();
 
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
@@ -242,10 +244,48 @@ public class FunctionValidator {
                     updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
             }
+            String className = classSymbol.getName().isPresent() ? classSymbol.getName().get() : "";
+            if (!eligibleInterfaces.containsKey(className) && classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
+                eligibleInterfaces.put(className, resourceMethodFound);
+            }
             if (!resourceMethodFound) {
-                updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+                if (!implementedValidInterface(classSymbol, location, context)) {
+                    updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+                }
             }
         }
+    }
+
+    private boolean implementedValidInterface(ClassSymbol classSymbol, Location location,
+                                              SyntaxNodeAnalysisContext context) {
+        boolean hasValidInterface = false;
+        if (!classSymbol.typeInclusions().isEmpty()) {
+            List<TypeSymbol> typeInclusions = classSymbol.typeInclusions();
+            for (TypeSymbol typeInclusion : typeInclusions) {
+                if (typeInclusion.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                    TypeReferenceTypeSymbol inclusionSymbol = (TypeReferenceTypeSymbol) typeInclusion;
+                    if (inclusionSymbol.definition().kind() == SymbolKind.CLASS) {
+                        ClassSymbol inclusionClassSymbol = (ClassSymbol) inclusionSymbol.definition();
+                        if (inclusionClassSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                            String className = inclusionClassSymbol.getName().isPresent() ?
+                                    inclusionClassSymbol.getName().get() : "";
+                            validateServiceClassDefinition(inclusionClassSymbol, location, context);
+                            if (eligibleInterfaces.containsKey(className)) {
+                                if (eligibleInterfaces.get(className)) {
+                                    hasValidInterface = true;
+                                } else {
+                                    if (!inclusionClassSymbol.typeInclusions().isEmpty()) {
+                                        hasValidInterface = implementedValidInterface(inclusionClassSymbol,
+                                                location, context);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return hasValidInterface;
     }
 
     private boolean isRecordType(TypeSymbol returnTypeSymbol) {
