@@ -126,7 +126,7 @@ public class Lexer {
             if value is LineTerminator {
                 string message = "Syntax Error: Unterminated string.";
                 return error UnterminatedStringError(message, line = self.currentLocation.line,
-                                                        column = self.currentLocation.column);
+                                                     column = self.currentLocation.column);
             } else {
                 value = self.readNextChar();
                 if value == DOUBLE_QUOTE && previousChar != BACK_SLASH {
@@ -141,7 +141,6 @@ public class Lexer {
     }
 
     isolated function readBlockStringLiteral() returns string {
-        string previousChar = "";
         string word = "";
         string[] lines = [];
         _ = self.readNextChar(); // Ignore third double quote character
@@ -152,7 +151,7 @@ public class Lexer {
                 word = "";
                 value = self.readNextChar();
             } else if value == DOUBLE_QUOTE {
-                previousChar = self.readNextChar();
+                string previousChar = self.readNextChar();
                 value = self.charReader.peek();
                 if value == DOUBLE_QUOTE {
                     previousChar += self.readNextChar();
@@ -172,7 +171,6 @@ public class Lexer {
                 value = self.readNextChar();
                 word += value;
             }
-            previousChar = value;
         }
         return self.getBlockStringValue(lines);
     }
