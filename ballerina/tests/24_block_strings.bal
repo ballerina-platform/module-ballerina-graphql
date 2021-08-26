@@ -34,7 +34,7 @@ isolated function testBlockStringsWithVariableDefaultValue() returns error? {
     string document = check getGraphQLDocumentFromFile("block_strings_with_variable_default_value.txt");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_variables_default_value.json");
+    json expectedPayload = check getJsonContentFromFile("block_strings_with_variable_default_value.json");
     test:assertEquals(actualPayload, expectedPayload);
 }
 

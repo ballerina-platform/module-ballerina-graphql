@@ -99,7 +99,6 @@ public class Lexer {
     }
 
     isolated function readStringLiteral() returns Token|SyntaxError {
-        string previousChar = "";
         string word = "";
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore first double quote character
@@ -109,29 +108,36 @@ public class Lexer {
             value = self.charReader.peek();
             if value == DOUBLE_QUOTE {
                 word = self.readBlockStringLiteral();
-                return getToken(word.trim(), T_STRING, location);
+                return getToken(word, T_STRING, location);
             } else {
                 return getToken(word, T_STRING, location);
             }
         } else {
-            while true {
-                value = self.charReader.peek();
-                if value is LineTerminator {
-                    string message = "Syntax Error: Unterminated string.";
-                    return error UnterminatedStringError(message, line = self.currentLocation.line,
-                                                         column = self.currentLocation.column);
-                } else {
-                    value = self.readNextChar();
-                    if value == DOUBLE_QUOTE && previousChar != BACK_SLASH {
-                        break;
-                    } else {
-                        word += value;
-                    }
-                    previousChar = value;
-                }
-            }
-            return getToken(word, T_STRING, location);
+            return self.readSingleLineStringLiteral(location);
         }
+    }
+
+    isolated function readSingleLineStringLiteral(Location location) returns Token|SyntaxError {
+        string previousChar = "";
+        string value = "";
+        string word = "";
+        while true {
+            value = self.charReader.peek();
+            if value is LineTerminator {
+                string message = "Syntax Error: Unterminated string.";
+                return error UnterminatedStringError(message, line = self.currentLocation.line,
+                                                        column = self.currentLocation.column);
+            } else {
+                value = self.readNextChar();
+                if value == DOUBLE_QUOTE && previousChar != BACK_SLASH {
+                    break;
+                } else {
+                    word += value;
+                }
+                previousChar = value;
+            }
+        }
+        return getToken(word, T_STRING, location);
     }
 
     isolated function readBlockStringLiteral() returns string {
@@ -146,13 +152,22 @@ public class Lexer {
                 word = "";
                 value = self.readNextChar();
             } else if value == DOUBLE_QUOTE {
-                string wordWithQuotes = self.readQuotesInBlockStrings(word);
-                if wordWithQuotes == word {
-                    lines.push(word);
-                    break;
-                } else {
-                    word = wordWithQuotes;
+                previousChar = self.readNextChar();
+                value = self.charReader.peek();
+                if value == DOUBLE_QUOTE {
+                    previousChar += self.readNextChar();
+                    value = self.charReader.peek();
+                    if value == DOUBLE_QUOTE {
+                        previousChar += self.readNextChar();
+                        if word.endsWith(BACK_SLASH) {
+                            word = word.substring(0, word.length()-1); //Remove back slash
+                        } else {
+                            lines.push(word);
+                            break;
+                        }
+                    }
                 }
+                word += previousChar;
             } else {
                 value = self.readNextChar();
                 word += value;
@@ -160,28 +175,6 @@ public class Lexer {
             previousChar = value;
         }
         return self.getBlockStringValue(lines);
-    }
-
-    isolated function readQuotesInBlockStrings(string word) returns string {
-        string previousChar = self.readNextChar();
-        string value = self.charReader.peek();
-        string returnString = word;
-        if value == DOUBLE_QUOTE {
-            previousChar = self.readNextChar();
-            value = self.charReader.peek();
-            if value == DOUBLE_QUOTE {
-                value = self.readNextChar();
-                if word.endsWith(BACK_SLASH) {
-                    returnString = word.substring(0, word.length()-1);
-                    returnString += value;
-                } else {
-                    return returnString;
-                }
-            }
-            returnString += previousChar;
-        }
-        returnString += previousChar;
-        return returnString;
     }
 
     isolated function getBlockStringValue(string[] lines) returns string {
@@ -194,18 +187,18 @@ public class Lexer {
             }
         }
         if commonIndent is int {
-            foreach string line in lines {
-                if commonIndent > line.length() {
+            foreach int i in 0..< lines.length() {
+                if commonIndent > lines[i].length() {
                     continue;
                 } else {
-                    lines[<int>lines.indexOf(line)] = line.substring(commonIndent, line.length());
+                    lines[i] = lines[i].substring(commonIndent, lines[i].length());
                 }
             }
         }
         foreach string line in lines {
-            formatted += line + "\n";
+            formatted = string:'join("\n", formatted, line);
         }
-        return formatted;
+        return formatted.trim();
     }
 
     isolated function getLeadingWhiteSpaceCount(string line) returns int {
