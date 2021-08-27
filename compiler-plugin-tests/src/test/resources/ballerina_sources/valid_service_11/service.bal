@@ -16,7 +16,20 @@
 
 import ballerina/graphql;
 
-distinct service class NamedEntity {
+// NamedEntity and SomeNamedEntity are not being used in the graphql service, not validated as graphql interfaces
+service class NamedEntity {
+    string name;
+
+    function init(string name) {
+        self.name = name;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+}
+
+service class SomeNamedEntity {
     string name;
 
     function init(string name) {
@@ -41,11 +54,9 @@ distinct service class ContactDetail {
 }
 
 distinct service class Person {
-    *NamedEntity;
     *ContactDetail;
 
-    function init(string name, string email) {
-        self.name = name;
+    function init(string email) {
         self.email = email;
     }
 }
@@ -53,7 +64,6 @@ distinct service class Person {
 distinct service class Student {
     *Person;
 
-    string name = "Sherlock";
     string email = "Shelock@gmail.com";
     int studentId = 3;
 
@@ -65,7 +75,6 @@ distinct service class Student {
 distinct service class Teacher {
     *Person;
 
-    string name = "Walter";
     string email = "Walter@gmail.com";
     string subject = "chemistry";
 

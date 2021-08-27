@@ -27,6 +27,7 @@ import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
+import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
@@ -60,11 +61,14 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
  */
 public class FunctionValidator {
     private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
-    private final Map<String, Boolean> eligibleInterfaces = new HashMap<>();
+    private final Set<String> eligibleInterfaces = new HashSet<>();
+    private final Set<String> typeInclusions = new HashSet<>();
+    private final Map<String, Boolean> interfacesWithResourceFunctions = new HashMap<>();
 
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         NodeList<Node> memberNodes = serviceDeclarationNode.members();
+        populatePossibleInterfaces(context.semanticModel().moduleSymbols());
         boolean resourceFunctionFound = false;
         for (Node node : memberNodes) {
             if (node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION) {
@@ -82,6 +86,35 @@ public class FunctionValidator {
         }
         if (!resourceFunctionFound) {
             updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
+        }
+    }
+
+    private void populatePossibleInterfaces(List<Symbol> moduleSymbols) {
+        for (Symbol symbol : moduleSymbols) {
+            if (symbol.kind() == SymbolKind.CLASS) {
+                ClassSymbol classSymbol = (ClassSymbol) symbol;
+
+                // for each ClassSymbol, keep track of all type inclusions(implemented interfaces)
+                List<TypeSymbol> inclusions = classSymbol.typeInclusions();
+                for (TypeSymbol typeInclusion : inclusions) {
+                    if (typeInclusion.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                        String typeName = typeInclusion.getName().isPresent() ? typeInclusion.getName().get() : "";
+                        if (typeInclusions.contains(typeName)) {
+                            continue;
+                        }
+                        typeInclusions.add(typeName);
+                    }
+                }
+                // for each ClassSymbol, add to eligibleInterfaces if it is a distinct service
+                if (classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                    String className = classSymbol.getName().isPresent() ?
+                            classSymbol.getName().get() : "";
+                    if (!eligibleInterfaces.contains(className)
+                            && classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
+                        eligibleInterfaces.add(className);
+                    }
+                }
+            }
         }
     }
 
@@ -245,18 +278,29 @@ public class FunctionValidator {
                 }
             }
             String className = classSymbol.getName().isPresent() ? classSymbol.getName().get() : "";
-            if (!eligibleInterfaces.containsKey(className) && classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
-                eligibleInterfaces.put(className, resourceMethodFound);
+            // if this service is an interface
+            if (typeInclusions.contains(className)) {
+                if (!classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
+                    updateContext(context, CompilationError.INVALID_INTERFACE, location);
+                }
+            }
+            // if this service is an eligibleInterface, keep track of resourceMethodFound value
+            if (eligibleInterfaces.contains(className)) {
+                if (!interfacesWithResourceFunctions.containsKey(className)) {
+                    interfacesWithResourceFunctions.put(className, resourceMethodFound);
+                }
             }
             if (!resourceMethodFound) {
-                if (!implementedValidInterface(classSymbol, location, context)) {
-                    updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+                if (!implementedValidInterface(classSymbol, context)) {
+                    updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS,
+                            classSymbol.getLocation().get());
                 }
             }
         }
     }
 
-    private boolean implementedValidInterface(ClassSymbol classSymbol, Location location,
+    // if the returning service has no resource function, this checks for implemented interfaces with resource functions
+    private boolean implementedValidInterface(ClassSymbol classSymbol,
                                               SyntaxNodeAnalysisContext context) {
         boolean hasValidInterface = false;
         if (!classSymbol.typeInclusions().isEmpty()) {
@@ -269,15 +313,17 @@ public class FunctionValidator {
                         if (inclusionClassSymbol.qualifiers().contains(Qualifier.SERVICE)) {
                             String className = inclusionClassSymbol.getName().isPresent() ?
                                     inclusionClassSymbol.getName().get() : "";
-                            validateServiceClassDefinition(inclusionClassSymbol, location, context);
-                            if (eligibleInterfaces.containsKey(className)) {
-                                if (eligibleInterfaces.get(className)) {
-                                    hasValidInterface = true;
-                                } else {
-                                    if (!inclusionClassSymbol.typeInclusions().isEmpty()) {
-                                        hasValidInterface = implementedValidInterface(inclusionClassSymbol,
-                                                location, context);
-                                    }
+                            // checks if the type inclusion if a valid service
+                            validateServiceClassDefinition(inclusionClassSymbol, inclusionSymbol.getLocation().get(),
+                                    context);
+                            // checks if the type inclusion is a valid interface
+                            if (interfacesWithResourceFunctions.containsKey(className)
+                                    && interfacesWithResourceFunctions.get(className)) {
+                                hasValidInterface = true;
+                            } else {
+                                // checks interfaces implemented by the interface
+                                if (!inclusionClassSymbol.typeInclusions().isEmpty()) {
+                                    hasValidInterface = implementedValidInterface(inclusionClassSymbol, context);
                                 }
                             }
                         }

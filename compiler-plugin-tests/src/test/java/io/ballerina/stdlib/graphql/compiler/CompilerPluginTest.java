@@ -458,36 +458,32 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
     }
 
-    // todo
-//    @Test
-//    public void testInvalidInterfacesWithNoResourceFunction() {
-//        Package currentPackage = loadPackage("invalid_service_22");
-//        PackageCompilation compilation = currentPackage.getCompilation();
-//        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-//        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-//        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-//        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
-//    }
-//
-//    @Test
-//    public void testInvalidInterfacesWithNoDistinctService1() {
-//        Package currentPackage = loadPackage("invalid_service_23");
-//        PackageCompilation compilation = currentPackage.getCompilation();
-//        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-//        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-//        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-//        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
-//    }
-//
-//    @Test
-//    public void testInvalidInterfacesWithNoDistinctService2() {
-//        Package currentPackage = loadPackage("invalid_service_24");
-//        PackageCompilation compilation = currentPackage.getCompilation();
-//        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-//        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-//        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-//        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
-//    }
+    @Test
+    public void testInvalidInterfacesWithNoResourceFunction() {
+        Package currentPackage = loadPackage("invalid_service_22");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 21, 24);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 29, 24);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 37, 24);
+    }
+
+    @Test
+    public void testInvalidInterfacesWithNoDistinctService1() {
+        Package currentPackage = loadPackage("invalid_service_23");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_INTERFACE, 19, 15);
+    }
 
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);

@@ -42,18 +42,6 @@ distinct service class Queue {
     }
 }
 
-distinct service class Deque {
-    *Queue;
-
-    function init(string name) {
-        self.name = name;
-    }
-
-    isolated resource function get name() returns string {
-        return self.name;
-    }
-}
-
 service class LinkedList {
     *Queue;
 

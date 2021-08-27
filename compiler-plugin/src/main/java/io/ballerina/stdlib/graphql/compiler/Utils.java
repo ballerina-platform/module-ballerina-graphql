@@ -86,7 +86,9 @@ public class Utils {
                 "A GraphQL resource/remote function cannot return \"any\" or \"anydata\", instead use specific type " +
                         "names", "GRAPHQL_112", DiagnosticSeverity.ERROR),
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
-                                   DiagnosticSeverity.ERROR);
+                                   DiagnosticSeverity.ERROR),
+        INVALID_INTERFACE("Interface types must have the distinct qualifier", "GRAPHQL_114",
+                DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;
