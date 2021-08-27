@@ -93,6 +93,10 @@ service /inputs on basicListener {
         }
         return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
     }
+
+    isolated resource function get sendEmail(string message) returns string {
+        return message;
+    }
 }
 
 service /records on basicListener {

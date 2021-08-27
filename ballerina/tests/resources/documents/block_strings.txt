@@ -1,0 +1,9 @@
+{
+    sendEmail(message: """
+        Hello,
+            World!,
+
+        Yours,
+            GraphQL
+    """) 
+}
