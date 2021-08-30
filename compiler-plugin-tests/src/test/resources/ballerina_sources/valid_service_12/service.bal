@@ -24,7 +24,7 @@ distinct service class Iterable {
         self.name = name;
     }
 
-    isolated resource function get name() returns string {
+    resource function get name() returns string {
         return self.name;
     }
 }
@@ -35,6 +35,10 @@ distinct service class Collection  {
     function init(string name) {
         self.name = name;
     }
+
+    resource function get name() returns string {
+        return self.name;
+    }
 }
 
 distinct service class Queue {
@@ -42,6 +46,10 @@ distinct service class Queue {
 
     function init(string name) {
         self.name = name;
+    }
+
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
@@ -51,23 +59,35 @@ service class Deque {
     function init(string name) {
         self.name = name;
     }
+
+    resource function get name() returns string {
+        return self.name;
+    }
 }
 
 service class LinkedList {
     *Queue;
 
     string name = "LinkedList";
+
+    resource function get name() returns string {
+        return self.name;
+    }
 }
 
 service class ArrayDeque {
     *Queue;
 
     string name = "ArrayDeque";
+
+    resource function get name() returns string {
+        return self.name;
+    }
 }
 
 service /graphql on new graphql:Listener(9000) {
 
-    isolated resource function get list(int length) returns Queue {
+    resource function get list(int length) returns Queue {
         if (length > 1) {
             return new LinkedList();
         } else {

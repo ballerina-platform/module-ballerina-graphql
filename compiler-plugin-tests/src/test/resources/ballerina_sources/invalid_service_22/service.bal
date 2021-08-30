@@ -56,7 +56,7 @@ service class ArrayDeque {
 
 service /graphql on new graphql:Listener(9000) {
 
-    isolated resource function get list(int length) returns Queue {
+    resource function get list(int length) returns Queue {
         if (length > 1) {
             return new LinkedList();
         } else {

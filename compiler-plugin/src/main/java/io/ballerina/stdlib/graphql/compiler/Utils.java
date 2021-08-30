@@ -88,7 +88,9 @@ public class Utils {
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
                                    DiagnosticSeverity.ERROR),
         INVALID_INTERFACE("Interface types must have the distinct qualifier", "GRAPHQL_114",
-                DiagnosticSeverity.ERROR);
+                DiagnosticSeverity.ERROR),
+        INVALID_INTERFACE_IMPLEMENTATION("All resource functions in the interface class is not implemented",
+                "GRAPHQL_115", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

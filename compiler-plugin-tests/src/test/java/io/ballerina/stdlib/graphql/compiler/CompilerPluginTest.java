@@ -485,6 +485,30 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_INTERFACE, 19, 15);
     }
 
+    @Test
+    public void testInvalidInterfaceImplementation() {
+        Package currentPackage = loadPackage("invalid_service_24");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 56, 15);
+    }
+
+    @Test
+    public void testInvalidInterfaceImplementation2() {
+        Package currentPackage = loadPackage("invalid_service_25");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 31, 24);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
