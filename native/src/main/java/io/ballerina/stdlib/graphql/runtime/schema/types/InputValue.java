@@ -24,16 +24,11 @@ package io.ballerina.stdlib.graphql.runtime.schema.types;
 public class InputValue {
     private final String name;
     private final SchemaType type;
-    private final String defaultValue;
+    private String defaultValue;
 
     public InputValue(String name, SchemaType type) {
-        this(name, type, null);
-    }
-
-    public InputValue(String name, SchemaType type, String defaultValue) {
         this.name = name;
         this.type = type;
-        this.defaultValue = defaultValue;
     }
 
     public String getName() {
@@ -42,6 +37,10 @@ public class InputValue {
 
     public SchemaType getType() {
         return type;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     public String getDefaultValue() {

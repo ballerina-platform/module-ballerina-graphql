@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1688] Fix GraphQL Query Includes Unknown Fragments Returning an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1688)
 - [[#1728] Fix Introspection not Working for `__type`](https://github.com/ballerina-platform/ballerina-standard-library/issues/1728)
 - [[#1730] Fix Validating `__schema` Field Disregarding the Position](https://github.com/ballerina-platform/ballerina-standard-library/issues/1730)
+- [[#1818] Fix NON_NULL Type Inputs with Default Values Shown as Nullable](https://github.com/ballerina-platform/ballerina-standard-library/issues/1818)
 
 ## [0.2.0.beta.2]  - 2021-07-06
 
