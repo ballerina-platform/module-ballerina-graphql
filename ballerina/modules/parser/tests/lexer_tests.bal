@@ -223,6 +223,47 @@ isolated function testStringWithVariableDefinition() returns error? {
 @test:Config {
     groups: ["lexer"]
 }
+isolated function testBlockString() returns error? {
+    string document = check getGraphQLDocumentFromFile("block_string.txt");
+    Lexer lexer = new(document);
+    Token token = check lexer.read();
+
+    Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("\n", T_IDENTIFIER, 1, 2);
+
+    token = check lexer.read(); // Space
+    token = check lexer.read(); // Space
+    token = check lexer.read(); // Space
+    token = check lexer.read(); // Space
+    token = check lexer.read();
+    expectedToken = getExpectedToken("greet", T_IDENTIFIER, 2, 5);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken("(", T_OPEN_PARENTHESES, 2, 10);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read(); // Space
+    expectedToken = getExpectedToken("msg", T_IDENTIFIER, 2, 11);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read();
+    expectedToken = getExpectedToken(":", T_COLON, 2, 14);
+    test:assertEquals(token, expectedToken);
+
+    token = check lexer.read(); // Space
+    token = check lexer.read();
+    string expectedValue = "Hello,\n    World!,\n\n        This is\n    GraphQL\nBlock String";
+    expectedToken = getExpectedToken(expectedValue, T_STRING, 2, 16);
+    test:assertEquals(token, expectedToken);
+}
+
+@test:Config {
+    groups: ["lexer"]
+}
 isolated function testComplexString() returns error? {
     string document = "\n\n\nquery getData {\n    picture(h: 128,,, w: 248)\n}";
     Lexer lexer = new(document);

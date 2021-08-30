@@ -76,6 +76,7 @@ public class EngineUtils {
     public static final BString INTERFACES_FIELD = StringUtils.fromString("interfaces");
     public static final BString VARIABLE_VALUE_FIELD = StringUtils.fromString("variableValue");
     public static final BString VARIABLE_DEFINITION = StringUtils.fromString("variableDefinition");
+    public static final BString INPUT_OBJECT = StringUtils.fromString("inputObject");
 
     // Schema related values
     public static final String INCLUDE_DEPRECATED = "includeDeprecated";

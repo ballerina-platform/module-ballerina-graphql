@@ -326,7 +326,7 @@ isolated function testParseAnonymousMutation() returns error? {
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "newAge");
-    test:assertEquals((<ArgumentValue>argumentNode.getValue()).value, 24);
+    test:assertEquals((<ArgumentValue>argumentNode.getValue().get("newAge")).value, 24);
     test:assertEquals(fieldNode.getFields().length(), 2);
     test:assertEquals(fieldNode.getFields()[0].getName(), "name");
     test:assertEquals(fieldNode.getFields()[1].getName(), "age");
@@ -350,7 +350,7 @@ isolated function testParseNamedMutation() returns error? {
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "newAge");
-    test:assertEquals((<ArgumentValue>argumentNode.getValue()).value, 24);
+    test:assertEquals((<ArgumentValue>argumentNode.getValue().get("newAge")).value, 24);
     test:assertEquals(fieldNode.getFields().length(), 2);
     test:assertEquals(fieldNode.getFields()[0].getName(), "name");
     test:assertEquals(fieldNode.getFields()[1].getName(), "age");
@@ -483,7 +483,7 @@ isolated function testFieldAliasWithArguments() returns error? {
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "id");
-    test:assertEquals((<ArgumentValue>argumentNode.getValue()).value, 1);
+    test:assertEquals((<ArgumentValue>argumentNode.getValue().get("id")).value, 1);
 }
 
 @test:Config {
@@ -525,9 +525,10 @@ isolated function testInputObjects() returns error? {
     ArgumentNode argValue = <ArgumentNode> variableDefinition?.defaultValue;
     test:assertEquals(argValue.getKind(), T_IDENTIFIER);
     test:assertEquals(argValue.getName(), "bAuthor");
-    map<ArgumentValue|ArgumentNode> defaultValue = <map<ArgumentValue|ArgumentNode>> argValue.getValue();
+    map<ArgumentValue|ArgumentNode> defaultValue = argValue.getValue();
     test:assertEquals(defaultValue.hasKey("name"), true);
-    ArgumentValue defaultValueField = <ArgumentValue> defaultValue.get("name");
+    ArgumentNode argField = <ArgumentNode> defaultValue.get("name");
+    ArgumentValue defaultValueField = <ArgumentValue> argField.getValue().get("name");
     test:assertEquals(defaultValueField.value, "J.K Rowling");
     FieldNode fieldNode = operationNode.getFields()[0];
     test:assertEquals(fieldNode.getName(), "book");
@@ -543,6 +544,7 @@ isolated function testInputObjects() returns error? {
     ArgumentNode fields2 = <ArgumentNode> inputObjectFields.get("movie");
     map<ArgumentValue|ArgumentNode> nestedFields = <map<ArgumentValue|ArgumentNode>>fields2.getValue();
     test:assertEquals(nestedFields.hasKey("movieName"), true);
-    ArgumentValue nestedValue = <ArgumentValue>nestedFields.get("movieName");
+    ArgumentNode innerField = <ArgumentNode> fields2.getValue().get("movieName");
+    ArgumentValue nestedValue = <ArgumentValue> innerField.getValue().get("movieName");
     test:assertEquals(nestedValue.value, "End Game");
 }

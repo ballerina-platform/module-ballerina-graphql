@@ -93,6 +93,10 @@ service /inputs on basicListener {
         }
         return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
     }
+
+    isolated resource function get sendEmail(string message) returns string {
+        return message;
+    }
 }
 
 service /input_objects on basicListener {
@@ -103,7 +107,7 @@ service /input_objects on basicListener {
             };
         } else if profileDetail?.age == 30 || profileDetail.name == "Walter" {
             return {
-                name: "Jesse Pinkman", age: 25, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
+                name: "Walter White", age: 50, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
             };
         } else {
             return {

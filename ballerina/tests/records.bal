@@ -114,6 +114,7 @@ public type Movie record {
     string movieName;
     string director?;
 };
+
 public type ProfileDetail record {
     string name;
     int age?;

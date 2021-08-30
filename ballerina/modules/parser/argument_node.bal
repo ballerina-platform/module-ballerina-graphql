@@ -19,13 +19,15 @@ public class ArgumentNode {
 
     private string name;
     private Location location;
-    private ArgumentValue|map<ArgumentValue|ArgumentNode> value;
+    private map<ArgumentValue|ArgumentNode> value;
     private ArgumentType kind;
     private string? variableName;
     private anydata? variableValue;
     private boolean variableDefinition;
+    private boolean inputObject;
 
-    public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
+    public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false,
+                                  boolean isInputObject = false) {
         self.name = name;
         self.location = location;
         self.value = {};
@@ -33,6 +35,7 @@ public class ArgumentNode {
         self.variableDefinition = isVarDef;
         self.variableName = ();
         self.variableValue = ();
+        self.inputObject = isInputObject;
     }
 
     public isolated function getName() returns string {
@@ -59,11 +62,11 @@ public class ArgumentNode {
         return self.variableName;
     }
 
-    public isolated function setValue(ArgumentValue|map<ArgumentValue|ArgumentNode> value) {
-        self.value = value;
+    public isolated function setValue(string name, ArgumentValue|ArgumentNode value) {
+        self.value[name] = value;
     }
 
-    public isolated function getValue() returns ArgumentValue|map<ArgumentValue|ArgumentNode>{
+    public isolated function getValue() returns map<ArgumentValue|ArgumentNode> {
         return self.value;
     }
 
@@ -81,5 +84,13 @@ public class ArgumentNode {
 
     public isolated function getVariableValue() returns anydata {
         return self.variableValue;
+    }
+
+    public isolated function isInputObject() returns boolean {
+        return self.inputObject;
+    }
+
+    public isolated function setInputObject(boolean value) {
+        self.inputObject = value;
     }
 }

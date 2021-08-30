@@ -116,57 +116,32 @@ class ValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue schemaArg = <__InputValue>(<map<anydata>>data).get("input");
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
-        __Type argType = getOfType(schemaArg.'type);
-        string expectedTypeName = argType?.name.toString();
-        parser:ArgumentValue|map<parser:ArgumentValue|parser:ArgumentNode> value = argumentNode.getValue();
-        if isInputObject(value) {
-            map<parser:ArgumentValue|parser:ArgumentNode> inputObjectValue =
-                <map<parser:ArgumentValue|parser:ArgumentNode>>value;
-            string actualTypeName = getTypeName(argumentNode);
-            if argumentNode.isVariableDefinition() {
-                if argumentNode.getVariableValue() is Scalar {
-                    parser:ArgumentValue argValue = <parser:ArgumentValue>
-                        {value: <Scalar>argumentNode.getVariableValue(), location: argumentNode.getLocation()};
-                    self.validateArgumentValue(argValue, getTypeName(argumentNode), schemaArg);
-                } else if argumentNode.getVariableValue() is map<anydata> {
-                    self.validateInputObjectVariableValue(<map<anydata>>argumentNode.getVariableValue(), schemaArg,
-                                                          argumentNode.getLocation(), fieldName);
-                } else {
-                    string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} ` +
-                    string`value: ${argumentNode.getVariableValue().toString()}`;
-                    ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
-                    self.errors.push(errorDetail);
-                }
-            } else {
-                self.visitInputObject(argumentNode, data);
-            }
+        if argumentNode.isVariableDefinition() {
+            self.validateVariableValue(argumentNode, schemaArg, fieldName);
+        } else if argumentNode.isInputObject() {
+            self.visitInputObject(argumentNode, schemaArg, fieldName);
         } else {
-            self.validateArgumentValue(<parser:ArgumentValue>value, getTypeName(argumentNode), schemaArg);
+            parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(schemaArg.name);
+            if fieldValue is parser:ArgumentValue {
+                self.validateArgumentValue(fieldValue, getTypeName(argumentNode), schemaArg);
+            }
         }
     }
 
-    isolated function visitInputObject(parser:ArgumentNode argumentNode, anydata data = ()) {
-        __InputValue inputValue = <__InputValue>(<map<anydata>>data).get("input");
-        string fieldName = <string>(<map<anydata>>data).get("fieldName");
-        __Type argType = getOfType(inputValue.'type);
-        string expectedTypeName = argType?.name.toString();
+    isolated function visitInputObject(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
+        __Type argType = getOfType(schemaArg.'type);
         __InputValue[] inputFields = <__InputValue[]>argType?.inputFields;
-        map<parser:ArgumentValue|parser:ArgumentNode> inputObjectFields =
-            <map<parser:ArgumentValue|parser:ArgumentNode>>argumentNode.getValue();
         self.validateInputObjectFields(argumentNode, inputFields);
         foreach __InputValue inputField in inputFields {
             __Type subArgType = getOfType(inputField.'type);
-            expectedTypeName = subArgType?.name.toString();
             __InputValue subInputValue = inputField;
-            if inputObjectFields.hasKey(inputField.name) {
-                parser:ArgumentValue|parser:ArgumentNode fieldValue = inputObjectFields.get(inputField.name);
+            if argumentNode.getValue().hasKey(inputField.name) {
+                parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(inputField.name);
                 if fieldValue is parser:ArgumentNode {
                     self.visitArgument(fieldValue, {input:subInputValue, fieldName:fieldName});
-                } else {
-                    self.validateArgumentValue(fieldValue, getTypeNameFromValue(<Scalar>fieldValue.value), subInputValue);
                 }
             } else {
-                if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
+                if ((subInputValue.'type).kind == NON_NULL && schemaArg?.defaultValue is ()) {
                     string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type ` +
                     string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
                     self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
@@ -175,12 +150,28 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateArgumentValue(parser:ArgumentValue value, string actualTypeName, __InputValue schemaArg) {
-        __Type argType = getOfType(schemaArg.'type);
-        string expectedTypeName = argType?.name.toString();
-        if argType.kind == ENUM {
-            self.validateEnumArgument(argType, value, actualTypeName, schemaArg);
+    isolated function validateVariableValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
+        anydata variableValue = argumentNode.getVariableValue();
+        if variableValue is Scalar {
+            parser:ArgumentValue argValue =
+                <parser:ArgumentValue> {value: variableValue, location: argumentNode.getLocation()};
+            self.validateArgumentValue(argValue, getTypeName(argumentNode), schemaArg);
+        } else if variableValue is map<anydata> {
+            self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getLocation(), fieldName);
         } else {
+            string expectedTypeName = getOfType(schemaArg.'type)?.name.toString();
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} ` +
+            string`value: ${variableValue.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            self.errors.push(errorDetail);
+        }
+    }
+
+    isolated function validateArgumentValue(parser:ArgumentValue value, string actualTypeName, __InputValue schemaArg) {
+        if getOfType(schemaArg.'type).kind == ENUM {
+            self.validateEnumArgument(value, actualTypeName, schemaArg);
+        } else {
+            string expectedTypeName = getOfType(schemaArg.'type)?.name.toString();
             if (expectedTypeName == actualTypeName) {
                 return;
             }
@@ -188,45 +179,32 @@ class ValidatorVisitor {
                 self.coerceInputIntToFloat(value);
                 return;
             }
-            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-            string`${(<parser:ArgumentValue>value).value.toString()}`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, (<parser:ArgumentValue>value).location);
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value.value.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
             self.errors.push(errorDetail);
         }
     }
 
-    isolated function validateInputObjectVariableValue(map<anydata> variableValues, __InputValue inputValue, Location location,
-                                                       string fieldName) {
+    isolated function validateInputObjectVariableValue(map<anydata> variableValues, __InputValue inputValue,
+                                                       Location location, string fieldName) {
         __Type argType = getOfType(inputValue.'type);
         __InputValue[] inputFields = <__InputValue[]>argType?.inputFields;
-        string expectedTypeName = argType?.name.toString();
-        foreach __InputValue inputField in inputFields {
-            __Type subArgType = getOfType(inputField.'type);
-            expectedTypeName = subArgType?.name.toString();
-            __InputValue subInputValue = inputField;
-            if variableValues.hasKey(inputField.name) {
-                anydata fieldValue = variableValues.get(inputField.name);
+        foreach __InputValue subInputValue in inputFields {
+            if variableValues.hasKey(subInputValue.name) {
+                anydata fieldValue = variableValues.get(subInputValue.name);
                 if fieldValue is Scalar {
-                    parser:ArgumentValue argValue = {value: <Scalar>fieldValue, location: location};
-                    if subArgType.kind == ENUM {
-                        self.validateEnumArgument(getOfType(subInputValue.'type), argValue, argType.kind,
-                                                  subInputValue);
+                    parser:ArgumentValue argValue = {value: fieldValue, location: location};
+                    if getOfType(subInputValue.'type).kind == ENUM {
+                        //validate input object field with enum value
+                        self.validateEnumArgument(argValue, argType.kind, subInputValue);
                     } else {
-                        string actualTypeName = getTypeNameFromValue(fieldValue);
-                        self.validateArgumentValue(argValue, actualTypeName, subInputValue);
+                        self.validateArgumentValue(argValue, getTypeNameFromValue(fieldValue), subInputValue);
                     }
                 } else if fieldValue is decimal {
-                    if expectedTypeName == FLOAT {
-                        parser:ArgumentValue argValue = {value: <float>fieldValue, location: location};
-                        self.validateArgumentValue(argValue, FLOAT, subInputValue);
-                    } else {
-                        string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: `+
-                        string`${fieldValue.toString()}`;
-                        ErrorDetail errorDetail = getErrorDetailRecord(message, location);
-                        self.errors.push(errorDetail);
-                    }
+                    //coerce decimal to float since float value change over the network
+                    self.coerceInputVariableDecimalToFloat(fieldValue, subInputValue, location);
                 } else if fieldValue is map<anydata> {
-                    self.validateInputObjectVariableValue(<map<anydata>>fieldValue, subInputValue, location, fieldName);
+                    self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
                 }
             } else {
                 if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
@@ -271,6 +249,19 @@ class ValidatorVisitor {
 
     isolated function coerceInputIntToFloat(parser:ArgumentValue argument) {
         argument.value = <float>argument.value;
+    }
+
+    isolated function coerceInputVariableDecimalToFloat(decimal value, __InputValue inputValue, Location location) {
+        string expectedTypeName = getOfType(inputValue.'type)?.name.toString();
+        if expectedTypeName == FLOAT {
+            parser:ArgumentValue argValue = {value: <float>value, location: location};
+            self.validateArgumentValue(argValue, FLOAT, inputValue);
+        } else {
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: `+
+            string`${value.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+            self.errors.push(errorDetail);
+        }
     }
 
     isolated function coerceInputVariableIntToFloat(string name, map<anydata> inputValues) {
@@ -340,27 +331,25 @@ class ValidatorVisitor {
     }
 
     isolated function validateInputObjectFields(parser:ArgumentNode node, __InputValue[] schemaFields) {
-        map<parser:ArgumentValue|parser:ArgumentNode> inputObjectFields =
-            <map<parser:ArgumentValue|parser:ArgumentNode>>node.getValue();
+        map<parser:ArgumentValue|parser:ArgumentNode> inputObjectFields = node.getValue();
         string[] undefinedFields = inputObjectFields.keys();
         foreach __InputValue fields in schemaFields {
-            if !(undefinedFields.indexOf(fields.name) is ()) {
-                _ = undefinedFields.remove(<int>undefinedFields.indexOf(fields.name));
+            int? index = undefinedFields.indexOf(fields.name);
+            if index is int {
+                _ = undefinedFields.remove(index);
             }
         }
         foreach string name in undefinedFields {
             string message = string`Field "${name}" is not defined by type "${node.getName()}".`;
             parser:ArgumentValue|parser:ArgumentNode fieldValue = inputObjectFields.get(name);
-            if fieldValue is parser:ArgumentValue {
-                self.errors.push(getErrorDetailRecord(message, fieldValue.location));
-            } else {
+            if fieldValue is parser:ArgumentNode {
                 self.errors.push(getErrorDetailRecord(message, fieldValue.getLocation()));
             }
         }
     }
 
-    isolated function validateEnumArgument(__Type argType, parser:ArgumentValue value, string actualArgType,
-                                           __InputValue inputValue) {
+    isolated function validateEnumArgument(parser:ArgumentValue value, string actualArgType, __InputValue inputValue) {
+        __Type argType = getOfType(inputValue.'type);
         if (getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER) {
             string message = string`Enum "${getTypeNameFromType(argType)}" cannot represent non-enum value: `+
             string`"${value.value}"`;
@@ -368,7 +357,7 @@ class ValidatorVisitor {
             self.errors.push(errorDetail);
             return;
         }
-       __EnumValue[] enumValues = <__EnumValue[]>argType?.enumValues;
+        __EnumValue[] enumValues = <__EnumValue[]> argType?.enumValues;
         foreach __EnumValue enumValue in enumValues {
             if (enumValue.name == value.value) {
                 return;
@@ -449,14 +438,6 @@ isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns 
 
 isolated function hasFields(__Type fieldType) returns boolean {
     if (fieldType.kind == OBJECT || fieldType.kind == UNION) {
-        return true;
-    }
-    return false;
-}
-
-isolated function isInputObject(parser:ArgumentValue|map<parser:ArgumentValue|parser:ArgumentNode> argument)
-    returns boolean {
-    if argument is map<parser:ArgumentValue|parser:ArgumentNode> {
         return true;
     }
     return false;

@@ -94,8 +94,8 @@ class VariableValidator {
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         map<parser:VariableDefinition> variableDefinitions = <map<parser:VariableDefinition>> data;
-        parser:Location location = argumentNode.getLocation();
         if argumentNode.isVariableDefinition() {
+            parser:Location location = argumentNode.getLocation();
             string variableName = <string>argumentNode.getVariableName();
             if variableDefinitions.hasKey(variableName) {
                 parser:VariableDefinition variableDefinition = variableDefinitions.get(variableName);
@@ -104,16 +104,21 @@ class VariableValidator {
                     argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
                     anydata value = self.variables.get(variableName);
                     self.setArgumentValue(value, argumentNode, location);
-                } else if !(variableDefinition?.defaultValue is ()) {
+                } else if variableDefinition?.defaultValue is parser:ArgumentValue {
+                    parser:ArgumentValue value = <parser:ArgumentValue> variableDefinition?.defaultValue;
                     argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
-                    if variableDefinition?.defaultValue is parser:ArgumentValue {
-                        argumentNode.setValue(<parser:ArgumentValue>variableDefinition?.defaultValue);
-                        argumentNode.setVariableDefinition(false);
-                    } else {
-                        parser:ArgumentNode defaultValue = <parser:ArgumentNode>variableDefinition?.defaultValue;
-                        argumentNode.setValue(defaultValue.getValue());
-                        argumentNode.setVariableDefinition(false);
+                    argumentNode.setValue(argumentNode.getName(), value);
+                    argumentNode.setVariableDefinition(false);
+                } else if variableDefinition?.defaultValue is parser:ArgumentNode {
+                    parser:ArgumentNode value = <parser:ArgumentNode> variableDefinition?.defaultValue;
+                    argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
+                    foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in value.getValue() {
+                        if fieldValue is parser:ArgumentNode {
+                            argumentNode.setValue(fieldValue.getName(), fieldValue);
+                        }
                     }
+                    argumentNode.setInputObject(true);
+                    argumentNode.setVariableDefinition(false);
                 } else {
                     string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
                     string`was not provided.`;
@@ -121,21 +126,18 @@ class VariableValidator {
                 }
             } else {
                 string message = string`Variable "$${variableName}" is not defined.`;
-                self.errors.push(getErrorDetailRecord(message, location)); 
+                self.errors.push(getErrorDetailRecord(message, location));
             }
-        } else if argumentNode.getValue() is map<parser:ArgumentValue|parser:ArgumentNode> {
-            map<parser:ArgumentValue|parser:ArgumentNode> fields =
-                <map<parser:ArgumentValue|parser:ArgumentNode>> argumentNode.getValue();
-            foreach string keys in fields.keys() {
-                if fields.get(keys) is parser:ArgumentNode {
-                    self.visitArgument(<parser:ArgumentNode>fields.get(keys), data);
+        } else {
+            foreach parser:ArgumentValue|parser:ArgumentNode argField in argumentNode.getValue() {
+                if argField is parser:ArgumentNode {
+                    self.visitArgument(argField, data);
                 }
             }
         }
     }
 
-    public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,
-                                              parser:Location location) {
+    public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument, parser:Location location) {
         if argument.getKind() == parser:T_IDENTIFIER {
             argument.setVariableValue(value);
         } else if getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {

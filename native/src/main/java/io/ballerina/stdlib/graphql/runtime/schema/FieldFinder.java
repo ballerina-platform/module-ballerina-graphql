@@ -18,12 +18,12 @@
 
 package io.ballerina.stdlib.graphql.runtime.schema;
 
-import io.ballerina.runtime.api.Parameter;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MethodType;
+import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
@@ -238,7 +238,7 @@ public class FieldFinder {
 
     private SchemaField getFieldsFromRemoteMethodType(RemoteMethodType remoteMethod) {
         SchemaField schemaField = new SchemaField(remoteMethod.getName());
-        addArgsToSchemaField(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), schemaField);
+        addArgsToSchemaField(remoteMethod, schemaField);
         setTypeForField(remoteMethod, schemaField);
         return schemaField;
     }
@@ -252,7 +252,7 @@ public class FieldFinder {
             schemaField.setType(fieldType);
         } else {
             setTypeForField(resourceMethod, schemaField);
-            addArgsToSchemaField(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), schemaField);
+            addArgsToSchemaField(resourceMethod, schemaField);
         }
         return schemaField;
     }
@@ -269,25 +269,24 @@ public class FieldFinder {
         }
     }
 
-    private void addArgsToSchemaField(Parameter[] parameters, Type[] paramTypes, SchemaField schemaField) {
-        for (int i = 0; i < parameters.length; i++) {
+    private void addArgsToSchemaField(MethodType method, SchemaField schemaField) {
+        for (Parameter parameter : method.getParameters()) {
             SchemaType inputValueType;
-            if (paramTypes[i].isNilable()) {
-                Type inputType = getInputTypeFromNilableType((UnionType) paramTypes[i]);
+            if (parameter.type.isNilable()) {
+                Type inputType = getInputTypeFromNilableType((UnionType) parameter.type);
                 inputValueType = this.typeMap.get(getTypeNameFromType(inputType));
             } else {
-                inputValueType = this.typeMap.get(getTypeNameFromType(paramTypes[i]));
+                inputValueType = this.typeMap.get(getTypeNameFromType(parameter.type));
             }
             InputValue inputValue;
-            if (paramTypes[i].isNilable()) {
-                inputValue = new InputValue(parameters[i].name, inputValueType);
-            } else if (parameters[i].isDefault) {
-                inputValue = new InputValue(parameters[i].name, inputValueType,
-                        paramTypes[i].getZeroValue().toString());
+            if (parameter.type.isNilable()) {
+                inputValue = new InputValue(parameter.name, inputValueType);
+            } else if (parameter.isDefault) {
+                inputValue = new InputValue(parameter.name, inputValueType, parameter.type.getZeroValue().toString());
             } else {
                 SchemaType nonNullType = getNonNullType();
                 nonNullType.setOfType(inputValueType);
-                inputValue = new InputValue(parameters[i].name, nonNullType);
+                inputValue = new InputValue(parameter.name, nonNullType);
             }
             schemaField.addArg(inputValue);
         }

@@ -269,8 +269,7 @@ public class Parser {
     }
 
     isolated function getInputObjectTypeArgument(string name, Location location) returns ArgumentNode|Error {
-        ArgumentNode argumentNode = new(name, location, T_IDENTIFIER);
-        map<ArgumentValue|ArgumentNode> valueMap = {};
+        ArgumentNode argumentNode = new(name, location, T_IDENTIFIER, isInputObject = true);
         Token token = check self.readNextNonSeparatorToken();// consume open brace here
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_CLOSE_BRACE {
@@ -278,7 +277,7 @@ public class Parser {
                 token = check self.readNextNonSeparatorToken();
                 string fieldName = check getIdentifierTokenvalue(token);
                 Location fieldLocation = token.location.clone();
-                if valueMap.hasKey(fieldName) {
+                if argumentNode.getValue().hasKey(fieldName) {
                     return getDuplicateFieldError(token);
                 }
                 token = check self.readNextNonSeparatorToken();
@@ -287,23 +286,28 @@ public class Parser {
                 }
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
+                    //nested input objects
                     ArgumentNode nestedInputObjectFields = check self.getInputObjectTypeArgument(fieldName, fieldLocation);
-                    valueMap[fieldName] = nestedInputObjectFields;
+                    argumentNode.setValue(fieldName, nestedInputObjectFields);
                 } else if token.kind == T_DOLLAR {
+                    //input object fields with variable definitions
                     token = check self.readNextNonSeparatorToken();
                     token = check self.readNextNonSeparatorToken();
                     string varName = check getIdentifierTokenvalue(token);
-                    ArgumentNode nestedVariableFields = new(fieldName, token.location, T_IDENTIFIER, true);
+                    ArgumentNode nestedVariableFields = new(fieldName, token.location, T_IDENTIFIER, isVarDef = true);
                     nestedVariableFields.addVariableName(varName);
-                    valueMap[fieldName] = nestedVariableFields;
+                    argumentNode.setValue(fieldName, nestedVariableFields);
                 } else {
+                    //input object fields with value
                     token = check self.readNextNonSeparatorToken();
+                    ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue fieldValue = check getArgumentValue(token);
-                    valueMap[fieldName] = fieldValue;
+                    ArgumentNode inputObjectFieldNode = new(fieldName, fieldLocation, argType);
+                    inputObjectFieldNode.setValue(fieldName, fieldValue);
+                    argumentNode.setValue(fieldName, inputObjectFieldNode);
                 }
                 token = check self.peekNextNonSeparatorToken();
             }
-            argumentNode.setValue(valueMap);
         }
         token = check self.readNextNonSeparatorToken(); // consume close brace here
         return argumentNode;
@@ -312,17 +316,18 @@ public class Parser {
     isolated function getScalarTypeArgument(string name, Location location) returns ArgumentNode|Error {
         Token token = check self.readNextNonSeparatorToken();
         if token.kind == T_DOLLAR {
+            //scalar type argument with variable definition
             token = check self.readNextNonSeparatorToken();
             string varName = check getIdentifierTokenvalue(token);
             ArgumentType argType = <ArgumentType>token.kind;
-            ArgumentNode argument = new(name, token.location, argType, true);
+            ArgumentNode argument = new(name, token.location, argType, isVarDef = true);
             argument.addVariableName(varName);
             return argument;
         } else {
             ArgumentValue value = check getArgumentValue(token);
             ArgumentType argType = <ArgumentType>token.kind;
             ArgumentNode argument = new(name, location, argType);
-            argument.setValue(value);
+            argument.setValue(name, value);
             return argument;
         }
     }

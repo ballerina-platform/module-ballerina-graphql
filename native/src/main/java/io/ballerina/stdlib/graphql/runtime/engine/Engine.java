@@ -20,13 +20,13 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.Parameter;
-import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.MethodType;
+import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
-import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -47,6 +47,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_F
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
@@ -131,7 +132,8 @@ public class Engine {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
-                getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments);
+                getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
+                                   RESOURCE_STRAND_METADATA);
                 return;
             }
         }
@@ -145,33 +147,23 @@ public class Engine {
         BString fieldName = node.getStringValue(NAME_FIELD);
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(fieldName.getValue())) {
-                getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments);
+                getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments,
+                                   REMOTE_STRAND_METADATA);
                 return;
             }
         }
     }
 
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
-                                           ResourceMethodType resourceMethod, BMap<BString, Object> data,
-                                           List<Object> pathSegments) {
+                                           MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
+                                           StrandMetadata strandMetadata) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(resourceMethod.getParameters(), resourceMethod.getParameterTypes(), arguments);
+        Object[] args = getArgsForMethod(method, arguments);
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, resourceMethod.getName(), null,
-                                                                         RESOURCE_STRAND_METADATA, callback, args);
-    }
-
-    private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
-                                           RemoteMethodType remoteMethod, BMap<BString, Object> data,
-                                           List<Object> pathSegments) {
-        BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(remoteMethod.getParameters(), remoteMethod.getParameterTypes(), arguments);
-        ResourceCallback callback = new ResourceCallback(executionContext, node, data, pathSegments);
-        executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, remoteMethod.getName(), null,
-                                                                         REMOTE_STRAND_METADATA, callback, args);
+        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, method.getName(), null,
+                                                                         strandMetadata, callback, args);
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
@@ -192,13 +184,16 @@ public class Engine {
                     argumentsMap.put(argName, value);
                 }
             } else {
-                if (objectFields.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
-                    Object argValue = objectFields.get(VALUE_FIELD);
-                    argumentsMap.put(argName, argValue);
-                } else {
+                if (argumentNode.getBooleanValue(INPUT_OBJECT)) {
                     BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
                     addInputObjectTypeArgument(objectFields, inputObjectFieldMap);
                     argumentsMap.put(argName, inputObjectFieldMap);
+                } else {
+                    if (objectFields.containsKey(argName)) {
+                        BMap<BString, Object> argValueRecord = (BMap<BString, Object>) objectFields.get(argName);
+                        Object argValue = argValueRecord.get(VALUE_FIELD);
+                        argumentsMap.put(argName, argValue);
+                    }
                 }
             }
         }
@@ -208,35 +203,36 @@ public class Engine {
                                                   BMap<BString, Object> inputObjectMap) {
         for (Map.Entry<BString, Object> entry : objectFields.entrySet()) {
             BString fieldName = entry.getKey();
-            if (entry.getValue() instanceof BMap) {
-                BMap<BString, Object> argumentValueRecord = (BMap<BString, Object>) entry.getValue();
-                Object argValue = argumentValueRecord.get(VALUE_FIELD);
-                inputObjectMap.put(fieldName, argValue);
+            BObject fieldValue = (BObject) entry.getValue();
+            BMap<BString, Object> nestedObjectFields = fieldValue.getMapValue(VALUE_FIELD);
+            if (nestedObjectFields.isEmpty()) {
+                if (fieldValue.getBooleanValue(VARIABLE_DEFINITION)) {
+                    Object value = fieldValue.get(VARIABLE_VALUE_FIELD);
+                    inputObjectMap.put(fieldName, value);
+                }
             } else {
-                BObject value = (BObject) entry.getValue();
-                BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
-                BMap<BString, Object> nestedObjectFields = value.getMapValue(VALUE_FIELD);
-                if (nestedObjectFields.isEmpty()) {
-                    if (value.getBooleanValue(VARIABLE_DEFINITION)) {
-                        Object fieldValue = value.get(VARIABLE_VALUE_FIELD);
-                        inputObjectMap.put(fieldName, fieldValue);
-                    }
-                } else if (nestedObjectFields.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
-                    Object argValue = objectFields.get(VALUE_FIELD);
-                    inputObjectMap.put(fieldName, argValue);
-                } else {
+                if (fieldValue.getBooleanValue(INPUT_OBJECT)) {
+                    BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
                     addInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
                     inputObjectMap.put(fieldName, nestedInputObjectFieldMap);
+                } else {
+                    if (nestedObjectFields.containsKey(fieldName)) {
+                        BMap<BString, Object> argValueRecord =
+                                (BMap<BString, Object>) nestedObjectFields.get(fieldName);
+                        Object argValue = argValueRecord.get(VALUE_FIELD);
+                        inputObjectMap.put(fieldName, argValue);
+                    }
                 }
             }
         }
     }
 
-    private static Object[] getArgsForMethod(Parameter[] parameters, Type[] types, BMap<BString, Object> arguments) {
+    private static Object[] getArgsForMethod(MethodType method, BMap<BString, Object> arguments) {
+        Parameter[] parameters = method.getParameters();
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[j] = types[i].getZeroValue();
+                result[j] = parameters[i].type.getZeroValue();
                 result[j + 1] = false;
             } else {
                 result[j] = arguments.get(StringUtils.fromString(parameters[i].name));
