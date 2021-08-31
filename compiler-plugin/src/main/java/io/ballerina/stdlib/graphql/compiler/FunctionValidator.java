@@ -311,7 +311,7 @@ public class FunctionValidator {
     // interface has all the resource functions
     private void validateImplementedClasses(ClassSymbol classSymbol, SyntaxNodeAnalysisContext context) {
         if (!classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
-            updateContext(context, CompilationError.INVALID_INTERFACE,
+            updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
                     classSymbol.getLocation().get());
         }
         Set<ClassSymbol> childClasses = typeInclusions.get(classSymbol.getName().get());
@@ -319,7 +319,7 @@ public class FunctionValidator {
         for (ClassSymbol childClass : childClasses) {
             if (!childClass.methods().keySet().containsAll(resourceFunctionsInInterface)) {
                 updateContext(context, CompilationError.INVALID_INTERFACE_IMPLEMENTATION,
-                        childClass.getLocation().get());
+                        childClass.getLocation().get(), classSymbol.getName().get());
             }
         }
     }
@@ -345,18 +345,18 @@ public class FunctionValidator {
                             Set<String> methods = classesAndResourceFunctions.get(className);
                             if (!implementedAllResourceFunctions(methods, classSymbol.methods().keySet())) {
                                 updateContext(context, CompilationError.INVALID_INTERFACE_IMPLEMENTATION,
-                                        inclusionClassSymbol.getLocation().get());
+                                        classSymbol.getLocation().get(), className);
                             }
                             // checks interfaces implemented by the interface
                             if (!inclusionClassSymbol.typeInclusions().isEmpty()) {
                                 implementedValidInterface(inclusionClassSymbol, context);
                             }
                         } else {
-                            updateContext(context, CompilationError.INVALID_INTERFACE,
+                            updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
                                     inclusionClassSymbol.getLocation().get());
                         }
                     } else {
-                        updateContext(context, CompilationError.INVALID_INTERFACE,
+                        updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
                                 inclusionClassSymbol.getLocation().get());
                     }
                 }

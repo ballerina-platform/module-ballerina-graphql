@@ -142,6 +142,14 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testValidMultipleInterfaceImplementations() {
+        Package currentPackage = loadPackage("valid_service_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -482,7 +490,7 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_INTERFACE, 19, 15);
+        assertError(diagnostic, CompilationError.NON_DISTINCT_INTERFACE_CLASS, 19, 15);
     }
 
     @Test
@@ -493,10 +501,10 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 56, 15);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 56, 15);
     }
 
     @Test
@@ -506,7 +514,31 @@ public class CompilerPluginTest {
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 31, 24);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
+    }
+
+    @Test
+    public void testInvalidMultipleInterfaceImplementation() {
+        Package currentPackage = loadPackage("invalid_service_26");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 61, 15);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 72, 15);
+    }
+
+    @Test
+    public void testInvalidMultipleInterfaceImplementation2() {
+        Package currentPackage = loadPackage("invalid_service_27");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 43, 15);
     }
 
     private Package loadPackage(String path) {
@@ -523,6 +555,14 @@ public class CompilerPluginTest {
     private void assertError(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
         Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
         Assert.assertEquals(diagnostic.message(), compilationError.getError());
+        // Compiler counts lines and columns from zero
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().line() + 1), line);
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().offset() + 1), column);
+    }
+
+    private void assertErrorFormat(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.diagnosticInfo().messageFormat(), compilationError.getError());
         // Compiler counts lines and columns from zero
         Assert.assertEquals((diagnostic.location().lineRange().startLine().line() + 1), line);
         Assert.assertEquals((diagnostic.location().lineRange().startLine().offset() + 1), column);

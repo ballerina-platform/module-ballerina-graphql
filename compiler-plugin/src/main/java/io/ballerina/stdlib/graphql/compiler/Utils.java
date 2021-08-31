@@ -87,9 +87,9 @@ public class Utils {
                         "names", "GRAPHQL_112", DiagnosticSeverity.ERROR),
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
                                    DiagnosticSeverity.ERROR),
-        INVALID_INTERFACE("Interface types must have the distinct qualifier", "GRAPHQL_114",
+        NON_DISTINCT_INTERFACE_CLASS("Interface types must have the distinct qualifier", "GRAPHQL_114",
                 DiagnosticSeverity.ERROR),
-        INVALID_INTERFACE_IMPLEMENTATION("All resource functions in the interface class is not implemented",
+        INVALID_INTERFACE_IMPLEMENTATION("All the resource functions in the interface class `{0}` must be implemented",
                 "GRAPHQL_115", DiagnosticSeverity.ERROR);
 
         private final String error;
@@ -143,6 +143,14 @@ public class Utils {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
                 errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
+        context.reportDiagnostic(diagnostic);
+    }
+
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
+                                     Location location, Object... args) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
+        Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, args);
         context.reportDiagnostic(diagnostic);
     }
 
