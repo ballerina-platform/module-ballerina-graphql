@@ -134,7 +134,7 @@ class VariableValidator {
         } else {
             string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ${value.toString()};` +
             string`Expected type ${getTypeName(argument)}. ${getTypeName(argument)} cannot represent value: ${value.toString()}`;
-            self.errors.push(getErrorDetailRecord(message, location)); 
+            self.errors.push(getErrorDetailRecord(message, location));
         }
     }
 }

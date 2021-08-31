@@ -99,26 +99,119 @@ public class Lexer {
     }
 
     isolated function readStringLiteral() returns Token|SyntaxError {
-        string previousChar = "";
         string word = "";
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore first double quote character
-        while (true) {
-            string value = self.charReader.peek();
-            if (value is LineTerminator) {
+        string value = self.charReader.peek();
+        if value == DOUBLE_QUOTE {
+            value = self.readNextChar();
+            value = self.charReader.peek();
+            if value == DOUBLE_QUOTE {
+                word = self.readBlockStringLiteral();
+                return getToken(word, T_STRING, location);
+            } else {
+                return getToken(word, T_STRING, location);
+            }
+        } else {
+            return self.readSingleLineStringLiteral(location);
+        }
+    }
+
+    isolated function readSingleLineStringLiteral(Location location) returns Token|SyntaxError {
+        string previousChar = "";
+        string value = "";
+        string word = "";
+        while true {
+            value = self.charReader.peek();
+            if value is LineTerminator {
                 string message = "Syntax Error: Unterminated string.";
                 return error UnterminatedStringError(message, line = self.currentLocation.line,
                                                      column = self.currentLocation.column);
-            } else if (value == DOUBLE_QUOTE && previousChar != BACK_SLASH) {
+            } else {
                 value = self.readNextChar();
-                break;
+                if value == DOUBLE_QUOTE && previousChar != BACK_SLASH {
+                    break;
+                } else {
+                    word += value;
+                }
+                previousChar = value;
+            }
+        }
+        return getToken(word, T_STRING, location);
+    }
+
+    isolated function readBlockStringLiteral() returns string {
+        string word = "";
+        string[] lines = [];
+        _ = self.readNextChar(); // Ignore third double quote character
+        while true {
+            string value = self.charReader.peek();
+            if value == NEW_LINE {
+                lines.push(word);
+                word = "";
+                value = self.readNextChar();
+            } else if value == DOUBLE_QUOTE {
+                string previousChar = self.readNextChar();
+                value = self.charReader.peek();
+                if value == DOUBLE_QUOTE {
+                    previousChar += self.readNextChar();
+                    value = self.charReader.peek();
+                    if value == DOUBLE_QUOTE {
+                        previousChar += self.readNextChar();
+                        if word.endsWith(BACK_SLASH) {
+                            word = word.substring(0, word.length()-1); //Remove back slash
+                        } else {
+                            lines.push(word);
+                            break;
+                        }
+                    }
+                }
+                word += previousChar;
             } else {
                 value = self.readNextChar();
                 word += value;
             }
-            previousChar = value;
         }
-        return getToken(word, T_STRING, location);
+        return self.getBlockStringValue(lines);
+    }
+
+    isolated function getBlockStringValue(string[] lines) returns string {
+        int? commonIndent = ();
+        string formatted = "";
+        foreach string line in lines {
+            int indent  = self.getLeadingWhiteSpaceCount(line);
+            if indent < line.length() && (commonIndent is () || indent < commonIndent) {
+                commonIndent = indent;
+            }
+        }
+        if commonIndent is int {
+            foreach int i in 0..< lines.length() {
+                if commonIndent > lines[i].length() {
+                    continue;
+                } else {
+                    lines[i] = lines[i].substring(commonIndent, lines[i].length());
+                }
+            }
+        }
+        foreach string line in lines {
+            formatted = string:'join("\n", formatted, line);
+        }
+        return formatted.trim();
+    }
+
+    isolated function getLeadingWhiteSpaceCount(string line) returns int {
+        CharIterator iterator = line.iterator();
+        CharIteratorNode? next = iterator.next();
+        int i = 0;
+        while next is CharIteratorNode {
+            if next.value is WhiteSpace {
+                i += 1;
+                next = iterator.next();
+            } else {
+                break;
+            }
+        }
+        return i;
     }
 
     isolated function readNumericLiteral(string fisrtChar) returns Token|SyntaxError {

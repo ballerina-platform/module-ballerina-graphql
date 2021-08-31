@@ -1,0 +1,9 @@
+{
+    greet(msg: """
+        Hello,
+            World!,
+
+                This is
+            GraphQL
+        Block String""")
+}

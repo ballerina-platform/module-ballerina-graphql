@@ -36,6 +36,24 @@ service object {
     }
 };
 
+service /input_type_introspection on basicListener {
+    isolated resource function get name(string name = "Walter") returns string {
+        return name;
+    }
+
+    isolated resource function get subject(string? subject = "Chemistry") returns string {
+        return subject.toString();
+    }
+
+    isolated resource function get city(string city) returns string {
+        return city;
+    }
+
+    isolated resource function get street(string? street) returns string {
+        return street.toString();
+    }
+}
+
 service /validation on basicListener {
     isolated resource function get name() returns string {
         return "James Moriarty";
@@ -92,6 +110,10 @@ service /inputs on basicListener {
             return [SUNDAY, SATURDAY];
         }
         return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
+    }
+
+    isolated resource function get sendEmail(string message) returns string {
+        return message;
     }
 }
 
