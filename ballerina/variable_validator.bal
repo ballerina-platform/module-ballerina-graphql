@@ -23,12 +23,14 @@ class VariableValidator {
     private map<json> variables;
     private string[] visitedVariableDefinitions;
     private ErrorDetail[] errors;
+    map<parser:VariableDefinition> variableDefinitions;
 
     public isolated function init(parser:DocumentNode documentNode, map<json>? variableValues){
         self.documentNode = documentNode;
         self.visitedVariableDefinitions = [];
         self.errors = [];
         self.variables = variableValues == () ? {} : variableValues;
+        self.variableDefinitions = {};
     }
 
     public isolated function validate() returns ErrorDetail[]? {
@@ -46,18 +48,18 @@ class VariableValidator {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        map<parser:VariableDefinition> variableDefinitions = operationNode.getVaribleDefinitions();
+        self.variableDefinitions = operationNode.getVaribleDefinitions();
         foreach ErrorDetail errorDetail in operationNode.getErrors() {
             self.errors.push(errorDetail);
         }
         foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection, <anydata>variableDefinitions);
+            self.visitSelection(selection);
         }
-        string[] keys = variableDefinitions.keys();
+        string[] keys = self.variableDefinitions.keys();
         foreach string name in keys {
             if self.visitedVariableDefinitions.indexOf(name) == () {
                 string message = string`Variable "$${name}" is never used.`;
-                Location location  = <Location> variableDefinitions.get(name)?.location;
+                Location location = <Location> self.variableDefinitions.get(name)?.location;
                 self.errors.push(getErrorDetailRecord(message, location)); 
             }
         }
@@ -67,38 +69,37 @@ class VariableValidator {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection.isFragment {
             parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-            self.visitFragment(fragmentNode, data);
+            self.visitFragment(fragmentNode);
         } else {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode, data);
+            self.visitField(fieldNode);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
-            self.visitArgument(argument, data);
+            self.visitArgument(argument);
         }
         if fieldNode.getSelections().length() > 0 {
             parser:Selection[] selections = fieldNode.getSelections();
             foreach parser:Selection subSelection in selections {
-                self.visitSelection(subSelection, data);
+                self.visitSelection(subSelection);
             }
         } 
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, data);
+            self.visitSelection(selection);
         }
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        map<parser:VariableDefinition> variableDefinitions = <map<parser:VariableDefinition>> data;
         if argumentNode.isVariableDefinition() {
             parser:Location location = argumentNode.getLocation();
             string variableName = <string>argumentNode.getVariableName();
-            if variableDefinitions.hasKey(variableName) {
-                parser:VariableDefinition variableDefinition = variableDefinitions.get(variableName);
+            if self.variableDefinitions.hasKey(variableName) {
+                parser:VariableDefinition variableDefinition = self.variableDefinitions.get(variableName);
                 self.visitedVariableDefinitions.push(variableName);
                 if self.variables.hasKey(variableName) {
                     argumentNode.setKind(getArgumentTypeKind(variableDefinition.kind));
@@ -131,7 +132,7 @@ class VariableValidator {
         } else {
             foreach parser:ArgumentValue|parser:ArgumentNode argField in argumentNode.getValue() {
                 if argField is parser:ArgumentNode {
-                    self.visitArgument(argField, data);
+                    self.visitArgument(argField);
                 }
             }
         }
