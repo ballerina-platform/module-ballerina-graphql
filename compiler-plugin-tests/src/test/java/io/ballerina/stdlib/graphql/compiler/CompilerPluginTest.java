@@ -126,6 +126,14 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testInputObjectTypeInputParameter() {
+        Package currentPackage = loadPackage("valid_service_11");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -440,6 +448,41 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
+    }
+
+    @Test
+    public void testInvalidInputObjects() {
+        Package currentPackage = loadPackage("invalid_service_22");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 9);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 35, 42);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 44, 37);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, 57, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 73, 50);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 79, 42);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 91, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 106, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 118, 39);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 130, 40);
     }
 
     private Package loadPackage(String path) {

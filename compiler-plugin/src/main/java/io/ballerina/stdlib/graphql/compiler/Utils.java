@@ -86,7 +86,12 @@ public class Utils {
                 "A GraphQL resource/remote function cannot return \"any\" or \"anydata\", instead use specific type " +
                         "names", "GRAPHQL_112", DiagnosticSeverity.ERROR),
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
-                                   DiagnosticSeverity.ERROR);
+                                   DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_INPUT_OBJECT("A GraphQL resource/remote function cannot return an input type",
+                "GRAPHQL_113", DiagnosticSeverity.ERROR),
+        INVALID_RESOURCE_INPUT_OBJECT_PARAM(
+                "A GraphQL resource/remote function cannot use an output type as an input type",
+                "GRAPHQL_114", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

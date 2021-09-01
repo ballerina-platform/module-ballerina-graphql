@@ -126,12 +126,12 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
 }
 
 isolated function getTypeNameFromValue(Scalar value) returns string {
-    if value is int {
-        return INT;
+    if value is float {
+        return FLOAT;
     } else if value is boolean {
         return BOOLEAN;
-    } else if value is float {
-        return FLOAT;
+    } else if value is int {
+        return INT;
     } else {
         return STRING;
     }

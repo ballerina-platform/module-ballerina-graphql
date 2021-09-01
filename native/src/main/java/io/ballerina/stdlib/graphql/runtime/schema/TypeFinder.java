@@ -121,7 +121,26 @@ public class TypeFinder {
 
     private void getInputTypesFromMethod(MethodType methodType) {
         for (Parameter parameter : methodType.getParameters()) {
-            getSchemaTypeFromBalType(parameter.type);
+            if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
+                getInputObjectSchemaType(parameter.type);
+            } else {
+                getSchemaTypeFromBalType(parameter.type);
+            }
+        }
+    }
+
+    private void getInputObjectSchemaType(Type type) {
+        if (!this.typeMap.containsKey(type.getName())) {
+            RecordType recordType = (RecordType) type;
+            this.createSchemaType(recordType.getName(), TypeKind.INPUT_OBJECT, recordType);
+            for (Field field : recordType.getFields().values()) {
+                int tag = field.getFieldType().getTag();
+                if (tag == TypeTags.RECORD_TYPE_TAG) {
+                    getInputObjectSchemaType(field.getFieldType());
+                } else {
+                    getSchemaTypeFromBalType(field.getFieldType());
+                }
+            }
         }
     }
 

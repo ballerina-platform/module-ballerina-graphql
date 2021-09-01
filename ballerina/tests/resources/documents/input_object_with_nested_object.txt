@@ -1,0 +1,6 @@
+query getBook {
+    book(info: {bookName: "Harry", edition: 6, author: { name: "Sherlock" }, movie:{movieName: "Venom", director: "Dexter Fletcher"}}) {
+        name
+        author
+    }
+}
