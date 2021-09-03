@@ -317,3 +317,14 @@ isolated function testTypeIntrospectionWithoutFields() returns error? {
     };
     assertJsonValuesWithOrder(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["introspection", "type", "inputs"]
+}
+isolated function testIntrospectionOnInputsWithDefaultValues() returns error? {
+    string graphqlUrl = "http://localhost:9091/input_type_introspection";
+    string document = check getGraphQLDocumentFromFile("introspection_on_inputs_with_default_values.txt");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("introspection_on_inputs_with_default_values.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
