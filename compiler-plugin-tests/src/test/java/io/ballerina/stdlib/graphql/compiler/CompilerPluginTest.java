@@ -33,7 +33,10 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin.
@@ -44,6 +47,8 @@ public class CompilerPluginTest {
             .toAbsolutePath();
     private static final Path DISTRIBUTION_PATH = Paths.get("build", "target", "ballerina-distribution")
             .toAbsolutePath();
+    private final Comparator<Diagnostic> comparator = (left, right) -> right.location().lineRange().startLine().line()
+                    - left.location().lineRange().startLine().line();
 
     @Test
     public void testValidResourceReturnTypes() {
@@ -499,12 +504,14 @@ public class CompilerPluginTest {
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        List<Diagnostic> unorderedErrorList = new ArrayList<>(diagnosticResult.errors());
+        unorderedErrorList.sort(comparator);
+        Iterator<Diagnostic> diagnosticIterator = unorderedErrorList.iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 56, 15);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 56, 15);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
     }
 
     @Test
@@ -523,12 +530,14 @@ public class CompilerPluginTest {
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        List<Diagnostic> unorderedErrorList = new ArrayList<>(diagnosticResult.errors());
+        unorderedErrorList.sort(comparator);
+        Iterator<Diagnostic> diagnosticIterator = unorderedErrorList.iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 61, 15);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 72, 15);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 72, 15);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 61, 15);
     }
 
     @Test
