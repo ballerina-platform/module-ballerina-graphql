@@ -490,7 +490,7 @@ isolated function testFieldAliasWithArguments() returns error? {
     groups: ["variables", "parser"]
 }
 isolated function testVariables() returns error? {
-    string document = "query getName($profileId:Int = 3) { profile(id:$profileId) { name } }";
+    string document = "query getName($profileId:Int! = 3) { profile(id:$profileId) { name } }";
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -498,7 +498,7 @@ isolated function testVariables() returns error? {
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
     VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["profileId"];
     test:assertEquals(variableDefinition.name, "profileId");
-    test:assertEquals(variableDefinition.kind, "Int");
+    test:assertEquals(variableDefinition.kind, "Int!");
     ArgumentValue argValue = <ArgumentValue> variableDefinition?.defaultValue;
     test:assertEquals(argValue.value, 3);
     FieldNode fieldNode = operationNode.getFields()[0];

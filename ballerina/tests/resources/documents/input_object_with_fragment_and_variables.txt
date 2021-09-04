@@ -1,4 +1,4 @@
-query getBook($bName:String, $bAuthor:ProfileDetail) {
+query getBook($bName:String!, $bAuthor:ProfileDetail!) {
     ...data
     
 }

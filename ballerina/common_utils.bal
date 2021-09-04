@@ -125,6 +125,19 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
     return schemaType?.name.toString();
 }
 
+isolated function getOfTypeNameFromTypeName(string typeName) returns string {
+    if typeName.endsWith("!") {
+        string ofTypeName = typeName.substring(0, typeName.length()-1);
+        if ofTypeName.startsWith("[") && ofTypeName.endsWith("]")  {
+            return getOfTypeNameFromTypeName(ofTypeName);
+        }
+        return ofTypeName;
+    } else if typeName.startsWith("[") && typeName.endsWith("]") {
+        return typeName.substring(1, typeName.length()-1);
+    }
+    return typeName;
+}
+
 isolated function getTypeNameFromValue(Scalar value) returns string {
     if value is float {
         return FLOAT;

@@ -388,6 +388,8 @@ isolated function getTokenType(string value) returns TokenType {
         return T_INT;
     } else if (value == HASH) {
         return T_COMMENT;
+    } else if (value == EXCLAMATION) {
+        return T_EXCLAMATION;
     }
     return T_IDENTIFIER;
 }

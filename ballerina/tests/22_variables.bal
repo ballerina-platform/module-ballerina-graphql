@@ -35,7 +35,7 @@ isolated function testInvalidRequestWithVariables() returns error? {
     groups: ["variables", "input"]
 }
 isolated function testDuplicateInputVariables() returns error? {
-    string document = string`($userName:String, $userName:Int){ greet (name: $userName) }`;
+    string document = string`($userName:String!, $userName:Int!){ greet (name: $userName) }`;
     json variables = { userName:"Thisaru" };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -59,7 +59,7 @@ isolated function testUndefinedInputVariables() returns error? {
     groups: ["variables", "input"]
 }
 isolated function testUnusedInputVariables() returns error? {
-    string document = string`query ($userName:String, $extra:Int){ greet (name: $userName) }`;
+    string document = string`query ($userName:String!, $extra:Int){ greet (name: $userName) }`;
     json variables = { userName:"Thisaru" };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -71,7 +71,7 @@ isolated function testUnusedInputVariables() returns error? {
     groups: ["variables", "input"]
 }
 isolated function testInputVariablesWithInvalidArgumentType() returns error? {
-    string document = string`query Greeting($userName:String){ greet (name: $userName ) }`;
+    string document = string`query Greeting($userName:String!){ greet (name: $userName ) }`;
     json variables = { userName: 4 };
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -154,7 +154,7 @@ isolated function testVariablesWithDefaultValues() returns error? {
     groups: ["variables", "inputs", "input_coerce"]
 }
 isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
-    string document = "($weight:Float){ weightInPounds(weightInKg:$weight) }";
+    string document = "($weight:Float!){ weightInPounds(weightInKg:$weight) }";
     json variables = { weight: 1};
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
@@ -171,7 +171,7 @@ isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testVariablesWithMissingRequiredArgument() returns error? {
-    string document = string`query Greeting($userName:String){ greet (name: $userName ) }`;
+    string document = string`query Greeting($userName:String!){ greet (name: $userName ) }`;
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variables_with_missing_required_argument.json");
@@ -231,5 +231,29 @@ isolated function testVariablesWithNestedMap() returns error? {
             }
         }
     };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "input_coerce"]
+}
+isolated function testInvalidUsageOfNullableVariable() returns error? {
+    string document = "($weight:Float){ weightInPounds(weightInKg:$weight) }";
+    json variables = { weight: 1};
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("invalid_usage_of_nullable_variable.json");
+    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "input"]
+}
+isolated function testVariablesWithInvalidType() returns error? {
+    string document = string`query Greeting($userName:Int!){ greet(name: $userName) }`;
+    json variables = { userName: 4 };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("variables_with_invalid_type.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

@@ -127,7 +127,7 @@ public class Parser {
                 return getExpectedCharError(token, COLON);
             }
             token = check self.readNextNonSeparatorToken();
-            string varType = check getIdentifierTokenvalue(token);
+            string varType = check self.getTypeIdentifierTokenValue(token);
             VariableDefinition varDefinition = {
                 name: varName,
                 kind: varType,
@@ -340,6 +340,17 @@ public class Parser {
             return getIdentifierTokenvalue(token);
         }
         return alias;
+    }
+
+    isolated function getTypeIdentifierTokenValue(Token token) returns string|Error {
+        string varType = check getIdentifierTokenvalue(token);
+        Token nextToken = check self.peekNextNonSeparatorToken();
+        if nextToken.kind == T_EXCLAMATION {
+            nextToken = check self.readNextNonSeparatorToken(); // Read exlamation
+            varType += nextToken.value.toString();
+            return varType;
+        }
+        return varType;
     }
 
     isolated function addOperationToDocument(OperationNode operation) {

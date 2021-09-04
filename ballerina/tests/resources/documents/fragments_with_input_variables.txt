@@ -1,4 +1,4 @@
-query ($profileId:Int){
+query ($profileId:Int!){
     ...data
 }
 

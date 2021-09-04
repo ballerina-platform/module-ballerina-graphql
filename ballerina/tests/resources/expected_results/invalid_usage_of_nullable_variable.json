@@ -1,11 +1,11 @@
 {
     "errors": [
         {
-            "message": "Int cannot represent non Int value: 70.5",
+            "message": "Variable \"weight\" of type \"Float\" used in position expecting type \"Float!\".",
             "locations": [
                 {
                     "line": 1,
-                    "column": 49
+                    "column": 45
                 }
             ]
         }

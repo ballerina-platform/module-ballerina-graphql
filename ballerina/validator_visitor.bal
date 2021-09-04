@@ -46,7 +46,8 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        __Field? schemaFieldForOperation = self.createSchemaFieldFromOperation(operationNode);
+        __Field? schemaFieldForOperation =
+            createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
         if schemaFieldForOperation is __Field {
             foreach parser:Selection selection in operationNode.getSelections() {
                 self.visitSelection(selection, schemaFieldForOperation);
@@ -83,7 +84,7 @@ class ValidatorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = getOfType(parentField.'type);
-        __Field? requiredFieldValue = self.getRequierdFieldFromType(parentType, fieldNode);
+        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
         if requiredFieldValue is () {
             string message = getFieldNotFoundErrorMessageFromType(fieldNode.getName(), parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
@@ -227,7 +228,7 @@ class ValidatorVisitor {
     isolated function validateUnionTypeField(parser:Selection selection, __Type parentType, __Field parentField) {
         if !selection.isFragment {
             parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            __Field? subField = self.getRequierdFieldFromType(parentType, fieldNode);
+            __Field? subField = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
             if subField is __Field {
                 self.visitField(fieldNode, subField);
             } else {
@@ -368,46 +369,49 @@ class ValidatorVisitor {
         self.errors.push(errorDetail);
     }
 
-    isolated function createSchemaFieldFromOperation(parser:OperationNode operationNode) returns __Field? {
-        parser:RootOperationType operationType = operationNode.getKind();
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type? 'type = getTypeFromTypeArray(self.schema.types, operationTypeName);
-        if 'type == () {
-            string message = string`Schema is not configured for ${operationType.toString()}s.`;
-            self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
-        } else {
-            return createField(operationTypeName, 'type);
+}
+
+isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,
+                                                 ErrorDetail[] errors) returns __Field? {
+    parser:RootOperationType operationType = operationNode.getKind();
+    string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+    __Type? 'type = getTypeFromTypeArray(typeArray, operationTypeName);
+    if 'type == () {
+        string message = string`Schema is not configured for ${operationType.toString()}s.`;
+        errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
+    } else {
+        return createField(operationTypeName, 'type);
+    }
+}
+
+isolated function getRequierdFieldFromType(__Type parentType, __Type[] typeArray,
+                                           parser:FieldNode fieldNode) returns __Field? {
+    __Field[] fields = getFieldsArrayFromType(parentType);
+    __Field? requiredField = getFieldFromFieldArray(fields, fieldNode.getName());
+    if requiredField is () {
+        if fieldNode.getName() == SCHEMA_FIELD && parentType?.name == QUERY_TYPE_NAME {
+            __Type fieldType = <__Type>getTypeFromTypeArray(typeArray, SCHEMA_TYPE_NAME);
+            requiredField = createField(SCHEMA_FIELD, fieldType);
+        } else if fieldNode.getName() == TYPE_FIELD && parentType?.name == QUERY_TYPE_NAME {
+            __Type fieldType = <__Type>getTypeFromTypeArray(typeArray, TYPE_TYPE_NAME);
+            __Type argumentType = <__Type>getTypeFromTypeArray(typeArray, STRING);
+            __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
+            __InputValue[] args = [{ name: NAME_ARGUMENT, 'type: wrapperType }];
+            requiredField = createField(TYPE_FIELD, fieldType, args);
+        } else if fieldNode.getName() == TYPE_NAME_FIELD {
+            __Type ofType = <__Type>getTypeFromTypeArray(typeArray, STRING);
+            __Type wrappingType = { kind: NON_NULL, ofType: ofType };
+            requiredField = createField(TYPE_NAME_FIELD, wrappingType);
         }
     }
+    return requiredField;
+}
 
-    isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) returns __Field? {
-        foreach __Field schemaField in fields {
-            if schemaField.name == fieldName {
-                return schemaField;
-            }
+isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) returns __Field? {
+    foreach __Field schemaField in fields {
+        if schemaField.name == fieldName {
+            return schemaField;
         }
-    }
-
-    isolated function getRequierdFieldFromType(__Type parentType, parser:FieldNode fieldNode) returns __Field? {
-        __Field[] fields = getFieldsArrayFromType(parentType);
-        __Field? requiredField = self.getFieldFromFieldArray(fields, fieldNode.getName());
-        if requiredField is () {
-            if fieldNode.getName() == SCHEMA_FIELD && parentType?.name == QUERY_TYPE_NAME {
-                __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
-                requiredField = createField(SCHEMA_FIELD, fieldType);
-            } else if fieldNode.getName() == TYPE_FIELD && parentType?.name == QUERY_TYPE_NAME {
-                __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
-                __Type argumentType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
-                __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
-                __InputValue[] args = [{ name: NAME_ARGUMENT, 'type: wrapperType }];
-                requiredField = createField(TYPE_FIELD, fieldType, args);
-            } else if fieldNode.getName() == TYPE_NAME_FIELD {
-                __Type ofType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
-                __Type wrappingType = { kind: NON_NULL, ofType: ofType };
-                requiredField = createField(TYPE_NAME_FIELD, wrappingType);
-            }
-        }
-        return requiredField;
     }
 }
 

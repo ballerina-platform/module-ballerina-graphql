@@ -1,4 +1,4 @@
-query getBook($bName:String, $bAuthor:ProfileDetail) {
+query getBook($bName:String!, $bAuthor:ProfileDetail!) {
     book(info: {bookName: $bName, edition: 6, author: $bAuthor, movie:{movieName: "End Game"}}) {
         name
     }
