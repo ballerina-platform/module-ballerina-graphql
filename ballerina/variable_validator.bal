@@ -209,7 +209,7 @@ class VariableValidator {
 
     isolated function getSchemaTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
         foreach __Type schemaType in types {
-            if (schemaType?.name.toString() == typeName) {
+            if schemaType?.name.toString() == typeName {
                 return schemaType;
             }
         }
