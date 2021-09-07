@@ -15,12 +15,11 @@
 // under the License.
 
 public type ParentNode object {
+    *Node;
     public isolated function addField(FieldNode fieldNode);
     public isolated function getFields() returns FieldNode[];
     public isolated function addFragment(string name);
     public isolated function getFragments() returns string[];
-    public isolated function getName() returns string;
     public isolated function addSelection(Selection selection);
     public isolated function getSelections() returns Selection[];
-    public isolated function getLocation() returns Location;
 };
