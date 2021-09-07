@@ -15,7 +15,6 @@
 // under the License.
 
 public class OperationNode {
-    *Node;
     *ParentNode;
 
     private string name;
@@ -79,7 +78,7 @@ public class OperationNode {
             string message = string`There can be only one variable named "$${varDef.name}"`;
             Location location = <Location> varDef?.location;
             self.errors.push({message: message, locations:[location]});
-        } else { 
+        } else {
             self.variables[varDef.name] = varDef;
         }
     }

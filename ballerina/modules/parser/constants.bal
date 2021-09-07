@@ -40,6 +40,7 @@ const PIPE = "|";
 const CLOSE_BRACE = "}";
 const FRAGMENT = "fragment";
 const ON = "on";
+public const NULL = "null";
 
 enum Digit {
     ZERO = "0",
