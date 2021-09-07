@@ -688,3 +688,37 @@ service /mutations on basicListener {
         return self.t;
     }
 }
+
+service /null_values on basicListener {
+    resource function get profile(int? id) returns Person {
+        if id == () {
+            return p1;
+        }
+        return p2;
+    }
+
+    remote function profile(string? name = ()) returns Person {
+        if name == () {
+            return p1;
+        }
+        return p2;
+    }
+
+    resource function get book(Author author) returns Book {
+        if author == { name: (), id: 1 } {
+            return b1;
+        } else if author == { name: "J. K. Rowling", id: 2 } {
+            return {
+                name: "Harry Potter and the Prisnor of the Azkaban",
+                author: "J. K. Rowling"
+            };
+        }
+        return b3;
+    }
+
+    resource function get 'null(int? value) returns string? {
+        if value != () {
+            return "Hello";
+        }
+    }
+}
