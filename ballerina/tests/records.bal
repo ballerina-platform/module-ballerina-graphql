@@ -138,3 +138,8 @@ public type Weight record {
 public type WeightInKg record {
     int weight;
 };
+
+public type Author record {
+    string? name;
+    int id;
+};

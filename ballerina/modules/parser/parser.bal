@@ -410,8 +410,9 @@ isolated function getRootOperationType(Token token) returns RootOperationType|Er
 
 isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
     if token.kind is ArgumentType {
+        Scalar? value = token.value == NULL ? () : token.value;
         return {
-            value: token.value,
+            value: value,
             location: token.location
         };
     } else {

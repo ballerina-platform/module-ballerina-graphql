@@ -169,6 +169,14 @@ class ValidatorVisitor {
     }
 
     isolated function validateArgumentValue(parser:ArgumentValue value, string actualTypeName, __InputValue schemaArg) {
+        if value.value == () {
+            if schemaArg.'type.kind == NON_NULL {
+                string message = string`Expected value of type "${getTypeNameFromType(schemaArg.'type)}", found null.`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+                self.errors.push(errorDetail);
+            }
+            return;
+        }
         if getOfType(schemaArg.'type).kind == ENUM {
             self.validateEnumArgument(value, actualTypeName, schemaArg);
         } else {
@@ -353,7 +361,7 @@ class ValidatorVisitor {
         __Type argType = getOfType(inputValue.'type);
         if (getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER) {
             string message = string`Enum "${getTypeNameFromType(argType)}" cannot represent non-enum value: `+
-            string`"${value.value}"`;
+            string`"${value.value.toString()}"`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
             self.errors.push(errorDetail);
             return;
@@ -364,7 +372,7 @@ class ValidatorVisitor {
                 return;
             }
         }
-        string message = string`Value "${value.value}" does not exist in "${inputValue.name}" enum.`;
+        string message = string`Value "${value.value.toString()}" does not exist in "${inputValue.name}" enum.`;
         ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
         self.errors.push(errorDetail);
     }

@@ -200,13 +200,7 @@ public class FieldFinder {
                 getFieldsFromInputObjectType(schemaType, field);
             } else {
                 SchemaField schemaField = new SchemaField(field.getFieldName());
-                SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
-                if (isRequired(field)) {
-                    SchemaType wrapperType = getNonNullType(fieldType);
-                    schemaField.setType(wrapperType);
-                } else {
-                    schemaField.setType(fieldType);
-                }
+                setTypeForField(field, schemaField);
                 if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
                     SchemaType nonNullType = getNonNullType(this.typeMap.get(STRING));
                     nonNullType.setOfType(this.typeMap.get(STRING));
@@ -219,11 +213,11 @@ public class FieldFinder {
 
     private void getFieldsFromInputObjectType(SchemaType schemaType, Field field) {
         SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
-        if (isRequired(field)) {
+        if (field.getFieldType().isNilable() || !isRequired(field)) {
+            schemaType.addInputField(new InputValue(field.getFieldName(), fieldType));
+        } else {
             SchemaType wrapperType = getNonNullType(fieldType);
             schemaType.addInputField(new InputValue(field.getFieldName(), wrapperType));
-        } else {
-            schemaType.addInputField(new InputValue(field.getFieldName(), fieldType));
         }
     }
 
@@ -260,6 +254,16 @@ public class FieldFinder {
         Type resourceReturnType = method.getType().getReturnType();
         SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
         if (resourceReturnType.isNilable()) {
+            schemaField.setType(fieldType);
+        } else {
+            SchemaType nonNullType = getNonNullType(fieldType);
+            schemaField.setType(nonNullType);
+        }
+    }
+
+    private void setTypeForField(Field field, SchemaField schemaField) {
+        SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
+        if (field.getFieldType().isNilable() || !isRequired(field)) {
             schemaField.setType(fieldType);
         } else {
             SchemaType nonNullType = getNonNullType(fieldType);
