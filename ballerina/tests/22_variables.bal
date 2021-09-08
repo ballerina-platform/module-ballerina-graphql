@@ -257,3 +257,15 @@ isolated function testVariablesWithInvalidType() returns error? {
     json expectedPayload = check getJsonContentFromFile("variables_with_invalid_type.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "input"]
+}
+isolated function testVariablesWithUnknownType() returns error? {
+    string document = string`query Greeting($userName: userName){ greet(name: $userName) }`;
+    json variables = { userName: 4 };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("variables_with_unknown_type.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

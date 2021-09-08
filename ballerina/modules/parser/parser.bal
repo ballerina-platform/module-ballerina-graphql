@@ -342,13 +342,33 @@ public class Parser {
         return alias;
     }
 
-    isolated function getTypeIdentifierTokenValue(Token token) returns string|Error {
-        string varType = check getIdentifierTokenvalue(token);
-        Token nextToken = check self.peekNextNonSeparatorToken();
-        if nextToken.kind == T_EXCLAMATION {
-            nextToken = check self.readNextNonSeparatorToken(); // Read exlamation
-            varType += nextToken.value.toString();
-            return varType;
+    isolated function getTypeIdentifierTokenValue(Token previousToken) returns string|Error {
+        Token token;
+        string varType;
+        if previousToken.kind == T_OPEN_BRACKET {
+            varType = previousToken.value.toString();
+            token = check self.readNextNonSeparatorToken();
+            varType += check self.getTypeIdentifierTokenValue(token);
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind != T_CLOSE_BRACKET {
+                return getExpectedCharError(token, CLOSE_BRACKET);
+            }
+            token = check self.readNextNonSeparatorToken(); // Read close bracket
+            varType += token.value.toString();
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_EXCLAMATION {
+                token = check self.readNextNonSeparatorToken(); // Read exlamation
+                varType += token.value.toString();
+                return varType;
+            }
+        } else {
+            varType = check getIdentifierTokenvalue(previousToken);
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_EXCLAMATION {
+                token = check self.readNextNonSeparatorToken(); // Read exlamation
+                varType += token.value.toString();
+                return varType;
+            }
         }
         return varType;
     }

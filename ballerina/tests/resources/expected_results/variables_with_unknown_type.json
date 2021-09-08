@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"userName\" of type \"userName\" used in position expecting type \"String!\".",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 51
+                }
+            ]
+        }
+    ]
+}

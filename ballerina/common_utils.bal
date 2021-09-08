@@ -126,14 +126,13 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
 }
 
 isolated function getOfTypeNameFromTypeName(string typeName) returns string {
+    string ofTypeName;
     if typeName.endsWith("!") {
-        string ofTypeName = typeName.substring(0, typeName.length()-1);
-        if ofTypeName.startsWith("[") && ofTypeName.endsWith("]")  {
-            return getOfTypeNameFromTypeName(ofTypeName);
-        }
-        return ofTypeName;
+        ofTypeName = typeName.substring(0, typeName.length()-1);
+        return getOfTypeNameFromTypeName(ofTypeName);
     } else if typeName.startsWith("[") && typeName.endsWith("]") {
-        return typeName.substring(1, typeName.length()-1);
+        ofTypeName = typeName.substring(1, typeName.length()-1);
+        return getOfTypeNameFromTypeName(ofTypeName);
     }
     return typeName;
 }

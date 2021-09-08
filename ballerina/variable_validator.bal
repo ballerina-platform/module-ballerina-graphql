@@ -116,7 +116,7 @@ class VariableValidator {
                 if self.variables.hasKey(variableName) {
                     argumentNode.setKind(getArgumentTypeKind(getOfTypeNameFromTypeName(variableDefinition.kind)));
                     anydata value = self.variables.get(variableName);
-                    self.setArgumentValue(value, argumentNode, location);
+                    self.setArgumentValue(value, argumentNode, variableDefinition);
                 } else if variableDefinition?.defaultValue is parser:ArgumentValue {
                     parser:ArgumentValue value = <parser:ArgumentValue> variableDefinition?.defaultValue;
                     argumentNode.setKind(getArgumentTypeKind(getOfTypeNameFromTypeName(variableDefinition.kind)));
@@ -156,7 +156,8 @@ class VariableValidator {
         }
     }
 
-    public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument, parser:Location location) {
+    public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,
+                                              parser:VariableDefinition varDef) {
         if argument.getKind() == parser:T_IDENTIFIER {
             argument.setVariableValue(value);
         } else if getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
@@ -167,9 +168,9 @@ class VariableValidator {
             argument.setVariableValue(value);
         } else {
             string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ` +
-            string`${value.toString()};Expected type ${getTypeName(argument)}. ${getTypeName(argument)}` +
+            string`${value.toString()};Expected type ${varDef.kind}. ${getTypeName(argument)}` +
             string` cannot represent value: ${value.toString()}`;
-            self.errors.push(getErrorDetailRecord(message, location)); 
+            self.errors.push(getErrorDetailRecord(message, argument.getLocation()));
         }
     }
 
@@ -177,12 +178,16 @@ class VariableValidator {
                                                       parser:ArgumentNode argNode) {
         __InputValue? inputValue = getInputValueFromArray(input, argNode.getName());
         __Type? actualType = self.getTypeRecordFromTypeName(varDef.kind);
-        if inputValue is __InputValue && actualType is __Type {
-            if getOfType(inputValue.'type)?.name != getOfType(actualType)?.name {
-                string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
-                string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
-                self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
-            } else if inputValue.'type.kind == NON_NULL && actualType.kind != NON_NULL && varDef?.defaultValue is () {
+        if inputValue is __InputValue {
+            if actualType is __Type {
+                if inputValue.'type != actualType {
+                    if varDef?.defaultValue is () || getOfType(inputValue.'type)?.name != getOfType(actualType)?.name {
+                        string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
+                        string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
+                        self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
+                    }
+                }
+            } else {
                 string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
                 string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
@@ -191,26 +196,35 @@ class VariableValidator {
     }
 
     isolated function getTypeRecordFromTypeName(string typeName) returns __Type? {
-        //TODO: Improve for 'List' type variables
+        string ofTypeName;
+        __Type wrapperType;
+        __Type? ofType;
         if typeName.endsWith("!") {
-            __Type wrapperType = {
-                kind: NON_NULL
+            wrapperType = {
+                kind: NON_NULL,
+                name: ()
             };
-            string ofTypeName = getOfTypeNameFromTypeName(typeName);
-            __Type? ofType = getTypeFromTypeArray(self.schema.types, ofTypeName);
+            ofTypeName = typeName.substring(0, typeName.length()-1);
+            ofType = self.getTypeRecordFromTypeName(ofTypeName);
+            if ofType is __Type {
+                wrapperType.ofType = ofType;
+            }
+            return wrapperType;
+        } else if typeName.startsWith("[") {
+            wrapperType = {
+                kind: LIST,
+                name: ()
+            };
+            ofTypeName = typeName.substring(1, typeName.length()-1);
+            ofType = self.getTypeRecordFromTypeName(ofTypeName);
             if ofType is __Type {
                 wrapperType.ofType = ofType;
             }
             return wrapperType;
         } else {
-            return self.getSchemaTypeFromTypeArray(self.schema.types, typeName);
-        }
-    }
-
-    isolated function getSchemaTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
-        foreach __Type schemaType in types {
-            if schemaType?.name.toString() == typeName {
-                return schemaType;
+            ofType = getTypeFromTypeArray(self.schema.types, typeName);
+            if ofType is __Type {
+                return ofType;
             }
         }
     }
