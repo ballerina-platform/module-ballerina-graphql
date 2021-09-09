@@ -559,6 +559,45 @@ isolated function testListTypeVariables() returns error? {
 }
 
 @test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testInvalidListTypeVariableMissingOpenBracket() returns error? {
+    string document = "query getId($name: String!]!) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected "$", found "]".`;
+    test:assertEquals(err.message(), expectedMessage);
+}
+
+@test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testInvalidListTypeVariableMissingCloseBracket() returns error? {
+    string document = "query getId($name: [String![) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected "]", found "[".`;
+    test:assertEquals(err.message(), expectedMessage);
+}
+
+@test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testEmptyListTypeVariable() returns error? {
+    string document = "query getId($name: []) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected Name, found "]".`;
+    test:assertEquals(err.message(), expectedMessage);
+}
+
+@test:Config {
     groups: ["input_objects", "parser"]
 }
 isolated function testInputObjects() returns error? {

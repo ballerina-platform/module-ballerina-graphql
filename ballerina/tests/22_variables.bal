@@ -269,3 +269,19 @@ isolated function testVariablesWithUnknownType() returns error? {
     json expectedPayload = check getJsonContentFromFile("variables_with_unknown_type.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testNonNullTypeVariablesWithNullableArgument() returns error? {
+    string document = "($day:Weekday!){ isHoliday(weekday: $day) }";
+    json variables = { day: MONDAY };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            isHoliday: false
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

@@ -174,20 +174,11 @@ class VariableValidator {
         }
     }
 
-    isolated function checkVariableUsageCompatibility(__InputValue[] input, parser:VariableDefinition varDef,
+    isolated function checkVariableUsageCompatibility(__InputValue[] inputValues, parser:VariableDefinition varDef,
                                                       parser:ArgumentNode argNode) {
-        __InputValue? inputValue = getInputValueFromArray(input, argNode.getName());
-        __Type? actualType = self.getTypeRecordFromTypeName(varDef.kind);
+        __InputValue? inputValue = getInputValueFromArray(inputValues, argNode.getName());
         if inputValue is __InputValue {
-            if actualType is __Type {
-                if inputValue.'type != actualType {
-                    if varDef?.defaultValue is () || getOfType(inputValue.'type)?.name != getOfType(actualType)?.name {
-                        string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
-                        string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
-                        self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
-                    }
-                }
-            } else {
+            if !self.isVariableUsageAllowed(varDef, inputValue) {
                 string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
                 string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
@@ -195,37 +186,68 @@ class VariableValidator {
         }
     }
 
+    isolated function isVariableUsageAllowed(parser:VariableDefinition varDef, __InputValue inputValue) returns boolean {
+        __Type? varType = self.getTypeRecordFromTypeName(varDef.kind);
+        if varType is __Type {
+            if inputValue.'type.kind == NON_NULL && varType.kind != NON_NULL {
+                if inputValue?.defaultValue is () && varDef?.defaultValue is () {
+                    return false;
+                }
+                return self.areTypesCompatible(varType, getOfType(inputValue.'type));
+            }
+            return self.areTypesCompatible(varType, inputValue.'type);
+        }
+        return false;
+    }
+
+    isolated function areTypesCompatible(__Type varType, __Type inputType) returns boolean {
+        if inputType.kind == NON_NULL {
+            if varType.kind != NON_NULL {
+                return false;
+            }
+            return self.areTypesCompatible(getOfType(varType), getOfType(inputType));
+        } else if varType.kind == NON_NULL {
+            return self.areTypesCompatible(getOfType(varType), inputType);
+        } else if inputType.kind == LIST {
+            if varType.kind != LIST {
+                return false;
+            }
+            return self.areTypesCompatible(getOfType(varType), getOfType(inputType));
+        } else if varType.kind == LIST {
+            return false;
+        } else {
+            if inputType == varType {
+                return true;
+            }
+            return false;
+        }
+    }
+
     isolated function getTypeRecordFromTypeName(string typeName) returns __Type? {
-        string ofTypeName;
-        __Type wrapperType;
-        __Type? ofType;
         if typeName.endsWith("!") {
-            wrapperType = {
+            __Type wrapperType = {
                 kind: NON_NULL,
                 name: ()
             };
-            ofTypeName = typeName.substring(0, typeName.length()-1);
-            ofType = self.getTypeRecordFromTypeName(ofTypeName);
+            string ofTypeName = typeName.substring(0, typeName.length()-1);
+            __Type? ofType = self.getTypeRecordFromTypeName(ofTypeName);
             if ofType is __Type {
                 wrapperType.ofType = ofType;
+                return wrapperType;
             }
-            return wrapperType;
         } else if typeName.startsWith("[") {
-            wrapperType = {
+            __Type wrapperType = {
                 kind: LIST,
                 name: ()
             };
-            ofTypeName = typeName.substring(1, typeName.length()-1);
-            ofType = self.getTypeRecordFromTypeName(ofTypeName);
+            string ofTypeName = typeName.substring(1, typeName.length()-1);
+            __Type? ofType = self.getTypeRecordFromTypeName(ofTypeName);
             if ofType is __Type {
                 wrapperType.ofType = ofType;
+                return wrapperType;
             }
-            return wrapperType;
         } else {
-            ofType = getTypeFromTypeArray(self.schema.types, typeName);
-            if ofType is __Type {
-                return ofType;
-            }
+            return getTypeFromTypeArray(self.schema.types, typeName);
         }
     }
 

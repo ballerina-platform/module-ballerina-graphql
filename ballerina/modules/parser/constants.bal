@@ -95,6 +95,6 @@ const T_DOLLAR = 16;
 const T_EQUAL = 17;
 const T_EXCLAMATION = 18;
 const T_OPEN_BRACKET = 19;
-const T_CLOSE_BRACKET = 19;
+const T_CLOSE_BRACKET = 20;
 
 public const ANONYMOUS_OPERATION = "<anonymous>";
