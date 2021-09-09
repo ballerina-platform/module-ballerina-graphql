@@ -186,14 +186,15 @@ class VariableValidator {
         }
     }
 
-    isolated function isVariableUsageAllowed(parser:VariableDefinition varDef, __InputValue inputValue) returns boolean {
+    isolated function isVariableUsageAllowed(parser:VariableDefinition varDef,
+                                             __InputValue inputValue) returns boolean {
         __Type? varType = self.getTypeRecordFromTypeName(varDef.kind);
         if varType is __Type {
             if inputValue.'type.kind == NON_NULL && varType.kind != NON_NULL {
                 if inputValue?.defaultValue is () && varDef?.defaultValue is () {
                     return false;
                 }
-                return self.areTypesCompatible(varType, getOfType(inputValue.'type));
+                return self.areTypesCompatible(varType, self.removeWrapperType(inputValue.'type));
             }
             return self.areTypesCompatible(varType, inputValue.'type);
         }
@@ -205,14 +206,14 @@ class VariableValidator {
             if varType.kind != NON_NULL {
                 return false;
             }
-            return self.areTypesCompatible(getOfType(varType), getOfType(inputType));
+            return self.areTypesCompatible(self.removeWrapperType(varType), self.removeWrapperType(inputType));
         } else if varType.kind == NON_NULL {
-            return self.areTypesCompatible(getOfType(varType), inputType);
+            return self.areTypesCompatible(self.removeWrapperType(varType), inputType);
         } else if inputType.kind == LIST {
             if varType.kind != LIST {
                 return false;
             }
-            return self.areTypesCompatible(getOfType(varType), getOfType(inputType));
+            return self.areTypesCompatible(self.removeWrapperType(varType), self.removeWrapperType(inputType));
         } else if varType.kind == LIST {
             return false;
         } else {
@@ -248,6 +249,15 @@ class VariableValidator {
             }
         } else {
             return getTypeFromTypeArray(self.schema.types, typeName);
+        }
+    }
+
+    isolated function removeWrapperType(__Type schemaType) returns __Type {
+        __Type? ofType = schemaType?.ofType;
+        if ofType is () {
+            return schemaType;
+        } else {
+            return ofType;
         }
     }
 
