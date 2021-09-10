@@ -1,8 +1,8 @@
-query A($profileId:Int) {
+query A($profileId:Int!) {
     ...data 
 }
 
-query B($profileId:Int) {
+query B($profileId:Int!) {
     ...data
 }
 

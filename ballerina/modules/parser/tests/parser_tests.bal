@@ -510,6 +510,100 @@ isolated function testVariables() returns error? {
 }
 
 @test:Config {
+    groups: ["variables", "parser"]
+}
+isolated function testNonNullTypeVariables() returns error? {
+    string document = "query getId($name: String!, $age: Int!) { profile(userName:$name, userAge:$age) { id } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
+    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["name"];
+    test:assertEquals(variableDefinition.name, "name");
+    test:assertEquals(variableDefinition.kind, "String!");
+    variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["age"];
+    test:assertEquals(variableDefinition.name, "age");
+    test:assertEquals(variableDefinition.kind, "Int!");
+    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "userName");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
+    test:assertEquals(argumentNode.getVariableName(), "name");
+    argumentNode = fieldNode.getArguments()[1];
+    test:assertEquals(argumentNode.getName(), "userAge");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
+    test:assertEquals(argumentNode.getVariableName(), "age");
+}
+
+@test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testListTypeVariables() returns error? {
+    string document = "query getId($name: [String!]!) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
+    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["name"];
+    test:assertEquals(variableDefinition.name, "name");
+    test:assertEquals(variableDefinition.kind, "[String!]!");
+    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "userName");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
+    test:assertEquals(argumentNode.getVariableName(), "name");
+}
+
+@test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testInvalidListTypeVariableMissingOpenBracket() returns error? {
+    string document = "query getId($name: String!]!) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected "$", found "]".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 27);
+}
+
+@test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testInvalidListTypeVariableMissingCloseBracket() returns error? {
+    string document = "query getId($name: [String![) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected "]", found "[".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 28);
+}
+
+@test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testEmptyListTypeVariable() returns error? {
+    string document = "query getId($name: []) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected Name, found "]".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 21);
+}
+
+@test:Config {
     groups: ["input_objects", "parser"]
 }
 isolated function testInputObjects() returns error? {

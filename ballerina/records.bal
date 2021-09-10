@@ -65,7 +65,7 @@ type __Schema record {|
 
 type __Type record {|
     __TypeKind kind;
-    string name?;
+    string? name?;
     string description?;
     __Field[] fields?;
     __Type[] interfaces?;

@@ -1,11 +1,11 @@
 {
     "errors": [
         {
-            "message": "Variable \"$userName\" of required type String was not provided.",
+            "message": "Variable \"$userName\" of required type String! was not provided.",
             "locations": [
                 {
                     "line": 1,
-                    "column": 49
+                    "column": 50
                 }
             ]
         }

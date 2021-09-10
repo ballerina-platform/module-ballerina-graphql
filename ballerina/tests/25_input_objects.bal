@@ -59,7 +59,7 @@ isolated function testInputObjectWithInvalidArguments() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithVariables() returns error? {
-    string document = string`($profile: ProfileDetail){searchProfile(profileDetail:$profile){ name }}`;
+    string document = string`($profile: ProfileDetail!){searchProfile(profileDetail:$profile){ name }}`;
     json variables = { profile: {name: "Arthur", age: 5} };
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
@@ -199,7 +199,7 @@ isolated function testInputObjectWithMissingVariablesArguments() returns error? 
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithEnumTypeVariables() returns error? {
-    string document = "($day:Date){ isHoliday(date: $day) }";
+    string document = "($day:Date!){ isHoliday(date: $day) }";
     json variables = {
         day: { day: SUNDAY }
     };
@@ -252,7 +252,7 @@ isolated function testInputObjectWithInlineFragmentsAndVaraibles() returns error
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithFloatTypeVariables() returns error? {
-    string document = "($weight:Weight){ weightInPounds (weight:$weight) }";
+    string document = "($weight:Weight!){ weightInPounds (weight:$weight) }";
     json variables = {
         weight: { weightInKg: 70.5 }
     };
@@ -270,7 +270,7 @@ isolated function testInputObjectWithFloatTypeVariables() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithInvalidTypeVariables() returns error? {
-    string document = "($weight:WeightInKg){ convertKgToGram (weight:$weight) }";
+    string document = "($weight:WeightInKg!){ convertKgToGram (weight:$weight) }";
     json variables = {
         weight: { weight: 70.5 }
     };
@@ -293,5 +293,17 @@ isolated function testInputObjectWithUnexpectedVaraibleValues() returns error? {
     };
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_unexpected_variable_values.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_objects", "input"]
+}
+isolated function testInputObjectVariablesWithInvalidTypeName() returns error? {
+    string document = string`($profile: Details!){ searchProfile(profileDetail: $profile){ name } }`;
+    json variables = { profile: {name: "Arthur", age: 5} };
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("input_object_variables_with_invalid_type_name.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

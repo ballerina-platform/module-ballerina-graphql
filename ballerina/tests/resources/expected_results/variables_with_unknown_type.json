@@ -1,11 +1,11 @@
 {
     "errors": [
         {
-            "message": "Int cannot represent non Int value: 70.5",
+            "message": "Variable \"userName\" of type \"userName\" used in position expecting type \"String!\".",
             "locations": [
                 {
                     "line": 1,
-                    "column": 49
+                    "column": 51
                 }
             ]
         }

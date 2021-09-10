@@ -127,7 +127,7 @@ public class Parser {
                 return getExpectedCharError(token, COLON);
             }
             token = check self.readNextNonSeparatorToken();
-            string varType = check getIdentifierTokenvalue(token);
+            string varType = check self.getTypeIdentifierTokenValue(token);
             VariableDefinition varDefinition = {
                 name: varName,
                 kind: varType,
@@ -340,6 +340,35 @@ public class Parser {
             return getIdentifierTokenvalue(token);
         }
         return alias;
+    }
+
+    isolated function getTypeIdentifierTokenValue(Token previousToken) returns string|Error {
+        string varType;
+        if previousToken.kind == T_OPEN_BRACKET {
+            varType = previousToken.value.toString();
+            Token token = check self.readNextNonSeparatorToken();
+            varType += check self.getTypeIdentifierTokenValue(token);
+            token = check self.readNextNonSeparatorToken();
+            if token.kind != T_CLOSE_BRACKET {
+                return getExpectedCharError(token, CLOSE_BRACKET);
+            }
+            varType += token.value.toString();
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_EXCLAMATION {
+                token = check self.readNextNonSeparatorToken(); // Read exlamation
+                varType += token.value.toString();
+                return varType;
+            }
+        } else {
+            varType = check getIdentifierTokenvalue(previousToken);
+            Token token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_EXCLAMATION {
+                token = check self.readNextNonSeparatorToken(); // Read exlamation
+                varType += token.value.toString();
+                return varType;
+            }
+        }
+        return varType;
     }
 
     isolated function addOperationToDocument(OperationNode operation) {
