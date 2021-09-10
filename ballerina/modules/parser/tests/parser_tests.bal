@@ -569,6 +569,8 @@ isolated function testInvalidListTypeVariableMissingOpenBracket() returns error?
     InvalidTokenError err = <InvalidTokenError>result;
     string expectedMessage = string`Syntax Error: Expected "$", found "]".`;
     test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 27);
 }
 
 @test:Config {
@@ -582,6 +584,8 @@ isolated function testInvalidListTypeVariableMissingCloseBracket() returns error
     InvalidTokenError err = <InvalidTokenError>result;
     string expectedMessage = string`Syntax Error: Expected "]", found "[".`;
     test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 28);
 }
 
 @test:Config {
@@ -595,6 +599,8 @@ isolated function testEmptyListTypeVariable() returns error? {
     InvalidTokenError err = <InvalidTokenError>result;
     string expectedMessage = string`Syntax Error: Expected Name, found "]".`;
     test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 21);
 }
 
 @test:Config {
