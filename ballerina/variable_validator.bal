@@ -111,20 +111,23 @@ class VariableValidator {
             string variableName = <string>argumentNode.getVariableName();
             if self.variableDefinitions.hasKey(variableName) {
                 parser:VariableDefinition variableDefinition = self.variableDefinitions.get(variableName);
-                self.checkVariableUsageCompatibility(inputValues, variableDefinition, argumentNode);
+                string argumentTypeName;
+                __Type? variableType;
+                [variableType, argumentTypeName] = self.getTypeRecordAndTypeFromTypeName(variableDefinition.kind);
+                self.checkVariableUsageCompatibility(variableType, inputValues, variableDefinition, argumentNode);
                 self.visitedVariableDefinitions.push(variableName);
                 if self.variables.hasKey(variableName) {
-                    argumentNode.setKind(getArgumentTypeKind(getOfTypeNameFromTypeName(variableDefinition.kind)));
+                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
                     anydata value = self.variables.get(variableName);
                     self.setArgumentValue(value, argumentNode, variableDefinition);
                 } else if variableDefinition?.defaultValue is parser:ArgumentValue {
                     parser:ArgumentValue value = <parser:ArgumentValue> variableDefinition?.defaultValue;
-                    argumentNode.setKind(getArgumentTypeKind(getOfTypeNameFromTypeName(variableDefinition.kind)));
+                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
                     argumentNode.setValue(argumentNode.getName(), value);
                     argumentNode.setVariableDefinition(false);
                 } else if variableDefinition?.defaultValue is parser:ArgumentNode {
                     parser:ArgumentNode value = <parser:ArgumentNode> variableDefinition?.defaultValue;
-                    argumentNode.setKind(getArgumentTypeKind(getOfTypeNameFromTypeName(variableDefinition.kind)));
+                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
                     foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in value.getValue() {
                         if fieldValue is parser:ArgumentNode {
                             argumentNode.setValue(fieldValue.getName(), fieldValue);
@@ -174,11 +177,11 @@ class VariableValidator {
         }
     }
 
-    isolated function checkVariableUsageCompatibility(__InputValue[] inputValues, parser:VariableDefinition varDef,
-                                                      parser:ArgumentNode argNode) {
+    isolated function checkVariableUsageCompatibility(__Type? varType, __InputValue[] inputValues,
+                                                      parser:VariableDefinition varDef, parser:ArgumentNode argNode) {
         __InputValue? inputValue = getInputValueFromArray(inputValues, argNode.getName());
         if inputValue is __InputValue {
-            if !self.isVariableUsageAllowed(varDef, inputValue) {
+            if !self.isVariableUsageAllowed(varType, varDef, inputValue) {
                 string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
                 string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
@@ -186,15 +189,14 @@ class VariableValidator {
         }
     }
 
-    isolated function isVariableUsageAllowed(parser:VariableDefinition varDef,
+    isolated function isVariableUsageAllowed(__Type? varType, parser:VariableDefinition varDef,
                                              __InputValue inputValue) returns boolean {
-        __Type? varType = self.getTypeRecordFromTypeName(varDef.kind);
         if varType is __Type {
             if inputValue.'type.kind == NON_NULL && varType.kind != NON_NULL {
                 if inputValue?.defaultValue is () && varDef?.defaultValue is () {
                     return false;
                 }
-                return self.areTypesCompatible(varType, self.removeWrapperType(inputValue.'type));
+                return self.areTypesCompatible(varType, <__Type>inputValue.'type?.ofType);
             }
             return self.areTypesCompatible(varType, inputValue.'type);
         }
@@ -206,14 +208,14 @@ class VariableValidator {
             if varType.kind != NON_NULL {
                 return false;
             }
-            return self.areTypesCompatible(self.removeWrapperType(varType), self.removeWrapperType(inputType));
+            return self.areTypesCompatible(<__Type>varType?.ofType, <__Type>inputType?.ofType);
         } else if varType.kind == NON_NULL {
-            return self.areTypesCompatible(self.removeWrapperType(varType), inputType);
+            return self.areTypesCompatible(<__Type>varType?.ofType, inputType);
         } else if inputType.kind == LIST {
             if varType.kind != LIST {
                 return false;
             }
-            return self.areTypesCompatible(self.removeWrapperType(varType), self.removeWrapperType(inputType));
+            return self.areTypesCompatible(<__Type>varType?.ofType, <__Type>inputType?.ofType);
         } else if varType.kind == LIST {
             return false;
         } else {
@@ -224,40 +226,35 @@ class VariableValidator {
         }
     }
 
-    isolated function getTypeRecordFromTypeName(string typeName) returns __Type? {
+    isolated function getTypeRecordAndTypeFromTypeName(string typeName) returns [__Type?, string] {
         if typeName.endsWith("!") {
             __Type wrapperType = {
                 kind: NON_NULL,
                 name: ()
             };
             string ofTypeName = typeName.substring(0, typeName.length()-1);
-            __Type? ofType = self.getTypeRecordFromTypeName(ofTypeName);
+            __Type? ofType;
+            [ofType, ofTypeName] = self.getTypeRecordAndTypeFromTypeName(ofTypeName);
             if ofType is __Type {
                 wrapperType.ofType = ofType;
-                return wrapperType;
+                return [wrapperType, ofTypeName];
             }
+            return [(), ofTypeName];
         } else if typeName.startsWith("[") {
             __Type wrapperType = {
                 kind: LIST,
                 name: ()
             };
             string ofTypeName = typeName.substring(1, typeName.length()-1);
-            __Type? ofType = self.getTypeRecordFromTypeName(ofTypeName);
+            __Type? ofType;
+            [ofType, ofTypeName] = self.getTypeRecordAndTypeFromTypeName(ofTypeName);
             if ofType is __Type {
                 wrapperType.ofType = ofType;
-                return wrapperType;
+                return [wrapperType, ofTypeName];
             }
+            return [(), ofTypeName];
         } else {
-            return getTypeFromTypeArray(self.schema.types, typeName);
-        }
-    }
-
-    isolated function removeWrapperType(__Type schemaType) returns __Type {
-        __Type? ofType = schemaType?.ofType;
-        if ofType is () {
-            return schemaType;
-        } else {
-            return ofType;
+            return [getTypeFromTypeArray(self.schema.types, typeName), typeName];
         }
     }
 
