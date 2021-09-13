@@ -33,7 +33,10 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin.
@@ -44,6 +47,8 @@ public class CompilerPluginTest {
             .toAbsolutePath();
     private static final Path DISTRIBUTION_PATH = Paths.get("build", "target", "ballerina-distribution")
             .toAbsolutePath();
+    private final Comparator<Diagnostic> comparator = (left, right) -> right.location().lineRange().startLine().line()
+                    - left.location().lineRange().startLine().line();
 
     @Test
     public void testValidResourceReturnTypes() {
@@ -128,6 +133,30 @@ public class CompilerPluginTest {
     @Test
     public void testInputObjectTypeInputParameter() {
         Package currentPackage = loadPackage("valid_service_11");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testValidInterfaceTypes1() {
+        Package currentPackage = loadPackage("valid_service_12");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testValidInterfaceTypes2() {
+        Package currentPackage = loadPackage("valid_service_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testValidMultipleInterfaceImplementations() {
+        Package currentPackage = loadPackage("valid_service_14");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
@@ -485,6 +514,85 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 130, 40);
     }
 
+    @Test
+    public void testInvalidInterfacesWithNoResourceFunction() {
+        Package currentPackage = loadPackage("invalid_service_23");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 21, 24);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 29, 24);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 37, 24);
+    }
+
+    @Test
+    public void testInvalidInterfacesWithNoDistinctService1() {
+        Package currentPackage = loadPackage("invalid_service_24");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.NON_DISTINCT_INTERFACE_CLASS, 19, 15);
+    }
+
+    @Test
+    public void testInvalidInterfaceImplementation() {
+        Package currentPackage = loadPackage("invalid_service_25");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        List<Diagnostic> unorderedErrorList = new ArrayList<>(diagnosticResult.errors());
+        unorderedErrorList.sort(comparator);
+        Iterator<Diagnostic> diagnosticIterator = unorderedErrorList.iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 56, 15);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
+    }
+
+    @Test
+    public void testInvalidInterfaceImplementation2() {
+        Package currentPackage = loadPackage("invalid_service_26");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 44, 15);
+    }
+
+    @Test
+    public void testInvalidMultipleInterfaceImplementation() {
+        Package currentPackage = loadPackage("invalid_service_27");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        List<Diagnostic> unorderedErrorList = new ArrayList<>(diagnosticResult.errors());
+        unorderedErrorList.sort(comparator);
+        Iterator<Diagnostic> diagnosticIterator = unorderedErrorList.iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 72, 15);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 61, 15);
+    }
+
+    @Test
+    public void testInvalidMultipleInterfaceImplementation2() {
+        Package currentPackage = loadPackage("invalid_service_28");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 43, 15);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -499,6 +607,14 @@ public class CompilerPluginTest {
     private void assertError(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
         Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
         Assert.assertEquals(diagnostic.message(), compilationError.getError());
+        // Compiler counts lines and columns from zero
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().line() + 1), line);
+        Assert.assertEquals((diagnostic.location().lineRange().startLine().offset() + 1), column);
+    }
+
+    private void assertErrorFormat(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.diagnosticInfo().messageFormat(), compilationError.getError());
         // Compiler counts lines and columns from zero
         Assert.assertEquals((diagnostic.location().lineRange().startLine().line() + 1), line);
         Assert.assertEquals((diagnostic.location().lineRange().startLine().offset() + 1), column);

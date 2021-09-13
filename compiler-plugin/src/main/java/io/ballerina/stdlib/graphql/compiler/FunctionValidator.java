@@ -27,6 +27,7 @@ import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
+import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
@@ -42,6 +43,8 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,10 +65,14 @@ public class FunctionValidator {
     private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
+    private final Map<String, Set<String>> classesAndResourceFunctions = new HashMap<>();
+    private final Map<String, Set<ClassSymbol>> typeInclusions = new HashMap<>();
+    private final Set<String> eligibleInterfaces = new HashSet<>();
 
     public void validate(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         NodeList<Node> memberNodes = serviceDeclarationNode.members();
+        populatePossibleInterfaces(context.semanticModel().moduleSymbols());
         boolean resourceFunctionFound = false;
         for (Node node : memberNodes) {
             if (node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION) {
@@ -85,6 +92,49 @@ public class FunctionValidator {
         existingReturnTypes.clear();
         if (!resourceFunctionFound) {
             updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
+        }
+    }
+
+    private void populatePossibleInterfaces(List<Symbol> moduleSymbols) {
+        for (Symbol symbol : moduleSymbols) {
+            if (symbol.kind() == SymbolKind.CLASS) {
+                ClassSymbol classSymbol = (ClassSymbol) symbol;
+
+                // for each ClassSymbol, keep track of all type inclusions(implemented interfaces)
+                List<TypeSymbol> inclusions = classSymbol.typeInclusions();
+                for (TypeSymbol typeInclusion : inclusions) {
+                    if (typeInclusion.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                        String typeName = typeInclusion.getName().isPresent() ? typeInclusion.getName().get() : "";
+                        if (typeInclusions.containsKey(typeName)) {
+                            typeInclusions.get(typeName).add(classSymbol);
+                        } else {
+                            Set<ClassSymbol> childClasses = new HashSet<>();
+                            childClasses.add(classSymbol);
+                            typeInclusions.put(typeName, childClasses);
+                        }
+                    }
+                }
+                // for each ClassSymbol, track all resource functions
+                if (classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                    String className = classSymbol.getName().isPresent() ?
+                            classSymbol.getName().get() : "";
+                    if (!classesAndResourceFunctions.containsKey(className)) {
+                        Collection<MethodSymbol> methods = classSymbol.methods().values();
+                        Set<String> resourceMethods = new HashSet<>();
+                         for (MethodSymbol method: methods) {
+                            if (method.qualifiers().contains(Qualifier.RESOURCE)) {
+                                resourceMethods.add(method.getName().get() + " "
+                                        + ((ResourceMethodSymbol) method).resourcePath().signature());
+                            }
+                        }
+                        classesAndResourceFunctions.put(className, resourceMethods);
+                    }
+                    // for each ClassSymbol, add to eligibleInterfaces if it is a distinct service
+                    if (classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
+                        eligibleInterfaces.add(className);
+                    }
+                }
+            }
         }
     }
 
@@ -184,6 +234,11 @@ public class FunctionValidator {
                 updateContext(context, CompilationError.INVALID_RETURN_TYPE, classSymbolLocation);
             } else {
                 validateServiceClassDefinition(classSymbol, classSymbolLocation, context);
+                String className = classSymbol.getName().isPresent() ? classSymbol.getName().get() : "";
+                // if this service is an interface
+                if (typeInclusions.containsKey(className)) {
+                    validateImplementedClasses(classSymbol, context);
+                }
             }
         }
     }
@@ -302,11 +357,77 @@ public class FunctionValidator {
                     updateContext(context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
             }
+            if (!classSymbol.typeInclusions().isEmpty()) {
+                implementedValidInterface(classSymbol, context);
+            }
             if (!resourceMethodFound) {
-                updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+                updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS,
+                        classSymbol.getLocation().get());
             }
         }
     }
+
+    // checks if the returning type is an interface and if so, if the classes implementing this
+    // interface has all the resource functions
+    private void validateImplementedClasses(ClassSymbol classSymbol, SyntaxNodeAnalysisContext context) {
+        if (!classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
+            updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
+                    classSymbol.getLocation().get());
+        }
+        Set<ClassSymbol> childClasses = typeInclusions.get(classSymbol.getName().get());
+        Set<String> resourceFunctionsInInterface = classesAndResourceFunctions.get(classSymbol.getName().get());
+        for (ClassSymbol childClass : childClasses) {
+            if (!childClass.methods().keySet().containsAll(resourceFunctionsInInterface)) {
+                updateContext(context, CompilationError.INVALID_INTERFACE_IMPLEMENTATION,
+                        childClass.getLocation().get(), classSymbol.getName().get());
+            }
+        }
+    }
+
+    // if the returning service has no resource function, this checks for implemented interfaces with resource functions
+    private void implementedValidInterface(ClassSymbol classSymbol,
+                                           SyntaxNodeAnalysisContext context) {
+        List<TypeSymbol> typeInclusions = classSymbol.typeInclusions();
+        for (TypeSymbol typeInclusion : typeInclusions) {
+            if (typeInclusion.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                TypeReferenceTypeSymbol inclusionSymbol = (TypeReferenceTypeSymbol) typeInclusion;
+                if (inclusionSymbol.definition().kind() == SymbolKind.CLASS) {
+                    ClassSymbol inclusionClassSymbol = (ClassSymbol) inclusionSymbol.definition();
+                    if (inclusionClassSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                        String className = inclusionClassSymbol.getName().isPresent() ?
+                                inclusionClassSymbol.getName().get() : "";
+                        // checks if the type inclusion if a valid service
+                        validateServiceClassDefinition(inclusionClassSymbol, inclusionSymbol.getLocation().get(),
+                                context);
+                        // checks if the type inclusion is a valid interface
+                        if (eligibleInterfaces.contains(className) &&
+                                classesAndResourceFunctions.containsKey(className)) {
+                            Set<String> methods = classesAndResourceFunctions.get(className);
+                            if (!implementedAllResourceFunctions(methods, classSymbol.methods().keySet())) {
+                                updateContext(context, CompilationError.INVALID_INTERFACE_IMPLEMENTATION,
+                                        classSymbol.getLocation().get(), className);
+                            }
+                            // checks interfaces implemented by the interface
+                            if (!inclusionClassSymbol.typeInclusions().isEmpty()) {
+                                implementedValidInterface(inclusionClassSymbol, context);
+                            }
+                        } else {
+                            updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
+                                    inclusionClassSymbol.getLocation().get());
+                        }
+                    } else {
+                        updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
+                                inclusionClassSymbol.getLocation().get());
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean implementedAllResourceFunctions(Set<String> interfaceMethods, Set<String> classMethods) {
+        return classMethods.containsAll(interfaceMethods);
+    }
+
 
     private boolean isRecordType(TypeSymbol returnTypeSymbol) {
         TypeDefinitionSymbol definitionSymbol =

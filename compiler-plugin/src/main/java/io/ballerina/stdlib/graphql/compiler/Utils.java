@@ -91,7 +91,11 @@ public class Utils {
                 "GRAPHQL_113", DiagnosticSeverity.ERROR),
         INVALID_RESOURCE_INPUT_OBJECT_PARAM(
                 "A GraphQL resource/remote function cannot use an output type as an input type",
-                "GRAPHQL_114", DiagnosticSeverity.ERROR);
+                "GRAPHQL_114", DiagnosticSeverity.ERROR),
+        NON_DISTINCT_INTERFACE_CLASS("Interface types must have the distinct qualifier", "GRAPHQL_114",
+                DiagnosticSeverity.ERROR),
+        INVALID_INTERFACE_IMPLEMENTATION("All the resource functions in the interface class `{0}` must be implemented",
+                "GRAPHQL_115", DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;
@@ -144,6 +148,14 @@ public class Utils {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
                 errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
+        context.reportDiagnostic(diagnostic);
+    }
+
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
+                                     Location location, Object... args) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
+        Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, args);
         context.reportDiagnostic(diagnostic);
     }
 
