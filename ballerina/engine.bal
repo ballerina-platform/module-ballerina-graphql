@@ -82,7 +82,7 @@ isolated class Engine {
             }
         }
 
-        VariableValidator variableValidator = new(document, variables);
+        VariableValidator variableValidator = new(self.schema, document, variables);
         errors = variableValidator.validate();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);

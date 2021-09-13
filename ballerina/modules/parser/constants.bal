@@ -40,6 +40,7 @@ const PIPE = "|";
 const CLOSE_BRACE = "}";
 const FRAGMENT = "fragment";
 const ON = "on";
+public const NULL = "null";
 
 enum Digit {
     ZERO = "0",
@@ -92,5 +93,8 @@ const T_WHITE_SPACE = 14;
 const T_ELLIPSIS = 15;
 const T_DOLLAR = 16;
 const T_EQUAL = 17;
+const T_EXCLAMATION = 18;
+const T_OPEN_BRACKET = 19;
+const T_CLOSE_BRACKET = 20;
 
 public const ANONYMOUS_OPERATION = "<anonymous>";

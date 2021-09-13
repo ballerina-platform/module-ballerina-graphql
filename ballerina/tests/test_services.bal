@@ -117,6 +117,55 @@ service /inputs on basicListener {
     }
 }
 
+service /input_objects on basicListener {
+    isolated resource function get searchProfile(ProfileDetail profileDetail) returns Person {
+        if profileDetail?.age == 28 && profileDetail.name == "Jessie" {
+            return {
+                name: "Jessie Pinkman", age: 26, address: { number: "23B", street: "Negra Arroyo Lane", city: "Albuquerque" }
+            };
+        } else if profileDetail?.age == 30 || profileDetail.name == "Walter" {
+            return {
+                name: "Walter White", age: 50, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
+            };
+        } else {
+            return {
+                name: "Sherlock Holmes", age: 40, address: { number: "221/B", street: "Baker Street", city: "London" }
+            };
+        }
+    }
+
+    resource function get book(Info info) returns Book[] {
+        if info.author.name == "Conan Doyle" {
+            return [b7, b8];
+        } else if info.bookName == "Harry Potter" {
+            return [b9, b10];
+        } else if info.author.name == "J.K Rowling" {
+           return [b9, b10];
+        } else if info?.movie?.movieName == "Harry Potter" {
+            return [b9, b10];
+        } else if info?.movie?.director == "Chris Columbus" || info?.movie?.director == "Dexter Fletcher"{
+            return [b7, b8, b9, b10];
+        } else {
+            return [b7, b8, b9, b10];
+        }
+    }
+
+    isolated resource function get isHoliday(Date date) returns boolean {
+        if date.day == SUNDAY || date.day == SATURDAY {
+            return true;
+        }
+        return false;
+    }
+
+    isolated resource function get weightInPounds(Weight weight) returns float {
+        return weight.weightInKg * CONVERSION_KG_TO_LBS;
+    }
+
+    isolated resource function get convertKgToGram(WeightInKg weight) returns float {
+        return <float>weight.weight * 1000.00;
+    }
+}
+
 service /records on basicListener {
     isolated resource function get detective() returns Person {
         return {
@@ -637,5 +686,39 @@ service /mutations on basicListener {
     isolated remote function setTeacherSubject(string subject) returns TeacherService {
         self.t.setSubject(subject);
         return self.t;
+    }
+}
+
+service /null_values on basicListener {
+    resource function get profile(int? id) returns Person {
+        if id == () {
+            return p1;
+        }
+        return p2;
+    }
+
+    remote function profile(string? name = ()) returns Person {
+        if name == () {
+            return p1;
+        }
+        return p2;
+    }
+
+    resource function get book(Author author) returns Book {
+        if author == { name: (), id: 1 } {
+            return b1;
+        } else if author == { name: "J. K. Rowling", id: 2 } {
+            return {
+                name: "Harry Potter and the Prisnor of the Azkaban",
+                author: "J. K. Rowling"
+            };
+        }
+        return b3;
+    }
+
+    resource function get 'null(int? value) returns string? {
+        if value != () {
+            return "Hello";
+        }
     }
 }

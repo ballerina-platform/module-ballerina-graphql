@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"weight\" of type \"Float\" used in position expecting type \"Float!\".",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 45
+                }
+            ]
+        }
+    ]
+}

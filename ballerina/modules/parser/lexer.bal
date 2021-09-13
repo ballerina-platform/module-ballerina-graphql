@@ -388,6 +388,12 @@ isolated function getTokenType(string value) returns TokenType {
         return T_INT;
     } else if (value == HASH) {
         return T_COMMENT;
+    } else if value == EXCLAMATION {
+        return T_EXCLAMATION;
+    } else if value == OPEN_BRACKET {
+        return T_OPEN_BRACKET;
+    } else if value == CLOSE_BRACKET {
+        return T_CLOSE_BRACKET;
     }
     return T_IDENTIFIER;
 }

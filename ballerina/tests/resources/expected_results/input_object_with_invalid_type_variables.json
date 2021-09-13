@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Int cannot represent non Int value: 70.5",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 49
+                }
+            ]
+        }
+    ]
+}

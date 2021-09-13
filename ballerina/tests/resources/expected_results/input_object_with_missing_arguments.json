@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"searchProfile\" argument \"name\" of type \"String!\" is required, but it was not provided.",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 17
+                }
+            ]
+        }
+    ]
+}

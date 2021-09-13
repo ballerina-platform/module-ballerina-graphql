@@ -17,30 +17,33 @@
 public class ArgumentNode {
     *Node;
 
-    private ArgumentName name;
-    private ArgumentValue value;
+    private string name;
+    private Location location;
+    private map<ArgumentValue|ArgumentNode> value;
     private ArgumentType kind;
     private string? variableName;
+    private anydata? variableValue;
     private boolean variableDefinition;
+    private boolean inputObject;
 
-    public isolated function init(ArgumentName name, ArgumentValue value, ArgumentType kind, boolean isVarDef = false) {
+    public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false,
+                                  boolean isInputObject = false) {
         self.name = name;
-        self.value = value;
+        self.location = location;
+        self.value = {};
         self.kind = kind;
         self.variableDefinition = isVarDef;
-        self.variableName = isVarDef ? value.value.toString() : ();
+        self.variableName = ();
+        self.variableValue = ();
+        self.inputObject = isInputObject;
     }
 
-    public isolated function getName() returns ArgumentName {
+    public isolated function getName() returns string {
         return self.name;
     }
 
-    public isolated function getValue() returns ArgumentValue {
-        return self.value;
-    }
-
-    public isolated function setValue(Scalar value) {
-        self.value.value = value;
+    public isolated function getLocation() returns Location {
+        return self.location;
     }
 
     public isolated function getKind() returns ArgumentType {
@@ -51,11 +54,43 @@ public class ArgumentNode {
         self.kind = kind;
     }
 
-    public isolated function isVariableDefinition() returns boolean {
-        return self.variableDefinition;
+    public isolated function addVariableName(string name) {
+        self.variableName = name;
     }
 
     public isolated function getVariableName() returns string? {
         return self.variableName;
+    }
+
+    public isolated function setValue(string name, ArgumentValue|ArgumentNode value) {
+        self.value[name] = value;
+    }
+
+    public isolated function getValue() returns map<ArgumentValue|ArgumentNode> {
+        return self.value;
+    }
+
+    public isolated function setVariableDefinition(boolean value) {
+        self.variableDefinition = value;
+    }
+
+    public isolated function isVariableDefinition() returns boolean {
+        return self.variableDefinition;
+    }
+
+    public isolated function setVariableValue(anydata inputValue) {
+        self.variableValue = inputValue;
+    }
+
+    public isolated function getVariableValue() returns anydata {
+        return self.variableValue;
+    }
+
+    public isolated function isInputObject() returns boolean {
+        return self.inputObject;
+    }
+
+    public isolated function setInputObject(boolean value) {
+        self.inputObject = value;
     }
 }

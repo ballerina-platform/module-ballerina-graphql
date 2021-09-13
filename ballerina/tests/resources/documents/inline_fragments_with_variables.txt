@@ -1,4 +1,4 @@
-query getData($profileId:Int){
+query getData($profileId:Int!){
     ...on Query {
         profile(id:$profileId) {
             ...on Person {

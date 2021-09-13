@@ -16,51 +16,127 @@
 
 import ballerina/graphql;
 
-// no resource functions in any parent interface class
-// resource function in an un-implemented interface - Deque
-distinct service class Iterable {
+type Person record {
     string name;
+    int age;
+};
 
-    function init(string name) {
-        self.name = name;
+type Book record {
+    string name;
+    Person author;
+};
+
+type Location record {
+    float latitude;
+    float longitude;
+};
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get profile(Person p) returns Person {
+        return {
+           name: "Walter",
+           age: 57
+        };
     }
 }
 
-distinct service class Collection  {
-    *Iterable;
-
-    function init(string name) {
-        self.name = name;
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Book b) returns Person {
+        return {
+           name: "Walter",
+           age: 57
+        };
     }
 }
 
-distinct service class Queue {
-    *Collection;
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get locationArray(Location location) returns float[] {
+        return [location.latitude, location.longitude];
+    }
 
-    function init(string name) {
-        self.name = name;
+    resource function get location() returns Location {
+        return {
+            latitude: 8.7,
+            longitude:56.7
+        };
     }
 }
 
-service class LinkedList {
-    *Queue;
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get location() returns Location {
+        return {
+            latitude: 8.7,
+            longitude:56.7
+        };
+    }
 
-    string name = "LinkedList";
+    resource function get locationArray(Location location) returns float[] {
+        return [location.latitude, location.longitude];
+    }
 }
 
-service class ArrayDeque {
-    *Queue;
-
-    string name = "ArrayDeque";
-}
-
-service /graphql on new graphql:Listener(9000) {
-
-    resource function get list(int length) returns Queue {
-        if (length > 1) {
-            return new LinkedList();
-        } else {
-            return new ArrayDeque();
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get details(Person p) returns Person? {
+        if p.name == "Sherlock" {
+            return {
+                name: "Walter",
+                age: 57
+            };
         }
+        return;
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get details(Person? p) returns Person {
+        if p is () {
+            return {
+                name: "Walter",
+                age: 57
+            };
+        }
+        return {
+            name: "Jessie",
+            age: 27
+        };
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get details(Person? p) returns Person? {
+        if p is () {
+            return {
+                name: "Walter",
+                age: 57
+            };
+        }
+        return;
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Person p) returns Book {
+        return {
+           name: "Sherlock Holmes",
+           author: {
+               name: "Arthur",
+               age: 60
+           }
+        };
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Person? p) returns Book? {
+        if (p is ()) {
+            return;
+        }
+        return {
+           name: "Sherlock Holmes",
+           author: {
+               name: "Arthur",
+               age: 60
+           }
+        };
     }
 }

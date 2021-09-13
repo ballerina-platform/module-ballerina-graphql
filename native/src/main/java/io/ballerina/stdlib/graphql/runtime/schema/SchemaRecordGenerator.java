@@ -39,6 +39,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERFACES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
@@ -101,6 +102,9 @@ public class SchemaRecordGenerator {
             if (schemaType.getKind() == TypeKind.OBJECT) {
                 BMap<BString, Object> typeRecord = this.typeRecords.get(schemaType.getName());
                 typeRecord.put(FIELDS_FIELD, getFieldsArray(schemaType));
+            } else if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
+                BMap<BString, Object> typeRecord = this.typeRecords.get(schemaType.getName());
+                typeRecord.put(INPUT_FIELDS_FIELD, getInputFieldsArray(schemaType));
             }
         }
     }
@@ -152,6 +156,14 @@ public class SchemaRecordGenerator {
             fieldsArray.append(getFieldRecord(schemaField));
         }
         return fieldsArray;
+    }
+
+    private BArray getInputFieldsArray(SchemaType schemaType) {
+        BArray inputFieldsArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD));
+        for (InputValue inputField : schemaType.getInputFields()) {
+            inputFieldsArray.append(getInputValueRecordFromInputValue(inputField));
+        }
+        return inputFieldsArray;
     }
 
     private BMap<BString, Object> getFieldRecord(SchemaField schemaField) {

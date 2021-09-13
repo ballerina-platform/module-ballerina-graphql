@@ -1,0 +1,15 @@
+query getBook($bName:String!, $bAuthor:ProfileDetail!) {
+    ...data
+    
+}
+
+fragment data on Query {
+    book(info: {bookName: $bName, edition: 6, author: $bAuthor, movie:{movieName: "End Game"}}) {
+        ...bookDetails
+    }
+}
+
+fragment bookDetails on Book {
+    name
+    author
+}

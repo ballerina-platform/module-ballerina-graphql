@@ -16,61 +16,45 @@
 
 import ballerina/graphql;
 
-distinct service class ContactDetail {
-    string email;
+service class Queue {
+    string name;
 
-    function init(string email) {
-        self.email = email;
+    function init(string name) {
+        self.name = name;
     }
 
-    resource function get email() returns string {
-        return self.email;
-    }
-}
-
-distinct service class Person {
-    *ContactDetail;
-
-    function init(string email) {
-        self.email = email;
-    }
-
-    resource function get email() returns string {
-        return self.email;
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
-// resource functions in the interface(Person) is not implemented
-service class Student {
-    *Person;
+service class LinkedList {
+    *Queue;
 
-    string email = "Shelock@gmail.com";
-    int studentId = 3;
+    string name = "LinkedList";
 
-    resource function get studentId() returns int {
-        return self.studentId;
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
-// resource functions in the interface(Person) is not implemented
-service class Teacher {
-    *Person;
+service class ArrayDeque {
+    *Queue;
 
-    string email = "Walter@gmail.com";
-    string subject = "chemistry";
+    string name = "ArrayDeque";
 
-    resource function get subject() returns string {
-        return self.subject;
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
 service /graphql on new graphql:Listener(9000) {
 
-     resource function get profile(int id) returns Person {
-        if (id < 10) {
-            return new Student();
+    resource function get list(int length) returns Queue {
+        if (length > 1) {
+            return new LinkedList();
         } else {
-            return new Teacher();
+            return new ArrayDeque();
         }
     }
 }

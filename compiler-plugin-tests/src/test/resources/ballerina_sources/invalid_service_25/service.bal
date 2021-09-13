@@ -41,12 +41,23 @@ distinct service class Person {
 }
 
 // resource functions in the interface(Person) is not implemented
+service class Student {
+    *Person;
+
+    string email = "Shelock@gmail.com";
+    int studentId = 3;
+
+    resource function get studentId() returns int {
+        return self.studentId;
+    }
+}
+
+// resource functions in the interface(Person) is not implemented
 service class Teacher {
     *Person;
 
     string email = "Walter@gmail.com";
     string subject = "chemistry";
-
 
     resource function get subject() returns string {
         return self.subject;
@@ -55,7 +66,11 @@ service class Teacher {
 
 service /graphql on new graphql:Listener(9000) {
 
-    resource function get profile(int id) returns Teacher {
-        return new Teacher();
+     resource function get profile(int id) returns Person {
+        if (id < 10) {
+            return new Student();
+        } else {
+            return new Teacher();
+        }
     }
 }

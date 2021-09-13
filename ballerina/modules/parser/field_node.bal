@@ -15,7 +15,6 @@
 // under the License.
 
 public class FieldNode {
-    *Node;
     *ParentNode;
 
     private final string name;

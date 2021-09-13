@@ -16,20 +16,21 @@
 
 import ballerina/graphql;
 
+// The Queue interface hierarchy present in the java.util package.
 distinct service class Iterable {
-    int counter;
+    string name;
 
-    function init(int counter) {
-        self.counter = counter;
+    function init(string name) {
+        self.name = name;
     }
 
-    resource function get counter() returns int {
-        return self.counter;
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
 distinct service class Collection  {
-    string name;
+    *Iterable;
 
     function init(string name) {
         self.name = name;
@@ -42,19 +43,25 @@ distinct service class Collection  {
 
 distinct service class Queue {
     *Collection;
-    *Iterable;
 
-    function init(string name, int counter) {
+    function init(string name) {
         self.name = name;
-        self.counter = counter;
     }
 
     resource function get name() returns string {
         return self.name;
     }
+}
 
-    resource function get counter() returns int {
-        return self.counter;
+service class Deque {
+    *Queue;
+
+    function init(string name) {
+        self.name = name;
+    }
+
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
@@ -62,14 +69,9 @@ service class LinkedList {
     *Queue;
 
     string name = "LinkedList";
-    int counter = 1;
 
     resource function get name() returns string {
         return self.name;
-    }
-
-    resource function get counter() returns int {
-        return self.counter;
     }
 }
 
@@ -77,14 +79,9 @@ service class ArrayDeque {
     *Queue;
 
     string name = "ArrayDeque";
-    int counter = 1;
 
     resource function get name() returns string {
         return self.name;
-    }
-
-    resource function get counter() returns int {
-        return self.counter;
     }
 }
 

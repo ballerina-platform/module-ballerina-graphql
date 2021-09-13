@@ -16,78 +16,46 @@
 
 import ballerina/graphql;
 
-distinct service class Iterable {
-    int counter;
+distinct service class ContactDetail {
+    string email;
 
-    function init(int counter) {
-        self.counter = counter;
+    function init(string email) {
+        self.email = email;
     }
 
-    resource function get counter() returns int {
-        return self.counter;
-    }
-}
-
-distinct service class Collection  {
-    string name;
-
-    function init(string name) {
-        self.name = name;
-    }
-
-    resource function get name() returns string {
-        return self.name;
+    resource function get email() returns string {
+        return self.email;
     }
 }
 
-distinct service class Queue {
-    *Collection;
-    *Iterable;
+distinct service class Person {
+    *ContactDetail;
 
-    function init(string name, int counter) {
-        self.name = name;
-        self.counter = counter;
+    function init(string email) {
+        self.email = email;
     }
 
-    resource function get name() returns string {
-        return self.name;
-    }
-
-    resource function get counter() returns int {
-        return self.counter;
+    resource function get email() returns string {
+        return self.email;
     }
 }
 
-service class LinkedList {
-    *Queue;
+// resource functions in the interface(Person) is not implemented
+service class Teacher {
+    *Person;
 
-    int counter = 1;
-    string name = "LinkedList";
+    string email = "Walter@gmail.com";
+    string subject = "chemistry";
 
-    resource function get counter() returns int {
-        return self.counter;
-    }
-}
 
-service class ArrayDeque {
-    *Queue;
-
-    string name = "ArrayDeque";
-    int counter = 1;
-
-    resource function get name() returns string {
-        return self.name;
+    resource function get subject() returns string {
+        return self.subject;
     }
 }
 
 service /graphql on new graphql:Listener(9000) {
 
-    // returning type is an interface. Has sub types ArrayDeque and LinkedList
-    resource function get list(int length) returns Queue {
-        if (length > 1) {
-            return new LinkedList();
-        } else {
-            return new ArrayDeque();
-        }
+    resource function get profile(int id) returns Teacher {
+        return new Teacher();
     }
 }

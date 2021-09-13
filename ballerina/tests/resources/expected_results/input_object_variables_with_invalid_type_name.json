@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"profile\" of type \"Details!\" used in position expecting type \"ProfileDetail!\".",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 53
+                }
+            ]
+        }
+    ]
+}

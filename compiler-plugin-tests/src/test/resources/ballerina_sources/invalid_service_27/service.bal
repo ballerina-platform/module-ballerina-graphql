@@ -40,7 +40,7 @@ distinct service class Collection  {
     }
 }
 
-service class Queue {
+distinct service class Queue {
     *Collection;
     *Iterable;
 
@@ -49,15 +49,45 @@ service class Queue {
         self.counter = counter;
     }
 
-    resource function get something() returns string {
-        return "something else";
+    resource function get name() returns string {
+        return self.name;
+    }
+
+    resource function get counter() returns int {
+        return self.counter;
+    }
+}
+
+service class LinkedList {
+    *Queue;
+
+    int counter = 1;
+    string name = "LinkedList";
+
+    resource function get counter() returns int {
+        return self.counter;
+    }
+}
+
+service class ArrayDeque {
+    *Queue;
+
+    string name = "ArrayDeque";
+    int counter = 1;
+
+    resource function get name() returns string {
+        return self.name;
     }
 }
 
 service /graphql on new graphql:Listener(9000) {
 
-    // returning type has implemented interfaces, doesn't have sub types
+    // returning type is an interface. Has sub types ArrayDeque and LinkedList
     resource function get list(int length) returns Queue {
-        return new Queue("Queue", 1);
+        if (length > 1) {
+            return new LinkedList();
+        } else {
+            return new ArrayDeque();
+        }
     }
 }

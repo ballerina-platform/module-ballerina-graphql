@@ -16,92 +16,22 @@
 
 import ballerina/graphql;
 
-// NamedEntity and SomeNamedEntity are not being used in the graphql service, not validated as graphql interfaces
-service class NamedEntity {
-    string name;
+type Location record {
+    float latitude;
+    float longitude;
+};
 
-    function init(string name) {
-        self.name = name;
-    }
-
-    resource function get name() returns string {
-        return self.name;
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get location(Location location) returns float[] {
+        return [location.latitude, location.longitude];
     }
 }
 
-service class SomeNamedEntity {
-    string name;
-
-    function init(string name) {
-        self.name = name;
-    }
-
-    resource function get name() returns string {
-        return self.name;
-    }
-}
-
-distinct service class ContactDetail {
-    string email;
-
-    function init(string email) {
-        self.email = email;
-    }
-
-    resource function get email() returns string {
-        return self.email;
-    }
-}
-
-distinct service class Person {
-    *ContactDetail;
-
-    function init(string email) {
-        self.email = email;
-    }
-
-    resource function get email() returns string {
-        return self.email;
-    }
-}
-
-distinct service class Student {
-    *Person;
-
-    string email = "Shelock@gmail.com";
-    int studentId = 3;
-
-    resource function get email() returns string {
-        return self.email;
-    }
-
-    resource function get studentId() returns int {
-        return self.studentId;
-    }
-}
-
-distinct service class Teacher {
-    *Person;
-
-    string email = "Walter@gmail.com";
-    string subject = "chemistry";
-
-    resource function get email() returns string {
-        return self.email;
-    }
-
-    resource function get subject() returns string {
-        return self.subject;
-    }
-}
-
-service /graphql on new graphql:Listener(9000) {
-
-    resource function get profile(int id) returns Person {
-        if (id < 10) {
-            return new Student();
-        } else {
-            return new Teacher();
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get color(Location? location) returns float[]? {
+        if (location is Location) {
+            return [location.latitude, location.longitude];
         }
+        return;
     }
 }

@@ -16,8 +16,8 @@
 
 import ballerina/graphql;
 
-// The Queue interface hierarchy present in the java.util package.
-distinct service class Iterable {
+// NamedEntity and SomeNamedEntity are not being used in the graphql service, not validated as graphql interfaces
+service class NamedEntity {
     string name;
 
     function init(string name) {
@@ -29,8 +29,8 @@ distinct service class Iterable {
     }
 }
 
-distinct service class Collection  {
-    *Iterable;
+service class SomeNamedEntity {
+    string name;
 
     function init(string name) {
         self.name = name;
@@ -41,57 +41,67 @@ distinct service class Collection  {
     }
 }
 
-distinct service class Queue {
-    *Collection;
+distinct service class ContactDetail {
+    string email;
 
-    function init(string name) {
-        self.name = name;
+    function init(string email) {
+        self.email = email;
     }
 
-    resource function get name() returns string {
-        return self.name;
-    }
-}
-
-service class Deque {
-    *Queue;
-
-    function init(string name) {
-        self.name = name;
-    }
-
-    resource function get name() returns string {
-        return self.name;
+    resource function get email() returns string {
+        return self.email;
     }
 }
 
-service class LinkedList {
-    *Queue;
+distinct service class Person {
+    *ContactDetail;
 
-    string name = "LinkedList";
+    function init(string email) {
+        self.email = email;
+    }
 
-    resource function get name() returns string {
-        return self.name;
+    resource function get email() returns string {
+        return self.email;
     }
 }
 
-service class ArrayDeque {
-    *Queue;
+distinct service class Student {
+    *Person;
 
-    string name = "ArrayDeque";
+    string email = "Shelock@gmail.com";
+    int studentId = 3;
 
-    resource function get name() returns string {
-        return self.name;
+    resource function get email() returns string {
+        return self.email;
+    }
+
+    resource function get studentId() returns int {
+        return self.studentId;
+    }
+}
+
+distinct service class Teacher {
+    *Person;
+
+    string email = "Walter@gmail.com";
+    string subject = "chemistry";
+
+    resource function get email() returns string {
+        return self.email;
+    }
+
+    resource function get subject() returns string {
+        return self.subject;
     }
 }
 
 service /graphql on new graphql:Listener(9000) {
 
-    resource function get list(int length) returns Queue {
-        if (length > 1) {
-            return new LinkedList();
+    resource function get profile(int id) returns Person {
+        if (id < 10) {
+            return new Student();
         } else {
-            return new ArrayDeque();
+            return new Teacher();
         }
     }
 }

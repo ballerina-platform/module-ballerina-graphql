@@ -1,0 +1,5 @@
+query getBook($bName: String!, $authorAge:Int) {
+    book(info: {bookName: $bName, edition: 6, author: {name: "Arthur Conan Doyle", age: $authorAge}, movie:{movieName: "Sherlock"}}) {
+        name
+    }
+}

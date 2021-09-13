@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"$bName\" is not defined.",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 28
+                }
+            ]
+        }
+    ]
+}

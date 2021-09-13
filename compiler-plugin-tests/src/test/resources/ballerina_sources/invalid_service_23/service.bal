@@ -16,15 +16,29 @@
 
 import ballerina/graphql;
 
-service class Queue {
+// no resource functions in any parent interface class
+// resource function in an un-implemented interface - Deque
+distinct service class Iterable {
     string name;
 
     function init(string name) {
         self.name = name;
     }
+}
 
-    resource function get name() returns string {
-        return self.name;
+distinct service class Collection  {
+    *Iterable;
+
+    function init(string name) {
+        self.name = name;
+    }
+}
+
+distinct service class Queue {
+    *Collection;
+
+    function init(string name) {
+        self.name = name;
     }
 }
 
@@ -32,20 +46,12 @@ service class LinkedList {
     *Queue;
 
     string name = "LinkedList";
-
-    resource function get name() returns string {
-        return self.name;
-    }
 }
 
 service class ArrayDeque {
     *Queue;
 
     string name = "ArrayDeque";
-
-    resource function get name() returns string {
-        return self.name;
-    }
 }
 
 service /graphql on new graphql:Listener(9000) {

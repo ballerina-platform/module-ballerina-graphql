@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "String cannot represent non String value: 5",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 37
+                }
+            ]
+        },
+        {
+            "message": "Int cannot represent non Int value: Arthur",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 45
+                }
+            ]
+        }
+    ]
+}

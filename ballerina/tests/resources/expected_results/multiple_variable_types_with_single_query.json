@@ -2,7 +2,7 @@
     "data": {
         "greet": "Hello, Thisaru",
         "isLegal": true,
-        "weightInPounds": 154.35,
+        "weightInPounds": 155.45250000000001,
         "isHoliday": false,
         "getDay": [
             "MONDAY",

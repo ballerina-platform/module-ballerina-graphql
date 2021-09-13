@@ -131,7 +131,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testValidInterfaceTypes1() {
+    public void testInputObjectTypeInputParameter() {
         Package currentPackage = loadPackage("valid_service_11");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -139,7 +139,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testValidInterfaceTypes2() {
+    public void testValidInterfaceTypes1() {
         Package currentPackage = loadPackage("valid_service_12");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
@@ -147,8 +147,16 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testValidMultipleInterfaceImplementations() {
+    public void testValidInterfaceTypes2() {
         Package currentPackage = loadPackage("valid_service_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testValidMultipleInterfaceImplementations() {
+        Package currentPackage = loadPackage("valid_service_14");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
@@ -472,8 +480,43 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidInterfacesWithNoResourceFunction() {
+    public void testInvalidInputObjects() {
         Package currentPackage = loadPackage("invalid_service_22");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 9);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 35, 42);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 44, 37);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, 57, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 73, 50);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 79, 42);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 91, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 106, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 118, 39);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 130, 40);
+    }
+
+    @Test
+    public void testInvalidInterfacesWithNoResourceFunction() {
+        Package currentPackage = loadPackage("invalid_service_23");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 3);
@@ -490,7 +533,7 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidInterfacesWithNoDistinctService1() {
-        Package currentPackage = loadPackage("invalid_service_23");
+        Package currentPackage = loadPackage("invalid_service_24");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
@@ -500,7 +543,7 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidInterfaceImplementation() {
-        Package currentPackage = loadPackage("invalid_service_24");
+        Package currentPackage = loadPackage("invalid_service_25");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
@@ -516,7 +559,7 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidInterfaceImplementation2() {
-        Package currentPackage = loadPackage("invalid_service_25");
+        Package currentPackage = loadPackage("invalid_service_26");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
@@ -526,7 +569,7 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidMultipleInterfaceImplementation() {
-        Package currentPackage = loadPackage("invalid_service_26");
+        Package currentPackage = loadPackage("invalid_service_27");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
@@ -542,7 +585,7 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidMultipleInterfaceImplementation2() {
-        Package currentPackage = loadPackage("invalid_service_27");
+        Package currentPackage = loadPackage("invalid_service_28");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.errorCount(), 2);

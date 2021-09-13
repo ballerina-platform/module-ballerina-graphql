@@ -15,7 +15,6 @@
 // under the License.
 
 public class FragmentNode {
-    *Node;
     *ParentNode;
 
     private string name;

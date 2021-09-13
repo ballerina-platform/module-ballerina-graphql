@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
 buildscript {
     repositories {
         maven {
@@ -34,10 +37,10 @@ description = 'Ballerina - GraphQl Ballerina'
 def packageName = "graphql"
 def packageOrg = "ballerina"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
+def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/Ballerina.toml")
+def compilerPluginTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/CompilerPlugin.toml")
 def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
 def compilerPluginTomlFile = new File("$project.projectDir/CompilerPlugin.toml")
-def originalBallerinaToml = ballerinaTomlFile.text
-def originalCompilerPluginToml = compilerPluginTomlFile.text
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -64,19 +67,25 @@ ballerina {
 
 task updateTomlFiles {
     doLast {
-        def newBallerinaToml = ballerinaTomlFile.text.replace("@project.version@", project.version)
+        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
         ballerinaTomlFile.text = newBallerinaToml
 
-        def newCompilerPluginToml = compilerPluginTomlFile.text.replace("@project.version@", project.version)
+        def newCompilerPluginToml = compilerPluginTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         compilerPluginTomlFile.text = newCompilerPluginToml
     }
 }
 
-task revertTomlFiles {
+task commitTomlFiles {
     doLast {
-        ballerinaTomlFile.text = originalBallerinaToml
-        compilerPluginTomlFile.text = originalCompilerPluginToml
+        project.exec {
+            ignoreExitValue true
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "git commit Ballerina.toml Dependencies.toml CompilerPlugin.toml -m \"[Automated] Update the native jar versions\""
+            } else {
+                commandLine 'sh', '-c', "git commit Ballerina.toml Dependencies.toml CompilerPlugin.toml -m '[Automated] Update the native jar versions'"
+            }
+        }
     }
 }
 

@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Syntax Error: Duplicate input object field \"bookName\", found Name \"bookName\".",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 35
+                }
+            ]
+        }
+    ]
+}

@@ -61,7 +61,9 @@ class ExecutorVisitor {
         if fieldNode.getName() == SCHEMA_FIELD {
             executeIntrospection(self, fieldNode, self.schema);
         } else if fieldNode.getName() == TYPE_FIELD {
-            string requiredTypeName = fieldNode.getArguments()[0].getValue().value.toString();
+            parser:ArgumentNode argNode = fieldNode.getArguments()[0];
+            parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue().get(argNode.getName());
+            string requiredTypeName = argValue.value.toString();
             __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
             executeIntrospection(self, fieldNode, requiredType);
         } else {

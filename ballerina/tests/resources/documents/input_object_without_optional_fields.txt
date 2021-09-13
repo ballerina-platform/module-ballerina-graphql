@@ -1,0 +1,5 @@
+{
+    book(info: {bookName: "Study in Scarlet", edition: 6, author: {name: "Arthur Conan Doyle", age: 67}}) { 
+        name
+    }
+}

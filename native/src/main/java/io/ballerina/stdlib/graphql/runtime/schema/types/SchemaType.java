@@ -38,6 +38,7 @@ public class SchemaType {
     private final Map<String, SchemaField> fields;
     private final List<Object> enumValues;
     private final Set<SchemaType> possibleTypes;
+    private final List<InputValue> inputFields;
     private SchemaType ofType;
     private final Type balType;
 
@@ -49,7 +50,8 @@ public class SchemaType {
         this.name = name;
         this.kind = kind;
         this.balType = balType;
-        this.fields = (kind == TypeKind.OBJECT) ? new HashMap<>() : null;
+        this.fields = kind == TypeKind.OBJECT ? new HashMap<>() : null;
+        this.inputFields = kind == TypeKind.INPUT_OBJECT ? new ArrayList<>() : null;
         this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
         this.possibleTypes = (kind == TypeKind.UNION) ? new LinkedHashSet<>() : null;
     }
@@ -74,6 +76,10 @@ public class SchemaType {
         return this.enumValues;
     }
 
+    public List<InputValue> getInputFields() {
+        return this.inputFields;
+    }
+
     public SchemaType getOfType() {
         return this.ofType;
     }
@@ -91,6 +97,10 @@ public class SchemaType {
 
     public void addEnumValue(Object o) {
         this.enumValues.add(o);
+    }
+
+    public void addInputField(InputValue inputVal) {
+        this.inputFields.add(inputVal);
     }
 
     public void setOfType(SchemaType ofType) {

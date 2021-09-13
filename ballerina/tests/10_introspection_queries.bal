@@ -229,6 +229,17 @@ isolated function testTypeNameIntrospectionInFragments() returns error? {
 }
 
 @test:Config {
+    groups: ["input_objects", "introspection"]
+}
+isolated function testIntrospectionOnServiceWithInputObjects() returns error? {
+    string graphqlUrl = "http://localhost:9091/input_objects";
+    string document = check getGraphQLDocumentFromFile("introspection_on_service_with_input_objects.txt");
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("introspection_on_service_with_input_objects.json");
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
     groups: ["introspection", "typename", "validation"]
 }
 isolated function testTypeNameIntrospectionOnScalar() returns error? {
