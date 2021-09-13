@@ -66,7 +66,7 @@ class VariableValidator {
             if self.visitedVariableDefinitions.indexOf(name) == () {
                 string message = string`Variable "$${name}" is never used.`;
                 Location location = <Location> self.variableDefinitions.get(name)?.location;
-                self.errors.push(getErrorDetailRecord(message, location)); 
+                self.errors.push(getErrorDetailRecord(message, location));
             }
         }
         self.visitedVariableDefinitions = [];
@@ -95,7 +95,7 @@ class VariableValidator {
             foreach parser:Selection subSelection in selections {
                 self.visitSelection(subSelection, data);
             }
-        } 
+        }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
@@ -229,8 +229,7 @@ class VariableValidator {
     isolated function getTypeRecordAndTypeFromTypeName(string typeName) returns [__Type?, string] {
         if typeName.endsWith("!") {
             __Type wrapperType = {
-                kind: NON_NULL,
-                name: ()
+                kind: NON_NULL
             };
             string ofTypeName = typeName.substring(0, typeName.length()-1);
             __Type? ofType;
@@ -242,8 +241,7 @@ class VariableValidator {
             return [(), ofTypeName];
         } else if typeName.startsWith("[") {
             __Type wrapperType = {
-                kind: LIST,
-                name: ()
+                kind: LIST
             };
             string ofTypeName = typeName.substring(1, typeName.length()-1);
             __Type? ofType;
