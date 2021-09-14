@@ -147,11 +147,11 @@ class VariableValidator {
             parser:ArgumentValue value = <parser:ArgumentValue> variableDefinition?.defaultValue;
             if variableType is __Type {
                 if value.value is () && variableType.kind == NON_NULL {
-                    string message = string`Variable ${variableName} of type ${variableDefinition.kind} has` +
+                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
                     string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
                     self.errors.push(getErrorDetailRecord(message, value.location));
                 } else if value.value is Scalar && getTypeNameFromValue(<Scalar>value.value) != argumentTypeName {
-                    string message = string`Variable ${variableName} of type ${variableDefinition.kind} has` +
+                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
                     string` invalid default value: ${value.value.toString()}. Expected type` +
                     string` "${argumentTypeName}", found ${value.value.toString()}`;
                     self.errors.push(getErrorDetailRecord(message, value.location));

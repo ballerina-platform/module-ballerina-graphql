@@ -337,3 +337,14 @@ isolated function testNullableVariablesWithoutValue() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testVariableDefaultNullValueWithNonNullType() returns error? {
+    string document = "($age:Int! = null){ isLegal(age: $age) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("variable_default_null_value_with_non_null_type.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
