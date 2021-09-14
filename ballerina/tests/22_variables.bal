@@ -285,3 +285,55 @@ isolated function testNonNullTypeVariablesWithNullableArgument() returns error? 
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "fragments", "input"]
+}
+isolated function testVariableWithInvalidDefaultValue1() returns error? {
+    string document = string`query Greeting($userName:String = 3){ greet (name: $userName ) }`;
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value1.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "input_coerce"]
+}
+isolated function testVariableWithInvalidDefaultValue2() returns error? {
+    string document = string`($weight:Float = "Walter"){ weightInPounds(weightInKg:$weight) }`;
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value2.json");
+    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testVariablesWithDefaultNullValue() returns error? {
+    string document = "($day:Weekday = null){ isHoliday(weekday: $day) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            isHoliday: false
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testNullableVariablesWithoutValue() returns error? {
+    string document = "($day:Weekday){ isHoliday(weekday: $day) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            isHoliday: false
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
