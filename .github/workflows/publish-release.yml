@@ -30,7 +30,6 @@ jobs:
                 uses: aquasecurity/trivy-action@master
                 with:
                     scan-type: 'fs'
-                    scan-ref: '/github/workspace/ballerina/lib'
                     format: 'table'
                     exit-code: '1'
 

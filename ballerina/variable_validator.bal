@@ -229,8 +229,7 @@ class VariableValidator {
     isolated function getTypeRecordAndTypeFromTypeName(string typeName) returns [__Type?, string] {
         if typeName.endsWith("!") {
             __Type wrapperType = {
-                kind: NON_NULL,
-                name: ()
+                kind: NON_NULL
             };
             string ofTypeName = typeName.substring(0, typeName.length()-1);
             __Type? ofType;
@@ -242,8 +241,7 @@ class VariableValidator {
             return [(), ofTypeName];
         } else if typeName.startsWith("[") {
             __Type wrapperType = {
-                kind: LIST,
-                name: ()
+                kind: LIST
             };
             string ofTypeName = typeName.substring(1, typeName.length()-1);
             __Type? ofType;
