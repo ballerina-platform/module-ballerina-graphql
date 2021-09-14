@@ -69,9 +69,9 @@ class ValidatorVisitor {
             if node is () {
                 return;
             }
-            __Type? fragmentOnType = self.validateFragment(selection, <string>parentType?.name);
+            __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if fragmentOnType is __Type {
-                parentField = createField(fragmentOnType?.name.toString(), fragmentOnType);
+                parentField = createField(fragmentOnType.name.toString(), fragmentOnType);
                 parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
                 self.visitFragment(fragmentNode, parentField);
             }
@@ -160,7 +160,7 @@ class ValidatorVisitor {
         } else if variableValue is map<anydata> {
             self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getLocation(), fieldName);
         } else {
-            string expectedTypeName = getOfType(schemaArg.'type)?.name.toString();
+            string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} ` +
             string`value: ${variableValue.toString()}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
@@ -180,7 +180,7 @@ class ValidatorVisitor {
         if getOfType(schemaArg.'type).kind == ENUM {
             self.validateEnumArgument(value, actualTypeName, schemaArg);
         } else {
-            string expectedTypeName = getOfType(schemaArg.'type)?.name.toString();
+            string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             if (expectedTypeName == actualTypeName) {
                 return;
             }
@@ -261,7 +261,7 @@ class ValidatorVisitor {
     }
 
     isolated function coerceInputVariableDecimalToFloat(decimal value, __InputValue inputValue, Location location) {
-        string expectedTypeName = getOfType(inputValue.'type)?.name.toString();
+        string expectedTypeName = getOfType(inputValue.'type).name.toString();
         if expectedTypeName == FLOAT {
             parser:ArgumentValue argValue = {value: <float>value, location: location};
             self.validateArgumentValue(argValue, FLOAT, inputValue);
@@ -286,11 +286,11 @@ class ValidatorVisitor {
         __InputValue[] inputValues = schemaField.args;
         __InputValue[] notFoundInputValues = [];
 
-        if (inputValues.length() == 0) {
-            if (arguments.length() > 0) {
+        if inputValues.length() == 0 {
+            if arguments.length() > 0 {
                 foreach parser:ArgumentNode argumentNode in arguments {
                     string argName = argumentNode.getName();
-                    string parentName = parentType?.name is string ? <string>parentType?.name : "";
+                    string parentName = parentType.name is string ? <string>parentType.name : "";
                     string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
                     self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                 }
@@ -300,11 +300,11 @@ class ValidatorVisitor {
             foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName();
                 __InputValue? inputValue = getInputValueFromArray(inputValues, argName);
-                if (inputValue is __InputValue) {
+                if inputValue is __InputValue {
                     _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
                     self.visitArgument(argumentNode, {input:inputValue, fieldName:fieldNode.getName()});
                 } else {
-                    string parentName = parentType?.name is string ? <string>parentType?.name : "";
+                    string parentName = parentType.name is string ? <string>parentType.name : "";
                     string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
                     self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                 }
@@ -312,7 +312,7 @@ class ValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if (inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is ()) {
+            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
@@ -397,10 +397,10 @@ isolated function getRequierdFieldFromType(__Type parentType, __Type[] typeArray
     __Field[] fields = getFieldsArrayFromType(parentType);
     __Field? requiredField = getFieldFromFieldArray(fields, fieldNode.getName());
     if requiredField is () {
-        if fieldNode.getName() == SCHEMA_FIELD && parentType?.name == QUERY_TYPE_NAME {
+        if fieldNode.getName() == SCHEMA_FIELD && parentType.name == QUERY_TYPE_NAME {
             __Type fieldType = <__Type>getTypeFromTypeArray(typeArray, SCHEMA_TYPE_NAME);
             requiredField = createField(SCHEMA_FIELD, fieldType);
-        } else if fieldNode.getName() == TYPE_FIELD && parentType?.name == QUERY_TYPE_NAME {
+        } else if fieldNode.getName() == TYPE_FIELD && parentType.name == QUERY_TYPE_NAME {
             __Type fieldType = <__Type>getTypeFromTypeArray(typeArray, TYPE_TYPE_NAME);
             __Type argumentType = <__Type>getTypeFromTypeArray(typeArray, STRING);
             __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
@@ -433,7 +433,7 @@ isolated function copyInputValueArray(__InputValue[] original) returns __InputVa
 
 isolated function getInputValueFromArray(__InputValue[] inputValues, string name) returns __InputValue? {
     foreach __InputValue inputValue in inputValues {
-        if (inputValue.name == name) {
+        if inputValue.name == name {
             return inputValue;
         }
     }
@@ -442,14 +442,14 @@ isolated function getInputValueFromArray(__InputValue[] inputValues, string name
 isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
     foreach __Type schemaType in types {
         __Type ofType = getOfType(schemaType);
-        if (ofType?.name.toString() == typeName) {
+        if ofType.name.toString() == typeName {
             return ofType;
         }
     }
 }
 
 isolated function hasFields(__Type fieldType) returns boolean {
-    if (fieldType.kind == OBJECT || fieldType.kind == UNION) {
+    if fieldType.kind == OBJECT || fieldType.kind == UNION {
         return true;
     }
     return false;
