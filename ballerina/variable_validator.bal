@@ -139,7 +139,7 @@ class VariableValidator {
                                                         parser:VariableDefinition variableDefinition,
                                                         string argumentTypeName, __Type? variableType) {
         string variableName = <string>argumentNode.getVariableName();
-        parser:ArgumentNode?|parser:ArgumentValue? defaultValue = variableDefinition?.defaultValue;
+        parser:ArgumentNode|parser:ArgumentValue? defaultValue = variableDefinition?.defaultValue;
         if self.variables.hasKey(variableName) {
             argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
             anydata value = self.variables.get(variableName);
