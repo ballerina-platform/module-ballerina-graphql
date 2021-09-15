@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message":"Variable \"userName\" of type \"String\" has invalid default value: 3. Expected type \"String\", found 3",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 35
+                }
+            ]
+        }
+    ]
+}

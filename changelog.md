@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1879] Fix Nullable Record Fields Identifying as NON_NULL Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1879)
 - [[#1845] Fix not Allowing to Pass `null` as Input Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/1845)
 - [[#1803] Fix Not Allowing NON_NULL Type in Variable Definitions](https://github.com/ballerina-platform/ballerina-standard-library/issues/1803)
+- [[#1911] Fix Variable Default Value With Invalid Type Retuning Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1911)
+- [[#1912] Fix Nullable Variables Return Error when Value is not Present](https://github.com/ballerina-platform/ballerina-standard-library/issues/1912)
 
 ## [0.2.0.beta.2]  - 2021-07-06
 

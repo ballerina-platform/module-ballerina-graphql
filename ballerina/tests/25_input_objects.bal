@@ -307,3 +307,14 @@ isolated function testInputObjectVariablesWithInvalidTypeName() returns error? {
     json expectedPayload = check getJsonContentFromFile("input_object_variables_with_invalid_type_name.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["input_objects", "input"]
+}
+isolated function testInputObjectWithMissingNullableVariableValue() returns error? {
+    string document = check getGraphQLDocumentFromFile("input_object_with_missing_nullable_variable_value.txt");
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("input_object_with_missing_nullable_variable_value.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
