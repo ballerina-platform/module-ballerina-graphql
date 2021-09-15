@@ -135,37 +135,37 @@ class VariableValidator {
         }
     }
 
-    public isolated function validateVariableDefinition(parser:ArgumentNode argumentNode, parser:VariableDefinition variableDefinition,
+    public isolated function validateVariableDefinition(parser:ArgumentNode argumentNode,
+                                                        parser:VariableDefinition variableDefinition,
                                                         string argumentTypeName, __Type? variableType) {
-        parser:Location location = argumentNode.getLocation();
         string variableName = <string>argumentNode.getVariableName();
+        parser:ArgumentNode?|parser:ArgumentValue? defaultValue = variableDefinition?.defaultValue;
         if self.variables.hasKey(variableName) {
             argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
             anydata value = self.variables.get(variableName);
             self.setArgumentValue(value, argumentNode, variableDefinition);
-        } else if variableDefinition?.defaultValue is parser:ArgumentValue {
-            parser:ArgumentValue value = <parser:ArgumentValue> variableDefinition?.defaultValue;
+        } else if defaultValue is parser:ArgumentValue {
             if variableType is __Type {
-                if value.value is () && variableType.kind == NON_NULL {
+                if defaultValue.value is () && variableType.kind == NON_NULL {
                     string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
                     string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
-                    self.errors.push(getErrorDetailRecord(message, value.location));
-                } else if value.value is Scalar && getTypeNameFromValue(<Scalar>value.value) != argumentTypeName {
+                    self.errors.push(getErrorDetailRecord(message, defaultValue.location));
+                } else if defaultValue.value is Scalar &&
+                    getTypeNameFromValue(<Scalar>defaultValue.value) != argumentTypeName {
                     string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                    string` invalid default value: ${value.value.toString()}. Expected type` +
-                    string` "${argumentTypeName}", found ${value.value.toString()}`;
-                    self.errors.push(getErrorDetailRecord(message, value.location));
+                    string` invalid default value: ${defaultValue.value.toString()}. Expected type` +
+                    string` "${argumentTypeName}", found ${defaultValue.value.toString()}`;
+                    self.errors.push(getErrorDetailRecord(message, defaultValue.location));
                 } else {
                     argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-                    argumentNode.setValue(argumentNode.getName(), value);
+                    argumentNode.setValue(argumentNode.getName(), defaultValue);
                     argumentNode.setVariableDefinition(false);
                 }
             }
-        } else if variableDefinition?.defaultValue is parser:ArgumentNode {
-            parser:ArgumentNode value = <parser:ArgumentNode> variableDefinition?.defaultValue;
+        } else if defaultValue is parser:ArgumentNode {
             argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
             if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
-                foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in value.getValue() {
+                foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
                     if fieldValue is parser:ArgumentNode {
                         argumentNode.setValue(fieldValue.getName(), fieldValue);
                     }
@@ -175,9 +175,10 @@ class VariableValidator {
             } else {
                 string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
                 string` invalid default value. Expected type "${variableDefinition.kind}"`;
-                self.errors.push(getErrorDetailRecord(message, value.getLocation()));
+                self.errors.push(getErrorDetailRecord(message, defaultValue.getLocation()));
             }
         } else {
+            parser:Location location = argumentNode.getLocation();
             if variableType is __Type && variableType.kind == NON_NULL {
                 string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
                 string`was not provided.`;
