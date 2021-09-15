@@ -348,3 +348,14 @@ isolated function testVariableDefaultNullValueWithNonNullType() returns error? {
     json expectedPayload = check getJsonContentFromFile("variable_default_null_value_with_non_null_type.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testScalarTypeVariableWithInputObjectValue() returns error? {
+    string document = "($age:Int! = {}){ isLegal(age: $age) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("scalar_type_variable_with_input_object_value.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

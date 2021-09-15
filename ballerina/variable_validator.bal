@@ -164,13 +164,19 @@ class VariableValidator {
         } else if variableDefinition?.defaultValue is parser:ArgumentNode {
             parser:ArgumentNode value = <parser:ArgumentNode> variableDefinition?.defaultValue;
             argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-            foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in value.getValue() {
-                if fieldValue is parser:ArgumentNode {
-                    argumentNode.setValue(fieldValue.getName(), fieldValue);
+            if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
+                foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in value.getValue() {
+                    if fieldValue is parser:ArgumentNode {
+                        argumentNode.setValue(fieldValue.getName(), fieldValue);
+                    }
                 }
+                argumentNode.setInputObject(true);
+                argumentNode.setVariableDefinition(false);
+            } else {
+                string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                string` invalid default value. Expected type "${variableDefinition.kind}"`;
+                self.errors.push(getErrorDetailRecord(message, value.getLocation()));
             }
-            argumentNode.setInputObject(true);
-            argumentNode.setVariableDefinition(false);
         } else {
             if variableType is __Type && variableType.kind == NON_NULL {
                 string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
