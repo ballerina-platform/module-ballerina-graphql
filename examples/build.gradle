@@ -66,12 +66,7 @@ clean {
 
 task testExamples {
     doLast {
-        def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")
         examples.each { example ->
-            def dependenciesTomlFile = new File("${project.projectDir}/resources/Dependencies.toml")
-            def dependenciesTomlFileInExample = new File("${project.projectDir}/${example}/Dependencies.toml")
-            def newDependenciesTomlText = dependenciesTomlFile.text.replace("@project.version@", moduleVersion)
-            dependenciesTomlFileInExample.text = newDependenciesTomlText
             try {
                 exec {
                     workingDir project.projectDir
@@ -85,7 +80,7 @@ task testExamples {
                 println("Example '${example}' Build failed: " + e.message)
                 throw e
             } finally {
-                dependenciesTomlFileInExample.text = ""
+                commitDependenciesTomlFile(example)
             }
         }
     }
@@ -100,12 +95,7 @@ task buildExamples {
         }
     }
     doLast {
-        def moduleVersion = "${project.version}".replace("-SNAPSHOT", "")
         examples.each { example ->
-            def dependenciesTomlFile = new File("${project.projectDir}/resources/Dependencies.toml")
-            def dependenciesTomlFileInExample = new File("${project.projectDir}/${example}/Dependencies.toml")
-            def newDependenciesTomlText = dependenciesTomlFile.text.replace("@project.version@", moduleVersion)
-            dependenciesTomlFileInExample.text = newDependenciesTomlText
             try {
                 exec {
                     workingDir project.projectDir
@@ -119,8 +109,19 @@ task buildExamples {
                 println("Example '${example}' Build failed: " + e.message)
                 throw e
             } finally {
-                dependenciesTomlFileInExample.text = ""
+                commitDependenciesTomlFile(example)
             }
+        }
+    }
+}
+
+def commitDependenciesTomlFile(String example) {
+    project.exec {
+        ignoreExitValue true
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            commandLine 'cmd', '/c', "git commit ${example}/Dependencies.toml -m \"[Automated] Commit the Dependencies.toml file\""
+        } else {
+            commandLine 'sh', '-c', "git commit ${example}/Dependencies.toml -m '[Automated] Commit the Dependencies.toml file'"
         }
     }
 }
