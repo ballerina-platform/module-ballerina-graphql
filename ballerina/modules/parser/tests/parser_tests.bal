@@ -667,3 +667,15 @@ isolated function testInputObjects() returns error? {
     ArgumentValue nestedValue = <ArgumentValue> innerField.getValue().get("movieName");
     test:assertEquals(nestedValue.value, "End Game");
 }
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
+isolated function testDirectives() returns error? {
+    string document = check getGraphQLDocumentFromFile("query_type_directives.txt");
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
+}

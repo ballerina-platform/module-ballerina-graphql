@@ -1,0 +1,17 @@
+query getData($skipProfile:Boolean!, $skipStreet:Boolean = true) {
+    Query {
+        profile(id:$profileId) @skip(if: $skipProfile) {
+            ...on Person @include(if: true) {
+                name
+                address {
+                    ...personalAddress @include(if: true)
+                }
+            }
+        }
+    }
+}
+
+fragment personalAddress on Address {
+    city
+    street @skip(if: $skipStreet)
+}

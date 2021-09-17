@@ -23,6 +23,7 @@ public class OperationNode {
     private Selection[] selections;
     private map<VariableDefinition> variables;
     private ErrorDetail[] errors;
+    private DirectiveNode[] directives;
 
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
@@ -31,6 +32,7 @@ public class OperationNode {
         self.selections = [];
         self.variables = {};
         self.errors = [];
+        self.directives = [];
     }
 
     public isolated function getName() returns string {
@@ -69,5 +71,13 @@ public class OperationNode {
 
     public isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
+    }
+
+    public isolated function addDirective(DirectiveNode directive) {
+        self.directives.push(directive);
+    }
+
+    public isolated function getDirectives() returns DirectiveNode[] {
+        return self.directives;
     }
 }
