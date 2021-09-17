@@ -18,4 +18,6 @@ public type ParentNode object {
     *Node;
     public isolated function addSelection(Selection selection);
     public isolated function getSelections() returns Selection[];
+    public isolated function addDirective(DirectiveNode directive);
+    public isolated function getDirectives() returns DirectiveNode[];
 };

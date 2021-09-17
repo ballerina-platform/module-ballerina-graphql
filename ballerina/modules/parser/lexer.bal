@@ -394,6 +394,8 @@ isolated function getTokenType(string value) returns TokenType {
         return T_OPEN_BRACKET;
     } else if value == CLOSE_BRACKET {
         return T_CLOSE_BRACKET;
+    } else if value == AT {
+        return T_AT;
     }
     return T_IDENTIFIER;
 }
