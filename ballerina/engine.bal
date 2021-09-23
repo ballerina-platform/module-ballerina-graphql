@@ -19,16 +19,15 @@ import graphql.parser;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final readonly & ListenerAuthConfig[]? auth;
+    private final Context context;
 
-    isolated function init(__Schema schema, GraphqlServiceConfig? serviceConfig) returns Error? {
+    isolated function init(__Schema schema, int? maxQueryDepth) returns Error? {
         self.schema = schema.cloneReadOnly();
-        self.auth = getListenerAuthConfig(serviceConfig).cloneReadOnly();
-        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
+        self.context = new;
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
@@ -125,7 +124,7 @@ isolated class Engine {
         }
     }
 
-    isolated function getAuthConfigs() returns ListenerAuthConfig[]? {
-        return self.auth;
+    isolated function getContext() returns Context {
+        return self.context;
     }
 }

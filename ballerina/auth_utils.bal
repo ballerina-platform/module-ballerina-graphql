@@ -95,7 +95,7 @@ isolated function create401Response() returns http:Response {
     ErrorDetail authnError = {
         message: "Required authentication information is either missing or not valid for the resource."
     };
-    response.setPayload({ errors: [authnError] });
+    response.setJsonPayload({ errors: [authnError] });
     return response;
 }
 
@@ -105,6 +105,6 @@ isolated function create403Response() returns http:Response {
     ErrorDetail authzError = {
         message: "Access is denied to the requested resource. The user might not have enough permission."
     };
-    response.setPayload({ errors: [authzError] });
+    response.setJsonPayload({ errors: [authzError] });
     return response;
 }

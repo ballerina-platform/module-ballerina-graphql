@@ -1,0 +1,102 @@
+// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+import ballerina/http;
+import ballerina/test;
+
+@test:Config {
+    groups: ["context"]
+}
+function testCreatingContextWithScalarValues() returns error? {
+    ContextInit contextInit = isolated function (http:Request request) returns Context|error {
+        Context context = new;
+        check context.add("String", "Ballerina");
+        check context.add("Int", 5);
+        check context.add("Boolean", false);
+        return context;
+    };
+    http:Request request = new;
+    Context context = check contextInit(request);
+    test:assertEquals(<string> check context.get("String"), "Ballerina");
+    test:assertEquals(<int> check context.get("Int"), 5);
+    test:assertEquals(<boolean> check context.get("Boolean"), false);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+function testCreatingContextWithObjectValues() returns error? {
+    ContextInit contextInit = isolated function (http:Request request) returns Context|error {
+        Context context = new;
+        check context.add("HierarchicalServiceObject", new HierarchicalName());
+        return context;
+    };
+    http:Request request = new;
+    Context context = check contextInit(request);
+    test:assertTrue((check context.get("HierarchicalServiceObject")) is HierarchicalName);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+function testRemovingAttributeFromContext() returns error? {
+    ContextInit contextInit = isolated function (http:Request request) returns Context|error {
+        Context context = new;
+        check context.add("String", "Ballerina");
+        return context;
+    };
+    http:Request request = new;
+    Context context = check contextInit(request);
+    var attribute1 = check context.remove("String");
+    test:assertTrue(attribute1 is string);
+    test:assertEquals(<string>attribute1, "Ballerina");
+
+    var attribute2 = context.remove("String");
+    test:assertTrue(attribute2 is Error);
+    test:assertEquals((<Error>attribute2).message(), "Attribute with the key \"String\" not found in the context");
+}
+
+@test:Config {
+    groups: ["context"]
+}
+function testRequestingInvalidAttributeFromContext() returns error? {
+    ContextInit contextInit = isolated function (http:Request request) returns Context|error {
+        Context context = new;
+        check context.add("String", "Ballerina");
+        return context;
+    };
+    http:Request request = new;
+    Context context = check contextInit(request);
+    var invalidAttribute = context.get("No");
+    test:assertTrue(invalidAttribute is Error);
+    test:assertEquals((<Error>invalidAttribute).message(), "Attribute with the key \"No\" not found in the context");
+}
+
+@test:Config {
+    groups: ["context"]
+}
+function testAddingDuplicateAttribute() returns error? {
+    ContextInit contextInit = isolated function (http:Request request) returns Context|error {
+        Context context = new;
+        check context.add("String", "Ballerina");
+        check context.add("String", "Ballerina");
+        return context;
+    };
+    http:Request request = new;
+    Context|error context = contextInit(request);
+    test:assertTrue(context is error);
+    test:assertEquals((<error>context).message(), "Cannot add attribute to the context. Key \"String\" already exists");
+}
