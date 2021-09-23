@@ -20,7 +20,7 @@ import ballerina/lang.value;
 public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
 
-    isolated function init() {
+    public isolated function init() {
         self.attributes = {};
     }
 
