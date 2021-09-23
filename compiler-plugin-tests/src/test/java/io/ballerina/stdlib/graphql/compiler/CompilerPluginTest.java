@@ -134,6 +134,22 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testGraphQLContextAsFirstParameter() {
+        Package currentPackage = loadPackage("valid_service_12");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testGraphQLContextInsideReturningServices() {
+        Package currentPackage = loadPackage("valid_service_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -483,6 +499,34 @@ public class CompilerPluginTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 130, 40);
+    }
+
+    @Test
+    public void testGraphQLContextAsAnotherParameter() {
+        Package currentPackage = loadPackage("invalid_service_23");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, 20, 64);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, 24, 61);
+    }
+
+    @Test
+    public void testInvalidContextObject() {
+        Package currentPackage = loadPackage("invalid_service_24");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 21, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 25, 40);
     }
 
     private Package loadPackage(String path) {

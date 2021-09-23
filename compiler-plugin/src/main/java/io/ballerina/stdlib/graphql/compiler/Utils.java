@@ -53,6 +53,7 @@ public class Utils {
     public static final String RESOURCE_FUNCTION_GET = "get";
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String DOUBLE_UNDERSCORES = "__";
+    public static final String CONTEXT_IDENTIFIER = "Context";
 
     /**
      * Compilation errors.
@@ -88,10 +89,12 @@ public class Utils {
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
                                    DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_INPUT_OBJECT("A GraphQL resource/remote function cannot return an input type",
-                "GRAPHQL_113", DiagnosticSeverity.ERROR),
+                                         "GRAPHQL_113", DiagnosticSeverity.ERROR),
         INVALID_RESOURCE_INPUT_OBJECT_PARAM(
                 "A GraphQL resource/remote function cannot use an output type as an input type",
-                "GRAPHQL_114", DiagnosticSeverity.ERROR);
+                "GRAPHQL_114", DiagnosticSeverity.ERROR),
+        INVALID_LOCATION_FOR_CONTEXT_PARAMETER("The graphql:Context should be the first parameter", "GRAPHQL_115",
+                                               DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

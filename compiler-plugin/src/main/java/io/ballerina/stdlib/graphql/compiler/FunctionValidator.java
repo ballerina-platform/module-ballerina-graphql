@@ -22,11 +22,13 @@ import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
+import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
@@ -49,7 +51,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
+import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
 import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
@@ -188,22 +193,38 @@ public class FunctionValidator {
         }
     }
 
+    public FunctionValidator() {
+        super();
+    }
+
     private void validateInputParamType(MethodSymbol methodSymbol, Location location,
                                         SyntaxNodeAnalysisContext context) {
         if (methodSymbol.typeDescriptor().typeKind() == TypeDescKind.FUNCTION) {
             FunctionTypeSymbol functionTypeSymbol = methodSymbol.typeDescriptor();
             if (functionTypeSymbol.params().isPresent()) {
                 List<ParameterSymbol> parameterSymbols = functionTypeSymbol.params().get();
-                // can have any number of valid input params
-                for (ParameterSymbol param : parameterSymbols) {
+                for (int i = 0; i < parameterSymbols.size(); i++) {
+                    ParameterSymbol param = parameterSymbols.get(i);
+                    if (isContextParameter(param.typeDescriptor())) {
+                        if (i != 0) {
+                            Location inputLocation = getLocation(param, location);
+                            updateContext(context, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER,
+                                          inputLocation);
+                        }
+                        continue;
+                    }
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
                         Location inputLocation = getLocation(param, location);
                         if (param.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                            TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol)
-                                    ((TypeReferenceTypeSymbol) param.typeDescriptor()).definition();
+                            Symbol symbol = ((TypeReferenceTypeSymbol) param.typeDescriptor()).definition();
+                            if (symbol.kind() == SymbolKind.CLASS) {
+                                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
+                                continue;
+                            }
+                            TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
                             if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
                                 updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM,
-                                        inputLocation);
+                                              inputLocation);
                             } else {
                                 updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
                             }
@@ -421,5 +442,16 @@ public class FunctionValidator {
                 }
             }
         }
+    }
+
+    private boolean isContextParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getModule().isPresent()) {
+            ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
+            if (typeSymbol.getName().isPresent()) {
+                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
+                        PACKAGE_ORG) && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
+            }
+        }
+        return false;
     }
 }
