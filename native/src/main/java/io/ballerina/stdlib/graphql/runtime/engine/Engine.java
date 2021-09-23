@@ -114,7 +114,7 @@ public class Engine {
         String fieldName = node.getStringValue(NAME_FIELD).getValue();
         CallbackHandler callbackHandler = new CallbackHandler(future);
         List<Object> pathSegments = new ArrayList<>();
-        pathSegments.add(fieldName);
+        pathSegments.add(StringUtils.fromString(fieldName));
         ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, MUTATION);
         executeRemoteMethod(executionContext, service, node, data, pathSegments);
     }

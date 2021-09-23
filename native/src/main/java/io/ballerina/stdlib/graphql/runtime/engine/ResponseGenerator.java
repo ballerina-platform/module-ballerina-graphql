@@ -157,7 +157,13 @@ public class ResponseGenerator {
                 Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
                 populateResponse(executionContext, node, resultElement, subData, updatedPathSegments);
-                resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
+                if (result.get(i) instanceof BError) {
+                    BMap<BString, Object> subField = createDataRecord();
+                    subField.put(node.getStringValue(NAME_FIELD), null);
+                    resultArray.append(subField);
+                } else {
+                    resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
+                }
             }
             data.put(node.getStringValue(ALIAS_FIELD), resultArray);
         }
