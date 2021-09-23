@@ -103,7 +103,6 @@ public class EngineUtils {
     // Internal Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
     static final String DATA_RECORD = "Data";
-    static final String CONTEXT_OBJECT = "Context";
 
     // Record fields
     static final BString LOCATION_FIELD = StringUtils.fromString("location");
