@@ -28,7 +28,9 @@ isolated service class HttpService {
     }
 
     isolated resource function get .(http:Request request) returns http:Response {
-        Context|http:Response context = self.initContext(request);
+         // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
+        http:RequestContext requestContext = new;
+        Context|http:Response context = self.initContext(request, requestContext);
         if context is http:Response {
             return context;
         } else {
@@ -41,7 +43,9 @@ isolated service class HttpService {
     }
 
     isolated resource function post .(http:Request request) returns http:Response {
-        Context|http:Response context = self.initContext(request);
+         // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
+        http:RequestContext requestContext = new;
+        Context|http:Response context = self.initContext(request, requestContext);
         if context is http:Response {
             return context;
         } else {
@@ -53,10 +57,10 @@ isolated service class HttpService {
         }
     }
 
-    isolated function initContext(http:Request request) returns Context|http:Response {
+    isolated function initContext(http:Request request, http:RequestContext requestContext) returns Context|http:Response {
         ContextInit? contextInit = self.contextInit;
         if contextInit != () {
-            Context|error context = contextInit(request);
+            Context|error context = contextInit(request, requestContext);
             if context is error {
                 json payload = { errors: [{ message: context.message() }] };
                 http:Response response = new;

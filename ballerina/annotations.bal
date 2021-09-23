@@ -30,4 +30,4 @@ public type GraphqlServiceConfig record {|
 # The annotation to configure a GraphQL service.
 public annotation GraphqlServiceConfig ServiceConfig on service;
 
-type ContextInit isolated function (http:Request request) returns Context|error;
+type ContextInit isolated function (http:Request request, http:RequestContext requestContext) returns Context|error;
