@@ -19,7 +19,6 @@ import graphql.parser;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final Context context;
 
     isolated function init(__Schema schema, int? maxQueryDepth) returns Error? {
         self.schema = schema.cloneReadOnly();
@@ -27,7 +26,6 @@ isolated class Engine {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
-        self.context = new;
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
@@ -44,8 +42,8 @@ isolated class Engine {
         }
     }
 
-    isolated function execute(parser:OperationNode operationNode) returns OutputObject {
-        ExecutorVisitor executor = new(self, self.schema);
+    isolated function execute(parser:OperationNode operationNode, Context context) returns OutputObject {
+        ExecutorVisitor executor = new(self, self.schema, context);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         ResponseCoerceVisitor responseCoerceVisitor = new(self.schema, outputObject);
         return responseCoerceVisitor.getCoercedOutputObject(operationNode);
@@ -122,9 +120,5 @@ isolated class Engine {
             };
             return getOutputObjectFromErrorDetail(errorDetail);
         }
-    }
-
-    isolated function getContext() returns Context {
-        return self.context;
     }
 }

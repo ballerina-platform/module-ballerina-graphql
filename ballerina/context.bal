@@ -36,7 +36,7 @@ public isolated class Context {
         }
     }
 
-    public isolated function get(string 'key) returns value:Cloneable|isolated object {} {
+    public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error {
         lock {
             if self.attributes.hasKey('key) {
                 value:Cloneable|isolated object {} value = self.attributes.get('key);
@@ -50,7 +50,7 @@ public isolated class Context {
         return error Error(string`Attribute with the key "${'key}" not found in the context`);
     }
 
-    public isolated function remove(string 'key) returns value:Cloneable|isolated object {} {
+    public isolated function remove(string 'key) returns value:Cloneable|isolated object {}|Error {
         lock {
             if self.attributes.hasKey('key) {
                 value:Cloneable|isolated object {} value = self.attributes.remove('key);

@@ -38,7 +38,7 @@ isolated service class HttpService {
             if authResult is http:Response {
                 return authResult;
             }
-            return handleGetRequests(self.engine, request);
+            return handleGetRequests(self.engine, request, context);
         }
     }
 
@@ -53,24 +53,20 @@ isolated service class HttpService {
             if authResult is http:Response {
                 return authResult;
             }
-            return handlePostRequests(self.engine, request);
+            return handlePostRequests(self.engine, request, context);
         }
     }
 
     isolated function initContext(http:Request request, http:RequestContext requestContext) returns Context|http:Response {
-        ContextInit? contextInit = self.contextInit;
-        if contextInit != () {
-            Context|error context = contextInit(request, requestContext);
-            if context is error {
-                json payload = { errors: [{ message: context.message() }] };
-                http:Response response = new;
-                response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-                response.setPayload(payload);
-                return response;
-            } else {
-                return context;
-            }
+        Context|error context = self.contextInit(request, requestContext);
+        if context is error {
+            json payload = { errors: [{ message: context.message() }] };
+            http:Response response = new;
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            response.setPayload(payload);
+            return response;
+        } else {
+            return context;
         }
-        return new Context();
     }
 }

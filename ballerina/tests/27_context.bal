@@ -110,3 +110,144 @@ function testAddingDuplicateAttribute() returns error? {
     test:assertTrue(context is error);
     test:assertEquals((<error>context).message(), "Cannot add attribute to the context. Key \"String\" already exists");
 }
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithHttpHeaderValues() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = "{ profile { name } }";
+    http:Request request = new;
+    request.setHeader("scope", "admin");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Walter White"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithHttpHeaderValuesWithInvalidScope() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = "{ profile { name } }";
+    http:Request request = new;
+    request.setHeader("scope", "user");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "You don't have permission to retrieve data",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ],
+                path: [
+                    "profile"
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithHttpHeaderValuesInRemoteFunction() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = "mutation { update { name } }";
+    http:Request request = new;
+    request.setHeader("scope", "admin");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            update: [
+                {
+                    name: "Sherlock Holmes"
+                },
+                {
+                    name: "Walter White"
+                },
+                {
+                    name: "Tom Marvolo Riddle"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithHttpHeaderValuesInRemoteFunctionWithInvalidScope() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = "mutation { update { name } }";
+    http:Request request = new;
+    request.setHeader("scope", "user");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "You don't have permission to retrieve data",
+                locations: [
+                    {
+                        line: 1,
+                        column: 12
+                    }
+                ],
+                path: [ "update", 1 ]
+            }
+        ],
+        data: {
+            update: [
+                {
+                    name: "Sherlock Holmes"
+                },
+                {},
+                {
+                    name: "Tom Marvolo Riddle"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithMissingAttribute() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = "mutation { update { name } }";
+    http:Request request = new;
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Http header does not exist",
+                locations: [
+                    {
+                        line: 1,
+                        column: 12
+                    }
+                ],
+                path: ["update"]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

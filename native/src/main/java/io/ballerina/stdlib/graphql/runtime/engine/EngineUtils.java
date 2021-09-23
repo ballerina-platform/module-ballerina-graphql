@@ -98,10 +98,12 @@ public class EngineUtils {
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
     static final BString ENGINE_FIELD = StringUtils.fromString("engine");
     static final BString DATA_FIELD = StringUtils.fromString("data");
+    static final BString CONTEXT_FIELD = StringUtils.fromString("context");
 
-    // Record Types
+    // Internal Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
     static final String DATA_RECORD = "Data";
+    static final String CONTEXT_OBJECT = "Context";
 
     // Record fields
     static final BString LOCATION_FIELD = StringUtils.fromString("location");

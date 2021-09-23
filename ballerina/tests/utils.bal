@@ -25,6 +25,11 @@ returns json|error {
     return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
 }
 
+isolated function getJsonPayloadFromRequest(string url, http:Request request) returns json|error {
+    http:Client httpClient = check new(url);
+    return httpClient->post("/", request);
+}
+
 isolated function getJsonContentFromFile(string fileName) returns json|error {
     string path = check file:joinPath("tests", "resources", "expected_results", fileName);
     return io:fileReadJson(path);
