@@ -529,6 +529,17 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 25, 40);
     }
 
+    @Test
+    public void testInvalidRecordFieldType() {
+        Package currentPackage = loadPackage("invalid_service_25");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 20, 12);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);

@@ -433,8 +433,10 @@ public class FunctionValidator {
                                       Location location) {
         Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
         for (RecordFieldSymbol recordField : recordFieldSymbolMap.values()) {
-            if (recordField.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                validateReturnType(recordField.typeDescriptor(), location, context);
+            if (recordField.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE ||
+                    recordField.typeDescriptor().typeKind() == TypeDescKind.UNION) {
+                Location fieldLocation = getLocation(recordField, location);
+                validateReturnType(recordField.typeDescriptor(), fieldLocation, context);
             } else {
                 if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
                     Location fieldLocation = getLocation(recordField, location);

@@ -186,7 +186,6 @@ public class TypeFinder {
         if (isEnum(unionType)) {
             this.createSchemaType(getTypeNameFromType(unionType), TypeKind.ENUM, unionType);
         } else {
-            // TODO: Handle cases where record fields have `error?` type.
             List<Type> memberTypes = getMemberTypes(unionType);
             if (memberTypes.size() == 1) {
                 getSchemaTypeFromBalType(memberTypes.get(0));
