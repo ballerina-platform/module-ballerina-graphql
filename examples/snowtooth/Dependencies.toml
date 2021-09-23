@@ -220,6 +220,7 @@ name = "log"
 version = "2.0.0"
 transitive = true
 dependencies = [
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "observe"}
 ]
@@ -327,6 +328,22 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerinai", packageName = "observe", moduleName = "observe"}
+]
+
+[[package]]
+org = "graphql"
+name = "snowtooth"
+version = "0.1.0"
+transitive = false
+dependencies = [
+	{org = "ballerina", name = "graphql"},
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "test"},
+	{org = "ballerinai", name = "observe"}
+]
+modules = [
+	{org = "graphql", packageName = "snowtooth", moduleName = "snowtooth"},
+	{org = "graphql", packageName = "snowtooth", moduleName = "snowtooth.datasource"}
 ]
 
 
