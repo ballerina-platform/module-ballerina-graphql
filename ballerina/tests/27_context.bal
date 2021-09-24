@@ -78,6 +78,27 @@ function testRemovingAttributeFromContext() returns error? {
 @test:Config {
     groups: ["context"]
 }
+function testRemovingObjectAttributeFromContext() returns error? {
+    ContextInit contextInit =
+        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+            Context context = new;
+            check context.add("HierarchicalServiceObject", new HierarchicalName());
+            return context;
+        };
+    http:Request request = new;
+    http:RequestContext requestContext = new;
+    Context context = check contextInit(request, requestContext);
+    var attribute1 = check context.remove("HierarchicalServiceObject");
+    test:assertTrue(attribute1 is HierarchicalName);
+
+    var attribute2 = context.remove("String");
+    test:assertTrue(attribute2 is Error);
+    test:assertEquals((<Error>attribute2).message(), "Attribute with the key \"String\" not found in the context");
+}
+
+@test:Config {
+    groups: ["context"]
+}
 function testRequestingInvalidAttributeFromContext() returns error? {
     ContextInit contextInit =
         isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
