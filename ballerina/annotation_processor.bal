@@ -27,11 +27,10 @@ isolated function getListenerAuthConfig(GraphqlServiceConfig? serviceConfig) ret
 }
 
 isolated function getContextInit(GraphqlServiceConfig? serviceConfig) returns ContextInit {
-    ContextInit? contextInit = serviceConfig?.contextInit;
-    if contextInit is ContextInit {
-        return contextInit;
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.contextInit;
     }
-    return initContext;
+    return initDefaultContext;
 }
 
 isolated function getServiceConfig(Service serviceObject) returns GraphqlServiceConfig? {

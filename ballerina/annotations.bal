@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
-
 # Provides a set of configurations for the GraphQL service.
 #
 # + maxQueryDepth - The maximum depth allowed for a query
@@ -24,10 +22,8 @@ import ballerina/http;
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
-    ContextInit contextInit?;
+    ContextInit contextInit = initDefaultContext;
 |};
 
 # The annotation to configure a GraphQL service.
 public annotation GraphqlServiceConfig ServiceConfig on service;
-
-type ContextInit isolated function (http:Request request, http:RequestContext requestContext) returns Context|error;

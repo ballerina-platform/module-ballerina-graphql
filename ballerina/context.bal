@@ -65,6 +65,6 @@ public isolated class Context {
     }
 }
 
-isolated function initContext(http:Request request, http:RequestContext requestContext) returns Context|error {
+isolated function initDefaultContext(http:Request request, http:RequestContext requestContext) returns Context|error {
     return new;
 }
