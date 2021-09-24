@@ -727,7 +727,7 @@ service /null_values on basicListener {
 @ServiceConfig {
     contextInit: isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
         Context context = new;
-        check context.add("scope", request.getHeader("scope"));
+        check context.add("scope", check request.getHeader("scope"));
         return context;
     }
 }

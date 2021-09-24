@@ -232,20 +232,12 @@ isolated function testContextWithHttpHeaderValuesInRemoteFunctionWithInvalidScop
 isolated function testContextWithMissingAttribute() returns error? {
     string url = "http://localhost:9092/context";
     string document = "mutation { update { name } }";
-    http:Request request = new;
-    request.setPayload({ query: document });
-    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json actualPayload = check assertResponseAndGetPayload(url, document,
+                                                           statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
     json expectedPayload = {
         errors: [
             {
-                message: "Http header does not exist",
-                locations: [
-                    {
-                        line: 1,
-                        column: 12
-                    }
-                ],
-                path: ["update"]
+                message: "Http header does not exist"
             }
         ]
     };

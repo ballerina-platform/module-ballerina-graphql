@@ -48,6 +48,14 @@ returns json|error {
     return response.getJsonPayload();
 }
 
+isolated function assertResponseAndGetPayload(string url, string document, json? variables = {},
+string? operationName = (), int statusCode = http:STATUS_OK) returns json|error {
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
+    test:assertEquals(response.statusCode, statusCode);
+    return response.getJsonPayload();
+}
+
 isolated function getTextPayloadFromBadRequest(string url, http:Request request) returns string|error {
     http:Client httpClient = check new(url);
     http:Response response = check httpClient->post("/", request);
