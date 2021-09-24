@@ -23,10 +23,12 @@ class ExecutorVisitor {
     private final Engine engine;
     private Data data;
     private ErrorDetail[] errors;
+    private Context context;
 
-    isolated function init(Engine engine, __Schema schema) {
+    isolated function init(Engine engine, __Schema schema, Context context) {
         self.engine = engine;
         self.schema = schema;
+        self.context = context;
         self.data = {};
         self.errors = [];
     }

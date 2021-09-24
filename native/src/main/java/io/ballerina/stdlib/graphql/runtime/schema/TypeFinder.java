@@ -48,8 +48,9 @@ import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromTy
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getUnionTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.NOT_SUPPORTED_ERROR;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -176,9 +177,11 @@ public class TypeFinder {
             MapType mapType = (MapType) type;
             Type constrainedType = mapType.getConstrainedType();
             getSchemaTypeFromBalType(constrainedType);
+        } else if (isContext(type)) {
+            // Do nothing
         } else {
             String message = "Unsupported type found in GraphQL service: " + type.getName();
-            throw createError(message, NOT_SUPPORTED_ERROR);
+            throw createError(message, ERROR_TYPE);
         }
     }
 
@@ -186,7 +189,6 @@ public class TypeFinder {
         if (isEnum(unionType)) {
             this.createSchemaType(getTypeNameFromType(unionType), TypeKind.ENUM, unionType);
         } else {
-            // TODO: Handle cases where record fields have `error?` type.
             List<Type> memberTypes = getMemberTypes(unionType);
             if (memberTypes.size() == 1) {
                 getSchemaTypeFromBalType(memberTypes.get(0));

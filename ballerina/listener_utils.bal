@@ -18,13 +18,13 @@ import ballerina/http;
 
 import graphql.parser;
 
-isolated function handleGetRequests(Engine engine, http:Request request) returns http:Response {
+isolated function handleGetRequests(Engine engine, http:Request request, Context context) returns http:Response {
     string? query = request.getQueryParamValue(PARAM_QUERY);
     if query is string && query != "" {
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
         json? variables = request.getQueryParamValue(PARAM_VARIABLES);
         if variables is map<json> || variables == () {
-            return getResponseFromQuery(engine, query, operationName, variables);
+            return getResponseFromQuery(engine, query, operationName, variables, context);
         } else {
             return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
         }
@@ -33,10 +33,10 @@ isolated function handleGetRequests(Engine engine, http:Request request) returns
     }
 }
 
-isolated function handlePostRequests(Engine engine, http:Request request) returns http:Response {
+isolated function handlePostRequests(Engine engine, http:Request request, Context context) returns http:Response {
     string contentType = request.getContentType();
     if contentType == CONTENT_TYPE_JSON {
-        return getResponseFromJsonPayload(engine, request);
+        return getResponseFromJsonPayload(engine, request, context);
     } else if contentType == CONTENT_TYPE_GQL {
         return createResponse("Content-Type 'application/graphql' is not yet supported", http:STATUS_BAD_REQUEST);
     } else {
@@ -44,7 +44,8 @@ isolated function handlePostRequests(Engine engine, http:Request request) return
     }
 }
 
-isolated function getResponseFromJsonPayload(Engine engine, http:Request request) returns http:Response {
+isolated function getResponseFromJsonPayload(Engine engine, http:Request request, Context context)
+returns http:Response {
     var payload = request.getJsonPayload();
     if payload is json {
         var document = payload.query;
@@ -52,7 +53,7 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
         variables = variables is error ? () : variables;
         if document is string && document != "" {
             if variables is map<json> || variables is () {
-                return getResponseFromQuery(engine, document, getOperationName(payload), variables);
+                return getResponseFromQuery(engine, document, getOperationName(payload), variables, context);
             } else {
                 return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
             }
@@ -61,17 +62,19 @@ isolated function getResponseFromJsonPayload(Engine engine, http:Request request
     return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
 }
 
-isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables) returns http:Response {
+isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
+    Context context) returns http:Response {
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
-        return getResponseFromExecution(engine, validationResult);
+        return getResponseFromExecution(engine, validationResult, context);
     } else {
         return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
 }
 
-isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode) returns http:Response {
-    OutputObject outputObject = engine.execute(operationNode);
+isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
+returns http:Response {
+    OutputObject outputObject = engine.execute(operationNode, context);
     return createResponse(outputObject.toJson());
 }
 

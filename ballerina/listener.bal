@@ -51,10 +51,11 @@ public class Listener {
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         __Schema schema = check createSchema(s);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        Engine engine = check new(schema, serviceConfig);
+        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
+        Engine engine = check new(schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
 
-        HttpService httpService = new(engine);
+        HttpService httpService = new(engine, serviceConfig);
         error? result = self.httpListener.attach(httpService, name);
         if (result is error) {
             return error Error("Error occurred while attaching the service", result);

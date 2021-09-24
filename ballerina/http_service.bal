@@ -18,24 +18,55 @@ import ballerina/http;
 
 isolated service class HttpService {
     private final Engine engine;
+    private final readonly & ListenerAuthConfig[]? authConfig;
+    private final ContextInit contextInit;
 
-    isolated function init(Engine engine) {
+    isolated function init(Engine engine, GraphqlServiceConfig? serviceConfig) {
         self.engine = engine;
+        self.authConfig = getListenerAuthConfig(serviceConfig).cloneReadOnly();
+        self.contextInit = getContextInit(serviceConfig);
     }
 
     isolated resource function get .(http:Request request) returns http:Response {
-        http:Response? authResult = authenticateService(self.engine.getAuthConfigs(), request);
-        if authResult is http:Response {
-            return authResult;
+         // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
+        http:RequestContext requestContext = new;
+        Context|http:Response context = self.initContext(request, requestContext);
+        if context is http:Response {
+            return context;
+        } else {
+            http:Response? authResult = authenticateService(self.authConfig, request);
+            if authResult is http:Response {
+                return authResult;
+            }
+            return handleGetRequests(self.engine, request, context);
         }
-        return handleGetRequests(self.engine, request);
     }
 
     isolated resource function post .(http:Request request) returns http:Response {
-        http:Response? authResult = authenticateService(self.engine.getAuthConfigs(), request);
-        if authResult is http:Response {
-            return authResult;
+         // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
+        http:RequestContext requestContext = new;
+        Context|http:Response context = self.initContext(request, requestContext);
+        if context is http:Response {
+            return context;
+        } else {
+            http:Response? authResult = authenticateService(self.authConfig, request);
+            if authResult is http:Response {
+                return authResult;
+            }
+            return handlePostRequests(self.engine, request, context);
         }
-        return handlePostRequests(self.engine, request);
+    }
+
+    isolated function initContext(http:Request request, http:RequestContext requestContext) returns Context|http:Response {
+        Context|error context = self.contextInit(request, requestContext);
+        if context is error {
+            json payload = { errors: [{ message: context.message() }] };
+            http:Response response = new;
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            response.setPayload(payload);
+            return response;
+        } else {
+            return context;
+        }
     }
 }

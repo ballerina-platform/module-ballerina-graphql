@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
+
 # Represents the Scalar types supported by the Ballerina GraphQL module.
 public type Scalar boolean|int|float|string;
 
@@ -22,3 +24,11 @@ public type Service service object {
 };
 
 type AnydataMap map<anydata>;
+
+# Function type for initializing the `graphql:Context` object.
+# This function will be called with the `http:Request` and the `http:RequestContext` objects from the original request
+# received to the GraphQL endpoint.
+#
+# + request - The `http:Request` object from the original request
+# + requestContext - The `http:RequestContext` object from the original request
+public type ContextInit isolated function (http:Request request, http:RequestContext requestContext) returns Context|error;
