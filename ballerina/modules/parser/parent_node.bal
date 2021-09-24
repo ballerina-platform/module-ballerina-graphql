@@ -16,10 +16,6 @@
 
 public type ParentNode object {
     *Node;
-    public isolated function addField(FieldNode fieldNode);
-    public isolated function getFields() returns FieldNode[];
-    public isolated function addFragment(string name);
-    public isolated function getFragments() returns string[];
     public isolated function addSelection(Selection selection);
     public isolated function getSelections() returns Selection[];
 };

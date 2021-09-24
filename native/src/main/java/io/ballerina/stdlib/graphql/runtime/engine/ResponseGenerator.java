@@ -38,10 +38,9 @@ import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResourceM
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getArgumentsFromField;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ALIAS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_FRAGMENT_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FRAGMENT_NODE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NODE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPENAME_FIELD;
@@ -97,10 +96,9 @@ public class ResponseGenerator {
         } else {
             executionContext.setTypeName(service.getType().getName());
             for (int i = 0; i < selections.size(); i++) {
-                BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
-                boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
-                BObject subNode = selection.getObjectValue(NODE_FIELD);
-                if (isFragment) {
+                BObject subNode = (BObject) selections.get(i);
+                BString typeName = StringUtils.fromString(subNode.getType().getName());
+                if (typeName.equals(FRAGMENT_NODE)) {
                     if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
                         executeResourceForFragmentNodes(executionContext, service, subNode, subData, paths,
                                                         pathSegments);
@@ -120,10 +118,9 @@ public class ResponseGenerator {
         executionContext.setTypeName(record.getType().getName());
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
-            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
-            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
-            BObject subNode = selection.getObjectValue(NODE_FIELD);
-            if (isFragment) {
+            BObject subNode = (BObject) selections.get(i);
+            BString typeName = StringUtils.fromString(subNode.getType().getName());
+            if (typeName.equals(FRAGMENT_NODE)) {
                 if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getNameFromRecordTypeMap(record))) {
                     processFragmentNodes(executionContext, subNode, record, subData, pathSegments);
                 }
@@ -181,10 +178,9 @@ public class ResponseGenerator {
                                      BMap<BString, Object> data, List<Object> pathSegments) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
-            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
-            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
-            BObject subNode = selection.getObjectValue(NODE_FIELD);
-            if (isFragment) {
+            BObject subNode = (BObject) selections.get(i);
+            BString typeName = StringUtils.fromString(subNode.getType().getName());
+            if (typeName.equals(FRAGMENT_NODE)) {
                 processFragmentNodes(executionContext, subNode, record, data, pathSegments);
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
@@ -201,10 +197,9 @@ public class ResponseGenerator {
                                                         List<Object> pathSegments) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
         for (int i = 0; i < selections.size(); i++) {
-            BMap<BString, Object> selection = (BMap<BString, Object>) selections.get(i);
-            boolean isFragment = selection.getBooleanValue(IS_FRAGMENT_FIELD);
-            BObject subNode = selection.getObjectValue(NODE_FIELD);
-            if (isFragment) {
+            BObject subNode = (BObject) selections.get(i);
+            BString typeName = StringUtils.fromString(subNode.getType().getName());
+            if (typeName.equals(FRAGMENT_NODE)) {
                 executeResourceForFragmentNodes(executionContext, service, subNode, data, paths, pathSegments);
             } else {
                 executeResourceWithPath(executionContext, subNode, service, data, paths, pathSegments);

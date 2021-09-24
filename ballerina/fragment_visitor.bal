@@ -48,6 +48,7 @@ class FragmentVisitor {
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
                 self.errors.push(errorDetail);
             }
+            _ = documentNode.getFragments().remove(fragmentNode.getName());
         }
     }
 
@@ -58,15 +59,11 @@ class FragmentVisitor {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if (selection.isFragment) {
-            parser:FragmentNode? fragmentNode = self.getFragment(selection);
-            if (fragmentNode is parser:FragmentNode) {
-                self.visitFragment(fragmentNode);
-                selection.node = fragmentNode;
-            }
+        if selection is parser:FragmentNode {
+            self.appendNamedFragmentFields(selection);
+            self.visitFragment(selection);
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            var result = self.visitField(fieldNode);
+            self.visitField(selection);
         }
     }
 
@@ -87,15 +84,26 @@ class FragmentVisitor {
         }
     }
 
-    isolated function getFragment(parser:Selection selection) returns parser:FragmentNode? {
+    isolated function appendNamedFragmentFields(parser:FragmentNode selection) {
         parser:DocumentNode documentNode = <parser:DocumentNode>self.documentNode;
-        parser:FragmentNode? fragmentNode = documentNode.getFragment(selection.name);
-        if (fragmentNode is ()) {
-            string message = string`Unknown fragment "${selection.name}".`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, selection.location);
+        parser:FragmentNode? fragmentNode = documentNode.getFragment(selection.getName());
+        if fragmentNode is () {
+            string message = string`Unknown fragment "${selection.getName()}".`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
+        } else {
+            if !selection.isInlineFragment() && selection.getSelections().length() == 0 {
+                self.appendFields(fragmentNode, selection);
+            }
         }
-        return fragmentNode;
+    }
+
+    isolated function appendFields(parser:FragmentNode fragment, parser:FragmentNode selection) {
+        selection.setOnType(fragment.getOnType());
+        selection.setLocation(fragment.getLocation());
+        foreach parser:Selection fragmentSelection in fragment.getSelections() {
+            selection.addSelection(fragmentSelection);
+        }
     }
 
     isolated function getErrors() returns ErrorDetail[] {
