@@ -201,7 +201,6 @@ public class Parser {
         FragmentNode fragmentNode = new(fragmentName, token.location, false);
         fragmentNode.setSpreadLocation(spreadLocation);
         parentNode.addSelection(fragmentNode);
-        return;
     }
 
     isolated function addInlineFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
