@@ -84,25 +84,25 @@ class FragmentVisitor {
         }
     }
 
-    isolated function appendNamedFragmentFields(parser:FragmentNode selection) {
-        parser:DocumentNode documentNode = <parser:DocumentNode>self.documentNode;
-        parser:FragmentNode? fragmentNode = documentNode.getFragment(selection.getName());
-        if fragmentNode is () {
-            string message = string`Unknown fragment "${selection.getName()}".`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
+    isolated function appendNamedFragmentFields(parser:FragmentNode fragmentNode) {
+        parser:DocumentNode documentNode = self.documentNode;
+        parser:FragmentNode? actualFragmentNode = documentNode.getFragment(fragmentNode.getName());
+        if actualFragmentNode is () {
+            string message = string`Unknown fragment "${fragmentNode.getName()}".`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
             self.errors.push(errorDetail);
         } else {
-            if !selection.isInlineFragment() && selection.getSelections().length() == 0 {
-                self.appendFields(fragmentNode, selection);
+            if !fragmentNode.isInlineFragment() && fragmentNode.getSelections().length() == 0 {
+                self.appendFields(actualFragmentNode, fragmentNode);
             }
         }
     }
 
-    isolated function appendFields(parser:FragmentNode fragment, parser:FragmentNode selection) {
-        selection.setOnType(fragment.getOnType());
-        selection.setLocation(fragment.getLocation());
-        foreach parser:Selection fragmentSelection in fragment.getSelections() {
-            selection.addSelection(fragmentSelection);
+    isolated function appendFields(parser:FragmentNode actualFragmentNode, parser:FragmentNode fragmentNode) {
+        fragmentNode.setOnType(actualFragmentNode.getOnType());
+        fragmentNode.setLocation(actualFragmentNode.getLocation());
+        foreach parser:Selection fragmentSelection in actualFragmentNode.getSelections() {
+            fragmentNode.addSelection(fragmentSelection);
         }
     }
 

@@ -24,10 +24,11 @@ public class FragmentNode {
     private boolean inlineFragment;
     private Selection[] selections;
 
-    public isolated function init(string name, Location location, boolean inlineFragment, string onType = "") {
+    public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
+                                  string onType = "") {
         self.name = name;
         self.location = location;
-        self.spreadLocation = ();
+        self.spreadLocation = spreadLocation;
         self.onType = onType;
         self.inlineFragment = inlineFragment;
         self.selections = [];
@@ -59,10 +60,6 @@ public class FragmentNode {
 
     public isolated function getSpreadLocation() returns Location? {
         return self.spreadLocation;
-    }
-
-    public isolated function setSpreadLocation(Location spreadLocation) {
-        self.spreadLocation = spreadLocation;
     }
 
     public isolated function setLocation(Location location) {

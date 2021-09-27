@@ -98,7 +98,7 @@ public class ResponseGenerator {
             for (int i = 0; i < selections.size(); i++) {
                 BObject subNode = (BObject) selections.get(i);
                 BString typeName = StringUtils.fromString(subNode.getType().getName());
-                if (typeName.equals(FRAGMENT_NODE)) {
+                if (FRAGMENT_NODE.equals(typeName)) {
                     if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
                         executeResourceForFragmentNodes(executionContext, service, subNode, subData, paths,
                                                         pathSegments);
@@ -120,7 +120,7 @@ public class ResponseGenerator {
         for (int i = 0; i < selections.size(); i++) {
             BObject subNode = (BObject) selections.get(i);
             BString typeName = StringUtils.fromString(subNode.getType().getName());
-            if (typeName.equals(FRAGMENT_NODE)) {
+            if (FRAGMENT_NODE.equals(typeName)) {
                 if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getNameFromRecordTypeMap(record))) {
                     processFragmentNodes(executionContext, subNode, record, subData, pathSegments);
                 }
@@ -180,7 +180,7 @@ public class ResponseGenerator {
         for (int i = 0; i < selections.size(); i++) {
             BObject subNode = (BObject) selections.get(i);
             BString typeName = StringUtils.fromString(subNode.getType().getName());
-            if (typeName.equals(FRAGMENT_NODE)) {
+            if (FRAGMENT_NODE.equals(typeName)) {
                 processFragmentNodes(executionContext, subNode, record, data, pathSegments);
             } else {
                 BString fieldName = subNode.getStringValue(NAME_FIELD);
@@ -199,7 +199,7 @@ public class ResponseGenerator {
         for (int i = 0; i < selections.size(); i++) {
             BObject subNode = (BObject) selections.get(i);
             BString typeName = StringUtils.fromString(subNode.getType().getName());
-            if (typeName.equals(FRAGMENT_NODE)) {
+            if (FRAGMENT_NODE.equals(typeName)) {
                 executeResourceForFragmentNodes(executionContext, service, subNode, data, paths, pathSegments);
             } else {
                 executeResourceWithPath(executionContext, subNode, service, data, paths, pathSegments);

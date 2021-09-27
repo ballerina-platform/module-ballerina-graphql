@@ -63,9 +63,9 @@ class ValidatorVisitor {
             return;
         }
         if selection is parser:FragmentNode {
-            __Type? fragmentOnType = self.validateFragment(selection, <string>parentType?.name);
+            __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if fragmentOnType is __Type {
-                parentField = createField(fragmentOnType?.name.toString(), fragmentOnType);
+                parentField = createField(fragmentOnType.name.toString(), fragmentOnType);
                 self.visitFragment(selection, parentField);
             }
         } else {
@@ -241,7 +241,7 @@ class ValidatorVisitor {
                 self.visitFragment(selection, subField);
             } else {
                 string message = getFragmetCannotSpreadError(selection, selection.getName(), parentType);
-                self.errors.push(getErrorDetailRecord(message, <Location> selection.getSpreadLocation()));
+                self.errors.push(getErrorDetailRecord(message, <Location>selection.getSpreadLocation()));
             }
         }
     }

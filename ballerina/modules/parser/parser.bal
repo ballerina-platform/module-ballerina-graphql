@@ -91,7 +91,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         string onType = check getIdentifierTokenvalue(token);
 
-        FragmentNode fragmentNode = new(name, location, false, onType);
+        FragmentNode fragmentNode = new(name, location, false, onType = onType);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
@@ -198,8 +198,7 @@ public class Parser {
     isolated function addNamedFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
-        FragmentNode fragmentNode = new(fragmentName, token.location, false);
-        fragmentNode.setSpreadLocation(spreadLocation);
+        FragmentNode fragmentNode = new(fragmentName, token.location, false, spreadLocation);
         parentNode.addSelection(fragmentNode);
     }
 
@@ -209,8 +208,7 @@ public class Parser {
         Location location = token.location;
         string onType = check getIdentifierTokenvalue(token);
         string fragmentName = string`${parentNode.getName()}_${onType}`;
-        FragmentNode fragmentNode = new(fragmentName, location, true, onType);
-        fragmentNode.setSpreadLocation(spreadLocation);
+        FragmentNode fragmentNode = new(fragmentName, location, true, spreadLocation, onType);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);

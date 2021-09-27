@@ -71,27 +71,22 @@ class DuplicateFieldRemover {
 
     private isolated function removeDuplicateSelections(parser:Selection[] selections) {
         map<parser:FieldNode> visitedFields = {};
-        map<parser:FragmentNode> visitedFragmentOnTypes = {};
+        map<parser:FragmentNode> visitedFragments = {};
         int i = 0;
         while i < selections.length() {
             parser:Selection selection = selections[i];
             if selection is parser:FragmentNode {
-                if visitedFragmentOnTypes.hasKey(selection.getOnType()) {
-                    if selection.isInlineFragment() {
-                        parser:Selection removed = selections.remove(i);
-                        i -= 1;
-                    } else {
-                        self.appendDuplicateFragments(selection, visitedFragmentOnTypes.get(selection.getOnType()));
-                        parser:Selection removed = selections.remove(i);
-                        i -= 1;
-                    }
+                if visitedFragments.hasKey(selection.getOnType()) {
+                    self.appendDuplicateFragments(selection, visitedFragments.get(selection.getOnType()));
+                    _ = selections.remove(i);
+                    i -= 1;
                 } else {
-                    visitedFragmentOnTypes[selection.getOnType()] = selection;
+                    visitedFragments[selection.getOnType()] = selection;
                 }
             } else {
                 if visitedFields.hasKey(selection.getAlias()) {
                     self.appendDuplicateFields(selection, visitedFields.get(selection.getAlias()));
-                    parser:Selection removed = selections.remove(i);
+                    _ = selections.remove(i);
                     i -= 1;
                 } else {
                     visitedFields[selection.getAlias()] = selection;

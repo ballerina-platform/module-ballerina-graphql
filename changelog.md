@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - [[#1597] Validate Max Query Depth at Runtime](https://github.com/ballerina-platform/ballerina-standard-library/issues/1597)
-- [[#1922] Create Fragment Node for Named Fragments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1922)
+- [[#1922] Unify Parsing Named Fragments and Inline Fragments](https://github.com/ballerina-platform/ballerina-standard-library/issues/1922)
 
 ### Fixed
 - [[#1622] Invalidate Returning any or anydata from GraphQL Resource Functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/1622)
