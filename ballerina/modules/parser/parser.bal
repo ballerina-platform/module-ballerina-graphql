@@ -218,7 +218,6 @@ public class Parser {
         check self.addSelections(fragmentNode);
         check self.document.addFragment(fragmentNode);
         parentNode.addSelection(fragmentNode);
-        return;
     }
 
     isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {
