@@ -77,7 +77,7 @@ class DuplicateFieldRemover {
             parser:Selection selection = selections[i];
             if selection is parser:FragmentNode {
                 if visitedFragments.hasKey(selection.getOnType()) {
-                    self.appendDuplicateFragments(selection, visitedFragments.get(selection.getOnType()));
+                    self.appendDuplicates(selection, visitedFragments.get(selection.getOnType()));
                     _ = selections.remove(i);
                     i -= 1;
                 } else {
@@ -85,7 +85,7 @@ class DuplicateFieldRemover {
                 }
             } else {
                 if visitedFields.hasKey(selection.getAlias()) {
-                    self.appendDuplicateFields(selection, visitedFields.get(selection.getAlias()));
+                    self.appendDuplicates(selection, visitedFields.get(selection.getAlias()));
                     _ = selections.remove(i);
                     i -= 1;
                 } else {
@@ -96,13 +96,7 @@ class DuplicateFieldRemover {
         }
     }
 
-    private isolated function appendDuplicateFields(parser:FieldNode duplicate, parser:FieldNode original) {
-        foreach parser:Selection selection in duplicate.getSelections() {
-            original.addSelection(selection);
-        }
-    }
-
-    private isolated function appendDuplicateFragments(parser:FragmentNode duplicate, parser:FragmentNode original) {
+    private isolated function appendDuplicates(parser:ParentNode duplicate, parser:ParentNode original) {
         foreach parser:Selection selection in duplicate.getSelections() {
             original.addSelection(selection);
         }

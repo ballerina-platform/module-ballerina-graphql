@@ -100,7 +100,6 @@ class FragmentVisitor {
 
     isolated function appendFields(parser:FragmentNode actualFragmentNode, parser:FragmentNode fragmentNode) {
         fragmentNode.setOnType(actualFragmentNode.getOnType());
-        fragmentNode.setLocation(actualFragmentNode.getLocation());
         foreach parser:Selection fragmentSelection in actualFragmentNode.getSelections() {
             fragmentNode.addSelection(fragmentSelection);
         }
