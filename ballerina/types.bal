@@ -29,6 +29,6 @@ type AnydataMap map<anydata>;
 # This function will be called with the `http:Request` and the `http:RequestContext` objects from the original request
 # received to the GraphQL endpoint.
 #
-# + request - The `http:Request` object from the original request
 # + requestContext - The `http:RequestContext` object from the original request
-public type ContextInit isolated function (http:Request request, http:RequestContext requestContext) returns Context|error;
+# + request - The `http:Request` object from the original request
+public type ContextInit isolated function (http:RequestContext requestContext, http:Request request) returns Context|error;

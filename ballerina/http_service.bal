@@ -30,7 +30,7 @@ isolated service class HttpService {
     isolated resource function get .(http:Request request) returns http:Response {
          // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
         http:RequestContext requestContext = new;
-        Context|http:Response context = self.initContext(request, requestContext);
+        Context|http:Response context = self.initContext(requestContext, request);
         if context is http:Response {
             return context;
         } else {
@@ -38,14 +38,14 @@ isolated service class HttpService {
             if authResult is http:Response {
                 return authResult;
             }
-            return handleGetRequests(self.engine, request, context);
+            return handleGetRequests(self.engine, context, request);
         }
     }
 
     isolated resource function post .(http:Request request) returns http:Response {
          // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
         http:RequestContext requestContext = new;
-        Context|http:Response context = self.initContext(request, requestContext);
+        Context|http:Response context = self.initContext(requestContext, request);
         if context is http:Response {
             return context;
         } else {
@@ -53,12 +53,12 @@ isolated service class HttpService {
             if authResult is http:Response {
                 return authResult;
             }
-            return handlePostRequests(self.engine, request, context);
+            return handlePostRequests(self.engine, context, request);
         }
     }
 
-    isolated function initContext(http:Request request, http:RequestContext requestContext) returns Context|http:Response {
-        Context|error context = self.contextInit(request, requestContext);
+    isolated function initContext(http:RequestContext requestContext, http:Request request) returns Context|http:Response {
+        Context|error context = self.contextInit(requestContext, request);
         if context is error {
             json payload = { errors: [{ message: context.message() }] };
             http:Response response = new;

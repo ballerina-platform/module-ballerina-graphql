@@ -18,7 +18,7 @@ import ballerina/http;
 
 import graphql.parser;
 
-isolated function handleGetRequests(Engine engine, http:Request request, Context context) returns http:Response {
+isolated function handleGetRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string? query = request.getQueryParamValue(PARAM_QUERY);
     if query is string && query != "" {
         string? operationName = request.getQueryParamValue(PARAM_OPERATION_NAME);
@@ -33,10 +33,10 @@ isolated function handleGetRequests(Engine engine, http:Request request, Context
     }
 }
 
-isolated function handlePostRequests(Engine engine, http:Request request, Context context) returns http:Response {
+isolated function handlePostRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string contentType = request.getContentType();
     if contentType == CONTENT_TYPE_JSON {
-        return getResponseFromJsonPayload(engine, request, context);
+        return getResponseFromJsonPayload(engine, context, request);
     } else if contentType == CONTENT_TYPE_GQL {
         return createResponse("Content-Type 'application/graphql' is not yet supported", http:STATUS_BAD_REQUEST);
     } else {
@@ -44,7 +44,7 @@ isolated function handlePostRequests(Engine engine, http:Request request, Contex
     }
 }
 
-isolated function getResponseFromJsonPayload(Engine engine, http:Request request, Context context)
+isolated function getResponseFromJsonPayload(Engine engine, Context context, http:Request request)
 returns http:Response {
     var payload = request.getJsonPayload();
     if payload is json {

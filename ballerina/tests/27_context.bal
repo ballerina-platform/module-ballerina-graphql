@@ -22,7 +22,7 @@ import ballerina/test;
 }
 function testCreatingContextWithScalarValues() returns error? {
     ContextInit contextInit =
-        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
             Context context = new;
             check context.add("String", "Ballerina");
             check context.add("Int", 5);
@@ -31,7 +31,7 @@ function testCreatingContextWithScalarValues() returns error? {
         };
     http:Request request = new;
     http:RequestContext requestContext = new;
-    Context context = check contextInit(request, requestContext);
+    Context context = check contextInit(requestContext, request);
     test:assertEquals(<string> check context.get("String"), "Ballerina");
     test:assertEquals(<int> check context.get("Int"), 5);
     test:assertEquals(<boolean> check context.get("Boolean"), false);
@@ -42,14 +42,14 @@ function testCreatingContextWithScalarValues() returns error? {
 }
 function testCreatingContextWithObjectValues() returns error? {
     ContextInit contextInit =
-        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
             Context context = new;
             check context.add("HierarchicalServiceObject", new HierarchicalName());
             return context;
         };
     http:Request request = new;
     http:RequestContext requestContext = new;
-    Context context = check contextInit(request, requestContext);
+    Context context = check contextInit(requestContext, request);
     test:assertTrue((check context.get("HierarchicalServiceObject")) is HierarchicalName);
 }
 
@@ -58,14 +58,14 @@ function testCreatingContextWithObjectValues() returns error? {
 }
 function testRemovingAttributeFromContext() returns error? {
     ContextInit contextInit =
-        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
             Context context = new;
             check context.add("String", "Ballerina");
             return context;
         };
     http:Request request = new;
     http:RequestContext requestContext = new;
-    Context context = check contextInit(request, requestContext);
+    Context context = check contextInit(requestContext, request);
     var attribute1 = check context.remove("String");
     test:assertTrue(attribute1 is string);
     test:assertEquals(<string>attribute1, "Ballerina");
@@ -80,14 +80,14 @@ function testRemovingAttributeFromContext() returns error? {
 }
 function testRemovingObjectAttributeFromContext() returns error? {
     ContextInit contextInit =
-        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
             Context context = new;
             check context.add("HierarchicalServiceObject", new HierarchicalName());
             return context;
         };
     http:Request request = new;
     http:RequestContext requestContext = new;
-    Context context = check contextInit(request, requestContext);
+    Context context = check contextInit(requestContext, request);
     var attribute1 = check context.remove("HierarchicalServiceObject");
     test:assertTrue(attribute1 is HierarchicalName);
 
@@ -101,14 +101,14 @@ function testRemovingObjectAttributeFromContext() returns error? {
 }
 function testRequestingInvalidAttributeFromContext() returns error? {
     ContextInit contextInit =
-        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
             Context context = new;
             check context.add("String", "Ballerina");
             return context;
         };
     http:Request request = new;
     http:RequestContext requestContext = new;
-    Context context = check contextInit(request, requestContext);
+    Context context = check contextInit(requestContext, request);
     var invalidAttribute = context.get("No");
     test:assertTrue(invalidAttribute is Error);
     test:assertEquals((<Error>invalidAttribute).message(), "Attribute with the key \"No\" not found in the context");
@@ -119,7 +119,7 @@ function testRequestingInvalidAttributeFromContext() returns error? {
 }
 function testAddingDuplicateAttribute() returns error? {
     ContextInit contextInit =
-        isolated function (http:Request request, http:RequestContext requestContext) returns Context|error {
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
             Context context = new;
             check context.add("String", "Ballerina");
             check context.add("String", "Ballerina");
@@ -127,7 +127,7 @@ function testAddingDuplicateAttribute() returns error? {
         };
     http:Request request = new;
     http:RequestContext requestContext = new;
-    Context|error context = contextInit(request, requestContext);
+    Context|error context = contextInit(requestContext, request);
     test:assertTrue(context is error);
     test:assertEquals((<error>context).message(), "Cannot add attribute to the context. Key \"String\" already exists");
 }
