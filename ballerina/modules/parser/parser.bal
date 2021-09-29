@@ -186,7 +186,7 @@ public class Parser {
 
         FieldNode fieldNode = new(name, token.location, alias);
         check self.addArgumentsToSelection(fieldNode);
-        check self.addDirectivesToSelection(fieldNode);
+        check self.addDirectivesToSelection(fieldNode, FIELD);
         token = check self.peekNextNonSeparatorToken();
         if token.kind == T_OPEN_BRACE {
             check self.addSelections(fieldNode);
@@ -198,7 +198,7 @@ public class Parser {
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
         FragmentNode fragmentNode = new(fragmentName, token.location, false, spreadLocation);
-        check self.addDirectivesToSelection(fragmentNode);
+        check self.addDirectivesToSelection(fragmentNode, FRAGMENT_SPREAD);
         parentNode.addSelection(fragmentNode);
     }
 
@@ -209,7 +209,7 @@ public class Parser {
         string onType = check getIdentifierTokenvalue(token);
         string fragmentName = string`${parentNode.getName()}_${onType}`;
         FragmentNode fragmentNode = new(fragmentName, location, true, spreadLocation, onType);
-        check self.addDirectivesToSelection(fragmentNode);
+        check self.addDirectivesToSelection(fragmentNode, INLINE_FRAGMENT);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
@@ -247,34 +247,37 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
     }
 
-    isolated function addDirectivesToSelection(ParentNode parentNode) returns Error? {
+    isolated function addDirectivesToSelection(ParentNode parentNode, DirectiveLocation dirLocation) returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
         if token.kind != T_AT {
             return;
         }
-        token = check self.readNextNonSeparatorToken();//consume @
-        token = check self.readNextNonSeparatorToken();
-        string name = check getIdentifierTokenvalue(token);
-        token = check self.readNextNonSeparatorToken();
-        if token.kind != T_OPEN_PARENTHESES {
-            return getExpectedCharError(token, OPEN_PARENTHESES);
+        while token.kind == T_AT {
+            token = check self.readNextNonSeparatorToken();//consume @
+            Location location = token.location.clone();
+            token = check self.readNextNonSeparatorToken();
+            string name = check getIdentifierTokenvalue(token);
+            DirectiveNode directiveNode = new(name, location);
+            directiveNode.addDirectiveLocation(dirLocation);
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_OPEN_PARENTHESES {
+                token = check self.readNextNonSeparatorToken(); //consume (
+                while token.kind != T_CLOSE_PARENTHESES {
+                    token = check self.readNextNonSeparatorToken();
+                    string varName = check getIdentifierTokenvalue(token);
+                    token = check self.readNextNonSeparatorToken();
+                    if token.kind != T_COLON {
+                        return getExpectedCharError(token, COLON);
+                    }
+                    ArgumentNode argument = check self.getScalarTypeArgument(varName, location);
+                    directiveNode.addArgument(argument);
+                    token = check self.peekNextNonSeparatorToken();
+                }
+                token = check self.readNextNonSeparatorToken();
+            }
+            parentNode.addDirective(directiveNode);
+            token = check self.peekNextNonSeparatorToken();
         }
-        token = check self.readNextNonSeparatorToken();
-        string varName = check getIdentifierTokenvalue(token);
-        Location location = token.location.clone();
-        token = check self.readNextNonSeparatorToken();
-        if token.kind != T_COLON {
-            return getExpectedCharError(token, COLON);
-        }
-        ArgumentNode argument = check self.getScalarTypeArgument(name, location);
-        token = check self.readNextNonSeparatorToken();
-        if token.kind != T_CLOSE_PARENTHESES {
-            return getExpectedCharError(token, CLOSE_PARENTHESES);
-        }
-        DirectiveNode directiveNode = new(name, location);
-        directiveNode.addArgument(argument);
-        directiveNode.addDirectiveLocation(FIELD);
-        parentNode.addDirective(directiveNode);
     }
 
     isolated function getInputObjectTypeArgument(string name, Location location) returns ArgumentNode|Error {

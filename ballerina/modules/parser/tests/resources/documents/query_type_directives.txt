@@ -4,7 +4,7 @@ query getData($skipProfile:Boolean!, $skipStreet:Boolean = true) {
             ...on Person @include(if: true) {
                 name
                 address {
-                    ...personalAddress @include(if: true)
+                    ...personalAddress @include(if: true) @include(if:$skipProfile)
                 }
             }
         }
@@ -13,5 +13,5 @@ query getData($skipProfile:Boolean!, $skipStreet:Boolean = true) {
 
 fragment personalAddress on Address {
     city
-    street @skip(if: $skipStreet)
+    street @skip(if: $skipStreet) @include(if:$skipProfile)
 }
