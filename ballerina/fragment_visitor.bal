@@ -103,6 +103,9 @@ class FragmentVisitor {
         foreach parser:Selection fragmentSelection in actualFragmentNode.getSelections() {
             fragmentNode.addSelection(fragmentSelection);
         }
+        foreach parser:DirectiveNode directive in actualFragmentNode.getDirectives() {
+            fragmentNode.addDirective(directive);
+        }
     }
 
     isolated function getErrors() returns ErrorDetail[] {

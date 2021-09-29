@@ -671,6 +671,72 @@ isolated function testInputObjects() returns error? {
 @test:Config {
     groups: ["directives", "parser"]
 }
+isolated function testInvalidDirectives1() returns error? {
+    string document = "query getId { profile @skip(if:true { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected Name, found "{".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 37);
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
+isolated function testInvalidDirectives2() returns error? {
+    string document = "query getId { profile @skip(if true) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Expected ":", found "true".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 32);
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
+isolated function testInvalidDirectives3() returns error? {
+    string document = "query getId { profile @skip(if:) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected ")".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 32);
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
+isolated function testDirectivesWithoutVariables() returns error? {
+    string document = "query getId{ profile @skip { id } }";
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> operationNode.getSelections()[0];
+    test:assertEquals(fieldNode.getName(), "profile");
+    DirectiveNode[] directives = fieldNode.getDirectives();
+    test:assertEquals(directives.length(), 1);
+    DirectiveNode directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getArguments().length(), 0);
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
 isolated function testDirectives() returns error? {
     string document = check getGraphQLDocumentFromFile("query_type_directives.txt");
     Parser parser = new(document);
@@ -678,4 +744,82 @@ isolated function testDirectives() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
+    FieldNode fieldNode = <FieldNode> operationNode.getSelections()[0];
+    Selection selection = fieldNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    fieldNode = <FieldNode> selection;
+
+    test:assertEquals(fieldNode.getName(), "profile");
+    DirectiveNode[] directives = fieldNode.getDirectives();
+    test:assertEquals(directives.length(), 1);
+    DirectiveNode directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], FIELD);
+    ArgumentNode argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
+    selection = fieldNode.getSelections()[0];
+    test:assertTrue(selection is FragmentNode);
+    FragmentNode fragmentNode = <FragmentNode> selection;
+
+    test:assertEquals(fragmentNode.getName(), "profile_Person");
+    test:assertEquals(fragmentNode.isInlineFragment(), true);
+    directives = fragmentNode.getDirectives();
+    test:assertEquals(directives.length(), 1);
+    directive = directives[0];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], INLINE_FRAGMENT);
+    test:assertEquals(directive.getArguments().length(), 1);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    selection = fragmentNode.getSelections()[1];
+    test:assertTrue(selection is FieldNode);
+    fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "address");
+    selection = fieldNode.getSelections()[0];
+    test:assertTrue(selection is FragmentNode);
+    fragmentNode = <FragmentNode> selection;
+
+    test:assertEquals(fragmentNode.getName(), "personalAddress");
+    test:assertEquals(fragmentNode.isInlineFragment(), false);
+    directives = fragmentNode.getDirectives();
+    test:assertEquals(directives.length(), 2);
+    directive = directives[0];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], FRAGMENT_SPREAD);
+    test:assertEquals(directive.getArguments().length(), 1);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    directive = directives[1];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getArguments().length(), 1);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    map<FragmentNode> fragmentsMap = documentNode.getFragments();
+    FragmentNode? result = fragmentsMap[fragmentNode.getName()];
+    test:assertTrue(result is FragmentNode);
+    fragmentNode = <FragmentNode>result;
+
+    selection = fragmentNode.getSelections()[1];
+    test:assertTrue(selection is FieldNode);
+    fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "street");
+    directives = fieldNode.getDirectives();
+    test:assertEquals(directives.length(), 2);
+    directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], FIELD);
+    test:assertEquals(directive.getArguments().length(), 1);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    directive = directives[1];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getArguments().length(), 1);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
 }
