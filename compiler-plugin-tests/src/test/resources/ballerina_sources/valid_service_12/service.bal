@@ -17,7 +17,7 @@
 import ballerina/graphql;
 import ballerina/http;
 
-public isolated function initContext(http:Request request, http:RequestContext requestContext)
+public isolated function initContext(http:RequestContext requestContext, http:Request request)
 returns graphql:Context|error {
     graphql:Context context = new;
     check context.add("auth", "TOKEN");
