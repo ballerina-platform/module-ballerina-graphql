@@ -359,3 +359,59 @@ isolated function testScalarTypeVariableWithInputObjectValue() returns error? {
     json expectedPayload = check getJsonContentFromFile("scalar_type_variable_with_input_object_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testEnumTypeDefaultValueWithVariables() returns error? {
+    string document = "($day:Weekday = SUNDAY){ isHoliday(weekday: $day) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            isHoliday: true
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testInvalidEnumTypeDefaultValueWithVariables() returns error? {
+    string document = "($day:Weekday = SNDAY){ isHoliday(weekday: $day) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("invalid_enum_type_default_value_with_variables.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "input_coerce"]
+}
+isolated function testVariableDefaultValueWithCoerceIntInputToFloat() returns error? {
+    string document = "($weight:Float = 4){ weightInPounds(weightInKg: $weight) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            weightInPounds: <float>8.82
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs"]
+}
+isolated function testFloatTypeVariableWithDefaultValue() returns error? {
+    string document = "($weight:Float = 4.3534){ weightInPounds(weightInKg: $weight) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            weightInPounds: <float>9.599247
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

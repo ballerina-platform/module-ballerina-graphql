@@ -146,20 +146,30 @@ class VariableValidator {
             self.setArgumentValue(value, argumentNode, variableDefinition);
         } else if defaultValue is parser:ArgumentValue {
             if variableType is __Type {
-                if defaultValue.value is () && variableType.kind == NON_NULL {
-                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                    string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
-                    self.errors.push(getErrorDetailRecord(message, defaultValue.location));
-                } else if defaultValue.value is Scalar &&
-                    getTypeNameFromValue(<Scalar>defaultValue.value) != argumentTypeName {
-                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                    string` invalid default value: ${defaultValue.value.toString()}. Expected type` +
-                    string` "${argumentTypeName}", found ${defaultValue.value.toString()}`;
-                    self.errors.push(getErrorDetailRecord(message, defaultValue.location));
+                parser:Scalar? value = defaultValue.value;
+                if value is Scalar {
+                    if getTypeNameFromValue(value) == STRING &&
+                        getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
+                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
+                    } else if getTypeNameFromValue(value) == INT &&
+                        getArgumentTypeKind(argumentTypeName) == parser:T_FLOAT {
+                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
+                    } else if getTypeNameFromValue(value) == argumentTypeName {
+                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
+                    } else {
+                        string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                        string` invalid default value: ${value.toString()}. Expected type` +
+                        string` "${argumentTypeName}", found ${value.toString()}`;
+                        self.errors.push(getErrorDetailRecord(message, defaultValue.location));
+                    }
                 } else {
-                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-                    argumentNode.setValue(argumentNode.getName(), defaultValue);
-                    argumentNode.setVariableDefinition(false);
+                    if variableType.kind == NON_NULL {
+                        string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                        string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
+                        self.errors.push(getErrorDetailRecord(message, defaultValue.location));
+                    } else {
+                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
+                    }
                 }
             }
         } else if defaultValue is parser:ArgumentNode {
@@ -188,6 +198,13 @@ class VariableValidator {
                 argumentNode.setVariableDefinition(false);
             }
         }
+    }
+
+    public isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, string argumentTypeName,
+                                                           parser:ArgumentValue|parser:ArgumentNode defaultValue) {
+        argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+        argumentNode.setValue(argumentNode.getName(), defaultValue);
+        argumentNode.setVariableDefinition(false);
     }
 
     public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,
