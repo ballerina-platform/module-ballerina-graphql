@@ -71,13 +71,7 @@ public class DocumentNode {
     }
 
     private isolated function appendDuplicateInlineFragment(FragmentNode duplicate, FragmentNode original) {
-        foreach var fields in duplicate.getFields() {
-            original.addField(fields);
-        }
-        foreach var fragments in duplicate.getFragments() {
-            original.addFragment(fragments);
-        }
-        foreach var selections in duplicate.getSelections() {
+        foreach Selection selections in duplicate.getSelections() {
             original.addSelection(selections);
         }
     }

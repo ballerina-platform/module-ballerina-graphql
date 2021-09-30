@@ -19,19 +19,18 @@ public class FragmentNode {
 
     private string name;
     private Location location;
+    private Location? spreadLocation;
     private string onType;
     private boolean inlineFragment;
-    private FieldNode[] fields;
-    private string[] fragments;
     private Selection[] selections;
 
-    public isolated function init(string name, Location location, string onType, boolean inlineFragment) {
+    public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
+                                  string onType = "") {
         self.name = name;
         self.location = location;
+        self.spreadLocation = spreadLocation;
         self.onType = onType;
         self.inlineFragment = inlineFragment;
-        self.fields = [];
-        self.fragments = [];
         self.selections = [];
     }
 
@@ -43,24 +42,8 @@ public class FragmentNode {
         return self.location;
     }
 
-    public isolated function addField(FieldNode fieldNode) {
-        self.fields.push(fieldNode);
-    }
-
-    public isolated function getFields() returns FieldNode[] {
-        return self.fields;
-    }
-
     public isolated function getOnType() returns string {
         return self.onType;
-    }
-
-    public isolated function addFragment(string name) {
-        self.fragments.push(name);
-    }
-
-    public isolated function getFragments() returns string[] {
-        return self.fragments;
     }
 
     public isolated function addSelection(Selection selection) {
@@ -73,5 +56,17 @@ public class FragmentNode {
 
     public isolated function isInlineFragment() returns boolean {
         return self.inlineFragment;
+    }
+
+    public isolated function getSpreadLocation() returns Location? {
+        return self.spreadLocation;
+    }
+
+    public isolated function setLocation(Location location) {
+        self.location = location;
+    }
+
+    public isolated function setOnType(string onType) {
+        self.onType = onType;
     }
 }

@@ -116,6 +116,9 @@ public class EngineUtils {
     static final BString NODE_FIELD = StringUtils.fromString("node");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
 
+    // Node Types
+    static final BString FRAGMENT_NODE = StringUtils.fromString("FragmentNode");
+
     // Query Fields
     public static final String TYPENAME_FIELD = "__typename";
 

@@ -20,8 +20,6 @@ public class OperationNode {
     private string name;
     private RootOperationType kind;
     private Location location;
-    private FieldNode[] fields;
-    private string[] fragments;
     private Selection[] selections;
     private map<VariableDefinition> variables;
     private ErrorDetail[] errors;
@@ -30,8 +28,6 @@ public class OperationNode {
         self.name = name;
         self.kind = kind;
         self.location = location;
-        self.fields = [];
-        self.fragments = [];
         self.selections = [];
         self.variables = {};
         self.errors = [];
@@ -47,22 +43,6 @@ public class OperationNode {
 
     public isolated function getLocation() returns Location {
         return self.location;
-    }
-
-    public isolated function addField(FieldNode fieldNode) {
-        self.fields.push(fieldNode);
-    }
-
-    public isolated function getFields() returns FieldNode[] {
-        return self.fields;
-    }
-
-    public isolated function addFragment(string name) {
-        self.fragments.push(name);
-    }
-
-    public isolated function getFragments() returns string[] {
-        return self.fragments;
     }
 
     public isolated function addSelection(Selection selection) {

@@ -48,6 +48,7 @@ class FragmentVisitor {
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
                 self.errors.push(errorDetail);
             }
+            _ = documentNode.getFragments().remove(fragmentNode.getName());
         }
     }
 
@@ -58,15 +59,11 @@ class FragmentVisitor {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if (selection.isFragment) {
-            parser:FragmentNode? fragmentNode = self.getFragment(selection);
-            if (fragmentNode is parser:FragmentNode) {
-                self.visitFragment(fragmentNode);
-                selection.node = fragmentNode;
-            }
+        if selection is parser:FragmentNode {
+            self.appendNamedFragmentFields(selection);
+            self.visitFragment(selection);
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            var result = self.visitField(fieldNode);
+            self.visitField(selection);
         }
     }
 
@@ -87,15 +84,25 @@ class FragmentVisitor {
         }
     }
 
-    isolated function getFragment(parser:Selection selection) returns parser:FragmentNode? {
-        parser:DocumentNode documentNode = <parser:DocumentNode>self.documentNode;
-        parser:FragmentNode? fragmentNode = documentNode.getFragment(selection.name);
-        if (fragmentNode is ()) {
-            string message = string`Unknown fragment "${selection.name}".`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, selection.location);
+    isolated function appendNamedFragmentFields(parser:FragmentNode fragmentNode) {
+        parser:DocumentNode documentNode = self.documentNode;
+        parser:FragmentNode? actualFragmentNode = documentNode.getFragment(fragmentNode.getName());
+        if actualFragmentNode is () {
+            string message = string`Unknown fragment "${fragmentNode.getName()}".`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
             self.errors.push(errorDetail);
+        } else {
+            if !fragmentNode.isInlineFragment() && fragmentNode.getSelections().length() == 0 {
+                self.appendFields(actualFragmentNode, fragmentNode);
+            }
         }
-        return fragmentNode;
+    }
+
+    isolated function appendFields(parser:FragmentNode actualFragmentNode, parser:FragmentNode fragmentNode) {
+        fragmentNode.setOnType(actualFragmentNode.getOnType());
+        foreach parser:Selection fragmentSelection in actualFragmentNode.getSelections() {
+            fragmentNode.addSelection(fragmentSelection);
+        }
     }
 
     isolated function getErrors() returns ErrorDetail[] {
