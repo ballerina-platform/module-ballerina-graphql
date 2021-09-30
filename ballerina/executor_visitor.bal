@@ -49,12 +49,10 @@ class ExecutorVisitor {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if (selection.isFragment) {
-            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
-            self.visitFragment(fragmentNode, data);
+        if selection is parser:FragmentNode {
+            self.visitFragment(selection, data);
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode, data);
+            self.visitField(selection, data);
         }
     }
 

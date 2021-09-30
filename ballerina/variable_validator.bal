@@ -73,12 +73,10 @@ class VariableValidator {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection.isFragment {
-            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-            self.visitFragment(fragmentNode, data);
+        if selection is parser:FragmentNode {
+            self.visitFragment(selection, data);
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode, data);
+            self.visitField(selection, data);
         }
     }
 
@@ -95,7 +93,7 @@ class VariableValidator {
             foreach parser:Selection subSelection in selections {
                 self.visitSelection(subSelection, data);
             }
-        } 
+        }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {

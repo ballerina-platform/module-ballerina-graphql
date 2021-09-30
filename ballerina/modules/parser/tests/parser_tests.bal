@@ -75,18 +75,20 @@ fragment profileFields on Profile {
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
     OperationNode operationNode = operations[0];
-    FieldNode[] fieldNodes = operationNode.getFields();
-    test:assertEquals(fieldNodes.length(), 1);
-    FieldNode fieldNode = fieldNodes[0];
-    string[] fragments = fieldNode.getFragments();
-    test:assertEquals(fragments.length(), 1);
-    string fragmentName = fragments[0];
+    Selection[] selections = operationNode.getSelections();
+    test:assertEquals(selections.length(), 1);
+    test:assertTrue(selections[0] is FieldNode);
+    FieldNode fieldNode = <FieldNode>selections[0];
+    selections = fieldNode.getSelections();
+    test:assertEquals(selections.length(), 1);
+    test:assertTrue(selections[0] is FragmentNode);
+    string fragmentName = (<FragmentNode>selections[0]).getName();
     test:assertEquals(fragmentName, "profileFields");
     map<FragmentNode> fragmentsMap = documentNode.getFragments();
     FragmentNode? result = fragmentsMap[fragmentName];
     test:assertTrue(result is FragmentNode);
     FragmentNode fragmentNode = <FragmentNode>result;
-    test:assertEquals(fragmentNode.getFields().length(), 2);
+    test:assertEquals(fragmentNode.getSelections().length(), 2);
     test:assertEquals(fragmentNode.getOnType(), "Profile");
 }
 
@@ -320,16 +322,18 @@ isolated function testParseAnonymousMutation() returns error? {
     OperationNode operationNode = operations[0];
     test:assertEquals(operationNode.getKind(), MUTATION);
     test:assertEquals(operationNode.getName(), ANONYMOUS_OPERATION);
-    test:assertEquals(operationNode.getFields().length(), 1);
-    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "setAge");
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "newAge");
     test:assertEquals((<ArgumentValue>argumentNode.getValue().get("newAge")).value, 24);
-    test:assertEquals(fieldNode.getFields().length(), 2);
-    test:assertEquals(fieldNode.getFields()[0].getName(), "name");
-    test:assertEquals(fieldNode.getFields()[1].getName(), "age");
+    test:assertEquals(fieldNode.getSelections().length(), 2);
+    test:assertEquals((<FieldNode>fieldNode.getSelections()[0]).getName(), "name");
+    test:assertEquals((<FieldNode>fieldNode.getSelections()[1]).getName(), "age");
 }
 
 @test:Config {
@@ -344,16 +348,18 @@ isolated function testParseNamedMutation() returns error? {
     OperationNode operationNode = operations[0];
     test:assertEquals(operationNode.getKind(), MUTATION);
     test:assertEquals(operationNode.getName(), "SetAge");
-    test:assertEquals(operationNode.getFields().length(), 1);
-    FieldNode fieldNode = operationNode.getFields()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "setAge");
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "newAge");
     test:assertEquals((<ArgumentValue>argumentNode.getValue().get("newAge")).value, 24);
-    test:assertEquals(fieldNode.getFields().length(), 2);
-    test:assertEquals(fieldNode.getFields()[0].getName(), "name");
-    test:assertEquals(fieldNode.getFields()[1].getName(), "age");
+    test:assertEquals(fieldNode.getSelections().length(), 2);
+    test:assertEquals((<FieldNode>fieldNode.getSelections()[0]).getName(), "name");
+    test:assertEquals((<FieldNode>fieldNode.getSelections()[1]).getName(), "age");
 }
 
 @test:Config {
@@ -393,8 +399,10 @@ isolated function testFieldAlias() returns error? {
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
-    test:assertEquals(operationNode.getFields().length(), 1);
-    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "name");
     string alias = fieldNode.getAlias();
@@ -410,8 +418,10 @@ isolated function testFieldAliasWithNamedOperation() returns error? {
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
-    test:assertEquals(operationNode.getFields().length(), 1);
-    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "name");
     string alias = fieldNode.getAlias();
@@ -455,10 +465,14 @@ isolated function testFieldAliasInsideField() returns error? {
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
-    test:assertEquals(operationNode.getFields().length(), 1);
-    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
-    test:assertEquals(fieldNode.getFields().length(), 1);
-    fieldNode = <FieldNode>fieldNode.getFields()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getSelections().length(), 1);
+    selection = fieldNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    fieldNode = <FieldNode> selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "name");
     string alias = fieldNode.getAlias();
@@ -474,8 +488,10 @@ isolated function testFieldAliasWithArguments() returns error? {
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
-    test:assertEquals(operationNode.getFields().length(), 1);
-    FieldNode fieldNode = <FieldNode>operationNode.getFields()[0];
+    test:assertEquals(operationNode.getSelections().length(), 1);
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "profile");
     string alias = fieldNode.getAlias();
@@ -501,7 +517,9 @@ isolated function testVariables() returns error? {
     test:assertEquals(variableDefinition.kind, "Int");
     ArgumentValue argValue = <ArgumentValue> variableDefinition?.defaultValue;
     test:assertEquals(argValue.value, 3);
-    FieldNode fieldNode = operationNode.getFields()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "id");
@@ -525,7 +543,9 @@ isolated function testNonNullTypeVariables() returns error? {
     variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["age"];
     test:assertEquals(variableDefinition.name, "age");
     test:assertEquals(variableDefinition.kind, "Int!");
-    FieldNode fieldNode = operationNode.getFields()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userName");
@@ -550,7 +570,9 @@ isolated function testListTypeVariables() returns error? {
     VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["name"];
     test:assertEquals(variableDefinition.name, "name");
     test:assertEquals(variableDefinition.kind, "[String!]!");
-    FieldNode fieldNode = operationNode.getFields()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userName");
@@ -624,7 +646,9 @@ isolated function testInputObjects() returns error? {
     ArgumentNode argField = <ArgumentNode> defaultValue.get("name");
     ArgumentValue defaultValueField = <ArgumentValue> argField.getValue().get("name");
     test:assertEquals(defaultValueField.value, "J.K Rowling");
-    FieldNode fieldNode = operationNode.getFields()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "book");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "info");
