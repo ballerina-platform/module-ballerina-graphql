@@ -287,7 +287,7 @@ isolated function testNonNullTypeVariablesWithNullableArgument() returns error? 
 }
 
 @test:Config {
-    groups: ["variables", "fragments", "input"]
+    groups: ["variables", "input"]
 }
 isolated function testVariableWithInvalidDefaultValue1() returns error? {
     string document = string`query Greeting($userName:String = 3){ greet (name: $userName ) }`;
@@ -305,6 +305,17 @@ isolated function testVariableWithInvalidDefaultValue2() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value2.json");
+    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs"]
+}
+isolated function testVariableWithInvalidDefaultValue3() returns error? {
+    string document = string`query Greeting($userName:String = Walter){ greet (name: $userName ) }`;
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value3.json");
     assertJsonValuesWithOrder(expectedPayload, expectedPayload);
 }
 
@@ -383,6 +394,17 @@ isolated function testInvalidEnumTypeDefaultValueWithVariables() returns error? 
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_enum_type_default_value_with_variables.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testEnumTypeDefaultValueWithStringLiteral() returns error? {
+    string document = "($day:Weekday = \"MONDAY\"){ isHoliday(weekday: $day) }";
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("enum_type_default_value_with_string_literal.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

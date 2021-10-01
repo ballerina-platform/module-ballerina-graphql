@@ -141,8 +141,7 @@ public class Parser {
                     ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation);
                     varDefinition.defaultValue = value;
                 } else {
-                    token = check self.readNextNonSeparatorToken();
-                    ArgumentValue value = check getArgumentValue(token);
+                    ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation);
                     varDefinition.defaultValue = value;
                 }
                 token = check self.peekNextNonSeparatorToken();

@@ -38,7 +38,7 @@ public type Location record {|
 public type VariableDefinition record {|
     string name;
     string kind;
-    ArgumentValue|ArgumentNode defaultValue?;
+    ArgumentNode defaultValue?;
     Location location?;
 |};
 
