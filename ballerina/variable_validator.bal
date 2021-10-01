@@ -137,53 +137,52 @@ class VariableValidator {
                                                         parser:VariableDefinition variableDefinition,
                                                         string argumentTypeName, __Type? variableType) {
         string variableName = <string>argumentNode.getVariableName();
-        parser:ArgumentNode|parser:ArgumentValue? defaultValue = variableDefinition?.defaultValue;
+        parser:ArgumentNode? defaultValue = variableDefinition?.defaultValue;
         if self.variables.hasKey(variableName) {
             argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
             anydata value = self.variables.get(variableName);
             self.setArgumentValue(value, argumentNode, variableDefinition);
-        } else if defaultValue is parser:ArgumentValue {
-            if variableType is __Type {
-                parser:Scalar? value = defaultValue.value;
-                if value is Scalar {
-                    if getTypeNameFromValue(value) == STRING &&
-                        getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
-                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
-                    } else if getTypeNameFromValue(value) == INT &&
-                        getArgumentTypeKind(argumentTypeName) == parser:T_FLOAT {
-                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
-                    } else if getTypeNameFromValue(value) == argumentTypeName {
-                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
-                    } else {
-                        string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                        string` invalid default value: ${value.toString()}. Expected type` +
-                        string` "${argumentTypeName}", found ${value.toString()}`;
-                        self.errors.push(getErrorDetailRecord(message, defaultValue.location));
-                    }
-                } else {
-                    if variableType.kind == NON_NULL {
-                        string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                        string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
-                        self.errors.push(getErrorDetailRecord(message, defaultValue.location));
-                    } else {
-                        self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, defaultValue);
-                    }
-                }
-            }
         } else if defaultValue is parser:ArgumentNode {
-            argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-            if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
-                foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
-                    if fieldValue is parser:ArgumentNode {
-                        argumentNode.setValue(fieldValue.getName(), fieldValue);
+            if defaultValue.isInputObject() {
+                argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+                if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
+                    foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
+                        if fieldValue is parser:ArgumentNode {
+                            argumentNode.setValue(fieldValue.getName(), fieldValue);
+                        }
+                    }
+                    argumentNode.setInputObject(true);
+                    argumentNode.setVariableDefinition(false);
+                } else {
+                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                    string` invalid default value. Expected type "${variableDefinition.kind}"`;
+                    self.errors.push(getErrorDetailRecord(message, defaultValue.getLocation()));
+                }
+            } else {
+                if variableType is __Type {
+                    parser:ArgumentValue value = <parser:ArgumentValue> defaultValue.getValue()[variableName];
+                    if value.value is Scalar {
+                        if getArgumentTypeKind(argumentTypeName) == parser:T_FLOAT &&
+                            defaultValue.getKind() == parser:T_INT {
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                        } else if getArgumentTypeKind(argumentTypeName) == defaultValue.getKind() {
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                        } else {
+                            string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                            string` invalid default value: ${value.value.toString()}. Expected type` +
+                            string` "${argumentTypeName}", found ${value.value.toString()}`;
+                            self.errors.push(getErrorDetailRecord(message, value.location));
+                        }
+                    } else {
+                        if variableType.kind == NON_NULL {
+                            string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                            string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
+                            self.errors.push(getErrorDetailRecord(message, value.location));
+                        } else {
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                        }
                     }
                 }
-                argumentNode.setInputObject(true);
-                argumentNode.setVariableDefinition(false);
-            } else {
-                string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                string` invalid default value. Expected type "${variableDefinition.kind}"`;
-                self.errors.push(getErrorDetailRecord(message, defaultValue.getLocation()));
             }
         } else {
             parser:Location location = argumentNode.getLocation();

@@ -515,7 +515,8 @@ isolated function testVariables() returns error? {
     VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["profileId"];
     test:assertEquals(variableDefinition.name, "profileId");
     test:assertEquals(variableDefinition.kind, "Int");
-    ArgumentValue argValue = <ArgumentValue> variableDefinition?.defaultValue;
+    ArgumentNode argValueNode = <ArgumentNode> variableDefinition?.defaultValue;
+    ArgumentValue argValue = <ArgumentValue> argValueNode.getValue()[variableDefinition.name];
     test:assertEquals(argValue.value, 3);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
