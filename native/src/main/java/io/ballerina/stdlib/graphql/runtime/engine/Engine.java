@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
@@ -57,8 +58,11 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -80,7 +84,7 @@ public class Engine {
             SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
             return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
-            return e;
+            return createError("Error occurred while creating the schema", ERROR_TYPE, e);
         }
     }
 
@@ -110,7 +114,7 @@ public class Engine {
         String fieldName = node.getStringValue(NAME_FIELD).getValue();
         CallbackHandler callbackHandler = new CallbackHandler(future);
         List<Object> pathSegments = new ArrayList<>();
-        pathSegments.add(fieldName);
+        pathSegments.add(StringUtils.fromString(fieldName));
         ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, MUTATION);
         executeRemoteMethod(executionContext, service, node, data, pathSegments);
     }
@@ -158,7 +162,7 @@ public class Engine {
                                            MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
                                            StrandMetadata strandMetadata) {
         BMap<BString, Object> arguments = getArgumentsFromField(node);
-        Object[] args = getArgsForMethod(method, arguments);
+        Object[] args = getArgsForMethod(method, arguments, executionContext);
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
@@ -227,10 +231,16 @@ public class Engine {
         }
     }
 
-    private static Object[] getArgsForMethod(MethodType method, BMap<BString, Object> arguments) {
+    private static Object[] getArgsForMethod(MethodType method, BMap<BString, Object> arguments,
+                                             ExecutionContext executionContext) {
         Parameter[] parameters = method.getParameters();
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
+            if (i == 0 && isContext(parameters[i].type)) {
+                result[i] = executionContext.getVisitor().getObjectValue(CONTEXT_FIELD);
+                result[j + 1] = true;
+                continue;
+            }
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
                 result[j] = parameters[i].type.getZeroValue();
                 result[j + 1] = false;

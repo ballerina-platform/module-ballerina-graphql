@@ -89,7 +89,7 @@ isolated function testNullValueForDefaultableArguments() returns error? {
 }
 
 @test:Config {
-    groups: ["inputs", "nullable", "test"]
+    groups: ["inputs", "nullable"]
 }
 isolated function testNullValueInInputObjectField() returns error? {
     string url = "http://localhost:9091/null_values";
@@ -106,7 +106,7 @@ isolated function testNullValueInInputObjectField() returns error? {
 }
 
 @test:Config {
-    groups: ["inputs", "nullable", "test"]
+    groups: ["inputs", "nullable"]
 }
 isolated function testNullAsResourceFunctionName() returns error? {
     string url = "http://localhost:9091/null_values";

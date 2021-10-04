@@ -17,8 +17,20 @@ jobs:
                     distribution: 'adopt'
                     java-version: '11'
 
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
+            -   name: Build with Gradle
+                env:
+                    packageUser: ${{ github.actor }}
+                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
+                run: ./gradlew build -x check -x test
+
+            -   name: Run Trivy vulnerability scanner
+                uses: aquasecurity/trivy-action@master
+                with:
+                    scan-type: 'fs'
+                    scan-ref: '/github/workspace/ballerina'
+                    skip-dirs: 'build'
+                    format: 'table'
+                    exit-code: '1'
 
             -   name: Publish artifact
                 env:

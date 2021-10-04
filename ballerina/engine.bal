@@ -19,12 +19,9 @@ import graphql.parser;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final readonly & ListenerAuthConfig[]? auth;
 
-    isolated function init(__Schema schema, GraphqlServiceConfig? serviceConfig) returns Error? {
+    isolated function init(__Schema schema, int? maxQueryDepth) returns Error? {
         self.schema = schema.cloneReadOnly();
-        self.auth = getListenerAuthConfig(serviceConfig).cloneReadOnly();
-        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
@@ -45,8 +42,8 @@ isolated class Engine {
         }
     }
 
-    isolated function execute(parser:OperationNode operationNode) returns OutputObject {
-        ExecutorVisitor executor = new(self, self.schema);
+    isolated function execute(parser:OperationNode operationNode, Context context) returns OutputObject {
+        ExecutorVisitor executor = new(self, self.schema, context);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         ResponseCoerceVisitor responseCoerceVisitor = new(self.schema, outputObject);
         return responseCoerceVisitor.getCoercedOutputObject(operationNode);
@@ -123,9 +120,5 @@ isolated class Engine {
             };
             return getOutputObjectFromErrorDetail(errorDetail);
         }
-    }
-
-    isolated function getAuthConfigs() returns ListenerAuthConfig[]? {
-        return self.auth;
     }
 }

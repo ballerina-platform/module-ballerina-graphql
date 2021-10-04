@@ -91,7 +91,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         string onType = check getIdentifierTokenvalue(token);
 
-        FragmentNode fragmentNode = new(name, location, onType, false);
+        FragmentNode fragmentNode = new(name, location, false, onType = onType);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
@@ -141,8 +141,7 @@ public class Parser {
                     ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation);
                     varDefinition.defaultValue = value;
                 } else {
-                    token = check self.readNextNonSeparatorToken();
-                    ArgumentValue value = check getArgumentValue(token);
+                    ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation);
                     varDefinition.defaultValue = value;
                 }
                 token = check self.peekNextNonSeparatorToken();
@@ -160,13 +159,7 @@ public class Parser {
                 check self.addFragment(parentNode);
             } else {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
-                Selection selection = {
-                    name: fieldNode.getAlias(),
-                    isFragment: false,
-                    node: fieldNode,
-                    location: fieldNode.getLocation()
-                };
-                parentNode.addSelection(selection);
+                parentNode.addSelection(fieldNode);
             }
             token = check self.peekNextNonSeparatorToken();
         }
@@ -180,23 +173,9 @@ public class Parser {
         token = check self.peekNextNonSeparatorToken();
         string keyword = check getIdentifierTokenvalue(token);
         if keyword == ON {
-            var [name, location] = check self.addInlineFragmentToNode(parentNode);
-            Selection selection = {
-                name: name,
-                isFragment: true,
-                location: location,
-                spreadLocation: spreadLocation
-            };
-            parentNode.addSelection(selection);
+            check self.addInlineFragmentToNode(parentNode, spreadLocation);
         } else {
-            var [name, location] = check self.addNamedFragmentToNode(parentNode);
-            Selection selection = {
-                name: name,
-                isFragment: true,
-                location: location,
-                spreadLocation: spreadLocation
-            };
-            parentNode.addSelection(selection);
+            check self.addNamedFragmentToNode(parentNode, spreadLocation);
         }
     }
 
@@ -212,32 +191,30 @@ public class Parser {
         if token.kind == T_OPEN_BRACE {
             check self.addSelections(fieldNode);
         }
-        parentNode.addField(fieldNode);
         return fieldNode;
     }
 
-    isolated function addNamedFragmentToNode(ParentNode parentNode) returns ([string, Location]|Error) {
+    isolated function addNamedFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
-        parentNode.addFragment(fragmentName);
-        return [fragmentName, token.location];
+        FragmentNode fragmentNode = new(fragmentName, token.location, false, spreadLocation);
+        parentNode.addSelection(fragmentNode);
     }
 
-    isolated function addInlineFragmentToNode(ParentNode parentNode) returns ([string,Location]|Error) {
+    isolated function addInlineFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken();//Consume on keyword
         token = check self.readNextNonSeparatorToken();
         Location location = token.location;
         string onType = check getIdentifierTokenvalue(token);
         string fragmentName = string`${parentNode.getName()}_${onType}`;
-        FragmentNode fragmentNode = new(fragmentName, location, onType, true);
+        FragmentNode fragmentNode = new(fragmentName, location, true, spreadLocation, onType);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
         check self.document.addFragment(fragmentNode);
-        parentNode.addFragment(fragmentName);
-        return [fragmentName, location];
+        parentNode.addSelection(fragmentNode);
     }
 
     isolated function addArgumentsToSelection(FieldNode fieldNode) returns Error? {

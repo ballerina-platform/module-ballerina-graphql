@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import ballerina/lang.runtime;
 
 Service simpleService = service object {
@@ -719,6 +720,41 @@ service /null_values on basicListener {
     resource function get 'null(int? value) returns string? {
         if value != () {
             return "Hello";
+        }
+    }
+}
+
+@ServiceConfig {
+    contextInit: isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
+        Context context = new;
+        check context.add("scope", check request.getHeader("scope"));
+        return context;
+    }
+}
+service /context on serviceTypeListener {
+    isolated resource function get profile(Context context) returns Person|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return {
+                name: "Walter White",
+                age: 51,
+                address: {
+                    number: "308",
+                    street: "Negra Arroyo Lane",
+                    city: "Albuquerque"
+                }
+            };
+        } else {
+            return error("You don't have permission to retrieve data");
+        }
+    }
+
+    remote function update(Context context) returns (Person|error)[]|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return people;
+        } else {
+            return [p1, error("You don't have permission to retrieve data"), p3];
         }
     }
 }

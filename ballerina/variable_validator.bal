@@ -73,12 +73,10 @@ class VariableValidator {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection.isFragment {
-            parser:FragmentNode fragmentNode = self.documentNode.getFragments().get(selection.name);
-            self.visitFragment(fragmentNode, data);
+        if selection is parser:FragmentNode {
+            self.visitFragment(selection, data);
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode, data);
+            self.visitField(selection, data);
         }
     }
 
@@ -107,7 +105,6 @@ class VariableValidator {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         __InputValue[] inputValues = <__InputValue[]>data;
         if argumentNode.isVariableDefinition() {
-            parser:Location location = argumentNode.getLocation();
             string variableName = <string>argumentNode.getVariableName();
             if self.variableDefinitions.hasKey(variableName) {
                 parser:VariableDefinition variableDefinition = self.variableDefinitions.get(variableName);
@@ -116,33 +113,10 @@ class VariableValidator {
                 [variableType, argumentTypeName] = self.getTypeRecordAndTypeFromTypeName(variableDefinition.kind);
                 self.checkVariableUsageCompatibility(variableType, inputValues, variableDefinition, argumentNode);
                 self.visitedVariableDefinitions.push(variableName);
-                if self.variables.hasKey(variableName) {
-                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-                    anydata value = self.variables.get(variableName);
-                    self.setArgumentValue(value, argumentNode, variableDefinition);
-                } else if variableDefinition?.defaultValue is parser:ArgumentValue {
-                    parser:ArgumentValue value = <parser:ArgumentValue> variableDefinition?.defaultValue;
-                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-                    argumentNode.setValue(argumentNode.getName(), value);
-                    argumentNode.setVariableDefinition(false);
-                } else if variableDefinition?.defaultValue is parser:ArgumentNode {
-                    parser:ArgumentNode value = <parser:ArgumentNode> variableDefinition?.defaultValue;
-                    argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-                    foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in value.getValue() {
-                        if fieldValue is parser:ArgumentNode {
-                            argumentNode.setValue(fieldValue.getName(), fieldValue);
-                        }
-                    }
-                    argumentNode.setInputObject(true);
-                    argumentNode.setVariableDefinition(false);
-                } else {
-                    string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
-                    string`was not provided.`;
-                    self.errors.push(getErrorDetailRecord(message, location));
-                }
+                self.validateVariableDefinition(argumentNode, variableDefinition, argumentTypeName, variableType);
             } else {
                 string message = string`Variable "$${variableName}" is not defined.`;
-                self.errors.push(getErrorDetailRecord(message, location));
+                self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
             }
         } else {
             __InputValue? inputValue = getInputValueFromArray(inputValues, argumentNode.getName());
@@ -157,6 +131,77 @@ class VariableValidator {
                 }
             }
         }
+    }
+
+    public isolated function validateVariableDefinition(parser:ArgumentNode argumentNode,
+                                                        parser:VariableDefinition variableDefinition,
+                                                        string argumentTypeName, __Type? variableType) {
+        string variableName = <string>argumentNode.getVariableName();
+        parser:ArgumentNode? defaultValue = variableDefinition?.defaultValue;
+        if self.variables.hasKey(variableName) {
+            argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+            anydata value = self.variables.get(variableName);
+            self.setArgumentValue(value, argumentNode, variableDefinition);
+        } else if defaultValue is parser:ArgumentNode {
+            if defaultValue.isInputObject() {
+                argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+                if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
+                    foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
+                        if fieldValue is parser:ArgumentNode {
+                            argumentNode.setValue(fieldValue.getName(), fieldValue);
+                        }
+                    }
+                    argumentNode.setInputObject(true);
+                    argumentNode.setVariableDefinition(false);
+                } else {
+                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                    string` invalid default value. Expected type "${variableDefinition.kind}"`;
+                    self.errors.push(getErrorDetailRecord(message, defaultValue.getLocation()));
+                }
+            } else {
+                if variableType is __Type {
+                    parser:ArgumentValue value = <parser:ArgumentValue> defaultValue.getValue()[variableName];
+                    if value.value is Scalar {
+                        if getArgumentTypeKind(argumentTypeName) == parser:T_FLOAT &&
+                            defaultValue.getKind() == parser:T_INT {
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                        } else if getArgumentTypeKind(argumentTypeName) == defaultValue.getKind() {
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                        } else {
+                            string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                            string` invalid default value: ${value.value.toString()}. Expected type` +
+                            string` "${argumentTypeName}", found ${value.value.toString()}`;
+                            self.errors.push(getErrorDetailRecord(message, value.location));
+                        }
+                    } else {
+                        if variableType.kind == NON_NULL {
+                            string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                            string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
+                            self.errors.push(getErrorDetailRecord(message, value.location));
+                        } else {
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                        }
+                    }
+                }
+            }
+        } else {
+            parser:Location location = argumentNode.getLocation();
+            if variableType is __Type && variableType.kind == NON_NULL {
+                string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
+                string`was not provided.`;
+                self.errors.push(getErrorDetailRecord(message, location));
+            } else {
+                argumentNode.setValue(argumentNode.getName(), {value: (), location: location});
+                argumentNode.setVariableDefinition(false);
+            }
+        }
+    }
+
+    public isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, string argumentTypeName,
+                                                           parser:ArgumentValue|parser:ArgumentNode defaultValue) {
+        argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+        argumentNode.setValue(argumentNode.getName(), defaultValue);
+        argumentNode.setVariableDefinition(false);
     }
 
     public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,

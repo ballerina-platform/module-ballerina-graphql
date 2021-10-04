@@ -25,6 +25,11 @@ returns json|error {
     return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
 }
 
+isolated function getJsonPayloadFromRequest(string url, http:Request request) returns json|error {
+    http:Client httpClient = check new(url);
+    return httpClient->post("/", request);
+}
+
 isolated function getJsonContentFromFile(string fileName) returns json|error {
     string path = check file:joinPath("tests", "resources", "expected_results", fileName);
     return io:fileReadJson(path);
@@ -40,6 +45,14 @@ returns json|error {
     http:Client httpClient = check new(url);
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     assertResponseForBadRequest(response);
+    return response.getJsonPayload();
+}
+
+isolated function assertResponseAndGetPayload(string url, string document, json? variables = {},
+string? operationName = (), int statusCode = http:STATUS_OK) returns json|error {
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
+    test:assertEquals(response.statusCode, statusCode);
     return response.getJsonPayload();
 }
 

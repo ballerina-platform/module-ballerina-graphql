@@ -21,17 +21,13 @@ public class FieldNode {
     private final string alias;
     private Location location;
     private ArgumentNode[] arguments;
-    private FieldNode[] fields;
-    private string[] fragments;
     private Selection[] selections;
 
     public isolated function init(string name, Location location, string alias) {
         self.name = name;
         self.alias = alias;
         self.location = location;
-        self.fields = [];
         self.arguments = [];
-        self.fragments = [];
         self.selections = [];
     }
 
@@ -51,24 +47,8 @@ public class FieldNode {
         self.arguments.push(argument);
     }
 
-    public isolated function addField(FieldNode fieldNode) {
-        self.fields.push(fieldNode);
-    }
-
     public isolated function getArguments() returns ArgumentNode[] {
         return self.arguments;
-    }
-
-    public isolated function getFields() returns FieldNode[] {
-        return self.fields;
-    }
-
-    public isolated function addFragment(string name) {
-        self.fragments.push(name);
-    }
-
-    public isolated function getFragments() returns string[] {
-        return self.fragments;
     }
 
     public isolated function addSelection(Selection selection) {

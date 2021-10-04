@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.runtime.utils;
 
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 
@@ -36,7 +37,9 @@ public class Utils {
     static final String EXECUTE_SERVICE_FUNCTION = "executeService";
     static final String EXECUTE_MUTATION_FUNCTION = "executeMutation";
 
-    public static final String NOT_SUPPORTED_ERROR = "NotSupportedError";
+    // Internal type names
+    public static final String ERROR_TYPE = "Error";
+    public static final String CONTEXT_OBJECT = "Context";
 
     public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
                                                                                      getModule().getName(),
@@ -51,10 +54,23 @@ public class Utils {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);
     }
 
+    public static BError createError(String message, String errorTypeName, BError cause) {
+        return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), cause, null);
+    }
+
     public static String[] removeFirstElementFromArray(String[] array) {
         int length = array.length - 1;
         String[] result = new String[length];
         System.arraycopy(array, 1, result, 0, length);
         return result;
+    }
+
+    public static boolean isContext(Type type) {
+        if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
+            return false;
+        }
+        return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
+                type.getPackage().getName().equals(ModuleUtils.getModule().getName()) &&
+                type.getName().equals(CONTEXT_OBJECT);
     }
 }
