@@ -20,6 +20,21 @@ jobs:
                     distribution: 'adopt'
                     java-version: '11'
 
+            -   name: Build with Gradle
+                env:
+                    packageUser: ${{ github.actor }}
+                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
+                run: ./gradlew build -x check -x test
+
+            -   name: Run Trivy vulnerability scanner
+                uses: aquasecurity/trivy-action@master
+                with:
+                    scan-type: 'fs'
+                    scan-ref: '/github/workspace/ballerina'
+                    skip-dirs: 'build'
+                    format: 'table'
+                    exit-code: '1'
+
             -   name: Get Release Version
                 run: echo "VERSION=$((grep -w 'version' | cut -d= -f2) < gradle.properties | rev | cut --complement -d- -f1 | rev)" >> $GITHUB_ENV
 
@@ -37,9 +52,6 @@ jobs:
                     sed -i 's/stdlib\(.*\)=\(.*\)-[0-9]\{8\}-[0-9]\{6\}-.*$/stdlib\1=\2/g' gradle.properties
                     git add gradle.properties
                     git commit -m "Move dependencies to stable version" || echo "No changes to commit"
-
-            -   name: Configure Gradle
-                run: chmod +x gradlew
 
             -   name: Publish Package
                 env:

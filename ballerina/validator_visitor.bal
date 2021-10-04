@@ -62,22 +62,14 @@ class ValidatorVisitor {
             self.validateUnionTypeField(selection, parentType, parentField);
             return;
         }
-        if selection.isFragment {
-            // This will be nil if the fragment is not found. The error is recorded in the fragment visitor.
-            // Therefore nil value is ignored.
-            var node = selection?.node;
-            if node is () {
-                return;
-            }
+        if selection is parser:FragmentNode {
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if fragmentOnType is __Type {
                 parentField = createField(fragmentOnType.name.toString(), fragmentOnType);
-                parser:FragmentNode fragmentNode = <parser:FragmentNode>node;
-                self.visitFragment(fragmentNode, parentField);
+                self.visitFragment(selection, parentField);
             }
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode, parentField);
+            self.visitField(selection, parentField);
         }
     }
 
@@ -234,24 +226,22 @@ class ValidatorVisitor {
     }
 
     isolated function validateUnionTypeField(parser:Selection selection, __Type parentType, __Field parentField) {
-        if !selection.isFragment {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            __Field? subField = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
+        if selection is parser:FieldNode {
+            __Field? subField = getRequierdFieldFromType(parentType, self.schema.types, selection);
             if subField is __Field {
-                self.visitField(fieldNode, subField);
+                self.visitField(selection, subField);
             } else {
-                string message = getInvalidFieldOnUnionTypeError(selection.name, parentType);
-                self.errors.push(getErrorDetailRecord(message, selection.location));
+                string message = getInvalidFieldOnUnionTypeError(selection.getAlias(), parentType);
+                self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
             }
         } else {
-            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
-            __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, fragmentNode.getOnType());
+            __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, selection.getOnType());
             if requiredType is __Type {
                 __Field subField = createField(parentField.name, requiredType);
-                self.visitFragment(fragmentNode, subField);
+                self.visitFragment(selection, subField);
             } else {
-                string message = getFragmetCannotSpreadError(fragmentNode, selection.name, parentType);
-                self.errors.push(getErrorDetailRecord(message, <Location>selection?.spreadLocation));
+                string message = getFragmetCannotSpreadError(selection, selection.getName(), parentType);
+                self.errors.push(getErrorDetailRecord(message, <Location>selection.getSpreadLocation()));
             }
         }
     }
@@ -286,8 +276,8 @@ class ValidatorVisitor {
         __InputValue[] inputValues = schemaField.args;
         __InputValue[] notFoundInputValues = [];
 
-        if (inputValues.length() == 0) {
-            if (arguments.length() > 0) {
+        if inputValues.length() == 0 {
+            if arguments.length() > 0 {
                 foreach parser:ArgumentNode argumentNode in arguments {
                     string argName = argumentNode.getName();
                     string parentName = parentType.name is string ? <string>parentType.name : "";
@@ -300,7 +290,7 @@ class ValidatorVisitor {
             foreach parser:ArgumentNode argumentNode in arguments {
                 string argName = argumentNode.getName();
                 __InputValue? inputValue = getInputValueFromArray(inputValues, argName);
-                if (inputValue is __InputValue) {
+                if inputValue is __InputValue {
                     _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
                     self.visitArgument(argumentNode, {input:inputValue, fieldName:fieldNode.getName()});
                 } else {
@@ -312,27 +302,26 @@ class ValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if (inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is ()) {
+            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
         }
     }
 
-    isolated function validateFragment(parser:Selection fragment, string schemaTypeName) returns __Type? {
-        parser:FragmentNode fragmentNode = <parser:FragmentNode>self.documentNode.getFragment(fragment.name);
+    isolated function validateFragment(parser:FragmentNode fragmentNode, string schemaTypeName) returns __Type? {
         string fragmentOnTypeName = fragmentNode.getOnType();
         __Type? fragmentOnType = getTypeFromTypeArray(self.schema.types, fragmentOnTypeName);
         if (fragmentOnType is ()) {
             string message = string`Unknown type "${fragmentOnTypeName}".`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, fragment.location);
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
             self.errors.push(errorDetail);
         } else {
             __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, schemaTypeName);
             __Type ofType = getOfType(schemaType);
             if (fragmentOnType != ofType) {
-                string message = getFragmetCannotSpreadError(fragmentNode, fragment.name, ofType);
-                ErrorDetail errorDetail = getErrorDetailRecord(message, <Location>fragment?.spreadLocation);
+                string message = getFragmetCannotSpreadError(fragmentNode, fragmentNode.getName(), ofType);
+                ErrorDetail errorDetail = getErrorDetailRecord(message, <Location> fragmentNode.getSpreadLocation());
                 self.errors.push(errorDetail);
             }
             return fragmentOnType;
@@ -433,7 +422,7 @@ isolated function copyInputValueArray(__InputValue[] original) returns __InputVa
 
 isolated function getInputValueFromArray(__InputValue[] inputValues, string name) returns __InputValue? {
     foreach __InputValue inputValue in inputValues {
-        if (inputValue.name == name) {
+        if inputValue.name == name {
             return inputValue;
         }
     }
@@ -442,14 +431,14 @@ isolated function getInputValueFromArray(__InputValue[] inputValues, string name
 isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
     foreach __Type schemaType in types {
         __Type ofType = getOfType(schemaType);
-        if (ofType.name.toString() == typeName) {
+        if ofType.name.toString() == typeName {
             return ofType;
         }
     }
 }
 
 isolated function hasFields(__Type fieldType) returns boolean {
-    if (fieldType.kind == OBJECT || fieldType.kind == UNION) {
+    if fieldType.kind == OBJECT || fieldType.kind == UNION {
         return true;
     }
     return false;

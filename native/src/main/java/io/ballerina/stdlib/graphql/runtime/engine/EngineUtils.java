@@ -98,8 +98,9 @@ public class EngineUtils {
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
     static final BString ENGINE_FIELD = StringUtils.fromString("engine");
     static final BString DATA_FIELD = StringUtils.fromString("data");
+    static final BString CONTEXT_FIELD = StringUtils.fromString("context");
 
-    // Record Types
+    // Internal Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
     static final String DATA_RECORD = "Data";
 
@@ -114,6 +115,9 @@ public class EngineUtils {
     static final BString IS_FRAGMENT_FIELD = StringUtils.fromString("isFragment");
     static final BString NODE_FIELD = StringUtils.fromString("node");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
+
+    // Node Types
+    static final BString FRAGMENT_NODE = StringUtils.fromString("FragmentNode");
 
     // Query Fields
     public static final String TYPENAME_FIELD = "__typename";

@@ -43,17 +43,11 @@ type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
 
 public type ArgumentType T_INT|T_FLOAT|T_BOOLEAN|T_STRING|T_IDENTIFIER;
 
+public type Selection FieldNode|FragmentNode;
+
 # Represents the types of operations valid in Ballerina GraphQL.
 public enum RootOperationType {
     QUERY = "query",
     MUTATION = "mutation",
     SUBSCRIPTION = "subscription"
 }
-
-public type Selection record {|
-    string name;
-    boolean isFragment;
-    ParentNode node?;
-    Location location;
-    Location spreadLocation?;
-|};

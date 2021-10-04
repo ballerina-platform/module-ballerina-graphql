@@ -60,10 +60,10 @@ class ResponseCoerceVisitor {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection.isFragment {
-            self.visitFragment(<parser:FragmentNode>selection?.node, data);
+        if selection is parser:FragmentNode {
+            self.visitFragment(selection, data);
         } else {
-            self.visitField(<parser:FieldNode>selection?.node, data);
+            self.visitField(selection, data);
         }
     }
 

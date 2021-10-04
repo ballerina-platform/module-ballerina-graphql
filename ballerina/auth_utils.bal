@@ -92,19 +92,19 @@ isolated function tryAuthenticate(ListenerAuthConfig[] authConfig, string header
 isolated function create401Response() returns http:Response {
     http:Response response = new;
     response.statusCode = 401;
-    json payload = {
+    ErrorDetail authnError = {
         message: "Required authentication information is either missing or not valid for the resource."
     };
-    response.setPayload(payload);
+    response.setPayload({ errors: [authnError] });
     return response;
 }
 
 isolated function create403Response() returns http:Response {
     http:Response response = new;
     response.statusCode = 403;
-    json payload = {
+    ErrorDetail authzError = {
         message: "Access is denied to the requested resource. The user might not have enough permission."
     };
-    response.setPayload(payload);
+    response.setPayload({ errors: [authzError] });
     return response;
 }

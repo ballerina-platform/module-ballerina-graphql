@@ -23,10 +23,12 @@ class ExecutorVisitor {
     private final Engine engine;
     private Data data;
     private ErrorDetail[] errors;
+    private Context context;
 
-    isolated function init(Engine engine, __Schema schema) {
+    isolated function init(Engine engine, __Schema schema, Context context) {
         self.engine = engine;
         self.schema = schema;
+        self.context = context;
         self.data = {};
         self.errors = [];
     }
@@ -47,12 +49,10 @@ class ExecutorVisitor {
     }
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if (selection.isFragment) {
-            parser:FragmentNode fragmentNode = <parser:FragmentNode>selection?.node;
-            self.visitFragment(fragmentNode, data);
+        if selection is parser:FragmentNode {
+            self.visitFragment(selection, data);
         } else {
-            parser:FieldNode fieldNode = <parser:FieldNode>selection?.node;
-            self.visitField(fieldNode, data);
+            self.visitField(selection, data);
         }
     }
 

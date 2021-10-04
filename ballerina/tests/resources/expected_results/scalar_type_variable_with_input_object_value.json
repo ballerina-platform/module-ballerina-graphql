@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message":"Variable \"age\" of type \"Int!\" has invalid default value. Expected type \"Int!\"",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 3
+                }
+            ]
+        }
+    ]
+}

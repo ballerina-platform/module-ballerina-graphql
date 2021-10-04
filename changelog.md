@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1723] Add Type Name Introspection](https://github.com/ballerina-platform/ballerina-standard-library/issues/1723)
 - [[#1704] Add Block String Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1704)
 - [[#1365] Add Input Object Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1365)
+- [[#1906] Add Context Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1906)
 
 ### Changed
 - [[#1597] Validate Max Query Depth at Runtime](https://github.com/ballerina-platform/ballerina-standard-library/issues/1597)
@@ -26,6 +27,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1879] Fix Nullable Record Fields Identifying as NON_NULL Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/1879)
 - [[#1845] Fix not Allowing to Pass `null` as Input Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/1845)
 - [[#1803] Fix Not Allowing NON_NULL Type in Variable Definitions](https://github.com/ballerina-platform/ballerina-standard-library/issues/1803)
+- [[#1911] Fix Variable Default Value With Invalid Type Retuning Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1911)
+- [[#1912] Fix Nullable Variables Return Error when Value is not Present](https://github.com/ballerina-platform/ballerina-standard-library/issues/1912)
+- [[#1912] GraphQL auth errors are not in proper format](https://github.com/ballerina-platform/ballerina-standard-library/issues/1920)
+- [[#1953] Fix Allowing Record Fields to Have Invalid Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1953)
+- [[#1983] Fix Not Allowing Int Value as Default Value in Float Type Variables](https://github.com/ballerina-platform/ballerina-standard-library/issues/1983)
+- [[#1984] Fix Not Allowing to Pass Default Value to Enum Type Variables](https://github.com/ballerina-platform/ballerina-standard-library/issues/1984)
+- [[#1990] Fix Accepting Enum Value as Default Value in String Type Variables](https://github.com/ballerina-platform/ballerina-standard-library/issues/1990)
 
 ## [0.2.0.beta.2]  - 2021-07-06
 

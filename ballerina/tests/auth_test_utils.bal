@@ -95,7 +95,7 @@ isolated function sendNoTokenRequest(int port, string path) returns http:Respons
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload);
+    return clientEP->post(path, payload);
 }
 
 isolated function sendBasicTokenRequest(int port, string path, string username, string password) returns http:Response|http:ClientError {
@@ -112,7 +112,7 @@ isolated function sendBasicTokenRequest(int port, string path, string username, 
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload);
+    return clientEP->post(path, payload);
 }
 
 isolated function sendBearerTokenRequest(int port, string path, string token) returns http:Response|http:ClientError {
@@ -128,7 +128,7 @@ isolated function sendBearerTokenRequest(int port, string path, string token) re
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload);
+    return clientEP->post(path, payload);
 }
 
 isolated function sendJwtRequest(int port, string path) returns http:Response|http:ClientError {
@@ -159,7 +159,7 @@ isolated function sendJwtRequest(int port, string path) returns http:Response|ht
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload);
+    return clientEP->post(path, payload);
 }
 
 isolated function sendOAuth2TokenRequest(int port, string path) returns http:Response|http:ClientError {
@@ -185,7 +185,7 @@ isolated function sendOAuth2TokenRequest(int port, string path) returns http:Res
         }
     });
     json payload = { "query": "{ greeting }" };
-    return <@untainted> clientEP->post(path, payload);
+    return clientEP->post(path, payload);
 }
 
 isolated function assertSuccess(http:Response|http:ClientError response) {

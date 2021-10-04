@@ -163,6 +163,22 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testGraphQLContextAsFirstParameter() {
+        Package currentPackage = loadPackage("valid_service_15");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testGraphQLContextInsideReturningServices() {
+        Package currentPackage = loadPackage("valid_service_16");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -591,6 +607,45 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertErrorFormat(diagnostic, CompilationError.INVALID_INTERFACE_IMPLEMENTATION, 43, 15);
+    }
+
+    @Test
+    public void testGraphQLContextAsAnotherParameter() {
+        Package currentPackage = loadPackage("invalid_service_29");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, 20, 64);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, 24, 61);
+    }
+
+    @Test
+    public void testInvalidContextObject() {
+        Package currentPackage = loadPackage("invalid_service_30");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 21, 43);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 25, 40);
+    }
+
+    @Test
+    public void testInvalidRecordFieldType() {
+        Package currentPackage = loadPackage("invalid_service_31");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 20, 12);
     }
 
     private Package loadPackage(String path) {

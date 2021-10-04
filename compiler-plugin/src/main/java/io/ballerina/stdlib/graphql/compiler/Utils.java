@@ -53,6 +53,7 @@ public class Utils {
     public static final String RESOURCE_FUNCTION_GET = "get";
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String DOUBLE_UNDERSCORES = "__";
+    public static final String CONTEXT_IDENTIFIER = "Context";
 
     /**
      * Compilation errors.
@@ -60,20 +61,18 @@ public class Utils {
     enum CompilationError {
         INVALID_FUNCTION("Remote methods are not allowed inside the service classes returned from GraphQL resources",
                          "GRAPHQL_101", DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE("Invalid return type for GraphQL resource/remote function", "GRAPHQL_102",
-                            DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE("Invalid GraphQL field Type", "GRAPHQL_102", DiagnosticSeverity.ERROR),
         INVALID_RESOURCE_INPUT_PARAM("Invalid input parameter type for GraphQL resource/remote function", "GRAPHQL_103",
                                      DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_NIL("A GraphQL resource/remote function must have a return type", "GRAPHQL_104",
-                                DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_ERROR_OR_NIL("A GraphQL resource/remote function must have a return data type",
-                                         "GRAPHQL_105", DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_NIL("A GraphQL field must have a return type", "GRAPHQL_104", DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_ERROR_OR_NIL("A GraphQL field must have a return data type", "GRAPHQL_105",
+                                         DiagnosticSeverity.ERROR),
         INVALID_RESOURCE_FUNCTION_ACCESSOR(
                 "Only \"" + RESOURCE_FUNCTION_GET + "\" accessor is allowed for GraphQL resource function",
                 "GRAPHQL_106", DiagnosticSeverity.ERROR),
         INVALID_MULTIPLE_LISTENERS("A GraphQL service cannot be attached to multiple listeners", "GRAPHQL_107",
                                    DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_ERROR("A GraphQL resource/remote function must have a return data type", "GRAPHQL_108",
+        INVALID_RETURN_TYPE_ERROR("A GraphQL field must have a return data type", "GRAPHQL_108",
                                   DiagnosticSeverity.ERROR),
         INVALID_LISTENER_INIT("http:Listener and graphql:ListenerConfiguration are mutually exclusive", "GRAPHQL_109",
                               DiagnosticSeverity.ERROR),
@@ -83,19 +82,20 @@ public class Utils {
                                    "\", which is reserved by GraphQL introspection", "GRAPHQL_111",
                            DiagnosticSeverity.ERROR),
         INVALID_RETURN_TYPE_ANY(
-                "A GraphQL resource/remote function cannot return \"any\" or \"anydata\", instead use specific type " +
-                        "names", "GRAPHQL_112", DiagnosticSeverity.ERROR),
+                "A GraphQL field cannot have \"any\" or \"anydata\" as the type, instead use specific types",
+                "GRAPHQL_112", DiagnosticSeverity.ERROR),
         MISSING_RESOURCE_FUNCTIONS("A GraphQL service must have at least one resource function", "GRAPHQL_113",
                                    DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_INPUT_OBJECT("A GraphQL resource/remote function cannot return an input type",
-                "GRAPHQL_113", DiagnosticSeverity.ERROR),
-        INVALID_RESOURCE_INPUT_OBJECT_PARAM(
-                "A GraphQL resource/remote function cannot use an output type as an input type",
-                "GRAPHQL_114", DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_INPUT_OBJECT("A GraphQL field type cannot be an input type", "GRAPHQL_113",
+                                         DiagnosticSeverity.ERROR),
+        INVALID_RESOURCE_INPUT_OBJECT_PARAM("A GraphQL field cannot use an output type as an input type", "GRAPHQL_114",
+                                            DiagnosticSeverity.ERROR),
         NON_DISTINCT_INTERFACE_CLASS("Interface types must have the distinct qualifier", "GRAPHQL_114",
                 DiagnosticSeverity.ERROR),
         INVALID_INTERFACE_IMPLEMENTATION("All the resource functions in the interface class `{0}` must be implemented",
-                "GRAPHQL_115", DiagnosticSeverity.ERROR);
+                "GRAPHQL_115", DiagnosticSeverity.ERROR),
+        INVALID_LOCATION_FOR_CONTEXT_PARAMETER("The graphql:Context should be the first parameter", "GRAPHQL_116",
+                                               DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;
