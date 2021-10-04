@@ -758,12 +758,31 @@ service /context on serviceTypeListener {
         }
     }
 
+    isolated resource function get animal() returns Animal {
+        return new;
+    }
+
     remote function update(Context context) returns (Person|error)[]|error {
         var scope = check context.get("scope");
         if scope is string && scope == "admin" {
             return people;
         } else {
             return [p1, error("You don't have permission to retrieve data"), p3];
+        }
+    }
+}
+
+public distinct service class Animal {
+    isolated resource function get call(Context context, string sound, int count) returns string {
+        var scope = context.get("scope");
+        if scope is string && scope == "admin" {
+            string call = "";
+            foreach int i in 0...count {
+                call += string`${sound} `;
+            }
+            return call;
+        } else {
+            return sound;
         }
     }
 }

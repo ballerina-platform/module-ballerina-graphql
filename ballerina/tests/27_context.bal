@@ -282,3 +282,43 @@ isolated function testContextWithMissingAttribute() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithAdditionalParametersInNestedObject() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = string`{ animal { call(sound: "Meow", count: 3) } }`;
+    http:Request request = new;
+    request.setHeader("scope", "admin");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            animal: {
+                call: "Meow Meow Meow Meow "
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithAdditionalParametersInNestedObjectWithInvalidScope() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = string`{ animal { call(sound: "Meow", count: 3) } }`;
+    http:Request request = new;
+    request.setHeader("scope", "user");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            animal: {
+                call: "Meow"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
