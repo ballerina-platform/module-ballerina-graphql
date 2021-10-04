@@ -749,6 +749,15 @@ service /context on serviceTypeListener {
         }
     }
 
+    isolated resource function get name(Context context, string name) returns string|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return name;
+        } else {
+            return error("You don't have permission to retrieve data");
+        }
+    }
+
     remote function update(Context context) returns (Person|error)[]|error {
         var scope = check context.get("scope");
         if scope is string && scope == "admin" {
