@@ -1,13 +1,9 @@
 # Proposal: GraphQL Context
 
-_Owners_: Thisaru, Dimuthu
-
-_Reviewers_: Shafreen, Chanaka
-
-_Created_: 2021/10/04
-
-_Updated_: 2021/10/04
-
+_Owners_: Thisaru, Dimuthu    
+_Reviewers_: Shafreen, Chanaka      
+_Created_: 2021/10/04   
+_Updated_: 2021/10/04     
 _Issue_: [#1906](https://github.com/ballerina-platform/ballerina-standard-library/issues/1906)
 
 ## Summary
