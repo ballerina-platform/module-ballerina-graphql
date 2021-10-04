@@ -277,7 +277,7 @@ public class FieldFinder {
             Type inputType;
             InputValue inputValue;
             if (isContext(parameter.type)) {
-                return;
+                continue;
             }
             if (parameter.type.isNilable()) {
                 inputType = getInputTypeFromNilableType((UnionType) parameter.type);
