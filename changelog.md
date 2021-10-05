@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1984] Fix Not Allowing to Pass Default Value to Enum Type Variables](https://github.com/ballerina-platform/ballerina-standard-library/issues/1984)
 - [[#1990] Fix Accepting Enum Value as Default Value in String Type Variables](https://github.com/ballerina-platform/ballerina-standard-library/issues/1990)
 - [[#1998] Fix Ignoring Parameters after Context Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1998)
+- [[#2003] Fix Failing Input Object Validation with Null Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/2003)
 
 ## [0.2.0.beta.2]  - 2021-07-06
 

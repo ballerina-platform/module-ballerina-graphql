@@ -80,6 +80,18 @@ isolated function testInputVariablesWithInvalidArgumentType() returns error? {
 }
 
 @test:Config {
+    groups: ["variables", "input"]
+}
+isolated function testInputVariablesWithEmptyInputObjectValue() returns error? {
+    string document = string`query Greeting($userName:String!){ greet (name: $userName ) }`;
+    json variables = { userName: {} };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("input_variables_with_empty_input_object_value.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testFragmentsWithInputVariables() returns error? {
