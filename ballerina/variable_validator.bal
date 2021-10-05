@@ -208,7 +208,7 @@ class VariableValidator {
                                               parser:VariableDefinition varDef) {
         if argument.getKind() == parser:T_IDENTIFIER {
             argument.setVariableValue(value);
-        } else if getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
+        } else if value is Scalar && getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);
         } else if value is decimal && getTypeName(argument) == FLOAT {
             argument.setVariableValue(<float>value);

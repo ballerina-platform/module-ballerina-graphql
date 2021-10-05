@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"$userName\" got invalid value {};Expected type String!. String cannot represent value: {}",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 50
+                }
+            ]
+        }
+    ]
+}

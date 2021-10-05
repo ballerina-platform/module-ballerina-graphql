@@ -1,0 +1,49 @@
+{
+    "errors": [
+        {
+            "message": "String cannot represent non String value: {}",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 17
+                }
+            ]
+        },
+        {
+            "message": "Int cannot represent non Int value: {}",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 31
+                }
+            ]
+        },
+        {
+            "message": "String cannot represent non String value: {}",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 42
+                }
+            ]
+        },
+        {
+            "message": "Int cannot represent non Int value: {}",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 52
+                }
+            ]
+        },
+        {
+            "message": "String cannot represent non String value: {}",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 69
+                }
+            ]
+        }
+    ]
+}
