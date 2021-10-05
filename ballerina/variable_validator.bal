@@ -216,7 +216,7 @@ class VariableValidator {
             argument.setVariableValue(value);
         } else {
             string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ` +
-            string`${value.toString()};Expected type ${varDef.kind}. ${getTypeName(argument)}` +
+            string`${value.toString()}; Expected type ${varDef.kind}. ${getTypeName(argument)}` +
             string` cannot represent value: ${value.toString()}`;
             self.errors.push(getErrorDetailRecord(message, argument.getLocation()));
         }
