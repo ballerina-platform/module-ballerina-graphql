@@ -256,11 +256,10 @@ The result for the above query is the following JSON:
 ```
 
 ##### Context Init
-This function will be used to initialize the `graphql:Context` object. Usage of the `graphql:Context` will be described
-in a separate section.
+This field is used to initialize the `graphql:Context` object. Usage of the `graphql:Context` will be described in a separate section.
 
 ### Context
-The `graphql:Context` can be used to pass meta-information among the graphql resolver (resource/remote) functions. It will be created per each request, with a defined set of attributes. Attributes can be stored in the `graphql:Context` object using key, value pairs. The key should be always a `string`. The type of the value is `value:Clonable|isolated object {}`. This means the values can be any immutable type, `readonly` value, or an isolated object. These attributes can be set using a function, which can be given as a service configuration parameter.
+The `graphql:Context` can be used to pass meta-information among the graphql resolver (resource/remote) functions. It will be created per each request, with a defined set of attributes. Attributes can be stored in the `graphql:Context` object using key, value pairs. The key should be always a `string`. The type of the value is `value:Cloneable|isolated object {}`. This means the values can be any immutable type, `readonly` value, or an isolated object. These attributes can be set using a function, which can be given as a service configuration parameter.
 
 #### Context Init
 The `graphql:Context` can be initialized using a function. The function signature is as follows:
@@ -343,7 +342,7 @@ resource function get greeting(graphql:Context context) returns string|error {
 ##### `remove()` Function
 This function will remove the attribute for a provided key, and return the value. If the key does not exist, it will return a `graphql:Error`.
 
-> **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may cause issues in parallel executions in queries.
+> **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
 
 ```
 resource function get greeting(graphql:Context context) returns string|error {
