@@ -38,7 +38,7 @@ public class Parser {
     }
 
     isolated function parseRootOperation(Token token) returns Error? {
-        if token.kind == T_OPEN_PARENTHESES || token.kind == T_OPEN_BRACE {
+        if token.kind == T_OPEN_PARENTHESES || token.kind == T_OPEN_BRACE || token.kind == T_AT {
             return self.parseAnonymousOperation();
         } else if token.kind == T_IDENTIFIER {
             Scalar value = token.value;
@@ -53,7 +53,7 @@ public class Parser {
 
     isolated function parseAnonymousOperation() returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
-        OperationNode operation = check self.createOperationNode(ANONYMOUS_OPERATION, QUERY, token.location);
+        OperationNode operation = check self.createOperationNode(ANONYMOUS_OPERATION, OPERATION_QUERY, token.location);
         self.addOperationToDocument(operation);
     }
 
@@ -64,7 +64,7 @@ public class Parser {
         string operationName = check getOperationNameFromToken(self);
         token = check self.peekNextNonSeparatorToken();
         TokenType tokenType = token.kind;
-        if tokenType == T_OPEN_PARENTHESES || tokenType == T_OPEN_BRACE {
+        if tokenType == T_OPEN_PARENTHESES || tokenType == T_AT || tokenType == T_OPEN_BRACE {
             OperationNode operation = check self.createOperationNode(operationName, operationType, location);
             self.addOperationToDocument(operation);
         } else {
@@ -92,6 +92,7 @@ public class Parser {
         string onType = check getIdentifierTokenvalue(token);
 
         FragmentNode fragmentNode = new(name, location, false, onType = onType);
+        check self.addDirectivesToSelection(fragmentNode, FRAGMENT_DEFINITION);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
             return getExpectedCharError(token, OPEN_BRACE);
@@ -107,6 +108,7 @@ public class Parser {
         if token.kind == T_OPEN_PARENTHESES {
             check self.addVariableDefinition(operation);
         }
+        check self.addDirectivesToSelection(operation, getLocationFromRootOperationType(kind));
         check self.addSelections(operation);
         return operation;
     }
@@ -138,10 +140,10 @@ public class Parser {
                 token = check self.readNextNonSeparatorToken();// consume "=" sign here
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
-                    ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation);
+                    ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
                     varDefinition.defaultValue = value;
                 } else {
-                    ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation);
+                    ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation, false);
                     varDefinition.defaultValue = value;
                 }
                 token = check self.peekNextNonSeparatorToken();
@@ -269,8 +271,24 @@ public class Parser {
                     if token.kind != T_COLON {
                         return getExpectedCharError(token, COLON);
                     }
-                    ArgumentNode argument = check self.getScalarTypeArgument(varName, location);
-                    directiveNode.addArgument(argument);
+                    token = check self.peekNextNonSeparatorToken();
+                    if token.kind == T_OPEN_BRACE {
+                        if dirLocation == QUERY || dirLocation == MUTATION {
+                            ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location, false);
+                            directiveNode.addArgument(argumentNode);
+                        } else {
+                            ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location);
+                            directiveNode.addArgument(argumentNode);
+                        }
+                    } else {
+                        if dirLocation == QUERY || dirLocation == MUTATION {
+                            ArgumentNode argument = check self.getScalarTypeArgument(varName, location, false);
+                            directiveNode.addArgument(argument);
+                        } else {
+                            ArgumentNode argument = check self.getScalarTypeArgument(varName, location);
+                            directiveNode.addArgument(argument);
+                        }
+                    }
                     token = check self.peekNextNonSeparatorToken();
                 }
                 token = check self.readNextNonSeparatorToken();
@@ -280,7 +298,8 @@ public class Parser {
         }
     }
 
-    isolated function getInputObjectTypeArgument(string name, Location location) returns ArgumentNode|Error {
+    isolated function getInputObjectTypeArgument(string name, Location location,
+                                                 boolean isAllowVariableValue = true) returns ArgumentNode|Error {
         ArgumentNode argumentNode = new(name, location, T_IDENTIFIER, isInputObject = true);
         Token token = check self.readNextNonSeparatorToken();// consume open brace here
         token = check self.peekNextNonSeparatorToken();
@@ -299,16 +318,21 @@ public class Parser {
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
                     //nested input objects
-                    ArgumentNode nestedInputObjectFields = check self.getInputObjectTypeArgument(fieldName, fieldLocation);
+                    ArgumentNode nestedInputObjectFields =
+                        check self.getInputObjectTypeArgument(fieldName, fieldLocation, isAllowVariableValue);
                     argumentNode.setValue(fieldName, nestedInputObjectFields);
                 } else if token.kind == T_DOLLAR {
-                    //input object fields with variable definitions
-                    token = check self.readNextNonSeparatorToken();
-                    token = check self.readNextNonSeparatorToken();
-                    string varName = check getIdentifierTokenvalue(token);
-                    ArgumentNode nestedVariableFields = new(fieldName, token.location, T_IDENTIFIER, isVarDef = true);
-                    nestedVariableFields.addVariableName(varName);
-                    argumentNode.setValue(fieldName, nestedVariableFields);
+                    if isAllowVariableValue {
+                        //input object fields with variable definitions
+                        token = check self.readNextNonSeparatorToken();
+                        token = check self.readNextNonSeparatorToken();
+                        string varName = check getIdentifierTokenvalue(token);
+                        ArgumentNode nestedVariableFields = new(fieldName, token.location, T_IDENTIFIER, isVarDef = true);
+                        nestedVariableFields.addVariableName(varName);
+                        argumentNode.setValue(fieldName, nestedVariableFields);
+                    } else {
+                        return getUnexpectedTokenError(token);
+                    }
                 } else {
                     //input object fields with value
                     token = check self.readNextNonSeparatorToken();
@@ -325,16 +349,20 @@ public class Parser {
         return argumentNode;
     }
 
-    isolated function getScalarTypeArgument(string name, Location location) returns ArgumentNode|Error {
+    isolated function getScalarTypeArgument(string name, Location location,
+                                            boolean isAllowVariableValue = true) returns ArgumentNode|Error {
         Token token = check self.readNextNonSeparatorToken();
         if token.kind == T_DOLLAR {
-            //scalar type argument with variable definition
-            token = check self.readNextNonSeparatorToken();
-            string varName = check getIdentifierTokenvalue(token);
-            ArgumentType argType = <ArgumentType>token.kind;
-            ArgumentNode argument = new(name, token.location, argType, isVarDef = true);
-            argument.addVariableName(varName);
-            return argument;
+            if isAllowVariableValue {
+                //scalar type argument with variable definition
+                token = check self.readNextNonSeparatorToken();
+                string varName = check getIdentifierTokenvalue(token);
+                ArgumentType argType = <ArgumentType>token.kind;
+                ArgumentNode argument = new(name, token.location, argType, isVarDef = true);
+                argument.addVariableName(varName);
+                return argument;
+            }
+            return getUnexpectedTokenError(token);
         } else {
             ArgumentValue value = check getArgumentValue(token);
             ArgumentType argType = <ArgumentType>token.kind;
@@ -436,7 +464,7 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Error 
         // If this is a named operation, we should consume name token
         token = check parser.readNextNonSeparatorToken();
         return <string>token.value;
-    } else if token.kind == T_OPEN_BRACE || token.kind == T_OPEN_PARENTHESES {
+    } else if token.kind == T_OPEN_BRACE || token.kind == T_OPEN_PARENTHESES || token.kind == T_AT {
         return ANONYMOUS_OPERATION;
     }
     return getUnexpectedTokenError(token);
@@ -448,4 +476,13 @@ isolated function getIdentifierTokenvalue(Token token) returns string|Error {
     } else {
         return getExpectedNameError(token);
     }
+}
+
+isolated function getLocationFromRootOperationType(RootOperationType operation) returns DirectiveLocation {
+    if operation == OPERATION_SUBSCRIPTION {
+        return SUBSCRIPTION;
+    } else if operation == OPERATION_MUTATION {
+        return MUTATION;
+    }
+    return QUERY;
 }

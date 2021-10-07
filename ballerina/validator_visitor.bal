@@ -460,10 +460,10 @@ isolated function hasFields(__Type fieldType) returns boolean {
 
 isolated function getOperationTypeNameFromOperationType(parser:RootOperationType rootOperationType) returns string {
     match rootOperationType {
-        parser:MUTATION => {
+        parser:OPERATION_MUTATION => {
             return MUTATION_TYPE_NAME;
         }
-        parser:SUBSCRIPTION => {
+        parser:OPERATION_SUBSCRIPTION => {
             return SUBSCRIPTION_TYPE_NAME;
         }
         _ => {

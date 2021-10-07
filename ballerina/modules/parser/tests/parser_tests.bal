@@ -320,7 +320,7 @@ isolated function testParseAnonymousMutation() returns error? {
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
     OperationNode operationNode = operations[0];
-    test:assertEquals(operationNode.getKind(), MUTATION);
+    test:assertEquals(operationNode.getKind(), OPERATION_MUTATION);
     test:assertEquals(operationNode.getName(), ANONYMOUS_OPERATION);
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
@@ -346,7 +346,7 @@ isolated function testParseNamedMutation() returns error? {
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
     OperationNode operationNode = operations[0];
-    test:assertEquals(operationNode.getKind(), MUTATION);
+    test:assertEquals(operationNode.getKind(), OPERATION_MUTATION);
     test:assertEquals(operationNode.getName(), "SetAge");
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
@@ -627,6 +627,36 @@ isolated function testEmptyListTypeVariable() returns error? {
 }
 
 @test:Config {
+    groups: ["variables", "list", "parser"]
+}
+isolated function testVariablesWithInvalidDefaultValue() returns error? {
+    string document = "query getId($name: String = $name) { profile(userName:$name) { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 29);
+}
+
+@test:Config {
+    groups: ["variables", "input_objects", "parser"]
+}
+isolated function testInputObjectWithInvalidVariableDefaultValue() returns error? {
+    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_variable_default_value.txt");
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 91);
+}
+
+@test:Config {
     groups: ["input_objects", "parser"]
 }
 isolated function testInputObjects() returns error? {
@@ -716,6 +746,21 @@ isolated function testInvalidDirectives3() returns error? {
 @test:Config {
     groups: ["directives", "parser"]
 }
+isolated function testDirectivesWithoutInvalidVariableUsage() returns error? {
+    string document = "query getId($skip:Boolean = true ) @skip(if: $skip) { profile { id } }";
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 46);
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
 isolated function testDirectivesWithoutVariables() returns error? {
     string document = "query getId{ profile @skip { id } }";
     Parser parser = new(document);
@@ -732,6 +777,82 @@ isolated function testDirectivesWithoutVariables() returns error? {
     DirectiveNode directive = directives[0];
     test:assertEquals(directive.getName(), "skip");
     test:assertEquals(directive.getArguments().length(), 0);
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
+isolated function testDirectivesInUndefinedLocations() returns error? {
+    string document = check getGraphQLDocumentFromFile("query_type_directives_in_undefined_location.txt");
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    DirectiveNode[] directives = operationNode.getDirectives();
+    test:assertEquals(directives.length(), 2);
+    DirectiveNode directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], QUERY);
+    ArgumentNode argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    directive = directives[1];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], QUERY);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+
+    map<FragmentNode> fragments = documentNode.getFragments();
+    FragmentNode? fragment = fragments.get("p1");
+    test:assertTrue(fragment is FragmentNode);
+    directives = (<FragmentNode>fragment).getDirectives();
+    test:assertEquals(directives.length(), 2);
+    directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], FRAGMENT_DEFINITION);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    test:assertEquals(argumentNode.isVariableDefinition(), true);
+    directive = directives[1];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], FRAGMENT_DEFINITION);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+}
+
+@test:Config {
+    groups: ["directives", "parser"]
+}
+isolated function testDirectivesWithMutation() returns error? {
+    string document = check getGraphQLDocumentFromFile("query_type_directives_with_mutation.txt");
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    DirectiveNode[] directives = operationNode.getDirectives();
+    test:assertEquals(directives.length(), 1);
+    DirectiveNode directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], MUTATION);
+    ArgumentNode argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+
+    test:assertEquals(fieldNode.getName(), "setName");
+    directives = fieldNode.getDirectives();
+    test:assertEquals(directives.length(), 1);
+    directive = directives[0];
+    test:assertEquals(directive.getName(), "include");
+    test:assertEquals(directive.getDirectiveLocations().length(), 1);
+    test:assertEquals(directive.getDirectiveLocations()[0], FIELD);
+    argumentNode = directive.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "if");
 }
 
 @test:Config {
