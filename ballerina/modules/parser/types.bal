@@ -47,14 +47,18 @@ public type Selection FieldNode|FragmentNode;
 
 # Represents the types of operations valid in Ballerina GraphQL.
 public enum RootOperationType {
-    QUERY = "query",
-    MUTATION = "mutation",
-    SUBSCRIPTION = "subscription"
+    OPERATION_QUERY = "query",
+    OPERATION_MUTATION = "mutation",
+    OPERATION_SUBSCRIPTION = "subscription"
 }
 
 public enum DirectiveLocation {
-    //to be add query, mutation, subscription
+    //executable directive locations
+    QUERY,
+    MUTATION,
+    SUBSCRIPTION,
     FIELD,
+    FRAGMENT_DEFINITION,
     FRAGMENT_SPREAD,
     INLINE_FRAGMENT
 }

@@ -805,36 +805,6 @@
                     "interfaces": null,
                     "enumValues": [
                         {
-                            "name": "INPUT_FIELD_DEFINITION",
-                            "description": null,
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
-                            "name": "ENUM_VALUE",
-                            "description": null,
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
-                            "name": "ARGUMENT_DEFINITION",
-                            "description": null,
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
-                            "name": "FIELD_DEFINITION",
-                            "description": null,
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
-                            "name": "SCHEMA",
-                            "description": null,
-                            "isDeprecated": false,
-                            "deprecationReason": null
-                        },
-                        {
                             "name": "INLINE_FRAGMENT",
                             "description": null,
                             "isDeprecated": false,
