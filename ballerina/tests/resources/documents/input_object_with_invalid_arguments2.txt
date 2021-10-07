@@ -1,0 +1,5 @@
+query getBook($bAuthor:ProfileDetail = { name: {}, age:{}}) {
+    book(info: {bookName: {}, edition: {}, author: $bAuthor, movie:{movieName: {}}}) {
+        name
+    }
+}

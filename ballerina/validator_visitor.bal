@@ -123,23 +123,30 @@ class ValidatorVisitor {
 
     isolated function visitInputObject(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         __Type argType = getOfType(schemaArg.'type);
-        __InputValue[] inputFields = <__InputValue[]>argType?.inputFields;
-        self.validateInputObjectFields(argumentNode, inputFields);
-        foreach __InputValue inputField in inputFields {
-            __Type subArgType = getOfType(inputField.'type);
-            __InputValue subInputValue = inputField;
-            if argumentNode.getValue().hasKey(inputField.name) {
-                parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(inputField.name);
-                if fieldValue is parser:ArgumentNode {
-                    self.visitArgument(fieldValue, {input:subInputValue, fieldName:fieldName});
-                }
-            } else {
-                if ((subInputValue.'type).kind == NON_NULL && schemaArg?.defaultValue is ()) {
-                    string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type ` +
-                    string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
-                    self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+        __InputValue[]? inputFields = argType?.inputFields;
+        if inputFields is __InputValue[] {
+            self.validateInputObjectFields(argumentNode, inputFields);
+            foreach __InputValue inputField in inputFields {
+                __Type subArgType = getOfType(inputField.'type);
+                __InputValue subInputValue = inputField;
+                if argumentNode.getValue().hasKey(inputField.name) {
+                    parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(inputField.name);
+                    if fieldValue is parser:ArgumentNode {
+                        self.visitArgument(fieldValue, {input:subInputValue, fieldName:fieldName});
+                    }
+                } else {
+                    if ((subInputValue.'type).kind == NON_NULL && schemaArg?.defaultValue is ()) {
+                        string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type ` +
+                        string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
+                        self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+                    }
                 }
             }
+        } else {
+            string expectedTypeName = getOfType(schemaArg.'type).name.toString();
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: {}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            self.errors.push(errorDetail);
         }
     }
 
@@ -189,31 +196,38 @@ class ValidatorVisitor {
     isolated function validateInputObjectVariableValue(map<anydata> variableValues, __InputValue inputValue,
                                                        Location location, string fieldName) {
         __Type argType = getOfType(inputValue.'type);
-        __InputValue[] inputFields = <__InputValue[]>argType?.inputFields;
-        foreach __InputValue subInputValue in inputFields {
-            if variableValues.hasKey(subInputValue.name) {
-                anydata fieldValue = variableValues.get(subInputValue.name);
-                if fieldValue is Scalar {
-                    parser:ArgumentValue argValue = {value: fieldValue, location: location};
-                    if getOfType(subInputValue.'type).kind == ENUM {
-                        //validate input object field with enum value
-                        self.validateEnumArgument(argValue, argType.kind, subInputValue);
-                    } else {
-                        self.validateArgumentValue(argValue, getTypeNameFromValue(fieldValue), subInputValue);
+        __InputValue[]? inputFields = argType?.inputFields;
+        if inputFields is __InputValue[] {
+            foreach __InputValue subInputValue in inputFields {
+                if variableValues.hasKey(subInputValue.name) {
+                    anydata fieldValue = variableValues.get(subInputValue.name);
+                    if fieldValue is Scalar {
+                        parser:ArgumentValue argValue = {value: fieldValue, location: location};
+                        if getOfType(subInputValue.'type).kind == ENUM {
+                            //validate input object field with enum value
+                            self.validateEnumArgument(argValue, argType.kind, subInputValue);
+                        } else {
+                            self.validateArgumentValue(argValue, getTypeNameFromValue(fieldValue), subInputValue);
+                        }
+                    } else if fieldValue is decimal {
+                        //coerce decimal to float since float value change over the network
+                        self.coerceInputVariableDecimalToFloat(fieldValue, subInputValue, location);
+                    } else if fieldValue is map<anydata> {
+                        self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
                     }
-                } else if fieldValue is decimal {
-                    //coerce decimal to float since float value change over the network
-                    self.coerceInputVariableDecimalToFloat(fieldValue, subInputValue, location);
-                } else if fieldValue is map<anydata> {
-                    self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
-                }
-            } else {
-                if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
-                    string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type `+
-                    string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
-                    self.errors.push(getErrorDetailRecord(message, location));
+                } else {
+                    if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
+                        string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type `+
+                        string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
+                        self.errors.push(getErrorDetailRecord(message, location));
+                    }
                 }
             }
+        } else {
+            string expectedTypeName = getOfType(inputValue.'type).name.toString();
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: {}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+            self.errors.push(errorDetail);
         }
     }
 

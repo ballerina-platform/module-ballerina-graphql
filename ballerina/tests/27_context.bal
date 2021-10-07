@@ -155,6 +155,24 @@ isolated function testContextWithHttpHeaderValues() returns error? {
 @test:Config {
     groups: ["context"]
 }
+isolated function testContextWithAdditionalParameters() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = string`{ name(name: "Jesse Pinkman") }`;
+    http:Request request = new;
+    request.setHeader("scope", "admin");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            name: "Jesse Pinkman"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
 isolated function testContextWithHttpHeaderValuesWithInvalidScope() returns error? {
     string url = "http://localhost:9092/context";
     string document = "{ profile { name } }";
@@ -261,6 +279,46 @@ isolated function testContextWithMissingAttribute() returns error? {
                 message: "Http header does not exist"
             }
         ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithAdditionalParametersInNestedObject() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = string`{ animal { call(sound: "Meow", count: 3) } }`;
+    http:Request request = new;
+    request.setHeader("scope", "admin");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            animal: {
+                call: "Meow Meow Meow Meow "
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithAdditionalParametersInNestedObjectWithInvalidScope() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = string`{ animal { call(sound: "Meow", count: 3) } }`;
+    http:Request request = new;
+    request.setHeader("scope", "user");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        data: {
+            animal: {
+                call: "Meow"
+            }
+        }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
