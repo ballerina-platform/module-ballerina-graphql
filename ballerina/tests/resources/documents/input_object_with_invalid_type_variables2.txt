@@ -1,0 +1,5 @@
+query getBook($bName:String = "Harry", $bAuthor:ProfileDetail!, $dir:String) {
+    book(info: {bookName: $bName, edition: 6, author: $bAuthor, movie:{movieName: "End Game", director:$dir}}) {
+        name
+    }
+}

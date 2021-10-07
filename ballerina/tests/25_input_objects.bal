@@ -47,11 +47,22 @@ isolated function testInputObjectWithMissingArgs() returns error? {
 @test:Config {
     groups: ["input_objects", "input"]
 }
-isolated function testInputObjectWithInvalidArguments() returns error? {
+isolated function testInputObjectWithInvalidArguments1() returns error? {
     string document = string`{searchProfile(profileDetail:{name: 5, age: "Arthur"}){ name }}`;
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments.json");
+    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments1.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_objects", "input", "variables"]
+}
+isolated function testInputObjectWithInvalidArguments2() returns error? {
+    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_arguments2.txt");
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -269,14 +280,28 @@ isolated function testInputObjectWithFloatTypeVariables() returns error? {
 @test:Config {
     groups: ["input_objects", "input"]
 }
-isolated function testInputObjectWithInvalidTypeVariables() returns error? {
+isolated function testInputObjectWithInvalidTypeVariables1() returns error? {
     string document = "($weight:WeightInKg!){ convertKgToGram (weight:$weight) }";
     json variables = {
         weight: { weight: 70.5 }
     };
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables.json");
+    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables1.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_objects", "input", "variables"]
+}
+isolated function testInputObjectWithInvalidTypeVariables2() returns error? {
+    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_type_variables2.txt");
+    string url = "http://localhost:9091/input_objects";
+    json variables = {
+        bAuthor: {name:{}, age:{}}
+    };
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

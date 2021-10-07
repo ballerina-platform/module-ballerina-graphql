@@ -37,7 +37,7 @@ listener graphql:Listener graphqlListener = new (4000, timeout = 10, secureSocke
 ```
 
 ### Service
-The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated. 
+The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated.
 
 The GraphQL services are exposed through a single endpoint. The URL of the GraphQL service can be provided when defining the service. (Check the next example, in which the URL is `/graphql`).
 
@@ -94,20 +94,20 @@ public type Person record {|
 
 service /graphql on new graphql:Listener(4000) {
     private Person profile;
-    
+
     function init() {
         self.profile = { name: "Walter White", age: 50, city: "Albuquerque" };
     }
-    
+
     resource function get profile() returns Person {
         return self.profile;
     }
-    
+
     remote function updateName(string name) returns Person {
         self.profile.name = name;
         return self.profile;
     }
-    
+
     remote function updateCity(string city) reutns Person {
         self.profile.city = city;
         return self.profile;
@@ -134,7 +134,7 @@ type Person {
 }
 ```
 
->**Note:** A GraphQL schema must have a root `Query` type. Therefore, a Ballerina GraphQL service must have at least one resource function defined. 
+>**Note:** A GraphQL schema must have a root `Query` type. Therefore, a Ballerina GraphQL service must have at least one resource function defined.
 
 This can be mutated using the following document.
 
@@ -180,7 +180,7 @@ Additional configurations of a Ballerina GraphQL service can be provided using t
 These configurations include security-related configurations for the GraphQL service.
 
 ##### Security Configurations
-A GraphQL service can be secured by setting `auth` field in the `graphql:ServiceConfig`. Ballerina GraphQL services supports Basic Authentication, JWT Authentication and OAuth2 Authentication. 
+A GraphQL service can be secured by setting `auth` field in the `graphql:ServiceConfig`. Ballerina GraphQL services supports Basic Authentication, JWT Authentication and OAuth2 Authentication.
 
 ```ballerina
 @graphql:SeviceConfig {
@@ -255,6 +255,104 @@ The result for the above query is the following JSON:
 }
 ```
 
+##### Context Init
+This field is used to initialize the `graphql:Context` object. Usage of the `graphql:Context` will be described in a separate section.
+
+### Context
+The `graphql:Context` can be used to pass meta-information among the graphql resolver (resource/remote) functions. It will be created per each request, with a defined set of attributes. Attributes can be stored in the `graphql:Context` object using key, value pairs. The key should be always a `string`. The type of the value is `value:Cloneable|isolated object {}`. This means the values can be any immutable type, `readonly` value, or an isolated object. These attributes can be set using a function, which can be given as a service configuration parameter.
+
+#### Context Init
+The `graphql:Context` can be initialized using a function. The function signature is as follows:
+```ballerina
+isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context|error {}
+```
+
+The values from the `http:RequestContext` and the `http:Request` can be set as attributes of the `graphql:Context` since they are passed as arguments for this function. Then the function should be provided as a `graphql:ServiceConfig` parameter.
+
+Following are examples for providing the context init function.
+
+##### Providing the Init Function Directly
+```ballerina
+import ballerina/graphql;
+import ballerina/http;
+
+@graphql:ServiceConfig {
+    contextInit: isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context context = new;
+        check context.add("<key>", <value>);
+        return context;
+    }
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+
+##### Providing the Init Function as a Function Pointer
+```ballerina
+import ballerina/graphql;
+import ballerina/http;
+
+isolated function initContext(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+    graphql:Context context = new;
+    check context.add("<key>", <value>);
+    return context;
+}
+
+@graphql:ServiceConfig {
+    contextInit: initContext
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+
+> **Note:** Even if the context init function is not provided, a default, empty context will be created per each request.
+
+#### Using the Context in Resolver Functions
+If the `graphql:Context` needs to be accessed, the resolver function has to add it as the first parameter of the function.
+Following is an example:
+
+```ballerina
+service on new graphql:Listener(4000) {
+    resource function get greet(graphql:Context context) returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+This is similar for any `remote` function, or a `resource` function inside a service object used as a GraphQL object type.
+
+#### Retrieving Attributes from the Context
+There are two methods to retrieve attributes from the `graphql:Context`.
+
+##### `get()` Function
+This will return the value of the attribute using the provided key. If the key does not exist, it will return a `graphql:Error`.
+
+```
+resource function get greeting(graphql:Context context) returns string|error {
+    var username = check context.get("username");
+    if username is string {
+        return "Hello, " + username;
+    }
+    return "Hello, World!";
+}
+```
+
+##### `remove()` Function
+This function will remove the attribute for a provided key, and return the value. If the key does not exist, it will return a `graphql:Error`.
+
+> **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
+
+```
+resource function get greeting(graphql:Context context) returns string|error {
+    var username = check context.remove("username");
+    if username is string {
+        return "Hello, " + username;
+    }
+    return "Hello, World!";
+}
+
 ### Types
 The Ballerina GraphQL resources can return the following types:
 
@@ -262,12 +360,13 @@ The Ballerina GraphQL resources can return the following types:
 
 ##### Scalar types
 The following Ballerina types are considered as Scalar types:
-- `int`
-- `string`
-- `boolean`
-- `float`
-- `decimal`
-- `enum`
+
+* `int`
+* `string`
+* `boolean`
+* `float`
+* `decimal`
+* `enum`
 
 ```ballerina
 resource function get greeting() returns string {
@@ -378,16 +477,16 @@ service graphql:Service /graphql on new graphql:Listener(4000) {
 service class Person {
     private string name;
     private int age;
-    
+
     public function init(string name, int age) {
         self.name = name;
         self.age = age;
     }
-    
+
     resource function get name() returns string {
         return self.name;
     }
-    
+
     resource function get age() returns int {
         return self.age;
     }
@@ -488,7 +587,7 @@ Result:
 }
 ```
 
-Note: Each element in the array consists only of the required `name` field.
+> **Note:** Each element in the array consists only of the required `name` field.
 
 
 #### Optional Types
@@ -538,7 +637,7 @@ Result:
         }
     }
 }
-```  
+```
 
 If the following document is used:
 ```
@@ -556,7 +655,7 @@ This will be the result:
         "profile": null
     }
 }
-``` 
+```
 
 #### Union Types
 The Ballerina GraphQL service can return a union of distinct service types. This will be mapped to a GraphQL `UNION` type.
@@ -581,16 +680,16 @@ service /graphql on new graphql:Listener(4000) {
 distinct service class Student {
     private int id;
     private string name;
-    
+
     public function init(int id, string name) {
         self.id = id;
         self.name = name;
     }
-    
+
     resource function get id() returns int {
         return self.id;
     }
-    
+
     resource function get name() returns string {
         return self.name;
     }
@@ -600,28 +699,28 @@ distinct service class Teacher {
     private int id;
     private string name;
     private string subject;
-    
+
     public function init(int id, string name, string subject) {
         self.id = id;
         self.name = name;
         self.subject = subject;
     }
-    
+
     resource function get id() returns int {
         return self.id;
     }
-    
+
     resource function get name() returns string {
         return self.name;
     }
-        
+
     resource function get subject() returns string {
         return self.subject;
     }
 }
 ```
 
-This will generate the following schema: 
+This will generate the following schema:
 
 ```
 type Query {
@@ -668,7 +767,7 @@ The result will be:
         }
     }
 }
-``` 
+```
 
 If the following document is used:
 
@@ -697,12 +796,12 @@ The result will be:
         }
     }
 }
-``` 
+```
 
 #### Errors (With union)
 A Ballerina GraphQL resource can return an `error` with the union of the types mentioned above.
 
-Note: A resource cannot return an `error`, any subtype of an `error`, or, an `error?`, which will result in a compilation error.
+> **Note:** A resource cannot return an `error`, any subtype of an `error`, or, an `error?`, which will result in a compilation error.
 
 ```ballerina
 public type Person record {|
@@ -756,11 +855,11 @@ service graphql:Service /graphql on new graphq:Listener(4000) {
     resource function profile/name/first() returns string {
         return "Walter";
     }
-    
+
     resource function profile/name/last() returns string {
         return "White"
     }
-    
+
     resource function profile/age() returns int {
         return 51;
     }
@@ -785,4 +884,4 @@ type name {
 }
 ```
 
-Note: The field name, and the type names are equal.
+> **Note:** The field name, and the type names are equal.
