@@ -6,13 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Added
-- [[#1853] Add Parser Validation for Directives in GraphQL Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/1853)
-
 ### Fixed
 - [[#2018] Fix Ignoring Parser Invalidation of Variable Usages in Variable Definitions](https://github.com/ballerina-platform/ballerina-standard-library/issues/2018)
 
-## [0.2.0.beta.3]
+## [1.0.0]
 
 ### Added
 - [[#1634] Add Alias Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1634)
