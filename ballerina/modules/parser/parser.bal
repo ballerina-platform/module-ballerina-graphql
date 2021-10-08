@@ -64,7 +64,7 @@ public class Parser {
         string operationName = check getOperationNameFromToken(self);
         token = check self.peekNextNonSeparatorToken();
         TokenType tokenType = token.kind;
-        if tokenType == T_OPEN_PARENTHESES || tokenType == T_AT || tokenType == T_OPEN_BRACE {
+        if tokenType == T_OPEN_PARENTHESES || tokenType == T_OPEN_BRACE || tokenType == T_AT {
             OperationNode operation = check self.createOperationNode(operationName, operationType, location);
             self.addOperationToDocument(operation);
         } else {
@@ -255,7 +255,7 @@ public class Parser {
             return;
         }
         while token.kind == T_AT {
-            token = check self.readNextNonSeparatorToken();//consume @
+            token = check self.readNextNonSeparatorToken(); //consume @
             Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenvalue(token);
@@ -263,39 +263,44 @@ public class Parser {
             directiveNode.addDirectiveLocation(dirLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_OPEN_PARENTHESES {
-                token = check self.readNextNonSeparatorToken(); //consume (
-                while token.kind != T_CLOSE_PARENTHESES {
-                    token = check self.readNextNonSeparatorToken();
-                    string varName = check getIdentifierTokenvalue(token);
-                    token = check self.readNextNonSeparatorToken();
-                    if token.kind != T_COLON {
-                        return getExpectedCharError(token, COLON);
-                    }
-                    token = check self.peekNextNonSeparatorToken();
-                    if token.kind == T_OPEN_BRACE {
-                        if dirLocation == QUERY || dirLocation == MUTATION {
-                            ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location, false);
-                            directiveNode.addArgument(argumentNode);
-                        } else {
-                            ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location);
-                            directiveNode.addArgument(argumentNode);
-                        }
-                    } else {
-                        if dirLocation == QUERY || dirLocation == MUTATION {
-                            ArgumentNode argument = check self.getScalarTypeArgument(varName, location, false);
-                            directiveNode.addArgument(argument);
-                        } else {
-                            ArgumentNode argument = check self.getScalarTypeArgument(varName, location);
-                            directiveNode.addArgument(argument);
-                        }
-                    }
-                    token = check self.peekNextNonSeparatorToken();
-                }
-                token = check self.readNextNonSeparatorToken();
+                check self.addArgumentsToDirective(directiveNode, dirLocation);
             }
             parentNode.addDirective(directiveNode);
             token = check self.peekNextNonSeparatorToken();
         }
+    }
+
+     isolated function addArgumentsToDirective(DirectiveNode directiveNode, DirectiveLocation dirLocation) returns Error? {
+        Token token = check self.readNextNonSeparatorToken(); //consume (
+        while token.kind != T_CLOSE_PARENTHESES {
+            token = check self.readNextNonSeparatorToken();
+            string varName = check getIdentifierTokenvalue(token);
+            Location location = token.location.clone();
+            token = check self.readNextNonSeparatorToken();
+            if token.kind != T_COLON {
+                return getExpectedCharError(token, COLON);
+            }
+            token = check self.peekNextNonSeparatorToken();
+            if token.kind == T_OPEN_BRACE {
+                if dirLocation == QUERY || dirLocation == MUTATION {
+                    ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location, false);
+                    directiveNode.addArgument(argumentNode);
+                } else {
+                    ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location);
+                    directiveNode.addArgument(argumentNode);
+                }
+            } else {
+                if dirLocation == QUERY || dirLocation == MUTATION {
+                    ArgumentNode argument = check self.getScalarTypeArgument(varName, location, false);
+                    directiveNode.addArgument(argument);
+                } else {
+                    ArgumentNode argument = check self.getScalarTypeArgument(varName, location);
+                    directiveNode.addArgument(argument);
+                }
+            }
+            token = check self.peekNextNonSeparatorToken();
+        }
+        token = check self.readNextNonSeparatorToken();
     }
 
     isolated function getInputObjectTypeArgument(string name, Location location,
