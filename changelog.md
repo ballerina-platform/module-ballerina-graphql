@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#2018] Fix Ignoring Parser Invalidation of Variable Usages in Variable Definitions](https://github.com/ballerina-platform/ballerina-standard-library/issues/2018)
+
+## [1.0.0]
+
 ### Added
 - [[#1634] Add Alias Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1634)
 - [[#1361] Add Variable Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1361)

@@ -1,0 +1,5 @@
+query getBook($bName:String = "Harry", $info:Info = {bookName:"Sherlock", author: { name: $bName}) {
+    book(info: $info) {
+        name
+    }
+}

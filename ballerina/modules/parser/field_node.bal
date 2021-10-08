@@ -22,6 +22,7 @@ public class FieldNode {
     private Location location;
     private ArgumentNode[] arguments;
     private Selection[] selections;
+    private DirectiveNode[] directives;
 
     public isolated function init(string name, Location location, string alias) {
         self.name = name;
@@ -29,6 +30,7 @@ public class FieldNode {
         self.location = location;
         self.arguments = [];
         self.selections = [];
+        self.directives = [];
     }
 
     public isolated function getName() returns string {
@@ -57,5 +59,13 @@ public class FieldNode {
 
     public isolated function getSelections() returns Selection[] {
         return self.selections;
+    }
+
+    public isolated function addDirective(DirectiveNode directive) {
+        self.directives.push(directive);
+    }
+
+    public isolated function getDirectives() returns DirectiveNode[] {
+        return self.directives;
     }
 }

@@ -23,6 +23,7 @@ public class FragmentNode {
     private string onType;
     private boolean inlineFragment;
     private Selection[] selections;
+    private DirectiveNode[] directives;
 
     public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
                                   string onType = "") {
@@ -32,6 +33,7 @@ public class FragmentNode {
         self.onType = onType;
         self.inlineFragment = inlineFragment;
         self.selections = [];
+        self.directives = [];
     }
 
     public isolated function getName() returns string {
@@ -68,5 +70,13 @@ public class FragmentNode {
 
     public isolated function setOnType(string onType) {
         self.onType = onType;
+    }
+
+    public isolated function addDirective(DirectiveNode directive) {
+        self.directives.push(directive);
+    }
+
+    public isolated function getDirectives() returns DirectiveNode[] {
+        return self.directives;
     }
 }

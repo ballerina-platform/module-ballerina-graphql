@@ -59,21 +59,6 @@
                     "name": "__DirectiveLocation",
                     "enumValues": [
                         {
-                            "name": "INPUT_FIELD_DEFINITION"
-                        },
-                        {
-                            "name": "ENUM_VALUE"
-                        },
-                        {
-                            "name": "ARGUMENT_DEFINITION"
-                        },
-                        {
-                            "name": "FIELD_DEFINITION"
-                        },
-                        {
-                            "name": "SCHEMA"
-                        },
-                        {
                             "name": "INLINE_FRAGMENT"
                         },
                         {
