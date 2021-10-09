@@ -65,7 +65,7 @@ jobs:
                 run: |
                     git config user.name ${{ secrets.BALLERINA_BOT_USERNAME }}
                     git config user.email ${{ secrets.BALLERINA_BOT_EMAIL }}
-                    ./gradlew release -Prelease.useAutomaticVersion=true
+                    ./gradlew clean release -Prelease.useAutomaticVersion=true
                     ./gradlew -Pversion=${VERSION} publish -x test -PpublishToCentral=true
 
             -   name: GitHub Release and Release Sync PR
