@@ -22,7 +22,8 @@
                 "registeredYear": 2010
             },
             {
-                "name": "Ford"
+                "name": "Ford",
+                "registeredYear": null
             }
         ]
     }

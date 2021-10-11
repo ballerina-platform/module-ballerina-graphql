@@ -194,7 +194,10 @@ isolated function testContextWithHttpHeaderValuesWithInvalidScope() returns erro
                     "profile"
                 ]
             }
-        ]
+        ],
+        data: {
+            profile: null
+        }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
