@@ -5,4 +5,4 @@ version = "1.0.0"
 distribution = "slbeta3"
 
 [[platform.java11.dependency]]
-path = "../native/build/libs/graphql-native-1.0.0-SNAPSHOT.jar"
+path = "../native/build/libs/graphql-native-1.0.0.jar"
