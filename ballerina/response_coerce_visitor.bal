@@ -49,9 +49,17 @@ class ResponseCoerceVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        Data coerced = {};
-        OutputData? outputData = getOutputDataRecord(self.outputObject, coerced);
-        if outputData is OutputData {
+        if self.outputObject.hasKey("data") {
+            if self.outputObject?.data == () {
+                self.coercedOutputObject.data = ();
+                return;
+            }
+
+            Data coerced = {};
+            OutputData outputData = {
+                original: self.outputObject?.data,
+                coerced: coerced
+            };
             foreach parser:Selection selection in operationNode.getSelections() {
                 self.visitSelection(selection, outputData);
             }
@@ -69,7 +77,7 @@ class ResponseCoerceVisitor {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         OutputData outputData = <OutputData>data;
-        Data original = outputData.original;
+        Data? original = outputData.original;
         Data coerced = outputData.coerced;
 
         anydata|anydata[] subOriginal = original[fieldNode.getAlias()];
@@ -86,7 +94,7 @@ class ResponseCoerceVisitor {
         } else if subOriginal is Data {
             coerced[fieldNode.getAlias()] = self.orderData(subOriginal, fieldNode);
         } else {
-            if original.hasKey(fieldNode.getAlias()) {
+            if original != () && original.hasKey(fieldNode.getAlias()) {
                 coerced[fieldNode.getAlias()] = subOriginal;
             }
         }
@@ -122,14 +130,12 @@ isolated function sortErrorDetail(ErrorDetail errorDetail) returns int {
 }
 
 isolated function getOutputDataRecord(OutputObject outputObject, Data coerced) returns OutputData? {
-    Data? original = outputObject?.data;
-    if original == () {
-        return;
+    if outputObject.hasKey("data") {
+        return { original: <Data>outputObject?.data, coerced: coerced };
     }
-    return { original: <Data>original, coerced: coerced };
 }
 
 type OutputData record {
-    Data original;
+    Data? original;
     Data coerced;
 };
