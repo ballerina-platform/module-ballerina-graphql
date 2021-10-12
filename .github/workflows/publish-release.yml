@@ -27,7 +27,7 @@ jobs:
                 run: |
                     git config --global user.name ${{ secrets.BALLERINA_BOT_USERNAME }}
                     git config --global user.email ${{ secrets.BALLERINA_BOT_EMAIL }}
-                    ./gradlew build -x check -x test
+                    ./gradlew build -x check -x test -x :graphql-examples:build
 
             -   name: Run Trivy vulnerability scanner
                 uses: aquasecurity/trivy-action@master
