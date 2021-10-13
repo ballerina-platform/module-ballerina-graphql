@@ -772,7 +772,7 @@ service /context on serviceTypeListener {
     }
 }
 
-public distinct service class Animal {
+public isolated distinct service class Animal {
     isolated resource function get call(Context context, string sound, int count) returns string {
         var scope = context.get("scope");
         if scope is string && scope == "admin" {

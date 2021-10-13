@@ -195,9 +195,7 @@ isolated function testContextWithHttpHeaderValuesWithInvalidScope() returns erro
                 ]
             }
         ],
-        data: {
-            profile: null
-        }
+        data: null
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -231,7 +229,7 @@ isolated function testContextWithHttpHeaderValuesInRemoteFunction() returns erro
 }
 
 @test:Config {
-    groups: ["context"]
+    groups: ["context", "test"]
 }
 isolated function testContextWithHttpHeaderValuesInRemoteFunctionWithInvalidScope() returns error? {
     string url = "http://localhost:9092/context";

@@ -79,9 +79,7 @@ isolated function testEnumWithUnion() returns error? {
                 path: ["day"]
             }
         ],
-        data: {
-            day: null
-        }
+        data: null
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

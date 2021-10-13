@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/lang.array;
+
 import graphql.parser;
 
 class ResponseFormatter {
@@ -75,11 +76,18 @@ class ResponseFormatter {
     }
 
     isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType) {
+        __Type fieldType = parentType;
+        if parentType.kind == UNION {
+            string onType = fragmentNode.getOnType();
+            fieldType = <__Type>getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, onType);
+        }
         foreach parser:Selection selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 self.coerceFragmentValues(data, result, selection, parentType);
             } else {
-                result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType);
+                if data.hasKey(selection.getAlias()) {
+                    result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType);
+                }
             }
         }
     }
@@ -131,12 +139,11 @@ class ResponseFormatter {
 
     isolated function getFieldType(string fieldName, __Type parentType) returns __Type {
         __Type objectType = unwrapNonNullype(parentType);
-        __Field[] fields = <__Field[]>objectType?.fields;
-        __Field selectionField = self.getField(fields, fieldName);
+        __Field selectionField = self.getField(objectType, fieldName);
         return selectionField.'type;
     }
 
-    isolated function getField(__Field[] fields, string fieldName) returns __Field {
+    isolated function getField(__Type parentType, string fieldName) returns __Field {
         if fieldName == SCHEMA_FIELD {
             __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
             return createField(SCHEMA_FIELD, fieldType);
@@ -151,6 +158,7 @@ class ResponseFormatter {
             __Type wrappingType = { kind: NON_NULL, ofType: ofType };
             return createField(TYPE_NAME_FIELD, wrappingType);
         } else {
+            __Field[] fields = <__Field[]>parentType?.fields;
             return <__Field>getFieldFromFieldArray(fields, fieldName);
         }
     }
