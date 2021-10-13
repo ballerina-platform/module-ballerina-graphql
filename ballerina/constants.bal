@@ -32,6 +32,8 @@ const MUTATION_TYPE_NAME = "Mutation";
 const SUBSCRIPTION_TYPE_NAME = "Subscription";
 
 const NAME_ARGUMENT = "name";
+const DATA_FIELD = "data";
+const ERRORS_FIELD = "errors";
 
 // Scalar type names used in GraphQL
 const INT = "Int";
