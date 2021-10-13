@@ -158,27 +158,18 @@ public class FieldFinder {
     private SchemaType getSchemaTypeFromType(Type type) {
         int tag = type.getTag();
         if (tag == TypeTags.UNION_TAG) {
-            UnionType unionType = (UnionType) type;
-            if (isEnum(unionType)) {
-                return this.typeMap.get(getTypeNameFromType(unionType));
-            }
-            List<Type> memberTypes = getMemberTypes(unionType);
-            if (memberTypes.size() == 1) {
-                return getSchemaTypeFromType(memberTypes.get(0));
-            } else {
-                SchemaType schemaType = this.getType(getUnionTypeName(unionType));
-                for (Type memberType : memberTypes) {
-                    SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
-                    schemaType.addPossibleType(possibleType);
-                }
-                return schemaType;
-            }
+            return getSchemaTypeFromUnionType((UnionType) type);
         } else if (tag == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
             SchemaType schemaType = new SchemaType(null, TypeKind.LIST);
             Type elementType = arrayType.getElementType();
             SchemaType elementSchemaType = getSchemaTypeFromType(elementType);
-            schemaType.setOfType(elementSchemaType);
+            if (elementType.isNilable()) {
+                schemaType.setOfType(elementSchemaType);
+            } else {
+                SchemaType nonNullType = getNonNullType(elementSchemaType);
+                schemaType.setOfType(nonNullType);
+            }
             return schemaType;
         } else if (tag == TypeTags.TABLE_TAG) {
             TableType tableType = (TableType) type;
@@ -187,6 +178,23 @@ public class FieldFinder {
             return schemaType;
         } else {
             return this.typeMap.get(getTypeNameFromType(type));
+        }
+    }
+
+    private SchemaType getSchemaTypeFromUnionType(UnionType unionType) {
+        if (isEnum(unionType)) {
+            return this.typeMap.get(getTypeNameFromType(unionType));
+        }
+        List<Type> memberTypes = getMemberTypes(unionType);
+        if (memberTypes.size() == 1) {
+            return getSchemaTypeFromType(memberTypes.get(0));
+        } else {
+            SchemaType schemaType = this.getType(getUnionTypeName(unionType));
+            for (Type memberType : memberTypes) {
+                SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
+                schemaType.addPossibleType(possibleType);
+            }
+            return schemaType;
         }
     }
 

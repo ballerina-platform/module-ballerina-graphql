@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/test;
 
 @test:Config {
@@ -68,12 +69,13 @@ isolated function testReturningUnionOfServiceObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "service", "union", "fragments"]
+    groups: ["introspection", "service", "union", "fragments", "test"]
 }
 isolated function testGraphQLPlaygroundIntrospectionQuery() returns error? {
     string document = check getGraphQLDocumentFromFile("graphql_playground_introspection_query.txt");
     json expectedPayload = check getJsonContentFromFile("graphql_playground_introspection_query.json");
     string url = "http://localhost:9092/snowtooth";
     json actualPayload = check getJsonPayloadFromService(url, document);
+    io:println(actualPayload);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

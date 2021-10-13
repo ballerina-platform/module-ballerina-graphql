@@ -63,7 +63,10 @@ class ResponseFormatter {
                     self.coerceFragmentValues(data, result, selection, parentType);
                 } else {
                     __Type fieldType = self.getFieldType(selection.getName(), parentType);
-                    anydata|anydata[] fieldResult = self.coerceObjectField(data, selection, parentType);
+                    anydata|anydata[] fieldResult = ();
+                    if data.hasKey(selection.getAlias()) {
+                        fieldResult = self.coerceObjectField(data, selection, parentType);
+                    }
                     if fieldType.kind == NON_NULL && fieldResult == () {
                         return ();
                     } else {
@@ -127,7 +130,11 @@ class ResponseFormatter {
         if fieldValue == () {
             return fieldValue;
         } else if fieldValue is anydata[] {
-            __Type fieldType = self.getFieldType(fieldNode.getName(), parentType);
+            __Type elementType = unwrapNonNullype(parentType);
+            if elementType.kind == LIST {
+                elementType = unwrapNonNullype(<__Type>elementType?.ofType);
+            }
+            __Type fieldType = self.getFieldType(fieldNode.getName(), elementType);
             return self.coerceArray(fieldValue, fieldNode, fieldType);
         } else if fieldValue is Data {
             __Type fieldType = self.getFieldType(fieldNode.getName(), parentType);
@@ -138,7 +145,7 @@ class ResponseFormatter {
     }
 
     isolated function getFieldType(string fieldName, __Type parentType) returns __Type {
-        __Type objectType = unwrapNonNullype(parentType);
+        __Type objectType = getOfType(parentType);
         __Field selectionField = self.getField(objectType, fieldName);
         return selectionField.'type;
     }

@@ -229,7 +229,7 @@ isolated function testContextWithHttpHeaderValuesInRemoteFunction() returns erro
 }
 
 @test:Config {
-    groups: ["context", "test"]
+    groups: ["context"]
 }
 isolated function testContextWithHttpHeaderValuesInRemoteFunctionWithInvalidScope() returns error? {
     string url = "http://localhost:9092/context";
@@ -251,12 +251,40 @@ isolated function testContextWithHttpHeaderValuesInRemoteFunctionWithInvalidScop
                 path: [ "update", 1 ]
             }
         ],
+        data: null
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testNullableArrayElementValuesWithError() returns error? {
+    string url = "http://localhost:9092/context";
+    string document = "mutation { updateNullable { name } }";
+    http:Request request = new;
+    request.setHeader("scope", "user");
+    request.setPayload({ query: document });
+    json actualPayload = check getJsonPayloadFromRequest(url, request);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "You don't have permission to retrieve data",
+                locations: [
+                    {
+                        line: 1,
+                        column: 12
+                    }
+                ],
+                path: [ "updateNullable", 1 ]
+            }
+        ],
         data: {
-            update: [
+            updateNullable: [
                 {
                     name: "Sherlock Holmes"
                 },
-                {},
+                null,
                 {
                     name: "Tom Marvolo Riddle"
                 }
