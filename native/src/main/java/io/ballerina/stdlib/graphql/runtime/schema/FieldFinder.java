@@ -177,12 +177,8 @@ public class FieldFinder {
             ArrayType arrayType = (ArrayType) type;
             SchemaType schemaType = new SchemaType(null, TypeKind.LIST);
             Type elementType = arrayType.getElementType();
-            if (elementType.getTag() != TypeTags.UNION_TAG) {
-                SchemaType wrapperType = getNonNullType(getSchemaTypeFromType(elementType));
-                schemaType.setOfType(wrapperType);
-            } else {
-                schemaType.setOfType(getSchemaTypeFromType(elementType));
-            }
+            SchemaType elementSchemaType = getSchemaTypeFromType(elementType);
+            schemaType.setOfType(elementSchemaType);
             return schemaType;
         } else if (tag == TypeTags.TABLE_TAG) {
             TableType tableType = (TableType) type;
