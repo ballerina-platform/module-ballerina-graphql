@@ -79,11 +79,6 @@ class ResponseFormatter {
     }
 
     isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType) {
-        __Type fieldType = parentType;
-        if parentType.kind == UNION {
-            string onType = fragmentNode.getOnType();
-            fieldType = <__Type>getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, onType);
-        }
         foreach parser:Selection selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 self.coerceFragmentValues(data, result, selection, parentType);
@@ -111,11 +106,6 @@ class ResponseFormatter {
                     return ();
                 }
                 result.push(elementResult);
-            } else if element == () {
-                if elementType.kind == NON_NULL {
-                    return ();
-                }
-                result.push(element);
             } else {
                 result.push(element);
             }
@@ -130,11 +120,7 @@ class ResponseFormatter {
         if fieldValue == () {
             return fieldValue;
         } else if fieldValue is anydata[] {
-            __Type elementType = unwrapNonNullype(parentType);
-            if elementType.kind == LIST {
-                elementType = unwrapNonNullype(<__Type>elementType?.ofType);
-            }
-            __Type fieldType = self.getFieldType(fieldNode.getName(), elementType);
+            __Type fieldType = self.getFieldType(fieldNode.getName(), objectType);
             return self.coerceArray(fieldValue, fieldNode, fieldType);
         } else if fieldValue is Data {
             __Type fieldType = self.getFieldType(fieldNode.getName(), parentType);
