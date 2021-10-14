@@ -23,12 +23,14 @@ class ValidatorVisitor {
     private final parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
+    private __Directive[] defaultDirectives;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode) {
         self.schema = schema;
         self.documentNode = documentNode;
         self.errors = [];
         self.usedFragments = {};
+        self.defaultDirectives = schema.directives;
     }
 
     public isolated function validate() returns ErrorDetail[]? {
@@ -48,6 +50,7 @@ class ValidatorVisitor {
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         __Field? schemaFieldForOperation =
             createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
+        self.validateDirectiveArguments(operationNode);
         if schemaFieldForOperation is __Field {
             foreach parser:Selection selection in operationNode.getSelections() {
                 self.visitSelection(selection, schemaFieldForOperation);
@@ -86,7 +89,7 @@ class ValidatorVisitor {
         __Type fieldType = getOfType(requiredField.'type);
         __Field[] subFields = getFieldsArrayFromType(fieldType);
         self.checkArguments(parentType, fieldNode, requiredField);
-
+        self.validateDirectiveArguments(fieldNode);
         if !hasFields(fieldType) && fieldNode.getSelections().length() == 0 {
             return;
         } else if !hasFields(fieldType) && fieldNode.getSelections().length() > 0 {
@@ -234,6 +237,7 @@ class ValidatorVisitor {
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
+        self.validateDirectiveArguments(fragmentNode);
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
@@ -289,7 +293,6 @@ class ValidatorVisitor {
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
         __InputValue[] inputValues = schemaField.args;
         __InputValue[] notFoundInputValues = [];
-
         if inputValues.length() == 0 {
             if arguments.length() > 0 {
                 foreach parser:ArgumentNode argumentNode in arguments {
@@ -378,6 +381,34 @@ class ValidatorVisitor {
         string message = string`Value "${value.value.toString()}" does not exist in "${inputValue.name}" enum.`;
         ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
         self.errors.push(errorDetail);
+    }
+
+    isolated function validateDirectiveArguments(parser:ParentNode node) {
+        foreach parser:DirectiveNode directive in node.getDirectives() {
+            foreach __Directive defaultDirective in self.defaultDirectives {
+                if directive.getName() == defaultDirective.name {
+                    __InputValue[] notFoundInputValues = copyInputValueArray(defaultDirective.args);
+                    foreach parser:ArgumentNode argumentNode in directive.getArguments() {
+                        string argName = argumentNode.getName();
+                        __InputValue? inputValue = getInputValueFromArray(defaultDirective.args, argName);
+                        if inputValue is __InputValue {
+                            _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
+                            self.visitArgument(argumentNode, {input:inputValue, fieldName:directive.getName()});
+                        } else {
+                            string message = string`Unknown argument "${argName}" on directive` +
+                            string`"${directive.getName()}".`;
+                            self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+                        }
+                    }
+                    foreach __InputValue arg in notFoundInputValues {
+                        string message = string`Directive "${directive.getName()}" argument "${arg.name}" of type` +
+                        string`"${getTypeNameFromType(arg.'type)}" is required but not provided.`;
+                        self.errors.push(getErrorDetailRecord(message, directive.getLocation()));
+                    }
+                    break;
+                }
+            }
+        }
     }
 
 }

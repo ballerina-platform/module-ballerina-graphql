@@ -25,6 +25,7 @@ class VariableValidator {
     private string[] visitedVariableDefinitions;
     private ErrorDetail[] errors;
     map<parser:VariableDefinition> variableDefinitions;
+    private __Directive[] defaultDirectives;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode, map<json>? variableValues) {
         self.schema = schema;
@@ -33,6 +34,7 @@ class VariableValidator {
         self.errors = [];
         self.variables = variableValues == () ? {} : variableValues;
         self.variableDefinitions = {};
+        self.defaultDirectives = schema.directives;
     }
 
     public isolated function validate() returns ErrorDetail[]? {
@@ -56,6 +58,7 @@ class VariableValidator {
         foreach ErrorDetail errorDetail in operationNode.getErrors() {
             self.errors.push(errorDetail);
         }
+        self.validateDirectiveVariables(operationNode);
         if schemaFieldForOperation is __Field {
             foreach parser:Selection selection in operationNode.getSelections() {
                 self.visitSelection(selection, schemaFieldForOperation);
@@ -85,6 +88,7 @@ class VariableValidator {
         __Type parentType = getOfType(parentField.'type);
         __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
         __InputValue[] inputValues = requiredFieldValue is __Field ? requiredFieldValue.args : [];
+        self.validateDirectiveVariables(fieldNode);
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
             self.visitArgument(argument, inputValues);
         }
@@ -97,6 +101,7 @@ class VariableValidator {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        self.validateDirectiveVariables(fragmentNode);
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
@@ -298,6 +303,29 @@ class VariableValidator {
             return [(), ofTypeName];
         } else {
             return [getTypeFromTypeArray(self.schema.types, typeName), typeName];
+        }
+    }
+
+    isolated function validateDirectiveVariables(parser:ParentNode node) {
+        foreach parser:DirectiveNode directive in node.getDirectives() {
+            boolean isDefinedDirective = false;
+            foreach __Directive defaultDirective in self.defaultDirectives {
+                if directive.getName() == defaultDirective.name {
+                    isDefinedDirective = true;
+                    foreach parser:ArgumentNode argument in directive.getArguments() {
+                        self.visitArgument(argument, defaultDirective.args);
+                    }
+                    break;
+                }
+            }
+            if !isDefinedDirective {
+                //visit undefined directive's variables
+                foreach parser:ArgumentNode argument in directive.getArguments() {
+                    if argument.isVariableDefinition() {
+                        self.visitedVariableDefinitions.push(<string>argument.getVariableName());
+                    }
+                }
+            }
         }
     }
 
