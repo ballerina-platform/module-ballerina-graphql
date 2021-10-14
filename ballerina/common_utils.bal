@@ -67,10 +67,12 @@ isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue
     return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
 }
 
-isolated function getOutputObject(map<anydata> data, ErrorDetail[] errors) returns OutputObject {
+isolated function getOutputObject(Data data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
     if data.length() > 0 {
-        outputObject.data = <Data> checkpanic data.cloneWithType(Data);
+        outputObject.data = data;
+    } else {
+        outputObject.data = ();
     }
     if errors.length() > 0 {
         outputObject.errors = errors;

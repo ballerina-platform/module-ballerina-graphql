@@ -63,6 +63,7 @@ public class ResponseGenerator {
         if (TYPENAME_FIELD.equals(node.getStringValue(NAME_FIELD).getValue())) {
             data.put(node.getStringValue(ALIAS_FIELD), StringUtils.fromString(executionContext.getTypeName()));
         } else if (result instanceof BError) {
+            data.put(node.getStringValue(ALIAS_FIELD), null);
             BError bError = (BError) result;
             appendErrorToVisitor(bError, executionContext.getVisitor(), node, pathSegments);
         } else if (result instanceof BValue) {

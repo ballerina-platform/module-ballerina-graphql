@@ -352,6 +352,7 @@ resource function get greeting(graphql:Context context) returns string|error {
     }
     return "Hello, World!";
 }
+```
 
 ### Types
 The Ballerina GraphQL resources can return the following types:

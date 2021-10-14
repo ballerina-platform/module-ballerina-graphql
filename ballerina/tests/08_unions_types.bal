@@ -42,7 +42,10 @@ isolated function testResourceReturningUnionTypes() returns error? {
                 ],
                 path: ["profile"]
             }
-        ]
+        ],
+        data: {
+            profile: null
+        }
     };
     assertJsonValuesWithOrder(result, expectedPayload);
 }

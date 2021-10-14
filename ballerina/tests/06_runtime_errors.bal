@@ -42,7 +42,8 @@ isolated function testRuntimeError() returns error? {
                 ],
                 path: ["profile"]
             }
-        ]
+        ],
+        data: null
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -73,7 +74,8 @@ isolated function testRuntimeErrorWithGetRequest() returns error? {
                 ],
                 path: ["profile"]
             }
-        ]
+        ],
+        data: null
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
