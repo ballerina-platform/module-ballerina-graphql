@@ -41,4 +41,4 @@ jobs:
                 run: ./gradlew publish --no-daemon --scan
 
             -   name: Generate CodeCov Report
-                uses: codecov/codecov-action@v1
+                uses: codecov/codecov-action@v2
