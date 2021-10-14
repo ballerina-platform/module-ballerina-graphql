@@ -159,7 +159,7 @@ class ResponseFormatter {
 
 isolated function sortErrorDetail(ErrorDetail errorDetail) returns int {
     Location[]? locations = errorDetail?.locations;
-    if (locations == ()) {
+    if locations == () {
         return 0;
     } else {
         return locations[locations.length() - 1].line;
