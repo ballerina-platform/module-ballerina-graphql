@@ -8,8 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#2018] Fix Ignoring Parser Invalidation of Variable Usages in Variable Definitions](https://github.com/ballerina-platform/ballerina-standard-library/issues/2018)
+- [[#1988] Fix Fields Missing from the Response when an Error Occurred](https://github.com/ballerina-platform/ballerina-standard-library/issues/1988)
+- [[#2041] Fix Invalid Type Inferring for List Element Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2041)
+- [[#2042] Fix NON_NULL Fields Returning null Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/2042)
 
-## [1.0.0]
+## [1.0.0] - 2021-10-09
 
 ### Added
 - [[#1634] Add Alias Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1634)
@@ -87,7 +90,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1305] Allow Enum as an Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/1305)
 - [[#1250] Fix Hanging the Service when Returning Array](https://github.com/ballerina-platform/ballerina-standard-library/issues/1250)
 - [[#1274] Fix Recursive Type Reference Causing Stack Overflow](https://github.com/ballerina-platform/ballerina-standard-library/issues/1274)
-- [[#1252] Fix Incorrect Behaviour in Validation EnumValues Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/1251)
+- [[#1252] Fix Incorrect Behavior in Validation EnumValues Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/1251)
 - [[#1269] Fix Validating Incorrect Arguments as Valid](https://github.com/ballerina-platform/ballerina-standard-library/issues/1269)
 - [[#1268] Fix Incorrect Validation for Fields in Service Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1268)
 - [[#1266] Fix Incorrect Validation for Input Parameters with Default Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/1266)
