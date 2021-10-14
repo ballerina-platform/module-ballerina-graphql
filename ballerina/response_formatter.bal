@@ -168,9 +168,9 @@ isolated function sortErrorDetail(ErrorDetail errorDetail) returns int {
 
 isolated function getTypeForOperationNode(__Schema schema, parser:OperationNode operationNode) returns __Type {
     parser:RootOperationType operationType = operationNode.getKind();
-    if operationType == parser:QUERY {
+    if operationType == parser:OPERATION_QUERY {
         return schema.queryType;
-    } else if operationType == parser:MUTATION {
+    } else if operationType == parser:OPERATION_MUTATION {
         return <__Type>schema?.mutationType;
     } else {
         return <__Type>schema?.subscriptionType;
