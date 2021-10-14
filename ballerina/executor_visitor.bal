@@ -20,7 +20,7 @@ class ExecutorVisitor {
     *parser:Visitor;
 
     private final __Schema schema;
-    private final Engine engine;
+    private final Engine engine; // This field needed to be accessed from the native code
     private Data data;
     private ErrorDetail[] errors;
     private Context context;

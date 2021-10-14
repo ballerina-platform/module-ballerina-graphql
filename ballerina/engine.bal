@@ -45,8 +45,8 @@ isolated class Engine {
     isolated function execute(parser:OperationNode operationNode, Context context) returns OutputObject {
         ExecutorVisitor executor = new(self, self.schema, context);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
-        ResponseCoerceVisitor responseCoerceVisitor = new(self.schema, outputObject);
-        return responseCoerceVisitor.getCoercedOutputObject(operationNode);
+        ResponseFormatter responseCoerceVisitor = new(self.schema);
+        return responseCoerceVisitor.getCoercedOutputObject(outputObject, operationNode);
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {

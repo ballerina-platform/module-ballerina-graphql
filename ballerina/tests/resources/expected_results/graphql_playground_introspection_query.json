@@ -271,9 +271,13 @@
                                     "kind": "LIST",
                                     "name": null,
                                     "ofType": {
-                                        "kind": "UNION",
-                                        "name": "SearchResult",
-                                        "ofType": null
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "UNION",
+                                            "name": "SearchResult",
+                                            "ofType": null
+                                        }
                                     }
                                 }
                             },
@@ -1336,9 +1340,13 @@
                                 "kind": "LIST",
                                 "name": null,
                                 "ofType": {
-                                    "kind": "ENUM",
-                                    "name": "__DirectiveLocation",
-                                    "ofType": null
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "ENUM",
+                                        "name": "__DirectiveLocation",
+                                        "ofType": null
+                                    }
                                 }
                             },
                             "isDeprecated": false,

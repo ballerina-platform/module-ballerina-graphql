@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#1988] Fix Fields Missing from the Response when an Error Occurred](https://github.com/ballerina-platform/ballerina-standard-library/issues/1988)
+- [[#2041] Fix Invalid Type Inferring for List Element Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2041)
+- [[#2042] Fix NON_NULL Fields Returning null Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/2042)
+
 ## [1.0.0] - 2021-10-09
 
 ### Added

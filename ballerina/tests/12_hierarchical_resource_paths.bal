@@ -89,7 +89,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
         data: {
             profile: {
                 name: {
-                    address: {}
+                    address: null
                 }
             }
         }
