@@ -185,3 +185,22 @@ isolated function testDirectivesSkipAllSelections() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["directives", "input"]
+}
+isolated function testMultipleDirectiveUsageInFields() returns error? {
+    string document = check getGraphQLDocumentFromFile("multiple_directive_usage_in_fields.txt");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            detective: {
+                address: {
+                    street: "Baker Street"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
