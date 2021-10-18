@@ -28,7 +28,7 @@ type Boolean TRUE|FALSE;
 
 type SeparatorType T_EOF|T_WHITE_SPACE|T_COMMA|T_NEW_LINE;
 type SpecialCharacterType T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_COMMENT|T_DOLLAR|
-                          T_EQUAL|T_EXCLAMATION|T_OPEN_BRACKET|T_CLOSE_BRACKET;
+                          T_EQUAL|T_EXCLAMATION|T_OPEN_BRACKET|T_CLOSE_BRACKET|T_AT;
 
 type Separator WhiteSpace|LineTerminator|COMMA;
 type SpecialCharacter EXCLAMATION|DOLLAR|OPEN_PARENTHESES|CLOSE_PARENTHESES|ELLIPSIS|COLON|EQUAL|AT|OPEN_BRACKET|
@@ -37,7 +37,7 @@ type SpecialCharacter EXCLAMATION|DOLLAR|OPEN_PARENTHESES|CLOSE_PARENTHESES|ELLI
 type TokenType SeparatorType|SpecialCharacterType|T_IDENTIFIER|T_STRING|T_INT|T_FLOAT|T_BOOLEAN|T_COMMENT|T_ELLIPSIS;
 
 type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PARENTHESES|T_COLON|T_IDENTIFIER|T_STRING|
-                 T_INT|T_FLOAT|T_BOOLEAN|T_ELLIPSIS|T_EQUAL|T_DOLLAR|T_EXCLAMATION|T_OPEN_BRACKET|T_CLOSE_BRACKET;
+                 T_INT|T_FLOAT|T_BOOLEAN|T_ELLIPSIS|T_EQUAL|T_DOLLAR|T_EXCLAMATION|T_OPEN_BRACKET|T_CLOSE_BRACKET|T_AT;
 
 type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
 
@@ -47,7 +47,18 @@ public type Selection FieldNode|FragmentNode;
 
 # Represents the types of operations valid in Ballerina GraphQL.
 public enum RootOperationType {
-    QUERY = "query",
-    MUTATION = "mutation",
-    SUBSCRIPTION = "subscription"
+    OPERATION_QUERY = "query",
+    OPERATION_MUTATION = "mutation",
+    OPERATION_SUBSCRIPTION = "subscription"
+}
+
+public enum DirectiveLocation {
+    //executable directive locations
+    QUERY,
+    MUTATION,
+    SUBSCRIPTION,
+    FIELD,
+    FRAGMENT_DEFINITION,
+    FRAGMENT_SPREAD,
+    INLINE_FRAGMENT
 }

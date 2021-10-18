@@ -67,9 +67,9 @@ class ExecutorVisitor {
             __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
             executeIntrospection(self, fieldNode, requiredType);
         } else {
-            if operationType == parser:QUERY {
+            if operationType == parser:OPERATION_QUERY {
                 executeQuery(self, fieldNode);
-            } else if operationType == parser:MUTATION {
+            } else if operationType == parser:OPERATION_MUTATION {
                 executeMutation(self, fieldNode);
             }
         }

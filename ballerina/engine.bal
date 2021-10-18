@@ -45,8 +45,8 @@ isolated class Engine {
     isolated function execute(parser:OperationNode operationNode, Context context) returns OutputObject {
         ExecutorVisitor executor = new(self, self.schema, context);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
-        ResponseFormatter responseCoerceVisitor = new(self.schema);
-        return responseCoerceVisitor.getCoercedOutputObject(outputObject, operationNode);
+        ResponseFormatter responseFormatter = new(self.schema);
+        return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
     }
 
     isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
@@ -90,6 +90,13 @@ isolated class Engine {
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
+
+        DirectiveVisitor directiveVisitor = new(self.schema, document);
+        errors = directiveVisitor.validate();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
+
         DuplicateFieldRemover duplicateFieldRemover = new(document);
         duplicateFieldRemover.remove();
     }

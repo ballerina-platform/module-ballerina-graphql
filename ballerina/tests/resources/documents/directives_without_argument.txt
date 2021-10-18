@@ -1,0 +1,14 @@
+query getData {
+    profile @skip {
+        ...on Profile {
+            name {
+                first @skip @include
+                ...lastName
+            }
+        }
+    }
+}
+
+fragment lastName on Name {
+    last @include
+}

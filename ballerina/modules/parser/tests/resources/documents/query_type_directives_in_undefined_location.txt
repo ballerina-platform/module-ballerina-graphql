@@ -1,0 +1,14 @@
+query getData($skipProfile:Boolean = true) @skip(if: true) @include(if: false) {
+    Query {
+        profile(id:4)  {
+            ...p1
+        }
+    }
+}
+
+fragment p1 on Person @skip(if: $skipProfile) @include(if: false) {
+    name
+    address {
+        city
+    }
+}
