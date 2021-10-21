@@ -1,0 +1,10 @@
+query getPerson { 
+    detective @skip(if: false) @include(if: true) { 
+        name @skip(if: true) @include(if: true)
+        age @include(if:false) @skip(if: true)
+        address {
+            city @include(if: false) @skip(if:false) 
+            street
+        } 
+    } 
+}

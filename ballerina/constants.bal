@@ -40,3 +40,7 @@ const INT = "Int";
 const STRING = "String";
 const FLOAT = "Float";
 const BOOLEAN = "Boolean";
+
+// Default Directive names used in GraphQL
+const SKIP = "skip";
+const INCLUDE = "include";

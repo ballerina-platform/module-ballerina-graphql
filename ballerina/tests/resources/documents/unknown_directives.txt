@@ -1,0 +1,10 @@
+query getData($isHide:Boolean = false) {
+    profile @author(if: false) {
+        ...on Profile @admin(if: true, id: 4) {
+            name {
+                first @hide(if: $isHide)
+                last
+            }
+        }
+    }
+}

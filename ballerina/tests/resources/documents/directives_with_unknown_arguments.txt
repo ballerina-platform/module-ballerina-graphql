@@ -1,0 +1,9 @@
+query getPerson @include(id:5) { 
+    detective @skip(if:true, name:"Sherlock") { 
+        name @skip(day:SUNDAY) @include(value:4.5, if: false)
+        address {
+            city
+            street @include(id:4)
+        } 
+    } 
+}

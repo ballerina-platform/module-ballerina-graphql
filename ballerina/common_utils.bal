@@ -71,6 +71,8 @@ isolated function getOutputObject(Data data, ErrorDetail[] errors) returns Outpu
     OutputObject outputObject = {};
     if data.length() > 0 {
         outputObject.data = data;
+    } else if errors.length() == 0 {
+        outputObject.data = {};
     } else {
         outputObject.data = ();
     }
