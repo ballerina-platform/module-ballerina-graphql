@@ -1,0 +1,16 @@
+query getData($optional:Boolean!, $require:Boolean = true, $profileId:Int = 1) {
+    ...on Query {
+        profile(id:$profileId) {
+            ...on Person @include(if: true) {
+                name
+                address @skip(if: $require){
+                    city
+                    street
+                }
+                address @skip(if: $optional){
+                    number
+                }
+            }
+        }
+    }
+}

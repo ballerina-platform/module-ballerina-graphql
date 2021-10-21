@@ -93,3 +93,9 @@ isolated function getOperationName(json payload) returns string? {
         return operationName;
     }
 }
+
+isolated function addDefaultDirectives(__Schema schema) {
+    foreach __Directive directive in defaultDirectives {
+        schema.directives.push(directive);
+    }
+}

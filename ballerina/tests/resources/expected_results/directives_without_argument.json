@@ -1,0 +1,40 @@
+{
+    "errors": [
+        {
+            "message": "Directive \"skip\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 13
+                }
+            ]
+        },
+        {
+            "message": "Directive \"skip\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+            "locations": [
+                {
+                    "line": 5,
+                    "column": 23
+                }
+            ]
+        },
+        {
+            "message": "Directive \"include\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+            "locations": [
+                {
+                    "line": 5,
+                    "column": 29
+                }
+            ]
+        },
+        {
+            "message": "Directive \"include\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+            "locations": [
+                {
+                    "line": 13,
+                    "column": 10
+                }
+            ]
+        }
+    ]
+}

@@ -90,6 +90,13 @@ isolated class Engine {
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
+
+        DirectiveVisitor directiveVisitor = new(self.schema, document);
+        errors = directiveVisitor.validate();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
+
         DuplicateFieldRemover duplicateFieldRemover = new(document);
         duplicateFieldRemover.remove();
     }
