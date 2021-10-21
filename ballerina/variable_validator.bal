@@ -148,15 +148,14 @@ class VariableValidator {
             anydata value = self.variables.get(variableName);
             self.setArgumentValue(value, argumentNode, variableDefinition);
         } else if defaultValue is parser:ArgumentNode {
-            if defaultValue.isInputObject() {
-                argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+            if defaultValue.getKind() == parser:T_INPUT_OBJECT {
                 if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
+                    argumentNode.setKind(parser:T_INPUT_OBJECT);
                     foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
                         if fieldValue is parser:ArgumentNode {
                             argumentNode.setValue(fieldValue.getName(), fieldValue);
                         }
                     }
-                    argumentNode.setInputObject(true);
                     argumentNode.setVariableDefinition(false);
                 } else {
                     string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
@@ -211,7 +210,9 @@ class VariableValidator {
 
     public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,
                                               parser:VariableDefinition varDef) {
-        if argument.getKind() == parser:T_IDENTIFIER {
+        if argument.getKind() == parser:T_INPUT_OBJECT {
+            argument.setVariableValue(value);
+        } else if argument.getKind() == parser:T_IDENTIFIER {
             argument.setVariableValue(value);
         } else if value is Scalar && getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);

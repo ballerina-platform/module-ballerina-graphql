@@ -74,28 +74,29 @@ enum LineTerminator {
 const TRUE = "true";
 const FALSE = "false";
 
-// Token Types
+// Parser Types
 const T_EOF = 0;
 public const T_IDENTIFIER = 1;
 public const T_STRING = 2;
 public const T_INT = 3;
 public const T_FLOAT = 4;
 public const T_BOOLEAN = 5;
-const T_COMMENT = 6;
-const T_OPEN_BRACE = 7;
-const T_CLOSE_BRACE = 8;
-const T_OPEN_PARENTHESES = 9;
-const T_CLOSE_PARENTHESES = 10;
-const T_COLON = 11;
-const T_COMMA = 12;
-const T_NEW_LINE = 13;
-const T_WHITE_SPACE = 14;
-const T_ELLIPSIS = 15;
-const T_DOLLAR = 16;
-const T_EQUAL = 17;
-const T_EXCLAMATION = 18;
-const T_OPEN_BRACKET = 19;
-const T_CLOSE_BRACKET = 20;
-const T_AT = 21;
+public const T_COMMENT = 6;
+public const T_OPEN_BRACE = 7;
+public const T_CLOSE_BRACE = 8;
+public const T_OPEN_PARENTHESES = 9;
+public const T_CLOSE_PARENTHESES = 10;
+public const T_COLON = 11;
+public const T_COMMA = 12;
+public const T_NEW_LINE = 13;
+public const T_WHITE_SPACE = 14;
+public const T_ELLIPSIS = 15;
+public const T_DOLLAR = 16;
+public const T_EQUAL = 17;
+public const T_EXCLAMATION = 18;
+public const T_OPEN_BRACKET = 19;
+public const T_CLOSE_BRACKET = 20;
+public const T_AT = 21;
+public const T_INPUT_OBJECT = 22;
 
 public const ANONYMOUS_OPERATION = "<anonymous>";
