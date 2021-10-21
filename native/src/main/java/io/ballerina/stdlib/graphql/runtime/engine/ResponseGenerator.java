@@ -47,9 +47,9 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPENAME_FI
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpdateResourcePathsList;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getNameFromRecordTypeMap;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
 
 /**
  * Used to generate the response for a GraphQL request in Ballerina.
@@ -122,7 +122,7 @@ public class ResponseGenerator {
             BObject subNode = (BObject) selections.get(i);
             BString typeName = StringUtils.fromString(subNode.getType().getName());
             if (FRAGMENT_NODE.equals(typeName)) {
-                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getNameFromRecordTypeMap(record))) {
+                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getTypeNameFromType(record.getType()))) {
                     processFragmentNodes(executionContext, subNode, record, subData, pathSegments);
                 }
             } else {

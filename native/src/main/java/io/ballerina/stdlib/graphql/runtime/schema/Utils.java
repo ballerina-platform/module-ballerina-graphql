@@ -24,7 +24,9 @@ import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MapType;
+import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -34,6 +36,7 @@ import io.ballerina.runtime.api.values.BString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
@@ -91,6 +94,8 @@ public class Utils {
             return getTypeNameFromType(((TableType) type).getConstrainedType());
         } else if (tag == TypeTags.UNION_TAG) {
             return getUnionTypeName((UnionType) type);
+        } else if (tag == TypeTags.RECORD_TYPE_TAG) {
+            return getRecordTypeName((RecordType) type);
         }
         return type.getName();
     }
@@ -120,5 +125,17 @@ public class Utils {
         return unionType.getName().isBlank() ?
                 memberTypes.stream().map(Type::getName).collect(Collectors.joining(UNION_TYPE_NAME_DELIMITER)) :
                 unionType.getName();
+    }
+
+    private static String getRecordTypeName(RecordType recordType) {
+        Optional<IntersectionType> intersectionType = recordType.getIntersectionType();
+        if (intersectionType.isPresent()) {
+            for (Type constituentType : intersectionType.get().getConstituentTypes()) {
+                if (constituentType.getTag() != TypeTags.READONLY_TAG) {
+                    return  constituentType.getName();
+                }
+            }
+        }
+        return recordType.getName();
     }
 }
