@@ -154,22 +154,6 @@ public class EngineUtils {
         return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
     }
 
-    // Temporary fix until https://github.com/ballerina-platform/ballerina-lang/issues/30728 is fixed
-    static String getNameFromRecordTypeMap(BMap<BString, Object> record) {
-        String name = record.getType().getName();
-        if (name.contains("&")) {
-            String[] intersectionMemberTypeNames = name.split("&");
-            for (String intersectionTypeName : intersectionMemberTypeNames) {
-                intersectionTypeName = intersectionTypeName.strip();
-                if (!intersectionTypeName.equals("readonly")) {
-                    String[] typeNameSegments = intersectionTypeName.split(":");
-                    return typeNameSegments[typeNameSegments.length - 1].strip();
-                }
-            }
-        }
-        return name;
-    }
-
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
         String[] resourcePath = resourceMethod.getResourcePath();
         if (resourcePath.length != paths.size()) {
