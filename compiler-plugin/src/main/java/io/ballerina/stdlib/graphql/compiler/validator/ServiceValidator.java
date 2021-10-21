@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
+package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
@@ -28,11 +28,11 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.validateModuleId;
 
 /**
@@ -62,8 +62,8 @@ public class ServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext>
             ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
             List<TypeSymbol> listeners = serviceDeclarationSymbol.listenerTypes();
             if (listeners.size() > 1 && hasGraphqlListener(listeners)) {
-                Utils.updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS,
-                                    serviceDeclarationNode.location());
+                ValidatorUtils.updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS,
+                                             serviceDeclarationNode.location());
             } else {
                 if (listeners.get(0).typeKind() == TypeDescKind.UNION) {
                     UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listeners.get(0);
