@@ -43,7 +43,7 @@ public class SchemaGeneratorTask implements AnalysisTask<SyntaxNodeAnalysisConte
     public void perform(SyntaxNodeAnalysisContext syntaxNodeAnalysisContext) {
         ServiceDeclarationSymbol serviceDeclarationSymbol = getGraphqlServiceDeclarationNode(syntaxNodeAnalysisContext);
         if (serviceDeclarationSymbol != null) {
-            FunctionAnalyzer functionAnalyzer = new FunctionAnalyzer(serviceDeclarationSymbol);
+            FunctionAnalyzer functionAnalyzer = new FunctionAnalyzer();
             functionAnalyzer.generate();
         }
     }

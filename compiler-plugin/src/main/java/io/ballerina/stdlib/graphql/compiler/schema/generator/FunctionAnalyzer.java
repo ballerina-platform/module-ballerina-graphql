@@ -18,20 +18,14 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
-
 /**
  * Used to analyze the functions inside a Ballerina GraphQL service to generate the schema.
  */
 public class FunctionAnalyzer {
-    ServiceDeclarationSymbol serviceDeclarationSymbol;
 
-    public FunctionAnalyzer(ServiceDeclarationSymbol serviceDeclarationSymbol) {
-        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
+    public FunctionAnalyzer() {
     }
 
     public void generate() {
-        Schema schema = new Schema();
     }
 }

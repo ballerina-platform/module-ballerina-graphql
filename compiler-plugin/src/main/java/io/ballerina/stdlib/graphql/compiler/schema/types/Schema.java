@@ -18,5 +18,8 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+/**
+ * Represents a GraphQL schema.
+ */
 public class Schema {
 }
