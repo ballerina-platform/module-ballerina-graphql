@@ -68,10 +68,8 @@ public class SchemaGeneratorTask implements AnalysisTask<SyntaxNodeAnalysisConte
             }
         } else {
             Optional<ModuleSymbol> moduleSymbol = listeners.get(0).getModule();
-            if (moduleSymbol.isPresent()) {
-                if (isGraphqlModule(moduleSymbol.get())) {
-                    return serviceDeclarationSymbol;
-                }
+            if (isGraphqlModule(moduleSymbol)) {
+                return serviceDeclarationSymbol;
             }
         }
         return null;
@@ -82,7 +80,7 @@ public class SchemaGeneratorTask implements AnalysisTask<SyntaxNodeAnalysisConte
         for (TypeSymbol typeSymbol : memberTypes) {
             Optional<ModuleSymbol> moduleSymbol = typeSymbol.getModule();
             if (moduleSymbol.isPresent()) {
-                return isGraphqlModule(moduleSymbol.get());
+                return isGraphqlModule(moduleSymbol);
             }
         }
         return false;

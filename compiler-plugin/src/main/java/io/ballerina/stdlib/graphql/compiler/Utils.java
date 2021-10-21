@@ -44,12 +44,6 @@ public class Utils {
     public static final String PACKAGE_PREFIX = "graphql";
     public static final String PACKAGE_ORG = "ballerina";
 
-    public static boolean validateModuleId(ModuleSymbol moduleSymbol) {
-        String moduleName = moduleSymbol.id().moduleName();
-        String orgName = moduleSymbol.id().orgName();
-        return moduleName.equals(PACKAGE_PREFIX) && orgName.equals(PACKAGE_ORG);
-    }
-
     public static MethodSymbol getMethodSymbol(SyntaxNodeAnalysisContext context,
                                                FunctionDefinitionNode functionDefinitionNode) {
         MethodSymbol methodSymbol = null;
@@ -74,18 +68,26 @@ public class Utils {
                     .map(typeReferenceTypeSymbol -> (TypeReferenceTypeSymbol) typeReferenceTypeSymbol)
                     .anyMatch(typeReferenceTypeSymbol ->
                                       typeReferenceTypeSymbol.getModule().isPresent()
-                                              && validateModuleId(typeReferenceTypeSymbol.getModule().get()
-                                      ));
+                                              && isGraphqlModule(typeReferenceTypeSymbol.getModule()));
         }
 
         if (listenerType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             Optional<ModuleSymbol> moduleOpt = ((TypeReferenceTypeSymbol) listenerType).typeDescriptor().getModule();
-            return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
+            return moduleOpt.isPresent() && isGraphqlModule(moduleOpt);
         }
 
         if (listenerType.typeKind() == TypeDescKind.OBJECT) {
             Optional<ModuleSymbol> moduleOpt = listenerType.getModule();
-            return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
+            return moduleOpt.isPresent() && isGraphqlModule(moduleOpt);
+        }
+        return false;
+    }
+
+    public static boolean isGraphqlModule(Optional<ModuleSymbol> moduleSymbolOptional) {
+        if (moduleSymbolOptional.isPresent()) {
+            String moduleName = moduleSymbolOptional.get().id().moduleName();
+            String orgName = moduleSymbolOptional.get().id().orgName();
+            return moduleName.equals(PACKAGE_PREFIX) && orgName.equals(PACKAGE_ORG);
         }
         return false;
     }

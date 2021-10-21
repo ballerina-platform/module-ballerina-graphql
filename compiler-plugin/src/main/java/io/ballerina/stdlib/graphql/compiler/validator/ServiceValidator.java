@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
@@ -33,7 +32,7 @@ import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 import java.util.List;
 import java.util.Optional;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.validateModuleId;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModule;
 
 /**
  * Validates a Ballerina GraphQL Service.
@@ -69,16 +68,10 @@ public class ServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext>
                     UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listeners.get(0);
                     List<TypeSymbol> members = unionTypeSymbol.memberTypeDescriptors();
                     for (TypeSymbol memberSymbol : members) {
-                        Optional<ModuleSymbol> module = memberSymbol.getModule();
-                        if (module.isPresent()) {
-                            isGraphQlService = validateModuleId(module.get());
-                        }
+                        isGraphQlService = isGraphqlModule(memberSymbol.getModule());
                     }
                 } else {
-                    Optional<ModuleSymbol> module = listeners.get(0).getModule();
-                    if (module.isPresent()) {
-                        isGraphQlService = validateModuleId(module.get());
-                    }
+                    isGraphQlService = isGraphqlModule(listeners.get(0).getModule());
                 }
             }
         }
@@ -91,12 +84,12 @@ public class ServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext>
                 UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listener;
                 List<TypeSymbol> members = unionTypeSymbol.memberTypeDescriptors();
                 for (TypeSymbol member : members) {
-                    if (validateModuleId(member.getModule().get())) {
+                    if (isGraphqlModule(member.getModule())) {
                         return true;
                     }
                 }
             } else {
-                if (validateModuleId(listener.getModule().get())) {
+                if (isGraphqlModule(listener.getModule())) {
                     return true;
                 }
             }
