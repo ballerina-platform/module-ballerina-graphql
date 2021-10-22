@@ -76,11 +76,11 @@ public class EngineUtils {
     public static final BString INTERFACES_FIELD = StringUtils.fromString("interfaces");
     public static final BString VARIABLE_VALUE_FIELD = StringUtils.fromString("variableValue");
     public static final BString VARIABLE_DEFINITION = StringUtils.fromString("variableDefinition");
-    public static final BString INPUT_OBJECT = StringUtils.fromString("inputObject");
 
     // Schema related values
     public static final String INCLUDE_DEPRECATED = "includeDeprecated";
     public static final String FALSE = "false";
+    public static final int T_INPUT_OBJECT = 22;
 
     // Schema related type names
     public static final String INTEGER = "Int";
@@ -112,8 +112,6 @@ public class EngineUtils {
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
-    static final BString IS_FRAGMENT_FIELD = StringUtils.fromString("isFragment");
-    static final BString NODE_FIELD = StringUtils.fromString("node");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
 
     // Node Types

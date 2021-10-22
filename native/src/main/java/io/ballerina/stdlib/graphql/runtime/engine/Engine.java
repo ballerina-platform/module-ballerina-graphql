@@ -53,6 +53,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.T_INPUT_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
@@ -188,7 +189,7 @@ public class Engine {
                     argumentsMap.put(argName, value);
                 }
             } else {
-                if (argumentNode.getIntValue(KIND_FIELD) == 22) {
+                if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                     BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
                     addInputObjectTypeArgument(objectFields, inputObjectFieldMap);
                     argumentsMap.put(argName, inputObjectFieldMap);
@@ -215,7 +216,7 @@ public class Engine {
                     inputObjectMap.put(fieldName, value);
                 }
             } else {
-                if (fieldValue.getIntValue(KIND_FIELD) == 22) {
+                if (fieldValue.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                     BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
                     addInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
                     inputObjectMap.put(fieldName, nestedInputObjectFieldMap);
