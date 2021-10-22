@@ -130,21 +130,17 @@ public class Parser {
             }
             token = check self.readNextNonSeparatorToken();
             string varType = check self.getTypeIdentifierTokenValue(token);
-            VariableDefinition varDefinition = {
-                name: varName,
-                kind: varType,
-                location: varDefinitionLocation
-            };
+            VariableDefinitionNode varDefinition = new(varName, varType, varDefinitionLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
                 token = check self.readNextNonSeparatorToken();// consume "=" sign here
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
                     ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
-                    varDefinition.defaultValue = value;
+                    varDefinition.setDefaultValue(value);
                 } else {
                     ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation, false);
-                    varDefinition.defaultValue = value;
+                    varDefinition.setDefaultValue(value);
                 }
                 token = check self.peekNextNonSeparatorToken();
             }
