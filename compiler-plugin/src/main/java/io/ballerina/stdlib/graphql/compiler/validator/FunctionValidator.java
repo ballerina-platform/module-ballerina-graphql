@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
+package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
@@ -41,6 +41,8 @@ import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.Utils;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -53,14 +55,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
-import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
-import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
-import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
-import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.CONTEXT_IDENTIFIER;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
 
 /**
  * Validate functions in Ballerina GraphQL services.
@@ -125,10 +126,11 @@ public class FunctionValidator {
                     if (!classesAndResourceFunctions.containsKey(className)) {
                         Collection<MethodSymbol> methods = classSymbol.methods().values();
                         Set<String> resourceMethods = new HashSet<>();
-                         for (MethodSymbol method: methods) {
+                        for (MethodSymbol method : methods) {
                             if (method.qualifiers().contains(Qualifier.RESOURCE)) {
                                 resourceMethods.add(method.getName().get() + " "
-                                        + ((ResourceMethodSymbol) method).resourcePath().signature());
+                                                            +
+                                                            ((ResourceMethodSymbol) method).resourcePath().signature());
                             }
                         }
                         classesAndResourceFunctions.put(className, resourceMethods);
@@ -186,7 +188,7 @@ public class FunctionValidator {
     private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (Utils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
+            if (ValidatorUtils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
                 updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
             }
         }
@@ -382,7 +384,7 @@ public class FunctionValidator {
             }
             if (!resourceMethodFound) {
                 updateContext(context, CompilationError.MISSING_RESOURCE_FUNCTIONS,
-                        classSymbol.getLocation().get());
+                              classSymbol.getLocation().get());
             }
         }
     }
@@ -392,14 +394,14 @@ public class FunctionValidator {
     private void validateImplementedClasses(ClassSymbol classSymbol, SyntaxNodeAnalysisContext context) {
         if (!classSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
             updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
-                    classSymbol.getLocation().get());
+                          classSymbol.getLocation().get());
         }
         Set<ClassSymbol> childClasses = typeInclusions.get(classSymbol.getName().get());
         Set<String> resourceFunctionsInInterface = classesAndResourceFunctions.get(classSymbol.getName().get());
         for (ClassSymbol childClass : childClasses) {
             if (!childClass.methods().keySet().containsAll(resourceFunctionsInInterface)) {
                 updateContext(context, CompilationError.INVALID_INTERFACE_IMPLEMENTATION,
-                        childClass.getLocation().get(), classSymbol.getName().get());
+                              childClass.getLocation().get(), classSymbol.getName().get());
             }
         }
     }
@@ -418,26 +420,26 @@ public class FunctionValidator {
                                 inclusionClassSymbol.getName().get() : "";
                         // checks if the type inclusion if a valid service
                         validateServiceClassDefinition(inclusionClassSymbol, inclusionSymbol.getLocation().get(),
-                                context);
+                                                       context);
                         // checks if the type inclusion is a valid interface
                         if (eligibleInterfaces.contains(className) &&
                                 classesAndResourceFunctions.containsKey(className)) {
                             Set<String> methods = classesAndResourceFunctions.get(className);
                             if (!implementedAllResourceFunctions(methods, classSymbol.methods().keySet())) {
                                 updateContext(context, CompilationError.INVALID_INTERFACE_IMPLEMENTATION,
-                                        classSymbol.getLocation().get(), className);
+                                              classSymbol.getLocation().get(), className);
                             }
-                            // checks interfaces implemented by the interface
+                            // check interfaces implemented by the interface
                             if (!inclusionClassSymbol.typeInclusions().isEmpty()) {
                                 implementedValidInterface(inclusionClassSymbol, context);
                             }
                         } else {
                             updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
-                                    inclusionClassSymbol.getLocation().get());
+                                          inclusionClassSymbol.getLocation().get());
                         }
                     } else {
                         updateContext(context, CompilationError.NON_DISTINCT_INTERFACE_CLASS,
-                                inclusionClassSymbol.getLocation().get());
+                                      inclusionClassSymbol.getLocation().get());
                     }
                 }
             }
@@ -558,7 +560,7 @@ public class FunctionValidator {
                 Location fieldLocation = getLocation(recordField, location);
                 validateReturnType(recordField.typeDescriptor(), fieldLocation, context);
             } else {
-                if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
+                if (ValidatorUtils.isInvalidFieldName(recordField.getName().orElse(""))) {
                     Location fieldLocation = getLocation(recordField, location);
                     updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
                 }
@@ -570,8 +572,9 @@ public class FunctionValidator {
         if (typeSymbol.getModule().isPresent()) {
             ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
             if (typeSymbol.getName().isPresent()) {
-                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
-                        PACKAGE_ORG) && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
+                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX)
+                        && moduleSymbol.id().orgName().equals(PACKAGE_ORG)
+                        && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
             }
         }
         return false;

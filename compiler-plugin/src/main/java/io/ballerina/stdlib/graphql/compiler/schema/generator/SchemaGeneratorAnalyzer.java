@@ -16,23 +16,18 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
+package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.CodeAnalysisContext;
 import io.ballerina.projects.plugins.CodeAnalyzer;
 
-import java.util.Arrays;
-
 /**
- * The {@code CodeAnalyzer} for Ballerina GraphQL services.
+ * The {@code CodeAnalyzer} for generating the GraphQL schema for Ballerina GraphQL services.
  */
-public class ServiceAnalyzer extends CodeAnalyzer {
+public class SchemaGeneratorAnalyzer extends CodeAnalyzer {
     @Override
     public void init(CodeAnalysisContext codeAnalysisContext) {
-        codeAnalysisContext.addSyntaxNodeAnalysisTask(new ServiceValidator(), SyntaxKind.SERVICE_DECLARATION);
-        codeAnalysisContext.addSyntaxNodeAnalysisTask(new ListenerValidator(),
-                Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION, SyntaxKind.EXPLICIT_NEW_EXPRESSION));
-
+        codeAnalysisContext.addSyntaxNodeAnalysisTask(new SchemaGeneratorTask(), SyntaxKind.SERVICE_DECLARATION);
     }
 }

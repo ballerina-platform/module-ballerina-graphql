@@ -16,18 +16,16 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
-
-import io.ballerina.projects.plugins.CompilerPlugin;
-import io.ballerina.projects.plugins.CompilerPluginContext;
-import io.ballerina.stdlib.graphql.compiler.validator.ServiceAnalyzer;
+package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 /**
- * This is the compiler plugin for Ballerina GraphQL package.
+ * Used to analyze the functions inside a Ballerina GraphQL service to generate the schema.
  */
-public class GraphqlCompilerPlugin extends CompilerPlugin {
-    @Override
-    public void init(CompilerPluginContext compilerPluginContext) {
-        compilerPluginContext.addCodeAnalyzer(new ServiceAnalyzer());
+public class FunctionAnalyzer {
+
+    public FunctionAnalyzer() {
+    }
+
+    public void generate() {
     }
 }
