@@ -389,9 +389,10 @@ public class Parser {
 
     isolated function getTypeIdentifierTokenValue(Token previousToken) returns string|Error {
         string varType;
+        Token token;
         if previousToken.kind == T_OPEN_BRACKET {
             varType = previousToken.value.toString();
-            Token token = check self.readNextNonSeparatorToken();
+            token = check self.readNextNonSeparatorToken();
             varType += check self.getTypeIdentifierTokenValue(token);
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_CLOSE_BRACKET {
@@ -406,7 +407,7 @@ public class Parser {
             }
         } else {
             varType = check getIdentifierTokenvalue(previousToken);
-            Token token = check self.peekNextNonSeparatorToken();
+            token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EXCLAMATION {
                 token = check self.readNextNonSeparatorToken(); // Read exlamation
                 varType += token.value.toString();
