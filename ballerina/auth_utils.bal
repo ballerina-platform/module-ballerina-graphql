@@ -29,13 +29,13 @@ isolated function authenticateService(ListenerAuthConfig[]? authConfigs, http:Re
     if (header is string) {
         http:Unauthorized|http:Forbidden? result = tryAuthenticate(<ListenerAuthConfig[]>authConfigs, header);
         if (result is http:Unauthorized) {
-            return create401Response();
+            return createUnauthorizedResponse();
         } else if (result is http:Forbidden) {
-            return create403Response();
+            return createForbiddenResponse();
         }
         return;
     } else {
-        return create401Response();
+        return createUnauthorizedResponse();
     }
 }
 
@@ -89,22 +89,30 @@ isolated function tryAuthenticate(ListenerAuthConfig[] authConfig, string header
     return unauthorized;
 }
 
-isolated function create401Response() returns http:Response {
+isolated function createUnauthorizedResponse() returns http:Response {
     http:Response response = new;
-    response.statusCode = 401;
-    ErrorDetail authnError = {
-        message: "Required authentication information is either missing or not valid for the resource."
+    response.statusCode = http:STATUS_BAD_REQUEST;
+    json payload = {
+        errors: [
+            {
+                message: "Required authentication information is either missing or not valid for the resource."
+            }
+        ]
     };
-    response.setPayload({ errors: [authnError] });
+    response.setPayload(payload);
     return response;
 }
 
-isolated function create403Response() returns http:Response {
+isolated function createForbiddenResponse() returns http:Response {
     http:Response response = new;
-    response.statusCode = 403;
-    ErrorDetail authzError = {
-        message: "Access is denied to the requested resource. The user might not have enough permission."
+    response.statusCode = http:STATUS_BAD_REQUEST;
+    json payload = {
+        errors: [
+            {
+                message: "Access is denied to the requested resource. The user might not have enough permission."
+            }
+        ]
     };
-    response.setPayload({ errors: [authzError] });
+    response.setPayload(payload);
     return response;
 }

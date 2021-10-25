@@ -198,7 +198,20 @@ isolated function assertSuccess(http:Response|http:ClientError response) {
 
 isolated function assertForbidden(http:Response|http:ClientError response) {
     if (response is http:Response) {
-        test:assertEquals(response.statusCode, 403);
+        test:assertEquals(response.statusCode, 400);
+        json expectedPayload = {
+            errors: [
+                {
+                    message: "Access is denied to the requested resource. The user might not have enough permission."
+                }
+            ]
+        };
+        json|http:ClientError payload = response.getJsonPayload();
+        if (payload is json) {
+            assertJsonValuesWithOrder(payload, expectedPayload);
+        } else {
+            test:assertFail(msg = "Test Failed!");
+        }
     } else {
         test:assertFail(msg = "Test Failed!");
     }
@@ -206,7 +219,20 @@ isolated function assertForbidden(http:Response|http:ClientError response) {
 
 isolated function assertUnauthorized(http:Response|http:ClientError response) {
     if (response is http:Response) {
-        test:assertEquals(response.statusCode, 401);
+        test:assertEquals(response.statusCode, 400);
+        json expectedPayload = {
+            errors: [
+                {
+                    message: "Required authentication information is either missing or not valid for the resource."
+                }
+            ]
+        };
+        json|http:ClientError payload = response.getJsonPayload();
+        if (payload is json) {
+            assertJsonValuesWithOrder(payload, expectedPayload);
+        } else {
+            test:assertFail(msg = "Test Failed!");
+        }
     } else {
         test:assertFail(msg = "Test Failed!");
     }
