@@ -18,8 +18,3 @@ public type Node object {
     public isolated function getName() returns string;
     public isolated function getLocation() returns Location;
 };
-
-public type ArgumentValue record {|
-    Scalar? value;
-    Location location;
-|};

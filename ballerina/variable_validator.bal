@@ -130,9 +130,12 @@ class VariableValidator {
                 __InputValue[]? inputFieldValues = inputFieldType?.inputFields;
                 inputValues = inputFieldValues is __InputValue[] ? inputFieldValues : [];
             }
-            foreach parser:ArgumentValue|parser:ArgumentNode argField in argumentNode.getValue() {
-                if argField is parser:ArgumentNode {
-                    self.visitArgument(argField, inputValues);
+
+            if argumentNode.getValue() is parser:ArgumentValue[] {
+                foreach parser:ArgumentValue argField in <parser:ArgumentValue[]>argumentNode.getValue() {
+                    if argField is parser:ArgumentNode {
+                        self.visitArgument(argField, inputValues);
+                    }
                 }
             }
         }
@@ -151,11 +154,8 @@ class VariableValidator {
             if defaultValue.getKind() == parser:T_INPUT_OBJECT {
                 if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
                     argumentNode.setKind(parser:T_INPUT_OBJECT);
-                    foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
-                        if fieldValue is parser:ArgumentNode {
-                            argumentNode.setValue(fieldValue.getName(), fieldValue);
-                        }
-                    }
+                    argumentNode.setValue(defaultValue.getValue());
+                    argumentNode.setValueLocation(defaultValue.getValueLocation());
                     argumentNode.setVariableDefinition(false);
                 } else {
                     string message = string`Variable "${variableName}" of type "${varDef.getTypeName()}" has invalid` +
@@ -164,26 +164,27 @@ class VariableValidator {
                 }
             } else {
                 if variableType is __Type {
-                    parser:ArgumentValue value = <parser:ArgumentValue> defaultValue.getValue()[variableName];
-                    if value.value is Scalar {
+                    parser:ArgumentValue value = <parser:ArgumentValue> defaultValue.getValue();
+                    Location valueLocation = defaultValue.getValueLocation();
+                    if value is Scalar {
                         if getArgumentTypeKind(argumentTypeName) == parser:T_FLOAT &&
                             defaultValue.getKind() == parser:T_INT {
-                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value, valueLocation);
                         } else if getArgumentTypeKind(argumentTypeName) == defaultValue.getKind() {
-                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value, valueLocation);
                         } else {
                             string message = string`Variable "${variableName}" of type "${varDef.getTypeName()}" has` +
-                            string` invalid default value: ${value.value.toString()}. Expected type ` +
-                            string`"${argumentTypeName}", found ${value.value.toString()}`;
-                            self.errors.push(getErrorDetailRecord(message, value.location));
+                            string` invalid default value: ${value.toString()}. Expected type ` +
+                            string`"${argumentTypeName}", found ${value.toString()}`;
+                            self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
                         }
                     } else {
                         if variableType.kind == NON_NULL {
                             string message = string`Variable "${variableName}" of type "${varDef.getTypeName()}" has` +
                             string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
-                            self.errors.push(getErrorDetailRecord(message, value.location));
+                            self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
                         } else {
-                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
+                            self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value, valueLocation);
                         }
                     }
                 }
@@ -195,16 +196,19 @@ class VariableValidator {
                 string`not provided.`;
                 self.errors.push(getErrorDetailRecord(message, location));
             } else {
-                argumentNode.setValue(argumentNode.getName(), {value: (), location: location});
+                argumentNode.setValue(());
+                argumentNode.setValueLocation(location);
                 argumentNode.setVariableDefinition(false);
             }
         }
     }
 
     public isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, string argumentTypeName,
-                                                           parser:ArgumentValue|parser:ArgumentNode defaultValue) {
+                                                           parser:ArgumentValue defaultValue,
+                                                           parser:Location valueLocation) {
         argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
-        argumentNode.setValue(argumentNode.getName(), defaultValue);
+        argumentNode.setValue(defaultValue);
+        argumentNode.setValueLocation(valueLocation);
         argumentNode.setVariableDefinition(false);
     }
 

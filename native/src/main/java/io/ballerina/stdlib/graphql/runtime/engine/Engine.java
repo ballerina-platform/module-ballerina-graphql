@@ -41,7 +41,6 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
@@ -182,52 +181,36 @@ public class Engine {
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
             BString argName = argumentNode.getStringValue(NAME_FIELD);
-            BMap<BString, Object> objectFields = argumentNode.getMapValue(VALUE_FIELD);
-            if (objectFields.isEmpty()) {
-                if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
-                    Object value = argumentNode.get(VARIABLE_VALUE_FIELD);
-                    argumentsMap.put(argName, value);
-                }
+            if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                Object value = argumentNode.get(VARIABLE_VALUE_FIELD);
+                argumentsMap.put(argName, value);
+            } else if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
+                BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
+                BArray objectFields = argumentNode.getArrayValue(VALUE_FIELD);
+                addInputObjectTypeArgument(objectFields, inputObjectFieldMap);
+                argumentsMap.put(argName, inputObjectFieldMap);
             } else {
-                if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
-                    BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
-                    addInputObjectTypeArgument(objectFields, inputObjectFieldMap);
-                    argumentsMap.put(argName, inputObjectFieldMap);
-                } else {
-                    if (objectFields.containsKey(argName)) {
-                        BMap<BString, Object> argValueRecord = (BMap<BString, Object>) objectFields.get(argName);
-                        Object argValue = argValueRecord.get(VALUE_FIELD);
-                        argumentsMap.put(argName, argValue);
-                    }
-                }
+                Object argValue = argumentNode.get(VALUE_FIELD);
+                argumentsMap.put(argName, argValue);
             }
         }
     }
 
-    public static void addInputObjectTypeArgument(BMap<BString, Object> objectFields,
-                                                  BMap<BString, Object> inputObjectMap) {
-        for (Map.Entry<BString, Object> entry : objectFields.entrySet()) {
-            BString fieldName = entry.getKey();
-            BObject fieldValue = (BObject) entry.getValue();
-            BMap<BString, Object> nestedObjectFields = fieldValue.getMapValue(VALUE_FIELD);
-            if (nestedObjectFields.isEmpty()) {
-                if (fieldValue.getBooleanValue(VARIABLE_DEFINITION)) {
-                    Object value = fieldValue.get(VARIABLE_VALUE_FIELD);
-                    inputObjectMap.put(fieldName, value);
-                }
+    public static void addInputObjectTypeArgument(BArray objectFields, BMap<BString, Object> inputObjectMap) {
+        for (int i = 0; i < objectFields.size(); i++) {
+            BObject objectFieldNode = (BObject) objectFields.get(i);
+            BString fieldName = objectFieldNode.getStringValue(NAME_FIELD);
+            if (objectFieldNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                Object value = objectFieldNode.get(VARIABLE_VALUE_FIELD);
+                inputObjectMap.put(fieldName, value);
+            } else if (objectFieldNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
+                BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
+                BArray nestedObjectFields = objectFieldNode.getArrayValue(VALUE_FIELD);
+                addInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
+                inputObjectMap.put(fieldName, nestedInputObjectFieldMap);
             } else {
-                if (fieldValue.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
-                    BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
-                    addInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
-                    inputObjectMap.put(fieldName, nestedInputObjectFieldMap);
-                } else {
-                    if (nestedObjectFields.containsKey(fieldName)) {
-                        BMap<BString, Object> argValueRecord =
-                                (BMap<BString, Object>) nestedObjectFields.get(fieldName);
-                        Object argValue = argValueRecord.get(VALUE_FIELD);
-                        inputObjectMap.put(fieldName, argValue);
-                    }
-                }
+                Object argValue = objectFieldNode.get(VALUE_FIELD);
+                inputObjectMap.put(fieldName, argValue);
             }
         }
     }
