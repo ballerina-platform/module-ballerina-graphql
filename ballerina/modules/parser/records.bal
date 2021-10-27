@@ -29,19 +29,6 @@ public type Location record {|
     int column;
 |};
 
-# Store a Varibale defined in a GraphQL operation.
-#
-# + name - Name of the variable   
-# + kind - Type of the variable   
-# + defaultValue - Default value of the variable    
-# + location - Location of the variable definition
-public type VariableDefinition record {|
-    string name;
-    string kind;
-    ArgumentNode defaultValue?;
-    Location location?;
-|};
-
 # Represents the details of an error occurred during parsing, validating, or executing a GraphQL document.
 #
 # + message - The details of the error
