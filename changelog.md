@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#741] Add Default Directives 'skip' & 'include' Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/741)
+- [[#2026] Implement auth error types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2026)
 
 ### Fixed
 - [[#1988] Fix Fields Missing from the Response when an Error Occurred](https://github.com/ballerina-platform/ballerina-standard-library/issues/1988)
