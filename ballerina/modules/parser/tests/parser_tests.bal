@@ -670,7 +670,7 @@ isolated function testInputObjects() returns error? {
     test:assertEquals(variableDefinition.name, "bAuthor");
     test:assertEquals(variableDefinition.kind, "ProfileDetail");
     ArgumentNode argValue = <ArgumentNode> variableDefinition?.defaultValue;
-    test:assertEquals(argValue.getKind(), T_IDENTIFIER);
+    test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "bAuthor");
     map<ArgumentValue|ArgumentNode> defaultValue = argValue.getValue();
     test:assertEquals(defaultValue.hasKey("name"), true);

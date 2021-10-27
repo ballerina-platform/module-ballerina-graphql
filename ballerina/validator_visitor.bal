@@ -114,7 +114,7 @@ class ValidatorVisitor {
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
         if argumentNode.isVariableDefinition() {
             self.validateVariableValue(argumentNode, schemaArg, fieldName);
-        } else if argumentNode.isInputObject() {
+        } else if argumentNode.getKind() == parser:T_INPUT_OBJECT {
             self.visitInputObject(argumentNode, schemaArg, fieldName);
         } else {
             parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(schemaArg.name);
@@ -208,7 +208,7 @@ class ValidatorVisitor {
                         parser:ArgumentValue argValue = {value: fieldValue, location: location};
                         if getOfType(subInputValue.'type).kind == ENUM {
                             //validate input object field with enum value
-                            self.validateEnumArgument(argValue, argType.kind, subInputValue);
+                            self.validateEnumArgument(argValue, ENUM, subInputValue);
                         } else {
                             self.validateArgumentValue(argValue, getTypeNameFromValue(fieldValue), subInputValue);
                         }

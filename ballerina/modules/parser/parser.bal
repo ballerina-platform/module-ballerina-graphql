@@ -305,7 +305,7 @@ public class Parser {
 
     isolated function getInputObjectTypeArgument(string name, Location location,
                                                  boolean isAllowVariableValue = true) returns ArgumentNode|Error {
-        ArgumentNode argumentNode = new(name, location, T_IDENTIFIER, isInputObject = true);
+        ArgumentNode argumentNode = new(name, location, T_INPUT_OBJECT);
         Token token = check self.readNextNonSeparatorToken();// consume open brace here
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_CLOSE_BRACE {

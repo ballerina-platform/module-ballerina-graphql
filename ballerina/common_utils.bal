@@ -92,8 +92,10 @@ isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
         return BOOLEAN;
     } else if kind == parser:T_STRING {
         return STRING;
+    } else if kind == parser:T_INPUT_OBJECT {
+        return INPUT_OBJECT;
     } else {
-        return argumentNode.getKind().toString();
+        return ENUM;
     }
 }
 
@@ -106,6 +108,8 @@ isolated function getArgumentTypeKind(string argType) returns parser:ArgumentTyp
         return parser:T_FLOAT;
     } else if argType == BOOLEAN {
         return parser:T_BOOLEAN;
+    } else if argType == INPUT_OBJECT {
+        return parser:T_INPUT_OBJECT;
     } else {
         return parser:T_IDENTIFIER;
     }
