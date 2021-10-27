@@ -53,7 +53,7 @@ public class DocumentNode {
         self.operations[operation.getName()] = operation;
     }
 
-    public isolated function addFragment(FragmentNode fragment) returns SyntaxError? {
+    public isolated function addFragment(FragmentNode fragment) {
         if (self.fragments.hasKey(fragment.getName())) {
             FragmentNode originalFragment = <FragmentNode>self.fragments[fragment.getName()];
             if(fragment.isInlineFragment()) {
