@@ -24,10 +24,6 @@ plugins {
 
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
-def ballerinaModulePath = "${project.rootDir}/ballerina/"
-def ballerinaDistPath = "${ballerinaModulePath}/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
-def ballerinaDist = "${buildDir}/target/ballerina-distribution"
-
 dependencies {
     checkstyle project(':checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstylePluginVersion}"
@@ -82,30 +78,6 @@ compileJava {
     }
 }
 
-task copyDistribution(type: Copy) {
-    from ballerinaDistPath
-    into ballerinaDist
-}
-
-task copyPackageBala {
-    doLast {
-        copy {
-            from "${ballerinaModulePath}/build/cache_parent"
-            into "${ballerinaDist}/repo"
-            copy {
-                into("bala/ballerina") {
-                    from "bala/ballerina"
-                }
-            }
-            copy {
-                into("cache/ballerina/") {
-                    from "cache/ballerina"
-                }
-            }
-        }
-    }
-}
-
 test {
     systemProperty "ballerina.offline.flag", "true"
     useTestNG()
@@ -123,6 +95,4 @@ test {
     }
 }
 
-copyDistribution.dependsOn ":graphql-ballerina:build"
-copyPackageBala.dependsOn copyDistribution
-test.dependsOn copyPackageBala
+test.dependsOn ":graphql-ballerina:build"
