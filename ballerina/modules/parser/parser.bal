@@ -98,7 +98,7 @@ public class Parser {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
-        check self.document.addFragment(fragmentNode);
+        self.document.addFragment(fragmentNode);
     }
 
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
@@ -217,7 +217,7 @@ public class Parser {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
-        check self.document.addFragment(fragmentNode);
+        self.document.addFragment(fragmentNode);
         parentNode.addSelection(fragmentNode);
     }
 
