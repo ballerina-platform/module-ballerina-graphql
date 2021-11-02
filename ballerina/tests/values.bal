@@ -118,14 +118,34 @@ Book b10 = {
     author: "J.K Rowling"
 };
 
-Movie m1 =  {
+Movie m1 = {
     movieName: "Harry Potter and the Sorcerer's Stone",
     director: "Chris Columbus"
 };
 
-Movie m2 =  {
+Movie m2 = {
     movieName: "Sherlock Holmes",
     director: "Dexter Fletcher"
+};
+
+Movie m3 = {
+    movieName: "El Camino",
+    director: "Vince Gilligan"
+};
+
+Movie m4 = {
+    movieName: "Escape Plan",
+    director: "Mikael Hafstrom"
+};
+
+Movie m5 = {
+    movieName: "Papillon",
+    director: "Franklin Schaffner"
+};
+
+Movie m6 = {
+    movieName: "The Fugitive",
+    director: "Andrew Davis"
 };
 
 Course c1 = {

@@ -280,6 +280,12 @@ public class FieldFinder {
         for (Parameter parameter : method.getParameters()) {
             Type inputType;
             InputValue inputValue;
+            if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
+                SchemaType wrapperType = getListType((ArrayType) parameter.type);
+                inputValue = new InputValue(parameter.name, wrapperType);
+                schemaField.addArg(inputValue);
+                continue;
+            }
             if (isContext(parameter.type)) {
                 continue;
             }
@@ -313,5 +319,18 @@ public class FieldFinder {
             result = memberType;
         }
         return result;
+    }
+
+    private SchemaType getListType(ArrayType arrayType) {
+        SchemaType schemaType = new SchemaType(null, TypeKind.LIST);
+        Type elementType = arrayType.getElementType();
+        SchemaType elementSchemaType = getSchemaTypeFromType(elementType);
+        if (elementType.isNilable()) {
+            schemaType.setOfType(elementSchemaType);
+        } else {
+            SchemaType nonNullType = getNonNullType(elementSchemaType);
+            schemaType.setOfType(nonNullType);
+        }
+        return schemaType;
     }
 }
