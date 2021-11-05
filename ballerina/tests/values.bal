@@ -219,10 +219,10 @@ Worker w3 = {
     contacts: { home: contact3 }
 };
 
-map<Worker> workers = { id1: w1, id2: w2, id3: w3 };
-map<Contact> contacts = { home1: contact1, home2: contact2, home3: contact3 };
+map<Worker & readonly> workers = { id1: w1, id2: w2, id3: w3 };
+map<Contact & readonly> contacts = { home1: contact1, home2: contact2, home3: contact3 };
 
 Company company = {
-    workers: workers,
-    contacts: contacts
+    workers: workers.cloneReadOnly(),
+    contacts: contacts.cloneReadOnly()
 };

@@ -671,12 +671,22 @@ service /mutations on basicListener {
     }
 
     isolated remote function setName(string name) returns Person {
-        self.p.name = name;
+        Person p = { name: name, age: self.p.age, address: self.p.address };
+        self.p = p;
         return self.p;
     }
 
     isolated remote function setCity(string city) returns Person {
-        self.p.address.city = city;
+        Person p = {
+            name: self.p.name,
+            age: self.p.age,
+            address: {
+                number: self.p.address.number,
+                street: self.p.address.street,
+                city: city
+            }
+        };
+        self.p = p;
         return self.p;
     }
 

@@ -138,7 +138,7 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
 }
 isolated function testServiceObjectArrayWithFragmentReturningError() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = check getGraphQLDocumentFromFile("service_object_array_with_fragment_returning_error.txt");
+    string document = check getGraphQLDocumentFromFile("service_object_array_with_fragment_returning_error.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("service_object_array_with_fragment_returning_error.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -149,7 +149,7 @@ isolated function testServiceObjectArrayWithFragmentReturningError() returns err
 }
 isolated function testServiceObjectArrayWithInvalidResponseOrder() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = check getGraphQLDocumentFromFile("service_object_array_with_fragment_returning_error.txt");
+    string document = check getGraphQLDocumentFromFile("service_object_array_with_fragment_returning_error.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("service_object_array_with_invalid_response_order.json");
     test:assertEquals(result, expectedPayload);

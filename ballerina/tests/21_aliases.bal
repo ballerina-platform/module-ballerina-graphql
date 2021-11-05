@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["alias"]
 }
 isolated function testAlias() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias.txt");
+    string document = check getGraphQLDocumentFromFile("alias.graphql");
     string url = "http://localhost:9091/duplicates";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
@@ -40,7 +40,7 @@ isolated function testAlias() returns error? {
     groups: ["alias", "records"]
 }
 isolated function testSameFieldWithMultipleAlias() returns error? {
-    string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias.txt");
+    string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("same_field_with_multiple_alias.json");
@@ -51,7 +51,7 @@ isolated function testSameFieldWithMultipleAlias() returns error? {
     groups: ["alias", "records"]
 }
 isolated function testSameFieldWithMultipleAliasDifferentSubFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias_different_subfields.txt");
+    string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias_different_subfields.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("same_field_with_multiple_alias_different_subfields.json");
@@ -62,7 +62,7 @@ isolated function testSameFieldWithMultipleAliasDifferentSubFields() returns err
     groups: ["alias", "records", "validation"]
 }
 isolated function testAliasWithInvalidFieldName() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias_with_invalid_field_name.txt");
+    string document = check getGraphQLDocumentFromFile("alias_with_invalid_field_name.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
@@ -85,7 +85,7 @@ isolated function testAliasWithInvalidFieldName() returns error? {
     groups: ["alias", "service", "unions"]
 }
 isolated function testAliasOnServiceObjectsUnion() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias_on_service_objects_union.txt");
+    string document = check getGraphQLDocumentFromFile("alias_on_service_objects_union.graphql");
     string url = "http://localhost:9092/unions";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("alias_on_service_objects_union.json");
@@ -96,7 +96,7 @@ isolated function testAliasOnServiceObjectsUnion() returns error? {
     groups: ["alias", "hierarchical_paths"]
 }
 isolated function testAliasOnHierarchicalResources() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias_on_hierarchical_resources.txt");
+    string document = check getGraphQLDocumentFromFile("alias_on_hierarchical_resources.graphql");
     string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("alias_on_hierarchical_resources.json");

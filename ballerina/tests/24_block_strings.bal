@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["block_strings"]
 }
 isolated function testBlockStrings() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings.txt");
+    string document = check getGraphQLDocumentFromFile("block_strings.graphql");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("block_strings.json");
@@ -31,7 +31,7 @@ isolated function testBlockStrings() returns error? {
     groups: ["block_strings"]
 }
 isolated function testBlockStringsWithVariableDefaultValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings_with_variable_default_value.txt");
+    string document = check getGraphQLDocumentFromFile("block_strings_with_variable_default_value.graphql");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("block_strings_with_variable_default_value.json");
@@ -42,7 +42,7 @@ isolated function testBlockStringsWithVariableDefaultValue() returns error? {
     groups: ["block_strings"]
 }
 isolated function testInvalidBlockStrings() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_block_strings.txt");
+    string document = check getGraphQLDocumentFromFile("invalid_block_strings.graphql");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_block_strings.json");
@@ -53,7 +53,7 @@ isolated function testInvalidBlockStrings() returns error? {
     groups: ["block_strings"]
 }
 isolated function testBlockStringsWithEscapedCharacter() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings_with_escaped_character.txt");
+    string document = check getGraphQLDocumentFromFile("block_strings_with_escaped_character.graphql");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("block_strings_with_escaped_character.json");
@@ -64,7 +64,7 @@ isolated function testBlockStringsWithEscapedCharacter() returns error? {
     groups: ["block_strings"]
 }
 isolated function testBlockStringsWithDoubleQuotes() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings_with_double_quotes.txt");
+    string document = check getGraphQLDocumentFromFile("block_strings_with_double_quotes.graphql");
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("block_strings_with_double_quotes.json");

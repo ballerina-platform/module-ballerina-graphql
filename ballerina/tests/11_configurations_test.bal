@@ -63,7 +63,7 @@ isolated function testQueryExceedingMaxDepth() returns error? {
     groups: ["configs"]
 }
 isolated function testFragmentQueryExceedingMaxDepth() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragment_query_exceeding_max_depth.txt");
+    string document = check getGraphQLDocumentFromFile("fragment_query_exceeding_max_depth.graphql");
     string url = "http://localhost:9091/depthLimitService";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("fragment_query_exceeding_max_depth.json");
@@ -74,7 +74,7 @@ isolated function testFragmentQueryExceedingMaxDepth() returns error? {
     groups: ["configs"]
 }
 isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_with_named_operation_exceeding_max_depth.txt");
+    string document = check getGraphQLDocumentFromFile("query_with_named_operation_exceeding_max_depth.graphql");
     string url = "http://localhost:9091/depthLimitService";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {

@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["fragments", "validation"]
 }
 isolated function testUnknownFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("unknown_fragment.graphql");
     string url = "http://localhost:9091/validation";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     string message = string`Unknown fragment "friend".`;
@@ -44,7 +44,7 @@ isolated function testUnknownFragment() returns error? {
     groups: ["fragments", "validation"]
 }
 isolated function testUnknownNestedFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_nested_fragments.txt");
+    string document = check getGraphQLDocumentFromFile("unknown_nested_fragments.graphql");
     string url ="http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     string message = string`Unknown fragment "fail".`;
@@ -68,7 +68,7 @@ isolated function testUnknownNestedFragments() returns error? {
     groups: ["fragments", "validation"]
 }
 isolated function testFragmentOnInvalidType() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragment_on_invalid_type.txt");
+    string document = check getGraphQLDocumentFromFile("fragment_on_invalid_type.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     string message = string`Fragment "data" cannot be spread here as objects of type "Query" can never be of type "Person".`;
@@ -92,7 +92,7 @@ isolated function testFragmentOnInvalidType() returns error? {
     groups: ["fragments", "validation"]
 }
 isolated function testFragmentWithInvalidField() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragment_with_invalid_field.txt");
+    string document = check getGraphQLDocumentFromFile("fragment_with_invalid_field.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     string message = string`Cannot query field "invalid" on type "Person".`;
@@ -116,7 +116,7 @@ isolated function testFragmentWithInvalidField() returns error? {
     groups: ["fragments", "records", "array"]
 }
 isolated function testFragmentsOnRecordObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
@@ -127,7 +127,7 @@ isolated function testFragmentsOnRecordObjects() returns error? {
     groups: ["fragments"]
 }
 isolated function testNestedFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("nested_fragments.txt");
+    string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
@@ -138,7 +138,7 @@ isolated function testNestedFragments() returns error? {
     groups: ["fragments"]
 }
 isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_resource_invocation.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_resource_invocation.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_resource_invocation.json");
@@ -149,7 +149,7 @@ isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
     groups: ["fragments", "introspection"]
 }
 isolated function testFragmentsWithInvalidIntrospection() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_invalid_introspection.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_with_invalid_introspection.graphql");
     string url = "http://localhost:9091/validation";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
@@ -169,10 +169,10 @@ isolated function testFragmentsWithInvalidIntrospection() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "introspection"]
+    groups: ["fragments", "introspection", "test"]
 }
 isolated function testFragmentsWithIntrospection() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_introspection.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_with_introspection.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_with_introspection.json");
@@ -183,7 +183,7 @@ isolated function testFragmentsWithIntrospection() returns error? {
     groups: ["fragments", "service"]
 }
 isolated function testFragmentsQueryingServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_querying_service_objects.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_querying_service_objects.graphql");
     string url = "http://localhost:9092/service_types";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
@@ -202,7 +202,7 @@ isolated function testFragmentsQueryingServiceObjects() returns error? {
     groups: ["fragments", "validation"]
 }
 isolated function testUnusedFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("unused_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("unused_fragment.graphql");
     string url = "http://localhost:9092/service_types";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
@@ -225,7 +225,7 @@ isolated function testUnusedFragment() returns error? {
     groups: ["fragments", "inline"]
 }
 isolated function testInlineFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
@@ -236,7 +236,7 @@ isolated function testInlineFragment() returns error? {
     groups: ["fragments", "inline"]
 }
 isolated function testUnknownInlineFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_inline_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("unknown_inline_fragment.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("unknown_inline_fragment.json");
@@ -247,7 +247,7 @@ isolated function testUnknownInlineFragment() returns error? {
     groups: ["fragments", "inline"]
 }
 isolated function testInvalidSpreadInlineFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_spread_inline_fragments.txt");
+    string document = check getGraphQLDocumentFromFile("invalid_spread_inline_fragments.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_spread_inline_fragments.json");
@@ -258,7 +258,7 @@ isolated function testInvalidSpreadInlineFragments() returns error? {
     groups: ["fragments"]
 }
 isolated function testFragmentsInsideFragmentsWhenReturningServices() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_inside_fragments_when_returning_services.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_inside_fragments_when_returning_services.graphql");
     string url = "http://localhost:9092/service_objects";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
@@ -276,7 +276,7 @@ isolated function testFragmentsInsideFragmentsWhenReturningServices() returns er
 }
 isolated function testNestedFragmentsQueryingServiceObjectsWithMultipleFields() returns error? {
     string document =
-        check getGraphQLDocumentFromFile("nested_fragments_querying_service_objects_with_multiple_fields.txt");
+        check getGraphQLDocumentFromFile("nested_fragments_querying_service_objects_with_multiple_fields.graphql");
     string url = "http://localhost:9092/service_objects";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
