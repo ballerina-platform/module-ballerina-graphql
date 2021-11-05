@@ -136,7 +136,7 @@ service /input_objects on basicListener {
         }
     }
 
-    resource function get book(Info info) returns Book[] {
+    isolated resource function get book(Info info) returns Book[] {
         if info.author.name == "Conan Doyle" {
             return [b7, b8];
         } else if info.bookName == "Harry Potter" {
@@ -657,47 +657,57 @@ service /noScopes on secureListener {
 }
 // **************** Security-Related Services ****************
 
-service /mutations on basicListener {
+isolated service /mutations on basicListener {
     private Person p;
     private TeacherService t;
 
-    function init() {
+    isolated function init() {
         self.p = p2.clone();
         self.t = new(1, "Walter Bishop", "Physics");
     }
 
     isolated resource function get person() returns Person {
-        return self.p;
+        lock {
+            return self.p;
+        }
     }
 
     isolated remote function setName(string name) returns Person {
-        Person p = { name: name, age: self.p.age, address: self.p.address };
-        self.p = p;
-        return self.p;
+        lock {
+            Person p = { name: name, age: self.p.age, address: self.p.address };
+            self.p = p;
+            return self.p;
+        }
     }
 
     isolated remote function setCity(string city) returns Person {
-        Person p = {
-            name: self.p.name,
-            age: self.p.age,
-            address: {
-                number: self.p.address.number,
-                street: self.p.address.street,
-                city: city
-            }
-        };
-        self.p = p;
-        return self.p;
+        lock {
+            Person p = {
+                name: self.p.name,
+                age: self.p.age,
+                address: {
+                    number: self.p.address.number,
+                    street: self.p.address.street,
+                    city: city
+                }
+            };
+            self.p = p;
+            return self.p;
+        }
     }
 
     isolated remote function setTeacherName(string name) returns TeacherService {
-        self.t.setName(name);
-        return self.t;
+        lock {
+            self.t.setName(name);
+            return self.t;
+        }
     }
 
     isolated remote function setTeacherSubject(string subject) returns TeacherService {
-        self.t.setSubject(subject);
-        return self.t;
+        lock {
+            self.t.setSubject(subject);
+            return self.t;
+        }
     }
 }
 
