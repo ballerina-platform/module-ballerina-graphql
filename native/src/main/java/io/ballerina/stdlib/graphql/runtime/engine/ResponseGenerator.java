@@ -229,7 +229,7 @@ public class ResponseGenerator {
     }
 
     private static String getTypeNameFromRecordValue(RecordType recordType) {
-        if (recordType.isSealed() && recordType.getIntersectionType().isPresent()) {
+        if (recordType.getName().contains("&") && recordType.getIntersectionType().isPresent()) {
             for (Type constituentType : recordType.getIntersectionType().get().getConstituentTypes()) {
                 if (constituentType.getTag() != TypeTags.READONLY_TAG) {
                     return constituentType.getName();
