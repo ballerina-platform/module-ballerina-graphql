@@ -211,7 +211,7 @@ isolated function testEnumTypeVariables() returns error? {
 }
 isolated function testMultipleVariableTypesWithSingleQuery() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_variable_types_with_single_query.txt");
-    json variables = { 
+    json variables = {
         name: "Thisaru",
         age: 30,
         weight: 70.5,
@@ -255,7 +255,7 @@ isolated function testInvalidUsageOfNullableVariable() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("invalid_usage_of_nullable_variable.json");
-    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -317,7 +317,7 @@ isolated function testVariableWithInvalidDefaultValue2() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value2.json");
-    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -328,7 +328,7 @@ isolated function testVariableWithInvalidDefaultValue3() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value3.json");
-    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {

@@ -38,6 +38,7 @@ class QueryDepthValidator{
         if (self.errors.length() > 0) {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {

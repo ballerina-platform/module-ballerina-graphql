@@ -99,6 +99,7 @@ isolated class Engine {
 
         DuplicateFieldRemover duplicateFieldRemover = new(document);
         duplicateFieldRemover.remove();
+        return;
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)

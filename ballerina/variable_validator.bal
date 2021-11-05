@@ -42,6 +42,7 @@ class VariableValidator {
         if self.errors.length() > 0 {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -69,7 +70,7 @@ class VariableValidator {
             if self.visitedVariableDefinitions.indexOf(name) == () {
                 string message = string`Variable "$${name}" is never used.`;
                 Location location = self.variableDefinitions.get(name).getLocation();
-                self.errors.push(getErrorDetailRecord(message, location)); 
+                self.errors.push(getErrorDetailRecord(message, location));
             }
         }
         self.visitedVariableDefinitions = [];

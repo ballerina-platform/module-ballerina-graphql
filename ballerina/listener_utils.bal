@@ -92,6 +92,7 @@ isolated function getOperationName(json payload) returns string? {
     if operationName is string {
         return operationName;
     }
+    return;
 }
 
 isolated function addDefaultDirectives(__Schema schema) {

@@ -93,6 +93,7 @@ service /inputs on basicListener {
         } else if (id == 2) {
             return quote3;
         }
+        return;
     }
 
     isolated resource function get weightInPounds(float weightInKg) returns float {
@@ -407,7 +408,6 @@ service /special_types on specialTypesTestListener {
 
 service /snowtooth on serviceTypeListener {
     isolated resource function get allLifts(Status? status) returns Lift[] {
-        LiftRecord[] lifts;
         if status is Status {
             return from var lift in liftTable where lift.status == status select new(lift);
         } else {
@@ -416,7 +416,6 @@ service /snowtooth on serviceTypeListener {
     }
 
     isolated resource function get allTrails(Status? status) returns Trail[] {
-        TrailRecord[] trails;
         if status is Status {
             return from var trail in trailTable where trail.status == status select new(trail);
         } else {
@@ -429,6 +428,7 @@ service /snowtooth on serviceTypeListener {
         if lifts.length() > 0 {
             return new Lift(lifts[0]);
         }
+        return;
     }
 
     isolated resource function get trail(string id) returns Trail? {
@@ -436,6 +436,7 @@ service /snowtooth on serviceTypeListener {
         if trails.length() > 0 {
             return new Trail(trails[0]);
         }
+        return;
     }
 
     isolated resource function get liftCount(Status status) returns int {
@@ -721,6 +722,7 @@ service /null_values on basicListener {
         if value != () {
             return "Hello";
         }
+        return;
     }
 }
 
@@ -786,8 +788,10 @@ public isolated distinct service class Animal {
         var scope = context.get("scope");
         if scope is string && scope == "admin" {
             string call = "";
-            foreach int i in 0...count {
+            int i = 0;
+            while i < count {
                 call += string`${sound} `;
+                i += 1;
             }
             return call;
         } else {

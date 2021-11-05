@@ -65,7 +65,6 @@ public class Lexer {
 
     isolated function readNextToken() returns Token|SyntaxError {
         string char = self.charReader.peek();
-        Location location = self.currentLocation.clone();
         if (char == EOF) {
             self.inProgress = false;
             return self.getTokenFromChar(char);
@@ -290,13 +289,15 @@ public class Lexer {
 
     isolated function readEllipsisToken() returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
-        foreach int i in 0...2 {
+        int i = 0;
+        while i < 3 {
             string c = self.readNextChar();
             if (c != DOT) {
                 string message = string`Syntax Error: Cannot parse the unexpected character "${DOT}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
                                                                column = self.currentLocation.column);
             }
+            i += 1;
         }
         return getToken(ELLIPSIS, T_ELLIPSIS, location);
     }

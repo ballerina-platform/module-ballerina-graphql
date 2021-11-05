@@ -136,7 +136,6 @@ isolated function testContentTypeGraphql() returns error? {
     groups: ["request_validation", "listener"]
 }
 isolated function testInvalidRequestBody() returns error? {
-    http:Client httpClient = check new("http://localhost:9091/graphql");
     http:Request request = new;
     request.setTextPayload("Invalid");
     request.setHeader("Content-Type", "application/json");
