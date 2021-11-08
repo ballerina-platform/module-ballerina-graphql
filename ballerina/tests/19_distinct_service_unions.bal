@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["service", "union"]
 }
 isolated function testUnionOfDistinctServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("union_of_distinct_service_objects.txt");
+    string document = check getGraphQLDocumentFromFile("union_of_distinct_service_objects.graphql");
     string url = "http://localhost:9092/unions";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
@@ -38,7 +38,7 @@ isolated function testUnionOfDistinctServiceObjects() returns error? {
     groups: ["service", "union", "negative"]
 }
 isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_query_with_distinct_service_unions.txt");
+    string document = check getGraphQLDocumentFromFile("invalid_query_with_distinct_service_unions.graphql");
     string url = "http://localhost:9092/unions";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {

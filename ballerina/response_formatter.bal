@@ -53,7 +53,6 @@ class ResponseFormatter {
     }
 
     isolated function coerceObject(Data? data, parser:ParentNode parentNode, __Type parentType) returns Data? {
-        __Type objectType = unwrapNonNullype(parentType);
         if data == () {
             return ();
         } else {

@@ -22,6 +22,8 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -49,7 +51,6 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataR
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
 
 /**
  * Used to generate the response for a GraphQL request in Ballerina.
@@ -116,13 +117,14 @@ public class ResponseGenerator {
     static void getDataFromRecord(ExecutionContext executionContext, BObject node, BMap<BString, Object> record,
                                   BMap<BString, Object> data, List<Object> pathSegments) {
         BArray selections = node.getArrayValue(SELECTIONS_FIELD);
-        executionContext.setTypeName(record.getType().getName());
+        String recordTypeName = getTypeNameFromRecordValue((RecordType) record.getType());
+        executionContext.setTypeName(recordTypeName);
         BMap<BString, Object> subData = createDataRecord();
         for (int i = 0; i < selections.size(); i++) {
             BObject subNode = (BObject) selections.get(i);
             BString typeName = StringUtils.fromString(subNode.getType().getName());
             if (FRAGMENT_NODE.equals(typeName)) {
-                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(getTypeNameFromType(record.getType()))) {
+                if (subNode.getStringValue(ON_TYPE_FIELD).getValue().equals(recordTypeName)) {
                     processFragmentNodes(executionContext, subNode, record, subData, pathSegments);
                 }
             } else {
@@ -224,5 +226,16 @@ public class ResponseGenerator {
     static void appendErrorToVisitor(BError bError, BObject visitor, BObject node, List<Object> pathSegments) {
         BArray errors = visitor.getArrayValue(ERRORS_FIELD);
         errors.append(getErrorDetailRecord(bError, node, pathSegments));
+    }
+
+    private static String getTypeNameFromRecordValue(RecordType recordType) {
+        if (recordType.getName().contains("&") && recordType.getIntersectionType().isPresent()) {
+            for (Type constituentType : recordType.getIntersectionType().get().getConstituentTypes()) {
+                if (constituentType.getTag() != TypeTags.READONLY_TAG) {
+                    return constituentType.getName();
+                }
+            }
+        }
+        return recordType.getName();
     }
 }

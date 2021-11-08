@@ -156,7 +156,7 @@ distinct isolated service class StudentService {
     }
 }
 
-public distinct service class TeacherService {
+public distinct isolated service class TeacherService {
     private final int id;
     private string name;
     private string subject;
@@ -172,18 +172,26 @@ public distinct service class TeacherService {
     }
 
     isolated resource function get name() returns string {
-        return self.name;
+        lock {
+            return self.name;
+        }
     }
 
     isolated function setName(string name) {
-        self.name = name;
+        lock {
+            self.name = name;
+        }
     }
 
     isolated resource function get subject() returns string {
-        return self.subject;
+        lock {
+            return self.subject;
+        }
     }
 
     isolated function setSubject(string subject) {
-        self.subject = subject;
+        lock {
+            self.subject = subject;
+        }
     }
 }

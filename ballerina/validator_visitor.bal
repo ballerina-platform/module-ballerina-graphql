@@ -38,6 +38,7 @@ class ValidatorVisitor {
         if (self.errors.length() > 0) {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -87,7 +88,6 @@ class ValidatorVisitor {
         }
         __Field requiredField = <__Field>requiredFieldValue;
         __Type fieldType = getOfType(requiredField.'type);
-        __Field[] subFields = getFieldsArrayFromType(fieldType);
         self.checkArguments(parentType, fieldNode, requiredField);
         self.validateDirectiveArguments(fieldNode);
         if !hasFields(fieldType) && fieldNode.getSelections().length() == 0 {
@@ -130,7 +130,6 @@ class ValidatorVisitor {
         if inputFields is __InputValue[] {
             self.validateInputObjectFields(argumentNode, inputFields);
             foreach __InputValue inputField in inputFields {
-                __Type subArgType = getOfType(inputField.'type);
                 __InputValue subInputValue = inputField;
                 if argumentNode.getValue().hasKey(inputField.name) {
                     parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(inputField.name);
@@ -235,8 +234,6 @@ class ValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        __Field parentField = <__Field>data;
-        __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
         self.validateDirectiveArguments(fragmentNode);
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
@@ -343,6 +340,7 @@ class ValidatorVisitor {
             }
             return fragmentOnType;
         }
+        return;
     }
 
     isolated function validateInputObjectFields(parser:ArgumentNode node, __InputValue[] schemaFields) {
@@ -424,6 +422,7 @@ isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:Oper
     } else {
         return createField(operationTypeName, 'type);
     }
+    return;
 }
 
 isolated function getRequierdFieldFromType(__Type parentType, __Type[] typeArray,
@@ -455,6 +454,7 @@ isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) ret
             return schemaField;
         }
     }
+    return;
 }
 
 isolated function copyInputValueArray(__InputValue[] original) returns __InputValue[] {
@@ -471,6 +471,7 @@ isolated function getInputValueFromArray(__InputValue[] inputValues, string name
             return inputValue;
         }
     }
+    return;
 }
 
 isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
@@ -480,6 +481,7 @@ isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns 
             return ofType;
         }
     }
+    return;
 }
 
 isolated function hasFields(__Type fieldType) returns boolean {

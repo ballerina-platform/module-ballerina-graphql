@@ -325,7 +325,7 @@ isolated function testContextWithAdditionalParametersInNestedObject() returns er
     json expectedPayload = {
         data: {
             animal: {
-                call: "Meow Meow Meow Meow "
+                call: "Meow Meow Meow "
             }
         }
     };

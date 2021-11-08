@@ -30,7 +30,7 @@ service /graphql on new graphql:Listener(9000) {
         } else {
             lifts = from var lift in ds:liftTable select lift;
         }
-        return lifts.map(liftRecord => new Lift(liftRecord));  
+        return lifts.map(liftRecord => new Lift(liftRecord));
     }
 
     # A list of all `Trail` objects
@@ -38,11 +38,11 @@ service /graphql on new graphql:Listener(9000) {
     resource function get allTrails(ds:Status? status) returns Trail[] {
         ds:TrailRecord[] trails;
         if status is ds:Status {
-            trails = from var trail in ds:trailTable where trail.status == status select trail;   
+            trails = from var trail in ds:trailTable where trail.status == status select trail;
         } else {
             trails = from var trail in ds:trailTable select trail;
         }
-        return trails.map(trailRecord => new Trail(trailRecord));  
+        return trails.map(trailRecord => new Trail(trailRecord));
     }
 
     # Returns a `Lift` by `id` (id: "panorama")
@@ -51,7 +51,8 @@ service /graphql on new graphql:Listener(9000) {
         ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.id == id select lift;
         if lifts.length() > 0 {
             return new Lift(lifts[0]);
-        } 
+        }
+        return;
     }
 
     # Returns a `Trail` by `id` (id: "old-witch")
@@ -60,7 +61,8 @@ service /graphql on new graphql:Listener(9000) {
         ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.id == id select trail;
         if trails.length() > 0 {
             return new Trail(trails[0]);
-        } 
+        }
+        return;
     }
 
     # Returns an `Int` of `Lift` objects with optional `LiftStatus` filter

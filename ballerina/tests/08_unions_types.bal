@@ -71,7 +71,7 @@ isolated function testResourceReturningUnionWithNull() returns error? {
 }
 isolated function testQueryUnionType() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("query_union_type.txt");
+    string document = check getGraphQLDocumentFromFile("query_union_type.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         data: {
@@ -88,7 +88,7 @@ isolated function testQueryUnionType() returns error? {
 }
 isolated function testUnionTypeWithIncorrectFragment() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("union_type_with_incorrect_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("union_type_with_incorrect_fragment.graphql");
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
@@ -111,7 +111,7 @@ isolated function testUnionTypeWithIncorrectFragment() returns error? {
 }
 isolated function testQueryUnionTypeWithFieldAndFragment() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("union_type_with_field_and_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("union_type_with_field_and_fragment.graphql");
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
@@ -134,7 +134,7 @@ isolated function testQueryUnionTypeWithFieldAndFragment() returns error? {
 }
 isolated function testUnionTypeWithFragmentAndField() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("union_type_with_fragment_and_field.txt");
+    string document = check getGraphQLDocumentFromFile("union_type_with_fragment_and_field.graphql");
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
@@ -205,7 +205,7 @@ isolated function testUnionTypeWithSelectionField() returns error? {
 }
 isolated function testUnionTypeAsRecordFieldWithoutFragment() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("union_type_as_record_field_without_fragment.txt");
+    string document = check getGraphQLDocumentFromFile("union_type_as_record_field_without_fragment.graphql");
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
@@ -228,7 +228,7 @@ isolated function testUnionTypeAsRecordFieldWithoutFragment() returns error? {
 }
 isolated function testUnionTypeAsRecordField() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("union_type_as_record_field.txt");
+    string document = check getGraphQLDocumentFromFile("union_type_as_record_field.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         data: {
@@ -247,7 +247,7 @@ isolated function testUnionTypeAsRecordField() returns error? {
 }
 isolated function testUnionTypesWithMissingTypesInDocument() returns error? {
     string graphqlUrl = "http://localhost:9091/records_union";
-    string document = check getGraphQLDocumentFromFile("union_types_with_missing_types_in_document.txt");
+    string document = check getGraphQLDocumentFromFile("union_types_with_missing_types_in_document.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("union_types_with_missing_types_in_document.json");
     assertJsonValuesWithOrder(result, expectedPayload);

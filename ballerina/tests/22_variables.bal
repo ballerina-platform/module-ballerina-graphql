@@ -95,7 +95,7 @@ isolated function testInputVariablesWithEmptyInputObjectValue() returns error? {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testFragmentsWithInputVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_input_variables.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_with_input_variables.graphql");
     json variables = { profileId: 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
@@ -107,7 +107,7 @@ isolated function testFragmentsWithInputVariables() returns error? {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testFragmentsWithUndefinedInputVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_undefined_variables.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_with_undefined_variables.graphql");
     json variables = { profileId: 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -119,7 +119,7 @@ isolated function testFragmentsWithUndefinedInputVariables() returns error? {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testDuplicateVariablesWithMultipleOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("duplicate_variables_with_multiple_operations.txt");
+    string document = check getGraphQLDocumentFromFile("duplicate_variables_with_multiple_operations.graphql");
     json variables = { profileId: 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document, variables, "B");
@@ -131,7 +131,7 @@ isolated function testDuplicateVariablesWithMultipleOperations() returns error? 
     groups: ["variables", "fragments", "input"]
 }
 isolated function testFragmnetsWithUnsusedVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_unused_variables.txt");
+    string document = check getGraphQLDocumentFromFile("fragments_with_unused_variables.graphql");
     json variables = { profileId: 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables, "B");
@@ -143,7 +143,7 @@ isolated function testFragmnetsWithUnsusedVariables() returns error? {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testInlineFragmentsWithVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_fragments_with_variables.txt");
+    string document = check getGraphQLDocumentFromFile("inline_fragments_with_variables.graphql");
     json variables = { profileId: 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
@@ -152,10 +152,10 @@ isolated function testInlineFragmentsWithVariables() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "fragments", "input"]
+    groups: ["variables", "fragments", "input", "test"]
 }
 isolated function testVariablesWithDefaultValues() returns error? {
-    string document = check getGraphQLDocumentFromFile("variables_with_default_values.txt");
+    string document = check getGraphQLDocumentFromFile("variables_with_default_values.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("variables_with_default_values.json");
@@ -210,8 +210,8 @@ isolated function testEnumTypeVariables() returns error? {
     groups: ["variables", "inputs"]
 }
 isolated function testMultipleVariableTypesWithSingleQuery() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_variable_types_with_single_query.txt");
-    json variables = { 
+    string document = check getGraphQLDocumentFromFile("multiple_variable_types_with_single_query.graphql");
+    json variables = {
         name: "Thisaru",
         age: 30,
         weight: 70.5,
@@ -255,7 +255,7 @@ isolated function testInvalidUsageOfNullableVariable() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("invalid_usage_of_nullable_variable.json");
-    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -317,7 +317,7 @@ isolated function testVariableWithInvalidDefaultValue2() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value2.json");
-    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -328,7 +328,7 @@ isolated function testVariableWithInvalidDefaultValue3() returns error? {
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value3.json");
-    assertJsonValuesWithOrder(expectedPayload, expectedPayload);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
