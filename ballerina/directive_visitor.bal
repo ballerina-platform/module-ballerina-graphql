@@ -36,6 +36,7 @@ class DirectiveVisitor {
         if self.errors.length() > 0 {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -62,7 +63,7 @@ class DirectiveVisitor {
                 i += 1;
             } else {
                 _ = selections.remove(i);
-            }   
+            }
         }
     }
 

@@ -60,7 +60,7 @@ isolated function testMutation() returns error? {
     groups: ["mutations"]
 }
 isolated function testMultipleMutations() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_mutations.txt");
+    string document = check getGraphQLDocumentFromFile("multiple_mutations.graphql");
     string url = "http://localhost:9091/mutations";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("multiple_mutations.json");
@@ -94,7 +94,7 @@ isolated function testInvalidMutation() returns error? {
     groups: ["mutations"]
 }
 isolated function testMultipleMutationsOnServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_mutations_on_service_objects.txt");
+    string document = check getGraphQLDocumentFromFile("multiple_mutations_on_service_objects.graphql");
     string url = "http://localhost:9091/mutations";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("multiple_mutations_on_service_objects.json");
