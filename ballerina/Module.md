@@ -60,7 +60,7 @@ service graphql:Service /graphql on new graphql:Listener(4000) {
 
 The above can be queried using the GraphQL document below:
 
-```
+```graphql
 {
     greeting(name: "John")
 }
@@ -117,7 +117,7 @@ service /graphql on new graphql:Listener(4000) {
 
 This will generate the following schema:
 
-```schema
+```graphql
 type Query {
     profile: Person!
 }
@@ -138,7 +138,7 @@ type Person {
 
 This can be mutated using the following document.
 
-```
+```graphql
 mutation updatePerson {
     updateName(name: "Mr. Lambert") {
         ... ProfileFragment
@@ -223,7 +223,7 @@ service graphql:Service /graphql on new graphql:Listener(9090) {
 ```
 
 The above service only accepts queries of less than 2 levels. For an example, consider the following document:
-```
+```graphql
 query getData {
     book {
         author {
@@ -329,7 +329,7 @@ There are two methods to retrieve attributes from the `graphql:Context`.
 ##### `get()` Function
 This will return the value of the attribute using the provided key. If the key does not exist, it will return a `graphql:Error`.
 
-```
+```ballerina
 resource function get greeting(graphql:Context context) returns string|error {
     var username = check context.get("username");
     if username is string {
@@ -344,7 +344,7 @@ This function will remove the attribute for a provided key, and return the value
 
 > **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
 
-```
+```ballerina
 resource function get greeting(graphql:Context context) returns string|error {
     var username = check context.remove("username");
     if username is string {
@@ -376,7 +376,7 @@ resource function get greeting() returns string {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     greeting
 }
@@ -408,7 +408,7 @@ resource function get profile() returns Person {
 ```
 
 This will generate the following schema.
-```
+```graphql
 type Query {
     profile: Person!
 }
@@ -420,7 +420,7 @@ type Person {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     profile {
         name
@@ -442,7 +442,7 @@ Result:
 ```
 
 Each field can be queried separately as shown in the following document:
-```
+```graphql
 {
     profile {
         name
@@ -496,7 +496,7 @@ service class Person {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile: Person!
 }
@@ -549,7 +549,7 @@ resource function get people() returns Person[] {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile: [Person!]!
 }
@@ -561,7 +561,7 @@ type Person {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     people {
         name
@@ -609,7 +609,7 @@ resource function get profile(int id) returns Person? {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile: Person
 }
@@ -621,7 +621,7 @@ type Person {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     profile(id: 1) {
         name
@@ -641,7 +641,7 @@ Result:
 ```
 
 If the following document is used:
-```
+```graphql
 {
     profile(id: 4) {
         name
@@ -723,7 +723,7 @@ distinct service class Teacher {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile(purity: Int!): StudentOrTeacher!
 }
@@ -744,7 +744,7 @@ union StudentOrTeacher Student|Teacher
 
 This can be queried using the following document:
 
-```
+```graphql
 query {
     profile(purity: 75) {
         ... on Student {
@@ -772,7 +772,7 @@ The result will be:
 
 If the following document is used:
 
-```
+```graphql
 query {
     profile(purity: 99) {
         ... on Student {
@@ -820,7 +820,7 @@ resource function get profile(int id) returns Person|error {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     profile(id: 5) {
         name
