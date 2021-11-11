@@ -58,7 +58,7 @@ public class Listener {
         attachHttpServiceToGraphqlService(s, httpService);
 
         error? result = self.httpListener.attach(httpService, name);
-        if (result is error) {
+        if result is error {
             return error Error("Error occurred while attaching the service", result);
         }
     }
@@ -69,7 +69,7 @@ public class Listener {
     # + return - A `graphql:Error` if an error occurred during the service detaching process or else `()`
     public isolated function detach(Service s) returns Error? {
         HttpService? httpService = getHttpServiceFromGraphqlService(s);
-        if (httpService is HttpService) {
+        if httpService is HttpService {
             error? result = self.httpListener.detach(httpService);
             if (result is error) {
                 return error Error("Error occurred while detaching the service", result);
@@ -82,7 +82,7 @@ public class Listener {
     # + return - A `graphql:Error`, if an error occurred during the service starting process, otherwise nil
     public isolated function 'start() returns Error? {
         error? result = self.httpListener.'start();
-        if (result is error) {
+        if result is error {
             return error Error("Error occurred while starting the service", result);
         }
     }
@@ -92,7 +92,7 @@ public class Listener {
     # + return - A `graphql:Error`, if an error occurred during the service stopping process, otherwise nil
     public isolated function gracefulStop() returns Error? {
         error? result = self.httpListener.gracefulStop();
-        if (result is error) {
+        if result is error {
             return error Error("Error occurred while stopping the service", result);
         }
     }
@@ -102,7 +102,7 @@ public class Listener {
     # + return - A `graphql:Error` if an error occurred during the service stopping process or else `()`
     public isolated function immediateStop() returns Error? {
         error? result = self.httpListener.immediateStop();
-        if (result is error) {
+        if result is error {
             return error Error("Error occurred while stopping the service", result);
         }
     }
