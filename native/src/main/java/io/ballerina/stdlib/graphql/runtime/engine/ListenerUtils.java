@@ -23,7 +23,7 @@ import io.ballerina.runtime.api.values.BObject;
 /**
  * External utility methods used in Ballerina GraphQL listener.
  */
-public class ListenerUtils {
+public final class ListenerUtils {
     private static final String HTTP_SERVICE = "graphql.http.service";
 
     private ListenerUtils() {}
