@@ -26,6 +26,8 @@ import io.ballerina.runtime.api.values.BObject;
 public class ListenerUtils {
     private static final String HTTP_SERVICE = "graphql.http.service";
 
+    private ListenerUtils() {}
+
     public static void attachHttpServiceToGraphqlService(BObject graphqlService, BObject httpService) {
         graphqlService.addNativeData(HTTP_SERVICE, httpService);
     }
