@@ -19,7 +19,6 @@ import ballerina/http;
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
-    private HttpService? httpService;
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
@@ -39,7 +38,6 @@ public class Listener {
         } else {
             self.httpListener = listenTo;
         }
-        self.httpService = ();
     }
 
     # Attaches the provided service to the Listener.
@@ -57,11 +55,12 @@ public class Listener {
         attachServiceToEngine(s, engine);
 
         HttpService httpService = new(engine, serviceConfig);
+        attachHttpServiceToGraphqlService(s, httpService);
+
         error? result = self.httpListener.attach(httpService, name);
         if (result is error) {
             return error Error("Error occurred while attaching the service", result);
         }
-        self.httpService = httpService;
     }
 
     # Detaches the provided service from the Listener.
@@ -69,8 +68,9 @@ public class Listener {
     # + s - The service to be detached from the listener
     # + return - A `graphql:Error` if an error occurred during the service detaching process or else `()`
     public isolated function detach(Service s) returns Error? {
-        if (self.httpService is HttpService) {
-            error? result = self.httpListener.detach(<HttpService>self.httpService);
+        HttpService? httpService = getHttpServiceFromGraphqlService(s);
+        if (httpService is HttpService) {
+            error? result = self.httpListener.detach(httpService);
             if (result is error) {
                 return error Error("Error occurred while detaching the service", result);
             }

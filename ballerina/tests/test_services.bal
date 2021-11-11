@@ -17,7 +17,17 @@
 import ballerina/http;
 import ballerina/lang.runtime;
 
-Service simpleService = service object {
+Service simpleService1 = service object {
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    isolated resource function get id() returns int {
+        return 1;
+    }
+};
+
+Service simpleService2 = service object {
     isolated resource function get name() returns string {
         return "Walter White";
     }
