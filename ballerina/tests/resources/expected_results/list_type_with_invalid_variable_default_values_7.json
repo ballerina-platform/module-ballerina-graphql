@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"profileDetail: In element #1: \" of type \"ProfileDetail\" has invalid default value. Expected type \"ProfileDetail\"",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 50
+                }
+            ]
+        },
+        {
+            "message": "Variable \"profileDetail\" of type \"[ProfileDetail]\" used in position expecting type \"[ProfileDetail!]!\".",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 103
+                }
+            ]
+        }
+    ]
+}

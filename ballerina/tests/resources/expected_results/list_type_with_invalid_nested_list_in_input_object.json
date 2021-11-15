@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "In element #0: In element #1: In element #0: String cannot represent non String value: true",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 143
+                }
+            ]
+        },
+        {
+            "message": "In element #0: In element #1: In element #1: String cannot represent non String value: 4",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 149
+                }
+            ]
+        }
+    ]
+}

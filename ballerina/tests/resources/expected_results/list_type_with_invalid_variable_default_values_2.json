@@ -1,0 +1,58 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"words: In element #0: \" of type \"Int\" has invalid default value: Hello!. Expected type \"Int\", found Hello!",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 25
+                }
+            ]
+        },
+        {
+            "message": "Variable \"words: In element #1: \" of type \"Int\" has invalid default value: This. Expected type \"Int\", found This",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 35
+                }
+            ]
+        },
+        {
+            "message": "Variable \"words: In element #2: \" of type \"Int\" has invalid default value: is. Expected type \"Int\", found is",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 43
+                }
+            ]
+        },
+        {
+            "message": "Variable \"words: In element #3: \" of type \"Int\" has invalid default value: Ballerina. Expected type \"Int\", found Ballerina",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 49
+                }
+            ]
+        },
+        {
+            "message": "Variable \"words: In element #4: \" of type \"Int\" has invalid default value: GraphQL. Expected type \"Int\", found GraphQL",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 62
+                }
+            ]
+        },
+        {
+            "message": "Variable \"words\" of type \"[Int]\" used in position expecting type \"[String]\".",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 90
+                }
+            ]
+        }
+    ]
+}

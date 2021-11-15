@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "In element #0: In element #0: String cannot represent non String value: true",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 99
+                }
+            ]
+        },
+        {
+            "message": "In element #0: In element #1: String cannot represent non String value: graphql",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 105
+                }
+            ]
+        }
+    ]
+}

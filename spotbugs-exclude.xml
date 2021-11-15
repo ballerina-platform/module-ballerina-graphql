@@ -7,4 +7,20 @@
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>
+    <Match>
+        <And>
+            <Class name="io.ballerina.stdlib.graphql.runtime.engine.Engine" />
+            <And>
+            <Method name="addListMembersFromVariableValue" />
+            </And>
+            <Bug pattern="BC_UNCONFIRMED_CAST" />
+        </And>
+    </Match>
+    <Match>
+        <And>
+            <Class name="io.ballerina.stdlib.graphql.runtime.engine.Engine" />
+            <Method name="addArgumentFromVariableValue" />
+            <Bug pattern="BC_UNCONFIRMED_CAST" />
+        </And>
+    </Match>
 </FindBugsFilter>

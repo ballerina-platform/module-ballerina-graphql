@@ -781,6 +781,43 @@ isolated function testListTypeArgumentWithVariables() returns error? {
 }
 
 @test:Config {
+    groups: ["list", "input_objects", "variables", "parser"]
+}
+
+isolated function testListTypeWithinInputObjectVariableDefualtValue() returns error? {
+    string document = string`query ($userDetails: UserDetails = {name: "Jessie", friends: ["walter", null]}){ profile(details: $userDetails) { id } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["userDetails"];
+    test:assertEquals(variableDefinition.getName(), "userDetails");
+    test:assertEquals(variableDefinition.getTypeName(), "UserDetails");
+    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
+    test:assertEquals(argValue.getName(), "userDetails");
+    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    test:assertEquals(defaultValue.length(), 2);
+
+    ArgumentNode field1 = <ArgumentNode> defaultValue[0];
+    test:assertEquals(field1.getKind(), T_STRING);
+    ArgumentValue field1Value = <ArgumentValue> field1.getValue();
+    test:assertEquals(<Scalar>field1Value, "Jessie");
+
+    ArgumentNode field2 = <ArgumentNode> defaultValue[1];
+    test:assertEquals(field2.getKind(), T_LIST);
+    ArgumentValue[] field2Value = <ArgumentValue[]> field2.getValue();
+    test:assertEquals(field2Value.length(), 2);
+    ArgumentNode innerField = <ArgumentNode> field2Value[0];
+    ArgumentValue innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>innerFieldValue, "walter");
+    innerField = <ArgumentNode> field2Value[1];
+    innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<null>innerFieldValue, null);
+}
+
+@test:Config {
     groups: ["list", "variables", "parser"]
 }
 

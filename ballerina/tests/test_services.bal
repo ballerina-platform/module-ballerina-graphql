@@ -167,13 +167,15 @@ service /input_objects on basicListener {
     }
 }
 
-service /input_list on basicListener {
-    isolated resource function get concat(string[] words) returns string {
+service /list_inputs on basicListener {
+    isolated resource function get concat(string?[]? words) returns string {
         string result = "";
-        if words.length() > 0 {
-            foreach string word in words {
-                result += word;
-                result += " ";
+        if words is string?[] && words.length() > 0 {
+            foreach string? word in words {
+                if word is string {
+                    result += word;
+                    result += " ";
+                }
             }
             return result.trim();
         }
@@ -237,7 +239,35 @@ service /input_list on basicListener {
         return results;
     }
 
-    isolated resource function get isHoliday(Weekday[] days) returns boolean {
+    resource function get getMovie(TvSeries tvSeries) returns Movie[] {
+        Movie[] results = [m1, m2, m3, m4, m5, m6];
+        if tvSeries?.episodes is Episode[] {
+            Episode[] episodes = <Episode[]>tvSeries?.episodes;
+            foreach Episode episode in episodes {
+                if episode?.newCharacters is string[] {
+                    string[] characters = <string[]> episode?.newCharacters;
+                    foreach string name in characters {
+                        if name == "Sara" || name == "Michael" || name == "Lincoln" {
+                            results = [m4, m5, m6];
+                        } else if name == "Harry" || name == "Hagrid" {
+                            results = [m1];
+                        } else if name == "Sherlock" {
+                            results = [m2];
+                        }
+                    }
+                } else {
+                    if episode.title == "The Key" || episode.title == "Flight" {
+                        results = [m4, m5];
+                    } else if episode.title == "Cancer Man" {
+                        results = [m3];
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
+    isolated resource function get isIncludeHoliday(Weekday[] days = [MONDAY, FRIDAY]) returns boolean {
         if days.indexOf(<Weekday> SUNDAY) != () || days.indexOf(<Weekday> SATURDAY) != () {
             return true;
         }

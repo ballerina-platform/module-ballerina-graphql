@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"words: In element #3: \" of type \"String\" has invalid default value: Ballerina. Expected type \"String\", found Ballerina",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 52
+                }
+            ]
+        },
+        {
+            "message": "Variable \"words: In element #4: \" of type \"String\" has invalid default value: true. Expected type \"String\", found true",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 63
+                }
+            ]
+        }
+    ]
+}

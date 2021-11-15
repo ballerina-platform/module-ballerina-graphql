@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"prices: In element #0: In element #1: \" of type \"Float!\" has invalid default value: true. Expected type \"Float!\", found true",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 36
+                }
+            ]
+        },
+        {
+            "message": "Variable \"prices: In element #1: \" of type \"[Float!]!\" has invalid default value: false. Expected type \"[Float!]!\", found false",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 46
+                }
+            ]
+        }
+    ]
+}

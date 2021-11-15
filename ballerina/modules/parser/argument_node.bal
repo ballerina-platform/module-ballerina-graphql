@@ -23,7 +23,7 @@ public class ArgumentNode {
     private Location valueLocation;
     private ArgumentType kind;
     private string? variableName;
-    private anydata? variableValue;
+    private json variableValue;
     private boolean variableDefinition;
 
     public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
@@ -85,11 +85,11 @@ public class ArgumentNode {
         return self.variableDefinition;
     }
 
-    public isolated function setVariableValue(anydata inputValue) {
+    public isolated function setVariableValue(json inputValue) {
         self.variableValue = inputValue;
     }
 
-    public isolated function getVariableValue() returns anydata {
+    public isolated function getVariableValue() returns json {
         return self.variableValue;
     }
 }

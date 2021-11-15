@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.utils;
 
+import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.Type;
@@ -66,6 +67,9 @@ public class Utils {
     }
 
     public static boolean isContext(Type type) {
+        if (type.getTag() == TypeTags.ARRAY_TAG) {
+            return false;
+        }
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }

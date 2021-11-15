@@ -340,6 +340,11 @@ public class Parser {
                         check self.getInputObjectTypeArgument(fieldName, fieldLocation, isAllowVariableValue);
                     fields.push(nestedInputObjectFields);
                     visitedFields.push(fieldName);
+                } else if token.kind == T_OPEN_BRACKET {
+                    //list with nested lists
+                    ArgumentNode listTypeFieldValue = check self.getListTypeArgument(fieldName, token.location);
+                    fields.push(listTypeFieldValue);
+                    visitedFields.push(fieldName);
                 } else if token.kind == T_DOLLAR {
                     if isAllowVariableValue {
                         //input object fields with variable definitions
