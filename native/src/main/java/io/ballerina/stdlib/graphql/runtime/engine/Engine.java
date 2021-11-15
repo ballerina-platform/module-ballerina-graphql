@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.MethodType;
@@ -167,8 +168,15 @@ public class Engine {
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, method.getName(), null,
-                                                                         strandMetadata, callback, args);
+        if (service.getType().isIsolated()) {
+            executionContext.getEnvironment().getRuntime()
+                    .invokeMethodAsyncConcurrently(service, method.getName(), null,
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+        } else {
+            executionContext.getEnvironment().getRuntime()
+                    .invokeMethodAsyncSequentially(service, method.getName(), null,
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+        }
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
