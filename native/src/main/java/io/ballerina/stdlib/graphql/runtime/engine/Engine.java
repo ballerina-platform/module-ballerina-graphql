@@ -168,7 +168,7 @@ public class Engine {
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
-        if (service.getType().isIsolated()) {
+        if (service.getType().isIsolated() && service.getType().isIsolated(method.getName())) {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncConcurrently(service, method.getName(), null,
                             strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
