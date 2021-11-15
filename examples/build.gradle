@@ -45,9 +45,9 @@ task testExamples {
                 exec {
                     workingDir project.projectDir
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', '/c', "${ballerinaDist}/bin/bal.bat build --with-tests ${example} && exit %%ERRORLEVEL%%"
+                        commandLine 'cmd', '/c', "${ballerinaDist}/bin/bal.bat test ${example} && exit %%ERRORLEVEL%%"
                     } else {
-                        commandLine 'sh', '-c', "${ballerinaDist}/bin/bal build --with-tests ${example}"
+                        commandLine 'sh', '-c', "${ballerinaDist}/bin/bal test ${example}"
                     }
                 }
             } catch (Exception e) {
