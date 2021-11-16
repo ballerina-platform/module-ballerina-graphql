@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "In element #1: String cannot represent non String value: 5",
+            "message": "words: In element #1:String cannot represent non String value: 5",
             "locations": [
                 {
                     "line": 1,
@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "In element #2: String cannot represent non String value: true",
+            "message": "words: In element #2:String cannot represent non String value: true",
             "locations": [
                 {
                     "line": 1,
@@ -19,7 +19,7 @@
             ]
         },
         {
-            "message": "In element #3: String cannot represent non String value: {}",
+            "message": "words: In element #3:String cannot represent non String value: {}",
             "locations": [
                 {
                     "line": 1,

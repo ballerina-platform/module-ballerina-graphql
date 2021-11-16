@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "In element #0: In element #1: In element #0: String cannot represent non String value: true",
+            "message": "tvSeries: In element #0:String cannot represent non String value: true",
             "locations": [
                 {
                     "line": 1,
@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "In element #0: In element #1: In element #1: String cannot represent non String value: 1",
+            "message": "tvSeries: In element #0:String cannot represent non String value: 1",
             "locations": [
                 {
                     "line": 1,

@@ -92,9 +92,7 @@ class VariableValidator {
         __InputValue[] inputValues = requiredFieldValue is __Field ? requiredFieldValue.args : [];
         self.validateDirectiveVariables(fieldNode);
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
-            self.updatePath(argument.getName());
             self.visitArgument(argument, inputValues);
-            self.removePath();
         }
         if fieldNode.getSelections().length() > 0 {
             parser:Selection[] selections = fieldNode.getSelections();
@@ -166,8 +164,7 @@ class VariableValidator {
             parser:ArgumentNode? valueNode;
             [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(defaultValue, variableType);
             if hasInvalidValue && valueNode is parser:ArgumentNode {
-                string? invalidValue = valueNode.getValue() is Scalar ? valueNode.getValue().toString(): ();
-                string message = getInvalidDefaultValueError(variableName, varDef.getTypeName(), invalidValue);
+                string message = getInvalidDefaultValueError(variableName, varDef.getTypeName(), valueNode.getValue());
                 self.errors.push(getErrorDetailRecord(message, valueNode.getValueLocation()));
             } else {
                 self.setDefaultValueToArgumentNode(argumentNode, getArgumentTypeIdentifierFromType(variableType),
@@ -217,16 +214,15 @@ class VariableValidator {
                     parser:ArgumentNode? valueNode;
                     [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(member, memberType);
                     if hasInvalidValue {
-                        string? invalidValue = member.getValue() is Scalar ? member.getValue().toString(): ();
-                        string listError = string`${defaultValue.getName()}: ${getListElementError(self.argumentPath)}`;
-                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), invalidValue);
+                        string listError = string`${getListElementError(self.argumentPath)}`;
+                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), member.getValue());
                         self.errors.push(getErrorDetailRecord(message, member.getValueLocation()));
                     }
                 }
                 self.removePath();
             }
         } else if memberType.kind == NON_NULL  {
-            string listError = string`${defaultValue.getName()}: ${getListElementError(self.argumentPath)}`;
+            string listError = string`${getListElementError(self.argumentPath)}`;
             string message = getInvalidDefaultValueError(listError, getTypeNameFromType(variableType), "[]");
             self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
         }
@@ -372,7 +368,4 @@ class VariableValidator {
         _ = self.argumentPath.pop();
     }
 
-    isolated function getPath() returns (string|int)[] {
-        return self.argumentPath;
-    }
 }

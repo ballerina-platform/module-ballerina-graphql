@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "In element #5: Enum \"Weekday\" cannot represent non-enum value: \"4\"",
+            "message": "days: In element #5:Enum \"Weekday\" cannot represent non-enum value: \"4\"",
             "locations": [
                 {
                     "line": 1,

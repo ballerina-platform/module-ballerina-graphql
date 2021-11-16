@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable \"words: In element #0: \" of type \"Int\" has invalid default value: Hello!. Expected type \"Int\", found Hello!",
+            "message": "Variable \"words: In element #0:\" of type \"Int\" has invalid default value: Hello!. Expected type \"Int\", found Hello!",
             "locations": [
                 {
                     "line": 1,
@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "Variable \"words: In element #1: \" of type \"Int\" has invalid default value: This. Expected type \"Int\", found This",
+            "message": "Variable \"words: In element #1:\" of type \"Int\" has invalid default value: This. Expected type \"Int\", found This",
             "locations": [
                 {
                     "line": 1,
@@ -19,7 +19,7 @@
             ]
         },
         {
-            "message": "Variable \"words: In element #2: \" of type \"Int\" has invalid default value: is. Expected type \"Int\", found is",
+            "message": "Variable \"words: In element #2:\" of type \"Int\" has invalid default value: is. Expected type \"Int\", found is",
             "locations": [
                 {
                     "line": 1,
@@ -28,7 +28,7 @@
             ]
         },
         {
-            "message": "Variable \"words: In element #3: \" of type \"Int\" has invalid default value: Ballerina. Expected type \"Int\", found Ballerina",
+            "message": "Variable \"words: In element #3:\" of type \"Int\" has invalid default value: Ballerina. Expected type \"Int\", found Ballerina",
             "locations": [
                 {
                     "line": 1,
@@ -37,7 +37,7 @@
             ]
         },
         {
-            "message": "Variable \"words: In element #4: \" of type \"Int\" has invalid default value: GraphQL. Expected type \"Int\", found GraphQL",
+            "message": "Variable \"words: In element #4:\" of type \"Int\" has invalid default value: GraphQL. Expected type \"Int\", found GraphQL",
             "locations": [
                 {
                     "line": 1,

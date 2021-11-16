@@ -67,9 +67,11 @@ isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue
     return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
 }
 
-isolated function getInvalidDefaultValueError(string variableName, string typeName, string? value = ()) returns string {
-    if value is string {
+isolated function getInvalidDefaultValueError(string variableName, string typeName, parser:ArgumentValue|parser:ArgumentValue[] value) returns string {
+    if value is Scalar {
         return string`Variable "${variableName}" of type "${typeName}" has invalid default value: ${value}. Expected type "${typeName}", found ${value}`;
+    } else if value is () {
+        return string`Variable "${variableName}" of type "${typeName}" has invalid default value: null. Expected type "${typeName}", found null`;
     }
     return string`Variable "${variableName}" of type "${typeName}" has invalid default value. Expected type "${typeName}"`;
 }
@@ -189,13 +191,26 @@ isolated function getTypeKind(__Type argType) returns __TypeKind {
 }
 
 isolated function getListElementError((string|int)[] path) returns string {
-    string listError = "";
-    foreach string|int item in path {
-        if item is int {
-            listError += string`In element #${item.toString()}: `;
+    string errorMsg = "";
+    if path.length() > 1 {
+        string listIndex = "";
+        string argName = "";
+        foreach int i in 0..< path.length() {
+            string|int pathSegment = path[i];
+            if pathSegment is int && argName.length() > 0 {
+                listIndex += string`: In element #${pathSegment.toString()}`;
+            } else if pathSegment is string && i == 0 {
+                argName = pathSegment;
+            } else if pathSegment is string && pathSegment == argName {
+                // skip the nested list name
+                continue;
+            } else {
+                break;
+            }
         }
+        errorMsg = string`${argName}${listIndex}:`;
     }
-    return listError;
+    return errorMsg;
 }
 
 isolated function getListMemberTypeFromType(__Type argType) returns __Type {

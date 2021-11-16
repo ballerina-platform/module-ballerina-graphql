@@ -83,7 +83,7 @@ isolated function testNullableListTypeInputWithInvalidValue() returns error? {
     string document = string`query { concat(words: ["Hello!", 5, true, {}, "GraphQL"]) }`;
     string url = "http://localhost:9091/list_inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("nullable_list_type_input_wiht_invalid_value.json");
+    json expectedPayload = check getJsonContentFromFile("nullable_list_type_input_with_invalid_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -105,7 +105,7 @@ isolated function testListTypeInputsWithNestedList() returns error? {
 @test:Config {
     groups: ["list", "input"]
 }
-isolated function testNestedListInputswithInvalidValues() returns error? {
+isolated function testNestedListInputWithInvalidValues() returns error? {
     string document = string`query { getTotal(prices: [[2, 3, d], [4, 5, 6, "is"], [3, 5, 6, 4 , true, 7]]) }`;
     string url = "http://localhost:9091/list_inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
@@ -174,7 +174,7 @@ isolated function testListTypeWithInvalidInputObjectsValue() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "In element #1: Episode cannot represent non Episode value: true",
+                message: "tvSeries: In element #1:Episode cannot represent non Episode value: true",
                 locations: [
                     {
                         line: 1,
@@ -280,7 +280,7 @@ isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns er
     json expectedPayload = {
         errors: [
             {
-                message: "In element #1: Episode cannot represent non Episode value: true",
+                message: "tvSeries: In element #1:Episode cannot represent non Episode value: true",
                 locations: [
                     {
                         line: 1,

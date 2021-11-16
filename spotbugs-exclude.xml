@@ -19,7 +19,7 @@
     <Match>
         <And>
             <Class name="io.ballerina.stdlib.graphql.runtime.engine.Engine" />
-            <Method name="addArgumentFromVariableValue" />
+            <Method name="addInputObjectFieldsFromVariableValue" />
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>

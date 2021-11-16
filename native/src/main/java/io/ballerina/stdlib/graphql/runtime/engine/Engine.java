@@ -196,7 +196,7 @@ public class Engine {
             BString argName = argumentNode.getStringValue(NAME_FIELD);
             Type argType  = getArgumentTypeFromMethod(argName, method);
             if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
-                addArgumentFromVariableValue(argumentNode, argumentsMap, getNonNullType(argType));
+                addInputObjectFieldsFromVariableValue(argumentNode, argumentsMap, getNonNullType(argType));
             } else if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                 BArray objectFields = argumentNode.getArrayValue(VALUE_FIELD);
                 BMap<BString, Object> inputObjectRecord =
@@ -223,7 +223,7 @@ public class Engine {
             Map<String, Field> fields = argType.getFields();
             Type fieldType = fields.get(fieldName.getValue()).getFieldType();
             if (objectFieldNode.getBooleanValue(VARIABLE_DEFINITION)) {
-                addArgumentFromVariableValue(objectFieldNode, inputObjectRecord, getNonNullType(fieldType));
+                addInputObjectFieldsFromVariableValue(objectFieldNode, inputObjectRecord, getNonNullType(fieldType));
             } else if (objectFieldNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                 BArray nestedObjectFields = objectFieldNode.getArrayValue(VALUE_FIELD);
                 BMap<BString, Object> nestedInputObjectRecord =
@@ -267,8 +267,8 @@ public class Engine {
         }
     }
 
-    public static void addArgumentFromVariableValue(BObject argumentNode, BMap<BString, Object> argumentsMap,
-                                                    Type argType) {
+    public static void addInputObjectFieldsFromVariableValue(BObject argumentNode, BMap<BString, Object> argumentsMap,
+                                                             Type argType) {
         BString argName = argumentNode.getStringValue(NAME_FIELD);
         if (argType.getTag() == TypeTags.RECORD_TYPE_TAG) {
             BMap<BString, Object> inputObjectFields = argumentNode.getMapValue(VARIABLE_VALUE_FIELD);
@@ -404,8 +404,7 @@ public class Engine {
             List<Type> memberTypes = getMemberTypes((UnionType) type);
             for (Type member : memberTypes) {
                 if (member.getTag() == TypeTags.ARRAY_TAG) {
-                    memberTypes.add(((ArrayType) member).getElementType());
-                    memberTypes.remove(memberTypes.indexOf(member));
+                    return (ArrayType) member;
                 }
             }
             return TypeCreator.createArrayType(TypeCreator.createUnionType(memberTypes));
