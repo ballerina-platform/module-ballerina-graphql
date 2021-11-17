@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#741] Add Default Directives 'skip' & 'include' Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/741)
 - [[#2026] Implement auth error types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2026)
 
+### Changed
+- [[#2398] Mark GraphQL Service type as distinct](https://github.com/ballerina-platform/ballerina-standard-library/issues/2398)
+
 ### Fixed
 - [[#1988] Fix Fields Missing from the Response when an Error Occurred](https://github.com/ballerina-platform/ballerina-standard-library/issues/1988)
 - [[#2041] Fix Invalid Type Inferring for List Element Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2041)
