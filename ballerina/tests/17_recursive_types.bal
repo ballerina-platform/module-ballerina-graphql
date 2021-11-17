@@ -37,7 +37,7 @@ isolated function testReturningRecursiveServiceTypes() returns error? {
     groups: ["service", "schema_generation"]
 }
 isolated function testRequestInvalidFieldFromServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("request_invalid_field_from_service_objects.txt");
+    string document = check getGraphQLDocumentFromFile("request_invalid_field_from_service_objects.graphql");
     string url = "http://localhost:9092/snowtooth";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
@@ -60,7 +60,7 @@ isolated function testRequestInvalidFieldFromServiceObjects() returns error? {
     groups: ["service", "union", "recursive_service", "schema_generation"]
 }
 isolated function testReturningUnionOfServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("returning_union_of_service_objects.txt");
+    string document = check getGraphQLDocumentFromFile("returning_union_of_service_objects.graphql");
     string url = "http://localhost:9092/snowtooth";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("returning_union_of_service_objects.json");
@@ -71,7 +71,7 @@ isolated function testReturningUnionOfServiceObjects() returns error? {
     groups: ["introspection", "service", "union", "fragments"]
 }
 isolated function testGraphQLPlaygroundIntrospectionQuery() returns error? {
-    string document = check getGraphQLDocumentFromFile("graphql_playground_introspection_query.txt");
+    string document = check getGraphQLDocumentFromFile("graphql_playground_introspection_query.graphql");
     json expectedPayload = check getJsonContentFromFile("graphql_playground_introspection_query.json");
     string url = "http://localhost:9092/snowtooth";
     json actualPayload = check getJsonPayloadFromService(url, document);

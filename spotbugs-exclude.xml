@@ -3,7 +3,6 @@
     <Match>
         <And>
             <Class name="io.ballerina.stdlib.graphql.runtime.schema.Utils" />
-            <Method name="getTypeNameFromType" />
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>

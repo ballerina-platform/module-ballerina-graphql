@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/jballerina.java;
 
 import graphql.parser;
 
@@ -92,6 +93,7 @@ isolated function getOperationName(json payload) returns string? {
     if operationName is string {
         return operationName;
     }
+    return;
 }
 
 isolated function addDefaultDirectives(__Schema schema) {
@@ -99,3 +101,12 @@ isolated function addDefaultDirectives(__Schema schema) {
         schema.directives.push(directive);
     }
 }
+
+isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getHttpServiceFromGraphqlService(Service s) returns HttpService? =
+@java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;

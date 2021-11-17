@@ -40,7 +40,7 @@ isolated function testBallerinaRecordAsGraphqlObject() returns error? {
     groups: ["records", "fragments", "inline"]
 }
 isolated function testInlineFragmentsOnRecordObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_fragments_on_record_objects.txt");
+    string document = check getGraphQLDocumentFromFile("inline_fragments_on_record_objects.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("inline_fragments_on_record_objects.json");
@@ -51,7 +51,7 @@ isolated function testInlineFragmentsOnRecordObjects() returns error? {
     groups: ["records", "fragments", "inline"]
 }
 isolated function testInlineNestedFragmentsOnRecordObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_nested_fragments_on_record_objects.txt");
+    string document = check getGraphQLDocumentFromFile("inline_nested_fragments_on_record_objects.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("inline_nested_fragments_on_record_objects.json");

@@ -40,6 +40,7 @@ class ValidatorVisitor {
         if (self.errors.length() > 0) {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -89,7 +90,6 @@ class ValidatorVisitor {
         }
         __Field requiredField = <__Field>requiredFieldValue;
         __Type fieldType = getOfType(requiredField.'type);
-        __Field[] subFields = getFieldsArrayFromType(fieldType);
         self.checkArguments(parentType, fieldNode, requiredField);
         self.validateDirectiveArguments(fieldNode);
         if !hasFields(fieldType) && fieldNode.getSelections().length() == 0 {
@@ -133,8 +133,8 @@ class ValidatorVisitor {
     isolated function visitInputObject(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         __Type argType = getOfType(schemaArg.'type);
         __InputValue[]? inputFields = argType?.inputFields;
-        parser:ArgumentValue[] fields = <parser:ArgumentValue[]> argumentNode.getValue();
-        if inputFields is __InputValue[] {
+        if inputFields is __InputValue[] && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
+            parser:ArgumentValue[] fields = <parser:ArgumentValue[]> argumentNode.getValue();
             self.validateInputObjectFields(argumentNode, inputFields);
             foreach __InputValue inputField in inputFields {
                 __InputValue subInputValue = inputField;
@@ -154,9 +154,8 @@ class ValidatorVisitor {
                 }
             }
         } else {
-            string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             string listError = getListElementError(self.argumentPath);
-            string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: {}`;
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode.getValue());
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
             self.errors.push(errorDetail);
         }
@@ -164,8 +163,8 @@ class ValidatorVisitor {
 
     isolated function visitListValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         self.updatePath(argumentNode.getName());
-        parser:ArgumentValue|parser:ArgumentValue[] listItems = argumentNode.getValue();
         if getTypeKind(schemaArg.'type) == LIST {
+            parser:ArgumentValue|parser:ArgumentValue[] listItems = argumentNode.getValue();
             if listItems is parser:ArgumentValue[] {
                 __InputValue listItemInputValue = createInputValueForListItem(schemaArg);
                 if listItems.length() > 0 {
@@ -189,6 +188,11 @@ class ValidatorVisitor {
                 ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
                 self.errors.push(errorDetail);
             }
+        } else {
+            string listError = getListElementError(self.argumentPath);
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode.getValue());
+            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            self.errors.push(errorDetail);
         }
         self.removePath();
     }
@@ -226,9 +230,9 @@ class ValidatorVisitor {
             }
             return;
         }
-        if getOfType(schemaArg.'type).kind == ENUM {
+        if getTypeKind(schemaArg.'type) == ENUM {
             self.validateEnumArgument(value, valueLocation, actualTypeName, schemaArg);
-        } else {
+        } else if getTypeKind(schemaArg.'type) == SCALAR {
             string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             if (expectedTypeName == actualTypeName) {
                 return;
@@ -239,6 +243,11 @@ class ValidatorVisitor {
             string listError = getListElementError(self.argumentPath);
             string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
             string`${value.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
+            self.errors.push(errorDetail);
+        } else {
+            string listError = getListElementError(self.argumentPath);
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), value);
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
         }
@@ -358,8 +367,6 @@ class ValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        __Field parentField = <__Field>data;
-        __Type? fragmentType = getTypeFromTypeArray(self.schema.types, fragmentNode.getOnType());
         self.validateDirectiveArguments(fragmentNode);
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
@@ -464,6 +471,7 @@ class ValidatorVisitor {
             }
             return fragmentOnType;
         }
+        return;
     }
 
     isolated function validateInputObjectFields(parser:ArgumentNode node, __InputValue[] schemaFields) {
@@ -562,6 +570,7 @@ isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:Oper
     } else {
         return createField(operationTypeName, 'type);
     }
+    return;
 }
 
 isolated function getRequierdFieldFromType(__Type parentType, __Type[] typeArray,
@@ -593,6 +602,7 @@ isolated function getFieldFromFieldArray(__Field[] fields, string fieldName) ret
             return schemaField;
         }
     }
+    return;
 }
 
 isolated function copyInputValueArray(__InputValue[] original) returns __InputValue[] {
@@ -609,6 +619,7 @@ isolated function getInputValueFromArray(__InputValue[] inputValues, string name
             return inputValue;
         }
     }
+    return;
 }
 
 isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns __Type? {
@@ -618,6 +629,7 @@ isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns 
             return ofType;
         }
     }
+    return;
 }
 
 isolated function hasFields(__Type fieldType) returns boolean {

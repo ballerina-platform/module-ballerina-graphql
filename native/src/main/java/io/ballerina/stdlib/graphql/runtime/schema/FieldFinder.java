@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.RecordType;
@@ -51,9 +52,10 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getUnionTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isRequired;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
@@ -176,6 +178,9 @@ public class FieldFinder {
             SchemaType schemaType = new SchemaType(null, TypeKind.LIST);
             schemaType.setOfType(getSchemaTypeFromType(tableType.getConstrainedType()));
             return schemaType;
+        } else if (tag == TypeTags.INTERSECTION_TAG) {
+            IntersectionType intersectionType = (IntersectionType) type;
+            return getSchemaTypeFromType(intersectionType.getEffectiveType());
         } else {
             return this.typeMap.get(getTypeNameFromType(type));
         }
@@ -189,7 +194,7 @@ public class FieldFinder {
         if (memberTypes.size() == 1) {
             return getSchemaTypeFromType(memberTypes.get(0));
         } else {
-            SchemaType schemaType = this.getType(getUnionTypeName(unionType));
+            SchemaType schemaType = this.getType(getTypeName(unionType));
             for (Type memberType : memberTypes) {
                 SchemaType possibleType = this.typeMap.get(getTypeNameFromType(memberType));
                 schemaType.addPossibleType(possibleType);
@@ -206,7 +211,7 @@ public class FieldFinder {
             } else {
                 SchemaField schemaField = new SchemaField(field.getFieldName());
                 setTypeForField(field, schemaField);
-                if (field.getFieldType().getTag() == TypeTags.MAP_TAG) {
+                if (getEffectiveType(field.getFieldType()).getTag() == TypeTags.MAP_TAG) {
                     SchemaType nonNullType = getNonNullType(this.typeMap.get(STRING));
                     nonNullType.setOfType(this.typeMap.get(STRING));
                     schemaField.addArg(new InputValue(KEY, nonNullType));

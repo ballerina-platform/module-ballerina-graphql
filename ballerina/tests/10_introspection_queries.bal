@@ -200,7 +200,7 @@ isolated function testTypeNameIntrospectionOnUnionOfRecordTypes() returns error?
 }
 isolated function testTypeNameIntrospectionOnServiceTypes() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_service_types.txt");
+    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_service_types.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_name_introspection_on_service_types.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -211,7 +211,7 @@ isolated function testTypeNameIntrospectionOnServiceTypes() returns error? {
 }
 isolated function testTypeNameIntrospectionOnUnionOfServiceTypes() returns error? {
     string graphqlUrl = "http://localhost:9092/unions";
-    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_union_of__service_types.txt");
+    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_union_of__service_types.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_name_introspection_on_union_of__service_types.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -222,7 +222,7 @@ isolated function testTypeNameIntrospectionOnUnionOfServiceTypes() returns error
 }
 isolated function testTypeNameIntrospectionInFragments() returns error? {
     string graphqlUrl = "http://localhost:9092/unions";
-    string document = check getGraphQLDocumentFromFile("type_name_introspection_in_fragments.txt");
+    string document = check getGraphQLDocumentFromFile("type_name_introspection_in_fragments.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_name_introspection_in_fragments.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -233,7 +233,7 @@ isolated function testTypeNameIntrospectionInFragments() returns error? {
 }
 isolated function testIntrospectionOnServiceWithInputObjects() returns error? {
     string graphqlUrl = "http://localhost:9091/input_objects";
-    string document = check getGraphQLDocumentFromFile("introspection_on_service_with_input_objects.txt");
+    string document = check getGraphQLDocumentFromFile("introspection_on_service_with_input_objects.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("introspection_on_service_with_input_objects.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -267,7 +267,7 @@ isolated function testTypeNameIntrospectionOnScalar() returns error? {
 }
 isolated function testTypeIntrospectionWithoutTypeNameArgument() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("type_introspection_without_type_name_argument.txt");
+    string document = check getGraphQLDocumentFromFile("type_introspection_without_type_name_argument.graphql");
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_introspection_without_type_name_argument.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -278,7 +278,7 @@ isolated function testTypeIntrospectionWithoutTypeNameArgument() returns error? 
 }
 isolated function testTypeIntrospectionInInvalidPlace() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("type_introspection_in_invalid_place.txt");
+    string document = check getGraphQLDocumentFromFile("type_introspection_in_invalid_place.graphql");
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_introspection_in_invalid_place.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -289,7 +289,7 @@ isolated function testTypeIntrospectionInInvalidPlace() returns error? {
 }
 isolated function testTypeIntrospection() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("type_introspection.txt");
+    string document = check getGraphQLDocumentFromFile("type_introspection.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_introspection.json");
     assertJsonValuesWithOrder(result, expectedPayload);
@@ -334,7 +334,7 @@ isolated function testTypeIntrospectionWithoutFields() returns error? {
 }
 isolated function testIntrospectionOnInputsWithDefaultValues() returns error? {
     string graphqlUrl = "http://localhost:9091/input_type_introspection";
-    string document = check getGraphQLDocumentFromFile("introspection_on_inputs_with_default_values.txt");
+    string document = check getGraphQLDocumentFromFile("introspection_on_inputs_with_default_values.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("introspection_on_inputs_with_default_values.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);

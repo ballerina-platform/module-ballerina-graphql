@@ -44,6 +44,7 @@ class VariableValidator {
         if self.errors.length() > 0 {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -71,7 +72,7 @@ class VariableValidator {
             if self.visitedVariableDefinitions.indexOf(name) == () {
                 string message = string`Variable "$${name}" is never used.`;
                 Location location = self.variableDefinitions.get(name).getLocation();
-                self.errors.push(getErrorDetailRecord(message, location)); 
+                self.errors.push(getErrorDetailRecord(message, location));
             }
         }
         self.visitedVariableDefinitions = [];
@@ -213,10 +214,10 @@ class VariableValidator {
                     boolean hasInvalidValue;
                     parser:ArgumentNode? valueNode;
                     [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(member, memberType);
-                    if hasInvalidValue {
+                    if hasInvalidValue && valueNode is parser:ArgumentNode {
                         string listError = string`${getListElementError(self.argumentPath)}`;
-                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), member.getValue());
-                        self.errors.push(getErrorDetailRecord(message, member.getValueLocation()));
+                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), valueNode.getValue());
+                        self.errors.push(getErrorDetailRecord(message, valueNode.getValueLocation()));
                     }
                 }
                 self.removePath();

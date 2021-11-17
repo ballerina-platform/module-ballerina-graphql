@@ -14,51 +14,51 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Address record {
+public type Address readonly & record {
     string number;
     string street;
     string city;
 };
 
-public type Person record {
+public type Person readonly & record {
     string name;
     int age;
     Address address;
 };
 
-type Book record {
+type Book readonly & record {
     string name;
     string author;
 };
 
-type Course record {
+type Course readonly & record {
     string name;
     int code;
     Book[] books;
 };
 
-type Student record {
+type Student readonly & record {
     string name;
     Course[] courses;
 };
 
-type Employee record {|
+type Employee readonly & record {|
     readonly int id;
     string name;
     decimal salary;
 |};
 
-public type Contact record {
+public type Contact readonly & record {
     string number;
 };
 
-public type Worker record {|
+public type Worker readonly & record {|
     string id;
     string name;
     map<Contact> contacts;
 |};
 
-public type Company record {|
+public type Company readonly & record {|
     map<Worker> workers;
     map<Contact> contacts;
 |};

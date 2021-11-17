@@ -18,12 +18,14 @@ isolated function getMaxQueryDepth(GraphqlServiceConfig? serviceConfig) returns 
     if serviceConfig is GraphqlServiceConfig {
         return serviceConfig?.maxQueryDepth;
     }
+    return;
 }
 
 isolated function getListenerAuthConfig(GraphqlServiceConfig? serviceConfig) returns ListenerAuthConfig[]? {
     if serviceConfig is GraphqlServiceConfig {
         return serviceConfig?.auth;
     }
+    return;
 }
 
 isolated function getContextInit(GraphqlServiceConfig? serviceConfig) returns ContextInit {

@@ -69,8 +69,6 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
@@ -179,8 +177,15 @@ public class Engine {
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, method.getName(), null,
-                                                                         strandMetadata, callback, args);
+        if (service.getType().isIsolated() && service.getType().isIsolated(method.getName())) {
+            executionContext.getEnvironment().getRuntime()
+                    .invokeMethodAsyncConcurrently(service, method.getName(), null,
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+        } else {
+            executionContext.getEnvironment().getRuntime()
+                    .invokeMethodAsyncSequentially(service, method.getName(), null,
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+        }
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node, MethodType method) {
@@ -199,8 +204,7 @@ public class Engine {
                 addInputObjectFieldsFromVariableValue(argumentNode, argumentsMap, getNonNullType(argType));
             } else if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                 BArray objectFields = argumentNode.getArrayValue(VALUE_FIELD);
-                BMap<BString, Object> inputObjectRecord =
-                        ValueCreator.createRecordValue(getModule(), getTypeNameFromType(argType));
+                BMap<BString, Object> inputObjectRecord = ValueCreator.createMapValue(argType);
                 addInputObjectTypeArgumentFromNode(objectFields, inputObjectRecord, (RecordType) argType);
                 argumentsMap.put(argName, inputObjectRecord);
             } else if (argumentNode.getIntValue(KIND_FIELD) == T_LIST) {
@@ -226,8 +230,7 @@ public class Engine {
                 addInputObjectFieldsFromVariableValue(objectFieldNode, inputObjectRecord, getNonNullType(fieldType));
             } else if (objectFieldNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                 BArray nestedObjectFields = objectFieldNode.getArrayValue(VALUE_FIELD);
-                BMap<BString, Object> nestedInputObjectRecord =
-                        ValueCreator.createRecordValue(getModule(), getTypeNameFromType(fieldType));
+                BMap<BString, Object> nestedInputObjectRecord = ValueCreator.createMapValue(fieldType);
                 addInputObjectTypeArgumentFromNode(nestedObjectFields, nestedInputObjectRecord, (RecordType) fieldType);
                 inputObjectRecord.put(fieldName, nestedInputObjectRecord);
             } else if (objectFieldNode.getIntValue(KIND_FIELD) == T_LIST) {
@@ -251,8 +254,7 @@ public class Engine {
                 addListMembersFromVariableValue(listItem, valueArray, getNonNullType(elementType));
             } else if (listItem.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                 BArray inputObjectFields = listItem.getArrayValue(VALUE_FIELD);
-                BMap<BString, Object> inputObjectRecord =
-                        ValueCreator.createRecordValue(getModule(), getTypeNameFromType(elementType));
+                BMap<BString, Object> inputObjectRecord = ValueCreator.createMapValue(elementType);
                 addInputObjectTypeArgumentFromNode(inputObjectFields, inputObjectRecord, (RecordType) elementType);
                 valueArray.append(inputObjectRecord);
             } else if (listItem.getIntValue(KIND_FIELD) == T_LIST) {
@@ -272,8 +274,7 @@ public class Engine {
         BString argName = argumentNode.getStringValue(NAME_FIELD);
         if (argType.getTag() == TypeTags.RECORD_TYPE_TAG) {
             BMap<BString, Object> inputObjectFields = argumentNode.getMapValue(VARIABLE_VALUE_FIELD);
-            BMap<BString, Object> inputObjectRecord =
-                    ValueCreator.createRecordValue(getModule(), getTypeNameFromType(argType));
+            BMap<BString, Object> inputObjectRecord = ValueCreator.createMapValue(argType);
             visitInputObjectTypeVariableValue(inputObjectFields, inputObjectRecord, (RecordType) argType);
             argumentsMap.put(argName, inputObjectRecord);
         } else if (argType.getTag() == TypeTags.ARRAY_TAG) {
@@ -290,8 +291,7 @@ public class Engine {
     public static void addListMembersFromVariableValue(BObject listItem, BArray valueArray, Type argType) {
         if (argType.getTag() == TypeTags.RECORD_TYPE_TAG) {
             BMap<BString, Object> inputObjectFields = listItem.getMapValue(VARIABLE_VALUE_FIELD);
-            BMap<BString, Object> inputObjectRecord =
-                    ValueCreator.createRecordValue(getModule(), getTypeNameFromType(argType));
+            BMap<BString, Object> inputObjectRecord = ValueCreator.createMapValue(argType);
             visitInputObjectTypeVariableValue(inputObjectFields, inputObjectRecord, (RecordType) argType);
             valueArray.append(inputObjectRecord);
         } else if (argType.getTag() == TypeTags.ARRAY_TAG) {
@@ -314,8 +314,7 @@ public class Engine {
             if (objectFields.containsKey(fieldName)) {
                 if (fieldType.getTag() == TypeTags.RECORD_TYPE_TAG) {
                     BMap<BString, Object> nestedFields = (BMap<BString, Object>) objectFields.getObjectValue(fieldName);
-                    BMap<BString, Object> nestedInputObjectRecord =
-                            ValueCreator.createRecordValue(getModule(), getTypeNameFromType(fieldType));
+                    BMap<BString, Object> nestedInputObjectRecord = ValueCreator.createMapValue(fieldType);
                     visitInputObjectTypeVariableValue(nestedFields, nestedInputObjectRecord, (RecordType) fieldType);
                     inputObjectRecord.put(fieldName, nestedInputObjectRecord);
                 } else if (fieldType.getTag() == TypeTags.ARRAY_TAG) {
@@ -337,8 +336,7 @@ public class Engine {
         for (int i = 0; i < argumentsArray.size(); i++) {
             if (elementType.getTag() == TypeTags.RECORD_TYPE_TAG) {
                 BMap<BString, Object> objectFields = (BMap<BString, Object>) argumentsArray.get(i);
-                BMap<BString, Object> inputObjectRecord = ValueCreator.
-                        createRecordValue(getModule(), getTypeNameFromType(elementType));
+                BMap<BString, Object> inputObjectRecord = ValueCreator.createMapValue(elementType);
                 visitInputObjectTypeVariableValue(objectFields, inputObjectRecord, (RecordType) elementType);
                 valueArray.append(inputObjectRecord);
             } else if (elementType.getTag() == TypeTags.ARRAY_TAG) {

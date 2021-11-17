@@ -76,6 +76,15 @@ isolated function getInvalidDefaultValueError(string variableName, string typeNa
     return string`Variable "${variableName}" of type "${typeName}" has invalid default value. Expected type "${typeName}"`;
 }
 
+isolated function getInvalidArgumentValueError(string listError, string expectedTypeName, parser:ArgumentValue|parser:ArgumentValue[] value) returns string {
+    if value is Scalar {
+        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
+    } else if value is () {
+        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
+    }
+    return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value.`;
+}
+
 isolated function getOutputObject(Data data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
     if data.length() > 0 {

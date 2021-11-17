@@ -105,11 +105,22 @@ isolated function testListTypeInputsWithNestedList() returns error? {
 @test:Config {
     groups: ["list", "input"]
 }
-isolated function testNestedListInputWithInvalidValues() returns error? {
+isolated function testNestedListInputWithInvalidValues1() returns error? {
     string document = string`query { getTotal(prices: [[2, 3, d], [4, 5, 6, "is"], [3, 5, 6, 4 , true, 7]]) }`;
     string url = "http://localhost:9091/list_inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values.json");
+    json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values1.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "input"]
+}
+isolated function testNestedListInputWithInvalidValues2() returns error? {
+    string document = string`query { getTotal(prices: [ 2, 3, 4, 5, 6]) }`;
+    string url = "http://localhost:9091/list_inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -146,7 +157,7 @@ isolated function testListTypeInputWithInvalidVaraibles() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeWithInputObjects() returns error? {
     string document = string`query { getSuggestions(tvSeries: [{ name: "Breaking Bad", episodes: [{title:"ep1"}] }]) { movieName } }`;
@@ -165,7 +176,7 @@ isolated function testListTypeWithInputObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testListTypeWithInvalidInputObjectsValue() returns error? {
     string document = string`query { getSuggestions(tvSeries: [{ name: "Breaking Bad", episodes: [{title:"ep1"}]}, { name: "Breaking Bad", episodes:true }]) { movieName } }`;
@@ -174,7 +185,7 @@ isolated function testListTypeWithInvalidInputObjectsValue() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "tvSeries: In element #1:Episode cannot represent non Episode value: true",
+                message: "tvSeries: In element #1:[Episode!] cannot represent non [Episode!] value: true",
                 locations: [
                     {
                         line: 1,
@@ -188,7 +199,7 @@ isolated function testListTypeWithInvalidInputObjectsValue() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeWithNestedListInInputObject() returns error? {
     string document = string`query { getSuggestions(tvSeries: [{ name: "GOT", episodes: [{title:"ep1", newCharacters:["Sherlock", "Jessie"]}, {title:"ep2", newCharacters:["Michael", "Jessie"]}]}]) { movieName } }`;
@@ -213,7 +224,35 @@ isolated function testListTypeWithNestedListInInputObject() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
+}
+isolated function testVariablesInsideListValue() returns error? {
+    string document = check getGraphQLDocumentFromFile("variables_inside_list_value.graphql");
+    string url = "http://localhost:9091/list_inputs";
+    json variables = {
+        name2: "Jessie"
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            getSuggestions: [
+                {
+                    movieName: "Escape Plan"
+                },
+                {
+                    movieName: "Papillon"
+                },
+                {
+                    movieName: "The Fugitive"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeWithInvalidNestedListInInputObject() returns error? {
     string document = string`query { getSuggestions(tvSeries: [{ name: "GOT", episodes: [{title:"ep1", newCharacters:["Sherlock", "Jessie"]}, {title:"ep2", newCharacters:[true, 4 ]}]}]) { movieName } }`;
@@ -224,7 +263,7 @@ isolated function testListTypeWithInvalidNestedListInInputObject() returns error
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testListTypeVariablesWithInputObjects() returns error? {
     string document = string`query ($tvSeries: [TvSeries!]!){ getSuggestions(tvSeries: $tvSeries) { movieName } }`;
@@ -255,7 +294,7 @@ isolated function testListTypeVariablesWithInputObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns error? {
     string document = string`query ($tvSeries: [TvSeries!]!){ getSuggestions(tvSeries: $tvSeries) { movieName } }`;
@@ -280,7 +319,7 @@ isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns er
     json expectedPayload = {
         errors: [
             {
-                message: "tvSeries: In element #1:Episode cannot represent non Episode value: true",
+                message: "tvSeries: In element #1:[Episode!] cannot represent non [Episode!] value: true",
                 locations: [
                     {
                         line: 1,
@@ -294,7 +333,7 @@ isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns er
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeVariablesWithNestedListInInputObject() returns error? {
     string document = string`query ($tvSeries: [TvSeries!]!){ getSuggestions(tvSeries: $tvSeries) { movieName } }`;
@@ -336,7 +375,7 @@ isolated function testListTypeVariablesWithNestedListInInputObject() returns err
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeVariableWithInvalidNestedListInInputObject() returns error? {
     string document = string`query ($tvSeries: [TvSeries!]!) { getSuggestions(tvSeries: $tvSeries) { movieName } }`;
@@ -364,7 +403,7 @@ isolated function testListTypeVariableWithInvalidNestedListInInputObject() retur
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeWithinInputObjects() returns error? {
     string document = string`query { getMovie(tvSeries: { name: "Breaking Bad", episodes: [{title:"Cancer Man"}] }) { movieName, director } }`;
@@ -384,7 +423,7 @@ isolated function testListTypeWithinInputObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testInvalidEmptyListTypeWithinInputObjects() returns error? {
     string document = string`query { getMovie(tvSeries: { name: "Breaking Bad", episodes: [{title:"Cancer Man", newCharacters:[]}] }) { movieName, director } }`;
@@ -407,7 +446,7 @@ isolated function testInvalidEmptyListTypeWithinInputObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
 }
 isolated function testInvalidListTypeWithinInputObjects() returns error? {
     string document = string`query { getMovie(tvSeries: { name: "Breaking Bad", episodes: [{title:"Cancer Man", newCharacters:[true, graphql]}] }) { movieName, director } }`;
@@ -418,7 +457,53 @@ isolated function testInvalidListTypeWithinInputObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "input_objects", "input"]
+}
+isolated function testInvalidListTypeForInputObjects() returns error? {
+    string document = string`query { getMovie(tvSeries: [{ name: "Breaking Bad", episodes: [{title:"Cancer Man", newCharacters:[true, graphql]}] }]) { movieName, director } }`;
+    string url = "http://localhost:9091/list_inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "TvSeries! cannot represent non TvSeries! value.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 18
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "input_objects", "input"]
+}
+isolated function testInvalidValueWithNestedListInInputObjects() returns error? {
+    string document = string`query { getMovie(tvSeries: { name: "Breaking Bad", episodes: {title:"Cancer Man", newCharacters:["paul"]}}) { movieName, director } }`;
+    string url = "http://localhost:9091/list_inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "[Episode!] cannot represent non [Episode!] value.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 52
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!){ getMovie(tvSeries: $tvSeries ) { movieName, director } }`;
@@ -449,7 +534,7 @@ isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
@@ -483,7 +568,7 @@ isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() retu
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testInvalidListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
@@ -642,7 +727,7 @@ isolated function testListTypeWithVariableDefaultValues6() returns error? {
     groups: ["list", "variables", "input"]
 }
 isolated function testListTypeWithVariableDefaultValues7() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_value_7.txt");
+    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_value_7.graphql");
     string url = "http://localhost:9091/list_inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_variable_default_value_7.json");
@@ -650,10 +735,10 @@ isolated function testListTypeWithVariableDefaultValues7() returns error? {
 }
 
 @test:Config {
-    groups: ["list", "variables", "InputObjects", "input"]
+    groups: ["list", "variables", "input_objects", "input"]
 }
 isolated function testListTypeWithVariableDefaultValues8() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_value_8.txt");
+    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_value_8.graphql");
     string url = "http://localhost:9091/list_inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
