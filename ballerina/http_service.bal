@@ -17,6 +17,8 @@
 import ballerina/http;
 
 isolated service class HttpService {
+    *http:Service;
+
     private final Engine engine;
     private final readonly & ListenerAuthConfig[]? authConfig;
     private final ContextInit contextInit;
