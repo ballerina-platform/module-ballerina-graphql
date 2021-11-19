@@ -255,7 +255,7 @@ isolated function testVariablesInsideListValue() returns error? {
     groups: ["list", "input_objects", "input"]
 }
 isolated function testListTypeWithInvalidNestedListInInputObject() returns error? {
-    string document = string`query { getSuggestions(tvSeries: [{ name: "GOT", episodes: [{title:"ep1", newCharacters:["Sherlock", "Jessie"]}, {title:"ep2", newCharacters:[true, 4 ]}]}]) { movieName } }`;
+    string document = string`query { getSuggestions(tvSeries: [{ name: "GOT", episodes: [{title:"ep1", newCharacters:["Sherlock", "Jessie"]}, {title:"ep2", newCharacters:[true, 4]}]}]) { movieName } }`;
     string url = "http://localhost:9091/list_inputs";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_nested_list_in_input_object.json");
