@@ -20,7 +20,7 @@ import ballerina/http;
 public type Scalar boolean|int|float|string;
 
 # Represents a GraphQL service.
-public type Service service object {
+public type Service distinct service object {
 };
 
 type AnydataMap map<anydata>;
