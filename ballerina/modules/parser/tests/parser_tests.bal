@@ -119,7 +119,7 @@ fragment on on Profile {
     groups: ["operations", "parser"]
 }
 isolated function testMultipleAnonymousOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_anonymous_operations.txt");
+    string document = check getGraphQLDocumentFromFile("multiple_anonymous_operations.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -182,7 +182,7 @@ query getData {
     groups: ["operations", "parser"]
 }
 isolated function testNamedOperationWithAnonymousOperation() returns error? {
-    string document = check getGraphQLDocumentFromFile("named_operation_with_anonymous_operation.txt");
+    string document = check getGraphQLDocumentFromFile("named_operation_with_anonymous_operation.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -203,7 +203,7 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
     groups: ["operations", "parser"]
 }
 isolated function testNamedOperationWithMultipleAnonymousOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("named_operation_with_multiple_anonymous_operations.txt");
+    string document = check getGraphQLDocumentFromFile("named_operation_with_multiple_anonymous_operations.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -234,7 +234,7 @@ isolated function testNamedOperationWithMultipleAnonymousOperations() returns er
     groups: ["operations", "parser"]
 }
 isolated function testThreeAnonymousOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("three_anonymous_operations.txt");
+    string document = check getGraphQLDocumentFromFile("three_anonymous_operations.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -275,7 +275,7 @@ isolated function testThreeAnonymousOperations() returns error? {
     groups: ["operations", "parser"]
 }
 isolated function testMultipleOperationsWithSameName() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_operations_with_same_name.txt");
+    string document = check getGraphQLDocumentFromFile("multiple_operations_with_same_name.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
@@ -512,11 +512,11 @@ isolated function testVariables() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
-    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["profileId"];
-    test:assertEquals(variableDefinition.name, "profileId");
-    test:assertEquals(variableDefinition.kind, "Int");
-    ArgumentNode argValueNode = <ArgumentNode> variableDefinition?.defaultValue;
-    ArgumentValue argValue = <ArgumentValue> argValueNode.getValue()[variableDefinition.name];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["profileId"];
+    test:assertEquals(variableDefinition.getName(), "profileId");
+    test:assertEquals(variableDefinition.getTypeName(), "Int");
+    ArgumentNode argValueNode = <ArgumentNode> variableDefinition.getDefaultValue();
+    ArgumentValue argValue = <ArgumentValue> argValueNode.getValue()[variableDefinition.getName()];
     test:assertEquals(argValue.value, 3);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
@@ -538,12 +538,12 @@ isolated function testNonNullTypeVariables() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["name"];
-    test:assertEquals(variableDefinition.name, "name");
-    test:assertEquals(variableDefinition.kind, "String!");
-    variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["age"];
-    test:assertEquals(variableDefinition.name, "age");
-    test:assertEquals(variableDefinition.kind, "Int!");
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["name"];
+    test:assertEquals(variableDefinition.getName(), "name");
+    test:assertEquals(variableDefinition.getTypeName(), "String!");
+    variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["age"];
+    test:assertEquals(variableDefinition.getName(), "age");
+    test:assertEquals(variableDefinition.getTypeName(), "Int!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode> selection;
@@ -568,9 +568,9 @@ isolated function testListTypeVariables() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
-    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["name"];
-    test:assertEquals(variableDefinition.name, "name");
-    test:assertEquals(variableDefinition.kind, "[String!]!");
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["name"];
+    test:assertEquals(variableDefinition.getName(), "name");
+    test:assertEquals(variableDefinition.getTypeName(), "[String!]!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode> selection;
@@ -645,7 +645,7 @@ isolated function testVariablesWithInvalidDefaultValue() returns error? {
     groups: ["variables", "input_objects", "parser"]
 }
 isolated function testInputObjectWithInvalidVariableDefaultValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_variable_default_value.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_variable_default_value.graphql");
     Parser parser = new(document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
@@ -660,17 +660,17 @@ isolated function testInputObjectWithInvalidVariableDefaultValue() returns error
     groups: ["input_objects", "parser"]
 }
 isolated function testInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    VariableDefinition variableDefinition = <VariableDefinition> operationNode.getVaribleDefinitions()["bAuthor"];
-    test:assertEquals(variableDefinition.name, "bAuthor");
-    test:assertEquals(variableDefinition.kind, "ProfileDetail");
-    ArgumentNode argValue = <ArgumentNode> variableDefinition?.defaultValue;
-    test:assertEquals(argValue.getKind(), T_IDENTIFIER);
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["bAuthor"];
+    test:assertEquals(variableDefinition.getName(), "bAuthor");
+    test:assertEquals(variableDefinition.getTypeName(), "ProfileDetail");
+    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "bAuthor");
     map<ArgumentValue|ArgumentNode> defaultValue = argValue.getValue();
     test:assertEquals(defaultValue.hasKey("name"), true);
@@ -783,7 +783,7 @@ isolated function testDirectivesWithoutVariables() returns error? {
     groups: ["directives", "parser"]
 }
 isolated function testDirectivesInUndefinedLocations() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_type_directives_in_undefined_location.txt");
+    string document = check getGraphQLDocumentFromFile("query_type_directives_in_undefined_location.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -827,7 +827,7 @@ isolated function testDirectivesInUndefinedLocations() returns error? {
     groups: ["directives", "parser"]
 }
 isolated function testDirectivesWithMutation() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_type_directives_with_mutation.txt");
+    string document = check getGraphQLDocumentFromFile("query_type_directives_with_mutation.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -859,7 +859,7 @@ isolated function testDirectivesWithMutation() returns error? {
     groups: ["directives", "parser"]
 }
 isolated function testDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_type_directives.txt");
+    string document = check getGraphQLDocumentFromFile("query_type_directives.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);

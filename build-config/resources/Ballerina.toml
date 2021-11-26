@@ -2,6 +2,10 @@
 org = "ballerina"
 name = "graphql"
 version = "@toml.version@"
+authors = ["Ballerina"]
+keywords = ["gql", "network", "query", "service"]
+repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
+license = ["Apache-2.0"]
 distribution = "slbeta3"
 
 [[platform.java11.dependency]]

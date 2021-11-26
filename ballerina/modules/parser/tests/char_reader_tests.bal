@@ -65,7 +65,7 @@ isolated function testCharReaderForAfterEof() {
     string s = "";
     CharReader reader = new(s);
     test:assertFalse(reader.isEof());
-    string c = reader.read();
+    _ = reader.read();
     test:assertTrue(reader.isEof());
 }
 

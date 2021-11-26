@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.MethodType;
@@ -48,11 +49,12 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_OBJECT;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.T_INPUT_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
@@ -166,8 +168,15 @@ public class Engine {
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
-        executionContext.getEnvironment().getRuntime().invokeMethodAsync(service, method.getName(), null,
-                                                                         strandMetadata, callback, args);
+        if (service.getType().isIsolated() && service.getType().isIsolated(method.getName())) {
+            executionContext.getEnvironment().getRuntime()
+                    .invokeMethodAsyncConcurrently(service, method.getName(), null,
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+        } else {
+            executionContext.getEnvironment().getRuntime()
+                    .invokeMethodAsyncSequentially(service, method.getName(), null,
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+        }
     }
 
     public static BMap<BString, Object> getArgumentsFromField(BObject node) {
@@ -188,7 +197,7 @@ public class Engine {
                     argumentsMap.put(argName, value);
                 }
             } else {
-                if (argumentNode.getBooleanValue(INPUT_OBJECT)) {
+                if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                     BMap<BString, Object> inputObjectFieldMap = ValueCreator.createMapValue();
                     addInputObjectTypeArgument(objectFields, inputObjectFieldMap);
                     argumentsMap.put(argName, inputObjectFieldMap);
@@ -215,7 +224,7 @@ public class Engine {
                     inputObjectMap.put(fieldName, value);
                 }
             } else {
-                if (fieldValue.getBooleanValue(INPUT_OBJECT)) {
+                if (fieldValue.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                     BMap<BString, Object> nestedInputObjectFieldMap = ValueCreator.createMapValue();
                     addInputObjectTypeArgument(nestedObjectFields, nestedInputObjectFieldMap);
                     inputObjectMap.put(fieldName, nestedInputObjectFieldMap);

@@ -17,6 +17,8 @@
 import ballerina/http;
 
 isolated service class HttpService {
+    *http:Service;
+
     private final Engine engine;
     private final readonly & ListenerAuthConfig[]? authConfig;
     private final ContextInit contextInit;
@@ -62,7 +64,11 @@ isolated service class HttpService {
         if context is error {
             json payload = { errors: [{ message: context.message() }] };
             http:Response response = new;
-            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            if (context is AuthnError || context is AuthzError) {
+                response.statusCode = http:STATUS_BAD_REQUEST;
+            } else {
+                response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            }
             response.setPayload(payload);
             return response;
         } else {

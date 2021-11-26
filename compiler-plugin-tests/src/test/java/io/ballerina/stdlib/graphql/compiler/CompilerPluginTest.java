@@ -45,7 +45,7 @@ public class CompilerPluginTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources")
             .toAbsolutePath();
-    private static final Path DISTRIBUTION_PATH = Paths.get("build", "target", "ballerina-distribution")
+    private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime")
             .toAbsolutePath();
     private final Comparator<Diagnostic> comparator = (left, right) -> right.location().lineRange().startLine().line()
                     - left.location().lineRange().startLine().line();

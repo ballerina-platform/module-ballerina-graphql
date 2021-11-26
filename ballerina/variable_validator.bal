@@ -24,7 +24,7 @@ class VariableValidator {
     private map<json> variables;
     private string[] visitedVariableDefinitions;
     private ErrorDetail[] errors;
-    map<parser:VariableDefinition> variableDefinitions;
+    map<parser:VariableDefinitionNode> variableDefinitions;
     private __Directive[] defaultDirectives;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode, map<json>? variableValues) {
@@ -42,6 +42,7 @@ class VariableValidator {
         if self.errors.length() > 0 {
             return self.errors;
         }
+        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -68,7 +69,7 @@ class VariableValidator {
         foreach string name in keys {
             if self.visitedVariableDefinitions.indexOf(name) == () {
                 string message = string`Variable "$${name}" is never used.`;
-                Location location = <Location> self.variableDefinitions.get(name)?.location;
+                Location location = self.variableDefinitions.get(name).getLocation();
                 self.errors.push(getErrorDetailRecord(message, location));
             }
         }
@@ -112,10 +113,10 @@ class VariableValidator {
         if argumentNode.isVariableDefinition() {
             string variableName = <string>argumentNode.getVariableName();
             if self.variableDefinitions.hasKey(variableName) {
-                parser:VariableDefinition variableDefinition = self.variableDefinitions.get(variableName);
+                parser:VariableDefinitionNode variableDefinition = self.variableDefinitions.get(variableName);
                 string argumentTypeName;
                 __Type? variableType;
-                [variableType, argumentTypeName] = self.getTypeRecordAndTypeFromTypeName(variableDefinition.kind);
+                [variableType, argumentTypeName] = self.getTypeRecordAndTypeFromTypeName(variableDefinition.getTypeName());
                 self.checkVariableUsageCompatibility(variableType, inputValues, variableDefinition, argumentNode);
                 self.visitedVariableDefinitions.push(variableName);
                 self.validateVariableDefinition(argumentNode, variableDefinition, argumentTypeName, variableType);
@@ -139,28 +140,27 @@ class VariableValidator {
     }
 
     public isolated function validateVariableDefinition(parser:ArgumentNode argumentNode,
-                                                        parser:VariableDefinition variableDefinition,
-                                                        string argumentTypeName, __Type? variableType) {
+                                                        parser:VariableDefinitionNode varDef, string argumentTypeName,
+                                                        __Type? variableType) {
         string variableName = <string>argumentNode.getVariableName();
-        parser:ArgumentNode? defaultValue = variableDefinition?.defaultValue;
+        parser:ArgumentNode? defaultValue = varDef.getDefaultValue();
         if self.variables.hasKey(variableName) {
             argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
             anydata value = self.variables.get(variableName);
-            self.setArgumentValue(value, argumentNode, variableDefinition);
+            self.setArgumentValue(value, argumentNode, varDef);
         } else if defaultValue is parser:ArgumentNode {
-            if defaultValue.isInputObject() {
-                argumentNode.setKind(getArgumentTypeKind(argumentTypeName));
+            if defaultValue.getKind() == parser:T_INPUT_OBJECT {
                 if getArgumentTypeKind(argumentTypeName) == parser:T_IDENTIFIER {
+                    argumentNode.setKind(parser:T_INPUT_OBJECT);
                     foreach parser:ArgumentValue|parser:ArgumentNode fieldValue in defaultValue.getValue() {
                         if fieldValue is parser:ArgumentNode {
                             argumentNode.setValue(fieldValue.getName(), fieldValue);
                         }
                     }
-                    argumentNode.setInputObject(true);
                     argumentNode.setVariableDefinition(false);
                 } else {
-                    string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                    string` invalid default value. Expected type "${variableDefinition.kind}"`;
+                    string message = string`Variable "${variableName}" of type "${varDef.getTypeName()}" has invalid` +
+                    string` default value. Expected type "${varDef.getTypeName()}"`;
                     self.errors.push(getErrorDetailRecord(message, defaultValue.getLocation()));
                 }
             } else {
@@ -173,14 +173,14 @@ class VariableValidator {
                         } else if getArgumentTypeKind(argumentTypeName) == defaultValue.getKind() {
                             self.setDefaultValueToArgumentNode(argumentNode, argumentTypeName, value);
                         } else {
-                            string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
-                            string` invalid default value: ${value.value.toString()}. Expected type` +
-                            string` "${argumentTypeName}", found ${value.value.toString()}`;
+                            string message = string`Variable "${variableName}" of type "${varDef.getTypeName()}" has` +
+                            string` invalid default value: ${value.value.toString()}. Expected type ` +
+                            string`"${argumentTypeName}", found ${value.value.toString()}`;
                             self.errors.push(getErrorDetailRecord(message, value.location));
                         }
                     } else {
                         if variableType.kind == NON_NULL {
-                            string message = string`Variable "${variableName}" of type "${variableDefinition.kind}" has` +
+                            string message = string`Variable "${variableName}" of type "${varDef.getTypeName()}" has` +
                             string` invalid default value: null. Expected type "${argumentTypeName}", found null`;
                             self.errors.push(getErrorDetailRecord(message, value.location));
                         } else {
@@ -192,8 +192,8 @@ class VariableValidator {
         } else {
             parser:Location location = argumentNode.getLocation();
             if variableType is __Type && variableType.kind == NON_NULL {
-                string message = string`Variable "$${variableName}" of required type ${variableDefinition.kind} `+
-                string`was not provided.`;
+                string message = string`Variable "$${variableName}" of required type ${varDef.getTypeName()} was `+
+                string`not provided.`;
                 self.errors.push(getErrorDetailRecord(message, location));
             } else {
                 argumentNode.setValue(argumentNode.getName(), {value: (), location: location});
@@ -210,8 +210,10 @@ class VariableValidator {
     }
 
     public isolated function setArgumentValue(anydata value, parser:ArgumentNode argument,
-                                              parser:VariableDefinition varDef) {
-        if argument.getKind() == parser:T_IDENTIFIER {
+                                              parser:VariableDefinitionNode varDef) {
+        if argument.getKind() == parser:T_INPUT_OBJECT {
+            argument.setVariableValue(value);
+        } else if argument.getKind() == parser:T_IDENTIFIER {
             argument.setVariableValue(value);
         } else if value is Scalar && getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);
@@ -221,29 +223,31 @@ class VariableValidator {
             argument.setVariableValue(value);
         } else {
             string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ` +
-            string`${value.toString()}; Expected type ${varDef.kind}. ${getTypeName(argument)}` +
+            string`${value.toString()}; Expected type ${varDef.getTypeName()}. ${getTypeName(argument)}` +
             string` cannot represent value: ${value.toString()}`;
             self.errors.push(getErrorDetailRecord(message, argument.getLocation()));
         }
     }
 
     isolated function checkVariableUsageCompatibility(__Type? varType, __InputValue[] inputValues,
-                                                      parser:VariableDefinition varDef, parser:ArgumentNode argNode) {
+                                                      parser:VariableDefinitionNode varDef,
+                                                      parser:ArgumentNode argNode) {
         __InputValue? inputValue = getInputValueFromArray(inputValues, argNode.getName());
         if inputValue is __InputValue {
             if !self.isVariableUsageAllowed(varType, varDef, inputValue) {
-                string message = string`Variable "${<string>argNode.getVariableName()}" of type "${varDef.kind}" `+
-                string`used in position expecting type "${getTypeNameFromType(inputValue.'type)}".`;
+                string message = string`Variable "${<string>argNode.getVariableName()}" of type `+
+                string`"${varDef.getTypeName()}" used in position expecting type `+
+                string`"${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
             }
         }
     }
 
-    isolated function isVariableUsageAllowed(__Type? varType, parser:VariableDefinition varDef,
+    isolated function isVariableUsageAllowed(__Type? varType, parser:VariableDefinitionNode varDef,
                                              __InputValue inputValue) returns boolean {
         if varType is __Type {
             if inputValue.'type.kind == NON_NULL && varType.kind != NON_NULL {
-                if inputValue?.defaultValue is () && varDef?.defaultValue is () {
+                if inputValue?.defaultValue is () && varDef.getDefaultValue() is () {
                     return false;
                 }
                 return self.areTypesCompatible(varType, <__Type>inputValue.'type?.ofType);

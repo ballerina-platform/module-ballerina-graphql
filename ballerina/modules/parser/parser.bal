@@ -98,7 +98,7 @@ public class Parser {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
-        check self.document.addFragment(fragmentNode);
+        self.document.addFragment(fragmentNode);
     }
 
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
@@ -130,21 +130,17 @@ public class Parser {
             }
             token = check self.readNextNonSeparatorToken();
             string varType = check self.getTypeIdentifierTokenValue(token);
-            VariableDefinition varDefinition = {
-                name: varName,
-                kind: varType,
-                location: varDefinitionLocation
-            };
+            VariableDefinitionNode varDefinition = new(varName, varType, varDefinitionLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
                 token = check self.readNextNonSeparatorToken();// consume "=" sign here
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
                     ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
-                    varDefinition.defaultValue = value;
+                    varDefinition.setDefaultValue(value);
                 } else {
                     ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation, false);
-                    varDefinition.defaultValue = value;
+                    varDefinition.setDefaultValue(value);
                 }
                 token = check self.peekNextNonSeparatorToken();
             }
@@ -217,7 +213,7 @@ public class Parser {
             return getExpectedCharError(token, OPEN_BRACE);
         }
         check self.addSelections(fragmentNode);
-        check self.document.addFragment(fragmentNode);
+        self.document.addFragment(fragmentNode);
         parentNode.addSelection(fragmentNode);
     }
 
@@ -305,7 +301,7 @@ public class Parser {
 
     isolated function getInputObjectTypeArgument(string name, Location location,
                                                  boolean isAllowVariableValue = true) returns ArgumentNode|Error {
-        ArgumentNode argumentNode = new(name, location, T_IDENTIFIER, isInputObject = true);
+        ArgumentNode argumentNode = new(name, location, T_INPUT_OBJECT);
         Token token = check self.readNextNonSeparatorToken();// consume open brace here
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_CLOSE_BRACE {
@@ -389,9 +385,10 @@ public class Parser {
 
     isolated function getTypeIdentifierTokenValue(Token previousToken) returns string|Error {
         string varType;
+        Token token;
         if previousToken.kind == T_OPEN_BRACKET {
             varType = previousToken.value.toString();
-            Token token = check self.readNextNonSeparatorToken();
+            token = check self.readNextNonSeparatorToken();
             varType += check self.getTypeIdentifierTokenValue(token);
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_CLOSE_BRACKET {
@@ -406,7 +403,7 @@ public class Parser {
             }
         } else {
             varType = check getIdentifierTokenvalue(previousToken);
-            Token token = check self.peekNextNonSeparatorToken();
+            token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EXCLAMATION {
                 token = check self.readNextNonSeparatorToken(); // Read exlamation
                 varType += token.value.toString();

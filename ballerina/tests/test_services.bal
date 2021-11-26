@@ -17,7 +17,17 @@
 import ballerina/http;
 import ballerina/lang.runtime;
 
-Service simpleService = service object {
+Service simpleService1 = service object {
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    isolated resource function get id() returns int {
+        return 1;
+    }
+};
+
+Service simpleService2 = service object {
     isolated resource function get name() returns string {
         return "Walter White";
     }
@@ -93,6 +103,7 @@ service /inputs on basicListener {
         } else if (id == 2) {
             return quote3;
         }
+        return;
     }
 
     isolated resource function get weightInPounds(float weightInKg) returns float {
@@ -135,7 +146,7 @@ service /input_objects on basicListener {
         }
     }
 
-    resource function get book(Info info) returns Book[] {
+    isolated resource function get book(Info info) returns Book[] {
         if info.author.name == "Conan Doyle" {
             return [b7, b8];
         } else if info.bookName == "Harry Potter" {
@@ -407,7 +418,6 @@ service /special_types on specialTypesTestListener {
 
 service /snowtooth on serviceTypeListener {
     isolated resource function get allLifts(Status? status) returns Lift[] {
-        LiftRecord[] lifts;
         if status is Status {
             return from var lift in liftTable where lift.status == status select new(lift);
         } else {
@@ -416,7 +426,6 @@ service /snowtooth on serviceTypeListener {
     }
 
     isolated resource function get allTrails(Status? status) returns Trail[] {
-        TrailRecord[] trails;
         if status is Status {
             return from var trail in trailTable where trail.status == status select new(trail);
         } else {
@@ -429,6 +438,7 @@ service /snowtooth on serviceTypeListener {
         if lifts.length() > 0 {
             return new Lift(lifts[0]);
         }
+        return;
     }
 
     isolated resource function get trail(string id) returns Trail? {
@@ -436,6 +446,7 @@ service /snowtooth on serviceTypeListener {
         if trails.length() > 0 {
             return new Trail(trails[0]);
         }
+        return;
     }
 
     isolated resource function get liftCount(Status status) returns int {
@@ -656,37 +667,57 @@ service /noScopes on secureListener {
 }
 // **************** Security-Related Services ****************
 
-service /mutations on basicListener {
+isolated service /mutations on basicListener {
     private Person p;
     private TeacherService t;
 
-    function init() {
+    isolated function init() {
         self.p = p2.clone();
         self.t = new(1, "Walter Bishop", "Physics");
     }
 
     isolated resource function get person() returns Person {
-        return self.p;
+        lock {
+            return self.p;
+        }
     }
 
     isolated remote function setName(string name) returns Person {
-        self.p.name = name;
-        return self.p;
+        lock {
+            Person p = { name: name, age: self.p.age, address: self.p.address };
+            self.p = p;
+            return self.p;
+        }
     }
 
     isolated remote function setCity(string city) returns Person {
-        self.p.address.city = city;
-        return self.p;
+        lock {
+            Person p = {
+                name: self.p.name,
+                age: self.p.age,
+                address: {
+                    number: self.p.address.number,
+                    street: self.p.address.street,
+                    city: city
+                }
+            };
+            self.p = p;
+            return self.p;
+        }
     }
 
     isolated remote function setTeacherName(string name) returns TeacherService {
-        self.t.setName(name);
-        return self.t;
+        lock {
+            self.t.setName(name);
+            return self.t;
+        }
     }
 
     isolated remote function setTeacherSubject(string subject) returns TeacherService {
-        self.t.setSubject(subject);
-        return self.t;
+        lock {
+            self.t.setSubject(subject);
+            return self.t;
+        }
     }
 }
 
@@ -721,6 +752,7 @@ service /null_values on basicListener {
         if value != () {
             return "Hello";
         }
+        return;
     }
 }
 
@@ -786,8 +818,10 @@ public isolated distinct service class Animal {
         var scope = context.get("scope");
         if scope is string && scope == "admin" {
             string call = "";
-            foreach int i in 0...count {
+            int i = 0;
+            while i < count {
                 call += string`${sound} `;
+                i += 1;
             }
             return call;
         } else {

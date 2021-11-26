@@ -2,9 +2,9 @@
 
 This module provides APIs for connecting and interacting with GraphQL endpoints.
 
-GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required and the same structure of the data is returned from the server preventing the returning of excessively large amounts of data.
+GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required and the same structure of the data is returned from the server, preventing the returning of excessively large amounts of data.
 
-The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
+The Ballerina GraphQL implementation is using the HTTP as the underlying protocol.
 
 ### Listener
 
@@ -31,7 +31,7 @@ When initializing the Ballerina GraphQL listener, a set of additional configurat
 The configurations that can be passed for this are defined in the `graphql:ListenerConfiguration` record.
 
 ```ballerina
-import ballrina/graphql;
+import ballerina/graphql;
 
 listener graphql:Listener graphqlListener = new (4000, timeout = 10, secureSocket = { key: { path: <KEYSTORE_PATH>, password: <PASSWORD>}});
 ```
@@ -39,14 +39,38 @@ listener graphql:Listener graphqlListener = new (4000, timeout = 10, secureSocke
 ### Service
 The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated.
 
-The GraphQL services are exposed through a single endpoint. The URL of the GraphQL service can be provided when defining the service. (Check the next example, in which the URL is `/graphql`).
+The GraphQL services are exposed through a single endpoint. The path of the GraphQL service endpoint can be provided via the service path of the GraphQL service. The end point of the following Ballerina GraphQL service will be `/graphql`.
+
+```ballerina
+import ballerina/graphql;
+
+service /graphql on new graphql:Listener(4000) {
+    // ...
+}
+```
+
+The GraphQL service endpoint URL will be `<host>:<port>/graphql`.
+
+Alternatively, a Ballerina graphql service can not have a path, in which case the endpoint will be the host URL and the port as the following example.
+
+```ballerina
+import ballerina/graphql;
+
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+
+The GraphQL service endpoint URL will be `<host>:<port>`
 
 #### Query Type
-The resource functions inside the service represent the resolvers of the `Query` root type.
+The `resource` functions inside the service represent the resolvers of the `Query` root type.
 
-When a resource function is defined inside a GraphQL service, the generated schema will have a `Query` root type and the resource function will be a field of the `Query` object.
+When a `resource` function is defined inside a GraphQL service, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
 
-The accessor of the resource function should always be `get`. The resource function name will become the name of the particular field in the GraphQL schema. The return type of the resource function will be the type of the corresponding field.
+>**Note:** A GraphQL service must have at least one resource function defined. Otherwise it will result in a compilation error.
+
+The accessor of the `resource` function should always be `get`. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
 
 ```ballerina
 import ballerina/graphql;
@@ -60,7 +84,7 @@ service graphql:Service /graphql on new graphql:Listener(4000) {
 
 The above can be queried using the GraphQL document below:
 
-```
+```graphql
 {
     greeting(name: "John")
 }
@@ -77,11 +101,11 @@ The result will be the following JSON.
 ```
 
 #### Mutation Type
-The remote functions inside the GraphQL service represent the resolvers of the `Mutation` root type.
+The `remote` functions inside the GraphQL service represent the resolvers of the `Mutation` root type.
 
-When a remote function is defined inside a GraphQL service, the schema will have a `Mutation` operation and the remote function will be a field of the `Mutation` object.
+When a `remote` function is defined inside a GraphQL service, the schema will have a `Mutation` operation and the `remote` function will be a field of the `Mutation` object.
 
-For an example, consider the following service that has a `Person` record named `person`. It has a `Query` field named `profile`, which returns the `person` record. It also has two remote functions named `updateName` and `updateCity`, which are used as mutations.
+For an example, consider the following service that has a `Person` record named `person`. It has a `Query` field named `profile`, which returns the `person` record. It also has two `remote` functions named `updateName` and `updateCity`, which are used as mutations.
 
 ```ballerina
 import ballerina/graphql;
@@ -117,7 +141,7 @@ service /graphql on new graphql:Listener(4000) {
 
 This will generate the following schema:
 
-```schema
+```graphql
 type Query {
     profile: Person!
 }
@@ -134,11 +158,11 @@ type Person {
 }
 ```
 
->**Note:** A GraphQL schema must have a root `Query` type. Therefore, a Ballerina GraphQL service must have at least one resource function defined.
+>**Note:** A GraphQL schema must have a root `Query` type. Therefore, a Ballerina GraphQL service must have at least one `resource` function defined.
 
 This can be mutated using the following document.
 
-```
+```graphql
 mutation updatePerson {
     updateName(name: "Mr. Lambert") {
         ... ProfileFragment
@@ -223,7 +247,7 @@ service graphql:Service /graphql on new graphql:Listener(9090) {
 ```
 
 The above service only accepts queries of less than 2 levels. For an example, consider the following document:
-```
+```graphql
 query getData {
     book {
         author {
@@ -259,7 +283,7 @@ The result for the above query is the following JSON:
 This field is used to initialize the `graphql:Context` object. Usage of the `graphql:Context` will be described in a separate section.
 
 ### Context
-The `graphql:Context` can be used to pass meta-information among the graphql resolver (resource/remote) functions. It will be created per each request, with a defined set of attributes. Attributes can be stored in the `graphql:Context` object using key, value pairs. The key should be always a `string`. The type of the value is `value:Cloneable|isolated object {}`. This means the values can be any immutable type, `readonly` value, or an isolated object. These attributes can be set using a function, which can be given as a service configuration parameter.
+The `graphql:Context` can be used to pass meta-information among the graphql resolver (`resource`/`remote`) functions. It will be created per each request, with a defined set of attributes. Attributes can be stored in the `graphql:Context` object using key-value pairs. The key should always be a `string`. The type of the value is `value:Cloneable|isolated object {}`. This means the values can be any immutable type, `readonly` value, or an isolated object. These attributes can be set using a function, which can be given as a service configuration parameter.
 
 #### Context Init
 The `graphql:Context` can be initialized using a function. The function signature is as follows:
@@ -329,7 +353,7 @@ There are two methods to retrieve attributes from the `graphql:Context`.
 ##### `get()` Function
 This will return the value of the attribute using the provided key. If the key does not exist, it will return a `graphql:Error`.
 
-```
+```ballerina
 resource function get greeting(graphql:Context context) returns string|error {
     var username = check context.get("username");
     if username is string {
@@ -344,7 +368,7 @@ This function will remove the attribute for a provided key, and return the value
 
 > **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
 
-```
+```ballerina
 resource function get greeting(graphql:Context context) returns string|error {
     var username = check context.remove("username");
     if username is string {
@@ -366,8 +390,6 @@ The following Ballerina types are considered as Scalar types:
 * `string`
 * `boolean`
 * `float`
-* `decimal`
-* `enum`
 
 ```ballerina
 resource function get greeting() returns string {
@@ -376,7 +398,7 @@ resource function get greeting() returns string {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     greeting
 }
@@ -391,10 +413,44 @@ Result:
 }
 ```
 
+#### Enums
+
+When a `resource` or a `remote` function returns an `enum` value, it will be mapped to a GraphQL `ENUM` type.
+
+```ballerina
+import ballerina/graphql;
+
+public enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+service on new graphql:Listener(4000) {
+    resource function get color(int code) returns Color {
+        // ...
+    }
+}
+```
+
+The above service will generate the following GraphQL schema.
+
+```graphql
+type Query {
+    color: Color!
+}
+
+enum Color {
+    RED
+    GREEN
+    BLUE
+}
+```
+
 ##### Record types
 
-When a resource is returning a record type, each field of the record can be queried separately.
-Each record type is mapped to a GraphQL `OBJECT` type and the fields of the record type are mapped to the fields of the `OBJECT` type.
+When a `resource` function is returning a `record` type, each field of the record can be queried separately.
+Each `record` type is mapped to a GraphQL `OBJECT` type and the fields of the `record` type are mapped to the fields of the `OBJECT` type.
 
 ```ballerina
 public type Person record {|
@@ -408,7 +464,7 @@ resource function get profile() returns Person {
 ```
 
 This will generate the following schema.
-```
+```graphql
 type Query {
     profile: Person!
 }
@@ -420,7 +476,7 @@ type Person {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     profile {
         name
@@ -442,7 +498,7 @@ Result:
 ```
 
 Each field can be queried separately as shown in the following document:
-```
+```graphql
 {
     profile {
         name
@@ -461,8 +517,8 @@ Result:
 }
 ```
 
-#### Service Objects
-When a resource function returns a service object, the service type is mapped to a GraphQL `OBJECT` type and the resource functions of the service type will be mapped as the fields of the `OBJECT`.
+#### Service Types
+When a `resource` function returns a service type, the service type is mapped to a GraphQL `OBJECT` type and the `resource` functions of the service type will be mapped as the fields of the `OBJECT`.
 
 When a service type is returned from a `graphql:Service`, the returning service type should also follow the rules of the `graphql:Service` explained above.
 
@@ -496,7 +552,7 @@ service class Person {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile: Person!
 }
@@ -530,8 +586,7 @@ The above will result in the following JSON:
 ```
 
 #### Arrays
-A GraphQL resource can return an array of the types mentioned above.
-When a resource is returning an array, the result will be a JSON array.
+A GraphQL `resource` function can return an array of the types mentioned above. When a `resource` function is returning an array, the result will be a JSON array.
 
 ```ballerina
 public type Person record {|
@@ -549,7 +604,7 @@ resource function get people() returns Person[] {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile: [Person!]!
 }
@@ -561,7 +616,7 @@ type Person {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     people {
         name
@@ -592,7 +647,7 @@ Result:
 
 
 #### Optional Types
-A Ballerina GraphQL resource can return an optional type. When the return value is `()`, the resulting field in the JSON will be `null`.
+A Ballerina GraphQL `resource` function can return an optional type. When the return value is `()`, the resulting field in the JSON will be `null`.
 
 ```ballerina
 public type Person record {|
@@ -609,7 +664,7 @@ resource function get profile(int id) returns Person? {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile: Person
 }
@@ -621,7 +676,7 @@ type Person {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     profile(id: 1) {
         name
@@ -641,7 +696,7 @@ Result:
 ```
 
 If the following document is used:
-```
+```graphql
 {
     profile(id: 4) {
         name
@@ -661,7 +716,7 @@ This will be the result:
 #### Union Types
 The Ballerina GraphQL service can return a union of distinct service types. This will be mapped to a GraphQL `UNION` type.
 
-Since Ballerina supports the union types by nature, directly returning a union type is also allowed (but not recommended). The recommended way is to define a union type name separately and then use that type name as shown in the following example. If a union type is returned directly without providing a type name, the type name will be `T1|T2|T3|...|Tn`.
+Since Ballerina supports union types by nature, directly returning a union type is also allowed (but not recommended). The recommended way is to define a union type name separately and then use that type name as shown in the following example. If a union type is returned directly without providing a type name, the type name will be `T1|T2|T3|...|Tn`.
 
 ```ballerina
 import ballerina/graphql;
@@ -723,7 +778,7 @@ distinct service class Teacher {
 
 This will generate the following schema:
 
-```
+```graphql
 type Query {
     profile(purity: Int!): StudentOrTeacher!
 }
@@ -744,7 +799,7 @@ union StudentOrTeacher Student|Teacher
 
 This can be queried using the following document:
 
-```
+```graphql
 query {
     profile(purity: 75) {
         ... on Student {
@@ -772,7 +827,7 @@ The result will be:
 
 If the following document is used:
 
-```
+```graphql
 query {
     profile(purity: 99) {
         ... on Student {
@@ -800,9 +855,9 @@ The result will be:
 ```
 
 #### Errors (With union)
-A Ballerina GraphQL resource can return an `error` with the union of the types mentioned above.
+A Ballerina GraphQL `resource` function can return an `error` with the union of the types mentioned above.
 
-> **Note:** A resource cannot return an `error`, any subtype of an `error`, or, an `error?`, which will result in a compilation error.
+> **Note:** A `resource` or a `remote` function cannot return only an `error`, any subtype of an `error`, or, an `error?`, which will result in a compilation error.
 
 ```ballerina
 public type Person record {|
@@ -820,7 +875,7 @@ resource function get profile(int id) returns Person|error {
 ```
 
 This can be queried using the following document:
-```
+```graphql
 {
     profile(id: 5) {
         name
@@ -846,7 +901,7 @@ Result:
 ```
 
 #### Hierarchical Resource Paths
-A resource inside a GraphQL service can have hierarchical paths.
+A `resource` function inside a GraphQL service can have hierarchical paths.
 When a hierarchical path is present, each level of the hierarchical path maps to the GraphQL field of the same name, and the type of that field will be mapped to an `OBJECT` type with the same name.
 
 ```ballerina
@@ -885,4 +940,4 @@ type name {
 }
 ```
 
-> **Note:** The field name, and the type names are equal.
+> **Note:** The field name and the type names are equal.

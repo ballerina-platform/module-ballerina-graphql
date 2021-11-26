@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
@@ -44,8 +45,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromType;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getUnionTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -177,6 +178,10 @@ public class TypeFinder {
             MapType mapType = (MapType) type;
             Type constrainedType = mapType.getConstrainedType();
             getSchemaTypeFromBalType(constrainedType);
+        } else if (tag == TypeTags.INTERSECTION_TAG) {
+            IntersectionType intersectionType = (IntersectionType) type;
+            Type effectiveType = intersectionType.getEffectiveType();
+            getSchemaTypeFromBalType(effectiveType);
         } else if (isContext(type)) {
             // Do nothing
         } else {
@@ -193,7 +198,7 @@ public class TypeFinder {
             if (memberTypes.size() == 1) {
                 getSchemaTypeFromBalType(memberTypes.get(0));
             } else {
-                String typeName = getUnionTypeName(unionType);
+                String typeName = getTypeName(unionType);
                 this.createSchemaType(typeName, TypeKind.UNION, unionType);
             }
             for (Type type : memberTypes) {

@@ -48,6 +48,14 @@ returns json|error {
     return response.getJsonPayload();
 }
 
+isolated function getTextPayloadFromBadService(string url, string document, json? variables = {}, string? operationName = ())
+returns string|error {
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
+    assertResponseForBadRequest(response);
+    return response.getTextPayload();
+}
+
 isolated function assertResponseAndGetPayload(string url, string document, json? variables = {},
 string? operationName = (), int statusCode = http:STATUS_OK) returns json|error {
     http:Client httpClient = check new(url);
@@ -64,8 +72,10 @@ isolated function getTextPayloadFromBadRequest(string url, http:Request request)
 }
 
 isolated function assertResponseForBadRequest(http:Response response) {
-    test:assertEquals(response.statusCode, http:STATUS_BAD_REQUEST);
-    test:assertEquals(response.reasonPhrase, "Bad Request");
+    int statusCode = response.statusCode;
+    if statusCode != http:STATUS_BAD_REQUEST && statusCode != http:STATUS_NOT_FOUND {
+        test:assertFail(string`Invalid status code received: ${statusCode}`);
+    }
 }
 
 isolated function assertJsonValuesWithOrder(json actualPayload, json expectedPayload) {

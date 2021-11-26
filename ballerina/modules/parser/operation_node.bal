@@ -21,7 +21,7 @@ public class OperationNode {
     private RootOperationType kind;
     private Location location;
     private Selection[] selections;
-    private map<VariableDefinition> variables;
+    private map<VariableDefinitionNode> variables;
     private ErrorDetail[] errors;
     private DirectiveNode[] directives;
 
@@ -55,17 +55,17 @@ public class OperationNode {
         return self.selections;
     }
 
-    public isolated function addVariableDefinition(VariableDefinition varDef) {
-        if (self.variables.hasKey(varDef.name)) {
-            string message = string`There can be only one variable named "$${varDef.name}"`;
-            Location location = <Location> varDef?.location;
+    public isolated function addVariableDefinition(VariableDefinitionNode varDef) {
+        if self.variables.hasKey(varDef.getName()) {
+            string message = string`There can be only one variable named "$${varDef.getName()}"`;
+            Location location = varDef.getLocation();
             self.errors.push({message: message, locations:[location]});
         } else {
-            self.variables[varDef.name] = varDef;
+            self.variables[varDef.getName()] = varDef;
         }
     }
 
-    public isolated function getVaribleDefinitions() returns map<VariableDefinition> {
+    public isolated function getVaribleDefinitions() returns map<VariableDefinitionNode> {
         return self.variables;
     }
 

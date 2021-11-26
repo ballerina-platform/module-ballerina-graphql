@@ -36,7 +36,6 @@ import io.ballerina.runtime.api.values.BString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
@@ -93,9 +92,11 @@ public class Utils {
         } else if (tag == TypeTags.TABLE_TAG) {
             return getTypeNameFromType(((TableType) type).getConstrainedType());
         } else if (tag == TypeTags.UNION_TAG) {
-            return getUnionTypeName((UnionType) type);
+            return getTypeName((UnionType) type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
-            return getRecordTypeName((RecordType) type);
+            return getTypeName((RecordType) type);
+        } else if (tag == TypeTags.INTERSECTION_TAG) {
+            return getTypeName((IntersectionType) type);
         }
         return type.getName();
     }
@@ -120,22 +121,26 @@ public class Utils {
         return ValueCreator.createArrayValue(arrayType);
     }
 
-    public static String getUnionTypeName(UnionType unionType) {
+    public static String getTypeName(UnionType unionType) {
         List<Type> memberTypes = getMemberTypes(unionType);
         return unionType.getName().isBlank() ?
                 memberTypes.stream().map(Type::getName).collect(Collectors.joining(UNION_TYPE_NAME_DELIMITER)) :
                 unionType.getName();
     }
 
-    private static String getRecordTypeName(RecordType recordType) {
-        Optional<IntersectionType> intersectionType = recordType.getIntersectionType();
-        if (intersectionType.isPresent()) {
-            for (Type constituentType : intersectionType.get().getConstituentTypes()) {
-                if (constituentType.getTag() != TypeTags.READONLY_TAG) {
-                    return  constituentType.getName();
-                }
-            }
-        }
+    private static String getTypeName(RecordType recordType) {
         return recordType.getName();
+    }
+
+    private static String getTypeName(IntersectionType intersectionType) {
+        return getTypeNameFromType(intersectionType.getEffectiveType());
+    }
+
+    public static Type getEffectiveType(Type type) {
+        if (type.getTag() == TypeTags.INTERSECTION_TAG) {
+            IntersectionType intersectionType = (IntersectionType) type;
+            return (intersectionType.getEffectiveType());
+        }
+        return type;
     }
 }

@@ -22,7 +22,7 @@ import ballerina/url;
     groups: ["request_validation", "listener"]
 }
 isolated function testMultipleOperationsWithoutOperationNameInRequest() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.txt");
+    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
     string url = "http://localhost:9091/validation";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
@@ -40,7 +40,7 @@ isolated function testMultipleOperationsWithoutOperationNameInRequest() returns 
     groups: ["request_validation", "listener"]
 }
 isolated function testMultipleOperationsWithInvalidOperationInRequest() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.txt");
+    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
     string url = "http://localhost:9091/validation";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, operationName = "invalid");
     json expectedPayload = {
@@ -136,7 +136,6 @@ isolated function testContentTypeGraphql() returns error? {
     groups: ["request_validation", "listener"]
 }
 isolated function testInvalidRequestBody() returns error? {
-    http:Client httpClient = check new("http://localhost:9091/graphql");
     http:Request request = new;
     request.setTextPayload("Invalid");
     request.setHeader("Content-Type", "application/json");

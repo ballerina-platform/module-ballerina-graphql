@@ -16,3 +16,9 @@
 
 # Represents any error related to the Ballerina GraphQL module.
 public type Error distinct error;
+
+# Represents the authentication error type.
+public type AuthnError distinct Error;
+
+# Represents the authorization error type.
+public type AuthzError distinct Error;

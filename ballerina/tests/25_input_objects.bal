@@ -59,7 +59,7 @@ isolated function testInputObjectWithInvalidArguments1() returns error? {
     groups: ["input_objects", "input", "variables"]
 }
 isolated function testInputObjectWithInvalidArguments2() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_arguments2.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_arguments2.graphql");
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments2.json");
@@ -82,7 +82,7 @@ isolated function testInputObjectWithVariables() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectIncludeFieldsWithVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_variables.graphql");
     json variables = { bName: "Harry Potter", authorAge: 50 };
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
@@ -94,7 +94,7 @@ isolated function testInputObjectIncludeFieldsWithVariables() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithDuplicateFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_duplicate_fields.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_duplicate_fields.graphql");
     json variables = {
         bName: "Harry Potter",
         bAuthor: {
@@ -112,7 +112,7 @@ isolated function testInputObjectWithDuplicateFields() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithUndefinedFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_undefined_fields.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_undefined_fields.graphql");
     json variables = {
         bName: "Harry Potter",
         bAuthor: {
@@ -130,7 +130,7 @@ isolated function testInputObjectWithUndefinedFields() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectIncludeFieldsWithUndefinedVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_undefined_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_undefined_variables.graphql");
     json variables = { authorAge: 50 };
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
@@ -142,7 +142,7 @@ isolated function testInputObjectIncludeFieldsWithUndefinedVariables() returns e
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectIncludeFieldsWithComplexVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_complex_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_complex_variables.graphql");
     json variables = {
         bName: "Study in Scarlet",
         bAuthor: {
@@ -160,7 +160,7 @@ isolated function testInputObjectIncludeFieldsWithComplexVariables() returns err
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithNestedObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_nested_object.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_nested_object.graphql");
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_nested_objects.json");
@@ -171,7 +171,7 @@ isolated function testInputObjectWithNestedObjects() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithDefaultValues() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.graphql");
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_default_value.json");
@@ -182,7 +182,7 @@ isolated function testInputObjectWithDefaultValues() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithoutOptionalFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_without_optional_fields.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_without_optional_fields.graphql");
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_without_optional_fields.json");
@@ -193,7 +193,7 @@ isolated function testInputObjectWithoutOptionalFields() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithMissingVariablesArguments() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_complex_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_complex_variables.graphql");
     json variables = {
         bName: "Study in Scarlet",
         bAuthor: {
@@ -228,7 +228,7 @@ isolated function testInputObjectWithEnumTypeVariables() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithFragmentsAndVaraibles() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_fragment_and_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_fragment_and_variables.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {
         bName: "Harry",
@@ -245,7 +245,7 @@ isolated function testInputObjectWithFragmentsAndVaraibles() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithInlineFragmentsAndVaraibles() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {
         bName: "Harry",
@@ -295,7 +295,7 @@ isolated function testInputObjectWithInvalidTypeVariables1() returns error? {
     groups: ["input_objects", "input", "variables"]
 }
 isolated function testInputObjectWithInvalidTypeVariables2() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_type_variables2.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_type_variables2.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {
         bAuthor: {name:{}, age:{}}
@@ -309,7 +309,7 @@ isolated function testInputObjectWithInvalidTypeVariables2() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithUnexpectedVaraibleValues() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {
         bName: "Harry",
@@ -337,7 +337,7 @@ isolated function testInputObjectVariablesWithInvalidTypeName() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithMissingNullableVariableValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_missing_nullable_variable_value.txt");
+    string document = check getGraphQLDocumentFromFile("input_object_with_missing_nullable_variable_value.graphql");
     string url = "http://localhost:9091/input_objects";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_missing_nullable_variable_value.json");

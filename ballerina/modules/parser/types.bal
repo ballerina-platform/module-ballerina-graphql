@@ -41,7 +41,7 @@ type LexicalType T_EOF|T_OPEN_BRACE|T_CLOSE_BRACE|T_OPEN_PARENTHESES|T_CLOSE_PAR
 
 type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
 
-public type ArgumentType T_INT|T_FLOAT|T_BOOLEAN|T_STRING|T_IDENTIFIER;
+public type ArgumentType T_INT|T_FLOAT|T_BOOLEAN|T_STRING|T_IDENTIFIER|T_INPUT_OBJECT;
 
 public type Selection FieldNode|FragmentNode;
 
