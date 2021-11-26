@@ -17,6 +17,11 @@
 import ballerina/auth;
 import ballerina/jwt;
 import ballerina/oauth2;
+import ballerina/http;
+
+public type CorsConfig record {|
+    *http:CorsConfig;
+|};
 
 # Represents file user store configurations for Basic Auth authentication.
 public type FileUserStoreConfig record {|

@@ -23,6 +23,7 @@ public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
     ContextInit contextInit = initDefaultContext;
+    CorsConfig cors?;
 |};
 
 # The annotation to configure a GraphQL service.
