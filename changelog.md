@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#2437] Pass `http:RequestContext` object to the `graphql:Context` Init Function](https://github.com/ballerina-platform/ballerina-standard-library/issues/2437)
+
+## [1.0.1] - 2021-11-19
 ### Added
 - [[#741] Add Default Directives 'skip' & 'include' Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/741)
 - [[#2026] Implement auth error types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2026)
