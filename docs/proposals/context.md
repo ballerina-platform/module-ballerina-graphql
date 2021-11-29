@@ -10,7 +10,7 @@ _Issue_: [#1906](https://github.com/ballerina-platform/ballerina-standard-librar
 Implement the context support for the Ballerina GraphQL package. The GraphQL context can be used to pass meta-information such as auth-related information to the GraphQL resolver (resource/remote) functions.
 
 ## Goals
-* Provide a way to create a GraphQL context per each request nad to pass it into the resolver functions on demand.
+* Provide a way to create a GraphQL context per each request and to pass it into the resolver functions on demand.
 * Provide a way to the users to define and control the context.
 
 ## Motivation
@@ -21,7 +21,7 @@ Developers can define what are the fields the context includes when defining the
 ## Description
 
 ### The `graphql:Context` Object
-The `graphql:Context` will be defined as an isolated object in the Ballerina GraphLQ module. Following is the API of the `graphql:Context` object:
+The `graphql:Context` will be defined as an isolated object in the Ballerina GraphQL module. Following is the API of the `graphql:Context` object:
 
 ```ballerina
 public isolated class Context {
