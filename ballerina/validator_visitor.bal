@@ -198,13 +198,13 @@ class ValidatorVisitor {
     }
 
     isolated function validateVariableValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
-        json variableValue = argumentNode.getVariableValue();
+        anydata variableValue = argumentNode.getVariableValue();
         if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR || getTypeKind(schemaArg.'type) == ENUM) {
             self.coerceArgumentIntValueToFloat(argumentNode, schemaArg);
             self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
         } else if variableValue is map<anydata> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
             self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
-        } else if variableValue is json[] && getTypeKind(schemaArg.'type) == LIST {
+        } else if variableValue is anydata[] && getTypeKind(schemaArg.'type) == LIST {
             self.updatePath(argumentNode.getName());
             self.validateListVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
             self.removePath();
@@ -253,14 +253,14 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateInputObjectVariableValue(map<json> variableValues, __InputValue inputValue,
+    isolated function validateInputObjectVariableValue(map<anydata> variableValues, __InputValue inputValue,
                                                        Location location, string fieldName) {
         __Type argType = getOfType(inputValue.'type);
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] {
             foreach __InputValue subInputValue in inputFields {
                 if variableValues.hasKey(subInputValue.name) {
-                    json fieldValue = variableValues.get(subInputValue.name);
+                    anydata fieldValue = variableValues.get(subInputValue.name);
                     if fieldValue is Scalar {
                         parser:ArgumentValue argValue = fieldValue;
                         if getOfType(subInputValue.'type).kind == ENUM {
@@ -277,9 +277,9 @@ class ValidatorVisitor {
                     } else if fieldValue is decimal {
                         //coerce decimal to float since float value change over the network
                         self.coerceInputVariableDecimalToFloat(variableValues, fieldValue, subInputValue, location);
-                    } else if fieldValue is map<json> {
+                    } else if fieldValue is map<anydata> {
                         self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
-                    } else if fieldValue is json[] {
+                    } else if fieldValue is anydata[] {
                         self.updatePath(subInputValue.name);
                         self.validateListVariableValue(fieldValue, subInputValue, location, fieldName);
                         self.removePath();
@@ -301,14 +301,14 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateListVariableValue(json[] variableValues, __InputValue inputValue,
+    isolated function validateListVariableValue(anydata[] variableValues, __InputValue inputValue,
                                                 Location location, string fieldName) {
         if getTypeKind(inputValue.'type) == LIST {
             __InputValue listItemInputValue = createInputValueForListItem(inputValue);
             if variableValues.length() > 0 {
                 foreach int i in 0..< variableValues.length() {
                     self.updatePath(i);
-                    json listItemValue = variableValues[i];
+                    anydata listItemValue = variableValues[i];
                     if listItemValue is Scalar {
                         parser:ArgumentValue argValue = listItemValue;
                         if getOfType(listItemInputValue.'type).kind == ENUM {

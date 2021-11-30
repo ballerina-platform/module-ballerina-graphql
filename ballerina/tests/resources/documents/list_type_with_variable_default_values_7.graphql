@@ -1,0 +1,6 @@
+query ($profileDetail: [ProfileDetail] = [null, [], {name: "Arthur"}]) {
+    searchProfile(profileDetail: $profileDetail) {
+        name,
+        age
+    }
+}

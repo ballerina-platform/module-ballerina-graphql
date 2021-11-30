@@ -553,19 +553,22 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_26");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 35, 44);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 44, 39);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 44, 44);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, 57, 5);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 59, 39);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 73, 52);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, 72, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 88, 52);
     }
 
     private Package loadPackage(String path) {

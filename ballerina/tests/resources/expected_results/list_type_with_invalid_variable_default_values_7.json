@@ -13,8 +13,8 @@
             "message": "Variable \"profileDetail\" of type \"[ProfileDetail]\" used in position expecting type \"[ProfileDetail!]!\".",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 103
+                    "line": 2,
+                    "column": 35
                 }
             ]
         }
