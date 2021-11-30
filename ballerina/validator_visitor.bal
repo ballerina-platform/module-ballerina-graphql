@@ -24,6 +24,7 @@ class ValidatorVisitor {
     private ErrorDetail[] errors;
     private map<string> usedFragments;
     private __Directive[] defaultDirectives;
+    private (string|int)[] argumentPath;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode) {
         self.schema = schema;
@@ -31,6 +32,7 @@ class ValidatorVisitor {
         self.errors = [];
         self.usedFragments = {};
         self.defaultDirectives = schema.directives;
+        self.argumentPath = [];
     }
 
     public isolated function validate() returns ErrorDetail[]? {
@@ -114,12 +116,16 @@ class ValidatorVisitor {
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
         if argumentNode.isVariableDefinition() {
             self.validateVariableValue(argumentNode, schemaArg, fieldName);
+            argumentNode.setKind(getArgumentTypeIdentifierFromType(schemaArg.'type));
         } else if argumentNode.getKind() == parser:T_INPUT_OBJECT {
             self.visitInputObject(argumentNode, schemaArg, fieldName);
+        } else if argumentNode.getKind() == parser:T_LIST {
+            self.visitListValue(argumentNode, schemaArg, fieldName);
         } else {
-            parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(schemaArg.name);
+            parser:ArgumentValue|parser:ArgumentValue[] fieldValue = argumentNode.getValue();
             if fieldValue is parser:ArgumentValue {
-                self.validateArgumentValue(fieldValue, getTypeName(argumentNode), schemaArg);
+                self.coerceArgumentIntValueToFloat(argumentNode, schemaArg);
+                self.validateArgumentValue(fieldValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
             }
         }
     }
@@ -127,16 +133,19 @@ class ValidatorVisitor {
     isolated function visitInputObject(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         __Type argType = getOfType(schemaArg.'type);
         __InputValue[]? inputFields = argType?.inputFields;
-        if inputFields is __InputValue[] {
+        if inputFields is __InputValue[] && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
+            parser:ArgumentValue[] fields = <parser:ArgumentValue[]> argumentNode.getValue();
             self.validateInputObjectFields(argumentNode, inputFields);
             foreach __InputValue inputField in inputFields {
                 __InputValue subInputValue = inputField;
-                if argumentNode.getValue().hasKey(inputField.name) {
-                    parser:ArgumentValue|parser:ArgumentNode fieldValue = argumentNode.getValue().get(inputField.name);
-                    if fieldValue is parser:ArgumentNode {
+                boolean isProvidedField = false;
+                foreach parser:ArgumentValue fieldValue in fields {
+                    if fieldValue is parser:ArgumentNode && fieldValue.getName() == inputField.name {
                         self.visitArgument(fieldValue, {input:subInputValue, fieldName:fieldName});
+                        isProvidedField = true;
                     }
-                } else {
+                }
+                if !isProvidedField {
                     if ((subInputValue.'type).kind == NON_NULL && schemaArg?.defaultValue is ()) {
                         string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type ` +
                         string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
@@ -145,52 +154,101 @@ class ValidatorVisitor {
                 }
             }
         } else {
-            string expectedTypeName = getOfType(schemaArg.'type).name.toString();
-            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: {}`;
+            string listError = getListElementError(self.argumentPath);
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode.getValue());
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
             self.errors.push(errorDetail);
         }
+    }
+
+    isolated function visitListValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
+        self.updatePath(argumentNode.getName());
+        if getTypeKind(schemaArg.'type) == LIST {
+            parser:ArgumentValue|parser:ArgumentValue[] listItems = argumentNode.getValue();
+            if listItems is parser:ArgumentValue[] {
+                __InputValue listItemInputValue = createInputValueForListItem(schemaArg);
+                if listItems.length() > 0 {
+                    foreach int i in 0..< listItems.length() {
+                        parser:ArgumentValue|parser:ArgumentValue[] item = listItems[i];
+                        if item is parser:ArgumentNode {
+                            self.updatePath(i);
+                            self.visitArgument(item, {input:listItemInputValue, fieldName:fieldName});
+                            self.removePath();
+                        }
+                    }
+                } else if listItemInputValue.'type.kind == NON_NULL {
+                    string expectedTypeName = getTypeNameFromType(schemaArg.'type);
+                    string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: []`;
+                    ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
+                    self.errors.push(errorDetail);
+                }
+            } else if schemaArg.'type.kind == NON_NULL {
+                string expectedTypeName = getTypeNameFromType(schemaArg.'type);
+                string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
+                self.errors.push(errorDetail);
+            }
+        } else {
+            string listError = getListElementError(self.argumentPath);
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode.getValue());
+            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            self.errors.push(errorDetail);
+        }
+        self.removePath();
     }
 
     isolated function validateVariableValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         anydata variableValue = argumentNode.getVariableValue();
-        if variableValue is Scalar {
-            parser:ArgumentValue argValue =
-                <parser:ArgumentValue> {value: variableValue, location: argumentNode.getLocation()};
-            self.validateArgumentValue(argValue, getTypeName(argumentNode), schemaArg);
-        } else if variableValue is map<anydata> {
-            self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getLocation(), fieldName);
+        if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR || getTypeKind(schemaArg.'type) == ENUM) {
+            self.coerceArgumentIntValueToFloat(argumentNode, schemaArg);
+            self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
+        } else if variableValue is map<anydata> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
+            self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
+        } else if variableValue is anydata[] && getTypeKind(schemaArg.'type) == LIST {
+            self.updatePath(argumentNode.getName());
+            self.validateListVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
+            self.removePath();
         } else {
             string expectedTypeName = getOfType(schemaArg.'type).name.toString();
-            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} ` +
-            string`value: ${variableValue.toString()}`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            string listError = getListElementError(self.argumentPath);
+            string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
+            string` ${variableValue.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
             self.errors.push(errorDetail);
         }
     }
 
-    isolated function validateArgumentValue(parser:ArgumentValue value, string actualTypeName, __InputValue schemaArg) {
-        if value.value == () {
+    isolated function validateArgumentValue(parser:ArgumentValue value, Location valueLocation, string actualTypeName,
+                                            __InputValue schemaArg) {
+        if value is () {
             if schemaArg.'type.kind == NON_NULL {
-                string message = string`Expected value of type "${getTypeNameFromType(schemaArg.'type)}", found null.`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+                string listError = getListElementError(self.argumentPath);
+                string message = string`${listError}Expected value of type "${getTypeNameFromType(schemaArg.'type)}"` +
+                string`, found null.`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
                 self.errors.push(errorDetail);
             }
             return;
         }
-        if getOfType(schemaArg.'type).kind == ENUM {
-            self.validateEnumArgument(value, actualTypeName, schemaArg);
-        } else {
+        if getTypeKind(schemaArg.'type) == ENUM {
+            self.validateEnumArgument(value, valueLocation, actualTypeName, schemaArg);
+        } else if getTypeKind(schemaArg.'type) == SCALAR {
             string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             if (expectedTypeName == actualTypeName) {
                 return;
             }
             if (expectedTypeName == FLOAT && actualTypeName == INT) {
-                self.coerceInputIntToFloat(value);
                 return;
             }
-            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value.value.toString()}`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+            string listError = getListElementError(self.argumentPath);
+            string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
+            string`${value.toString()}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
+            self.errors.push(errorDetail);
+        } else {
+            string listError = getListElementError(self.argumentPath);
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), value);
+            ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
         }
     }
@@ -204,18 +262,27 @@ class ValidatorVisitor {
                 if variableValues.hasKey(subInputValue.name) {
                     anydata fieldValue = variableValues.get(subInputValue.name);
                     if fieldValue is Scalar {
-                        parser:ArgumentValue argValue = {value: fieldValue, location: location};
+                        parser:ArgumentValue argValue = fieldValue;
                         if getOfType(subInputValue.'type).kind == ENUM {
                             //validate input object field with enum value
-                            self.validateEnumArgument(argValue, ENUM, subInputValue);
+                            self.validateEnumArgument(argValue, location, ENUM, subInputValue);
                         } else {
-                            self.validateArgumentValue(argValue, getTypeNameFromValue(fieldValue), subInputValue);
+                            string expectedTypeName = getOfType(subInputValue.'type).name.toString();
+                            if expectedTypeName == FLOAT && argValue is int {
+                                variableValues[subInputValue.name] = <float> argValue;
+                            }
+                            self.validateArgumentValue(argValue, location, getTypeNameFromValue(fieldValue),
+                                                       subInputValue);
                         }
                     } else if fieldValue is decimal {
                         //coerce decimal to float since float value change over the network
-                        self.coerceInputVariableDecimalToFloat(fieldValue, subInputValue, location);
+                        self.coerceInputVariableDecimalToFloat(variableValues, fieldValue, subInputValue, location);
                     } else if fieldValue is map<anydata> {
                         self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
+                    } else if fieldValue is anydata[] {
+                        self.updatePath(subInputValue.name);
+                        self.validateListVariableValue(fieldValue, subInputValue, location, fieldName);
+                        self.removePath();
                     }
                 } else {
                     if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
@@ -227,9 +294,75 @@ class ValidatorVisitor {
             }
         } else {
             string expectedTypeName = getOfType(inputValue.'type).name.toString();
-            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: {}`;
+            string listError = getListElementError(self.argumentPath);
+            string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: {}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, location);
             self.errors.push(errorDetail);
+        }
+    }
+
+    isolated function validateListVariableValue(anydata[] variableValues, __InputValue inputValue,
+                                                Location location, string fieldName) {
+        if getTypeKind(inputValue.'type) == LIST {
+            __InputValue listItemInputValue = createInputValueForListItem(inputValue);
+            if variableValues.length() > 0 {
+                foreach int i in 0..< variableValues.length() {
+                    self.updatePath(i);
+                    anydata listItemValue = variableValues[i];
+                    if listItemValue is Scalar {
+                        parser:ArgumentValue argValue = listItemValue;
+                        if getOfType(listItemInputValue.'type).kind == ENUM {
+                            self.validateEnumArgument(argValue, location, ENUM, listItemInputValue);
+                        } else {
+                            string expectedTypeName = getOfType(listItemInputValue.'type).name.toString();
+                            if expectedTypeName == FLOAT && argValue is int {
+                                variableValues[i] = <float> argValue;
+                            }
+                            self.validateArgumentValue(argValue, location, getTypeNameFromValue(listItemValue),
+                                                        listItemInputValue);
+                        }
+                    } else if listItemValue is decimal {
+                        //coerce decimal to float since float value change over the network
+                        string expectedTypeName = getOfType(listItemInputValue.'type).name.toString();
+                        if expectedTypeName == FLOAT {
+                            parser:ArgumentValue argValue = <float>listItemValue;
+                            variableValues[i] = <float>listItemValue;
+                            self.validateArgumentValue(argValue, location, FLOAT, inputValue);
+                        } else {
+                            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} `+
+                            string`value: ${listItemValue.toString()}`;
+                            ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+                            self.errors.push(errorDetail);
+                        }
+                    } else if listItemValue is map<json> {
+                        self.validateInputObjectVariableValue(listItemValue, listItemInputValue, location, fieldName);
+                    } else if listItemValue is json[] {
+                        self.updatePath(listItemInputValue.name);
+                        self.validateListVariableValue(listItemValue, listItemInputValue, location, fieldName);
+                        self.removePath();
+                    }
+                    self.removePath();
+                }
+            } else if listItemInputValue.'type.kind == NON_NULL {
+                string expectedTypeName = getTypeNameFromType(inputValue.'type);
+                string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: []`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+                self.errors.push(errorDetail);
+            }
+        } else {
+            string expectedTypeName = getOfType(inputValue.'type).name.toString();
+            string value = variableValues.toString();
+            string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+            self.errors.push(errorDetail);
+        }
+    }
+
+    isolated function coerceArgumentIntValueToFloat(parser:ArgumentNode argNode, __InputValue schemaArg) {
+        string expectedTypeName = getOfType(schemaArg.'type).name.toString();
+        if expectedTypeName == FLOAT && getTypeName(argNode) == INT {
+            argNode.setValue(<float> argNode.getValue());
+            argNode.setKind(parser:T_FLOAT);
         }
     }
 
@@ -261,15 +394,13 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function coerceInputIntToFloat(parser:ArgumentValue argument) {
-        argument.value = <float>argument.value;
-    }
-
-    isolated function coerceInputVariableDecimalToFloat(decimal value, __InputValue inputValue, Location location) {
+    isolated function coerceInputVariableDecimalToFloat(map<anydata> variabelValues, decimal value,
+                                                        __InputValue inputValue, Location location) {
         string expectedTypeName = getOfType(inputValue.'type).name.toString();
         if expectedTypeName == FLOAT {
-            parser:ArgumentValue argValue = {value: <float>value, location: location};
-            self.validateArgumentValue(argValue, FLOAT, inputValue);
+            parser:ArgumentValue argValue = <float>value;
+            variabelValues[inputValue.name] = <float>value;
+            self.validateArgumentValue(argValue, location, FLOAT, inputValue);
         } else {
             string message = string`${expectedTypeName} cannot represent non ${expectedTypeName} value: `+
             string`${value.toString()}`;
@@ -344,40 +475,49 @@ class ValidatorVisitor {
     }
 
     isolated function validateInputObjectFields(parser:ArgumentNode node, __InputValue[] schemaFields) {
-        map<parser:ArgumentValue|parser:ArgumentNode> inputObjectFields = node.getValue();
-        string[] undefinedFields = inputObjectFields.keys();
-        foreach __InputValue fields in schemaFields {
-            int? index = undefinedFields.indexOf(fields.name);
-            if index is int {
-                _ = undefinedFields.remove(index);
-            }
-        }
-        foreach string name in undefinedFields {
-            string message = string`Field "${name}" is not defined by type "${node.getName()}".`;
-            parser:ArgumentValue|parser:ArgumentNode fieldValue = inputObjectFields.get(name);
-            if fieldValue is parser:ArgumentNode {
-                self.errors.push(getErrorDetailRecord(message, fieldValue.getLocation()));
+        string[] definedFields = self.getInputObjectFieldNamesFromInputValue(schemaFields);
+        if node.getValue() is parser:ArgumentValue[] {
+            parser:ArgumentValue[] inputObjectFields = <parser:ArgumentValue[]> node.getValue();
+            foreach  parser:ArgumentValue 'field in inputObjectFields {
+                if 'field is parser:ArgumentNode {
+                    int? index = definedFields.indexOf('field.getName());
+                    if index is () {
+                        string message = string`Field "${'field.getName()}" is not defined by type ` +
+                        string`"${node.getName()}".`;
+                        self.errors.push(getErrorDetailRecord(message, 'field.getLocation()));
+                    }
+                }
             }
         }
     }
 
-    isolated function validateEnumArgument(parser:ArgumentValue value, string actualArgType, __InputValue inputValue) {
+    isolated function getInputObjectFieldNamesFromInputValue(__InputValue[] schemaFields) returns string[] {
+        string[] fieldNames = [];
+        foreach __InputValue 'field in schemaFields {
+            fieldNames.push('field.name);
+        }
+        return fieldNames;
+    }
+
+    isolated function validateEnumArgument(parser:ArgumentValue value, Location valueLocation, string actualArgType,
+                                           __InputValue inputValue) {
         __Type argType = getOfType(inputValue.'type);
         if (getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER) {
-            string message = string`Enum "${getTypeNameFromType(argType)}" cannot represent non-enum value: `+
-            string`"${value.value.toString()}"`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+            string listError = getListElementError(self.argumentPath);
+            string message = string`${listError}Enum "${getTypeNameFromType(argType)}" cannot represent non-enum` +
+            string` value: "${value.toString()}"`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
             return;
         }
         __EnumValue[] enumValues = <__EnumValue[]> argType?.enumValues;
         foreach __EnumValue enumValue in enumValues {
-            if (enumValue.name == value.value) {
+            if (enumValue.name == value) {
                 return;
             }
         }
-        string message = string`Value "${value.value.toString()}" does not exist in "${inputValue.name}" enum.`;
-        ErrorDetail errorDetail = getErrorDetailRecord(message, value.location);
+        string message = string`Value "${value.toString()}" does not exist in "${inputValue.name}" enum.`;
+        ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
         self.errors.push(errorDetail);
     }
 
@@ -407,6 +547,14 @@ class ValidatorVisitor {
                 }
             }
         }
+    }
+
+    isolated function updatePath(string|int path) {
+        self.argumentPath.push(path);
+    }
+
+    isolated function removePath() {
+        _ = self.argumentPath.pop();
     }
 
 }
@@ -516,4 +664,12 @@ isolated function createField(string fieldName, __Type fieldType, __InputValue[]
 isolated function getFieldsArrayFromType(__Type 'type) returns __Field[] {
     __Field[]? fields = 'type?.fields;
     return fields == () ? [] : fields;
+}
+
+isolated function createInputValueForListItem(__InputValue inputValue) returns __InputValue {
+    __Type listItemInputValueType = getListMemberTypeFromType(inputValue.'type);
+    return {
+        name: inputValue.name,
+        'type: listItemInputValueType
+    };
 }

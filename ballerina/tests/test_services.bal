@@ -178,6 +178,114 @@ service /input_objects on basicListener {
     }
 }
 
+service /list_inputs on basicListener {
+    isolated resource function get concat(string?[]? words) returns string {
+        string result = "";
+        if words is string?[] && words.length() > 0 {
+            foreach string? word in words {
+                if word is string {
+                    result += word;
+                    result += " ";
+                }
+            }
+            return result.trim();
+        }
+        return "Word list is empty";
+    }
+
+    isolated resource function get getTotal(float[][] prices) returns float[] {
+        float[] total = [];
+        float sumOfNestedList = 0;
+        foreach float[] nested in prices {
+            sumOfNestedList = 0;
+            foreach float price in nested {
+                sumOfNestedList += price;
+            }
+            total.push(sumOfNestedList);
+        }
+        return total;
+    }
+
+    isolated resource function get searchProfile(ProfileDetail[] profileDetail) returns Person[] {
+        Person[] results = [];
+        foreach ProfileDetail profile in profileDetail {
+            if profile?.age == 28 && profile.name == "Jessie" {
+                results.push({
+                    name: "Jessie Pinkman", age: 26, address: { number: "23B", street: "Negra Arroyo Lane", city: "Albuquerque" }
+                });
+            } else if profile?.age == 30 || profile.name == "Walter" {
+                results.push({
+                    name: "Walter White", age: 50, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
+                });
+            } else {
+                results.push({
+                    name: "Sherlock Holmes", age: 40, address: { number: "221/B", street: "Baker Street", city: "London" }
+                });
+            }
+        }
+        return results;
+    }
+
+    resource function get getSuggestions(TvSeries[] tvSeries) returns Movie[] {
+        Movie[] results = [m1, m2, m3, m4, m5, m6];
+        foreach TvSeries item in tvSeries {
+            if item.name == "Breaking Bad" {
+                results = [m3];
+            } else if item.name == "Prison Break" {
+                results = [m4, m5, m6];
+            } else if item?.episodes is Episode[] {
+                Episode[] episodes = <Episode[]>item?.episodes;
+                foreach Episode epi in episodes {
+                    if epi?.newCharacters is string[] {
+                        string[] characters = <string[]> epi?.newCharacters;
+                        foreach string name in characters {
+                            if name == "Sara" || name == "Michael" || name == "Lincoln" {
+                                results = [m4, m5, m6];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
+    resource function get getMovie(TvSeries tvSeries) returns Movie[] {
+        Movie[] results = [m1, m2, m3, m4, m5, m6];
+        if tvSeries?.episodes is Episode[] {
+            Episode[] episodes = <Episode[]>tvSeries?.episodes;
+            foreach Episode episode in episodes {
+                if episode?.newCharacters is string[] {
+                    string[] characters = <string[]> episode?.newCharacters;
+                    foreach string name in characters {
+                        if name == "Sara" || name == "Michael" || name == "Lincoln" {
+                            results = [m4, m5, m6];
+                        } else if name == "Harry" || name == "Hagrid" {
+                            results = [m1];
+                        } else if name == "Sherlock" {
+                            results = [m2];
+                        }
+                    }
+                } else {
+                    if episode.title == "The Key" || episode.title == "Flight" {
+                        results = [m4, m5];
+                    } else if episode.title == "Cancer Man" {
+                        results = [m3];
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
+    isolated resource function get isIncludeHoliday(Weekday[] days = [MONDAY, FRIDAY]) returns boolean {
+        if days.indexOf(<Weekday> SUNDAY) != () || days.indexOf(<Weekday> SATURDAY) != () {
+            return true;
+        }
+        return false;
+    }
+}
+
 service /records on basicListener {
     isolated resource function get detective() returns Person {
         return {

@@ -138,6 +138,9 @@ public class Parser {
                 if token.kind == T_OPEN_BRACE {
                     ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
                     varDefinition.setDefaultValue(value);
+                } else if token.kind == T_OPEN_BRACKET {
+                    ArgumentNode value = check self.getListTypeArgument(varName, varLocation, false);
+                    varDefinition.setDefaultValue(value);
                 } else {
                     ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation, false);
                     varDefinition.setDefaultValue(value);
@@ -235,6 +238,9 @@ public class Parser {
             if token.kind == T_OPEN_BRACE {
                 ArgumentNode argumentNode = check self.getInputObjectTypeArgument(name, location);
                 fieldNode.addArgument(argumentNode);
+            } else if token.kind == T_OPEN_BRACKET {
+                ArgumentNode argumentNode = check self.getListTypeArgument(name, location);
+                fieldNode.addArgument(argumentNode);
             } else {
                 ArgumentNode argument = check self.getScalarTypeArgument(name, location);
                 fieldNode.addArgument(argument);
@@ -266,7 +272,7 @@ public class Parser {
         }
     }
 
-     isolated function addArgumentsToDirective(DirectiveNode directiveNode, DirectiveLocation dirLocation) returns Error? {
+    isolated function addArgumentsToDirective(DirectiveNode directiveNode, DirectiveLocation dirLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); //consume (
         while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
@@ -283,6 +289,14 @@ public class Parser {
                     directiveNode.addArgument(argumentNode);
                 } else {
                     ArgumentNode argumentNode = check self.getInputObjectTypeArgument(varName, location);
+                    directiveNode.addArgument(argumentNode);
+                }
+            } else if token.kind == T_OPEN_BRACKET {
+                if dirLocation == QUERY || dirLocation == MUTATION {
+                    ArgumentNode argumentNode = check self.getListTypeArgument(varName, location, false);
+                    directiveNode.addArgument(argumentNode);
+                } else {
+                    ArgumentNode argumentNode = check self.getListTypeArgument(varName, location);
                     directiveNode.addArgument(argumentNode);
                 }
             } else {
@@ -302,14 +316,17 @@ public class Parser {
     isolated function getInputObjectTypeArgument(string name, Location location,
                                                  boolean isAllowVariableValue = true) returns ArgumentNode|Error {
         ArgumentNode argumentNode = new(name, location, T_INPUT_OBJECT);
+        ArgumentValue[] fields = [];
+        string[] visitedFields = [];
         Token token = check self.readNextNonSeparatorToken();// consume open brace here
         token = check self.peekNextNonSeparatorToken();
+        argumentNode.setValueLocation(token.location);
         if token.kind != T_CLOSE_BRACE {
             while token.kind != T_CLOSE_BRACE {
                 token = check self.readNextNonSeparatorToken();
                 string fieldName = check getIdentifierTokenvalue(token);
                 Location fieldLocation = token.location.clone();
-                if argumentNode.getValue().hasKey(fieldName) {
+                if visitedFields.indexOf(fieldName) != () {
                     return getDuplicateFieldError(token);
                 }
                 token = check self.readNextNonSeparatorToken();
@@ -321,7 +338,13 @@ public class Parser {
                     //nested input objects
                     ArgumentNode nestedInputObjectFields =
                         check self.getInputObjectTypeArgument(fieldName, fieldLocation, isAllowVariableValue);
-                    argumentNode.setValue(fieldName, nestedInputObjectFields);
+                    fields.push(nestedInputObjectFields);
+                    visitedFields.push(fieldName);
+                } else if token.kind == T_OPEN_BRACKET {
+                    //list with nested lists
+                    ArgumentNode listTypeFieldValue = check self.getListTypeArgument(fieldName, token.location);
+                    fields.push(listTypeFieldValue);
+                    visitedFields.push(fieldName);
                 } else if token.kind == T_DOLLAR {
                     if isAllowVariableValue {
                         //input object fields with variable definitions
@@ -330,7 +353,8 @@ public class Parser {
                         string varName = check getIdentifierTokenvalue(token);
                         ArgumentNode nestedVariableFields = new(fieldName, token.location, T_IDENTIFIER, isVarDef = true);
                         nestedVariableFields.addVariableName(varName);
-                        argumentNode.setValue(fieldName, nestedVariableFields);
+                        fields.push(nestedVariableFields);
+                        visitedFields.push(fieldName);
                     } else {
                         return getUnexpectedTokenError(token);
                     }
@@ -340,13 +364,66 @@ public class Parser {
                     ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue fieldValue = check getArgumentValue(token);
                     ArgumentNode inputObjectFieldNode = new(fieldName, fieldLocation, argType);
-                    inputObjectFieldNode.setValue(fieldName, fieldValue);
-                    argumentNode.setValue(fieldName, inputObjectFieldNode);
+                    inputObjectFieldNode.setValue(fieldValue);
+                    inputObjectFieldNode.setValueLocation(token.location);
+                    fields.push(inputObjectFieldNode);
+                    visitedFields.push(fieldName);
                 }
                 token = check self.peekNextNonSeparatorToken();
             }
         }
         token = check self.readNextNonSeparatorToken(); // consume close brace here
+        argumentNode.setValue(fields);
+        return argumentNode;
+    }
+
+    isolated function getListTypeArgument(string name, Location location,
+                                          boolean isAllowVariableValue = true) returns ArgumentNode|Error {
+        ArgumentNode argumentNode = new(name, location, T_LIST);
+        Token token = check self.readNextNonSeparatorToken();// consume open bracket here
+        ArgumentValue[] listMembers = [];
+        token = check self.peekNextNonSeparatorToken();
+        argumentNode.setValueLocation(token.location);
+        if token.kind != T_CLOSE_BRACKET {
+            while token.kind != T_CLOSE_BRACKET {
+                token = check self.peekNextNonSeparatorToken();
+                if token.kind == T_OPEN_BRACE {
+                    //list with input objects
+                    ArgumentNode inputObjectValue =
+                        check self.getInputObjectTypeArgument(name, token.location, isAllowVariableValue);
+                    listMembers.push(inputObjectValue);
+                } else if token.kind == T_OPEN_BRACKET {
+                    //list with nested lists
+                    ArgumentNode listValue = check self.getListTypeArgument(name, token.location);
+                    listMembers.push(listValue);
+                } else if token.kind == T_DOLLAR {
+                    if isAllowVariableValue {
+                        //list with variables
+                        token = check self.readNextNonSeparatorToken(); // consume dollar here
+                        token = check self.readNextNonSeparatorToken();
+                        string varName = check getIdentifierTokenvalue(token);
+                        ArgumentNode variableValue = new(name, token.location, T_IDENTIFIER, isVarDef = true);
+                        variableValue.addVariableName(varName);
+                        listMembers.push(variableValue);
+                    } else {
+                        return getUnexpectedTokenError(token);
+                    }
+                } else if token.kind is ArgumentType  {
+                    //list with Scalar values
+                    token = check self.readNextNonSeparatorToken();
+                    ArgumentType argType = <ArgumentType>token.kind;
+                    ArgumentValue value = check getArgumentValue(token);
+                    ArgumentNode argumentValue = new(name, token.location, argType);
+                    argumentValue.setValue(value);
+                    listMembers.push(argumentValue);
+                } else {
+                    return getUnexpectedTokenError(token);
+                }
+                token = check self.peekNextNonSeparatorToken();
+            }
+        }
+        token = check self.readNextNonSeparatorToken(); // consume close bracket here
+        argumentNode.setValue(listMembers);
         return argumentNode;
     }
 
@@ -361,6 +438,7 @@ public class Parser {
                 ArgumentType argType = <ArgumentType>token.kind;
                 ArgumentNode argument = new(name, token.location, argType, isVarDef = true);
                 argument.addVariableName(varName);
+                argument.setValueLocation(token.location);
                 return argument;
             }
             return getUnexpectedTokenError(token);
@@ -368,7 +446,8 @@ public class Parser {
             ArgumentValue value = check getArgumentValue(token);
             ArgumentType argType = <ArgumentType>token.kind;
             ArgumentNode argument = new(name, location, argType);
-            argument.setValue(name, value);
+            argument.setValue(value);
+            argument.setValueLocation(token.location);
             return argument;
         }
     }
@@ -450,11 +529,7 @@ isolated function getRootOperationType(Token token) returns RootOperationType|Er
 
 isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
     if token.kind is ArgumentType {
-        Scalar? value = token.value == NULL ? () : token.value;
-        return {
-            value: value,
-            location: token.location
-        };
+        return token.value == NULL ? () : token.value;
     } else {
         return getUnexpectedTokenError(token);
     }

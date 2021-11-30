@@ -1,0 +1,5 @@
+query {
+    getSuggestions(tvSeries: [{ name: "GOT", episodes: [{title:"ep1", newCharacters:["Sherlock", "Jessie"]}, {title:"ep2", newCharacters:[true, 4]}]}]) {
+        movieName
+    }
+}

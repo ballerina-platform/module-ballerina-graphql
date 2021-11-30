@@ -290,11 +290,21 @@ public class FieldFinder {
             }
             if (parameter.type.isNilable()) {
                 inputType = getInputTypeFromNilableType((UnionType) parameter.type);
-                inputValue = new InputValue(parameter.name, this.getType(getTypeNameFromType(inputType)));
+                if (inputType.getTag() == TypeTags.ARRAY_TAG) {
+                    SchemaType wrapperType = getSchemaTypeFromType(inputType);
+                    inputValue = new InputValue(parameter.name, wrapperType);
+                } else {
+                    inputValue = new InputValue(parameter.name, this.getType(getTypeNameFromType(inputType)));
+                }
             } else {
                 inputType = parameter.type;
-                SchemaType wrapperType = getNonNullType(this.getType(getTypeNameFromType(inputType)));
-                inputValue = new InputValue(parameter.name, wrapperType);
+                if (inputType.getTag() == TypeTags.ARRAY_TAG) {
+                    SchemaType wrapperType = getNonNullType(getSchemaTypeFromType(inputType));
+                    inputValue = new InputValue(parameter.name, wrapperType);
+                } else {
+                    SchemaType wrapperType = getNonNullType(this.getType(getTypeNameFromType(inputType)));
+                    inputValue = new InputValue(parameter.name, wrapperType);
+                }
             }
             if (parameter.isDefault) {
                 inputValue.setDefaultValue(inputType.getZeroValue().toString());

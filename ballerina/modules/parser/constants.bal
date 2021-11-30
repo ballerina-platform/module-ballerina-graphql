@@ -98,5 +98,6 @@ public const T_OPEN_BRACKET = 19;
 public const T_CLOSE_BRACKET = 20;
 public const T_AT = 21;
 public const T_INPUT_OBJECT = 22;
+public const T_LIST = 23;
 
 public const ANONYMOUS_OPERATION = "<anonymous>";

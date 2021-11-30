@@ -125,6 +125,8 @@ public class TypeFinder {
         for (Parameter parameter : methodType.getParameters()) {
             if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
                 getInputObjectSchemaType(parameter.type);
+            } else if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
+                getListSchemaType(parameter.type);
             } else {
                 getSchemaTypeFromBalType(parameter.type);
             }
@@ -139,9 +141,26 @@ public class TypeFinder {
                 int tag = field.getFieldType().getTag();
                 if (tag == TypeTags.RECORD_TYPE_TAG) {
                     getInputObjectSchemaType(field.getFieldType());
+                } else if (tag == TypeTags.ARRAY_TAG) {
+                    getListSchemaType(field.getFieldType());
                 } else {
                     getSchemaTypeFromBalType(field.getFieldType());
                 }
+            }
+        }
+    }
+
+    private void getListSchemaType(Type type) {
+        if (!this.typeMap.containsKey(type.getName())) {
+            ArrayType arrayType = (ArrayType) type;
+            Type elementType = arrayType.getElementType();
+            int tag = elementType.getTag();
+            if (tag == TypeTags.RECORD_TYPE_TAG) {
+                getInputObjectSchemaType(elementType);
+            } else if (tag == TypeTags.ARRAY_TAG) {
+                getListSchemaType(elementType);
+            } else {
+                getSchemaTypeFromBalType(elementType);
             }
         }
     }

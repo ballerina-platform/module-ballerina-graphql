@@ -1,0 +1,5 @@
+query {
+    getSuggestions(tvSeries: [{ name: "Breaking Bad", episodes: [{title:"ep1"}]}, { name: "Breaking Bad", episodes:true }]) {
+        movieName
+    }
+}

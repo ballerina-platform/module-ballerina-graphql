@@ -128,6 +128,26 @@ final readonly & Movie m2 =  {
     director: "Dexter Fletcher"
 };
 
+final readonly & Movie m3 = {
+    movieName: "El Camino",
+    director: "Vince Gilligan"
+};
+
+final readonly & Movie m4 = {
+    movieName: "Escape Plan",
+    director: "Mikael Hafstrom"
+};
+
+final readonly & Movie m5 = {
+    movieName: "Papillon",
+    director: "Franklin Schaffner"
+};
+
+final readonly & Movie m6 = {
+    movieName: "The Fugitive",
+    director: "Andrew Davis"
+};
+
 final readonly & Course c1 = {
     name: "Electronics",
     code: 106,

@@ -166,16 +166,16 @@ class DirectiveVisitor {
                 if argNode.isVariableDefinition() {
                     isSkipped = <boolean>argNode.getVariableValue();
                 } else {
-                    parser:ArgumentValue value = <parser:ArgumentValue> argNode.getValue().get(argNode.getName());
-                    isSkipped = <boolean>value.value;
+                    parser:ArgumentValue value = <parser:ArgumentValue> argNode.getValue();
+                    isSkipped = <boolean>value;
                 }
             } else {
                 parser:ArgumentNode argNode = directive.getArguments()[0];
                 if argNode.isVariableDefinition() {
                     isIncluded = <boolean>argNode.getVariableValue();
                 } else {
-                    parser:ArgumentValue value = <parser:ArgumentValue> argNode.getValue().get(argNode.getName());
-                    isIncluded = <boolean>value.value;
+                    parser:ArgumentValue value = <parser:ArgumentValue> argNode.getValue();
+                    isIncluded = <boolean>value;
                 }
             }
         }

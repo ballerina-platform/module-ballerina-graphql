@@ -66,6 +66,9 @@ public class Utils {
     }
 
     public static boolean isContext(Type type) {
+        if (type.getPackage() == null) {
+            return false;
+        }
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }

@@ -1,0 +1,40 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"prices: In element #0:\" of type \"[Float!]!\" has invalid default value: 2. Expected type \"[Float!]!\", found 2",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 33
+                }
+            ]
+        },
+        {
+            "message": "Variable \"prices: In element #1:\" of type \"[Float!]!\" has invalid default value: 3. Expected type \"[Float!]!\", found 3",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 36
+                }
+            ]
+        },
+        {
+            "message": "Variable \"prices: In element #2:\" of type \"[Float!]!\" has invalid default value: 4. Expected type \"[Float!]!\", found 4",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 39
+                }
+            ]
+        },
+        {
+            "message": "Variable \"prices: In element #3:\" of type \"[Float!]!\" has invalid default value: 5. Expected type \"[Float!]!\", found 5",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 42
+                }
+            ]
+        }
+    ]
+}

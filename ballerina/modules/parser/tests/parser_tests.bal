@@ -330,7 +330,7 @@ isolated function testParseAnonymousMutation() returns error? {
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "newAge");
-    test:assertEquals((<ArgumentValue>argumentNode.getValue().get("newAge")).value, 24);
+    test:assertEquals(<Scalar>argumentNode.getValue(), 24);
     test:assertEquals(fieldNode.getSelections().length(), 2);
     test:assertEquals((<FieldNode>fieldNode.getSelections()[0]).getName(), "name");
     test:assertEquals((<FieldNode>fieldNode.getSelections()[1]).getName(), "age");
@@ -356,7 +356,7 @@ isolated function testParseNamedMutation() returns error? {
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "newAge");
-    test:assertEquals((<ArgumentValue>argumentNode.getValue().get("newAge")).value, 24);
+    test:assertEquals(<Scalar>argumentNode.getValue(), 24);
     test:assertEquals(fieldNode.getSelections().length(), 2);
     test:assertEquals((<FieldNode>fieldNode.getSelections()[0]).getName(), "name");
     test:assertEquals((<FieldNode>fieldNode.getSelections()[1]).getName(), "age");
@@ -499,7 +499,7 @@ isolated function testFieldAliasWithArguments() returns error? {
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "id");
-    test:assertEquals((<ArgumentValue>argumentNode.getValue().get("id")).value, 1);
+    test:assertEquals(<Scalar>argumentNode.getValue(), 1);
 }
 
 @test:Config {
@@ -516,8 +516,8 @@ isolated function testVariables() returns error? {
     test:assertEquals(variableDefinition.getName(), "profileId");
     test:assertEquals(variableDefinition.getTypeName(), "Int");
     ArgumentNode argValueNode = <ArgumentNode> variableDefinition.getDefaultValue();
-    ArgumentValue argValue = <ArgumentValue> argValueNode.getValue()[variableDefinition.getName()];
-    test:assertEquals(argValue.value, 3);
+    ArgumentValue argValue = <ArgumentValue> argValueNode.getValue();
+    test:assertEquals(<Scalar>argValue, 3);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode> selection;
@@ -562,7 +562,7 @@ isolated function testNonNullTypeVariables() returns error? {
     groups: ["variables", "list", "parser"]
 }
 isolated function testListTypeVariables() returns error? {
-    string document = "query getId($name: [String!]!) { profile(userName:$name) { id } }";
+    string document = "query getId($name: [[[String!]]!]!) { profile(userName:$name) { id } }";
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -570,7 +570,7 @@ isolated function testListTypeVariables() returns error? {
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
     VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["name"];
     test:assertEquals(variableDefinition.getName(), "name");
-    test:assertEquals(variableDefinition.getTypeName(), "[String!]!");
+    test:assertEquals(variableDefinition.getTypeName(), "[[[String!]]!]!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode> selection;
@@ -627,7 +627,337 @@ isolated function testEmptyListTypeVariable() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "list", "parser"]
+    groups: ["list", "parser"]
+}
+isolated function testInvalidListTypeArgument() returns error? {
+    string document = string`query { profile(userNames:["Sherlock", "Walter") { id } }`;
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected ")".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 48);
+}
+
+@test:Config {
+    groups: ["list", "variables", "parser"]
+}
+
+isolated function testListWithInvalidDefaultValue() returns error? {
+    string document = string`query ($detail:Data = [$name, "Sherlock"]) { getId(data: $detail) { id } }`;
+    Parser parser = new(document);
+    DocumentNode|Error result = parser.parse();
+    test:assertTrue(result is InvalidTokenError);
+    InvalidTokenError err = <InvalidTokenError>result;
+    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    test:assertEquals(err.message(), expectedMessage);
+    test:assertEquals(err.detail()["line"], 1);
+    test:assertEquals(err.detail()["column"], 24);
+}
+
+@test:Config {
+    groups: ["list", "parser"]
+}
+isolated function testListTypeArgument() returns error? {
+    string document = string`query { profile(userNames:["Sherlock", 1, true, 3.4]) { id } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "userNames");
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    test:assertEquals((argumentValue).length(), 4);
+
+    ArgumentNode listItem = <ArgumentNode> argumentValue[0];
+    test:assertEquals(listItem.getKind(), T_STRING);
+    ArgumentValue listItemValue = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>listItemValue, "Sherlock");
+
+    listItem = <ArgumentNode> argumentValue[1];
+    test:assertEquals(listItem.getKind(), T_INT);
+    listItemValue = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>listItemValue, 1);
+
+    listItem = <ArgumentNode> argumentValue[2];
+    test:assertEquals(listItem.getKind(), T_BOOLEAN);
+    listItemValue = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>listItemValue, true);
+
+    listItem = <ArgumentNode> argumentValue[3];
+    test:assertEquals(listItem.getKind(), T_FLOAT);
+    listItemValue = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>listItemValue, 3.4);
+}
+
+@test:Config {
+    groups: ["list", "parser"]
+}
+isolated function testListTypeArgumentWithNestedLists() returns error? {
+    string document = string`query { profile(userNames:[["Sherlock"], [1], [[false]]]) { id } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "userNames");
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    test:assertEquals(argumentValue.length(), 3);
+
+    ArgumentNode listItem = <ArgumentNode> argumentValue[0];
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    ArgumentValue[] listItemValue = <ArgumentValue[]> listItem.getValue();
+    ArgumentNode innerListItem = <ArgumentNode> listItemValue[0];
+    test:assertEquals(innerListItem.getKind(), T_STRING);
+    ArgumentValue innerListItemValue = <ArgumentValue> innerListItem.getValue();
+    test:assertEquals(<Scalar>innerListItemValue, "Sherlock");
+
+    listItem = <ArgumentNode> argumentValue[1];
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    listItemValue = <ArgumentValue[]> listItem.getValue();
+    test:assertEquals(listItemValue.length(), 1);
+    innerListItem = <ArgumentNode> listItemValue[0];
+    test:assertEquals(innerListItem.getKind(), T_INT);
+    innerListItemValue = <ArgumentValue> innerListItem.getValue();
+    test:assertEquals(<Scalar>innerListItemValue, 1);
+
+    listItem = <ArgumentNode> argumentValue[2];
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    listItemValue = <ArgumentValue[]> listItem.getValue();
+    test:assertEquals(listItemValue.length(), 1);
+    innerListItem = <ArgumentNode> listItemValue[0];
+    test:assertEquals(innerListItem.getKind(), T_LIST);
+    listItemValue = <ArgumentValue[]> innerListItem.getValue();
+    test:assertEquals(listItemValue.length(), 1);
+    innerListItem = <ArgumentNode> listItemValue[0];
+    test:assertEquals(innerListItem.getKind(), T_BOOLEAN);
+    innerListItemValue = <ArgumentValue> innerListItem.getValue();
+    test:assertEquals(<Scalar>innerListItemValue, false);
+}
+
+@test:Config {
+    groups: ["list", "variables", "parser"]
+}
+
+isolated function testListTypeArgumentWithVariables() returns error? {
+    string document = string`query { profile(userNames:["Sherlock", $name, $user]) { id } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "userNames");
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    test:assertEquals(argumentValue.length(), 3);
+
+    ArgumentNode listItem = <ArgumentNode> argumentValue[0];
+    ArgumentValue listItemValue = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>listItemValue, "Sherlock");
+
+    ArgumentNode variableListItem = <ArgumentNode> argumentValue[1];
+    test:assertTrue(variableListItem.isVariableDefinition());
+    test:assertEquals(variableListItem.getVariableName(), "name");
+
+    variableListItem = <ArgumentNode> argumentValue[2];
+    test:assertTrue(variableListItem.isVariableDefinition());
+    test:assertEquals(variableListItem.getVariableName(), "user");
+}
+
+@test:Config {
+    groups: ["list", "input_objects", "variables", "parser"]
+}
+
+isolated function testListTypeWithinInputObjectVariableDefualtValue() returns error? {
+    string document = string`query ($userDetails: UserDetails = {name: "Jessie", friends: ["walter", null]}){ profile(details: $userDetails) { id } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["userDetails"];
+    test:assertEquals(variableDefinition.getName(), "userDetails");
+    test:assertEquals(variableDefinition.getTypeName(), "UserDetails");
+    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
+    test:assertEquals(argValue.getName(), "userDetails");
+    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    test:assertEquals(defaultValue.length(), 2);
+
+    ArgumentNode field1 = <ArgumentNode> defaultValue[0];
+    test:assertEquals(field1.getKind(), T_STRING);
+    ArgumentValue field1Value = <ArgumentValue> field1.getValue();
+    test:assertEquals(<Scalar>field1Value, "Jessie");
+
+    ArgumentNode field2 = <ArgumentNode> defaultValue[1];
+    test:assertEquals(field2.getKind(), T_LIST);
+    ArgumentValue[] field2Value = <ArgumentValue[]> field2.getValue();
+    test:assertEquals(field2Value.length(), 2);
+    ArgumentNode innerField = <ArgumentNode> field2Value[0];
+    ArgumentValue innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>innerFieldValue, "walter");
+    innerField = <ArgumentNode> field2Value[1];
+    innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<null>innerFieldValue, null);
+}
+
+@test:Config {
+    groups: ["list", "variables", "parser"]
+}
+
+isolated function testListTypeVariablesWithDefualtValue() returns error? {
+    string document = check getGraphQLDocumentFromFile("list_type_variables_with_default_value.graphql");
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
+
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["bName"];
+    test:assertEquals(variableDefinition.getName(), "bName");
+    test:assertEquals(variableDefinition.getTypeName(), "[[String]!]");
+    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    test:assertEquals(argValue.getKind(), T_LIST);
+    test:assertEquals(argValue.getName(), "bName");
+    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    test:assertEquals(defaultValue.length(), 2);
+
+    ArgumentNode field1 = <ArgumentNode> defaultValue[0];
+    test:assertEquals(field1.getKind(), T_LIST);
+    ArgumentValue[] field1Value = <ArgumentValue[]> field1.getValue();
+    ArgumentNode innerField = <ArgumentNode> field1Value[0];
+    ArgumentValue innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>innerFieldValue, "Harry");
+
+    ArgumentNode field2 = <ArgumentNode> defaultValue[1];
+    test:assertEquals(field2.getKind(), T_LIST);
+    ArgumentValue[] field2Value = <ArgumentValue[]> field2.getValue();
+    test:assertEquals(field2Value.length(), 3);
+    innerField = <ArgumentNode> field2Value[0];
+    innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>innerFieldValue, "SUNDAY");
+    innerField = <ArgumentNode> field2Value[1];
+    innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<null>innerFieldValue, null);
+    innerField = <ArgumentNode> field2Value[2];
+    innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>innerFieldValue, false);
+
+    variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["bAuthor"];
+    test:assertEquals(variableDefinition.getName(), "bAuthor");
+    test:assertEquals(variableDefinition.getTypeName(), "[ProfileDetail!]");
+    argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    test:assertEquals(argValue.getKind(), T_LIST);
+    test:assertEquals(argValue.getName(), "bAuthor");
+    defaultValue = <ArgumentValue[]> argValue.getValue();
+    test:assertEquals(defaultValue.length(), 1);
+
+    ArgumentNode 'field = <ArgumentNode> defaultValue[0];
+    test:assertEquals('field.getKind(), T_INPUT_OBJECT);
+    ArgumentValue[] fieldValue = <ArgumentValue[]> 'field.getValue();
+    innerField = <ArgumentNode> fieldValue[0];
+    innerFieldValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>innerFieldValue, "J.K Rowling");
+}
+
+@test:Config {
+    groups: ["list", "input_objects", "parser"]
+}
+
+isolated function testListTypeArgumentWithInputObjects() returns error? {
+    string document = string`query { profile(userNames:[{age: $age, name: "Jessie" }, {}]) { id } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "profile");
+    ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    test:assertEquals(argumentNode.getName(), "userNames");
+    test:assertEquals(argumentNode.getKind(), T_LIST);
+    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    test:assertEquals(argumentValue.length(), 2);
+
+    ArgumentNode inputObjectListItem = <ArgumentNode> argumentValue[0];
+    test:assertEquals(inputObjectListItem.getKind(), T_INPUT_OBJECT);
+    ArgumentValue[] fields = <ArgumentValue[]> inputObjectListItem.getValue();
+    test:assertEquals(fields.length(), 2);
+    ArgumentNode field1 = <ArgumentNode> fields[0];
+    test:assertEquals(field1.isVariableDefinition(), true);
+    test:assertEquals(field1.getVariableName(), "age");
+    ArgumentNode field2 = <ArgumentNode> fields[1];
+    ArgumentValue field2Value = <ArgumentValue> field2.getValue();
+    test:assertEquals(<Scalar>field2Value, "Jessie");
+
+    inputObjectListItem = <ArgumentNode> argumentValue[1];
+    test:assertEquals(inputObjectListItem.getKind(), T_INPUT_OBJECT);
+    fields = <ArgumentValue[]> inputObjectListItem.getValue();
+    test:assertEquals(fields.length(), 0);
+}
+
+@test:Config {
+    groups: ["list", "directives", "parser"]
+}
+isolated function testListTypeArgumentsInDirecitves() returns error? {
+    string document = string`query { user @skip(if:["Sherlock", { name: $name}, SUNDAY]){ name, age } }`;
+    Parser parser = new(document);
+    DocumentNode documentNode = check parser.parse();
+    test:assertEquals(documentNode.getOperations().length(), 1);
+    OperationNode operationNode = documentNode.getOperations()[0];
+    Selection selection = operationNode.getSelections()[0];
+    test:assertTrue(selection is FieldNode);
+    FieldNode fieldNode = <FieldNode> selection;
+    test:assertEquals(fieldNode.getName(), "user");
+    DirectiveNode[] directives = fieldNode.getDirectives();
+    test:assertEquals(directives.length(), 1);
+    DirectiveNode directive = directives[0];
+    test:assertEquals(directive.getName(), "skip");
+    test:assertEquals(directive.getArguments().length(), 1);
+    ArgumentNode directiveArgument = directive.getArguments()[0];
+    test:assertEquals(directiveArgument.getName(), "if");
+    test:assertEquals(directiveArgument.getKind(), T_LIST);
+    ArgumentValue[] argumentValues = <ArgumentValue[]> directiveArgument.getValue();
+    test:assertEquals(argumentValues.length(), 3);
+
+    ArgumentNode listItem = <ArgumentNode> argumentValues[0];
+    ArgumentValue listItemValue = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>listItemValue, "Sherlock");
+
+    listItem = <ArgumentNode> argumentValues[1];
+    test:assertEquals(listItem.getKind(), T_INPUT_OBJECT);
+    ArgumentValue[] inputObjectFields = <ArgumentValue[]> listItem.getValue();
+    test:assertEquals(inputObjectFields.length(), 1);
+    ArgumentNode inputObjectFieldValue = <ArgumentNode> inputObjectFields[0];
+    test:assertEquals(inputObjectFieldValue.getName(), "name");
+    test:assertTrue(inputObjectFieldValue.isVariableDefinition());
+    test:assertEquals(inputObjectFieldValue.getVariableName(), "name");
+
+    listItem = <ArgumentNode> argumentValues[2];
+    test:assertEquals(listItem.getKind(), T_IDENTIFIER);
+    ArgumentValue value = <ArgumentValue> listItem.getValue();
+    test:assertEquals(<Scalar>value, "SUNDAY");
+}
+
+@test:Config {
+    groups: ["variables", "parser"]
 }
 isolated function testVariablesWithInvalidDefaultValue() returns error? {
     string document = "query getId($name: String = $name) { profile(userName:$name) { id } }";
@@ -672,30 +1002,27 @@ isolated function testInputObjects() returns error? {
     ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "bAuthor");
-    map<ArgumentValue|ArgumentNode> defaultValue = argValue.getValue();
-    test:assertEquals(defaultValue.hasKey("name"), true);
-    ArgumentNode argField = <ArgumentNode> defaultValue.get("name");
-    ArgumentValue defaultValueField = <ArgumentValue> argField.getValue().get("name");
-    test:assertEquals(defaultValueField.value, "J.K Rowling");
+    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    test:assertEquals(defaultValue.length(), 1);
+    ArgumentNode argField = <ArgumentNode> defaultValue[0];
+    ArgumentValue defaultValueField = <ArgumentValue> argField.getValue();
+    test:assertEquals(<Scalar>defaultValueField, "J.K Rowling");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode> selection;
     test:assertEquals(fieldNode.getName(), "book");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "info");
-    map<ArgumentValue|ArgumentNode> inputObjectFields = <map<ArgumentValue|ArgumentNode>> argumentNode.getValue();
-    test:assertEquals(inputObjectFields.hasKey("bookName"), true);
-    test:assertEquals(inputObjectFields.hasKey("author"), true);
-    test:assertEquals(inputObjectFields.hasKey("movie"), true);
-    ArgumentNode fields1 = <ArgumentNode> inputObjectFields.get("author");
-    test:assertEquals(fields1.isVariableDefinition(), true);
-    test:assertEquals(fields1.getVariableName(), "bAuthor");
-    ArgumentNode fields2 = <ArgumentNode> inputObjectFields.get("movie");
-    map<ArgumentValue|ArgumentNode> nestedFields = <map<ArgumentValue|ArgumentNode>>fields2.getValue();
-    test:assertEquals(nestedFields.hasKey("movieName"), true);
-    ArgumentNode innerField = <ArgumentNode> fields2.getValue().get("movieName");
-    ArgumentValue nestedValue = <ArgumentValue> innerField.getValue().get("movieName");
-    test:assertEquals(nestedValue.value, "End Game");
+    ArgumentValue[] inputObjectFields = <ArgumentValue[]> argumentNode.getValue();
+    ArgumentNode field1 = <ArgumentNode> inputObjectFields[2];
+    test:assertEquals(field1.isVariableDefinition(), true);
+    test:assertEquals(field1.getVariableName(), "bAuthor");
+    ArgumentNode field2 = <ArgumentNode> inputObjectFields[3];
+    ArgumentValue[] nestedFields = <ArgumentValue[]> field2.getValue();
+    test:assertEquals(nestedFields.length(), 1);
+    ArgumentNode innerField = <ArgumentNode> nestedFields[0];
+    ArgumentValue nestedValue = <ArgumentValue> innerField.getValue();
+    test:assertEquals(<Scalar>nestedValue, "End Game");
 }
 
 @test:Config {

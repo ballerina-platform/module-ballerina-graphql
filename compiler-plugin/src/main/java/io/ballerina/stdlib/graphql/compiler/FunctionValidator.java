@@ -215,22 +215,7 @@ public class FunctionValidator {
                     }
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
                         Location inputLocation = getLocation(param, location);
-                        if (param.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                            Symbol symbol = ((TypeReferenceTypeSymbol) param.typeDescriptor()).definition();
-                            if (symbol.kind() == SymbolKind.CLASS) {
-                                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
-                                continue;
-                            }
-                            TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
-                            if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM,
-                                              inputLocation);
-                            } else {
-                                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
-                            }
-                        } else {
-                            updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
-                        }
+                        addInputTypeErrorIntoContext(param.typeDescriptor(), inputLocation, context);
                     }
                 }
             }
@@ -284,7 +269,36 @@ public class FunctionValidator {
                 return false;
             }
         }
+        if (inputTypeSymbol.typeKind() == TypeDescKind.ARRAY) {
+            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) inputTypeSymbol;
+            TypeSymbol typeSymbol = arrayTypeSymbol.memberTypeDescriptor();
+            return hasInvalidInputParamType(typeSymbol);
+        }
         return !hasPrimitiveType(inputTypeSymbol);
+    }
+
+    private void addInputTypeErrorIntoContext(TypeSymbol typeSymbol, Location inputLocation,
+                                              SyntaxNodeAnalysisContext context) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            Symbol symbol = ((TypeReferenceTypeSymbol) typeSymbol).definition();
+            if (symbol.kind() == SymbolKind.CLASS) {
+                updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
+            } else {
+                TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
+                if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+                    updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM,
+                            inputLocation);
+                } else {
+                    updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
+                }
+            }
+        } else if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
+            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) typeSymbol;
+            TypeSymbol ofTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
+            addInputTypeErrorIntoContext(ofTypeSymbol, inputLocation, context);
+        } else {
+            updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
+        }
     }
 
     private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {

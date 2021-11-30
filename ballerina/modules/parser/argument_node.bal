@@ -19,16 +19,18 @@ public class ArgumentNode {
 
     private string name;
     private Location location;
-    private map<ArgumentValue|ArgumentNode> value;
+    private ArgumentValue|ArgumentValue[] value;
+    private Location valueLocation;
     private ArgumentType kind;
     private string? variableName;
-    private anydata? variableValue;
+    private anydata variableValue;
     private boolean variableDefinition;
 
     public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
         self.name = name;
         self.location = location;
-        self.value = {};
+        self.value = [];
+        self.valueLocation = location;
         self.kind = kind;
         self.variableDefinition = isVarDef;
         self.variableName = ();
@@ -59,12 +61,20 @@ public class ArgumentNode {
         return self.variableName;
     }
 
-    public isolated function setValue(string name, ArgumentValue|ArgumentNode value) {
-        self.value[name] = value;
+    public isolated function setValue(ArgumentValue|ArgumentValue[] value) {
+        self.value = value;
     }
 
-    public isolated function getValue() returns map<ArgumentValue|ArgumentNode> {
+    public isolated function setValueLocation(Location location) {
+        self.valueLocation = location;
+    }
+
+    public isolated function getValue() returns ArgumentValue|ArgumentValue[] {
         return self.value;
+    }
+
+    public isolated function getValueLocation() returns Location {
+        return self.valueLocation;
     }
 
     public isolated function setVariableDefinition(boolean value) {

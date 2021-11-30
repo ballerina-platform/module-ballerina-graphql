@@ -1,0 +1,18 @@
+{
+    "data": {
+        "getSuggestions": [
+            {
+                "movieName": "Escape Plan",
+                "director": "Mikael Hafstrom"
+            },
+            {
+                "movieName": "Papillon",
+                "director": "Franklin Schaffner"
+            },
+            {
+                "movieName": "The Fugitive",
+                "director": "Andrew Davis"
+            }
+        ]
+    }
+}

@@ -143,3 +143,15 @@ public type Author record {
     string? name;
     int id;
 };
+
+public type TvSeries record {
+    string name;
+    string director?;
+    Episode[] episodes?;
+};
+
+public type Episode record {
+    string title;
+    int timeDuration?;
+    string[] newCharacters?;
+};

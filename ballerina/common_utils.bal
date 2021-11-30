@@ -67,6 +67,24 @@ isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue
     return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
 }
 
+isolated function getInvalidDefaultValueError(string variableName, string typeName, parser:ArgumentValue|parser:ArgumentValue[] value) returns string {
+    if value is Scalar {
+        return string`Variable "${variableName}" of type "${typeName}" has invalid default value: ${value}. Expected type "${typeName}", found ${value}`;
+    } else if value is () {
+        return string`Variable "${variableName}" of type "${typeName}" has invalid default value: null. Expected type "${typeName}", found null`;
+    }
+    return string`Variable "${variableName}" of type "${typeName}" has invalid default value. Expected type "${typeName}"`;
+}
+
+isolated function getInvalidArgumentValueError(string listError, string expectedTypeName, parser:ArgumentValue|parser:ArgumentValue[] value) returns string {
+    if value is Scalar {
+        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
+    } else if value is () {
+        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
+    }
+    return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value.`;
+}
+
 isolated function getOutputObject(Data data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
     if data.length() > 0 {
@@ -94,6 +112,8 @@ isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
         return STRING;
     } else if kind == parser:T_INPUT_OBJECT {
         return INPUT_OBJECT;
+    } else if kind == parser:T_LIST {
+        return LIST;
     } else {
         return ENUM;
     }
@@ -156,4 +176,55 @@ isolated function getErrorDetailRecord(string message, Location|Location[] locat
         message: message,
         locations: [<Location>location]
     };
+}
+
+isolated function getArgumentTypeIdentifierFromType(__Type argType) returns parser:ArgumentType {
+    if argType.kind == NON_NULL {
+        return getArgumentTypeIdentifierFromType(<__Type> argType?.ofType);
+    } else if argType.kind == LIST {
+        return parser:T_LIST;
+    } else if argType.kind == INPUT_OBJECT {
+        return parser:T_INPUT_OBJECT;
+    } else if argType.kind == ENUM {
+        return parser:T_IDENTIFIER;
+    } else {
+        return getArgumentTypeKind(<string> argType.name);
+    }
+}
+
+isolated function getTypeKind(__Type argType) returns __TypeKind {
+    if argType.kind == NON_NULL {
+        return (<__Type>argType?.ofType).kind;
+    }
+    return argType.kind;
+}
+
+isolated function getListElementError((string|int)[] path) returns string {
+    string errorMsg = "";
+    if path.length() > 1 {
+        string listIndex = "";
+        string argName = "";
+        foreach int i in 0..< path.length() {
+            string|int pathSegment = path[i];
+            if pathSegment is int && argName.length() > 0 {
+                listIndex += string`: In element #${pathSegment.toString()}`;
+            } else if pathSegment is string && i == 0 {
+                argName = pathSegment;
+            } else if pathSegment is string && pathSegment == argName {
+                // skip the nested list name
+                continue;
+            } else {
+                break;
+            }
+        }
+        errorMsg = string`${argName}${listIndex}:`;
+    }
+    return errorMsg;
+}
+
+isolated function getListMemberTypeFromType(__Type argType) returns __Type {
+    if argType.kind == NON_NULL {
+        return getListMemberTypeFromType((<__Type>argType?.ofType));
+    }
+    return <__Type>argType?.ofType;
 }

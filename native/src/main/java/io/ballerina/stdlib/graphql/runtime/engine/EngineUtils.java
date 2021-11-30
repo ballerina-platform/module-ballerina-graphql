@@ -81,6 +81,7 @@ public class EngineUtils {
     public static final String INCLUDE_DEPRECATED = "includeDeprecated";
     public static final String FALSE = "false";
     public static final int T_INPUT_OBJECT = 22;
+    public static final int T_LIST = 23;
 
     // Schema related type names
     public static final String INTEGER = "Int";

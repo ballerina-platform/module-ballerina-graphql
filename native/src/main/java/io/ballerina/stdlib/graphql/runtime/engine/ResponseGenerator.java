@@ -35,10 +35,11 @@ import io.ballerina.runtime.api.values.BValue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.executeResourceMethod;
-import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getArgumentsFromField;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ALIAS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FRAGMENT_NODE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
@@ -46,6 +47,9 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPENAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpdateResourcePathsList;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
@@ -140,10 +144,21 @@ public class ResponseGenerator {
 
     static void getDataFromMap(ExecutionContext executionContext, BObject node, BMap<BString, Object> map,
                                BMap<BString, Object> data, List<Object> pathSegments) {
-        BMap<BString, Object> arguments = getArgumentsFromField(node);
-        BString key = arguments.getStringValue(StringUtils.fromString(KEY));
-        Object result = map.get(key);
-        populateResponse(executionContext, node, result, data, pathSegments);
+        BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
+        for (int i = 0; i < argumentArray.size(); i++) {
+            BObject argumentNode = (BObject) argumentArray.get(i);
+            if (Objects.equals(StringUtils.fromString(KEY), argumentNode.getStringValue(NAME_FIELD))) {
+                if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                    BString key = argumentNode.getStringValue(VARIABLE_VALUE_FIELD);
+                    Object result = map.get(key);
+                    populateResponse(executionContext, node, result, data, pathSegments);
+                } else {
+                    BString key = argumentNode.getStringValue(VALUE_FIELD);
+                    Object result = map.get(key);
+                    populateResponse(executionContext, node, result, data, pathSegments);
+                }
+            }
+        }
     }
 
     static void getDataFromArray(ExecutionContext executionContext, BObject node, BArray result,

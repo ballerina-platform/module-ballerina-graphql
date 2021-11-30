@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "episodes: In element #0:String cannot represent non String value: true",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 52
+                }
+            ]
+        },
+        {
+            "message": "episodes: In element #0:String cannot represent non String value: 44",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 52
+                }
+            ]
+        }
+    ]
+}

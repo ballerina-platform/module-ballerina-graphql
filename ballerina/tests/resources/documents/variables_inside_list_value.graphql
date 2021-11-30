@@ -1,0 +1,5 @@
+query ($name1: String = "Michael", $name2: String!){ 
+    getSuggestions(tvSeries: [{ name: $name1, episodes: [{title:"ep1", newCharacters:["Sherlock", $name1]}, {title:"ep2", newCharacters:[$name1, $name2]}]}]) { 
+        movieName 
+    }
+}
