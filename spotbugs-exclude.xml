@@ -9,14 +9,6 @@
     <Match>
         <And>
             <Class name="io.ballerina.stdlib.graphql.runtime.engine.Engine" />
-            <Method name="addListMembersFromVariableValue" />
-            <Bug pattern="BC_UNCONFIRMED_CAST" />
-        </And>
-    </Match>
-    <Match>
-        <And>
-            <Class name="io.ballerina.stdlib.graphql.runtime.engine.Engine" />
-            <Method name="addInputObjectFieldsFromVariableValue" />
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>
