@@ -29,9 +29,7 @@ isolated service class HttpService {
         self.contextInit = getContextInit(serviceConfig);
     }
 
-    isolated resource function get .(http:Request request) returns http:Response {
-         // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
-        http:RequestContext requestContext = new;
+    isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
         Context|http:Response context = self.initContext(requestContext, request);
         if context is http:Response {
             return context;
@@ -44,9 +42,7 @@ isolated service class HttpService {
         }
     }
 
-    isolated resource function post .(http:Request request) returns http:Response {
-         // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
-        http:RequestContext requestContext = new;
+    isolated resource function post .(http:RequestContext requestContext, http:Request request) returns http:Response {
         Context|http:Response context = self.initContext(requestContext, request);
         if context is http:Response {
             return context;
