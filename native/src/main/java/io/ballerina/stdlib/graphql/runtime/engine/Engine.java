@@ -55,6 +55,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_F
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
@@ -74,6 +75,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_META
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -360,6 +362,10 @@ public class Engine {
                 result[i] = executionContext.getVisitor().getObjectValue(CONTEXT_FIELD);
                 result[j + 1] = true;
                 continue;
+            }
+            if (isFileUpload(parameters[i].type)) {
+                result[i] = executionContext.getVisitor().getMapValue(FILE_INFO).get(parameters[i].name);
+                result[j + 1] = true;
             }
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
                 result[j] = parameters[i].type.getZeroValue();

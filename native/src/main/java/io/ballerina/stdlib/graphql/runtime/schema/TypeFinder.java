@@ -52,6 +52,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -175,9 +176,13 @@ public class TypeFinder {
             this.createSchemaType(name, TypeKind.SCALAR, type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
             RecordType recordType = (RecordType) type;
-            this.createSchemaType(recordType.getName(), TypeKind.OBJECT, recordType);
-            for (Field field : recordType.getFields().values()) {
-                getSchemaTypeFromBalType(field.getFieldType());
+            if (isFileUpload(type)) {
+                // Do nothing
+            } else {
+                this.createSchemaType(recordType.getName(), TypeKind.OBJECT, recordType);
+                for (Field field : recordType.getFields().values()) {
+                    getSchemaTypeFromBalType(field.getFieldType());
+                }
             }
         } else if (tag == TypeTags.SERVICE_TAG) {
             ServiceType serviceType = (ServiceType) type;

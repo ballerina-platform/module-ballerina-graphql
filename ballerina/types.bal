@@ -32,3 +32,16 @@ type AnydataMap map<anydata>;
 # + requestContext - The `http:RequestContext` object from the original request
 # + request - The `http:Request` object from the original request
 public type ContextInit isolated function (http:RequestContext requestContext, http:Request request) returns Context|error;
+
+# Function input parameter type for access file details.
+#
+# + fileName - Name of the file
+# + mimeType - File mime type according to the content
+# + encoding - File stream encoding
+# + byteStream - File content as a stream of `byte[]`
+public type FileUpload record {|
+    string fileName;
+    string mimeType;
+    string encoding;
+    stream<byte[], error?> byteStream;
+|};

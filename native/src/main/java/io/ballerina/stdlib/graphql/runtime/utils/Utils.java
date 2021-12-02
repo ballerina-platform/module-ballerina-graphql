@@ -41,6 +41,8 @@ public class Utils {
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
 
+    public static final String FILE_UPLOAD = "FileUpload";
+
     public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
                                                                                      getModule().getName(),
                                                                                      getModule().getMajorVersion(),
@@ -75,5 +77,17 @@ public class Utils {
         return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
                 type.getPackage().getName().equals(ModuleUtils.getModule().getName()) &&
                 type.getName().equals(CONTEXT_OBJECT);
+    }
+
+    public static boolean isFileUpload(Type type) {
+        if (type.getPackage() == null) {
+            return false;
+        }
+        if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
+            return false;
+        }
+        return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
+                type.getPackage().getName().equals(ModuleUtils.getModule().getName()) &&
+                type.getName().equals(FILE_UPLOAD);
     }
 }

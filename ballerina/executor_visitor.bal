@@ -24,11 +24,13 @@ class ExecutorVisitor {
     private Data data;
     private ErrorDetail[] errors;
     private Context context;
+    private map<FileUpload|FileUpload[]> fileInfo;
 
-    isolated function init(Engine engine, __Schema schema, Context context) {
+    isolated function init(Engine engine, __Schema schema, Context context, map<FileUpload|FileUpload[]>? fileInfo) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
+        self.fileInfo = fileInfo == () ? {} : fileInfo;
         self.data = {};
         self.errors = [];
     }
