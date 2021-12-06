@@ -89,6 +89,7 @@ public class EngineUtils {
     public static final String BOOLEAN = "Boolean";
     public static final String FLOAT = "Float";
     public static final String DECIMAL = "Decimal";
+    public static final String STREAM = "Stream";
     public static final String QUERY = "Query";
     public static final String MUTATION = "Mutation";
 

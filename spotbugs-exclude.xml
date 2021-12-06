@@ -12,4 +12,11 @@
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>
+    <Match>
+        <And>
+            <Class name="io.ballerina.stdlib.graphql.runtime.utils.Utils" />
+            <Method name = "isFileUpload" />
+            <Bug pattern="BC_UNCONFIRMED_CAST" />
+        </And>
+    </Match>
 </FindBugsFilter>

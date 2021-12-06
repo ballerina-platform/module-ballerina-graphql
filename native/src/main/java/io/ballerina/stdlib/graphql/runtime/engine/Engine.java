@@ -202,6 +202,9 @@ public class Engine {
             BObject argumentNode = (BObject) argumentArray.get(i);
             BString argName = argumentNode.getStringValue(NAME_FIELD);
             Type argType  = getArgumentTypeFromMethod(argName, method);
+            if (isFileUpload(argType)) {
+                continue;
+            }
             if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
                 addInputObjectFieldsFromVariableValue(argumentNode, argumentsMap, getNonNullType(argType));
             } else if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
@@ -364,8 +367,14 @@ public class Engine {
                 continue;
             }
             if (isFileUpload(parameters[i].type)) {
-                result[i] = executionContext.getVisitor().getMapValue(FILE_INFO).get(parameters[i].name);
+                BMap<BString, Object> fileInfo = executionContext.getVisitor().getMapValue(FILE_INFO);
+                if (parameters[i].type.getTag() == TypeTags.ARRAY_TAG) {
+                    result[i] = fileInfo.getArrayValue(StringUtils.fromString(parameters[i].name));
+                } else {
+                    result[i] = fileInfo.getMapValue(StringUtils.fromString(parameters[i].name));
+                }
                 result[j + 1] = true;
+                continue;
             }
             if (arguments.get(StringUtils.fromString(parameters[i].name)) == null) {
                 result[j] = parameters[i].type.getZeroValue();

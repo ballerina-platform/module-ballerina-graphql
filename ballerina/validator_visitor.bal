@@ -199,7 +199,9 @@ class ValidatorVisitor {
 
     isolated function validateVariableValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         anydata variableValue = argumentNode.getVariableValue();
-        if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR || getTypeKind(schemaArg.'type) == ENUM) {
+        if getOfType(schemaArg.'type).name == FILE_UPLOAD {
+            return;
+        } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR || getTypeKind(schemaArg.'type) == ENUM) {
             self.coerceArgumentIntValueToFloat(argumentNode, schemaArg);
             self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
         } else if variableValue is map<anydata> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
@@ -259,6 +261,9 @@ class ValidatorVisitor {
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] {
             foreach __InputValue subInputValue in inputFields {
+                if getOfType(subInputValue.'type).name == FILE_UPLOAD {
+                    return;
+                }
                 if variableValues.hasKey(subInputValue.name) {
                     anydata fieldValue = variableValues.get(subInputValue.name);
                     if fieldValue is Scalar {
@@ -305,6 +310,9 @@ class ValidatorVisitor {
                                                 Location location, string fieldName) {
         if getTypeKind(inputValue.'type) == LIST {
             __InputValue listItemInputValue = createInputValueForListItem(inputValue);
+            if getOfType(listItemInputValue.'type).name == FILE_UPLOAD {
+                return;
+            }
             if variableValues.length() > 0 {
                 foreach int i in 0..< variableValues.length() {
                     self.updatePath(i);
@@ -447,7 +455,7 @@ class ValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
+            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () && getOfType(inputValue.'type).name != "FileUpload" {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }

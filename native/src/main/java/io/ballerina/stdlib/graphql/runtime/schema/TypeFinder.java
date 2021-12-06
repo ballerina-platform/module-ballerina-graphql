@@ -43,6 +43,7 @@ import java.util.Map;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STREAM;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeName;
@@ -52,7 +53,6 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -125,7 +125,11 @@ public class TypeFinder {
     private void getInputTypesFromMethod(MethodType methodType) {
         for (Parameter parameter : methodType.getParameters()) {
             if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
+//                if (isFileUpload(parameter.type)) {
+//                    // Do nothing
+//                } else {
                 getInputObjectSchemaType(parameter.type);
+//                }
             } else if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
                 getListSchemaType(parameter.type);
             } else {
@@ -141,7 +145,14 @@ public class TypeFinder {
             for (Field field : recordType.getFields().values()) {
                 int tag = field.getFieldType().getTag();
                 if (tag == TypeTags.RECORD_TYPE_TAG) {
+//                    if (isFileUpload(field.getFieldType())) {
+//                        // Do nothing
+//                    } else {
                     getInputObjectSchemaType(field.getFieldType());
+//                    }
+                } else if (tag == TypeTags.STREAM_TAG) {
+                    String name = STREAM;
+                    this.createSchemaType(name, TypeKind.SCALAR, type);
                 } else if (tag == TypeTags.ARRAY_TAG) {
                     getListSchemaType(field.getFieldType());
                 } else {
@@ -176,14 +187,14 @@ public class TypeFinder {
             this.createSchemaType(name, TypeKind.SCALAR, type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
             RecordType recordType = (RecordType) type;
-            if (isFileUpload(type)) {
-                // Do nothing
-            } else {
-                this.createSchemaType(recordType.getName(), TypeKind.OBJECT, recordType);
-                for (Field field : recordType.getFields().values()) {
-                    getSchemaTypeFromBalType(field.getFieldType());
-                }
+//            if (isFileUpload(type)) {
+//                // Do nothing
+//            } else {
+            this.createSchemaType(recordType.getName(), TypeKind.OBJECT, recordType);
+            for (Field field : recordType.getFields().values()) {
+                getSchemaTypeFromBalType(field.getFieldType());
             }
+//            }
         } else if (tag == TypeTags.SERVICE_TAG) {
             ServiceType serviceType = (ServiceType) type;
             getTypesFromService(serviceType.getName(), serviceType);

@@ -38,13 +38,16 @@ isolated function handleGetRequests(Engine engine, Context context, http:Request
 
 isolated function handlePostRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string contentType = request.getContentType();
+    io:println(contentType);
     if contentType == CONTENT_TYPE_JSON {
         return getResponseFromJsonPayload(engine, context, {},request);
     } else if contentType == CONTENT_TYPE_GQL {
         return createResponse("Content-Type 'application/graphql' is not yet supported", http:STATUS_BAD_REQUEST);
-    } else if contentType == CONTENT_TYPE_MULTIPART_FORM_DATA {
+    } else if contentType.includes(CONTENT_TYPE_MULTIPART_FORM_DATA) {
+        // io:println("mutlipart");
         return getResponseFromMultipartPayload(engine, context, request);
     } else {
+        // io:println(request.getBodyParts());
         return createResponse("Invalid 'Content-type' received", http:STATUS_BAD_REQUEST);
     }
 }
@@ -119,6 +122,7 @@ isolated function getResponseFromMultipartPayload(Engine engine, Context context
     if bodyParts is mime:Entity[] {
         foreach mime:Entity part in bodyParts {
             mime:ContentDisposition contentDisposition = part.getContentDisposition();
+            io:println(contentDisposition.name);
             if contentDisposition.name == MULTIPART_OPERATIONS {
                 json|mime:ParserError operation = part.getJson();
                 if operation is json {
@@ -164,14 +168,14 @@ isolated function getResponseFromMultipartPayload(Engine engine, Context context
     }
 
     map<FileUpload|FileUpload[]>|string fileInfoResult = getFileUploadValues(fileInfo, pathMap, variables);
-    if fileInfoResult is map<FileUpload> {
+    if fileInfoResult is map<FileUpload|FileUpload[]> {
         files = fileInfoResult;
     } else {
         response.statusCode = http:STATUS_BAD_REQUEST;
         response.setPayload(<string> fileInfoResult);
         return response;
     }
-    return forwardMultipartRequestToExecution(engine, context, fileInfo, payload);
+    return forwardMultipartRequestToExecution(engine, context, files, payload);
 }
 
 isolated function handleFileField(mime:Entity bodyPart) returns FileUpload|error {
@@ -210,24 +214,24 @@ isolated function getFileUploadValues(map<FileUpload> fileInfo, map<json> pathMa
                                 if fileInfo.hasKey(key) {
                                     files[path] = <FileUpload> fileInfo[key];
                                 } else {
-                                    return  "File content is missing";
+                                    return  "File content is missing in multipart request";
                                 }
                             } else {
-                                return "Undefined variable";
+                                return "Undefined variable found in multipart request";
                             }
                         } else {
-                            return "Invalid type for multipart field ‘map’ value";
+                            return "Invalid type for multipart request field ‘map’ value";
                         }
                     }
                 } else {
-                    return "Missing multipart field ‘map’ values";
+                    return "Missing multipart request field ‘map’ values";
                 }
             } else {
-                return "Invalid type for multipart field ‘map’";
+                return "Invalid type for multipart request field ‘map’";
             }
         }
     } else {
-        return "Missing multipart field ‘map’";
+        return "Missing multipart request field ‘map’";
     }
     return createFileUploadInfoMap(files, variables);
 }
@@ -272,7 +276,7 @@ isolated function createFileUploadInfoMap(map<FileUpload> files, map<json> varia
     return fileInfo;
 }
 
-isolated function forwardMultipartRequestToExecution(Engine engine, Context context, map<FileUpload> fileInfo, json payload) returns http:Response {
+isolated function forwardMultipartRequestToExecution(Engine engine, Context context, map<FileUpload|FileUpload[]> fileInfo, json payload) returns http:Response {
     if payload != () {
         http:Request request = new;
         request.setJsonPayload(payload, CONTENT_TYPE_JSON);

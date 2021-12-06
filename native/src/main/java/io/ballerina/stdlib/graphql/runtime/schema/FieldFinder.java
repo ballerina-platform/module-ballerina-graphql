@@ -60,7 +60,6 @@ import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isRequired;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -289,9 +288,9 @@ public class FieldFinder {
             if (isContext(parameter.type)) {
                 continue;
             }
-            if (isFileUpload(parameter.type)) {
-                continue;
-            }
+//            if (isFileUpload(parameter.type)) {
+//                continue;
+//            }
             if (parameter.type.isNilable()) {
                 inputType = getInputTypeFromNilableType((UnionType) parameter.type);
                 if (inputType.getTag() == TypeTags.ARRAY_TAG) {

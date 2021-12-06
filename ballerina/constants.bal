@@ -24,6 +24,7 @@ const PARAM_VARIABLES = "variables";
 
 const MULTIPART_OPERATIONS = "operations";
 const MULITPART_MAP = "map";
+const FILE_UPLOAD = "FileUpload";
 
 const SCHEMA_FIELD = "__schema";
 const TYPE_NAME_FIELD = "__typename";

@@ -18,8 +18,10 @@
 
 package io.ballerina.stdlib.graphql.runtime.utils;
 
+import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -80,6 +82,9 @@ public class Utils {
     }
 
     public static boolean isFileUpload(Type type) {
+        if (type.getTag() == TypeTags.ARRAY_TAG) {
+            return isFileUpload(((ArrayType) type).getElementType());
+        }
         if (type.getPackage() == null) {
             return false;
         }

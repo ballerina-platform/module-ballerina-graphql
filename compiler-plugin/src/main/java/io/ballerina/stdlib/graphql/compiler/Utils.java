@@ -54,6 +54,7 @@ public class Utils {
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String DOUBLE_UNDERSCORES = "__";
     public static final String CONTEXT_IDENTIFIER = "Context";
+    public static final String FILE_UPLOAD_IDENTIFIER = "FileUpload";
 
     /**
      * Compilation errors.
@@ -91,7 +92,12 @@ public class Utils {
         INVALID_RESOURCE_INPUT_OBJECT_PARAM("A GraphQL field cannot use an output type as an input type", "GRAPHQL_114",
                                             DiagnosticSeverity.ERROR),
         INVALID_LOCATION_FOR_CONTEXT_PARAMETER("The graphql:Context should be the first parameter", "GRAPHQL_115",
-                                               DiagnosticSeverity.ERROR);
+                                               DiagnosticSeverity.ERROR),
+        INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER(
+                "The graphql:FileUpload cannot be used as an input type of resource function", "GRAPHQL_116",
+                DiagnosticSeverity.ERROR),
+        INVALID_RETURN_TYPE_FILE_UPLOAD("The graphql:FileUpload cannot be used as an return type", "GRAPHQL_117",
+                DiagnosticSeverity.ERROR);
 
         private final String error;
         private final String errorCode;

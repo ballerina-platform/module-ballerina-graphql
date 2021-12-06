@@ -53,6 +53,7 @@ import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import static io.ballerina.stdlib.graphql.compiler.Utils.FILE_UPLOAD_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
 import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
@@ -174,6 +175,9 @@ public class FunctionValidator {
             TypeDefinitionSymbol typeDefinitionSymbol =
                     (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
             if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+                if (isFileUploadParameter(typeReferenceTypeSymbol.typeDescriptor())) {
+                    updateContext(context, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, location);
+                }
                 if (existingInputObjectTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
                     updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
                 } else {
@@ -212,6 +216,15 @@ public class FunctionValidator {
                                           inputLocation);
                         }
                         continue;
+                    }
+                    if (isFileUploadParameter(param.typeDescriptor())) {
+                        if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
+                            continue;
+                        } else {
+                            Location inputLocation = getLocation(param, location);
+                            updateContext(context, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER,
+                                    inputLocation);
+                        }
                     }
                     if (hasInvalidInputParamType(param.typeDescriptor())) {
                         Location inputLocation = getLocation(param, location);
@@ -272,6 +285,11 @@ public class FunctionValidator {
         if (inputTypeSymbol.typeKind() == TypeDescKind.ARRAY) {
             ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) inputTypeSymbol;
             TypeSymbol typeSymbol = arrayTypeSymbol.memberTypeDescriptor();
+            if (typeSymbol.typeKind() == TypeDescKind.ARRAY) { // invalidate FileUpload[][] type inputs
+                if (isFileUploadParameter(typeSymbol)) {
+                    return false;
+                }
+            }
             return hasInvalidInputParamType(typeSymbol);
         }
         return !hasPrimitiveType(inputTypeSymbol);
@@ -466,6 +484,17 @@ public class FunctionValidator {
             if (typeSymbol.getName().isPresent()) {
                 return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
                         PACKAGE_ORG) && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
+            }
+        }
+        return false;
+    }
+
+    private boolean isFileUploadParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getModule().isPresent()) {
+            ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
+            if (typeSymbol.getName().isPresent()) {
+                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
+                        PACKAGE_ORG) && typeSymbol.getName().get().equals(FILE_UPLOAD_IDENTIFIER);
             }
         }
         return false;

@@ -155,3 +155,9 @@ public type Episode record {
     int timeDuration?;
     string[] newCharacters?;
 };
+
+public type FileInfo record {
+    string fileName;
+    string mimeType;
+    string encoding;
+};

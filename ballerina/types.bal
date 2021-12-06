@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/io;
 
 # Represents the Scalar types supported by the Ballerina GraphQL module.
 public type Scalar boolean|int|float|string;
@@ -43,5 +44,5 @@ public type FileUpload record {|
     string fileName;
     string mimeType;
     string encoding;
-    stream<byte[], error?> byteStream;
+    stream<byte[], io:Error?> byteStream;
 |};
