@@ -180,8 +180,9 @@ public class FunctionValidator {
                     existingReturnTypes.add(typeReferenceTypeSymbol.typeDescriptor());
                 }
                 validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
+            } else {
+                validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
             }
-            validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
         } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
             ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
             Location classSymbolLocation = getLocation(classSymbol, location);
