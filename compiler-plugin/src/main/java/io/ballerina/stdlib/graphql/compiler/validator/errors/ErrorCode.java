@@ -16,18 +16,28 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
-
-import io.ballerina.projects.plugins.CompilerPlugin;
-import io.ballerina.projects.plugins.CompilerPluginContext;
-import io.ballerina.stdlib.graphql.compiler.validator.ServiceAnalyzer;
+package io.ballerina.stdlib.graphql.compiler.validator.errors;
 
 /**
- * This is the compiler plugin for Ballerina GraphQL package.
+ * Compilation error codes used in Ballerina GraphQL package compiler plugin.
  */
-public class GraphqlCompilerPlugin extends CompilerPlugin {
-    @Override
-    public void init(CompilerPluginContext compilerPluginContext) {
-        compilerPluginContext.addCodeAnalyzer(new ServiceAnalyzer());
-    }
+public enum ErrorCode {
+    GRAPHQL_101,
+    GRAPHQL_102,
+    GRAPHQL_103,
+    GRAPHQL_104,
+    GRAPHQL_105,
+    GRAPHQL_106,
+    GRAPHQL_107,
+    GRAPHQL_108,
+    GRAPHQL_109,
+    GRAPHQL_110,
+    GRAPHQL_111,
+    GRAPHQL_112,
+    GRAPHQL_113,
+    GRAPHQL_114,
+    GRAPHQL_115,
+    GRAPHQL_116,
+    GRAPHQL_117,
+    GRAPHQL_118
 }
