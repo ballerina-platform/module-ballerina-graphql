@@ -158,6 +158,22 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testGraphQLFileUpload() {
+        Package currentPackage = loadPackage("valid_service_15");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testGraphQLMultipleFileUpload() {
+        Package currentPackage = loadPackage("valid_service_16");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         Package currentPackage = loadPackage("invalid_service_1");
         PackageCompilation compilation = currentPackage.getCompilation();
@@ -576,13 +592,49 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("invalid_service_27");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, 20, 64);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 36, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, 24, 61);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 43, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 50, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, 57, 62);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, 64, 72);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 71, 67);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 82, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 93, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 104, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, 115, 60);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_INPUT_OBJECT_FIELD_TYPE, 122, 52);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_INPUT_OBJECT_FIELD_TYPE, 126, 33);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 31, 24);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 31, 24);
     }
 
     private Package loadPackage(String path) {

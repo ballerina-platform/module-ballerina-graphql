@@ -60,7 +60,7 @@ isolated function testFileUpload() returns error? {
     http:Client httpClient = check new("http://localhost:9091");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
-    test:assertEquals(statusCode, 400, msg = "Unexpected status code received: " + statusCode.toString());
+    test:assertEquals(statusCode, 200);
     string actualPaylaod = check response.getTextPayload();
     io:println(actualPaylaod);
 }
@@ -126,7 +126,7 @@ isolated function testMultipleFileUpload() returns error? {
     http:Client httpClient = check new("http://localhost:9091");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
-    test:assertEquals(statusCode, 400, msg = "Unexpected status code received: " + statusCode.toString());
+    test:assertEquals(statusCode, 200);
     string actualPaylaod = check response.getTextPayload();
     io:println(actualPaylaod);
 }

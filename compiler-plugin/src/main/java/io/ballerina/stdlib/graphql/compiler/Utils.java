@@ -96,7 +96,9 @@ public class Utils {
         INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER(
                 "The graphql:FileUpload cannot be used as an input type of resource function", "GRAPHQL_116",
                 DiagnosticSeverity.ERROR),
-        INVALID_RETURN_TYPE_FILE_UPLOAD("The graphql:FileUpload cannot be used as an return type", "GRAPHQL_117",
+        INVALID_RETURN_TYPE_FILE_UPLOAD("The graphql:FileUpload cannot be used as a return type", "GRAPHQL_117",
+                DiagnosticSeverity.ERROR),
+        INVALID_INPUT_OBJECT_FIELD_TYPE("The graphql:FileUpload cannot be used as field type", "GRAPHQL_118",
                 DiagnosticSeverity.ERROR);
 
         private final String error;
