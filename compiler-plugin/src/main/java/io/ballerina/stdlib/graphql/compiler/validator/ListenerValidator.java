@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
+package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -32,11 +32,13 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.Utils;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 
 import java.util.Optional;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
 
 /**
  * Validates Ballerina GraphQL Listener Initializations.
@@ -86,7 +88,7 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
             FunctionArgumentNode secondArg = functionArgs.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                Utils.updateContext(context, CompilationError.INVALID_LISTENER_INIT, secondArg.location());
+                updateContext(context, CompilationError.INVALID_LISTENER_INIT, secondArg.location());
             }
         }
     }

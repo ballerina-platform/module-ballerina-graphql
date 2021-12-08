@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#2437] Pass `http:RequestContext` object to the `graphql:Context` Init Function](https://github.com/ballerina-platform/ballerina-standard-library/issues/2437)
+- [[#2465] Disallow path parameters in GraphQL resource functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/2465)
 
 ## [1.0.1] - 2021-11-19
 
