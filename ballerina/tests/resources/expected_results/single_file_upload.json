@@ -1,0 +1,9 @@
+{
+    "data": {
+        "singleFileUpload": {
+            "fileName": "sample1.json",
+            "mimeType": "application/json",
+            "content": "{\"data\": \"This is GraphQL File upload\"}"
+        }
+    }
+}

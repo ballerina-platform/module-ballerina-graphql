@@ -61,15 +61,7 @@ isolated function testSingleFileUpload() returns error? {
 
     http:Client httpClient = check new("http://localhost:9091");
     json actualPayload = check httpClient->post("/fileUpload", request);
-    json expectedPayload = {
-        data: {
-            singleFileUpload: {
-                fileName: "sample1.json",
-                mimeType: "application/json",
-                content: "{\n    \"data\": \"This is GraphQL File upload\"\n}\n"
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile("single_file_upload.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -136,24 +128,7 @@ isolated function testMultipleFileUpload() returns error? {
 
     http:Client httpClient = check new("http://localhost:9091");
     json actualPayload = check httpClient->post("/fileUpload", request);
-    json expectedPayload = {
-        data: {
-            multipleFileUpload:[
-                {
-                    fileName: "sample1.json",
-                    content: "{\n    \"data\": \"This is GraphQL File upload\"\n}\n"
-                },
-                {
-                    fileName: "sample2.txt",
-                    content: "This is GraphQL file upload!"
-                },
-                {
-                    fileName: "sample3.xml",
-                    content: "<note>This is GraphQL File upload</note>\n"
-                }
-            ]
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile("multiple_file_upload.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

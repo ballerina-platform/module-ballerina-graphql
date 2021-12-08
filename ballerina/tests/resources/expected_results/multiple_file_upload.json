@@ -1,0 +1,18 @@
+{
+    "data": {
+        "multipleFileUpload": [
+            {
+                "fileName": "sample1.json",
+                "content": "{\"data\": \"This is GraphQL File upload\"}"
+            },
+            {
+                "fileName": "sample2.txt",
+                "content": "This is GraphQL file upload!"
+            },
+            {
+                "fileName": "sample3.xml",
+                "content": "<note>This is GraphQL File upload</note>"
+            }
+        ]
+    }
+}
