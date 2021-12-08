@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
+package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
@@ -35,12 +35,17 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
+import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
+import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.Utils;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -52,14 +57,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
-import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
 import static io.ballerina.stdlib.graphql.compiler.Utils.FILE_UPLOAD_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
-import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
-import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
-import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.isInvalidFieldName;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
 
 /**
  * Validate functions in Ballerina GraphQL services.
@@ -138,9 +143,26 @@ public class FunctionValidator {
     private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (Utils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
-                updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
+            validateResourcePath(resourceMethodSymbol, location, context);
+        }
+    }
+
+    private void validateResourcePath(ResourceMethodSymbol resourceMethodSymbol, Location location,
+                                      SyntaxNodeAnalysisContext context) {
+        ResourcePath resourcePath = resourceMethodSymbol.resourcePath();
+        if (resourcePath.kind() == ResourcePath.Kind.PATH_SEGMENT_LIST) {
+            PathSegmentList pathSegmentList = (PathSegmentList) resourcePath;
+            for (PathSegment pathSegment : pathSegmentList.list()) {
+                if (pathSegment.pathSegmentKind() == PathSegment.Kind.NAMED_SEGMENT) {
+                    if (isInvalidFieldName(pathSegment.signature())) {
+                        updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
+                    }
+                } else {
+                    updateContext(context, CompilationError.INVALID_PATH_PARAMETERS, location);
+                }
             }
+        } else {
+            updateContext(context, CompilationError.MISSING_RESOURCE_NAME, location);
         }
     }
 
@@ -487,7 +509,7 @@ public class FunctionValidator {
                 Location fieldLocation = getLocation(recordField, location);
                 validateReturnType(recordField.typeDescriptor(), fieldLocation, context);
             } else {
-                if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
+                if (isInvalidFieldName(recordField.getName().orElse(""))) {
                     Location fieldLocation = getLocation(recordField, location);
                     updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
                 }

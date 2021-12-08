@@ -20,12 +20,11 @@ package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Package;
-import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.testng.Assert;
@@ -47,137 +46,120 @@ public class CompilerPluginTest {
 
     @Test
     public void testValidResourceReturnTypes() {
-        Package currentPackage = loadPackage("valid_service_1");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_1";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testValidResourceInputTypes() {
-        Package currentPackage = loadPackage("valid_service_2");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_2";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testValidServiceConfigurationAnnotation() {
-        Package currentPackage = loadPackage("valid_service_3");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_3";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testResourceReturningEnum() {
-        Package currentPackage = loadPackage("valid_service_4");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_4";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testEnumAsResourceInputParameter() {
-        Package currentPackage = loadPackage("valid_service_5");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_5";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testValidListenerConfigurations() {
-        Package currentPackage = loadPackage("valid_service_6");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_6";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testOptionalInputParametersInResources() {
-        Package currentPackage = loadPackage("valid_service_7");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_7";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testReturningDistinctServiceObjects() {
-        Package currentPackage = loadPackage("valid_service_8");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_8";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testReturningServiceTypesRecursively() {
-        Package currentPackage = loadPackage("valid_service_9");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_9";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testFieldsInServiceObject() {
-        Package currentPackage = loadPackage("valid_service_10");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_10";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testInputObjectTypeInputParameter() {
-        Package currentPackage = loadPackage("valid_service_11");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_11";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testGraphQLContextAsFirstParameter() {
-        Package currentPackage = loadPackage("valid_service_12");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_12";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testGraphQLContextInsideReturningServices() {
-        Package currentPackage = loadPackage("valid_service_13");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_13";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testGraphQLListTypeInputParametersInResources() {
-        Package currentPackage = loadPackage("valid_service_14");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_14";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testGraphQLFileUpload() {
-        Package currentPackage = loadPackage("valid_service_15");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_15";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testGraphQLMultipleFileUpload() {
-        Package currentPackage = loadPackage("valid_service_16");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "valid_service_16";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testMultipleListenersOnSameService() {
-        Package currentPackage = loadPackage("invalid_service_1");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_1";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_MULTIPLE_LISTENERS, 19, 1);
@@ -185,9 +167,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testMissingResourceFunctionInService() {
-        Package currentPackage = loadPackage("invalid_service_2");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_2";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
@@ -195,9 +176,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidResourceAccessor() {
-        Package currentPackage = loadPackage("invalid_service_3");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_3";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 20, 23);
@@ -205,9 +185,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidResourceReturnTypes() {
-        Package currentPackage = loadPackage("invalid_service_4");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_4";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -238,9 +217,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidResourceInputParameterTypes() {
-        Package currentPackage = loadPackage("invalid_service_5");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_5";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 7);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -268,9 +246,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testReturningOnlyErrorOrNil() {
-        Package currentPackage = loadPackage("invalid_service_6");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_6";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 20, 5);
@@ -278,9 +255,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testReturningOnlyNil() {
-        Package currentPackage = loadPackage("invalid_service_7");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_7";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_NIL, 20, 5);
@@ -288,9 +264,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testReturningOnlyError() {
-        Package currentPackage = loadPackage("invalid_service_8");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_8";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 20, 5);
@@ -298,9 +273,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testListenerInitParameters() {
-        Package currentPackage = loadPackage("invalid_service_9");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_9";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -313,9 +287,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidInputParameterUnions() {
-        Package currentPackage = loadPackage("invalid_service_10");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_10";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -334,9 +307,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidResourceReturnTypeUnions() {
-        Package currentPackage = loadPackage("invalid_service_11");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_11";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 3);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -352,9 +324,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidAccessorsInServicesReturningFromResources() {
-        Package currentPackage = loadPackage("invalid_service_12");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_12";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -367,9 +338,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidReturnTypesInServicesReturningFromResources() {
-        Package currentPackage = loadPackage("invalid_service_13");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_13";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -382,9 +352,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidInputParametersInServicesReturningFromResources() {
-        Package currentPackage = loadPackage("invalid_service_14");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_14";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -397,9 +366,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidListenerInitParameters() {
-        Package currentPackage = loadPackage("invalid_service_15");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_15";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 22, 57);
@@ -407,9 +375,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidResourcePath() {
-        Package currentPackage = loadPackage("invalid_service_16");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_16";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 7);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -437,9 +404,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidReturnTypeAny() {
-        Package currentPackage = loadPackage("invalid_service_17");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_17";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
@@ -452,9 +418,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testServiceWithOnlyRemoteMethods() {
-        Package currentPackage = loadPackage("invalid_service_18");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_18";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
@@ -462,9 +427,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testRemoteMethodWithInvalidReturnType() {
-        Package currentPackage = loadPackage("invalid_service_19");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_19";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 23, 5);
@@ -472,9 +436,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testRemoteMethodInsideReturningServiceObject() {
-        Package currentPackage = loadPackage("invalid_service_20");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_20";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_FUNCTION, 36, 21);
@@ -482,9 +445,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testMissingResourceMethodFromReturningServiceClass() {
-        Package currentPackage = loadPackage("invalid_service_21");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_21";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
@@ -492,9 +454,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidInputObjects() {
-        Package currentPackage = loadPackage("invalid_service_22");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_22";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 9);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -527,9 +488,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testGraphQLContextAsAnotherParameter() {
-        Package currentPackage = loadPackage("invalid_service_23");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_23";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -541,9 +501,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidContextObject() {
-        Package currentPackage = loadPackage("invalid_service_24");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_24";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -555,9 +514,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidRecordFieldType() {
-        Package currentPackage = loadPackage("invalid_service_25");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_25";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -566,9 +524,8 @@ public class CompilerPluginTest {
 
     @Test
     public void testInvalidListTypeInputs() {
-        Package currentPackage = loadPackage("invalid_service_26");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_26";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -588,10 +545,25 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testInvalidResourcePaths() {
+        String packagePath = "invalid_service_27";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_PATH_PARAMETERS, 20, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_PATH_PARAMETERS, 24, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_NAME, 28, 5);
+    }
+
+    @Test
     public void testGraphQLFileUploadInInvalidLocations() {
-        Package currentPackage = loadPackage("invalid_service_27");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        String packagePath = "invalid_service_28";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -635,6 +607,10 @@ public class CompilerPluginTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 31, 24);
+    }
+
+    private DiagnosticResult getDiagnosticResult(String packagePath) {
+        return loadPackage(packagePath).getCompilation().diagnosticResult();
     }
 
     private Package loadPackage(String path) {

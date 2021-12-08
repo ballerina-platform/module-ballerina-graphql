@@ -15,139 +15,17 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/io;
 
-stream<io:Block, io:Error?> byteStream = check io:fileReadBlocksAsStream("./invalid_service_27/sample.txt");
-
-graphql:FileUpload file = {
-   fileName: "image.jpg",
-   mimeType: "application/jpeg",
-   encoding: "UTF-8",
-   byteStream: byteStream
-};
-
-public type File record {
-    string fileName;
-    graphql:FileUpload file;
-};
-
-service /graphql on new graphql:Listener(4000) {
-
-    resource function get getImage() returns graphql:FileUpload {
-        return file;
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get getImageIfExist() returns graphql:FileUpload? {
-        return;
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    resource function get getImages() returns graphql:FileUpload[] {
-        return [file];
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get upload(graphql:FileUpload p) returns string {
-        return "Successful";
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadMultiple(graphql:FileUpload[] p) returns string {
-        return "Successful";
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFile(graphql:FileUpload? p) returns string {
-        return "Successful";
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFile() returns string {
-        return "Successful";
+service / on new graphql:Listener(4000) {
+    resource function get profile/[string id]/name() returns string {
+        return "Walter White";
     }
 
-    remote function uploadAndGet() returns graphql:FileUpload {
-        return file;
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFile() returns string {
-        return "Successful";
+    resource function get profile/[string ...ids]() returns string {
+        return "Jesse Pinkman";
     }
 
-    isolated remote function uploadAndGet() returns graphql:FileUpload? {
-        return;
-    }
-}
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFile() returns string {
-        return "Successful";
-    }
-
-    remote function uploadAndGetMultiple() returns graphql:FileUpload[] {
-        return [file];
-    }
-}
-
-isolated service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFile() returns string {
-        return "Successful";
-    }
-
-    isolated remote function upload(graphql:FileUpload[][] p) returns string {
-        return "Invalid Input";
-    }
-}
-
-isolated service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFile(File f) returns string {
-        return "Successful";
-    }
-
-    remote function upload(File f) returns string {
-        return "successful";
-    }
-}
-
-isolated service /graphql on new graphql:Listener(4000) {
-
-    resource function get uploadFile() returns File {
-        return {
-            fileName: "sample.txt",
-            file: file
-        };
-    }
-}
-
-isolated service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get uploadFileName() returns string {
-        return "sample.txt";
-    }
-
-    remote function upload() returns File {
-        return {
-            fileName: "sample.txt",
-            file: file
-        };
+    resource function get .() returns int {
+        return 767;
     }
 }
