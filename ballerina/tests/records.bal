@@ -160,4 +160,5 @@ public type FileInfo record {
     string fileName;
     string mimeType;
     string encoding;
+    string content;
 };

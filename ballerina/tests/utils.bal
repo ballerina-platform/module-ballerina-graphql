@@ -83,3 +83,12 @@ isolated function assertJsonValuesWithOrder(json actualPayload, json expectedPay
     string expected = expectedPayload.toJsonString();
     test:assertEquals(actual, expected);
 }
+
+isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream) returns string|error {
+    record {| byte[] value; |}|io:Error? next = byteStream.next();
+    string content = "";
+    if next is Data {
+        content = check string:fromBytes(next.value);
+    }
+    return content;
+}

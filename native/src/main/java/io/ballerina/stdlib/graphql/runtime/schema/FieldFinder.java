@@ -288,9 +288,6 @@ public class FieldFinder {
             if (isContext(parameter.type)) {
                 continue;
             }
-//            if (isFileUpload(parameter.type)) {
-//                continue;
-//            }
             if (parameter.type.isNilable()) {
                 inputType = getInputTypeFromNilableType((UnionType) parameter.type);
                 if (inputType.getTag() == TypeTags.ARRAY_TAG) {

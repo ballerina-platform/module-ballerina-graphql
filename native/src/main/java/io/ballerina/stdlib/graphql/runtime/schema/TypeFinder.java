@@ -125,11 +125,7 @@ public class TypeFinder {
     private void getInputTypesFromMethod(MethodType methodType) {
         for (Parameter parameter : methodType.getParameters()) {
             if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
-//                if (isFileUpload(parameter.type)) {
-//                    // Do nothing
-//                } else {
                 getInputObjectSchemaType(parameter.type);
-//                }
             } else if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
                 getListSchemaType(parameter.type);
             } else {
@@ -145,11 +141,7 @@ public class TypeFinder {
             for (Field field : recordType.getFields().values()) {
                 int tag = field.getFieldType().getTag();
                 if (tag == TypeTags.RECORD_TYPE_TAG) {
-//                    if (isFileUpload(field.getFieldType())) {
-//                        // Do nothing
-//                    } else {
                     getInputObjectSchemaType(field.getFieldType());
-//                    }
                 } else if (tag == TypeTags.STREAM_TAG) {
                     String name = STREAM;
                     this.createSchemaType(name, TypeKind.SCALAR, type);
@@ -187,14 +179,10 @@ public class TypeFinder {
             this.createSchemaType(name, TypeKind.SCALAR, type);
         } else if (tag == TypeTags.RECORD_TYPE_TAG) {
             RecordType recordType = (RecordType) type;
-//            if (isFileUpload(type)) {
-//                // Do nothing
-//            } else {
             this.createSchemaType(recordType.getName(), TypeKind.OBJECT, recordType);
             for (Field field : recordType.getFields().values()) {
                 getSchemaTypeFromBalType(field.getFieldType());
             }
-//            }
         } else if (tag == TypeTags.SERVICE_TAG) {
             ServiceType serviceType = (ServiceType) type;
             getTypesFromService(serviceType.getName(), serviceType);

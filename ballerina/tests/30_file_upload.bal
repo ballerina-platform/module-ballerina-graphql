@@ -17,16 +17,15 @@
 import ballerina/http;
 import ballerina/mime;
 import ballerina/test;
-import ballerina/io;
 
 @test:Config {
     groups: ["file_upload"]
 }
-isolated function testFileUpload() returns error? {
-    string document = string`mutation($file: FileUpload!){ singleFileUpload(file: $file) { fileName, mimeType, encoding } }`;
+isolated function testSingleFileUpload() returns error? {
+    string document = string`mutation($file: FileUpload!){ singleFileUpload(file: $file) { fileName, mimeType, content } }`;
     json variables = {"file": null} ;
 
-    json op = {
+    json operation = {
         "query":document,
         "variables": variables
     }; 
@@ -38,7 +37,7 @@ isolated function testFileUpload() returns error? {
     contentDisposition1.name = "operations";
     contentDisposition1.disposition = "form-data";
     operations.setContentDisposition(contentDisposition1);
-    operations.setJson(op);
+    operations.setJson(operation);
 
     mime:Entity path = new;
     mime:ContentDisposition contentDisposition2 = new;
@@ -47,33 +46,42 @@ isolated function testFileUpload() returns error? {
     path.setContentDisposition(contentDisposition2);
     path.setJson(pathMap);
 
-    mime:Entity jsonBodyPart = new;
+    mime:Entity jsonFilePart = new;
+    jsonFilePart.setHeader("Content-Encoding", "gzip");
     mime:ContentDisposition contentDisposition3 = new;
     contentDisposition3.name = "0";
     contentDisposition3.disposition = "form-data";
-    jsonBodyPart.setContentDisposition(contentDisposition3);
-    jsonBodyPart.setJson({"name": "wso2"});
-    mime:Entity[] bodyParts = [operations, path, jsonBodyPart];
+    contentDisposition3.fileName = "sample1.json";
+    jsonFilePart.setContentDisposition(contentDisposition3);
+    jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
+
+    mime:Entity[] bodyParts = [operations, path, jsonFilePart];
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
     http:Client httpClient = check new("http://localhost:9091");
-    http:Response response = check httpClient->post("/fileUpload", request);
-    int statusCode = response.statusCode;
-    test:assertEquals(statusCode, 200);
-    string actualPaylaod = check response.getTextPayload();
-    io:println(actualPaylaod);
+    json actualPayload = check httpClient->post("/fileUpload", request);
+    json expectedPayload = {
+        data: {
+            singleFileUpload: {
+                fileName: "sample1.json",
+                mimeType: "application/json",
+                content: "{\n    \"data\": \"This is GraphQL File upload\"\n}\n"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 
 @test:Config {
-    groups: ["file_upload1"]
+    groups: ["file_upload"]
 }
 isolated function testMultipleFileUpload() returns error? {
-    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) { fileName, content } }`;
     json variables = {"files": [null, null, null]} ;
 
-    json op = {
+    json operation = {
         "query":document,
         "variables": variables
     }; 
@@ -89,7 +97,7 @@ isolated function testMultipleFileUpload() returns error? {
     contentDisposition1.name = "operations";
     contentDisposition1.disposition = "form-data";
     operations.setContentDisposition(contentDisposition1);
-    operations.setJson(op);
+    operations.setJson(operation);
 
     mime:Entity path = new;
     mime:ContentDisposition contentDisposition2 = new;
@@ -98,35 +106,249 @@ isolated function testMultipleFileUpload() returns error? {
     path.setContentDisposition(contentDisposition2);
     path.setJson(pathMap);
 
-    mime:Entity jsonBodyPart1 = new;
+    mime:Entity jsonFilePart = new;
     mime:ContentDisposition contentDisposition3 = new;
     contentDisposition3.name = "0";
     contentDisposition3.disposition = "form-data";
-    jsonBodyPart1.setContentDisposition(contentDisposition3);
-    jsonBodyPart1.setJson({"name": "wso2"});
+    contentDisposition3.fileName = "sample1.json";
+    jsonFilePart.setContentDisposition(contentDisposition3);
+    jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
 
-    mime:Entity jsonBodyPart2 = new;
+    mime:Entity txtFilePart = new;
     mime:ContentDisposition contentDisposition4 = new;
     contentDisposition4.name = "1";
     contentDisposition4.disposition = "form-data";
-    jsonBodyPart2.setContentDisposition(contentDisposition4);
-    jsonBodyPart2.setJson({"name": "This is the second file"});
+    contentDisposition4.fileName = "sample2.txt";
+    txtFilePart.setContentDisposition(contentDisposition4);
+    txtFilePart.setFileAsEntityBody("./tests/resources/files/sample2.txt", contentType = mime:TEXT_PLAIN);
 
-    mime:Entity jsonBodyPart3 = new;
+    mime:Entity xmlFilePart = new;
     mime:ContentDisposition contentDisposition5 = new;
     contentDisposition5.name = "2";
     contentDisposition5.disposition = "form-data";
-    jsonBodyPart3.setContentDisposition(contentDisposition5);
-    jsonBodyPart3.setJson({"name": "This is the 3rd file"});
+    contentDisposition5.fileName = "sample3.xml";
+    xmlFilePart.setContentDisposition(contentDisposition5);
+    xmlFilePart.setFileAsEntityBody("./tests/resources/files/sample3.xml", contentType = mime:APPLICATION_XML);
 
-    mime:Entity[] bodyParts = [operations, path, jsonBodyPart1, jsonBodyPart2, jsonBodyPart3];
+    mime:Entity[] bodyParts = [operations, path, jsonFilePart, txtFilePart, xmlFilePart];
+    http:Request request = new;
+    request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
+
+    http:Client httpClient = check new("http://localhost:9091");
+    json actualPayload = check httpClient->post("/fileUpload", request);
+    json expectedPayload = {
+        data: {
+            multipleFileUpload:[
+                {
+                    fileName: "sample1.json",
+                    content: "{\n    \"data\": \"This is GraphQL File upload\"\n}\n"
+                },
+                {
+                    fileName: "sample2.txt",
+                    content: "This is GraphQL file upload!"
+                },
+                {
+                    fileName: "sample3.xml",
+                    content: "<note>This is GraphQL File upload</note>\n"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["file_upload"]
+}
+isolated function testUndefinedVariableWithMultipartRequest() returns error? {
+    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) { fileName }}`;
+    json variables = {"files": [null]} ;
+
+    json operation = {
+        "query":document,
+        "variables": variables
+    };
+
+    json pathMap =  {
+        "0": ["files.1"]
+    };
+
+    mime:Entity operations = new;
+    mime:ContentDisposition contentDisposition1 = new;
+    contentDisposition1.name = "operations";
+    contentDisposition1.disposition = "form-data";
+    operations.setContentDisposition(contentDisposition1);
+    operations.setJson(operation);
+
+    mime:Entity path = new;
+    mime:ContentDisposition contentDisposition2 = new;
+    contentDisposition2.name = "map";
+    contentDisposition2.disposition = "form-data";
+    path.setContentDisposition(contentDisposition2);
+    path.setJson(pathMap);
+
+    mime:Entity jsonFilePart = new;
+    mime:ContentDisposition contentDisposition3 = new;
+    contentDisposition3.name = "0";
+    contentDisposition3.disposition = "form-data";
+    contentDisposition3.fileName = "sample1.json";
+    jsonFilePart.setContentDisposition(contentDisposition3);
+    jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
+
+    mime:Entity[] bodyParts = [operations, path];
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
     http:Client httpClient = check new("http://localhost:9091");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
-    test:assertEquals(statusCode, 200);
+    test:assertEquals(statusCode, 400);
     string actualPaylaod = check response.getTextPayload();
-    io:println(actualPaylaod);
+    string expectedMessage = "Undefined variable found in multipart request `map`";
+    test:assertEquals(actualPaylaod, expectedMessage);
+}
+
+@test:Config {
+    groups: ["file_upload"]
+}
+isolated function testMissingContentInMultipartRequest() returns error? {
+    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    json variables = {"files": [null, null]} ;
+
+    json operation = {
+        "query":document,
+        "variables": variables
+    };
+
+    json pathMap =  {
+        "0": ["files.0"]
+    };
+
+    mime:Entity operations = new;
+    mime:ContentDisposition contentDisposition1 = new;
+    contentDisposition1.name = "operations";
+    contentDisposition1.disposition = "form-data";
+    operations.setContentDisposition(contentDisposition1);
+    operations.setJson(operation);
+
+    mime:Entity path = new;
+    mime:ContentDisposition contentDisposition2 = new;
+    contentDisposition2.name = "map";
+    contentDisposition2.disposition = "form-data";
+    path.setContentDisposition(contentDisposition2);
+    path.setJson(pathMap);
+
+    mime:Entity jsonFilePart = new;
+    mime:ContentDisposition contentDisposition3 = new;
+    contentDisposition3.name = "0";
+    contentDisposition3.disposition = "form-data";
+    contentDisposition3.fileName = "sample1.json";
+    jsonFilePart.setContentDisposition(contentDisposition3);
+    jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
+
+    mime:Entity[] bodyParts = [operations, path];
+    http:Request request = new;
+    request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
+
+    http:Client httpClient = check new("http://localhost:9091");
+    http:Response response = check httpClient->post("/fileUpload", request);
+    int statusCode = response.statusCode;
+    test:assertEquals(statusCode, 400);
+    string actualPaylaod = check response.getTextPayload();
+    string expectedMessage = "File content is missing in multipart request";
+    test:assertEquals(actualPaylaod, expectedMessage);
+}
+
+@test:Config {
+    groups: ["file_upload"]
+}
+isolated function testInvalidMapFieldInMultipartRequest() returns error? {
+    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    json variables = {"files": [null]} ;
+
+    json operation = {
+        "query":document,
+        "variables": variables
+    };
+
+    json pathMap =  {
+        "0": "files.0"
+    };
+
+    mime:Entity operations = new;
+    mime:ContentDisposition contentDisposition1 = new;
+    contentDisposition1.name = "operations";
+    contentDisposition1.disposition = "form-data";
+    operations.setContentDisposition(contentDisposition1);
+    operations.setJson(operation);
+
+    mime:Entity path = new;
+    mime:ContentDisposition contentDisposition2 = new;
+    contentDisposition2.name = "map";
+    contentDisposition2.disposition = "form-data";
+    path.setContentDisposition(contentDisposition2);
+    path.setJson(pathMap);
+
+    mime:Entity[] bodyParts = [operations, path];
+    http:Request request = new;
+    request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
+
+    http:Client httpClient = check new("http://localhost:9091");
+    http:Response response = check httpClient->post("/fileUpload", request);
+    int statusCode = response.statusCode;
+    test:assertEquals(statusCode, 400);
+    string actualPaylaod = check response.getTextPayload();
+    string expectedMessage = "Invalid type for multipart request field ‘map’";
+    test:assertEquals(actualPaylaod, expectedMessage);
+}
+
+@test:Config {
+    groups: ["file_upload"]
+}
+isolated function testInvalidMapTypeInMultipartRequest() returns error? {
+    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    json variables = {"files": [null]} ;
+
+    json operation = {
+        "query":document,
+        "variables": variables
+    };
+
+    json pathMap =  {
+        "0": [2]
+    };
+
+    mime:Entity operations = new;
+    mime:ContentDisposition contentDisposition1 = new;
+    contentDisposition1.name = "operations";
+    contentDisposition1.disposition = "form-data";
+    operations.setContentDisposition(contentDisposition1);
+    operations.setJson(operation);
+
+    mime:Entity path = new;
+    mime:ContentDisposition contentDisposition2 = new;
+    contentDisposition2.name = "map";
+    contentDisposition2.disposition = "form-data";
+    path.setContentDisposition(contentDisposition2);
+    path.setJson(pathMap);
+
+    mime:Entity jsonFilePart = new;
+    mime:ContentDisposition contentDisposition3 = new;
+    contentDisposition3.name = "0";
+    contentDisposition3.disposition = "form-data";
+    contentDisposition3.fileName = "sample1.json";
+    jsonFilePart.setContentDisposition(contentDisposition3);
+    jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
+
+    mime:Entity[] bodyParts = [operations, path];
+    http:Request request = new;
+    request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
+
+    http:Client httpClient = check new("http://localhost:9091");
+    http:Response response = check httpClient->post("/fileUpload", request);
+    int statusCode = response.statusCode;
+    test:assertEquals(statusCode, 400);
+    string actualPaylaod = check response.getTextPayload();
+    string expectedMessage = "Invalid type for multipart request field ‘map’ value";
+    test:assertEquals(actualPaylaod, expectedMessage);
 }

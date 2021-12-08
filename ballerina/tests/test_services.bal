@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/io;
 import ballerina/lang.runtime;
 
 Service simpleService1 = service object {
@@ -50,27 +49,28 @@ service object {
 
 service /fileUpload on basicListener {
     isolated remote function singleFileUpload(FileUpload file) returns FileInfo|error {
-        string fileName = file.fileName;
-        stream<byte[], io:Error?> byteStream = file.byteStream;
-        io:println(file);
-        string path = string`tests/resources/key/s.json`;
-        check io:fileWriteBlocksFromStream(path, byteStream);
+        string contentFromByteStream = check getContentFromByteStream(file.byteStream);
         return {
             fileName: file.fileName,
             mimeType: file.mimeType,
-            encoding: file.encoding
+            encoding: file.encoding,
+            content: contentFromByteStream
         };
     }
 
-    isolated remote function multipleFileUpload(FileUpload[] files) returns string|error {
+    isolated remote function multipleFileUpload(FileUpload[] files) returns FileInfo[]|error {
+        FileInfo[] fileInfo = [];
         foreach int i in 0..< files.length() {
-            string fileName = files[i].fileName;
-            stream<byte[], io:Error?> byteStream = files[i].byteStream;
-            io:println(files[i]);
-            string path = string`tests/resources/key/${i.toString()}.json`;
-            check io:fileWriteBlocksFromStream(path, byteStream);
+            FileUpload file = files[i];
+            string contentFromByteStream = check getContentFromByteStream(file.byteStream);
+            fileInfo.push({
+                fileName: file.fileName,
+                mimeType: file.mimeType,
+                encoding: file.encoding,
+                content: contentFromByteStream
+            });
         }
-        return "Successfull";
+        return fileInfo;
     }
 }
 
