@@ -43,7 +43,7 @@ public class Utils {
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
 
-    public static final String FILE_UPLOAD = "FileUpload";
+    public static final String UPLOAD = "Upload";
 
     public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
                                                                                      getModule().getName(),
@@ -76,9 +76,7 @@ public class Utils {
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }
-        return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
-                type.getPackage().getName().equals(ModuleUtils.getModule().getName()) &&
-                type.getName().equals(CONTEXT_OBJECT);
+        return isGraphqlModule(type) && type.getName().equals(CONTEXT_OBJECT);
     }
 
     public static boolean isFileUpload(Type type) {
@@ -91,8 +89,11 @@ public class Utils {
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }
+        return isGraphqlModule(type) && type.getName().equals(UPLOAD);
+    }
+
+    public static boolean isGraphqlModule(Type type) {
         return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
-                type.getPackage().getName().equals(ModuleUtils.getModule().getName()) &&
-                type.getName().equals(FILE_UPLOAD);
+                type.getPackage().getName().equals(ModuleUtils.getModule().getName());
     }
 }

@@ -22,7 +22,7 @@ service /graphql on new graphql:Listener(4000) {
         return "sample.txt";
     }
 
-    remote function uploadFiles(graphql:FileUpload[] file) returns string {
+    remote function uploadFiles(graphql:Upload[] file) returns string {
         return "Successful";
     }
 }

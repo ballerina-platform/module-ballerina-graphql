@@ -42,9 +42,7 @@ public enum CompilationError {
     INVALID_LOCATION_FOR_CONTEXT_PARAMETER(ErrorMessage.ERROR_116, ErrorCode.GRAPHQL_116, DiagnosticSeverity.ERROR),
     INVALID_PATH_PARAMETERS(ErrorMessage.ERROR_117, ErrorCode.GRAPHQL_117, DiagnosticSeverity.ERROR),
     MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
-    INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER(ErrorMessage.ERROR_119, ErrorCode.GRAPHQL_119, DiagnosticSeverity.ERROR),
-    INVALID_RETURN_TYPE_FILE_UPLOAD(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR),
-    INVALID_INPUT_OBJECT_FIELD_TYPE(ErrorMessage.ERROR_121, ErrorCode.GRAPHQL_121, DiagnosticSeverity.ERROR);
+    INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION(ErrorMessage.ERROR_119, ErrorCode.GRAPHQL_119, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

@@ -47,7 +47,7 @@ public final class Utils {
     // resource function constants
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String CONTEXT_IDENTIFIER = "Context";
-    public static final String FILE_UPLOAD_IDENTIFIER = "FileUpload";
+    public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
 
     public static boolean validateModuleId(ModuleSymbol moduleSymbol) {
         String moduleName = moduleSymbol.id().moduleName();

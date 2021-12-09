@@ -48,7 +48,7 @@ service object {
 };
 
 service /fileUpload on basicListener {
-    isolated remote function singleFileUpload(FileUpload file) returns FileInfo|error {
+    remote function singleFileUpload(Upload file) returns FileInfo|error {
         string contentFromByteStream = check getContentFromByteStream(file.byteStream);
         return {
             fileName: file.fileName,
@@ -58,10 +58,10 @@ service /fileUpload on basicListener {
         };
     }
 
-    isolated remote function multipleFileUpload(FileUpload[] files) returns FileInfo[]|error {
+    remote function multipleFileUpload(Upload[] files) returns FileInfo[]|error {
         FileInfo[] fileInfo = [];
         foreach int i in 0..< files.length() {
-            FileUpload file = files[i];
+            Upload file = files[i];
             string contentFromByteStream = check getContentFromByteStream(file.byteStream);
             fileInfo.push({
                 fileName: file.fileName,

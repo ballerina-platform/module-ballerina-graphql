@@ -24,7 +24,7 @@ const PARAM_VARIABLES = "variables";
 
 const MULTIPART_OPERATIONS = "operations";
 const MULITPART_MAP = "map";
-const FILE_UPLOAD = "FileUpload";
+const UPLOAD = "Upload";
 const CONTENT_ENCODING = "Content-Encoding";
 
 const SCHEMA_FIELD = "__schema";

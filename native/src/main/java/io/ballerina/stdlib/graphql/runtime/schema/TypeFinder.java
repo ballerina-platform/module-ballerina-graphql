@@ -43,7 +43,6 @@ import java.util.Map;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STREAM;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeName;
@@ -51,8 +50,10 @@ import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromTy
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.UPLOAD;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -125,7 +126,12 @@ public class TypeFinder {
     private void getInputTypesFromMethod(MethodType methodType) {
         for (Parameter parameter : methodType.getParameters()) {
             if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
-                getInputObjectSchemaType(parameter.type);
+                if (isFileUpload(parameter.type)) {
+                    String name = UPLOAD;
+                    this.createSchemaType(name, TypeKind.SCALAR, parameter.type);
+                } else {
+                    getInputObjectSchemaType(parameter.type);
+                }
             } else if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
                 getListSchemaType(parameter.type);
             } else {
@@ -142,9 +148,6 @@ public class TypeFinder {
                 int tag = field.getFieldType().getTag();
                 if (tag == TypeTags.RECORD_TYPE_TAG) {
                     getInputObjectSchemaType(field.getFieldType());
-                } else if (tag == TypeTags.STREAM_TAG) {
-                    String name = STREAM;
-                    this.createSchemaType(name, TypeKind.SCALAR, type);
                 } else if (tag == TypeTags.ARRAY_TAG) {
                     getListSchemaType(field.getFieldType());
                 } else {

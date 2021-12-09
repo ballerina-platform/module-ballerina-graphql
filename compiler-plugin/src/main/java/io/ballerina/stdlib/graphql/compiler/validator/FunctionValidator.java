@@ -197,9 +197,6 @@ public class FunctionValidator {
             TypeDefinitionSymbol typeDefinitionSymbol =
                     (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
             if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                if (isFileUploadParameter(typeReferenceTypeSymbol)) {
-                    updateContext(context, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, location);
-                }
                 if (existingInputObjectTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
                     updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
                 } else {
@@ -279,6 +276,7 @@ public class FunctionValidator {
                         if (!methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
                             return true;
                         }
+                        return false;
                     }
                     if (existingReturnTypes.contains(typeDefinitionSymbol.typeDescriptor())) {
                         return true;
@@ -287,16 +285,17 @@ public class FunctionValidator {
                     }
                     Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
                             .typeDescriptor()).fieldDescriptors();
-                    boolean hasInvalidMember = true;
+                    boolean hasInvalidMember = false;
                     for (RecordFieldSymbol fields : memberMap.values()) {
-                        if (fields.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                            hasInvalidMember =
-                                    hasInvalidInputObjectField((TypeReferenceTypeSymbol) fields.typeDescriptor());
-                        } else {
-                            hasInvalidMember = hasInvalidReturnType(fields.typeDescriptor());
+                        if (isFileUploadParameter(fields.typeDescriptor())) {
+                            return true;
+                        }
+                        hasInvalidMember = hasInvalidInputParamType(fields.typeDescriptor(), methodSymbol);
+                        if (hasInvalidMember) {
+                            return true;
                         }
                     }
-                    return hasInvalidMember;
+                    return false;
                 }
                 return false;
             }
@@ -323,23 +322,11 @@ public class FunctionValidator {
             if (symbol.kind() == SymbolKind.CLASS) {
                 updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
             } else if (isFileUploadParameter(typeSymbol)) {
-                updateContext(context, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, inputLocation);
+                updateContext(context, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, inputLocation);
             } else {
                 TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
                 if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                    boolean fieldError = false;
-                    Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
-                            .typeDescriptor()).fieldDescriptors();
-                    for (RecordFieldSymbol fields : memberMap.values()) {
-                        if (isFileUploadParameter(fields.typeDescriptor())) {
-                            fieldError = true;
-                            updateContext(context, CompilationError.INVALID_INPUT_OBJECT_FIELD_TYPE, inputLocation);
-                        }
-                    }
-                    if (!fieldError) {
-                        updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM,
-                                inputLocation);
-                    }
+                    updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, inputLocation);
                 } else {
                     updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
                 }
@@ -355,21 +342,8 @@ public class FunctionValidator {
 
     private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
         return returnTypeSymbol.typeKind() == TypeDescKind.MAP || returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
-                returnTypeSymbol.typeKind() == TypeDescKind.BYTE || returnTypeSymbol.typeKind() == TypeDescKind.OBJECT;
-    }
-
-    private boolean hasInvalidInputObjectField(TypeReferenceTypeSymbol typeSymbol) {
-        if (typeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            if (isFileUploadParameter(typeSymbol)) {
-                return true;
-            }
-            if (existingReturnTypes.contains(typeSymbol.typeDescriptor())) {
-                return true;
-            }
-            existingInputObjectTypes.add(typeSymbol.typeDescriptor());
-            return false;
-        }
-        return hasInvalidReturnType(typeSymbol.typeDescriptor());
+                returnTypeSymbol.typeKind() == TypeDescKind.BYTE || returnTypeSymbol.typeKind() == TypeDescKind.OBJECT
+                || returnTypeSymbol.typeKind() == TypeDescKind.STREAM;
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location,
@@ -432,8 +406,6 @@ public class FunctionValidator {
                     if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
                         if (!isRecordType(returnType)) {
                             updateContext(context, CompilationError.INVALID_RETURN_TYPE, location);
-                        } else if (isFileUploadParameter(returnType)) {
-                            updateContext(context, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, location);
                         } else {
                             if (existingInputObjectTypes.contains(returnType)) {
                                 updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
@@ -445,14 +417,7 @@ public class FunctionValidator {
                             Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
                                     .typeDescriptor()).fieldDescriptors();
                             for (RecordFieldSymbol fields : memberMap.values()) {
-                                if (fields.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                                    if (existingInputObjectTypes.contains(fields.typeDescriptor())) {
-                                        updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT,
-                                                      location);
-                                    } else {
-                                        existingReturnTypes.add(fields.typeDescriptor());
-                                    }
-                                }
+                                validateReturnType(fields.typeDescriptor(), location, context);
                             }
                             recordTypes++;
                         }
@@ -512,6 +477,9 @@ public class FunctionValidator {
                 if (isInvalidFieldName(recordField.getName().orElse(""))) {
                     Location fieldLocation = getLocation(recordField, location);
                     updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
+                } else if (hasInvalidReturnType(recordField.typeDescriptor())) {
+                    Location inputLocation = getLocation(recordField, location);
+                    updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR, inputLocation);
                 }
             }
         }

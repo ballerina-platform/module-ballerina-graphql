@@ -199,7 +199,7 @@ class ValidatorVisitor {
 
     isolated function validateVariableValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
         anydata variableValue = argumentNode.getVariableValue();
-        if getOfType(schemaArg.'type).name == FILE_UPLOAD {
+        if getOfType(schemaArg.'type).name == UPLOAD {
             return;
         } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR || getTypeKind(schemaArg.'type) == ENUM) {
             self.coerceArgumentIntValueToFloat(argumentNode, schemaArg);
@@ -261,7 +261,7 @@ class ValidatorVisitor {
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] {
             foreach __InputValue subInputValue in inputFields {
-                if getOfType(subInputValue.'type).name == FILE_UPLOAD {
+                if getOfType(subInputValue.'type).name == UPLOAD {
                     return;
                 }
                 if variableValues.hasKey(subInputValue.name) {
@@ -310,7 +310,7 @@ class ValidatorVisitor {
                                                 Location location, string fieldName) {
         if getTypeKind(inputValue.'type) == LIST {
             __InputValue listItemInputValue = createInputValueForListItem(inputValue);
-            if getOfType(listItemInputValue.'type).name == FILE_UPLOAD {
+            if getOfType(listItemInputValue.'type).name == UPLOAD {
                 return;
             }
             if variableValues.length() > 0 {
@@ -455,7 +455,7 @@ class ValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () && getOfType(inputValue.'type).name != "FileUpload" {
+            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () && getOfType(inputValue.'type).name != UPLOAD {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }

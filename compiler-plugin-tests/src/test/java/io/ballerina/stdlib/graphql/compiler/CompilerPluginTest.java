@@ -143,7 +143,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testGraphQLFileUpload() {
+    public void testGraphQLSingleFileUpload() {
         String packagePath = "valid_service_15";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
@@ -567,46 +567,46 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 36, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 43, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 43, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 50, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, 57, 62);
+        assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 57, 58);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, 64, 72);
+        assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 64, 68);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 71, 67);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 71, 63);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 82, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 93, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 93, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 104, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LOCATION_FOR_FILE_UPLOAD_PARAMETER, 115, 60);
+        assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 115, 56);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_INPUT_OBJECT_FIELD_TYPE, 122, 52);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 122, 52);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_INPUT_OBJECT_FIELD_TYPE, 126, 33);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 126, 33);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 31, 24);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_FILE_UPLOAD, 31, 24);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

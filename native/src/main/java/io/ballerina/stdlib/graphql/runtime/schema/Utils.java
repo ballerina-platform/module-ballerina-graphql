@@ -42,7 +42,6 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DECIMAL;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FLOAT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTEGER;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STREAM;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
 
 /**
@@ -86,8 +85,6 @@ public class Utils {
         int tag = type.getTag();
         if (type.getTag() < TypeTags.JSON_TAG) {
             return getScalarTypeName(tag);
-        } else if (type.getTag() == TypeTags.STREAM_TAG) {
-            return STREAM;
         } else if (tag == TypeTags.ARRAY_TAG) {
             return getTypeNameFromType(((ArrayType) type).getElementType());
         } else if (tag == TypeTags.MAP_TAG) {

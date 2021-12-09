@@ -19,7 +19,7 @@ import ballerina/io;
 
 stream<io:Block, io:Error?> byteStream = check io:fileReadBlocksAsStream("./invalid_service_27/sample.txt");
 
-graphql:FileUpload file = {
+graphql:Upload file = {
    fileName: "image.jpg",
    mimeType: "application/jpeg",
    encoding: "UTF-8",
@@ -28,47 +28,47 @@ graphql:FileUpload file = {
 
 public type File record {
     string fileName;
-    graphql:FileUpload file;
+    graphql:Upload file;
 };
 
 service /graphql on new graphql:Listener(4000) {
 
-    resource function get getImage() returns graphql:FileUpload {
+    resource function get getImage() returns graphql:Upload {
         return file;
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
 
-    isolated resource function get getImageIfExist() returns graphql:FileUpload? {
+    isolated resource function get getImageIfExist() returns graphql:Upload? {
         return;
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
 
-    resource function get getImages() returns graphql:FileUpload[] {
+    resource function get getImages() returns graphql:Upload[] {
         return [file];
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
 
-    isolated resource function get upload(graphql:FileUpload p) returns string {
+    isolated resource function get upload(graphql:Upload p) returns string {
         return "Successful";
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
 
-    isolated resource function get uploadMultiple(graphql:FileUpload[] p) returns string {
+    isolated resource function get uploadMultiple(graphql:Upload[] p) returns string {
         return "Successful";
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
 
-    isolated resource function get uploadFile(graphql:FileUpload? p) returns string {
+    isolated resource function get uploadFile(graphql:Upload? p) returns string {
         return "Successful";
     }
 }
@@ -79,7 +79,7 @@ service /graphql on new graphql:Listener(4000) {
         return "Successful";
     }
 
-    remote function uploadAndGet() returns graphql:FileUpload {
+    remote function uploadAndGet() returns graphql:Upload {
         return file;
     }
 }
@@ -90,7 +90,7 @@ service /graphql on new graphql:Listener(4000) {
         return "Successful";
     }
 
-    isolated remote function uploadAndGet() returns graphql:FileUpload? {
+    isolated remote function uploadAndGet() returns graphql:Upload? {
         return;
     }
 }
@@ -101,7 +101,7 @@ service /graphql on new graphql:Listener(4000) {
         return "Successful";
     }
 
-    remote function uploadAndGetMultiple() returns graphql:FileUpload[] {
+    remote function uploadAndGetMultiple() returns graphql:Upload[] {
         return [file];
     }
 }
@@ -112,7 +112,7 @@ isolated service /graphql on new graphql:Listener(4000) {
         return "Successful";
     }
 
-    isolated remote function upload(graphql:FileUpload[][] p) returns string {
+    isolated remote function upload(graphql:Upload[][] p) returns string {
         return "Invalid Input";
     }
 }

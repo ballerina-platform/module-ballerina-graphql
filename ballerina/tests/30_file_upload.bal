@@ -15,14 +15,16 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/io;
 import ballerina/mime;
 import ballerina/test;
 
 @test:Config {
     groups: ["file_upload"]
 }
-isolated function testSingleFileUpload() returns error? {
-    string document = string`mutation($file: FileUpload!){ singleFileUpload(file: $file) { fileName, mimeType, content } }`;
+
+function testSingleFileUpload() returns error? {
+    string document = string`mutation($file: Upload!){ singleFileUpload(file: $file) { fileName, mimeType, content } }`;
     json variables = {"file": null} ;
 
     json operation = {
@@ -61,16 +63,18 @@ isolated function testSingleFileUpload() returns error? {
 
     http:Client httpClient = check new("http://localhost:9091");
     json actualPayload = check httpClient->post("/fileUpload", request);
-    json expectedPayload = check getJsonContentFromFile("single_file_upload.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    json receivedFileContent = check actualPayload.data.singleFileUpload.content;
+    stream<io:Block, io:Error?> fileReadBlocksAsStream = check io:fileReadBlocksAsStream("./tests/resources/files/sample1.json");
+    string contentFromSource = check getContentFromByteStream(fileReadBlocksAsStream);
+    assertJsonValuesWithOrder(receivedFileContent, contentFromSource);
 }
 
 
 @test:Config {
     groups: ["file_upload"]
 }
-isolated function testMultipleFileUpload() returns error? {
-    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) { fileName, content } }`;
+function testMultipleFileUpload() returns error? {
+    string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) { fileName, content } }`;
     json variables = {"files": [null, null, null]} ;
 
     json operation = {
@@ -128,15 +132,29 @@ isolated function testMultipleFileUpload() returns error? {
 
     http:Client httpClient = check new("http://localhost:9091");
     json actualPayload = check httpClient->post("/fileUpload", request);
-    json expectedPayload = check getJsonContentFromFile("multiple_file_upload.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    json recevedContents = check actualPayload.data.multipleFileUpload;
+    json receivedJsonFileContent = check (<json[]> recevedContents)[0].content;
+    stream<io:Block, io:Error?> fileReadBlocksAsStream = check io:fileReadBlocksAsStream("./tests/resources/files/sample1.json");
+    string jsonContentFromSource = check getContentFromByteStream(fileReadBlocksAsStream);
+    assertJsonValuesWithOrder(receivedJsonFileContent, jsonContentFromSource);
+
+    json receivedTxtFileContent = check (<json[]> recevedContents)[1].content;
+    fileReadBlocksAsStream = check io:fileReadBlocksAsStream("./tests/resources/files/sample2.txt");
+    string txtContentFromSource = check getContentFromByteStream(fileReadBlocksAsStream);
+    assertJsonValuesWithOrder(receivedTxtFileContent, txtContentFromSource);
+
+    json receivedXmlFileContent = check (<json[]> recevedContents)[2].content;
+    fileReadBlocksAsStream = check io:fileReadBlocksAsStream("./tests/resources/files/sample3.xml");
+    string xmlContentFromSource = check getContentFromByteStream(fileReadBlocksAsStream);
+    assertJsonValuesWithOrder(receivedXmlFileContent, xmlContentFromSource);
 }
 
 @test:Config {
     groups: ["file_upload"]
 }
 isolated function testUndefinedVariableWithMultipartRequest() returns error? {
-    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) { fileName }}`;
+    string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) { fileName }}`;
     json variables = {"files": [null]} ;
 
     json operation = {
@@ -170,7 +188,7 @@ isolated function testUndefinedVariableWithMultipartRequest() returns error? {
     jsonFilePart.setContentDisposition(contentDisposition3);
     jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
 
-    mime:Entity[] bodyParts = [operations, path];
+    mime:Entity[] bodyParts = [operations, path, jsonFilePart];
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
@@ -187,7 +205,7 @@ isolated function testUndefinedVariableWithMultipartRequest() returns error? {
     groups: ["file_upload"]
 }
 isolated function testMissingContentInMultipartRequest() returns error? {
-    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) }`;
     json variables = {"files": [null, null]} ;
 
     json operation = {
@@ -221,7 +239,7 @@ isolated function testMissingContentInMultipartRequest() returns error? {
     jsonFilePart.setContentDisposition(contentDisposition3);
     jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
 
-    mime:Entity[] bodyParts = [operations, path];
+    mime:Entity[] bodyParts = [operations, path, jsonFilePart];
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
@@ -238,7 +256,7 @@ isolated function testMissingContentInMultipartRequest() returns error? {
     groups: ["file_upload"]
 }
 isolated function testInvalidMapFieldInMultipartRequest() returns error? {
-    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) }`;
     json variables = {"files": [null]} ;
 
     json operation = {
@@ -273,7 +291,7 @@ isolated function testInvalidMapFieldInMultipartRequest() returns error? {
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);
     string actualPaylaod = check response.getTextPayload();
-    string expectedMessage = "Invalid type for multipart request field ‘map’";
+    string expectedMessage = "Invalid type for multipart request field ‘map’ value";
     test:assertEquals(actualPaylaod, expectedMessage);
 }
 
@@ -281,7 +299,7 @@ isolated function testInvalidMapFieldInMultipartRequest() returns error? {
     groups: ["file_upload"]
 }
 isolated function testInvalidMapTypeInMultipartRequest() returns error? {
-    string document = string`mutation($files: [FileUpload!]!){ multipleFileUpload(files: $files) }`;
+    string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) }`;
     json variables = {"files": [null]} ;
 
     json operation = {
