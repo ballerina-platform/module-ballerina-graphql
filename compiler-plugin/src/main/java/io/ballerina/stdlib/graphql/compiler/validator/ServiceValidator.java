@@ -59,7 +59,8 @@ public class ServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext>
         if (!isGraphQlService(context)) {
             return;
         }
-        this.functionValidator.validate(context);
+        this.functionValidator.initialize(context);
+        this.functionValidator.validate();
     }
 
     private boolean isGraphQlService(SyntaxNodeAnalysisContext context) {
