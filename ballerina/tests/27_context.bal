@@ -135,6 +135,63 @@ function testAddingDuplicateAttribute() returns error? {
 @test:Config {
     groups: ["context"]
 }
+function testSettingAttribute() returns error? {
+    ContextInit contextInit =
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
+            Context context = new;
+            context.set("String", "Ballerina");
+            return context;
+        };
+    http:Request request = new;
+    http:RequestContext requestContext = new;
+    Context context = check contextInit(requestContext, request);
+    var value = check context.get("String");
+    test:assertTrue(value is string);
+    test:assertEquals(<string>value, "Ballerina");
+}
+
+@test:Config {
+    groups: ["context"]
+}
+function testSettingAttributeTwice() returns error? {
+    ContextInit contextInit =
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
+            Context context = new;
+            context.set("String", "Ballerina");
+            return context;
+        };
+    http:Request request = new;
+    http:RequestContext requestContext = new;
+    Context context = check contextInit(requestContext, request);
+    var value = check context.get("String");
+    test:assertTrue(value is string);
+    test:assertEquals(<string>value, "Ballerina");
+
+    context.set("String", "GraphQL");
+    value = check context.get("String");
+    test:assertTrue(value is string);
+    test:assertEquals(<string>value, "GraphQL");
+}
+
+@test:Config {
+    groups: ["context"]
+}
+function testSettingObjectValues() returns error? {
+    ContextInit contextInit =
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
+            Context context = new;
+            context.set("HierarchicalServiceObject", new HierarchicalName());
+            return context;
+        };
+    http:Request request = new;
+    http:RequestContext requestContext = new;
+    Context context = check contextInit(requestContext, request);
+    test:assertTrue((check context.get("HierarchicalServiceObject")) is HierarchicalName);
+}
+
+@test:Config {
+    groups: ["context"]
+}
 isolated function testContextWithHttpHeaderValues() returns error? {
     string url = "http://localhost:9092/context";
     string document = "{ profile { name } }";
