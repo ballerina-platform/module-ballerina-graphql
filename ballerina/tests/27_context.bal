@@ -176,6 +176,22 @@ function testSettingAttributeTwice() returns error? {
 @test:Config {
     groups: ["context"]
 }
+function testSettingObjectValues() returns error? {
+    ContextInit contextInit =
+        isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
+            Context context = new;
+            context.set("HierarchicalServiceObject", new HierarchicalName());
+            return context;
+        };
+    http:Request request = new;
+    http:RequestContext requestContext = new;
+    Context context = check contextInit(requestContext, request);
+    test:assertTrue((check context.get("HierarchicalServiceObject")) is HierarchicalName);
+}
+
+@test:Config {
+    groups: ["context"]
+}
 isolated function testContextWithHttpHeaderValues() returns error? {
     string url = "http://localhost:9092/context";
     string document = "{ profile { name } }";
