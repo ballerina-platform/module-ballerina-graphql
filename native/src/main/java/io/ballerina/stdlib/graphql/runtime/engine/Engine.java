@@ -313,7 +313,7 @@ public class Engine {
             Type fieldType = stringFieldEntry.getValue().getFieldType();
             if (objectFields.containsKey(fieldName)) {
                 if (fieldType.getTag() == TypeTags.RECORD_TYPE_TAG) {
-                    BMap<BString, Object> nestedFields = (BMap<BString, Object>) objectFields.getObjectValue(fieldName);
+                    BMap<BString, Object> nestedFields = (BMap<BString, Object>) objectFields.getMapValue(fieldName);
                     BMap<BString, Object> nestedInputObjectRecord = ValueCreator.createMapValue(fieldType);
                     visitInputObjectTypeVariableValue(nestedFields, nestedInputObjectRecord, (RecordType) fieldType);
                     inputObjectRecord.put(fieldName, nestedInputObjectRecord);
