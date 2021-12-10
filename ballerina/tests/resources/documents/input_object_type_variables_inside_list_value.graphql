@@ -1,4 +1,4 @@
-query ($series1: TvSeries){ 
+query ($series1: TvSeries!){
     getSuggestions(tvSeries: [$series1]) { 
         movieName 
     }
