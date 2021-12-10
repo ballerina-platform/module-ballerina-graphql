@@ -254,6 +254,17 @@ isolated function testVariablesInsideListValue() returns error? {
 @test:Config {
     groups: ["list", "variables", "input_objects", "input"]
 }
+isolated function testInvalidVariablesInsideListValue() returns error? {
+    string document = check getGraphQLDocumentFromFile("invalid_variables_inside_list_value.graphql");
+    string url = "http://localhost:9091/list_inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("invalid_variables_inside_list_value.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "variables", "input_objects", "input"]
+}
 isolated function testInputObjectTypeVariablesInsideListValue() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_type_variables_inside_list_value.graphql");
     string url = "http://localhost:9091/list_inputs";

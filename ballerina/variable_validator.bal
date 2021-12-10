@@ -137,9 +137,15 @@ class VariableValidator {
         } else {
             __InputValue? inputValue = getInputValueFromArray(inputValues, argumentNode.getName());
             if inputValue is __InputValue {
-                __Type? inputFieldType = getOfType(inputValue.'type);
-                __InputValue[]? inputFieldValues = inputFieldType?.inputFields;
-                inputValues = inputFieldValues is __InputValue[] ? inputFieldValues : [];
+                if getTypeKind(inputValue.'type) is LIST {
+                    __InputValue[] inputFieldValues = [];
+                    inputFieldValues.push(createInputValueForListItem(inputValue));
+                    inputValues = inputFieldValues;
+                } else {
+                    __Type? inputFieldType = getOfType(inputValue.'type);
+                    __InputValue[]? inputFieldValues = inputFieldType?.inputFields;
+                    inputValues = inputFieldValues is __InputValue[] ? inputFieldValues : [];
+                }
             }
 
             if argumentNode.getValue() is parser:ArgumentValue[] {
