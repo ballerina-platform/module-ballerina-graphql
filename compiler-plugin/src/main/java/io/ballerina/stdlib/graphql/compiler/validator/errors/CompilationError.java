@@ -41,7 +41,8 @@ public enum CompilationError {
     INVALID_RESOURCE_INPUT_OBJECT_PARAM(ErrorMessage.ERROR_115, ErrorCode.GRAPHQL_115, DiagnosticSeverity.ERROR),
     INVALID_LOCATION_FOR_CONTEXT_PARAMETER(ErrorMessage.ERROR_116, ErrorCode.GRAPHQL_116, DiagnosticSeverity.ERROR),
     INVALID_PATH_PARAMETERS(ErrorMessage.ERROR_117, ErrorCode.GRAPHQL_117, DiagnosticSeverity.ERROR),
-    MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR);
+    MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
+    INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION(ErrorMessage.ERROR_119, ErrorCode.GRAPHQL_119, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

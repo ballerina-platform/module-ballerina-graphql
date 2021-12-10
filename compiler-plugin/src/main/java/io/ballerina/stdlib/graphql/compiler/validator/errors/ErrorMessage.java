@@ -43,7 +43,8 @@ public enum ErrorMessage {
     ERROR_115("A GraphQL field cannot use an output type as an input type"),
     ERROR_116("The graphql:Context should be the first parameter"),
     ERROR_117("Path parameters not allowed in GraphQL resources"),
-    ERROR_118("A GraphQL resource must have a name");
+    ERROR_118("A GraphQL resource must have a name"),
+    ERROR_119("The graphql:FileUpload cannot be used as an input type of resource function");
 
     private final String message;
 

@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/io;
 
 # Represents the Scalar types supported by the Ballerina GraphQL module.
 public type Scalar boolean|int|float|string;
@@ -32,3 +33,16 @@ type AnydataMap map<anydata>;
 # + requestContext - The `http:RequestContext` object from the original request
 # + request - The `http:Request` object from the original request
 public type ContextInit isolated function (http:RequestContext requestContext, http:Request request) returns Context|error;
+
+# The input parameter type used for file uploads in GraphQL mutations.
+#
+# + fileName - Name of the file
+# + mimeType - File mime type according to the content
+# + encoding - File stream encoding
+# + byteStream - File content as a stream of `byte[]`
+public type Upload record {|
+    string fileName;
+    string mimeType;
+    string encoding;
+    stream<byte[], io:Error?> byteStream;
+|};

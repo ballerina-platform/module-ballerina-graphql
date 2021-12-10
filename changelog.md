@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#1837] Add Input Value List Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1837)
+- [[#1882] Add File Uploading Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1882)
 
 ### Changed
 - [[#2476] Deprecating the `context.add` function and introducing the `context.set` function](https://github.com/ballerina-platform/ballerina-standard-library/issues/2476)

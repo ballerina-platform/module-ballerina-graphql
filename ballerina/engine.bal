@@ -42,8 +42,9 @@ isolated class Engine {
         }
     }
 
-    isolated function execute(parser:OperationNode operationNode, Context context) returns OutputObject {
-        ExecutorVisitor executor = new(self, self.schema, context);
+    isolated function execute(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo)
+        returns OutputObject {
+        ExecutorVisitor executor = new(self, self.schema, context, fileInfo);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
         ResponseFormatter responseFormatter = new(self.schema);
         return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
