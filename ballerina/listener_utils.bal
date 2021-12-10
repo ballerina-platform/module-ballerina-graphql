@@ -15,7 +15,9 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/io;
 import ballerina/jballerina.java;
+import ballerina/mime;
 
 import graphql.parser;
 
@@ -37,16 +39,18 @@ isolated function handleGetRequests(Engine engine, Context context, http:Request
 isolated function handlePostRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string contentType = request.getContentType();
     if contentType == CONTENT_TYPE_JSON {
-        return getResponseFromJsonPayload(engine, context, request);
+        return getResponseFromJsonPayload(engine, context, {}, request);
     } else if contentType == CONTENT_TYPE_GQL {
         return createResponse("Content-Type 'application/graphql' is not yet supported", http:STATUS_BAD_REQUEST);
+    } else if contentType.includes(CONTENT_TYPE_MULTIPART_FORM_DATA) {
+        return getResponseFromMultipartPayload(engine, context, request);
     } else {
         return createResponse("Invalid 'Content-type' received", http:STATUS_BAD_REQUEST);
     }
 }
 
-isolated function getResponseFromJsonPayload(Engine engine, Context context, http:Request request)
-returns http:Response {
+isolated function getResponseFromJsonPayload(Engine engine, Context context, map<Upload|Upload[]> fileInfo,
+                                             http:Request request) returns http:Response {
     var payload = request.getJsonPayload();
     if payload is json {
         var document = payload.query;
@@ -54,7 +58,7 @@ returns http:Response {
         variables = variables is error ? () : variables;
         if document is string && document != "" {
             if variables is map<json> || variables is () {
-                return getResponseFromQuery(engine, document, getOperationName(payload), variables, context);
+                return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
             } else {
                 return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
             }
@@ -64,18 +68,18 @@ returns http:Response {
 }
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
-    Context context) returns http:Response {
+    Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
-        return getResponseFromExecution(engine, validationResult, context);
+        return getResponseFromExecution(engine, validationResult, context, fileInfo);
     } else {
         return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
 }
 
-isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
-returns http:Response {
-    OutputObject outputObject = engine.execute(operationNode, context);
+isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context,
+                                           map<Upload|Upload[]> fileInfo) returns http:Response {
+    OutputObject outputObject = engine.execute(operationNode, context, fileInfo);
     return createResponse(outputObject.toJson());
 }
 
@@ -99,6 +103,180 @@ isolated function getOperationName(json payload) returns string? {
 isolated function addDefaultDirectives(__Schema schema) {
     foreach __Directive directive in defaultDirectives {
         schema.directives.push(directive);
+    }
+}
+
+isolated function getResponseFromMultipartPayload(Engine engine, Context context, http:Request request)
+    returns http:Response {
+    map<Upload> fileInfo = {};
+    map<json> pathMap = {};
+    map<json> variables = {};
+    json payload = ();
+    mime:Entity[]|http:ClientError bodyParts = request.getBodyParts();
+    if bodyParts is mime:Entity[] {
+        foreach mime:Entity part in bodyParts {
+            mime:ContentDisposition contentDisposition = part.getContentDisposition();
+            if contentDisposition.name == MULTIPART_OPERATIONS {
+                json|mime:ParserError operation = part.getJson();
+                if operation is json {
+                    payload = operation;
+                    json|error variableValues = operation.variables;
+                    if variableValues is map<json> {
+                        variables = variableValues;
+                    } else {
+                        return createResponse("Invlaid Mulitpart Request", http:STATUS_BAD_REQUEST);
+                    }
+                } else {
+                    return createResponse(operation.message(), http:STATUS_BAD_REQUEST);
+                }
+            } else if contentDisposition.name == MULITPART_MAP {
+                json|mime:ParserError paths = part.getJson();
+                if paths is json {
+                    if paths is map<json> {
+                        pathMap = paths;
+                    } else {
+                        return createResponse("Invalid type for multipart request field ‘map’",
+                            http:STATUS_BAD_REQUEST);
+                    }
+                } else {
+                    return createResponse(paths.message(), http:STATUS_BAD_REQUEST);
+                }
+            } else {
+                Upload|error handleFileFieldResult = handleFileField(part);
+                if handleFileFieldResult is Upload {
+                    fileInfo[part.getContentDisposition().name] = handleFileFieldResult;
+                } else {
+                    return createResponse(handleFileFieldResult.message(), http:STATUS_BAD_REQUEST);
+                }
+            }
+        }
+    } else {
+        return createResponse((<http:ClientError>bodyParts).message(), http:STATUS_BAD_REQUEST);
+    }
+    if fileInfo.length() == 0 {
+        return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
+    }
+    map<Upload|Upload[]>|http:Response fileInfoResult = getUploadValues(fileInfo, pathMap, variables);
+    if fileInfoResult is map<Upload|Upload[]> {
+        return forwardMultipartRequestToExecution(fileInfoResult, engine, context, payload);
+    }
+    return fileInfoResult;
+}
+
+isolated function handleFileField(mime:Entity bodyPart) returns Upload|error {
+    string encoding = bodyPart.getContentType();
+    string fileName = bodyPart.getContentDisposition().fileName;
+    mime:MediaType mediaType = check mime:getMediaType(bodyPart.getContentType());
+    string|mime:HeaderNotFoundError contentEncoding = bodyPart.getHeader(CONTENT_ENCODING);
+    if contentEncoding is string {
+        encoding = contentEncoding;
+    }
+    stream<byte[], io:Error?> byteStream = check bodyPart.getByteStream();
+    return {
+        fileName: fileName,
+        mimeType: mediaType.getBaseType(),
+        encoding: encoding,
+        byteStream: byteStream
+    };
+}
+
+isolated function getUploadValues(map<Upload> fileInfo, map<json> pathMap, map<json> variables)
+    returns map<Upload|Upload[]>|http:Response {
+    map<Upload> files = {}; //map of file path and file value
+    if pathMap.length() == 0 {
+        return createResponse("Missing multipart request field ‘map’", http:STATUS_BAD_REQUEST);
+    }
+    foreach string key in pathMap.keys() {
+        json value = pathMap[key];
+        if value is json[] {
+            http:Response? validateResult = validateRequestPathArray(fileInfo, variables, files, value, key);
+            if validateResult is http:Response {
+                return validateResult;
+            }
+        } else {
+            return createResponse("Invalid type for multipart request field ‘map’", http:STATUS_BAD_REQUEST);
+        }
+    }
+    return createUploadInfoMap(files, variables);
+}
+
+isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> variables, map<Upload> files,
+                                           json[] paths, string key) returns http:Response? {
+    if paths.length() == 0 {
+        return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
+    }
+    foreach json path in paths {
+        if !fileInfo.hasKey(key) {
+            return createResponse("File content is missing in multipart request", http:STATUS_BAD_REQUEST);
+        }
+        if path is string {
+            http:Response? validateVariablePathResult = validateVariablePath(variables, path);
+            if validateVariablePathResult is () {
+                files[path] = <Upload> fileInfo[key];
+                continue;
+            }
+            return validateVariablePathResult;
+        }
+        return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
+    }
+    return;
+}
+
+isolated function validateVariablePath(map<json> variables, string path) returns http:Response? {
+    //replace variable's null value with file path
+    string varName = path;
+    if path.includes(".") {
+        varName = path.substring(0, <int> path.indexOf("."));
+        string indexPart = path.substring((<int> path.indexOf(".") + 1), path.length());
+        int|error index = 'int:fromString(indexPart);
+        if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
+            json[] arrayValue = <json[]> variables.get(varName);
+            if index < arrayValue.length() {
+                arrayValue[index] = path;
+                variables[varName] = arrayValue;
+                return;
+            }
+        }
+        return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+    } else if !variables.hasKey(varName) {
+        return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+    }
+    return;
+}
+
+isolated function createUploadInfoMap(map<Upload> files, map<json> variables)
+    returns map<Upload|Upload[]>|http:Response {
+    map<Upload|Upload[]> fileInfo = {};
+    foreach string key in variables.keys() {
+        json value = variables[key];
+        if value is json[] {
+            Upload[] fileArray = [];
+            foreach json filePath in value {
+                if filePath is string {
+                    fileArray.push(<Upload> files[filePath]);
+                } else {
+                    return createResponse("File content is missing in multipart request", http:STATUS_BAD_REQUEST);
+                }
+            }
+            fileInfo[key] = fileArray;
+        } else {
+            fileInfo[key] = <Upload>files[key];
+        }
+    }
+    return fileInfo;
+}
+
+isolated function forwardMultipartRequestToExecution(map<Upload|Upload[]> fileInfo, Engine engine,
+                                                     Context context, json payload) returns http:Response {
+    if payload != () {
+        http:Request request = new;
+        request.setJsonPayload(payload);
+        return getResponseFromJsonPayload(engine, context, fileInfo, request);
+    } else {
+        http:Response response = new;
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        response.setPayload("Invalid type for the ‘operations’ multipart field");
+        return response;
     }
 }
 

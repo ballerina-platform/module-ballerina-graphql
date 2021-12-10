@@ -55,6 +55,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_F
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
@@ -74,6 +75,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_META
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -200,6 +202,9 @@ public class Engine {
             BObject argumentNode = (BObject) argumentArray.get(i);
             BString argName = argumentNode.getStringValue(NAME_FIELD);
             Type argType  = getArgumentTypeFromMethod(argName, method);
+            if (isFileUpload(argType)) {
+                continue;
+            }
             if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
                 addInputObjectFieldsFromVariableValue(argumentNode, argumentsMap, getNonNullType(argType));
             } else if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
@@ -313,7 +318,7 @@ public class Engine {
             Type fieldType = stringFieldEntry.getValue().getFieldType();
             if (objectFields.containsKey(fieldName)) {
                 if (fieldType.getTag() == TypeTags.RECORD_TYPE_TAG) {
-                    BMap<BString, Object> nestedFields = (BMap<BString, Object>) objectFields.getObjectValue(fieldName);
+                    BMap<BString, Object> nestedFields = (BMap<BString, Object>) objectFields.getMapValue(fieldName);
                     BMap<BString, Object> nestedInputObjectRecord = ValueCreator.createMapValue(fieldType);
                     visitInputObjectTypeVariableValue(nestedFields, nestedInputObjectRecord, (RecordType) fieldType);
                     inputObjectRecord.put(fieldName, nestedInputObjectRecord);
@@ -358,6 +363,16 @@ public class Engine {
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (i == 0 && isContext(parameters[i].type)) {
                 result[i] = executionContext.getVisitor().getObjectValue(CONTEXT_FIELD);
+                result[j + 1] = true;
+                continue;
+            }
+            if (isFileUpload(parameters[i].type)) {
+                BMap<BString, Object> fileInfo = executionContext.getVisitor().getMapValue(FILE_INFO);
+                if (parameters[i].type.getTag() == TypeTags.ARRAY_TAG) {
+                    result[i] = fileInfo.getArrayValue(StringUtils.fromString(parameters[i].name));
+                } else {
+                    result[i] = fileInfo.getMapValue(StringUtils.fromString(parameters[i].name));
+                }
                 result[j + 1] = true;
                 continue;
             }

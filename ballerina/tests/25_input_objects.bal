@@ -81,6 +81,26 @@ isolated function testInputObjectWithVariables() returns error? {
 @test:Config {
     groups: ["input_objects", "input"]
 }
+isolated function testInputObjectWithNestedInputObjectVariables() returns error? {
+    string document = string`($info: Info!){ book(info:$info){ name }}`;
+    json variables = {
+        info: {
+            bookName: "Sherlock",
+            edition: 4,
+            author: {
+                name: "Arthur"
+            }
+        }
+    };
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("input_object_with_nested_input_object_variables.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["input_objects", "input"]
+}
 isolated function testInputObjectIncludeFieldsWithVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_variables.graphql");
     json variables = { bName: "Harry Potter", authorAge: 50 };
