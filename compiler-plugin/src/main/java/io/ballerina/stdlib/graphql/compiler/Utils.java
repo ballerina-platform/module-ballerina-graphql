@@ -66,15 +66,6 @@ public final class Utils {
         return methodSymbol;
     }
 
-    public static boolean isResourceFunction(SyntaxNodeAnalysisContext context,
-                                             FunctionDefinitionNode functionDefinitionNode) {
-        return isResourceFunction(getMethodSymbol(context, functionDefinitionNode));
-    }
-
-    public static boolean isResourceFunction(MethodSymbol methodSymbol) {
-        return methodSymbol.qualifiers().contains(Qualifier.RESOURCE);
-    }
-
     public static boolean isRemoteFunction(SyntaxNodeAnalysisContext context,
                                            FunctionDefinitionNode functionDefinitionNode) {
         return isRemoteFunction(getMethodSymbol(context, functionDefinitionNode));
