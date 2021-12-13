@@ -16,10 +16,16 @@
 
 const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
+const CONTENT_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
 const PARAM_VARIABLES = "variables";
+
+const MULTIPART_OPERATIONS = "operations";
+const MULITPART_MAP = "map";
+const UPLOAD = "Upload";
+const CONTENT_ENCODING = "Content-Encoding";
 
 const SCHEMA_FIELD = "__schema";
 const TYPE_NAME_FIELD = "__typename";

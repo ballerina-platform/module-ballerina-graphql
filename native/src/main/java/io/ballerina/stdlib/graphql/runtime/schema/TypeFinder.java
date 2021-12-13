@@ -50,8 +50,10 @@ import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeNameFromTy
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.UPLOAD;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.removeFirstElementFromArray;
 
 /**
@@ -124,7 +126,12 @@ public class TypeFinder {
     private void getInputTypesFromMethod(MethodType methodType) {
         for (Parameter parameter : methodType.getParameters()) {
             if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
-                getInputObjectSchemaType(parameter.type);
+                if (isFileUpload(parameter.type)) {
+                    String name = UPLOAD;
+                    this.createSchemaType(name, TypeKind.SCALAR, parameter.type);
+                } else {
+                    getInputObjectSchemaType(parameter.type);
+                }
             } else if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
                 getListSchemaType(parameter.type);
             } else {

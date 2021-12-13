@@ -57,6 +57,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
+import static io.ballerina.stdlib.graphql.compiler.Utils.FILE_UPLOAD_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
@@ -449,6 +450,17 @@ public class FunctionValidator {
             if (typeSymbol.getName().isPresent()) {
                 return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
                         PACKAGE_ORG) && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
+            }
+        }
+        return false;
+    }
+
+    private boolean isFileUploadParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getModule().isPresent()) {
+            ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
+            if (typeSymbol.getName().isPresent()) {
+                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
+                        PACKAGE_ORG) && typeSymbol.getName().get().equals(FILE_UPLOAD_IDENTIFIER);
             }
         }
         return false;

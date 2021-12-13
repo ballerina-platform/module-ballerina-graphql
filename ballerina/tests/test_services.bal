@@ -47,6 +47,33 @@ service object {
     }
 };
 
+service /fileUpload on basicListener {
+    remote function singleFileUpload(Upload file) returns FileInfo|error {
+        string contentFromByteStream = check getContentFromByteStream(file.byteStream);
+        return {
+            fileName: file.fileName,
+            mimeType: file.mimeType,
+            encoding: file.encoding,
+            content: contentFromByteStream
+        };
+    }
+
+    remote function multipleFileUpload(Upload[] files) returns FileInfo[]|error {
+        FileInfo[] fileInfo = [];
+        foreach int i in 0..< files.length() {
+            Upload file = files[i];
+            string contentFromByteStream = check getContentFromByteStream(file.byteStream);
+            fileInfo.push({
+                fileName: file.fileName,
+                mimeType: file.mimeType,
+                encoding: file.encoding,
+                content: contentFromByteStream
+            });
+        }
+        return fileInfo;
+    }
+}
+
 service /input_type_introspection on basicListener {
     isolated resource function get name(string name = "Walter") returns string {
         return name;
