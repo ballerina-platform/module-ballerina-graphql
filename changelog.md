@@ -7,9 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#1837] Add Input Value List Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1837)
+- [[#1882] Add File Uploading Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1882)
+
+### Changed
+- [[#2476] Deprecating the `context.add` function and introducing the `context.set` function](https://github.com/ballerina-platform/ballerina-standard-library/issues/2476)
+
+### Fixed
+- [[#2437] Pass `http:RequestContext` object to the `graphql:Context` Init Function](https://github.com/ballerina-platform/ballerina-standard-library/issues/2437)
+- [[#2465] Disallow path parameters in GraphQL resource functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/2465)
+- [[#2480] Fix Input Object type variables return type cast error](https://github.com/ballerina-platform/ballerina-standard-library/issues/2480)
+- [[#2481] Fix ignoring type validation of variables in a list](https://github.com/ballerina-platform/ballerina-standard-library/issues/2481)
+
+## [1.0.1] - 2021-11-19
+
+### Added
 - [[#741] Add Default Directives 'skip' & 'include' Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/741)
 - [[#2026] Implement auth error types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2026)
-- [[#1837] Add Input Value List Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1837)
 
 ### Changed
 - [[#2398] Mark GraphQL Service type as distinct](https://github.com/ballerina-platform/ballerina-standard-library/issues/2398)

@@ -100,6 +100,7 @@ public class EngineUtils {
     static final BString ENGINE_FIELD = StringUtils.fromString("engine");
     static final BString DATA_FIELD = StringUtils.fromString("data");
     static final BString CONTEXT_FIELD = StringUtils.fromString("context");
+    static final BString FILE_INFO = StringUtils.fromString("fileInfo");
 
     // Internal Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";

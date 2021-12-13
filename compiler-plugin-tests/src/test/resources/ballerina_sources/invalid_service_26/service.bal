@@ -41,6 +41,21 @@ service /graphql on new graphql:Listener(4000) {
 }
 
 service /graphql on new graphql:Listener(4000) {
+    resource function get profile(Person[] p) returns Person[] {
+        return [
+            {
+               name: "Walter",
+               age: 57
+            },
+            {
+               name: "Jessie",
+               age: 27
+            }
+        ];
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
     resource function get book(Book[] b) returns Person {
         return {
            name: "Walter",

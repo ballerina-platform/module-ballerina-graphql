@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/lang.value;
 
+# The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
 
@@ -24,6 +25,29 @@ public isolated class Context {
         self.attributes = {};
     }
 
+    # Sets a given value for a given key in the GraphQL context.
+    #
+    # + key - The key for the value to be set
+    # + value - Value to be set
+    public isolated function set(string 'key, value:Cloneable|isolated object {} value) {
+        lock {
+            if value is value:Cloneable {
+                self.attributes['key] = value.clone();
+            } else {
+                self.attributes['key] = value;
+            }
+        }
+    }
+
+    # Adds a value to the GraphQL context.
+    #
+    # + key - The key for the value to be set
+    # + value - The value to be set
+    # + return - A `graphql:Error` if the key already exists in the context, nil otherwise
+    #
+    # # Deprecated
+    # This function is deprecated and will be removed in a future release. Please use `set` method instead.
+    @deprecated
     public isolated function add(string 'key, value:Cloneable|isolated object {} value) returns Error? {
         lock {
             if self.attributes.hasKey('key) {
@@ -36,6 +60,10 @@ public isolated class Context {
         }
     }
 
+    # Retrieves a value using the given key from the GraphQL context.
+    #
+    # + key - The key corresponding to the required value
+    # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error {
         lock {
             if self.attributes.hasKey('key) {
@@ -46,10 +74,14 @@ public isolated class Context {
                     return value;
                 }
             }
+            return error Error(string`Attribute with the key "${'key}" not found in the context`);
         }
-        return error Error(string`Attribute with the key "${'key}" not found in the context`);
     }
 
+    # Removes a value using the given key from the GraphQL context.
+    #
+    # + key - The key corresponding to the value to be removed
+    # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function remove(string 'key) returns value:Cloneable|isolated object {}|Error {
         lock {
             if self.attributes.hasKey('key) {
@@ -60,8 +92,8 @@ public isolated class Context {
                     return value;
                 }
             }
+            return error Error(string`Attribute with the key "${'key}" not found in the context`);
         }
-        return error Error(string`Attribute with the key "${'key}" not found in the context`);
     }
 }
 

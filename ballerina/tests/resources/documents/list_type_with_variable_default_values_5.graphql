@@ -1,0 +1,6 @@
+query ($profileDetail: [ProfileDetail!] = [{name: "Jessie", age: 28}, {name: "Arthur", age: 5}]){
+    searchProfile(profileDetail: $profileDetail) {
+        name,
+        age
+    }
+}

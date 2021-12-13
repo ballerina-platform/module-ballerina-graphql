@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "Variable \"p1\" of type \"ProfileDetail\" used in position expecting type \"ProfileDetail!\".",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 35
+                }
+            ]
+        },
+        {
+            "message": "Variable \"$p2\" of required type ProfileDetail! was not provided.",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 40
+                }
+            ]
+        }
+    ]
+}

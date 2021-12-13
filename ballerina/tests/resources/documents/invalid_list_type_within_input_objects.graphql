@@ -1,0 +1,6 @@
+query {
+    getMovie(tvSeries: { name: "Breaking Bad", episodes: [{title:"Cancer Man", newCharacters:[true, graphql]}] }) {
+        movieName,
+        director
+    }
+}

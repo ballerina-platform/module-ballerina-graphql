@@ -822,7 +822,7 @@ isolated function testListTypeWithinInputObjectVariableDefualtValue() returns er
 }
 
 isolated function testListTypeVariablesWithDefualtValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_variables_with_default_value.txt");
+    string document = check getGraphQLDocumentFromFile("list_type_variables_with_default_value.graphql");
     Parser parser = new(document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);

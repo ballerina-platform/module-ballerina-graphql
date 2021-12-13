@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.runtime.utils;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -41,6 +42,8 @@ public class Utils {
     // Internal type names
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
+
+    public static final String UPLOAD = "Upload";
 
     public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
                                                                                      getModule().getName(),
@@ -67,14 +70,30 @@ public class Utils {
     }
 
     public static boolean isContext(Type type) {
-        if (type.getTag() == TypeTags.ARRAY_TAG) {
+        if (type.getPackage() == null) {
             return false;
         }
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }
+        return isGraphqlModule(type) && type.getName().equals(CONTEXT_OBJECT);
+    }
+
+    public static boolean isFileUpload(Type type) {
+        if (type.getTag() == TypeTags.ARRAY_TAG) {
+            return isFileUpload(((ArrayType) type).getElementType());
+        }
+        if (type.getPackage() == null) {
+            return false;
+        }
+        if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
+            return false;
+        }
+        return isGraphqlModule(type) && type.getName().equals(UPLOAD);
+    }
+
+    public static boolean isGraphqlModule(Type type) {
         return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
-                type.getPackage().getName().equals(ModuleUtils.getModule().getName()) &&
-                type.getName().equals(CONTEXT_OBJECT);
+                type.getPackage().getName().equals(ModuleUtils.getModule().getName());
     }
 }

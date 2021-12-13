@@ -14,10 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
+// import ballerina/http;
 
-isolated service class HttpService {
-    *http:Service;
+// isolated service class HttpService {
+//     *http:Service;
 
     // private final Engine engine;
     // private final readonly & ListenerAuthConfig[]? authConfig;
@@ -29,9 +29,7 @@ isolated service class HttpService {
     //     self.contextInit = getContextInit(serviceConfig);
     // }
 
-    // isolated resource function get .(http:Request request) returns http:Response {
-    //      // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
-    //     http:RequestContext requestContext = new;
+    // isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
     //     Context|http:Response context = self.initContext(requestContext, request);
     //     if context is http:Response {
     //         return context;
@@ -44,9 +42,7 @@ isolated service class HttpService {
     //     }
     // }
 
-    // isolated resource function post .(http:Request request) returns http:Response {
-    //      // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
-    //     http:RequestContext requestContext = new;
+    // isolated resource function post .(http:RequestContext requestContext, http:Request request) returns http:Response {
     //     Context|http:Response context = self.initContext(requestContext, request);
     //     if context is http:Response {
     //         return context;
@@ -75,4 +71,4 @@ isolated service class HttpService {
     //         return context;
     //     }
     // }
-}
+// }

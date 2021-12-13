@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.plugins.CompilerPlugin;
 import io.ballerina.projects.plugins.CompilerPluginContext;
+import io.ballerina.stdlib.graphql.compiler.validator.ServiceAnalyzer;
 
 /**
  * This is the compiler plugin for Ballerina GraphQL package.

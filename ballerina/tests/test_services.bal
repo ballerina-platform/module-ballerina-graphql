@@ -47,6 +47,33 @@ service object {
     }
 };
 
+service /fileUpload on basicListener {
+    remote function singleFileUpload(Upload file) returns FileInfo|error {
+        string contentFromByteStream = check getContentFromByteStream(file.byteStream);
+        return {
+            fileName: file.fileName,
+            mimeType: file.mimeType,
+            encoding: file.encoding,
+            content: contentFromByteStream
+        };
+    }
+
+    remote function multipleFileUpload(Upload[] files) returns FileInfo[]|error {
+        FileInfo[] fileInfo = [];
+        foreach int i in 0..< files.length() {
+            Upload file = files[i];
+            string contentFromByteStream = check getContentFromByteStream(file.byteStream);
+            fileInfo.push({
+                fileName: file.fileName,
+                mimeType: file.mimeType,
+                encoding: file.encoding,
+                content: contentFromByteStream
+            });
+        }
+        return fileInfo;
+    }
+}
+
 service /input_type_introspection on basicListener {
     isolated resource function get name(string name = "Walter") returns string {
         return name;
@@ -405,6 +432,37 @@ service /depthLimitService on basicListener {
 
     resource function get students() returns Student[] {
         return students;
+    }
+}
+
+@ServiceConfig {
+    cors: {
+        allowOrigins :["*"],
+        allowCredentials : true,
+        allowHeaders:["X-Content-Type-Options", "X-PINGOTHER"],
+        exposeHeaders: ["X-CUSTOM-HEADER"],
+        allowMethods : ["*"],
+        maxAge: 84900
+    }
+}
+service /corsConfigService1 on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@ServiceConfig {
+    cors: {
+        allowOrigins :["http://www.wso2.com"],
+        allowCredentials : false,
+        allowHeaders:["X-Content-Type-Options", "X-PINGOTHER"],
+        exposeHeaders: ["X-HEADER"],
+        allowMethods : ["POST"]
+    }
+}
+service /corsConfigService2 on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
     }
 }
 

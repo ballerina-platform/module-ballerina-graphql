@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler;
+package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
@@ -35,12 +35,17 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
+import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
+import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.Utils;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -52,13 +57,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
-import static io.ballerina.stdlib.graphql.compiler.Utils.CompilationError;
+import static io.ballerina.stdlib.graphql.compiler.Utils.FILE_UPLOAD_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
-import static io.ballerina.stdlib.graphql.compiler.Utils.RESOURCE_FUNCTION_GET;
-import static io.ballerina.stdlib.graphql.compiler.Utils.getLocation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
-import static io.ballerina.stdlib.graphql.compiler.Utils.updateContext;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.isInvalidFieldName;
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
 
 /**
  * Validate functions in Ballerina GraphQL services.
@@ -137,9 +143,26 @@ public class FunctionValidator {
     private void validateResourcePath(MethodSymbol methodSymbol, Location location, SyntaxNodeAnalysisContext context) {
         if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (Utils.isInvalidFieldName(resourceMethodSymbol.resourcePath().signature())) {
-                updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
+            validateResourcePath(resourceMethodSymbol, location, context);
+        }
+    }
+
+    private void validateResourcePath(ResourceMethodSymbol resourceMethodSymbol, Location location,
+                                      SyntaxNodeAnalysisContext context) {
+        ResourcePath resourcePath = resourceMethodSymbol.resourcePath();
+        if (resourcePath.kind() == ResourcePath.Kind.PATH_SEGMENT_LIST) {
+            PathSegmentList pathSegmentList = (PathSegmentList) resourcePath;
+            for (PathSegment pathSegment : pathSegmentList.list()) {
+                if (pathSegment.pathSegmentKind() == PathSegment.Kind.NAMED_SEGMENT) {
+                    if (isInvalidFieldName(pathSegment.signature())) {
+                        updateContext(context, CompilationError.INVALID_FIELD_NAME, location);
+                    }
+                } else {
+                    updateContext(context, CompilationError.INVALID_PATH_PARAMETERS, location);
+                }
             }
+        } else {
+            updateContext(context, CompilationError.MISSING_RESOURCE_NAME, location);
         }
     }
 
@@ -180,8 +203,9 @@ public class FunctionValidator {
                     existingReturnTypes.add(typeReferenceTypeSymbol.typeDescriptor());
                 }
                 validateRecordFields(context, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
+            } else {
+                validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
             }
-            validateReturnType(typeDefinitionSymbol.typeDescriptor(), location, context);
         } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
             ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
             Location classSymbolLocation = getLocation(classSymbol, location);
@@ -213,7 +237,7 @@ public class FunctionValidator {
                         }
                         continue;
                     }
-                    if (hasInvalidInputParamType(param.typeDescriptor())) {
+                    if (hasInvalidInputParamType(param.typeDescriptor(), methodSymbol)) {
                         Location inputLocation = getLocation(param, location);
                         addInputTypeErrorIntoContext(param.typeDescriptor(), inputLocation, context);
                     }
@@ -222,14 +246,14 @@ public class FunctionValidator {
         }
     }
 
-    private boolean hasInvalidInputParamType(TypeSymbol inputTypeSymbol) {
+    private boolean hasInvalidInputParamType(TypeSymbol inputTypeSymbol, MethodSymbol methodSymbol) {
         if (inputTypeSymbol.typeKind() == TypeDescKind.UNION) {
             List<TypeSymbol> members = ((UnionTypeSymbol) inputTypeSymbol).userSpecifiedMemberTypes();
             boolean hasInvalidMember = false;
             int hasType = 0;
             for (TypeSymbol member : members) {
                 if (member.typeKind() != TypeDescKind.NIL) {
-                    hasInvalidMember = hasInvalidInputParamType(member);
+                    hasInvalidMember = hasInvalidInputParamType(member, methodSymbol);
                     hasType++;
                 }
             }
@@ -248,6 +272,12 @@ public class FunctionValidator {
                 if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
                     return true;
                 } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+                    if (isFileUploadParameter(inputTypeSymbol)) {
+                        if (!methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
+                            return true;
+                        }
+                        return false;
+                    }
                     if (existingReturnTypes.contains(typeDefinitionSymbol.typeDescriptor())) {
                         return true;
                     } else {
@@ -255,16 +285,17 @@ public class FunctionValidator {
                     }
                     Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
                             .typeDescriptor()).fieldDescriptors();
-                    boolean hasInvalidMember = true;
+                    boolean hasInvalidMember = false;
                     for (RecordFieldSymbol fields : memberMap.values()) {
-                        if (fields.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                            hasInvalidMember =
-                                    hasInvalidInputObjectField((TypeReferenceTypeSymbol) fields.typeDescriptor());
-                        } else {
-                            hasInvalidMember = hasInvalidReturnType(fields.typeDescriptor());
+                        if (isFileUploadParameter(fields.typeDescriptor())) {
+                            return true;
+                        }
+                        hasInvalidMember = hasInvalidInputParamType(fields.typeDescriptor(), methodSymbol);
+                        if (hasInvalidMember) {
+                            return true;
                         }
                     }
-                    return hasInvalidMember;
+                    return false;
                 }
                 return false;
             }
@@ -272,7 +303,14 @@ public class FunctionValidator {
         if (inputTypeSymbol.typeKind() == TypeDescKind.ARRAY) {
             ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) inputTypeSymbol;
             TypeSymbol typeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-            return hasInvalidInputParamType(typeSymbol);
+            if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
+                // invalidate FileUpload[][] type inputs
+                ArrayTypeSymbol nestedArrayTypeSymbol = (ArrayTypeSymbol) typeSymbol;
+                if (isFileUploadParameter(nestedArrayTypeSymbol.memberTypeDescriptor())) {
+                    return true;
+                }
+            }
+            return hasInvalidInputParamType(typeSymbol, methodSymbol);
         }
         return !hasPrimitiveType(inputTypeSymbol);
     }
@@ -283,11 +321,12 @@ public class FunctionValidator {
             Symbol symbol = ((TypeReferenceTypeSymbol) typeSymbol).definition();
             if (symbol.kind() == SymbolKind.CLASS) {
                 updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
+            } else if (isFileUploadParameter(typeSymbol)) {
+                updateContext(context, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, inputLocation);
             } else {
                 TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
                 if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-                    updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM,
-                            inputLocation);
+                    updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, inputLocation);
                 } else {
                     updateContext(context, CompilationError.INVALID_RESOURCE_INPUT_PARAM, inputLocation);
                 }
@@ -303,18 +342,8 @@ public class FunctionValidator {
 
     private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
         return returnTypeSymbol.typeKind() == TypeDescKind.MAP || returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
-                returnTypeSymbol.typeKind() == TypeDescKind.BYTE || returnTypeSymbol.typeKind() == TypeDescKind.OBJECT;
-    }
-
-    private boolean hasInvalidInputObjectField(TypeReferenceTypeSymbol typeSymbol) {
-        if (typeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            if (existingReturnTypes.contains(typeSymbol.typeDescriptor())) {
-                return true;
-            }
-            existingInputObjectTypes.add(typeSymbol.typeDescriptor());
-            return false;
-        }
-        return hasInvalidReturnType(typeSymbol.typeDescriptor());
+                returnTypeSymbol.typeKind() == TypeDescKind.BYTE || returnTypeSymbol.typeKind() == TypeDescKind.OBJECT
+                || returnTypeSymbol.typeKind() == TypeDescKind.STREAM;
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location,
@@ -388,14 +417,7 @@ public class FunctionValidator {
                             Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
                                     .typeDescriptor()).fieldDescriptors();
                             for (RecordFieldSymbol fields : memberMap.values()) {
-                                if (fields.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                                    if (existingInputObjectTypes.contains(fields.typeDescriptor())) {
-                                        updateContext(context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT,
-                                                      location);
-                                    } else {
-                                        existingReturnTypes.add(fields.typeDescriptor());
-                                    }
-                                }
+                                validateReturnType(fields.typeDescriptor(), location, context);
                             }
                             recordTypes++;
                         }
@@ -452,9 +474,12 @@ public class FunctionValidator {
                 Location fieldLocation = getLocation(recordField, location);
                 validateReturnType(recordField.typeDescriptor(), fieldLocation, context);
             } else {
-                if (Utils.isInvalidFieldName(recordField.getName().orElse(""))) {
+                if (isInvalidFieldName(recordField.getName().orElse(""))) {
                     Location fieldLocation = getLocation(recordField, location);
                     updateContext(context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
+                } else if (hasInvalidReturnType(recordField.typeDescriptor())) {
+                    Location inputLocation = getLocation(recordField, location);
+                    updateContext(context, CompilationError.INVALID_RETURN_TYPE_ERROR, inputLocation);
                 }
             }
         }
@@ -466,6 +491,17 @@ public class FunctionValidator {
             if (typeSymbol.getName().isPresent()) {
                 return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
                         PACKAGE_ORG) && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
+            }
+        }
+        return false;
+    }
+
+    private boolean isFileUploadParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getModule().isPresent()) {
+            ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
+            if (typeSymbol.getName().isPresent()) {
+                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
+                        PACKAGE_ORG) && typeSymbol.getName().get().equals(FILE_UPLOAD_IDENTIFIER);
             }
         }
         return false;
