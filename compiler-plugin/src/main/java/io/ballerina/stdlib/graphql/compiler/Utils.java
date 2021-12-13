@@ -68,7 +68,10 @@ public final class Utils {
 
     public static boolean isRemoteFunction(SyntaxNodeAnalysisContext context,
                                            FunctionDefinitionNode functionDefinitionNode) {
-        MethodSymbol methodSymbol = getMethodSymbol(context, functionDefinitionNode);
+        return isRemoteFunction(getMethodSymbol(context, functionDefinitionNode));
+    }
+
+    public static boolean isRemoteFunction(MethodSymbol methodSymbol) {
         return methodSymbol.qualifiers().contains(Qualifier.REMOTE);
     }
 

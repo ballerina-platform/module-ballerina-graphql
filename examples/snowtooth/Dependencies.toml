@@ -100,6 +100,9 @@ dependencies = [
 	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "url"}
 ]
+modules = [
+	{org = "ballerina", packageName = "http", moduleName = "http"}
+]
 
 [[package]]
 org = "ballerina"
@@ -305,6 +308,7 @@ name = "snowtooth"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "graphql"},
+	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerinai", name = "observe"}
 ]
