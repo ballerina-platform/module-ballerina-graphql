@@ -74,6 +74,7 @@ public class FunctionValidator {
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
     private SyntaxNodeAnalysisContext context;
+    private int arrayDimension = 0;
 
     public void initialize(SyntaxNodeAnalysisContext context) {
         this.context = context;
@@ -112,7 +113,7 @@ public class FunctionValidator {
             Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
             returnTypeDesc.ifPresent
                     (typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location()));
-            validateInputParameters(methodSymbol, functionDefinitionNode.location());
+            validateInputParameters(methodSymbol, functionDefinitionNode.location(), true);
         }
     }
 
@@ -122,7 +123,7 @@ public class FunctionValidator {
             Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
             returnTypeDesc.ifPresent(
                     typeSymbol -> validateReturnType(typeSymbol, functionDefinitionNode.location()));
-            validateInputParameters(methodSymbol, functionDefinitionNode.location());
+            validateInputParameters(methodSymbol, functionDefinitionNode.location(), false);
         }
     }
 
@@ -167,26 +168,26 @@ public class FunctionValidator {
         }
     }
 
-    private void validateReturnType(TypeSymbol returnTypeDesc, Location location) {
-        if (this.existingInputObjectTypes.contains(returnTypeDesc)) {
+    private void validateReturnType(TypeSymbol typeSymbol, Location location) {
+        if (this.existingInputObjectTypes.contains(typeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
-        } else if (returnTypeDesc.typeKind() == TypeDescKind.ANY || returnTypeDesc.typeKind() == TypeDescKind.ANYDATA) {
+        } else if (typeSymbol.typeKind() == TypeDescKind.ANY || typeSymbol.typeKind() == TypeDescKind.ANYDATA) {
             updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_ANY, location);
-        } else if (returnTypeDesc.typeKind() == TypeDescKind.UNION) {
-            validateReturnTypeUnion(((UnionTypeSymbol) returnTypeDesc).memberTypeDescriptors(), location);
-        } else if (returnTypeDesc.typeKind() == TypeDescKind.ARRAY) {
+        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+            validateReturnTypeUnion((UnionTypeSymbol) typeSymbol, location);
+        } else if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
             // check member type
-            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) returnTypeDesc;
+            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) typeSymbol;
             validateReturnType(arrayTypeSymbol.memberTypeDescriptor(), location);
-        } else if (returnTypeDesc.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            validateReturnTypeDefinitions((TypeReferenceTypeSymbol) returnTypeDesc, location);
-        } else if (returnTypeDesc.typeKind() == TypeDescKind.NIL) {
+        } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            validateReturnTypeDefinitions((TypeReferenceTypeSymbol) typeSymbol, location);
+        } else if (typeSymbol.typeKind() == TypeDescKind.NIL) {
             // nil alone is invalid - must have a return type
             updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_NIL, location);
-        } else if (returnTypeDesc.typeKind() == TypeDescKind.ERROR) {
+        } else if (typeSymbol.typeKind() == TypeDescKind.ERROR) {
             // error alone is invalid
             updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_ERROR, location);
-        } else if (hasInvalidReturnType(returnTypeDesc)) {
+        } else if (hasInvalidReturnType(typeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_RETURN_TYPE, location);
         }
     }
@@ -216,7 +217,7 @@ public class FunctionValidator {
         }
     }
 
-    private void validateInputParameters(MethodSymbol methodSymbol, Location location) {
+    private void validateInputParameters(MethodSymbol methodSymbol, Location location, boolean isResourceMethod) {
         FunctionTypeSymbol functionTypeSymbol = methodSymbol.typeDescriptor();
         if (functionTypeSymbol.params().isPresent()) {
             int i = 0;
@@ -229,28 +230,49 @@ public class FunctionValidator {
                                       inputLocation);
                     }
                 } else {
-                    validateInputParameterType(parameterSymbol.typeDescriptor(), inputLocation);
+                    validateInputParameterType(parameterSymbol.typeDescriptor(), inputLocation, isResourceMethod);
                 }
                 i++;
             }
         }
     }
 
-    private void validateInputParameterType(TypeSymbol typeSymbol, Location location) {
+    private void validateInputParameterType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
+        if (isFileUploadParameter(typeSymbol)) {
+            if (this.arrayDimension > 1) {
+                updateContext(this.context, CompilationError.MULTI_DIMENSIONAL_UPLOAD_ARRAY, location);
+            }
+            if (isResourceMethod) {
+                updateContext(this.context, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, location);
+            }
+        } else {
+            validateInputType(typeSymbol, location, isResourceMethod);
+        }
+    }
+
+    private void validateInputType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
         if (typeSymbol.typeKind() == TypeDescKind.UNION) {
-            validateUnionTypeInputParameter((UnionTypeSymbol) typeSymbol, location);
+            validateUnionTypeInputParameter((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            validateTypeReferenceInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location);
+            validateTypeReferenceInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
-            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) typeSymbol;
-            validateInputParameterType(arrayTypeSymbol.memberTypeDescriptor(), location);
+            validateArrayTypeInputParameter((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (!isPrimitiveType(typeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
                           typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
         }
     }
 
-    private void validateTypeReferenceInputParameterType(TypeReferenceTypeSymbol typeSymbol, Location location) {
+    private void validateArrayTypeInputParameter(ArrayTypeSymbol arrayTypeSymbol, Location location,
+                                                 boolean isResourceMethod) {
+        this.arrayDimension++;
+        TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
+        validateInputParameterType(memberTypeSymbol, location, isResourceMethod);
+        this.arrayDimension--;
+    }
+
+    private void validateTypeReferenceInputParameterType(TypeReferenceTypeSymbol typeSymbol, Location location,
+                                                         boolean isResourceMethod) {
         TypeSymbol typeDescriptor = typeSymbol.typeDescriptor();
         Symbol typeDefinition = typeSymbol.definition();
         if (typeSymbol.getName().isPresent()) {
@@ -259,16 +281,17 @@ public class FunctionValidator {
                 return;
             }
             if (typeDescriptor.typeKind() == TypeDescKind.RECORD) {
-                validateInputRecordType((RecordTypeSymbol) typeDescriptor, location);
+                validateInputRecordType((RecordTypeSymbol) typeDescriptor, location, isResourceMethod);
             } else if (typeDescriptor.typeKind() == TypeDescKind.UNION) {
-                validateUnionTypeInputParameter((UnionTypeSymbol) typeDescriptor, location);
+                validateUnionTypeInputParameter((UnionTypeSymbol) typeDescriptor, location, isResourceMethod);
             } else if (!isPrimitiveType(typeDescriptor)) {
                 updateContext(this.context, CompilationError.INVALID_INPUT_PARAMETER_TYPE, location, typeName);
             }
         }
     }
 
-    private void validateUnionTypeInputParameter(UnionTypeSymbol unionTypeSymbol, Location location) {
+    private void validateUnionTypeInputParameter(UnionTypeSymbol unionTypeSymbol, Location location,
+                                                 boolean isResourceMethod) {
         boolean foundDataType = false;
         int dataTypeCount = 0;
         for (TypeSymbol memberType : unionTypeSymbol.userSpecifiedMemberTypes()) {
@@ -276,7 +299,7 @@ public class FunctionValidator {
                 foundDataType = true;
                 dataTypeCount++;
                 if (memberType.typeKind() != TypeDescKind.SINGLETON) {
-                    validateInputParameterType(memberType, location);
+                    validateInputParameterType(memberType, location, isResourceMethod);
                 }
             }
         }
@@ -287,20 +310,22 @@ public class FunctionValidator {
         }
     }
 
-    private void validateInputRecordType(RecordTypeSymbol recordTypeSymbol, Location location) {
+    private void validateInputRecordType(RecordTypeSymbol recordTypeSymbol, Location location,
+                                         boolean isResourceMethod) {
         if (this.existingReturnTypes.contains(recordTypeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location);
         } else {
             this.existingInputObjectTypes.add(recordTypeSymbol);
             for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
-                validateInputParameterType(recordFieldSymbol.typeDescriptor(), location);
+                validateInputType(recordFieldSymbol.typeDescriptor(), location, isResourceMethod);
             }
         }
     }
 
-    private boolean hasInvalidReturnType(TypeSymbol returnTypeSymbol) {
-        return returnTypeSymbol.typeKind() == TypeDescKind.MAP || returnTypeSymbol.typeKind() == TypeDescKind.JSON ||
-                returnTypeSymbol.typeKind() == TypeDescKind.BYTE || returnTypeSymbol.typeKind() == TypeDescKind.OBJECT;
+    private boolean hasInvalidReturnType(TypeSymbol typeSymbol) {
+        return typeSymbol.typeKind() == TypeDescKind.MAP || typeSymbol.typeKind() == TypeDescKind.JSON ||
+                typeSymbol.typeKind() == TypeDescKind.BYTE || typeSymbol.typeKind() == TypeDescKind.OBJECT ||
+                typeSymbol.typeKind() == TypeDescKind.STREAM;
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location) {
@@ -317,7 +342,7 @@ public class FunctionValidator {
                     Optional<TypeSymbol> returnTypeDesc = methodSymbol.typeDescriptor().returnTypeDescriptor();
                     returnTypeDesc.ifPresent
                             (typeSymbol -> validateReturnType(typeSymbol, methodLocation));
-                    validateInputParameters(methodSymbol, methodLocation);
+                    validateInputParameters(methodSymbol, methodLocation, true);
                 } else if (methodSymbol.qualifiers().contains(Qualifier.REMOTE)) {
                     updateContext(this.context, CompilationError.INVALID_FUNCTION, methodLocation);
                 }
@@ -342,7 +367,7 @@ public class FunctionValidator {
                 returnType.typeKind() == TypeDescKind.DECIMAL;
     }
 
-    private void validateReturnTypeUnion(List<TypeSymbol> returnTypeMembers, Location location) {
+    private void validateReturnTypeUnion(UnionTypeSymbol unionTypeSymbol, Location location) {
         // for cases like returning (float|decimal) - only one scalar type is allowed
         int primitiveType = 0;
         // for cases with only error?
@@ -354,62 +379,52 @@ public class FunctionValidator {
         // only validated if serviceTypes > 1
         boolean distinctServices = true;
 
-        for (TypeSymbol returnType : returnTypeMembers) {
-            if (returnType.typeKind() != TypeDescKind.NIL && returnType.typeKind() != TypeDescKind.ERROR) {
-                if (returnType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                    // only service object types and records are allowed
-                    if ((((TypeReferenceTypeSymbol) returnType).definition()).kind() == SymbolKind.TYPE_DEFINITION) {
-                        if (!isRecordType(returnType)) {
-                            updateContext(this.context, CompilationError.INVALID_RETURN_TYPE, location);
-                        } else {
-                            if (this.existingInputObjectTypes.contains(returnType)) {
-                                updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT,
-                                              location);
-                            } else {
-                                this.existingReturnTypes.add(returnType);
-                            }
-                            TypeDefinitionSymbol typeDefinitionSymbol =
-                                    (TypeDefinitionSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
-                            Map<String, RecordFieldSymbol> memberMap = ((RecordTypeSymbol) typeDefinitionSymbol
-                                    .typeDescriptor()).fieldDescriptors();
-                            for (RecordFieldSymbol fields : memberMap.values()) {
-                                if (fields.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                                    if (this.existingInputObjectTypes.contains(fields.typeDescriptor())) {
-                                        updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT,
-                                                      location);
-                                    } else {
-                                        this.existingReturnTypes.add(fields.typeDescriptor());
-                                    }
-                                }
-                            }
-                            recordTypes++;
-                        }
-                    } else if (((TypeReferenceTypeSymbol) returnType).definition().kind() == SymbolKind.CLASS) {
-                        ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) returnType).definition();
-                        Location classSymbolLocation = getLocation(classSymbol, location);
-                        if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
-                            updateContext(this.context, CompilationError.INVALID_RETURN_TYPE, classSymbolLocation);
-                        } else {
-                            validateServiceClassDefinition(classSymbol, classSymbolLocation);
-                            // if distinctServices is false (one of the services is not distinct), skip setting it again
-                            if (distinctServices) {
-                                distinctServices = classSymbol.qualifiers().contains(Qualifier.DISTINCT);
-                            }
-                            serviceTypes++;
-                        }
-                    }
-                } else {
-                    if (hasInvalidReturnType(returnType)) {
+        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
+            if (memberType.typeKind() == TypeDescKind.NIL || memberType.typeKind() == TypeDescKind.ERROR) {
+                continue;
+            }
+            if (memberType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                TypeReferenceTypeSymbol typeSymbol = (TypeReferenceTypeSymbol) memberType;
+                Symbol typeDefinition = typeSymbol.definition();
+                if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION) {
+                    TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) typeDefinition;
+                    if (!isRecordType(memberType)) {
                         updateContext(this.context, CompilationError.INVALID_RETURN_TYPE, location);
+                    } else {
+                        RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+                        if (this.existingInputObjectTypes.contains(memberType)) {
+                            updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
+                        } else {
+                            this.existingReturnTypes.add(memberType);
+                        }
+                        validateRecordFields(recordTypeSymbol, location);
+                        recordTypes++;
+                    }
+                } else if (typeDefinition.kind() == SymbolKind.CLASS) {
+                    ClassSymbol classSymbol = (ClassSymbol) ((TypeReferenceTypeSymbol) memberType).definition();
+                    Location classSymbolLocation = getLocation(classSymbol, location);
+                    if (!classSymbol.qualifiers().contains(Qualifier.SERVICE)) {
+                        updateContext(this.context, CompilationError.INVALID_RETURN_TYPE, classSymbolLocation);
+                    } else {
+                        validateServiceClassDefinition(classSymbol, classSymbolLocation);
+                        // if distinctServices is false (one of the services is not distinct), skip setting it again
+                        if (distinctServices) {
+                            distinctServices = classSymbol.qualifiers().contains(Qualifier.DISTINCT);
+                        }
+                        serviceTypes++;
                     }
                 }
-
-                if (isPrimitiveType(returnType)) {
-                    primitiveType++;
-                } else {
-                    type++;
+            } else {
+                if (hasInvalidReturnType(memberType)) {
+                    updateContext(this.context, CompilationError.INVALID_RETURN_TYPE, location);
                 }
-            } // nil in a union in valid, no validation
+            }
+
+            if (isPrimitiveType(memberType)) {
+                primitiveType++;
+            } else {
+                type++;
+            }
         }
 
         // has multiple services and if at least one of them are not distinct
@@ -431,38 +446,39 @@ public class FunctionValidator {
     private void validateRecordFields(RecordTypeSymbol recordTypeSymbol, Location location) {
         Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
         for (RecordFieldSymbol recordField : recordFieldSymbolMap.values()) {
-            if (recordField.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE ||
-                    recordField.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-                Location fieldLocation = getLocation(recordField, location);
-                validateReturnType(recordField.typeDescriptor(), fieldLocation);
-            } else {
-                if (isInvalidFieldName(recordField.getName().orElse(""))) {
-                    Location fieldLocation = getLocation(recordField, location);
-                    updateContext(this.context, CompilationError.INVALID_FIELD_NAME, fieldLocation);
-                }
+            validateReturnType(recordField.typeDescriptor(), location);
+            if (isInvalidFieldName(recordField.getName().orElse(""))) {
+                updateContext(this.context, CompilationError.INVALID_FIELD_NAME, location);
             }
         }
     }
 
     private boolean isContextParameter(TypeSymbol typeSymbol) {
-        if (typeSymbol.getModule().isPresent()) {
-            ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
-            if (typeSymbol.getName().isPresent()) {
-                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
-                        PACKAGE_ORG) && typeSymbol.getName().get().equals(CONTEXT_IDENTIFIER);
-            }
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
         }
-        return false;
+        if (isNonGraphqlPackageSymbol(typeSymbol)) {
+            return false;
+        }
+        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     private boolean isFileUploadParameter(TypeSymbol typeSymbol) {
-        if (typeSymbol.getModule().isPresent()) {
-            ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
-            if (typeSymbol.getName().isPresent()) {
-                return moduleSymbol.id().moduleName().equals(PACKAGE_PREFIX) && moduleSymbol.id().orgName().equals(
-                        PACKAGE_ORG) && typeSymbol.getName().get().equals(FILE_UPLOAD_IDENTIFIER);
-            }
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
         }
-        return false;
+        if (isNonGraphqlPackageSymbol(typeSymbol)) {
+            return false;
+        }
+        return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
+    }
+
+    private boolean isNonGraphqlPackageSymbol(TypeSymbol typeSymbol) {
+        if (typeSymbol.getModule().isEmpty()) {
+            return true;
+        }
+        ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
+        return !PACKAGE_PREFIX.equals(moduleSymbol.id().moduleName()) ||
+                !PACKAGE_ORG.equals(moduleSymbol.id().orgName());
     }
 }

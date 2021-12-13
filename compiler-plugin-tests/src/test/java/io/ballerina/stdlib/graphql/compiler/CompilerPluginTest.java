@@ -151,13 +151,6 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testGraphQLMultipleFileUpload() {
-        String packagePath = "valid_service_16";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-    }
-
-    @Test
     public void testMultipleListenersOnSameService() {
         String packagePath = "invalid_service_1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -385,10 +378,10 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 42, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 26, 12);
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 50, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 21, 9);
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 50, 5);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 61, 5);
@@ -523,7 +516,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 20, 12);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 25, 5);
     }
 
     @Test
@@ -571,13 +564,13 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 36, 5);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 43, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 50, 5);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 57, 58);
@@ -586,31 +579,31 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 64, 68);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_PARAM, 71, 63);
+        assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 71, 63);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 82, 5);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 93, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 104, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, 115, 56);
+        assertError(diagnostic, CompilationError.MULTI_DIMENSIONAL_UPLOAD_ARRAY, 115, 56);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 122, 52);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 122, 52);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, 126, 33);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 126, 33);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 133, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR, 47, 31);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 147, 5);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

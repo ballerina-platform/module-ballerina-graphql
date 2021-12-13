@@ -43,8 +43,9 @@ public enum CompilationError {
     INVALID_PATH_PARAMETERS(ErrorMessage.ERROR_117, ErrorCode.GRAPHQL_117, DiagnosticSeverity.ERROR),
     MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
     INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION(ErrorMessage.ERROR_119, ErrorCode.GRAPHQL_119, DiagnosticSeverity.ERROR),
-    INVALID_INPUT_TYPE(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR),
-    INVALID_INPUT_TYPE_UNION(ErrorMessage.ERROR_121, ErrorCode.GRAPHQL_121, DiagnosticSeverity.ERROR);
+    MULTI_DIMENSIONAL_UPLOAD_ARRAY(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR),
+    INVALID_INPUT_TYPE(ErrorMessage.ERROR_121, ErrorCode.GRAPHQL_121, DiagnosticSeverity.ERROR),
+    INVALID_INPUT_TYPE_UNION(ErrorMessage.ERROR_122, ErrorCode.GRAPHQL_122, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

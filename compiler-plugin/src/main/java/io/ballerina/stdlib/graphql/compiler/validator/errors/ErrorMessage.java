@@ -44,9 +44,10 @@ public enum ErrorMessage {
     ERROR_116("The graphql:Context should be the first parameter"),
     ERROR_117("Path parameters not allowed in GraphQL resources"),
     ERROR_118("A GraphQL resource must have a name"),
-    ERROR_119("The graphql:FileUpload cannot be used as an input type of resource function"),
-    ERROR_120("Graphql input type must not be a subtype of `error?`"),
-    ERROR_121("Invalid union type for GraphQL input type");
+    ERROR_119("The graphql:Upload cannot be used as an input type of resource function"),
+    ERROR_120("GraphQL input cannot have multi-dimensional graphql:Upload arrays"),
+    ERROR_121("Graphql input type must not be a subtype of `error?`"),
+    ERROR_122("Invalid union type for GraphQL input type");
 
     private final String message;
 
