@@ -26,8 +26,8 @@ import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESO
  */
 public enum ErrorMessage {
     ERROR_101("Remote methods are not allowed inside the service classes returned from GraphQL resources"),
-    ERROR_102("Invalid GraphQL field Type: `{0}`"),
-    ERROR_103("Invalid input parameter type for GraphQL resource/remote function"),
+    ERROR_102("Invalid GraphQL field Type"),
+    ERROR_103("Invalid GraphQL input parameter type `{0}`"),
     ERROR_104("A GraphQL field must have a return type"),
     ERROR_105("A GraphQL field must have a return data type"),
     ERROR_106("Only \"" + RESOURCE_FUNCTION_GET + "\" accessor is allowed for GraphQL resource function"),
@@ -39,11 +39,13 @@ public enum ErrorMessage {
                       "\", which is reserved by GraphQL introspection"),
     ERROR_112("A GraphQL field cannot have \"any\" or \"anydata\" as the type, instead use specific types"),
     ERROR_113("A GraphQL service must have at least one resource function"),
-    ERROR_114("The record type `{0}` is used as a GraphQL input type, cannot be used as an output type"),
+    ERROR_114("A GraphQL field cannot use an input type as an output type"),
     ERROR_115("A GraphQL field cannot use an output type as an input type"),
     ERROR_116("The graphql:Context should be the first parameter"),
     ERROR_117("Path parameters not allowed in GraphQL resources"),
-    ERROR_118("A GraphQL resource must have a name");
+    ERROR_118("A GraphQL resource must have a name"),
+    ERROR_119("Graphql input type must not be a subtype of `error?`"),
+    ERROR_120("Invalid union type for GraphQL input type");
 
     private final String message;
 

@@ -26,7 +26,7 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 public enum CompilationError {
     INVALID_FUNCTION(ErrorMessage.ERROR_101, ErrorCode.GRAPHQL_101, DiagnosticSeverity.ERROR),
     INVALID_RETURN_TYPE(ErrorMessage.ERROR_102, ErrorCode.GRAPHQL_102, DiagnosticSeverity.ERROR),
-    INVALID_RESOURCE_INPUT_PARAM(ErrorMessage.ERROR_103, ErrorCode.GRAPHQL_103, DiagnosticSeverity.ERROR),
+    INVALID_INPUT_PARAMETER_TYPE(ErrorMessage.ERROR_103, ErrorCode.GRAPHQL_103, DiagnosticSeverity.ERROR),
     INVALID_RETURN_TYPE_NIL(ErrorMessage.ERROR_104, ErrorCode.GRAPHQL_104, DiagnosticSeverity.ERROR),
     INVALID_RETURN_TYPE_ERROR_OR_NIL(ErrorMessage.ERROR_105, ErrorCode.GRAPHQL_105, DiagnosticSeverity.ERROR),
     INVALID_RESOURCE_FUNCTION_ACCESSOR(ErrorMessage.ERROR_106, ErrorCode.GRAPHQL_106, DiagnosticSeverity.ERROR),
@@ -41,7 +41,9 @@ public enum CompilationError {
     INVALID_RESOURCE_INPUT_OBJECT_PARAM(ErrorMessage.ERROR_115, ErrorCode.GRAPHQL_115, DiagnosticSeverity.ERROR),
     INVALID_LOCATION_FOR_CONTEXT_PARAMETER(ErrorMessage.ERROR_116, ErrorCode.GRAPHQL_116, DiagnosticSeverity.ERROR),
     INVALID_PATH_PARAMETERS(ErrorMessage.ERROR_117, ErrorCode.GRAPHQL_117, DiagnosticSeverity.ERROR),
-    MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR);
+    MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
+    INVALID_INPUT_TYPE(ErrorMessage.ERROR_119, ErrorCode.GRAPHQL_119, DiagnosticSeverity.ERROR),
+    INVALID_INPUT_TYPE_UNION(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

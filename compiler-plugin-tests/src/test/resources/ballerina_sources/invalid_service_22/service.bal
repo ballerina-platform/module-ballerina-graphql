@@ -31,6 +31,10 @@ type Location record {
     float longitude;
 };
 
+type Movie record {|
+    byte[] data;
+|};
+
 service /graphql on new graphql:Listener(4000) {
     resource function get profile(Person p) returns Person {
         return {
@@ -138,5 +142,24 @@ service /graphql on new graphql:Listener(4000) {
                age: 60
            }
         };
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Person? p) returns string {
+        return "Sherlock Holmes";
+    }
+
+    resource function get person() returns Person {
+        return {
+            name: "Sherlock Holmes",
+            age: 45
+        };
+    }
+}
+
+service /graphql on new graphql:Listener(4000) {
+    resource function get book(Movie m) returns string {
+        return "Sherlock";
     }
 }
