@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message":"Variable \"userName\" of type \"String\" has invalid default value: Walter. Expected type \"String\", found Walter",
+            "message":"Variable userName expected value of type \"String\", found Walter",
             "locations": [
                 {
                     "line": 1,

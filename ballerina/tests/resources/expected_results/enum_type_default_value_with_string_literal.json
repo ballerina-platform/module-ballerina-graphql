@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable \"day\" of type \"Weekday\" has invalid default value: MONDAY. Expected type \"Weekday\", found MONDAY",
+            "message": "Variable day expected value of type \"Weekday\", found MONDAY",
             "locations": [
                 {
                     "line": 1,

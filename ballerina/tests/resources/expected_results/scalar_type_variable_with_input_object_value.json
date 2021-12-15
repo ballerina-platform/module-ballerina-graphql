@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message":"Variable \"age\" of type \"Int!\" has invalid default value. Expected type \"Int!\"",
+            "message":"Variable age expected value of type \"Int!\", found {}",
             "locations": [
                 {
                     "line": 1,

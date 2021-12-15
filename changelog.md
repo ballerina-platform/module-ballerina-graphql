@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#2076] Refactor GraphQL error messages](https://github.com/ballerina-platform/ballerina-standard-library/issues/2076)
+
+## [1.0.1] - 2021-12-14
+
 ### Added
 - [[#1837] Add Input Value List Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1837)
 - [[#1882] Add File Uploading Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1882)
