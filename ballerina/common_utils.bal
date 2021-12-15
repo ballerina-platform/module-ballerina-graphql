@@ -248,7 +248,7 @@ isolated function getErrorValueInString(parser:ArgumentNode argNode, string erro
         } else if argNode.getKind() is parser:T_LIST {
             stringErrorValue = getListErrorValueInString(argValue, stringErrorValue);
         }
-    } else if argValue is parser:ArgumentValue {
+    } else {
         stringErrorValue = appendScalarValues(argValue, stringErrorValue);
     }
     return stringErrorValue;
@@ -260,17 +260,18 @@ isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argVal
     foreach int i in 0..< argValue.length() {
         parser:ArgumentValue value = argValue[i];
         if value is parser:ArgumentNode {
-            if value.getValue() is parser:ArgumentValue[] {
+            parser:ArgumentValue|parser:ArgumentValue[] fieldValue = value.getValue();
+            if fieldValue is parser:ArgumentValue[] {
                 if value.getKind() is parser:T_LIST {
                     inputFields += string`${value.getName()}:`;
                 }
                 inputFields = getErrorValueInString(value, inputFields);
-            } else if value.getValue() is string {
-                inputFields += string`${value.getName()}: "${value.getValue().toString()}"`;
-            } else if value.getValue() is Scalar {
-                inputFields += string`${value.getName()}: ${value.getValue().toString()}`;
-            } else if value.getValue() is () {
+            } else if fieldValue is string {
+                inputFields += string`${value.getName()}: "${fieldValue}"`;
+            } else if fieldValue is () {
                 inputFields += string`${value.getName()}: null`;
+            } else if fieldValue is Scalar {
+                inputFields += string`${value.getName()}: ${fieldValue}`;
             }
         } else {
             inputFields = appendScalarValues(value, inputFields);
@@ -289,14 +290,15 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
     foreach int i in 0..< argValue.length() {
         parser:ArgumentValue value = argValue[i];
         if value is parser:ArgumentNode {
-            if value.getValue() is parser:ArgumentValue[] {
+            parser:ArgumentValue|parser:ArgumentValue[] listItemValue = value.getValue();
+            if listItemValue is parser:ArgumentValue[] {
                 listItems = getErrorValueInString(value, listItems);
-            } else if value.getValue() is string {
-                listItems += string`"${value.getValue().toString()}"`;
-            } else if value.getValue() is Scalar {
-                listItems += value.getValue().toString();
-            } else if value.getValue() is () {
+            } else if listItemValue is string {
+                listItems += string`"${listItemValue}"`;
+            } else if listItemValue is () {
                 listItems += "null";
+            } else if listItemValue is Scalar {
+                listItems += string`${listItemValue}`;
             }
         } else {
             listItems = appendScalarValues(value, listItems);
