@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable \"weight\" of type \"Float\" has invalid default value: Walter. Expected type \"Float\", found Walter",
+            "message": "Variable weight expected value of type \"Float\", found Walter",
             "locations": [
                 {
                     "line": 1,

@@ -171,7 +171,7 @@ class VariableValidator {
             parser:ArgumentNode? valueNode;
             [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(defaultValue, variableType);
             if hasInvalidValue && valueNode is parser:ArgumentNode {
-                string message = getInvalidDefaultValueError(variableName, varDef.getTypeName(), valueNode.getValue());
+                string message = getInvalidDefaultValueError(variableName, varDef.getTypeName(), valueNode);
                 self.errors.push(getErrorDetailRecord(message, valueNode.getValueLocation()));
             } else {
                 self.setDefaultValueToArgumentNode(argumentNode, getArgumentTypeIdentifierFromType(variableType),
@@ -222,7 +222,7 @@ class VariableValidator {
                     [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(member, memberType);
                     if hasInvalidValue && valueNode is parser:ArgumentNode {
                         string listError = string`${getListElementError(self.argumentPath)}`;
-                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), valueNode.getValue());
+                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), valueNode);
                         self.errors.push(getErrorDetailRecord(message, valueNode.getValueLocation()));
                     }
                 }
@@ -230,7 +230,7 @@ class VariableValidator {
             }
         } else if memberType.kind == NON_NULL  {
             string listError = string`${getListElementError(self.argumentPath)}`;
-            string message = getInvalidDefaultValueError(listError, getTypeNameFromType(variableType), "[]");
+            string message = getInvalidDefaultValueError(listError, getTypeNameFromType(variableType), defaultValue);
             self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
         }
     }
@@ -259,9 +259,8 @@ class VariableValidator {
         } else if value is int && getTypeName(argument) == FLOAT {
             argument.setVariableValue(value);
         } else {
-            string message = string`Variable "$${<string> argument.getVariableName()}" got invalid value ` +
-            string`${value.toString()}; Expected type ${varDef.getTypeName()}. ${getTypeName(argument)}` +
-            string` cannot represent value: ${value.toString()}`;
+            string message = string`Variable ${<string> argument.getVariableName()} expected value of type ` +
+            string`"${varDef.getTypeName()}", found ${value.toString()}`;
             self.errors.push(getErrorDetailRecord(message, argument.getLocation()));
         }
     }

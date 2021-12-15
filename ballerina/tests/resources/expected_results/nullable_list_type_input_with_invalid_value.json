@@ -19,7 +19,7 @@
             ]
         },
         {
-            "message": "words: In element #3:String cannot represent non String value.",
+            "message": "words: In element #3:String cannot represent non String value: {}",
             "locations": [
                 {
                     "line": 1,
