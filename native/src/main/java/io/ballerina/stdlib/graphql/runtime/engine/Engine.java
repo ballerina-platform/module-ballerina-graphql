@@ -66,6 +66,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.T_INPUT_OBJ
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.T_LIST;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
@@ -174,7 +175,7 @@ public class Engine {
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
                                            MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
                                            StrandMetadata strandMetadata) {
-        BMap<BString, Object> arguments = getArgumentsFromField(node, method);
+        BMap<BString, Object> arguments = getArgumentsFromField(node, method, executionContext);
         Object[] args = getArgsForMethod(method, arguments, executionContext);
         ResourceCallback callback =
                 new ResourceCallback(executionContext, node, data, pathSegments);
@@ -190,22 +191,33 @@ public class Engine {
         }
     }
 
-    public static BMap<BString, Object> getArgumentsFromField(BObject node, MethodType method) {
+    public static BMap<BString, Object> getArgumentsFromField(BObject node, MethodType method,
+                                                              ExecutionContext executionContext) {
         BMap<BString, Object> argumentsMap = ValueCreator.createMapValue();
-        getArgument(node, argumentsMap, method);
+        getArgument(node, argumentsMap, method, executionContext);
         return argumentsMap;
     }
 
-    public static void getArgument(BObject node, BMap<BString, Object> argumentsMap, MethodType method) {
+    public static void getArgument(BObject node, BMap<BString, Object> argumentsMap, MethodType method,
+                                   ExecutionContext executionContext) {
         BArray argumentArray = node.getArrayValue(ARGUMENTS_FIELD);
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
             BString argName = argumentNode.getStringValue(NAME_FIELD);
             Type argType  = getArgumentTypeFromMethod(argName, method);
             if (isFileUpload(argType)) {
-                continue;
-            }
-            if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                BMap<BString, Object> fileInfo = executionContext.getVisitor().getMapValue(FILE_INFO);
+                if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                    if (argType.getTag() == TypeTags.ARRAY_TAG) {
+                        BArray uploadValueArray =
+                                fileInfo.getArrayValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD));
+                        argumentsMap.put(argName, uploadValueArray);
+                    } else {
+                        argumentsMap.put(argName,
+                                fileInfo.getMapValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD)));
+                    }
+                }
+            } else if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
                 addInputObjectFieldsFromVariableValue(argumentNode, argumentsMap, getNonNullType(argType));
             } else if (argumentNode.getIntValue(KIND_FIELD) == T_INPUT_OBJECT) {
                 BArray objectFields = argumentNode.getArrayValue(VALUE_FIELD);
@@ -363,16 +375,6 @@ public class Engine {
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (i == 0 && isContext(parameters[i].type)) {
                 result[i] = executionContext.getVisitor().getObjectValue(CONTEXT_FIELD);
-                result[j + 1] = true;
-                continue;
-            }
-            if (isFileUpload(parameters[i].type)) {
-                BMap<BString, Object> fileInfo = executionContext.getVisitor().getMapValue(FILE_INFO);
-                if (parameters[i].type.getTag() == TypeTags.ARRAY_TAG) {
-                    result[i] = fileInfo.getArrayValue(StringUtils.fromString(parameters[i].name));
-                } else {
-                    result[i] = fileInfo.getMapValue(StringUtils.fromString(parameters[i].name));
-                }
                 result[j + 1] = true;
                 continue;
             }
