@@ -114,6 +114,7 @@ public class EngineUtils {
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
+    static final BString VARIABLE_NAME_FIELD = StringUtils.fromString("variableName");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
 
     // Node Types
