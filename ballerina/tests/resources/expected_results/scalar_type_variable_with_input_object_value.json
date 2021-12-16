@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message":"Variable age expected value of type \"Int!\", found {}",
+            "message":"Variable \"age\" expected value of type \"Int!\", found {}",
             "locations": [
                 {
                     "line": 1,

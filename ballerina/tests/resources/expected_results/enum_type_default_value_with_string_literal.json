@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable day expected value of type \"Weekday\", found MONDAY",
+            "message": "Variable \"day\" expected value of type \"Weekday\", found MONDAY",
             "locations": [
                 {
                     "line": 1,
