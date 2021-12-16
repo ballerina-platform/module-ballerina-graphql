@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message":"Variable words: In element #3: expected value of type \"String\", found Ballerina",
+            "message": "Variable \"words: In element #3:\" expected value of type \"String\", found Ballerina",
             "locations": [
                 {
                     "line": 1,
@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "Variable words: In element #4: expected value of type \"String\", found true",
+            "message": "Variable \"words: In element #4:\" expected value of type \"String\", found true",
             "locations": [
                 {
                     "line": 1,

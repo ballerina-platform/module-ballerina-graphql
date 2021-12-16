@@ -67,29 +67,19 @@ isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue
     return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
 }
 
-isolated function getInvalidDefaultValueError(string variableName, string typeName, parser:ArgumentValue value) returns string {
-    if value is parser:ArgumentNode {
-        string errorValue = getErrorValueInString(value);
-        return string`Variable ${variableName} expected value of type "${typeName}", found ${errorValue}`;
-    } else if value is string {
-        return string`Variable ${variableName} expected value of type "${typeName}", found "${value}"`;
-    } else if value is () {
-        return string`Variable ${variableName} expected value of type "${typeName}", found null`;
-    } else {
-        return string`Variable ${variableName} expected value of type "${typeName}", found ${value}`;
-    }
+isolated function getInvalidDefaultValueError(string variableName, string typeName, parser:ArgumentNode value) returns string {
+    string errorValue = getErrorValueInString(value);
+    return string`Variable "${variableName}" expected value of type "${typeName}", found ${errorValue}`;
 }
 
-isolated function getInvalidArgumentValueError(string listError, string expectedTypeName, parser:ArgumentValue value) returns string {
+isolated function getInvalidArgumentValueError(string listIndexOfError, string expectedTypeName, parser:ArgumentValue value) returns string {
     if value is parser:ArgumentNode {
         string errorValue = getErrorValueInString(value);
-        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
-    } else if value is string {
-        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: "${value}"`;
+        return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
     } else if value is () {
-        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
+        return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
     } else {
-        return string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
+        return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
     }
 }
 
@@ -240,18 +230,17 @@ isolated function getListMemberTypeFromType(__Type argType) returns __Type {
 }
 
 isolated function getErrorValueInString(parser:ArgumentNode argNode, string errorValue = "") returns string {
-    string stringErrorValue = errorValue;
     parser:ArgumentValue|parser:ArgumentValue[] argValue = argNode.getValue();
     if argValue is parser:ArgumentValue[] {
         if argNode.getKind() is parser:T_INPUT_OBJECT {
-            stringErrorValue = getInputObjectErrorValueInString(argValue, stringErrorValue);
+            return getInputObjectErrorValueInString(argValue, errorValue);
         } else if argNode.getKind() is parser:T_LIST {
-            stringErrorValue = getListErrorValueInString(argValue, stringErrorValue);
+            return getListErrorValueInString(argValue, errorValue);
         }
     } else {
-        stringErrorValue = appendScalarValues(argValue, stringErrorValue);
+        return appendScalarValues(argValue, errorValue);
     }
-    return stringErrorValue;
+    return errorValue;
 }
 
 isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argValue, string errorValue = "") returns string {
@@ -276,7 +265,7 @@ isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argVal
         } else {
             inputFields = appendScalarValues(value, inputFields);
         }
-        if argValue.length() > i+1 {
+        if argValue.length() > i + 1 {
             inputFields += ", ";
         }
     }
@@ -303,7 +292,7 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
         } else {
             listItems = appendScalarValues(value, listItems);
         }
-        if argValue.length() > i+1 {
+        if argValue.length() > i + 1 {
             listItems += ", ";
         }
     }
@@ -312,28 +301,23 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
 }
 
 isolated function appendScalarValues(parser:ArgumentValue argValue, string errorValue = "") returns string {
-    string scalarValue = errorValue;
-    if argValue is string {
-        scalarValue += string`${argValue.toString()}`;
-    } else if argValue is Scalar {
-        scalarValue += string`${argValue}`;
+    if argValue is Scalar {
+        return string`${errorValue}${argValue}`;
     } else if argValue is () {
-        scalarValue += "null";
+        return string`${errorValue}null`;
     }
-    return scalarValue;
+    return errorValue;
 }
 
 isolated function getInputObjectFieldFormPath((string|int)[] path, string name) returns string {
     int? index = path.indexOf(name);
-    string inputObjectField = name;
     if index is int {
         if index > 0 {
             string|int pathValue = path[index-1];
             if pathValue is string {
-                inputObjectField = string`${getInputObjectFieldFormPath(path, pathValue)}.${inputObjectField}`;
-                return inputObjectField;
+                return string`${getInputObjectFieldFormPath(path, pathValue)}.${name}`;
             }
         }
     }
-    return inputObjectField;
+    return name;
 }
