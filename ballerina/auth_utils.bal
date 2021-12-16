@@ -22,15 +22,15 @@ import ballerina/oauth2;
 // Uses for declarative auth design, where the authentication decision is taken by reading the auth annotations
 // provided in service and the `Authorization` header of request.
 isolated function authenticateService(ListenerAuthConfig[]? authConfigs, http:Request req) returns http:Response? {
-    if (authConfigs is ()) {
+    if authConfigs is () {
         return;
     }
     string|http:HeaderNotFoundError header = req.getHeader("Authorization");
-    if (header is string) {
+    if header is string {
         http:Unauthorized|http:Forbidden? result = tryAuthenticate(<ListenerAuthConfig[]>authConfigs, header);
-        if (result is http:Unauthorized) {
+        if result is http:Unauthorized {
             return createUnauthorizedResponse();
-        } else if (result is http:Forbidden) {
+        } else if result is http:Forbidden {
             return createForbiddenResponse();
         }
         return;
@@ -41,34 +41,34 @@ isolated function authenticateService(ListenerAuthConfig[]? authConfigs, http:Re
 
 isolated function tryAuthenticate(ListenerAuthConfig[] authConfig, string header) returns http:Unauthorized|http:Forbidden? {
     foreach ListenerAuthConfig config in authConfig {
-        if (config is FileUserStoreConfigWithScopes) {
+        if config is FileUserStoreConfigWithScopes {
             http:ListenerFileUserStoreBasicAuthHandler handler = new(config.fileUserStoreConfig);
             auth:UserDetails|http:Unauthorized authn = handler.authenticate(header);
             string|string[]? scopes = config?.scopes;
-            if (authn is auth:UserDetails) {
-                if (scopes is string|string[]) {
+            if authn is auth:UserDetails {
+                if scopes is string|string[] {
                     http:Forbidden? authz = handler.authorize(authn, scopes);
                     return authz;
                 }
                 return;
             }
-        } else if (config is LdapUserStoreConfigWithScopes) {
+        } else if config is LdapUserStoreConfigWithScopes {
             http:ListenerLdapUserStoreBasicAuthHandler handler = new(config.ldapUserStoreConfig);
             auth:UserDetails|http:Unauthorized authn = handler->authenticate(header);
             string|string[]? scopes = config?.scopes;
-            if (authn is auth:UserDetails) {
-                if (scopes is string|string[]) {
+            if authn is auth:UserDetails {
+                if scopes is string|string[] {
                     http:Forbidden? authz = handler->authorize(authn, scopes);
                     return authz;
                 }
                 return;
             }
-        } else if (config is JwtValidatorConfigWithScopes) {
+        } else if config is JwtValidatorConfigWithScopes {
             http:ListenerJwtAuthHandler handler = new(config.jwtValidatorConfig);
             jwt:Payload|http:Unauthorized authn = handler.authenticate(header);
             string|string[]? scopes = config?.scopes;
-            if (authn is jwt:Payload) {
-                if (scopes is string|string[]) {
+            if authn is jwt:Payload {
+                if scopes is string|string[] {
                     http:Forbidden? authz = handler.authorize(authn, scopes);
                     return authz;
                 }
@@ -78,9 +78,9 @@ isolated function tryAuthenticate(ListenerAuthConfig[] authConfig, string header
             // Here, config is OAuth2IntrospectionConfigWithScopes
             http:ListenerOAuth2Handler handler = new(config.oauth2IntrospectionConfig);
             oauth2:IntrospectionResponse|http:Unauthorized|http:Forbidden auth = handler->authorize(header, config?.scopes);
-            if (auth is oauth2:IntrospectionResponse) {
+            if auth is oauth2:IntrospectionResponse {
                 return;
-            } else if (auth is http:Forbidden) {
+            } else if auth is http:Forbidden {
                 return auth;
             }
         }

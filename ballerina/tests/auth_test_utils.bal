@@ -86,54 +86,54 @@ const string ACCESS_TOKEN_2 = "1zCsicMWpAA2YotnFZFEjr";
 const string ACCESS_TOKEN_3 = "invalid-token";
 
 isolated function sendNoTokenRequest(int port, string path) returns http:Response|http:ClientError {
-    http:Client clientEP = checkpanic new("https://localhost:" + port.toString(), {
-        secureSocket: {
+    http:Client clientEP = check new("https://localhost:" + port.toString(),
+        secureSocket = {
             cert: {
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
         }
-    });
+    );
     json payload = { "query": "{ greeting }" };
     return clientEP->post(path, payload);
 }
 
 isolated function sendBasicTokenRequest(int port, string path, string username, string password) returns http:Response|http:ClientError {
-    http:Client clientEP = checkpanic new("https://localhost:" + port.toString(), {
-        auth: {
+    http:Client clientEP = check new("https://localhost:" + port.toString(),
+        auth = {
             username: username,
             password: password
         },
-        secureSocket: {
+        secureSocket = {
             cert: {
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
         }
-    });
+    );
     json payload = { "query": "{ greeting }" };
     return clientEP->post(path, payload);
 }
 
 isolated function sendBearerTokenRequest(int port, string path, string token) returns http:Response|http:ClientError {
-    http:Client clientEP = checkpanic new("https://localhost:" + port.toString(), {
-        auth: {
+    http:Client clientEP = check new("https://localhost:" + port.toString(),
+        auth = {
             token: token
         },
-        secureSocket: {
+        secureSocket = {
             cert: {
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
         }
-    });
+    );
     json payload = { "query": "{ greeting }" };
     return clientEP->post(path, payload);
 }
 
 isolated function sendJwtRequest(int port, string path) returns http:Response|http:ClientError {
-    http:Client clientEP = checkpanic new("https://localhost:" + port.toString(), {
-        auth: {
+    http:Client clientEP = check new("https://localhost:" + port.toString(),
+        auth = {
             username: "admin",
             issuer: "wso2",
             audience: ["ballerina"],
@@ -151,20 +151,20 @@ isolated function sendJwtRequest(int port, string path) returns http:Response|ht
                 }
             }
         },
-        secureSocket: {
+        secureSocket = {
             cert: {
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
         }
-    });
+    );
     json payload = { "query": "{ greeting }" };
     return clientEP->post(path, payload);
 }
 
 isolated function sendOAuth2TokenRequest(int port, string path) returns http:Response|http:ClientError {
-    http:Client clientEP = checkpanic new("https://localhost:" + port.toString(), {
-        auth: {
+    http:Client clientEP = check new("https://localhost:" + port.toString(),
+        auth = {
             tokenUrl: "https://localhost:9445/oauth2/token",
             clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L5w4gz52uriT8ksZ3nUVjKvrfQMrU4uvZohTftxStwNEW4cfStBEGRxRL68",
             clientSecret: "9205371918321623741",
@@ -177,27 +177,27 @@ isolated function sendOAuth2TokenRequest(int port, string path) returns http:Res
                 }
             }
         },
-        secureSocket: {
+        secureSocket = {
             cert: {
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
         }
-    });
+    );
     json payload = { "query": "{ greeting }" };
     return clientEP->post(path, payload);
 }
 
 isolated function assertSuccess(http:Response|http:ClientError response) {
-    if (response is http:Response) {
+    if response is http:Response {
         test:assertEquals(response.statusCode, 200);
     } else {
-        test:assertFail(msg = "Test Failed!");
+        test:assertFail("Test Failed!");
     }
 }
 
 isolated function assertForbidden(http:Response|http:ClientError response) {
-    if (response is http:Response) {
+    if response is http:Response {
         test:assertEquals(response.statusCode, 400);
         json expectedPayload = {
             errors: [
@@ -207,18 +207,18 @@ isolated function assertForbidden(http:Response|http:ClientError response) {
             ]
         };
         json|http:ClientError payload = response.getJsonPayload();
-        if (payload is json) {
+        if payload is json {
             assertJsonValuesWithOrder(payload, expectedPayload);
         } else {
-            test:assertFail(msg = "Test Failed!");
+            test:assertFail("Test Failed!");
         }
     } else {
-        test:assertFail(msg = "Test Failed!");
+        test:assertFail("Test Failed!");
     }
 }
 
 isolated function assertUnauthorized(http:Response|http:ClientError response) {
-    if (response is http:Response) {
+    if response is http:Response {
         test:assertEquals(response.statusCode, 400);
         json expectedPayload = {
             errors: [
@@ -228,13 +228,13 @@ isolated function assertUnauthorized(http:Response|http:ClientError response) {
             ]
         };
         json|http:ClientError payload = response.getJsonPayload();
-        if (payload is json) {
+        if payload is json {
             assertJsonValuesWithOrder(payload, expectedPayload);
         } else {
-            test:assertFail(msg = "Test Failed!");
+            test:assertFail("Test Failed!");
         }
     } else {
-        test:assertFail(msg = "Test Failed!");
+        test:assertFail("Test Failed!");
     }
 }
 
@@ -251,20 +251,17 @@ service /oauth2 on sts {
 
     isolated resource function post introspect(http:Request request) returns json {
         string|http:ClientError payload = request.getTextPayload();
-        if (payload is string) {
+        if payload is string {
             string[] parts = regex:split(payload, "&");
             foreach string part in parts {
-                if (part.indexOf("token=") is int) {
+                if part.indexOf("token=") is int {
                     string token = regex:split(part, "=")[1];
-                    if (token == ACCESS_TOKEN_1) {
-                        json response = { "active": true, "exp": 3600, "scp": "write update" };
-                        return response;
-                    } else if (token == ACCESS_TOKEN_2) {
-                        json response = { "active": true, "exp": 3600, "scp": "read" };
-                        return response;
+                    if token == ACCESS_TOKEN_1 {
+                        return { "active": true, "exp": 3600, "scp": "write update" };
+                    } else if token == ACCESS_TOKEN_2 {
+                        return { "active": true, "exp": 3600, "scp": "read" };
                     } else {
-                        json response = { "active": false };
-                        return response;
+                        return { "active": false };
                     }
                 }
             }
