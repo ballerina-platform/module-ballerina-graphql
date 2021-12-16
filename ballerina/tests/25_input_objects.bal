@@ -213,7 +213,7 @@ isolated function testInputObjectWithoutOptionalFields() returns error? {
     groups: ["input_objects", "input"]
 }
 isolated function testInputObjectWithMissingVariablesArguments() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_complex_variables.graphql");
+    string document = check getGraphQLDocumentFromFile("input_object_with_missing_variables_arguments.graphql");
     json variables = {
         bName: "Study in Scarlet",
         bAuthor: {

@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "String! cannot represent non String! value.",
+            "message": "String! cannot represent non String! value: {name: \"s\"}",
             "locations": [
                 {
                     "line": 2,
@@ -10,16 +10,16 @@
             ]
         },
         {
-            "message": "Int! cannot represent non Int! value.",
+            "message": "Int! cannot represent non Int! value: {}",
             "locations": [
                 {
                     "line": 2,
-                    "column": 31
+                    "column": 39
                 }
             ]
         },
         {
-            "message": "String! cannot represent non String! value.",
+            "message": "String! cannot represent non String! value: {}",
             "locations": [
                 {
                     "line": 1,
@@ -28,7 +28,7 @@
             ]
         },
         {
-            "message": "Int cannot represent non Int value.",
+            "message": "Int cannot represent non Int value: {}",
             "locations": [
                 {
                     "line": 1,
@@ -37,11 +37,11 @@
             ]
         },
         {
-            "message": "String! cannot represent non String! value.",
+            "message": "String! cannot represent non String! value: {}",
             "locations": [
                 {
                     "line": 2,
-                    "column": 69
+                    "column": 77
                 }
             ]
         }

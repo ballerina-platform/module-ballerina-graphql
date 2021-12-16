@@ -134,9 +134,11 @@ class ValidatorVisitor {
         __Type argType = getOfType(schemaArg.'type);
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
+            self.updatePath(argumentNode.getName());
             parser:ArgumentValue[] fields = <parser:ArgumentValue[]> argumentNode.getValue();
             self.validateInputObjectFields(argumentNode, inputFields);
             foreach __InputValue inputField in inputFields {
+                self.updatePath(inputField.name);
                 __InputValue subInputValue = inputField;
                 boolean isProvidedField = false;
                 foreach parser:ArgumentValue fieldValue in fields {
@@ -147,15 +149,18 @@ class ValidatorVisitor {
                 }
                 if !isProvidedField {
                     if ((subInputValue.'type).kind == NON_NULL && schemaArg?.defaultValue is ()) {
-                        string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type ` +
-                        string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
+                        string inputFieldName = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
+                        string message = string`Field "${inputFieldName}" of required type ` +
+                        string`"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                     }
                 }
+                self.removePath();
             }
+            self.removePath();
         } else {
             string listError = getListElementError(self.argumentPath);
-            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode.getValue());
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode);
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
             self.errors.push(errorDetail);
         }
@@ -190,7 +195,7 @@ class ValidatorVisitor {
             }
         } else {
             string listError = getListElementError(self.argumentPath);
-            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode.getValue());
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode);
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
             self.errors.push(errorDetail);
         }
@@ -205,7 +210,9 @@ class ValidatorVisitor {
             self.coerceArgumentIntValueToFloat(argumentNode, schemaArg);
             self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
         } else if variableValue is map<anydata> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
+            self.updatePath(argumentNode.getName());
             self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
+            self.removePath();
         } else if variableValue is anydata[] && getTypeKind(schemaArg.'type) == LIST {
             self.updatePath(argumentNode.getName());
             self.validateListVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
@@ -283,7 +290,9 @@ class ValidatorVisitor {
                         //coerce decimal to float since float value change over the network
                         self.coerceInputVariableDecimalToFloat(variableValues, fieldValue, subInputValue, location);
                     } else if fieldValue is map<anydata> {
+                        self.updatePath(subInputValue.name);
                         self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
+                        self.removePath();
                     } else if fieldValue is anydata[] {
                         self.updatePath(subInputValue.name);
                         self.validateListVariableValue(fieldValue, subInputValue, location, fieldName);
@@ -291,8 +300,9 @@ class ValidatorVisitor {
                     }
                 } else {
                     if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
-                        string message = string`Field "${fieldName}" argument "${subInputValue.name}" of type `+
-                        string`"${getTypeNameFromType(subInputValue.'type)}" is required, but it was not provided.`;
+                        string inputField = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
+                        string message = string`Field "${inputField}" of required type ` +
+                        string`"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, location));
                     }
                 }
@@ -343,7 +353,9 @@ class ValidatorVisitor {
                             self.errors.push(errorDetail);
                         }
                     } else if listItemValue is map<json> {
+                        self.updatePath(listItemInputValue.name);
                         self.validateInputObjectVariableValue(listItemValue, listItemInputValue, location, fieldName);
+                        self.removePath();
                     } else if listItemValue is json[] {
                         self.updatePath(listItemInputValue.name);
                         self.validateListVariableValue(listItemValue, listItemInputValue, location, fieldName);
