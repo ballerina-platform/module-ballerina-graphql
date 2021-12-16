@@ -531,7 +531,7 @@ isolated function testInvalidListTypeForInputObjects() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "TvSeries! cannot represent non TvSeries! value.",
+                message: "TvSeries! cannot represent non TvSeries! value: [{name: \"Breaking Bad\", episodes:[{title: \"Cancer Man\", newCharacters:[true, \"graphql\"]}]}]",
                 locations: [
                     {
                         line: 2,
@@ -554,7 +554,7 @@ isolated function testInvalidValueWithNestedListInInputObjects() returns error? 
     json expectedPayload = {
         errors: [
             {
-                message: "[Episode!] cannot represent non [Episode!] value.",
+                message: "[Episode!] cannot represent non [Episode!] value: {title: \"Cancer Man\", newCharacters:[\"paul\"]}",
                 locations: [
                     {
                         line: 2,
