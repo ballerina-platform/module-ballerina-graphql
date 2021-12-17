@@ -1,7 +1,7 @@
 # Proposal: Generate GraphQL Schema at the Compile-Time
 
 _Owners_: @ThisaruGuruge @DimuthuMadushan     
-_Reviewers_: @shafreenAnfar
+_Reviewers_: @shafreenAnfar  
 _Created_: 2021/10/14   
 _Updated_: 2021/12/17     
 _Issue_: [#2047](https://github.com/ballerina-platform/ballerina-standard-library/issues/2047)
