@@ -24,7 +24,6 @@ public enum TrailStatus {
     OPEN,
     CLOSED
 }
-
 public type LiftRecord readonly & record {|
     readonly string id;
     string name;

@@ -24,32 +24,28 @@ service /graphql on new graphql:Listener(9000) {
     # A list of all `Lift` objects
     # + return - the lifts
     resource function get allLifts(ds:LiftStatus? status) returns Lift[] {
-        ds:LiftRecord[] lifts;
         if status is ds:LiftStatus {
-            lifts = from var lift in ds:liftTable where lift.status == status select lift;
+            return from ds:LiftRecord lift in ds:liftTable where lift.status == status select new(lift);
         } else {
-            lifts = from var lift in ds:liftTable select lift;
+            return from ds:LiftRecord lift in ds:liftTable select new(lift);
         }
-        return lifts.map(liftRecord => new Lift(liftRecord));
     }
 
     # A list of all `Trail` objects
     # + return - the trails
     resource function get allTrails(ds:TrailStatus? status) returns Trail[] {
-        ds:TrailRecord[] trails;
         if status is ds:TrailStatus {
-            trails = from var trail in ds:trailTable where trail.status == status select trail;
+            return from ds:TrailRecord trail in ds:trailTable where trail.status == status select new(trail);
         } else {
-            trails = from var trail in ds:trailTable select trail;
+            return from ds:TrailRecord trail in ds:trailTable select new(trail);
         }
-        return trails.map(trailRecord => new Trail(trailRecord));
     }
 
     # Returns a `Lift` by `id` (id: "panorama")
     # + return - the lift
     resource function get Lift(string id) returns Lift? {
-        ds:LiftRecord[] lifts = from var lift in ds:liftTable where lift.id == id select lift;
-        if lifts.length() > 0 {
+        ds:LiftRecord[] lifts = from ds:LiftRecord lift in ds:liftTable where lift.id == id select lift;
+        if lifts.length() == 1 {
             return new Lift(lifts[0]);
         }
         return;
@@ -58,8 +54,8 @@ service /graphql on new graphql:Listener(9000) {
     # Returns a `Trail` by `id` (id: "old-witch")
     # + return - the trail
     resource function get Trail(string id) returns Trail? {
-        ds:TrailRecord[] trails = from var trail in ds:trailTable where trail.id == id select trail;
-        if trails.length() > 0 {
+        ds:TrailRecord[] trails = from ds:TrailRecord trail in ds:trailTable where trail.id == id select trail;
+        if trails.length() == 1 {
             return new Trail(trails[0]);
         }
         return;
@@ -93,5 +89,40 @@ service /graphql on new graphql:Listener(9000) {
             searchResults.push(lift);
         }
         return searchResults;
+    }
+
+    remote function setLiftStatus(string id, ds:LiftStatus status) returns Lift|error? {
+        ds:LiftRecord[] lifts = from ds:LiftRecord lift in ds:liftTable where lift.id == id select lift;
+        if lifts.length() == 1 {
+            ds:LiftRecord oldLift = lifts[0];
+            ds:LiftRecord newLift = {
+                id: oldLift.id,
+                name: oldLift.name,
+                status: status,
+                capacity: oldLift.capacity,
+                night: oldLift.night,
+                elevationGain: oldLift.elevationGain
+            };
+            return new(newLift);
+        }
+        return;
+    }
+
+    remote function setTrailStatus(string id, ds:TrailStatus status) returns Trail|error? {
+        ds:TrailRecord[] trails = from ds:TrailRecord trail in ds:trailTable where trail.id == id select trail;
+        if trails.length() == 1 {
+            ds:TrailRecord oldTrail = trails[0];
+            ds:TrailRecord newTrail = {
+                id: oldTrail.id,
+                name: oldTrail.name,
+                status: status,
+                difficulty: oldTrail.difficulty,
+                groomed: oldTrail.groomed,
+                trees: oldTrail.trees,
+                night: oldTrail.night
+            };
+            return new(newTrail);
+        }
+        return;
     }
 }

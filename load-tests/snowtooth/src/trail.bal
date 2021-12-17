@@ -70,13 +70,14 @@ distinct isolated service class Trail {
     # A list of Lifts that provide access to this `Trail`
     # + return - the lifts
     resource function get accessByLifts () returns Lift[] {
-        ds:TrailRecord[] trails = [self.trail];
-        ds:EdgeRecord[] edges = from var edge in ds:edgeTable
-                       join var trail in trails on edge.trailId equals trail.id
-                       select edge;
-        ds:LiftRecord[] lifts = from var lift in ds:liftTable
-                      join var edge in edges on lift.id equals edge.liftId
-                      select lift;
+        ds:EdgeRecord[] edges = from ds:EdgeRecord edge in ds:edgeTable
+            where edge.trailId == self.trail.id
+            select edge;
+
+        ds:LiftRecord[] lifts = from ds:LiftRecord liftRecord in ds:liftTable
+            join ds:EdgeRecord edge in edges
+                on liftRecord.id equals edge.liftId
+            select liftRecord;
         return lifts.map(liftRecord => new Lift(liftRecord));
     }
 }

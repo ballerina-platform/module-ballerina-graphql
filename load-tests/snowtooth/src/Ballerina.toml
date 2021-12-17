@@ -1,5 +1,5 @@
 [package]
-org = "wso2"
+org = "graphql"
 name = "snowtooth"
 version = "0.1.0"
 
