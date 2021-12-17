@@ -21,7 +21,8 @@ As mentioned in the `Goals` section, the purpose of this proposal is to provide 
 GraphQL module provides `graphql:Upload` type described in `graphql:Upload` section, to represent the file information within the resolvers. Graphql library is able to process the Multipart request receiving to the GraphQL endpoint and extract a `graphql:Upload` type value from the request. The GraphQL multipart request handler resolves the request and populates the value of type `graphql:Upload`. If an error occurred while processing the request, it’ll be returned without further processing. The values populated without any error, pass along with the GraphQL document to continue the execution. The developer will be able to use these `graphql:Upload` type values within the resolvers to extract the file information. Extracted file information can be used to store the file using custom logic.
 
 The high-level architecture of the proposed design is as follows:
-![](../../../../../Downloads/Untitled Diagram(7).jpg)
+![Untitled Diagram(7)](https://user-images.githubusercontent.com/35717653/146486590-8f2aa120-ec4a-4e9a-9ad0-a7715aa30bf5.jpg)
+
 
 ### The `graphql:Upload` Type
 The `graphql:Upload` will be defined as a record type in the Ballerina GraphQL module. Following are the fields of the `graphql:Upload` type.
@@ -39,7 +40,7 @@ type Upload record {
 | fileName | 	string                   |Name of the file|
 | mimeType | 	string                   |File Mime type according to the file content|
 | encoding | 	string 	                 |File stream encoding|
-| byteStream | stream<byte[], io:Error?>  |File content as a stream of byte[]|
+| byteStream | stream<byte[], io:Error?>  |File content as a stream of `byte[]`|
 
 ### Multipart Request
 HTTP Multipart Request for GraphQL file upload consists of the following fields.
