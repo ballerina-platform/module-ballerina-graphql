@@ -45,3 +45,5 @@ build
 velocity.log*
 *Ballerina.lock
 graphql-ballerina/modules/graphql/
+examples/**/Dependencies.toml
+load-tests/**/Dependencies.toml
