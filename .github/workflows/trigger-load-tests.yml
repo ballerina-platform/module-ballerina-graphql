@@ -7,6 +7,10 @@ on:
                 description: >
                     List of test names. This needs to be filled only if you want to run a specific set of tests. Example: foo,bar
                 required: false
+            clusterName:
+                description: 'Cluster name'
+                default: 'graphql-perf-cluster-test'
+                required: false
 
 jobs:
     invokeLoadTests:
@@ -45,4 +49,4 @@ jobs:
                   repo: ballerina-platform/ballerina-performance-cloud
                   ref: refs/heads/main
                   token: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                  inputs: '{ "repo-name": "module-ballerina-graphql", "tests": "${{ steps.formatTestNames.outputs.testNames }}", "zipURL": ${{ steps.setRuntimeUrl.outputs.runtimeUrl}}, "clusterName": "graphql-perf-cluster-test", "dispatchType": "graphql-load-test" }'
+                  inputs: '{ "repo-name": "module-ballerina-graphql", "tests": "${{ steps.formatTestNames.outputs.testNames }}", "zipURL": ${{ steps.setRuntimeUrl.outputs.runtimeUrl}}, "clusterName": "${{ github.event.inputs.clusterName }}", "dispatchType": "graphql-load-test" }'
