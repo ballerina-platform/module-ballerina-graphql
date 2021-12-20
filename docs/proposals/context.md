@@ -3,7 +3,7 @@
 _Owners_: @ThisaruGuruge @DimuthuMadushan     
 _Reviewers_: @shafreenAnfar @ldclakmal       
 _Created_: 2021/10/04   
-_Updated_: 2021/10/04     
+_Updated_: 2021/12/20     
 _Issue_: [#1906](https://github.com/ballerina-platform/ballerina-standard-library/issues/1906)
 
 ## Summary
@@ -25,7 +25,7 @@ The `graphql:Context` will be defined as an isolated object in the Ballerina Gra
 
 ```ballerina
 public isolated class Context {
-    public isolated function add(string 'key, value:Cloneable|isolated object {} value) returns Error?;
+    public isolated function set(string 'key, value:Cloneable|isolated object {} value);
 
     public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error
 
@@ -35,7 +35,7 @@ public isolated class Context {
 
 The fields of the `Context` objects can be either `value:Clonable` or an isolated object.
 
-* The `add` function can be used to add a field to the context. It requires two arguments, the `key` and the `value`. Key must be a `string`. It will result in a `graphql:Error` if the provided key already exists in the context.
+* The `set` function can be used to set value to an attribute of the context. It requires two arguments, the `key` and the `value`. Key must be a `string`.
 
 * The `get` function can be used to get a field value from the context. It requires one argument, the `key`, which is a `string`. If the provided key exists in the context, it will return the value, otherwise it will return a `graphql:Error`.
 
@@ -43,14 +43,14 @@ The fields of the `Context` objects can be either `value:Clonable` or an isolate
 
 
 ### Initializing the Context
-Developers can write a function to initialize the context. Inside this function the developer have to initialize the `graphql:Context` object and add the necessary fields. The original `http:Request` and the `http:RequestContext` will be passed into this function, so that the developers can use those values to add fields to the context.
+Developers can write a function to initialize the context. Inside this function the developer have to initialize the `graphql:Context` object and set the necessary fields. The original `http:Request` and the `http:RequestContext` will be passed into this function, so that the developers can use those values to set attributes in the context.
 
 The function signature is as follows:
 
 ```ballerina
 isolated function initContext(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
     graphql:Context context = new;
-    check context.add("<key>", <value>);
+    context.set("<key>", <value>);
     return context;
 }
 ```
