@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.1">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="snowtooth_test_plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>deployment
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="client" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">50</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(users)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampUpPeriod,60)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="GraphQLHTTPSamplerGui" testclass="HTTPSamplerProxy" testname="GraphQL HTTP Request" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument" enabled="true">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;operationName&quot;:null,&quot;query&quot;:&quot;{\n  allLifts {\n    id\n    name\n    trailAccess {\n      id\n      name\n    }\n  }\n}&quot;}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">9000</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">graphql</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="GraphQLHTTPSampler.operationName"></stringProp>
+          <stringProp name="GraphQLHTTPSampler.query">{
+  allLifts {
+    id
+    name
+    trailAccess {
+      id
+      name
+    }
+  }
+}</stringProp>
+          <stringProp name="GraphQLHTTPSampler.variables"></stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion" enabled="true">
+            <stringProp name="JSON_PATH">data</stringProp>
+            <stringProp name="EXPECTED_VALUE">{&quot;allLifts&quot;:[{&quot;id&quot;:&quot;astra-express&quot;,&quot;name&quot;:&quot;Astra Express&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;blue-bird&quot;,&quot;name&quot;:&quot;Blue Bird&quot;},{&quot;id&quot;:&quot;blackhawk&quot;,&quot;name&quot;:&quot;Blackhawk&quot;},{&quot;id&quot;:&quot;ducks-revenge&quot;,&quot;name&quot;:&quot;Duck&apos;s Revenge&quot;},{&quot;id&quot;:&quot;ice-streak&quot;,&quot;name&quot;:&quot;Ice Streak&quot;},{&quot;id&quot;:&quot;parachute&quot;,&quot;name&quot;:&quot;Parachute&quot;},{&quot;id&quot;:&quot;goosebumps&quot;,&quot;name&quot;:&quot;Goosebumps&quot;}]},{&quot;id&quot;:&quot;jazz-cat&quot;,&quot;name&quot;:&quot;Jazz Cat&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;ducks-revenge&quot;,&quot;name&quot;:&quot;Duck&apos;s Revenge&quot;},{&quot;id&quot;:&quot;goosebumps&quot;,&quot;name&quot;:&quot;Goosebumps&quot;},{&quot;id&quot;:&quot;river-run&quot;,&quot;name&quot;:&quot;River Run&quot;},{&quot;id&quot;:&quot;cape-cod&quot;,&quot;name&quot;:&quot;Cape Cod&quot;},{&quot;id&quot;:&quot;grandma&quot;,&quot;name&quot;:&quot;Grandma&quot;},{&quot;id&quot;:&quot;wild-child&quot;,&quot;name&quot;:&quot;Wild Child&quot;},{&quot;id&quot;:&quot;old-witch&quot;,&quot;name&quot;:&quot;Old Witch&quot;}]},{&quot;id&quot;:&quot;jolly-roger&quot;,&quot;name&quot;:&quot;Jolly Roger&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;dance-fight&quot;,&quot;name&quot;:&quot;Dance Fight&quot;},{&quot;id&quot;:&quot;sneaky-pete&quot;,&quot;name&quot;:&quot;Sneaky Pete&quot;},{&quot;id&quot;:&quot;bear-cave&quot;,&quot;name&quot;:&quot;Bear Cave&quot;},{&quot;id&quot;:&quot;humpty-dumpty&quot;,&quot;name&quot;:&quot;Humpty Dumpty&quot;},{&quot;id&quot;:&quot;meatball&quot;,&quot;name&quot;:&quot;Meatball&quot;},{&quot;id&quot;:&quot;early-riser&quot;,&quot;name&quot;:&quot;Early Riser&quot;},{&quot;id&quot;:&quot;sunset&quot;,&quot;name&quot;:&quot;Sunset&quot;}]},{&quot;id&quot;:&quot;neptune-rope&quot;,&quot;name&quot;:&quot;Neptune Rope&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;home-run&quot;,&quot;name&quot;:&quot;Home Run&quot;},{&quot;id&quot;:&quot;crosscut&quot;,&quot;name&quot;:&quot;Crosscut&quot;}]},{&quot;id&quot;:&quot;panorama&quot;,&quot;name&quot;:&quot;Panorama&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;blackhawk&quot;,&quot;name&quot;:&quot;Blackhawk&quot;},{&quot;id&quot;:&quot;sunset&quot;,&quot;name&quot;:&quot;Sunset&quot;},{&quot;id&quot;:&quot;ocean-breeze&quot;,&quot;name&quot;:&quot;Ocean Breeze&quot;},{&quot;id&quot;:&quot;songstress&quot;,&quot;name&quot;:&quot;Songstress&quot;},{&quot;id&quot;:&quot;mountain-run&quot;,&quot;name&quot;:&quot;Mountain Run&quot;},{&quot;id&quot;:&quot;summit-saunter&quot;,&quot;name&quot;:&quot;Summit Saunter&quot;},{&quot;id&quot;:&quot;hemmed-slacks&quot;,&quot;name&quot;:&quot;Hemmed Slacks&quot;},{&quot;id&quot;:&quot;davids-dive&quot;,&quot;name&quot;:&quot;David&apos;s Dive&quot;},{&quot;id&quot;:&quot;quarry-chute&quot;,&quot;name&quot;:&quot;Quarry Chute&quot;}]},{&quot;id&quot;:&quot;prickly-peak&quot;,&quot;name&quot;:&quot;Prickly Peak&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;crooked-chute&quot;,&quot;name&quot;:&quot;Crooked Chute&quot;},{&quot;id&quot;:&quot;marks-chute&quot;,&quot;name&quot;:&quot;Mark&apos;s Chute&quot;},{&quot;id&quot;:&quot;the-terrible-chute&quot;,&quot;name&quot;:&quot;The Terrible Chute&quot;},{&quot;id&quot;:&quot;magma-chute&quot;,&quot;name&quot;:&quot;Magma Chute&quot;},{&quot;id&quot;:&quot;saddleback-chute&quot;,&quot;name&quot;:&quot;Saddleback Chute&quot;},{&quot;id&quot;:&quot;omega-chute&quot;,&quot;name&quot;:&quot;Omega Chute&quot;},{&quot;id&quot;:&quot;adirondack-chute&quot;,&quot;name&quot;:&quot;Adirondack Chute&quot;},{&quot;id&quot;:&quot;chicken-out-traverse&quot;,&quot;name&quot;:&quot;Chicken Out Traverse&quot;}]},{&quot;id&quot;:&quot;snowtooth-express&quot;,&quot;name&quot;:&quot;Snowtooth Express&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;blue-streak&quot;,&quot;name&quot;:&quot;Blue Streak&quot;},{&quot;id&quot;:&quot;hoya-saxa&quot;,&quot;name&quot;:&quot;Hoya Saxa&quot;},{&quot;id&quot;:&quot;michigan-ave&quot;,&quot;name&quot;:&quot;Michigan Ave&quot;},{&quot;id&quot;:&quot;parker-downhill&quot;,&quot;name&quot;:&quot;Parker Downhill&quot;},{&quot;id&quot;:&quot;wiggle-waggle&quot;,&quot;name&quot;:&quot;Wiggle Waggle&quot;},{&quot;id&quot;:&quot;meow-face&quot;,&quot;name&quot;:&quot;Meow Face&quot;},{&quot;id&quot;:&quot;golden-ticket&quot;,&quot;name&quot;:&quot;Golden Ticket&quot;}]},{&quot;id&quot;:&quot;summit&quot;,&quot;name&quot;:&quot;Summit&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;golden-ticket&quot;,&quot;name&quot;:&quot;Golden Ticket&quot;},{&quot;id&quot;:&quot;summit-bowl&quot;,&quot;name&quot;:&quot;Summit Bowl&quot;},{&quot;id&quot;:&quot;hangar-bowl&quot;,&quot;name&quot;:&quot;Hangar Bowl&quot;},{&quot;id&quot;:&quot;big-gully&quot;,&quot;name&quot;:&quot;Big Gully&quot;},{&quot;id&quot;:&quot;bigger-gully&quot;,&quot;name&quot;:&quot;Bigger Gully&quot;},{&quot;id&quot;:&quot;broadway-bowl&quot;,&quot;name&quot;:&quot;Broadway Bowl&quot;},{&quot;id&quot;:&quot;fish-bowl&quot;,&quot;name&quot;:&quot;Fish Bowl&quot;}]},{&quot;id&quot;:&quot;wallys&quot;,&quot;name&quot;:&quot;Wally&apos;s&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;buford&quot;,&quot;name&quot;:&quot;Buford&quot;},{&quot;id&quot;:&quot;slippy-stream&quot;,&quot;name&quot;:&quot;Slippy Stream&quot;},{&quot;id&quot;:&quot;peacock&quot;,&quot;name&quot;:&quot;Peacock&quot;},{&quot;id&quot;:&quot;fun-run&quot;,&quot;name&quot;:&quot;Fun Run&quot;},{&quot;id&quot;:&quot;sweet-treat&quot;,&quot;name&quot;:&quot;Sweet Treat&quot;},{&quot;id&quot;:&quot;stump-alley&quot;,&quot;name&quot;:&quot;Stump Alley&quot;}]},{&quot;id&quot;:&quot;western-states&quot;,&quot;name&quot;:&quot;Western States&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;centennial&quot;,&quot;name&quot;:&quot;Centennial&quot;},{&quot;id&quot;:&quot;biennial&quot;,&quot;name&quot;:&quot;Biennial&quot;},{&quot;id&quot;:&quot;millenial&quot;,&quot;name&quot;:&quot;Millenial&quot;},{&quot;id&quot;:&quot;searcher&quot;,&quot;name&quot;:&quot;Searcher&quot;},{&quot;id&quot;:&quot;white-lightning&quot;,&quot;name&quot;:&quot;White Lightning&quot;},{&quot;id&quot;:&quot;richards-return&quot;,&quot;name&quot;:&quot;Richard&apos;s Return&quot;},{&quot;id&quot;:&quot;head-chutes-gate-a&quot;,&quot;name&quot;:&quot;Head Chutes Gate A&quot;},{&quot;id&quot;:&quot;head-chutes-gate-b&quot;,&quot;name&quot;:&quot;Head Chutes Gate B&quot;},{&quot;id&quot;:&quot;head-chutes-gate-c&quot;,&quot;name&quot;:&quot;Head Chutes Gate C&quot;}]},{&quot;id&quot;:&quot;whirlybird&quot;,&quot;name&quot;:&quot;Whirlybird&quot;,&quot;trailAccess&quot;:[{&quot;id&quot;:&quot;richards-return&quot;,&quot;name&quot;:&quot;Richard&apos;s Return&quot;},{&quot;id&quot;:&quot;bird-glade&quot;,&quot;name&quot;:&quot;Bird Glade&quot;},{&quot;id&quot;:&quot;big-bird&quot;,&quot;name&quot;:&quot;Big Bird&quot;},{&quot;id&quot;:&quot;roller-park&quot;,&quot;name&quot;:&quot;Roller Park&quot;},{&quot;id&quot;:&quot;owl-glade&quot;,&quot;name&quot;:&quot;Owl Glade&quot;},{&quot;id&quot;:&quot;whippersnapper-ridge&quot;,&quot;name&quot;:&quot;Whippersnapper Ridge&quot;},{&quot;id&quot;:&quot;drop-in&quot;,&quot;name&quot;:&quot;Drop In&quot;},{&quot;id&quot;:&quot;mosh-pit&quot;,&quot;name&quot;:&quot;Mosh Pit&quot;}]}]}</stringProp>
+            <boolProp name="JSONVALIDATION">true</boolProp>
+            <boolProp name="EXPECT_NULL">false</boolProp>
+            <boolProp name="INVERT">false</boolProp>
+            <boolProp name="ISREGEX">false</boolProp>
+          </JSONPathAssertion>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

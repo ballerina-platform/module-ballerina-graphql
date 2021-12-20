@@ -1,0 +1,3 @@
+resources:
+    - snowtooth.yaml
+    - ingress.yaml
