@@ -1,0 +1,55 @@
+name: Process load test results
+on:
+    repository_dispatch:
+        types: [ graphql-load-test ]
+
+jobs:
+    process-results:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v2
+            -   name: Process results
+                if: ${{ github.event.client_payload.status == 'success' }}
+                run: |
+                    git config --global user.email "ballerina-bot@ballerina.org"
+                    git config --global user.name "ballerina-bot"
+                    branch_name="load-test-results"
+                    test_scenario="${{ github.event.client_payload.name }}"
+                    git pull
+                    git checkout $branch_name || git checkout -b $branch_name
+                    echo ${{ github.event.client_payload.result }} >> load-tests/$test_scenario/results/summary.csv
+                    git add load-tests/$test_scenario/results/summary.csv
+                    git commit -m "Update $test_scenario test results on $(date)"
+                    git push origin "${branch_name}"
+                env:
+                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+            -   name: Create pull request for new summary
+                if: ${{ github.event.client_payload.status == 'success' }}
+                run: gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files"
+                env:
+                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+            -   name: Approve PR
+                if: ${{ github.event.client_payload.status == 'success' }}
+                run: gh pr review --approve
+                env:
+                    GITHUB_TOKEN: ${{ secrets.BALLERINA_REVIEWER_BOT_TOKEN }}
+            -   name: Merge PR
+                if: ${{ github.event.client_payload.status == 'success' }}
+                run: |
+                    status="NOT COMPLETED"
+                    while [ ! -z "$status" ]
+                    do
+                      sleep 20
+                      status=$(gh pr status --jq '.currentBranch .statusCheckRollup[] | select(.status!="COMPLETED") | select(.context!="license/cla")' --json statusCheckRollup)
+                    done
+                    sleep 20
+                    gh pr merge --merge --delete-branch
+                env:
+                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+            -   name: Fail workflow
+                if: ${{ github.event.client_payload.status != 'success' }}
+                run: |
+                    echo "Load test result: "${{ github.event.client_payload.result }}
+                    echo "Load test "${{ github.event.client_payload.name }}" failed with status: "${{ github.event.client_payload.status }} "and error rate: "${{ github.event.client_payload.errorRate }}
+                    exit 1
