@@ -303,7 +303,7 @@ import ballerina/http;
 @graphql:ServiceConfig {
     contextInit: isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
         graphql:Context context = new;
-        check context.add("<key>", <value>);
+        context.set("<key>", <value>);
         return context;
     }
 }
@@ -319,7 +319,7 @@ import ballerina/http;
 
 isolated function initContext(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
     graphql:Context context = new;
-    check context.add("<key>", <value>);
+    context.set("<key>", <value>);
     return context;
 }
 
