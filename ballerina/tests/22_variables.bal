@@ -152,7 +152,7 @@ isolated function testInlineFragmentsWithVariables() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "fragments", "input", "test"]
+    groups: ["variables", "fragments", "input"]
 }
 isolated function testVariablesWithDefaultValues() returns error? {
     string document = check getGraphQLDocumentFromFile("variables_with_default_values.graphql");
