@@ -53,8 +53,6 @@ task testExamples {
             } catch (Exception e) {
                 println("Example '${example}' Build failed: " + e.message)
                 throw e
-            } finally {
-                commitDependenciesTomlFile(example)
             }
         }
     }
@@ -82,20 +80,7 @@ task buildExamples {
             } catch (Exception e) {
                 println("Example '${example}' Build failed: " + e.message)
                 throw e
-            } finally {
-                commitDependenciesTomlFile(example)
             }
-        }
-    }
-}
-
-def commitDependenciesTomlFile(String example) {
-    project.exec {
-        ignoreExitValue true
-        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            commandLine 'cmd', '/c', "git commit ${example}/Dependencies.toml -m \"[Automated] Commit the Dependencies.toml file\""
-        } else {
-            commandLine 'sh', '-c', "git commit ${example}/Dependencies.toml -m '[Automated] Commit the Dependencies.toml file'"
         }
     }
 }
