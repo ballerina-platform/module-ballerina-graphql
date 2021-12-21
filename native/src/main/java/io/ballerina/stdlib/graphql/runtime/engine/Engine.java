@@ -155,7 +155,7 @@ public class Engine {
                 return;
             }
         }
-        // The resource not found. This should be a either a resource with hierarchical paths or introspection query
+        // The resource not found. This should be either a resource with hierarchical paths or an introspection query
         getDataFromService(executionContext, service, node, data, paths, pathSegments);
     }
 
