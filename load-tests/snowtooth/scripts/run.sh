@@ -19,4 +19,4 @@
 set -e
 source base-scenario.sh
 
-jmeter -n -t "${scriptsDir}/"snowtooth-test-plan.jmx -l "${resultsDir}/"original.jtl -Jusers=60 -Jduration=3600 -Jhost=bal.perf.test -Jport=80 -Jprotocol=http -Jpath=snowtooth ${payload_flags}
+jmeter -n -t "${scriptsDir}/"snowtooth-test-plan.jmx -l "${resultsDir}/"original.jtl -Jusers=60 -Jduration=3600 -Jhost=bal.perf.test -Jport=80 -Jprotocol=http -Jpath=graphql ${payload_flags}
