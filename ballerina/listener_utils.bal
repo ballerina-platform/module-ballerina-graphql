@@ -285,7 +285,7 @@ isolated function forwardMultipartRequestToExecution(map<Upload|Upload[]> fileIn
     }
 }
 
-isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? serviceConfig) returns http:Service {
+isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? serviceConfig) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
@@ -296,9 +296,8 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final Engine engine = gqlEngine;
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
-        isolated resource function get .(http:Request request) returns http:Response {
-            // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
-            http:RequestContext requestContext = new;
+
+        isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
@@ -311,9 +310,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
-        isolated resource function post .(http:Request request) returns http:Response {
-            // TODO: Temporary initiate the request context here, since it is not yet added in the HTTP resource
-            http:RequestContext requestContext = new;
+        isolated resource function post .(http:RequestContext requestContext, http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
@@ -346,11 +343,11 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
-isolated function attachHttpServiceToGraphqlService(Service s, http:Service httpService) = @java:Method {
+isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function getHttpServiceFromGraphqlService(Service s) returns http:Service? =
+isolated function getHttpServiceFromGraphqlService(Service s) returns HttpService? =
 @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

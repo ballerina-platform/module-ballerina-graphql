@@ -32,9 +32,9 @@ function testCreatingContextWithScalarValues() returns error? {
     http:Request request = new;
     http:RequestContext requestContext = new;
     Context context = check contextInit(requestContext, request);
-    // test:assertEquals(<string> check context.get("String"), "Ballerina");
-    // test:assertEquals(<int> check context.get("Int"), 5);
-    // test:assertEquals(<boolean> check context.get("Boolean"), false);
+    test:assertEquals(<string> check context.get("String"), "Ballerina");
+    test:assertEquals(<int> check context.get("Int"), 5);
+    test:assertEquals(<boolean> check context.get("Boolean"), false);
 }
 
 @test:Config {
@@ -68,7 +68,7 @@ function testRemovingAttributeFromContext() returns error? {
     Context context = check contextInit(requestContext, request);
     var attribute1 = check context.remove("String");
     test:assertTrue(attribute1 is string);
-    // test:assertEquals(<string>attribute1, "Ballerina");
+    test:assertEquals(<string>attribute1, "Ballerina");
 
     var attribute2 = context.remove("String");
     test:assertTrue(attribute2 is Error);

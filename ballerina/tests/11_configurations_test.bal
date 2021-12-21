@@ -97,53 +97,37 @@ isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? 
     groups: ["configs", "cors"]
 }
 isolated function testCorsConfigurationWithWildCard() returns error? {
-    string document = "{ greet }";
     string url = "http://localhost:9091";
-    http:Request request = new;
-    request.setPayload({ query: document });
-    request.setHeader("Origin", "http://www.wso2.com");
-    request.setHeader("access-control-request-method", "POST");
-    json expectedPayload = {
-        data: {
-            greet: "Hello"
-        }
+    var headers = {
+        ["origin"]:"http://www.wso2.com",
+        ["access-control-request-method"]:["POST"],
+        ["access-control-request-headers"]:["X-Content-Type-Options"]
     };
-
     http:Client httpClient = check new(url);
-    http:Response response = check httpClient->post("/corsConfigService1", request);
-    assertJsonValuesWithOrder(check response.getJsonPayload(), expectedPayload);
-    assertJsonValuesWithOrder(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
+    http:Response response = check httpClient->options("/corsConfigService1", headers); // send preflight request
+    test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
     test:assertTrue(response.hasHeader("access-control-allow-credentials"));
     test:assertEquals(check response.getHeader("access-control-allow-methods"), "POST");
-    test:assertEquals(check response.getHeader("access-control-expose-headers"), "X-CUSTOM-HEADER");
+    test:assertEquals(check response.getHeader("access-control-allow-headers"), "X-Content-Type-Options");
     test:assertEquals(check response.getHeader("access-control-max-age"), "84900");
-    assertJsonValuesWithOrder(check response.getJsonPayload(), expectedPayload);
 }
 
 @test:Config {
     groups: ["configs", "cors"]
 }
 isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
-    string document = "{ greet }";
     string url = "http://localhost:9091";
-    http:Request request = new;
-    request.setPayload({ query: document });
-    request.setHeader("Origin", "http://www.wso2.com");
-    request.setHeader("access-control-request-method", "POST");
-    json expectedPayload = {
-        data: {
-            greet: "Hello"
-        }
+    var headers = {
+        ["origin"]:"http://www.wso2.com",
+        ["access-control-request-method"]:["POST"],
+        ["access-control-request-headers"]:["X-PINGOTHER"]
     };
-
     http:Client httpClient = check new(url);
-    http:Response response = check httpClient->post("/corsConfigService2", request);
+    http:Response response = check httpClient->options("/corsConfigService2", headers); // send preflight request
     test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
     test:assertNotEquals(check response.getHeader("access-control-allow-origin"), "http://www.ws02.com");
     test:assertTrue(response.hasHeader("access-control-allow-credentials"));
-    test:assertEquals(response.getHeader("access-control-allow-credentials"), false);
     test:assertEquals(check response.getHeader("access-control-allow-methods"), "POST");
-    test:assertEquals(check response.getHeader("access-control-expose-headers"), "X-HEADER");
+    test:assertEquals(check response.getHeader("access-control-allow-headers"), "X-PINGOTHER");
     test:assertEquals(check response.getHeader("access-control-max-age"), "-1");
-    assertJsonValuesWithOrder(check response.getJsonPayload(), expectedPayload);
 }

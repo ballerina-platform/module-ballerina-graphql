@@ -437,9 +437,9 @@ service /depthLimitService on basicListener {
 
 @ServiceConfig {
     cors: {
-        allowOrigins :["*"],
+        allowOrigins : ["*"],
         allowCredentials : true,
-        allowHeaders:["X-Content-Type-Options", "X-PINGOTHER"],
+        allowHeaders: ["X-Content-Type-Options"],
         exposeHeaders: ["X-CUSTOM-HEADER"],
         allowMethods : ["*"],
         maxAge: 84900
@@ -453,9 +453,9 @@ service /corsConfigService1 on basicListener {
 
 @ServiceConfig {
     cors: {
-        allowOrigins :["http://www.wso2.com"],
-        allowCredentials : false,
-        allowHeaders:["X-Content-Type-Options", "X-PINGOTHER"],
+        allowOrigins : ["http://www.wso2.com"],
+        allowCredentials : true,
+        allowHeaders: ["X-Content-Type-Options", "X-PINGOTHER"],
         exposeHeaders: ["X-HEADER"],
         allowMethods : ["POST"]
     }

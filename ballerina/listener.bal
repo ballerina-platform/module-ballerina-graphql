@@ -54,8 +54,7 @@ public class Listener {
         Engine engine = check new(schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
 
-        // HttpService httpService = new(engine, serviceConfig);
-        http:Service httpService = getHttpService(engine, serviceConfig);
+        HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 
         error? result = self.httpListener.attach(httpService, name);
@@ -69,8 +68,8 @@ public class Listener {
     # + s - The service to be detached from the listener
     # + return - A `graphql:Error` if an error occurred during the service detaching process or else `()`
     public isolated function detach(Service s) returns Error? {
-        http:Service? httpService = getHttpServiceFromGraphqlService(s);
-        if httpService is http:Service {
+        HttpService? httpService = getHttpServiceFromGraphqlService(s);
+        if httpService is HttpService {
             error? result = self.httpListener.detach(httpService);
             if (result is error) {
                 return error Error("Error occurred while detaching the service", result);

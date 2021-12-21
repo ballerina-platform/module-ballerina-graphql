@@ -47,7 +47,12 @@ public type Upload record {|
     stream<byte[], io:Error?> byteStream;
 |};
 
-# internal HTTP service class for GraphQL services
+# Represent CORS configurations for internal HTTP service
+public type CorsConfig record {|
+    *http:CorsConfig;
+|};
+
+# Internal HTTP service class for GraphQL services
 isolated service class HttpService {
     *http:Service;
 }
