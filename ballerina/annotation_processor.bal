@@ -14,6 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+isolated function getCorsConfig(GraphqlServiceConfig? serviceConfig) returns CorsConfig {
+    if serviceConfig is GraphqlServiceConfig && serviceConfig.cors is CorsConfig {
+        return <CorsConfig> serviceConfig.cors;
+    }
+    return {};
+}
+
 isolated function getMaxQueryDepth(GraphqlServiceConfig? serviceConfig) returns int? {
     if serviceConfig is GraphqlServiceConfig {
         return serviceConfig?.maxQueryDepth;

@@ -92,3 +92,42 @@ isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? 
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["configs", "cors"]
+}
+isolated function testCorsConfigurationWithWildCard() returns error? {
+    string url = "http://localhost:9091";
+    var headers = {
+        ["origin"]:"http://www.wso2.com",
+        ["access-control-request-method"]:["POST"],
+        ["access-control-request-headers"]:["X-Content-Type-Options"]
+    };
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->options("/corsConfigService1", headers); // send preflight request
+    test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
+    test:assertTrue(response.hasHeader("access-control-allow-credentials"));
+    test:assertEquals(check response.getHeader("access-control-allow-methods"), "POST");
+    test:assertEquals(check response.getHeader("access-control-allow-headers"), "X-Content-Type-Options");
+    test:assertEquals(check response.getHeader("access-control-max-age"), "84900");
+}
+
+@test:Config {
+    groups: ["configs", "cors"]
+}
+isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
+    string url = "http://localhost:9091";
+    var headers = {
+        ["origin"]:"http://www.wso2.com",
+        ["access-control-request-method"]:["POST"],
+        ["access-control-request-headers"]:["X-PINGOTHER"]
+    };
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->options("/corsConfigService2", headers); // send preflight request
+    test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
+    test:assertNotEquals(check response.getHeader("access-control-allow-origin"), "http://www.ws02.com");
+    test:assertTrue(response.hasHeader("access-control-allow-credentials"));
+    test:assertEquals(check response.getHeader("access-control-allow-methods"), "POST");
+    test:assertEquals(check response.getHeader("access-control-allow-headers"), "X-PINGOTHER");
+    test:assertEquals(check response.getHeader("access-control-max-age"), "-1");
+}

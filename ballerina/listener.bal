@@ -54,7 +54,7 @@ public class Listener {
         Engine engine = check new(schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
 
-        HttpService httpService = new(engine, serviceConfig);
+        HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 
         error? result = self.httpListener.attach(httpService, name);
