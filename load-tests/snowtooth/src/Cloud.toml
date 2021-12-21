@@ -1,0 +1,13 @@
+[container.image]
+repository = "ballerina"
+name = "snowtooth"
+
+[cloud.deployment]
+min_memory = "256Mi"
+max_memory = "512Mi"
+min_cpu = "200m"
+max_cpu = "1000m"
+
+[cloud.deployment.autoscaling]
+min_replicas = 1
+max_replicas = 1

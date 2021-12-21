@@ -127,8 +127,7 @@ public class TypeFinder {
         for (Parameter parameter : methodType.getParameters()) {
             if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
                 if (isFileUpload(parameter.type)) {
-                    String name = UPLOAD;
-                    this.createSchemaType(name, TypeKind.SCALAR, parameter.type);
+                    this.createSchemaType(UPLOAD, TypeKind.SCALAR, parameter.type);
                 } else {
                     getInputObjectSchemaType(parameter.type);
                 }

@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable \"prices: In element #0: In element #1:\" of type \"Float!\" has invalid default value: true. Expected type \"Float!\", found true",
+            "message": "Variable \"prices: In element #0: In element #1:\" expected value of type \"Float!\", found true",
             "locations": [
                 {
                     "line": 1,
@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "Variable \"prices: In element #1:\" of type \"[Float!]!\" has invalid default value: false. Expected type \"[Float!]!\", found false",
+            "message": "Variable \"prices: In element #1:\" expected value of type \"[Float!]!\", found false",
             "locations": [
                 {
                     "line": 1,

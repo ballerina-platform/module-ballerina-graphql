@@ -70,12 +70,6 @@ public class Utils {
     }
 
     public static boolean isContext(Type type) {
-        if (type.getPackage() == null) {
-            return false;
-        }
-        if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
-            return false;
-        }
         return isGraphqlModule(type) && type.getName().equals(CONTEXT_OBJECT);
     }
 
@@ -83,16 +77,16 @@ public class Utils {
         if (type.getTag() == TypeTags.ARRAY_TAG) {
             return isFileUpload(((ArrayType) type).getElementType());
         }
+        return isGraphqlModule(type) && type.getName().equals(UPLOAD);
+    }
+
+    public static boolean isGraphqlModule(Type type) {
         if (type.getPackage() == null) {
             return false;
         }
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }
-        return isGraphqlModule(type) && type.getName().equals(UPLOAD);
-    }
-
-    public static boolean isGraphqlModule(Type type) {
         return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
                 type.getPackage().getName().equals(ModuleUtils.getModule().getName());
     }

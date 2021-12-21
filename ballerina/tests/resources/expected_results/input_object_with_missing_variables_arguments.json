@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Field \"book\" argument \"name\" of type \"String!\" is required, but it was not provided.",
+            "message": "Field \"name\" of required type \"String!\" was not provided.",
             "locations": [
                 {
                     "line": 2,

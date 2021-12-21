@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "episodes: In element #0:String cannot represent non String value: true",
+            "message": "String cannot represent non String value: true",
             "locations": [
                 {
                     "line": 2,
@@ -10,7 +10,7 @@
             ]
         },
         {
-            "message": "episodes: In element #0:String cannot represent non String value: graphql",
+            "message": "String cannot represent non String value: graphql",
             "locations": [
                 {
                     "line": 2,

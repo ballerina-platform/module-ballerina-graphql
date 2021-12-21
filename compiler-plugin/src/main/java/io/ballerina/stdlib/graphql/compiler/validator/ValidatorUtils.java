@@ -43,6 +43,14 @@ public final class ValidatorUtils {
         context.reportDiagnostic(diagnostic);
     }
 
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
+                                     Location location, Object... args) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
+        Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, args);
+        context.reportDiagnostic(diagnostic);
+    }
+
     static Location getLocation(Symbol typeSymbol, Location alternateLocation) {
         if (typeSymbol.getLocation().isPresent()) {
             return typeSymbol.getLocation().get();

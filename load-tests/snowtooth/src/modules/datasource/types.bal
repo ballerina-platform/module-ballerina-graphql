@@ -14,15 +14,36 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/graphql;
-
-service /graphql on new graphql:Listener(4000) {
-
-    isolated resource function get fileName() returns string {
-        return "sample.txt";
-    }
-
-    remote function uploadFiles(graphql:Upload[] file) returns string {
-        return "Successful";
-    }
+public enum LiftStatus {
+    OPEN,
+    CLOSED,
+    HOLD
 }
+
+public enum TrailStatus {
+    OPEN,
+    CLOSED
+}
+public type LiftRecord readonly & record {|
+    readonly string id;
+    string name;
+    LiftStatus status;
+    int capacity;
+    boolean night;
+    int elevationGain;
+|};
+
+public type TrailRecord readonly & record {|
+    readonly string id;
+    string name;
+    TrailStatus status;
+    string difficulty;
+    boolean groomed;
+    boolean trees;
+    boolean night;
+|};
+
+public type EdgeRecord readonly & record {|
+    readonly string liftId;
+    readonly string trailId;
+|};

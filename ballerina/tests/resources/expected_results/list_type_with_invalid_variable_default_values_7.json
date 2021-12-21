@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Variable \"profileDetail: In element #1:\" of type \"ProfileDetail\" has invalid default value. Expected type \"ProfileDetail\"",
+            "message": "Variable \"profileDetail: In element #1:\" expected value of type \"ProfileDetail\", found []",
             "locations": [
                 {
                     "line": 1,

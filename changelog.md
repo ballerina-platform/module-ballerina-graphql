@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#2076] Refactor GraphQL error messages](https://github.com/ballerina-platform/ballerina-standard-library/issues/2076)
+- [[#2500] Fix returning NPE when multiple file uploading](https://github.com/ballerina-platform/ballerina-standard-library/issues/2500)
+
+## [1.0.1] - 2021-12-14
+
 ### Added
 - [[#1837] Add Input Value List Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1837)
 - [[#1882] Add File Uploading Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1882)
@@ -18,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2465] Disallow path parameters in GraphQL resource functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/2465)
 - [[#2480] Fix Input Object type variables return type cast error](https://github.com/ballerina-platform/ballerina-standard-library/issues/2480)
 - [[#2481] Fix ignoring type validation of variables in a list](https://github.com/ballerina-platform/ballerina-standard-library/issues/2481)
+- [[#2488] Validate the Record Filed Types when the Input Type is a Record](https://github.com/ballerina-platform/ballerina-standard-library/issues/2488)
 
 ## [1.0.1] - 2021-11-19
 

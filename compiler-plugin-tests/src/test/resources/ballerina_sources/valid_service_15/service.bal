@@ -22,7 +22,11 @@ service /graphql on new graphql:Listener(4000) {
         return "sample.txt";
     }
 
-    remote function upload(graphql:Upload file) returns string {
+    remote function singleFileUpload(graphql:Upload file) returns string {
+        return "Successful";
+    }
+
+    remote function multipleFileUpload(graphql:Upload[] file) returns string {
         return "Successful";
     }
 }

@@ -39,7 +39,7 @@ isolated function handleGetRequests(Engine engine, Context context, http:Request
 isolated function handlePostRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string contentType = request.getContentType();
     if contentType == CONTENT_TYPE_JSON {
-        return getResponseFromJsonPayload(engine, context, {}, request);
+        return getResponseFromJsonPayload(engine, context, request);
     } else if contentType == CONTENT_TYPE_GQL {
         return createResponse("Content-Type 'application/graphql' is not yet supported", http:STATUS_BAD_REQUEST);
     } else if contentType.includes(CONTENT_TYPE_MULTIPART_FORM_DATA) {
@@ -49,8 +49,8 @@ isolated function handlePostRequests(Engine engine, Context context, http:Reques
     }
 }
 
-isolated function getResponseFromJsonPayload(Engine engine, Context context, map<Upload|Upload[]> fileInfo,
-                                             http:Request request) returns http:Response {
+isolated function getResponseFromJsonPayload(Engine engine, Context context, http:Request request,
+                                             map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     var payload = request.getJsonPayload();
     if payload is json {
         var document = payload.query;
@@ -68,7 +68,7 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, map
 }
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
-    Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
+                                       Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
         return getResponseFromExecution(engine, validationResult, context, fileInfo);
@@ -150,17 +150,17 @@ isolated function getResponseFromMultipartPayload(Engine engine, Context context
                 }
             }
         }
+        if fileInfo.length() == 0 {
+            return createResponse("File content is missing in multipart request", http:STATUS_BAD_REQUEST);
+        }
+        map<Upload|Upload[]>|http:Response fileInfoResult = getUploadValues(fileInfo, pathMap, variables);
+        if fileInfoResult is map<Upload|Upload[]> {
+            return forwardMultipartRequestToExecution(fileInfoResult, engine, context, payload);
+        }
+        return fileInfoResult;
     } else {
         return createResponse((<http:ClientError>bodyParts).message(), http:STATUS_BAD_REQUEST);
     }
-    if fileInfo.length() == 0 {
-        return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
-    }
-    map<Upload|Upload[]>|http:Response fileInfoResult = getUploadValues(fileInfo, pathMap, variables);
-    if fileInfoResult is map<Upload|Upload[]> {
-        return forwardMultipartRequestToExecution(fileInfoResult, engine, context, payload);
-    }
-    return fileInfoResult;
 }
 
 isolated function handleFileField(mime:Entity bodyPart) returns Upload|error {
@@ -194,7 +194,7 @@ isolated function getUploadValues(map<Upload> fileInfo, map<json> pathMap, map<j
                 return validateResult;
             }
         } else {
-            return createResponse("Invalid type for multipart request field ‘map’", http:STATUS_BAD_REQUEST);
+            return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
         }
     }
     return createUploadInfoMap(files, variables);
@@ -203,11 +203,11 @@ isolated function getUploadValues(map<Upload> fileInfo, map<json> pathMap, map<j
 isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> variables, map<Upload> files,
                                            json[] paths, string key) returns http:Response? {
     if paths.length() == 0 {
-        return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
+        return createResponse("Missing file path in multipart request ‘map’", http:STATUS_BAD_REQUEST);
     }
     foreach json path in paths {
         if !fileInfo.hasKey(key) {
-            return createResponse("File content is missing in multipart request", http:STATUS_BAD_REQUEST);
+            return createResponse("Undefine file path found in multipart request ‘map’", http:STATUS_BAD_REQUEST);
         }
         if path is string {
             http:Response? validateVariablePathResult = validateVariablePath(variables, path);
@@ -217,7 +217,7 @@ isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> varia
             }
             return validateVariablePathResult;
         }
-        return createResponse("Invalid type for multipart request field ‘map’ value", http:STATUS_BAD_REQUEST);
+        return createResponse("Invalid file path value found in multipart request ‘map’", http:STATUS_BAD_REQUEST);
     }
     return;
 }
@@ -232,14 +232,19 @@ isolated function validateVariablePath(map<json> variables, string path) returns
         if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
             json[] arrayValue = <json[]> variables.get(varName);
             if index < arrayValue.length() {
-                arrayValue[index] = path;
-                variables[varName] = arrayValue;
-                return;
+                if arrayValue[index] == null {
+                    arrayValue[index] = path;
+                    variables[varName] = arrayValue;
+                    return;
+                }
+                return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
             }
         }
         return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
     } else if !variables.hasKey(varName) {
         return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+    } else if variables.get(varName) != null {
+        return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
     }
     return;
 }
@@ -271,7 +276,7 @@ isolated function forwardMultipartRequestToExecution(map<Upload|Upload[]> fileIn
     if payload != () {
         http:Request request = new;
         request.setJsonPayload(payload);
-        return getResponseFromJsonPayload(engine, context, fileInfo, request);
+        return getResponseFromJsonPayload(engine, context, request, fileInfo);
     } else {
         http:Response response = new;
         response.statusCode = http:STATUS_BAD_REQUEST;
