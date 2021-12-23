@@ -183,11 +183,11 @@ public class Engine {
         if (service.getType().isIsolated() && service.getType().isIsolated(method.getName())) {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncConcurrently(service, method.getName(), null,
-                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+                                                   strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         } else {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncSequentially(service, method.getName(), null,
-                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+                                                   strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         }
     }
 
@@ -204,7 +204,7 @@ public class Engine {
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
             BString argName = argumentNode.getStringValue(NAME_FIELD);
-            Type argType  = getArgumentTypeFromMethod(argName, method);
+            Type argType = getArgumentTypeFromMethod(argName, method);
             if (isFileUpload(argType)) {
                 BMap<BString, Object> fileInfo = executionContext.getVisitor().getMapValue(FILE_INFO);
                 if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
@@ -214,7 +214,7 @@ public class Engine {
                         argumentsMap.put(argName, uploadValueArray);
                     } else {
                         argumentsMap.put(argName,
-                                fileInfo.getMapValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD)));
+                                         fileInfo.getMapValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD)));
                     }
                 }
             } else if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
@@ -230,7 +230,7 @@ public class Engine {
                 addListTypeArgumentFromNode(values, valueArray, argType);
                 argumentsMap.put(argName, valueArray);
             } else {
-                Object argValue = argumentNode.get(VALUE_FIELD);;
+                Object argValue = argumentNode.get(VALUE_FIELD);
                 argumentsMap.put(argName, argValue);
             }
         }
@@ -406,9 +406,9 @@ public class Engine {
     private static Type getArgumentTypeFromMethod(BString paramName, MethodType method) {
         Parameter[] parameters = method.getParameters();
         Type paramType = TypeCreator.createArrayType(PredefinedTypes.TYPE_NULL);
-        for (int i = 0; i < parameters.length; i++) {
-            if (parameters[i].name.equals(paramName.getValue())) {
-                paramType = parameters[i].type;
+        for (Parameter parameter : parameters) {
+            if (parameter.name.equals(paramName.getValue())) {
+                paramType = parameter.type;
             }
         }
         return paramType;
