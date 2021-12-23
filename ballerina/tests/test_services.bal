@@ -435,6 +435,37 @@ service /depthLimitService on basicListener {
     }
 }
 
+@ServiceConfig {
+    cors: {
+        allowOrigins : ["*"],
+        allowCredentials : true,
+        allowHeaders: ["X-Content-Type-Options"],
+        exposeHeaders: ["X-CUSTOM-HEADER"],
+        allowMethods : ["*"],
+        maxAge: 84900
+    }
+}
+service /corsConfigService1 on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@ServiceConfig {
+    cors: {
+        allowOrigins : ["http://www.wso2.com"],
+        allowCredentials : true,
+        allowHeaders: ["X-Content-Type-Options", "X-PINGOTHER"],
+        exposeHeaders: ["X-HEADER"],
+        allowMethods : ["POST"]
+    }
+}
+service /corsConfigService2 on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
 service /profiles on hierarchicalPathListener {
     isolated resource function get profile/name/first() returns string {
         return "Sherlock";

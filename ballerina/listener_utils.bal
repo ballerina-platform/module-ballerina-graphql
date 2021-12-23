@@ -285,6 +285,64 @@ isolated function forwardMultipartRequestToExecution(map<Upload|Upload[]> fileIn
     }
 }
 
+isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? serviceConfig) returns HttpService {
+    final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
+    final ContextInit contextInitFunction = getContextInit(serviceConfig);
+    final CorsConfig corsConfig = getCorsConfig(serviceConfig);
+
+    HttpService httpService = @http:ServiceConfig {
+        cors: corsConfig
+    } isolated service object {
+        private final Engine engine = gqlEngine;
+        private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
+        private final ContextInit contextInit = contextInitFunction;
+
+        isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
+            Context|http:Response context = self.initContext(requestContext, request);
+            if context is http:Response {
+                return context;
+            } else {
+                http:Response? authResult = authenticateService(self.authConfig, request);
+                if authResult is http:Response {
+                    return authResult;
+                }
+                return handleGetRequests(self.engine, context, request);
+            }
+        }
+
+        isolated resource function post .(http:RequestContext requestContext, http:Request request) returns http:Response {
+            Context|http:Response context = self.initContext(requestContext, request);
+            if context is http:Response {
+                return context;
+            } else {
+                http:Response? authResult = authenticateService(self.authConfig, request);
+                if authResult is http:Response {
+                    return authResult;
+                }
+                return handlePostRequests(self.engine, context, request);
+            }
+        }
+
+        isolated function initContext(http:RequestContext requestContext, http:Request request) returns Context|http:Response {
+            Context|error context = self.contextInit(requestContext, request);
+            if context is error {
+                json payload = { errors: [{ message: context.message() }] };
+                http:Response response = new;
+                if (context is AuthnError || context is AuthzError) {
+                    response.statusCode = http:STATUS_BAD_REQUEST;
+                } else {
+                    response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+                }
+                response.setPayload(payload);
+                return response;
+            } else {
+                return context;
+            }
+        }
+    };
+    return httpService;
+}
+
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

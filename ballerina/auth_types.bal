@@ -15,8 +15,15 @@
 // under the License.
 
 import ballerina/auth;
+import ballerina/http;
 import ballerina/jwt;
 import ballerina/oauth2;
+
+# The prefix used to denote the Basic authentication scheme.
+public const string AUTH_SCHEME_BASIC = "Basic";
+
+# The prefix used to denote the Bearer authentication scheme.
+public const string AUTH_SCHEME_BEARER = "Bearer";
 
 # Represents file user store configurations for Basic Auth authentication.
 public type FileUserStoreConfig record {|
@@ -85,3 +92,7 @@ public type ListenerAuthConfig FileUserStoreConfigWithScopes|
                                LdapUserStoreConfigWithScopes|
                                JwtValidatorConfigWithScopes|
                                OAuth2IntrospectionConfigWithScopes;
+
+// Defines the listener authentication handlers.
+type ListenerAuthHandler http:ListenerFileUserStoreBasicAuthHandler|http:ListenerLdapUserStoreBasicAuthHandler|
+                         http:ListenerJwtAuthHandler|http:ListenerOAuth2Handler;
