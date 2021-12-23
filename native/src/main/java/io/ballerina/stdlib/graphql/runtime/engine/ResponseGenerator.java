@@ -63,8 +63,8 @@ public class ResponseGenerator {
     private ResponseGenerator() {
     }
 
-    static void populateResponse(ExecutionContext executionContext, BObject node, Object result,
-                                 BMap<BString, Object> data, List<Object> pathSegments) {
+    static synchronized void populateResponse(ExecutionContext executionContext, BObject node, Object result,
+                                              BMap<BString, Object> data, List<Object> pathSegments) {
         if (TYPENAME_FIELD.equals(node.getStringValue(NAME_FIELD).getValue())) {
             data.put(node.getStringValue(ALIAS_FIELD), StringUtils.fromString(executionContext.getTypeName()));
         } else if (result instanceof BError) {
@@ -104,6 +104,7 @@ public class ResponseGenerator {
             for (int i = 0; i < selections.size(); i++) {
                 BObject subNode = (BObject) selections.get(i);
                 BString typeName = StringUtils.fromString(subNode.getType().getName());
+                data.put(node.getStringValue(ALIAS_FIELD), subData);
                 if (FRAGMENT_NODE.equals(typeName)) {
                     if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
                         executeResourceForFragmentNodes(executionContext, service, subNode, subData, paths,
@@ -112,7 +113,6 @@ public class ResponseGenerator {
                 } else {
                     executeResourceWithPath(executionContext, subNode, service, subData, paths, pathSegments);
                 }
-                data.put(node.getStringValue(ALIAS_FIELD), subData);
             }
         }
         executionContext.getCallbackHandler().markComplete(callback);
