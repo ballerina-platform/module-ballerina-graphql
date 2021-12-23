@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#2076] Refactor GraphQL error messages](https://github.com/ballerina-platform/ballerina-standard-library/issues/2076)
 - [[#2500] Fix returning NPE when multiple file uploading](https://github.com/ballerina-platform/ballerina-standard-library/issues/2500)
+- [[#2518] Fix Intermittently Skipping Fields when Executing Resources](https://github.com/ballerina-platform/ballerina-standard-library/issues/2518)
 
 ## [1.0.1] - 2021-12-14
 

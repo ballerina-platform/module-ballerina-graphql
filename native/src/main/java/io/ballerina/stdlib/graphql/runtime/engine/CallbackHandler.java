@@ -43,7 +43,7 @@ public class CallbackHandler {
 
     public synchronized void markComplete(ResourceCallback callback) {
         this.callbacks.remove(callback);
-        if (this.callbacks.size() == 0) {
+        if (this.callbacks.isEmpty()) {
             this.future.complete(null);
         }
     }

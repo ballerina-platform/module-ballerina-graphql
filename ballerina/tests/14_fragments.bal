@@ -169,7 +169,7 @@ isolated function testFragmentsWithInvalidIntrospection() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "introspection", "test"]
+    groups: ["fragments", "introspection"]
 }
 isolated function testFragmentsWithIntrospection() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_introspection.graphql");
