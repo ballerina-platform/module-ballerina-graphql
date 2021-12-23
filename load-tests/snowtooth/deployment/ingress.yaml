@@ -15,6 +15,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: snowtooth
+                name: snowtooth-svc
                 port:
                   number: 9000
