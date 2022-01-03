@@ -19,6 +19,7 @@
 # + maxQueryDepth - The maximum depth allowed for a query
 # + auth - Listener authenticaton configurations
 # + contextInit - Function to initialize the context. If not provided, an empty context will be created
+# + cors - The cross origin resource sharing configurations for the service
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
