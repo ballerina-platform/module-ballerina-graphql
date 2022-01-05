@@ -1,0 +1,6 @@
+query {
+    droid {
+        name
+        appearsIn
+    }
+}

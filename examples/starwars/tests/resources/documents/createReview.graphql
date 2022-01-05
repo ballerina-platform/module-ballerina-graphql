@@ -1,0 +1,6 @@
+mutation ($epi:Episode!, $review: ReviewInput!) {
+    createReview(episode: $epi, reviewInput: $review) {
+        stars
+        commentary
+    }
+}
