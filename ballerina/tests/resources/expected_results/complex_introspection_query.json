@@ -47,6 +47,14 @@
                     "kind": "OBJECT"
                 },
                 {
+                    "name": "Weekday",
+                    "kind": "ENUM"
+                },
+                {
+                    "name": "School",
+                    "kind": "OBJECT"
+                },
+                {
                     "name": "__InputValue",
                     "kind": "OBJECT"
                 },

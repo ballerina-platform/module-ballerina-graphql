@@ -111,3 +111,42 @@ isolated function testUnionOfDistinctServicesArrayQueryOnSelectedTypesFragmentOn
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["service", "union"]
+}
+isolated function testUnionTypesWithFieldReturningEnum() returns error? {
+    string graphqlUrl = "http://localhost:9092/unions";
+    string document = string`query { profile(id: 101) { ... on TeacherService { name holidays } } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data:{
+            profile:{
+                name:"Walter White",
+                holidays:["SATURDAY", "SUNDAY"]
+            }
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "union"]
+}
+isolated function testUnionTypesWithNestedObjectIncludesFieldReturningEnum() returns error? {
+    string graphqlUrl = "http://localhost:9092/unions";
+    string document = string`query { profile(id: 101) { ... on TeacherService { holidays school { name openingDays } } } }`;
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = {
+        data:{
+            profile:{
+                holidays:["SATURDAY", "SUNDAY"],
+                school:{
+                    name:"CHEM",
+                    openingDays:["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
