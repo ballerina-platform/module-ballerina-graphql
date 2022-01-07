@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/io;
 
 @test:Config{}
 function testHero() returns error? {
@@ -57,7 +58,17 @@ function testHeroWithDirectives() returns error? {
     json expectedPayload = {
         data: {
             hero: {
-                mass: 77
+                mass: 77,
+                friends:[
+                    {},
+                    {},
+                    {
+                        name:"C-3PO"
+                    },
+                    {
+                        name:"R2-D2"
+                    }
+                ]
             }
         }
     };
@@ -70,7 +81,7 @@ function testCharacters() returns error? {
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {
-            hero:[
+            characters:[
                 {
                     name: "Luke Skywalker",
                     homePlanet: "Tatooine"
@@ -124,6 +135,34 @@ function testHuman() returns error? {
         id: "1000"
     };
     json actualPayload = check getJsonPayloadFromService(document, variables);
+    json expectedPayload = {
+        data:{
+            human:{
+                name:"Luke Skywalker",
+                friends:[
+                    {},
+                    {},
+                    {
+                        name: "C-3PO"
+                    },
+                    {
+                        name: "R2-D2"
+                    }
+                ]
+            }
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config{}
+function testSearch() returns error? {
+    string document = check getGraphQLDocumentFromFile("search.graphql");
+    json variables = {
+        text: "humanwith"
+    };
+    json actualPayload = check getJsonPayloadFromService(document, variables);
+    io:println(actualPayload.toJsonString());
     json expectedPayload = {
         data:{
             human:{

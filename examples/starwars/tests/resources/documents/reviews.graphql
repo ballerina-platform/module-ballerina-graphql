@@ -1,5 +1,5 @@
 query ($epi:Episode = NEWHOPE) {
-    reviews(episode:$epi) {
+    reviews(episode: $epi) {
         stars
         commentary
     }

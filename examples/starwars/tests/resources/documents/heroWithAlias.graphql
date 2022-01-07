@@ -1,5 +1,5 @@
 query {
-    luke:hero(episode: EMPIRE ) {
+    luke:hero(episode: EMPIRE) {
         ...on Human {
             name,
             mass

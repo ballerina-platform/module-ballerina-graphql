@@ -13,8 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2076] Refactor GraphQL error messages](https://github.com/ballerina-platform/ballerina-standard-library/issues/2076)
 - [[#2500] Fix returning NPE when multiple file uploading](https://github.com/ballerina-platform/ballerina-standard-library/issues/2500)
 - [[#2518] Fix Intermittently Skipping Fields when Executing Resources](https://github.com/ballerina-platform/ballerina-standard-library/issues/2518)
+- [[#2552] Fix returning error when querying a union type includes a field returns an object](https://github.com/ballerina-platform/ballerina-standard-library/issues/2552)
 
-## [1.0.1] - 2021-12-14
+## [1.1.0] - 2021-12-14
 
 ### Added
 - [[#1837] Add Input Value List Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1837)

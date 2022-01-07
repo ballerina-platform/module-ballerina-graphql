@@ -1,5 +1,5 @@
 query {
-    characters(idList:["1000", "2000"]) {
+    characters(idList: ["1000", "2000"]) {
         ...on Human {
             name
             homePlanet

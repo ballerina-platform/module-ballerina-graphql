@@ -34,7 +34,7 @@ public final readonly & table<StarshipRecord> key(id) starshipTable = table [
     { id: "3003", name: "Imperial shuttle", length: 20 }
 ];
 
-public final table<ReviewRecord> reviewTable = table [
+isolated table<ReviewRecord> reviewTable = table [
     { episode: NEWHOPE, stars:5, commentary:"This is a great movie!" }
 ];
 

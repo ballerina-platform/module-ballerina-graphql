@@ -88,16 +88,12 @@ distinct isolated service class Human {
     # + return - the startships
     resource function get starships () returns Starship[] {
         ds:HumanRecord[] humans = [self.human];
-        Starship[] starships = [];
         ds:StarshipEdgeRecord[] edges = from var edge in ds:starshipEdgeTable
                         join var human in humans on edge.characterId equals human.id
                         select edge;
         ds:StarshipRecord[] starship = from var ship in ds:starshipTable
                         join var edge in edges on ship.id equals edge.starshipId
                         select ship;
-        foreach ds:StarshipRecord ship in starship {
-            starships.push(ship);
-        }
-        return starships;
+        return starship;
     }
 }

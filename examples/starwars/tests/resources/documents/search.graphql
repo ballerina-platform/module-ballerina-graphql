@@ -1,0 +1,8 @@
+query ($text:String!) { 
+    search(text: $text) {
+        __typename
+        ...on Human {
+            name
+        }
+    }
+}

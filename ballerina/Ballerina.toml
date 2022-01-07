@@ -5,6 +5,7 @@ version = "1.2.0"
 authors = ["Ballerina"]
 keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
+icon = "icon.png"
 license = ["Apache-2.0"]
 distribution = "2201.0.0"
 

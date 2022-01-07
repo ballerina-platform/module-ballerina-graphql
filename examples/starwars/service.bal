@@ -1,4 +1,4 @@
-// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2022 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -17,7 +17,9 @@
 import ballerina/graphql;
 import starwars.datasource as ds;
 
-public type Character Human|Droid;
+type Character Human|Droid;
+
+type SearchResult Human|Droid|Starship;
 
 public enum Episode {
     NEWHOPE,
@@ -25,23 +27,23 @@ public enum Episode {
     JEDI
 }
 
-public type Starship record {|
+type Starship record {
     readonly string id;
     string name;
     float length?;
     float[][] cordinates?;
-|};
+};
 
-public type Review record {|
+public type Review record {
     Episode episode?;
     int stars;
     string commentary?;
-|};
+};
 
-public type ReviewInput record {|
+public type ReviewInput record {
     int stars;
     string commentary;
-|};
+};
 
 service /graphql on new graphql:Listener(9000) {
 
@@ -57,21 +59,19 @@ service /graphql on new graphql:Listener(9000) {
     # Returns reviews of the Star Wars
     # + return - the reviews 
     resource function get reviews(Episode episode) returns Review?[] {
-        ds:ReviewRecord[] reviews = from var review in ds:reviewTable where review.episode == episode select review;
-        return reviews;
+        return ds:getReviews(episode);
     }
 
-    # Returns a character by id, or null if character is not found
+    # Returns characters by id, or null if character is not found
     # + return - the characters
     resource function get characters(string[] idList) returns Character?[] {
-        Character?[] characters = [];
+        Character[] characters = [];
         foreach string id in idList {
             if ds:humanTable[id] is ds:HumanRecord {
                 characters.push(new Human(<ds:HumanRecord> ds:humanTable[id]));
             } else if ds:droidTable[id] is ds:DroidRecord {
                 characters.push(new Droid(<ds:DroidRecord> ds:droidTable[id]));
             }
-            characters.push(null);
         }
         return characters;
     }
@@ -100,6 +100,29 @@ service /graphql on new graphql:Listener(9000) {
         return ds:starshipTable[id];
     }
 
+    # Returns search results by text, or null if search item is not found
+    # + return - the SearchResult
+    resource function get search(string text) returns SearchResult[]? {
+        SearchResult[] searchResult = [];
+        if text.includes("human") {
+            ds:HumanRecord[] humans = from var human in ds:humanTable select human;
+            foreach ds:HumanRecord human in humans {
+                searchResult.push(new Human(human));
+            }
+            return searchResult;
+        } else if text.includes("droid") {
+            ds:DroidRecord[] droids = from var droid in ds:droidTable select droid;
+            foreach ds:DroidRecord droid in droids {
+                searchResult.push(new Droid(droid));
+            }
+            return searchResult;
+        } else if text.includes("starship") {
+            ds:StarshipRecord[] starships = from var ship in ds:starshipTable select ship;
+            return starships;
+        }
+        return;
+    }
+
     # Add new reviews and return the review values
     #
     # + episode - Episode name  
@@ -111,8 +134,6 @@ service /graphql on new graphql:Listener(9000) {
             stars: reviewInput.stars,
             commentary: reviewInput.commentary
         };
-        ds:reviewTable.add(newReview);
-        ds:ReviewRecord[] reviews = from var review in ds:reviewTable where review.episode == episode select review;
-        return reviews;
+        return ds:updateReviews(episode, newReview);
     }
 }

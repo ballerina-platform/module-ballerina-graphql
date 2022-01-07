@@ -1,5 +1,5 @@
 query ($id:String!) { 
-    human(id:$id) { 
+    human(id: $id) {
         name
         friends { 
             ...on Droid {
