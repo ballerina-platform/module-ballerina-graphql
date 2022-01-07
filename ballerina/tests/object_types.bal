@@ -194,4 +194,30 @@ public distinct isolated service class TeacherService {
             self.subject = subject;
         }
     }
+
+    isolated resource function get holidays() returns Weekday[] {
+        return [SATURDAY, SUNDAY];
+    }
+
+    isolated resource function get school() returns School {
+        return new School("CHEM");
+    }
+}
+
+public distinct isolated service class School {
+    private string name;
+
+    public isolated function init(string name) {
+        self.name = name;
+    }
+
+    isolated resource function get name() returns string {
+        lock {
+            return self.name;
+        }
+    }
+
+    isolated resource function get openingDays() returns Weekday[] {
+        return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
+    }
 }
