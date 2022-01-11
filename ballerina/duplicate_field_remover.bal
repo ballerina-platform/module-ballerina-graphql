@@ -46,8 +46,10 @@ class DuplicateFieldRemover {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
-        } else {
+        } else if selection is parser:FieldNode {
             self.visitField(selection);
+        } else {
+            panic error("Invalid selection node passed.");
         }
     }
 
@@ -83,7 +85,7 @@ class DuplicateFieldRemover {
                 } else {
                     visitedFragments[selection.getOnType()] = selection;
                 }
-            } else {
+            } else if selection is parser:FieldNode {
                 if visitedFields.hasKey(selection.getAlias()) {
                     self.appendDuplicates(selection, visitedFields.get(selection.getAlias()));
                     _ = selections.remove(i);
@@ -91,6 +93,8 @@ class DuplicateFieldRemover {
                 } else {
                     visitedFields[selection.getAlias()] = selection;
                 }
+            } else {
+                panic error("Invalid selection node passed.");
             }
             i += 1;
         }

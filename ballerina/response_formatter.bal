@@ -61,7 +61,7 @@ class ResponseFormatter {
             foreach parser:Selection selection in parentNode.getSelections() {
                 if selection is parser:FragmentNode {
                     self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
-                } else {
+                } else if selection is parser:FieldNode {
                     __Type fieldType = self.getFieldType(selection.getName(), parentType, onType);
                     anydata|anydata[] fieldResult = ();
                     if data.hasKey(selection.getAlias()) {
@@ -72,6 +72,8 @@ class ResponseFormatter {
                     } else {
                         result[selection.getAlias()] = fieldResult;
                     }
+                } else {
+                    panic error("Invalid selection node passed.");
                 }
             }
             return result;
@@ -83,10 +85,12 @@ class ResponseFormatter {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
-            } else {
+            } else if selection is parser:FieldNode {
                 if data.hasKey(selection.getAlias()) {
                     result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType, onType);
                 }
+            } else {
+                panic error("Invalid selection node passed.");
             }
         }
     }

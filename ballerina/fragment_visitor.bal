@@ -63,8 +63,10 @@ class FragmentVisitor {
         if selection is parser:FragmentNode {
             self.appendNamedFragmentFields(selection);
             self.visitFragment(selection);
-        } else {
+        } else if selection is parser:FieldNode {
             self.visitField(selection);
+        } else {
+            panic error("Invalid selection node passed.");
         }
     }
 

@@ -301,12 +301,14 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
-            } else {
+            } else if context is Context {
                 http:Response? authResult = authenticateService(self.authConfig, request);
                 if authResult is http:Response {
                     return authResult;
                 }
                 return handleGetRequests(self.engine, context, request);
+            } else {
+                panic error("Invalid object received from the context init function.");
             }
         }
 
@@ -314,12 +316,14 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
-            } else {
+            } else if context is Context {
                 http:Response? authResult = authenticateService(self.authConfig, request);
                 if authResult is http:Response {
                     return authResult;
                 }
                 return handlePostRequests(self.engine, context, request);
+            } else {
+                panic error("Invalid object received from the context init function.");
             }
         }
 
