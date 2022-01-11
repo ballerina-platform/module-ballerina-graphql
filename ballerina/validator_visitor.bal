@@ -74,8 +74,10 @@ class ValidatorVisitor {
                 parentField = createField(fragmentOnType.name.toString(), fragmentOnType);
                 self.visitFragment(selection, parentField);
             }
-        } else {
+        } else if selection is parser:FieldNode {
             self.visitField(selection, parentField);
+        } else {
+            panic error("Invalid selection node passed.");
         }
     }
 
@@ -402,7 +404,7 @@ class ValidatorVisitor {
                 string message = getInvalidFieldOnUnionTypeError(selection.getAlias(), parentType);
                 self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
             }
-        } else {
+        } else if selection is parser:FragmentNode {
             __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, selection.getOnType());
             if requiredType is __Type {
                 __Field subField = createField(parentField.name, requiredType);
@@ -411,6 +413,8 @@ class ValidatorVisitor {
                 string message = getFragmetCannotSpreadError(selection, selection.getName(), parentType);
                 self.errors.push(getErrorDetailRecord(message, <Location>selection.getSpreadLocation()));
             }
+        } else {
+            panic error("Invalid selection node passed.");
         }
     }
 

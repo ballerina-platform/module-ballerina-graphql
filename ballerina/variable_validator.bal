@@ -81,8 +81,10 @@ class VariableValidator {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection, data);
-        } else {
+        } else if selection is parser:FieldNode {
             self.visitField(selection, data);
+        } else {
+            panic error("Invalid selection node passed.");
         }
     }
 

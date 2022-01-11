@@ -70,8 +70,10 @@ class DirectiveVisitor {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
-        } else {
+        } else if selection is parser:FieldNode {
             self.visitField(selection);
+        } else {
+            panic error("Invalid selection node passed.");
         }
     }
 

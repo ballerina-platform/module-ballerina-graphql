@@ -52,44 +52,51 @@ class ResponseFormatter {
         }
     }
 
-    isolated function coerceObject(Data? data, parser:ParentNode parentNode, __Type parentType) returns Data? {
+    isolated function coerceObject(Data? data, parser:ParentNode parentNode, __Type parentType, string? onType = ())
+    returns Data? {
         if data == () {
             return ();
         } else {
             Data result = {};
             foreach parser:Selection selection in parentNode.getSelections() {
                 if selection is parser:FragmentNode {
-                    self.coerceFragmentValues(data, result, selection, parentType);
-                } else {
-                    __Type fieldType = self.getFieldType(selection.getName(), parentType);
+                    self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
+                } else if selection is parser:FieldNode {
+                    __Type fieldType = self.getFieldType(selection.getName(), parentType, onType);
                     anydata|anydata[] fieldResult = ();
                     if data.hasKey(selection.getAlias()) {
-                        fieldResult = self.coerceObjectField(data, selection, parentType);
+                        fieldResult = self.coerceObjectField(data, selection, parentType, onType);
                     }
                     if fieldType.kind == NON_NULL && fieldResult == () {
                         return ();
                     } else {
                         result[selection.getAlias()] = fieldResult;
                     }
+                } else {
+                    panic error("Invalid selection node passed.");
                 }
             }
             return result;
         }
     }
 
-    isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType) {
+    isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType,
+                                           string onType) {
         foreach parser:Selection selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
-                self.coerceFragmentValues(data, result, selection, parentType);
-            } else {
+                self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
+            } else if selection is parser:FieldNode {
                 if data.hasKey(selection.getAlias()) {
-                    result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType);
+                    result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType, onType);
                 }
+            } else {
+                panic error("Invalid selection node passed.");
             }
         }
     }
 
-    isolated function coerceArray(anydata[] value, parser:FieldNode fieldNode, __Type fieldType) returns anydata[]? {
+    isolated function coerceArray(anydata[] value, parser:FieldNode fieldNode, __Type fieldType, string? onType)
+    returns anydata[]? {
         anydata[] result = [];
         __Type elementType = fieldType;
         if fieldType.kind == NON_NULL {
@@ -100,7 +107,7 @@ class ResponseFormatter {
         }
         foreach anydata element in value {
             if element is Data {
-                anydata|anydata[] elementResult = self.coerceObject(element, fieldNode, elementType);
+                anydata|anydata[] elementResult = self.coerceObject(element, fieldNode, elementType, onType);
                 if elementResult == () && elementType.kind == NON_NULL {
                     return ();
                 }
@@ -112,30 +119,30 @@ class ResponseFormatter {
         return result;
     }
 
-    isolated function coerceObjectField(Data data, parser:FieldNode fieldNode, __Type parentType)
+    isolated function coerceObjectField(Data data, parser:FieldNode fieldNode, __Type parentType, string? onType)
     returns anydata|anydata[] {
         __Type objectType = unwrapNonNullype(parentType);
         anydata|anydata[] fieldValue = data.get(fieldNode.getAlias());
         if fieldValue == () {
             return fieldValue;
         } else if fieldValue is anydata[] {
-            __Type fieldType = self.getFieldType(fieldNode.getName(), objectType);
-            return self.coerceArray(fieldValue, fieldNode, fieldType);
+            __Type fieldType = self.getFieldType(fieldNode.getName(), objectType, onType);
+            return self.coerceArray(fieldValue, fieldNode, fieldType, onType);
         } else if fieldValue is Data {
-            __Type fieldType = self.getFieldType(fieldNode.getName(), parentType);
-            return self.coerceObject(fieldValue, fieldNode, fieldType);
+            __Type fieldType = self.getFieldType(fieldNode.getName(), parentType, onType);
+            return self.coerceObject(fieldValue, fieldNode, fieldType, onType);
         } else {
             return fieldValue;
         }
     }
 
-    isolated function getFieldType(string fieldName, __Type parentType) returns __Type {
+    isolated function getFieldType(string fieldName, __Type parentType, string? onType) returns __Type {
         __Type objectType = getOfType(parentType);
-        __Field selectionField = self.getField(objectType, fieldName);
+        __Field selectionField = self.getField(objectType, fieldName, onType);
         return selectionField.'type;
     }
 
-    isolated function getField(__Type parentType, string fieldName) returns __Field {
+    isolated function getField(__Type parentType, string fieldName, string? onType) returns __Field {
         if fieldName == SCHEMA_FIELD {
             __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
             return createField(SCHEMA_FIELD, fieldType);
@@ -150,6 +157,11 @@ class ResponseFormatter {
             __Type wrappingType = { kind: NON_NULL, ofType: ofType };
             return createField(TYPE_NAME_FIELD, wrappingType);
         } else {
+            if parentType.kind is UNION && onType is string {
+                __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
+                __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, onType);
+                return self.getField(exactType, fieldName, onType);
+            }
             __Field[] fields = <__Field[]>parentType?.fields;
             return <__Field>getFieldFromFieldArray(fields, fieldName);
         }
@@ -181,4 +193,13 @@ isolated function unwrapNonNullype(__Type 'type) returns __Type {
         return <__Type>'type?.ofType;
     }
     return 'type;
+}
+
+isolated function getTypeFromPossibleTypes(__Type[] possibleTypes, string onType) returns __Type? {
+    foreach __Type possibleType in possibleTypes {
+        if possibleType.name == onType {
+            return possibleType;
+        }
+    }
+    return;
 }
