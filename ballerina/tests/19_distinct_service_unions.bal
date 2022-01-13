@@ -16,8 +16,6 @@
 
 import ballerina/test;
 
-type Services StudentService|TeacherService;
-
 @test:Config {
     groups: ["service", "union"]
 }

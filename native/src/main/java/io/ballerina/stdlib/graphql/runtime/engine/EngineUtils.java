@@ -156,6 +156,7 @@ public class EngineUtils {
             if (memberType.size() == 1) {
                 return isScalarType(memberType.get(0));
             }
+            return false;
         }
         return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
     }

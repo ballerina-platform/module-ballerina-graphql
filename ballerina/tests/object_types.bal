@@ -14,6 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+type Services StudentService|TeacherService;
+
+type SearchResult Lift|Trail;
+
 isolated service class Name {
     isolated resource function get first() returns string {
         return "Sherlock";
@@ -45,8 +49,6 @@ distinct isolated service class HierarchicalName {
         return "Holmes";
     }
 }
-
-type SearchResult Lift|Trail;
 
 distinct isolated service class Lift {
     private final readonly & LiftRecord lift;

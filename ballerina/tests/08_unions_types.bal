@@ -16,12 +16,6 @@
 
 import ballerina/test;
 
-type Information Address|Person;
-
-type Details record {
-    Information information;
-};
-
 @test:Config {
     groups: ["union"]
 }
