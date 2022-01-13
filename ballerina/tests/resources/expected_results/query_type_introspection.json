@@ -12,6 +12,12 @@
                     },
                     {
                         "name": "ids"
+                    },
+                    {
+                        "name": "idsWithErrors"
+                    },
+                    {
+                        "name": "friends"
                     }
                 ]
             }

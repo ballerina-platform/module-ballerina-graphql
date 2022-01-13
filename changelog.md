@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2500] Fix returning NPE when multiple file uploading](https://github.com/ballerina-platform/ballerina-standard-library/issues/2500)
 - [[#2518] Fix Intermittently Skipping Fields when Executing Resources](https://github.com/ballerina-platform/ballerina-standard-library/issues/2518)
 - [[#2552] Fix returning error when querying a union type includes a field returns an object](https://github.com/ballerina-platform/ballerina-standard-library/issues/2552)
+- [[#2571] Fix Service Crashing when Fields Return Nullable, Union Type Arrays](https://github.com/ballerina-platform/ballerina-standard-library/issues/2571)
+- [[#2578] Fix Incorrect Response Returning for GraphQL Scalar Type Arrays](https://github.com/ballerina-platform/ballerina-standard-library/issues/2578)
 
 ## [1.1.0] - 2021-12-14
 

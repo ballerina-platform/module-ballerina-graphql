@@ -150,3 +150,24 @@ isolated function testUnionTypesWithNestedObjectIncludesFieldReturningEnum() ret
     };
     assertJsonValuesWithOrder(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["service", "union"]
+}
+isolated function testNullableUnionOfDistinctServicesArrayQueryOnSelectedTypes() returns error? {
+    string document = string`query { services { ... on TeacherService { name } } }`;
+    string url = "http://localhost:9092/unions";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            services: [
+                {},
+                {
+                    name: "Walter White"
+                },
+                null
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
