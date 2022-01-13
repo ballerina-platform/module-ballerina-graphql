@@ -61,6 +61,58 @@ isolated function testScalarArrays() returns error? {
 }
 
 @test:Config {
+    groups: ["arrays"]
+}
+isolated function testScalarArraysWithErrors() returns error? {
+    string graphqlUrl = "http://localhost:9091/validation";
+    string document = "{ idsWithErrors }";
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedResult = {
+        errors: [
+            {
+                message: "Not Found!",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ],
+                path: ["idsWithErrors", 3]
+            }
+        ],
+        data: null
+    };
+    assertJsonValuesWithOrder(actualResult, expectedResult);
+}
+
+@test:Config {
+    groups: ["arrays"]
+}
+isolated function testScalarNullableArraysWithErrors() returns error? {
+    string graphqlUrl = "http://localhost:9091/validation";
+    string document = "{ friends }";
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedResult = {
+        errors: [
+            {
+                message: "Not Found!",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ],
+                path: ["friends", 2]
+            }
+        ],
+        data: {
+            friends: ["walter", "jessie", null]
+        }
+    };
+    assertJsonValuesWithOrder(actualResult, expectedResult);
+}
+
+@test:Config {
     groups: ["array", "service"]
 }
 isolated function testResourceReturningServiceObjectArray() returns error? {

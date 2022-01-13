@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
 
 @test:Config{}
 function testHero() returns error? {
@@ -159,25 +158,40 @@ function testHuman() returns error? {
 function testSearch() returns error? {
     string document = check getGraphQLDocumentFromFile("search.graphql");
     json variables = {
-        text: "humanwith"
+        text: "humanInstarship"
     };
     json actualPayload = check getJsonPayloadFromService(document, variables);
-    io:println(actualPayload.toJsonString());
     json expectedPayload = {
-        data:{
-            human:{
-                name:"Luke Skywalker",
-                friends:[
-                    {},
-                    {},
-                    {
-                        name: "C-3PO"
-                    },
-                    {
-                        name: "R2-D2"
-                    }
-                ]
-            }
+        data: {
+            search: [
+                {
+                    __typename: "Human"
+                },
+                {
+                    __typename: "Human"
+                },
+                {
+                    __typename: "Human"
+                },
+                {
+                    __typename: "Human"
+                },
+                {
+                    __typename: "Human"
+                },
+                {
+                    __typename: "StarshipRecord"
+                },
+                {
+                    __typename: "StarshipRecord"
+                },
+                {
+                    __typename: "StarshipRecord"
+                },
+                {
+                    __typename: "StarshipRecord"
+                }
+            ]
         }
     };
     test:assertEquals(actualPayload, expectedPayload);

@@ -18,12 +18,14 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -55,6 +57,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataR
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 
 /**
  * Used to generate the response for a GraphQL request in Ballerina.
@@ -163,12 +167,18 @@ public class ResponseGenerator {
 
     static void getDataFromArray(ExecutionContext executionContext, BObject node, BArray result,
                                  BMap<BString, Object> data, List<Object> pathSegments) {
-        if (isScalarType(result.getElementType())) {
-            data.put(node.getStringValue(ALIAS_FIELD), result);
-        } else {
-            BArray resultArray = ValueCreator.createArrayValue(getDataRecordArrayType());
-            for (int i = 0; i < result.size(); i++) {
-                List<Object> updatedPathSegments = updatePathSegments(pathSegments, i);
+        BArray resultArray = ValueCreator.createArrayValue(getArrayType(result.getElementType()));
+        for (int i = 0; i < result.size(); i++) {
+            List<Object> updatedPathSegments = updatePathSegments(pathSegments, i);
+            if (isScalarType(resultArray.getElementType())) {
+                if (result.get(i) instanceof BError) {
+                    resultArray.append(null);
+                    BError bError = (BError) result.get(i);
+                    appendErrorToVisitor(bError, executionContext.getVisitor(), node, updatedPathSegments);
+                } else {
+                    resultArray.append(result.get(i));
+                }
+            } else {
                 Object resultElement = result.get(i);
                 BMap<BString, Object> subData = createDataRecord();
                 populateResponse(executionContext, node, resultElement, subData, updatedPathSegments);
@@ -180,8 +190,8 @@ public class ResponseGenerator {
                     resultArray.append(subData.get(node.getStringValue(NAME_FIELD)));
                 }
             }
-            data.put(node.getStringValue(ALIAS_FIELD), resultArray);
         }
+        data.put(node.getStringValue(ALIAS_FIELD), resultArray);
     }
 
     private static void getDataFromTable(ExecutionContext executionContext, BObject node, BTable table,
@@ -233,9 +243,26 @@ public class ResponseGenerator {
         executeResourceMethod(executionContext, service, node, data, updatedPaths, updatedPathSegments);
     }
 
-    private static ArrayType getDataRecordArrayType() {
-        BMap<BString, Object> data = createDataRecord();
-        return TypeCreator.createArrayType(data.getType());
+    private static ArrayType getArrayType(Type elementType) {
+        UnionType arrayType;
+        if (isScalarType(elementType)) {
+            int tag = elementType.getTag();
+            if (tag == TypeTags.UNION_TAG) {
+                if (isEnum((UnionType) elementType)) {
+                    arrayType = TypeCreator.createUnionType(PredefinedTypes.TYPE_NULL, elementType);
+                } else {
+                    List<Type> memberTypes = getMemberTypes((UnionType) elementType);
+                    memberTypes.add(PredefinedTypes.TYPE_NULL);
+                    arrayType = TypeCreator.createUnionType(memberTypes);
+                }
+            } else {
+                arrayType = TypeCreator.createUnionType(PredefinedTypes.TYPE_NULL, elementType);
+            }
+        } else {
+            BMap<BString, Object> data = createDataRecord();
+            arrayType = TypeCreator.createUnionType(PredefinedTypes.TYPE_NULL, data.getType());
+        }
+        return TypeCreator.createArrayType(arrayType);
     }
 
     static void appendErrorToVisitor(BError bError, BObject visitor, BObject node, List<Object> pathSegments) {

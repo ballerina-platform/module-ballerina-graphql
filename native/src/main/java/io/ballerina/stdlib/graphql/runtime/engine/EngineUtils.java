@@ -40,6 +40,7 @@ import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
@@ -151,6 +152,11 @@ public class EngineUtils {
             if (isEnum((UnionType) type)) {
                 return true;
             }
+            List<Type> memberType = getMemberTypes((UnionType) type);
+            if (memberType.size() == 1) {
+                return isScalarType(memberType.get(0));
+            }
+            return false;
         }
         return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
     }

@@ -109,16 +109,21 @@ service /graphql on new graphql:Listener(9000) {
             foreach ds:HumanRecord human in humans {
                 searchResult.push(new Human(human));
             }
-            return searchResult;
-        } else if text.includes("droid") {
+        }
+        if text.includes("droid") {
             ds:DroidRecord[] droids = from var droid in ds:droidTable select droid;
             foreach ds:DroidRecord droid in droids {
                 searchResult.push(new Droid(droid));
             }
-            return searchResult;
-        } else if text.includes("starship") {
+        }
+        if text.includes("starship") {
             ds:StarshipRecord[] starships = from var ship in ds:starshipTable select ship;
-            return starships;
+            foreach ds:StarshipRecord ship in starships {
+                searchResult.push(ship);
+            }
+        }
+        if searchResult.length() > 0 {
+            return searchResult;
         }
         return;
     }

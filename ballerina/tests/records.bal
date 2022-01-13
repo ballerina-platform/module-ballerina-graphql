@@ -14,6 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+type Information Address|Person;
+
+type Details record {
+    Information information;
+};
+
 public type Address readonly & record {
     string number;
     string street;

@@ -211,9 +211,20 @@ isolated function testTypeNameIntrospectionOnServiceTypes() returns error? {
 }
 isolated function testTypeNameIntrospectionOnUnionOfServiceTypes() returns error? {
     string graphqlUrl = "http://localhost:9092/unions";
-    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_union_of__service_types.graphql");
+    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_union_of_service_types.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("type_name_introspection_on_union_of__service_types.json");
+    json expectedPayload = check getJsonContentFromFile("type_name_introspection_on_union_of_service_types.json");
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "introspection", "typename"]
+}
+isolated function testTypeNameIntrospectionOnNullableUnionOfServiceTypes() returns error? {
+    string graphqlUrl = "http://localhost:9092/unions";
+    string document = check getGraphQLDocumentFromFile("type_name_introspection_on_nullable_union_of_service_types.graphql");
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("type_name_introspection_on_nullable_union_of_service_types.json");
     assertJsonValuesWithOrder(result, expectedPayload);
 }
 
