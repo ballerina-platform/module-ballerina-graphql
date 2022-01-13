@@ -108,6 +108,10 @@ service /validation on basicListener {
     isolated resource function get idsWithErrors() returns (int|error)[] {
         return [0, 1, 2, error("Not Found!")];
     }
+
+    isolated resource function get friends() returns (string|error)?[] {
+        return ["walter", "jessie", error("Not Found!")];
+    }
 }
 
 service /inputs on basicListener {
@@ -583,6 +587,10 @@ service /special_types on specialTypesTestListener {
 
     isolated resource function get openingDays() returns (Weekday|error)[] {
         return [MONDAY, TUESDAY, error("Holiday!"), THURSDAY, FRIDAY];
+    }
+
+    isolated resource function get specialHolidays() returns (Weekday|error)?[] {
+        return [TUESDAY, error("Holiday!"), THURSDAY];
     }
 
     resource function get company() returns Company {

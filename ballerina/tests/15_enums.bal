@@ -143,6 +143,33 @@ isolated function testReturningEnumArrayWithErrors() returns error? {
 }
 
 @test:Config {
+    groups: ["enums", "array"]
+}
+isolated function testReturningNullableEnumArrayWithErrors() returns error? {
+    string document = "query { specialHolidays }";
+    string url = "http://localhost:9095/special_types";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Holiday!",
+                locations: [
+                    {
+                        line: 1,
+                        column: 9
+                    }
+                ],
+                path: ["specialHolidays", 1]
+            }
+        ],
+        data: {
+            specialHolidays: ["TUESDAY", null, "THURSDAY"]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
     groups: ["enums"]
 }
 isolated function testEnumInvalidInputParameter() returns error? {
