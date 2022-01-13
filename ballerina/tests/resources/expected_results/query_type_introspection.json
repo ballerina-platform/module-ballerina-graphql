@@ -12,6 +12,9 @@
                     },
                     {
                         "name": "ids"
+                    },
+                    {
+                        "name":"idsWithErrors"
                     }
                 ]
             }

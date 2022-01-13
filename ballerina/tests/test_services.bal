@@ -104,6 +104,10 @@ service /validation on basicListener {
     isolated resource function get ids() returns int[] {
         return [0, 1, 2];
     }
+
+    isolated resource function get idsWithErrors() returns (int|error)[] {
+        return [0, 1, 2, error("Not Found!")];
+    }
 }
 
 service /inputs on basicListener {
@@ -577,6 +581,10 @@ service /special_types on specialTypesTestListener {
         return [SATURDAY, SUNDAY];
     }
 
+    isolated resource function get openingDays() returns (Weekday|error)[] {
+        return [MONDAY, TUESDAY, error("Holiday!"), THURSDAY, FRIDAY];
+    }
+
     resource function get company() returns Company {
         return company;
     }
@@ -652,6 +660,12 @@ service /unions on serviceTypeListener {
         StudentService s = new StudentService(1, "Jesse Pinkman");
         TeacherService t = new TeacherService(737, "Walter White", "Chemistry");
         return [s, t];
+    }
+
+    isolated resource function get services() returns Services?[] {
+        StudentService s = new StudentService(1, "Jesse Pinkman");
+        TeacherService t = new TeacherService(737, "Walter White", "Chemistry");
+        return [s, t, ()];
     }
 }
 

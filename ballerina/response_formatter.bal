@@ -113,6 +113,9 @@ class ResponseFormatter {
                 }
                 result.push(elementResult);
             } else {
+                if element == () && elementType.kind == NON_NULL {
+                    return ();
+                }
                 result.push(element);
             }
         }
