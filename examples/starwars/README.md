@@ -16,16 +16,12 @@ Also this implementation extensively uses the Ballerina Query feature. A SQL lik
  
 To start the service, move into the starwars folder and execute the below command.
  
-```
-$bal run
+```shell
+bal run
 ```
  
 It will build the starwars Ballerina project and then run it.
- 
-# Querying the Service
- 
-Any GraphQL compliant tool can be used to query the service. Enter the URL `http://localhost:9000/graphql` to connect to the service. Then the service can be queried with any query compliant with the written GraphQL service.
- 
+
 **Example Query**
  
 ```graphql

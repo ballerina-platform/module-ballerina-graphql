@@ -48,7 +48,7 @@ public type ReviewInput record {
 service /graphql on new graphql:Listener(9000) {
 
     # Fetch the hero of the Star Wars
-    # + return - the hero  
+    # + return - The hero
     resource function get hero(Episode? episode) returns Character {
         if episode == EMPIRE {
             return new Human(<ds:HumanRecord> ds:humanTable["1000"]);
@@ -57,13 +57,13 @@ service /graphql on new graphql:Listener(9000) {
     }
 
     # Returns reviews of the Star Wars
-    # + return - the reviews 
+    # + return - The reviews
     resource function get reviews(Episode episode) returns Review?[] {
         return ds:getReviews(episode);
     }
 
     # Returns characters by id, or null if character is not found
-    # + return - the characters
+    # + return - The characters
     resource function get characters(string[] idList) returns Character?[] {
         Character[] characters = [];
         foreach string id in idList {
@@ -77,7 +77,7 @@ service /graphql on new graphql:Listener(9000) {
     }
 
     # Returns a droid by id, or null if droid is not found
-    # + return - the Droid  
+    # + return - The Droid
     resource function get droid(string id = "2000") returns Droid? {
         if ds:droidTable[id] is ds:DroidRecord {
             return new Droid(<ds:DroidRecord> ds:droidTable[id]);
@@ -86,7 +86,7 @@ service /graphql on new graphql:Listener(9000) {
     }
 
     # Returns a human by id, or null if human is not found
-    # + return - the Human  
+    # + return - The Human
     resource function get human(string id) returns Human? {
         if ds:humanTable[id] is ds:HumanRecord {
             return new Human(<ds:HumanRecord> ds:humanTable[id]);
@@ -95,13 +95,13 @@ service /graphql on new graphql:Listener(9000) {
     }
 
     # Returns a starship by id, or null if starship is not found
-    # + return - the Starship  
+    # + return - The Starship
     resource function get starship(string id) returns Starship? {
         return ds:starshipTable[id];
     }
 
     # Returns search results by text, or null if search item is not found
-    # + return - the SearchResult
+    # + return - The SearchResult
     resource function get search(string text) returns SearchResult[]? {
         SearchResult[] searchResult = [];
         if text.includes("human") {
@@ -132,7 +132,7 @@ service /graphql on new graphql:Listener(9000) {
     #
     # + episode - Episode name  
     # + reviewInput - Review of the episode
-    # + return - the reviews
+    # + return - The reviews
     remote function createReview(Episode episode, ReviewInput reviewInput) returns Review[] {
         ds:ReviewRecord newReview = {
             episode: episode,

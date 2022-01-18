@@ -26,38 +26,38 @@ distinct isolated service class Human {
     }
 
     # The unique identifier of the human
-    # + return - the id
-    resource function get id () returns string {
+    # + return - The id
+    resource function get id() returns string {
         return self.human.id;
     }
 
     # The name of the human
-    # + return - the name
-    resource function get name () returns string {
+    # + return - The name
+    resource function get name() returns string {
         return self.human.name;
     }
 
     # The home planet of the human, or null if unknown
-    # + return - the homePlanet
-    resource function get homePlanet () returns string? {
+    # + return - The homePlanet
+    resource function get homePlanet() returns string? {
         return self.human?.homePlanet;
     }
 
     # Height in meters, or null if unknown
-    # + return - the height
-    resource function get height () returns float? {
+    # + return - The height
+    resource function get height() returns float? {
         return self.human.height;
     }
 
     # Mass in kilograms, or null if unknown
-    # + return - the mass
-    resource function get mass () returns int? {
+    # + return - The mass
+    resource function get mass() returns int? {
         return self.human.mass;
     }
 
     # This human's friends, or an empty list if they have none
-    # + return - the friends
-    resource function get friends () returns Character[] {
+    # + return - The friends
+    resource function get friends() returns Character[] {
         ds:HumanRecord[] humans = [self.human];
         Character[] friends = [];
         ds:FriendsEdgeRecord[] edges = from var edge in ds:friendsEdgeTable
@@ -79,14 +79,14 @@ distinct isolated service class Human {
     }
 
     # The episodes this human appears in
-    # + return - the episodes
-    resource function get appearsIn () returns Episode[] {
+    # + return - The episodes
+    resource function get appearsIn() returns Episode[] {
         return self.human.appearsIn;
     }
 
     # A list of starships this person has piloted, or an empty list if none
-    # + return - the startships
-    resource function get starships () returns Starship[] {
+    # + return - The startships
+    resource function get starships() returns Starship[] {
         ds:HumanRecord[] humans = [self.human];
         ds:StarshipEdgeRecord[] edges = from var edge in ds:starshipEdgeTable
                         join var human in humans on edge.characterId equals human.id

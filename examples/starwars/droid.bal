@@ -26,20 +26,20 @@ distinct isolated service class Droid {
     }
 
     # The unique identifier of the droid
-    # + return - the id
-    resource function get id () returns string {
+    # + return - The id
+    resource function get id() returns string {
         return self.droid.id;
     }
 
     # The name of the droid
-    # + return - the name
-    resource function get name () returns string {
+    # + return - The name
+    resource function get name() returns string {
         return self.droid.name;
     }
 
     # This droid's friends, or an empty list if they have none
-    # + return - the friends
-    resource function get friends () returns Character[] {
+    # + return - The friends
+    resource function get friends() returns Character[] {
         ds:DroidRecord[] droids = [self.droid];
         Character[] friends = [];
         ds:FriendsEdgeRecord[] edges = from var edge in ds:friendsEdgeTable
@@ -61,14 +61,14 @@ distinct isolated service class Droid {
     }
 
     # The episodes this droid appears in
-    # + return - the episodes
-    resource function get appearsIn () returns Episode[] {
+    # + return - The episodes
+    resource function get appearsIn() returns Episode[] {
         return self.droid.appearsIn;
     }
 
     # This droid's primary function
-    # + return - the primatyFunction
-    resource function get primaryFunction () returns string? {
+    # + return - The primaryFunction
+    resource function get primaryFunction() returns string? {
         return self.droid?.primaryFunction;
     }
 }
