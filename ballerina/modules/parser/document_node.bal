@@ -44,7 +44,7 @@ public class DocumentNode {
             return;
         } else if self.operations.hasKey(operation.getName()) {
             OperationNode originalOperation = <OperationNode>self.operations[operation.getName()];
-            string message = string`There can be only one operation named "${operation.getName()}".`;
+            string message = string `There can be only one operation named "${operation.getName()}".`;
             Location l1 = originalOperation.getLocation();
             Location l2 = operation.getLocation();
             self.errors.push({message: message, locations: [l1, l2]});
@@ -54,12 +54,12 @@ public class DocumentNode {
     }
 
     public isolated function addFragment(FragmentNode fragment) {
-        if (self.fragments.hasKey(fragment.getName())) {
+        if self.fragments.hasKey(fragment.getName()) {
             FragmentNode originalFragment = <FragmentNode>self.fragments[fragment.getName()];
-            if(fragment.isInlineFragment()) {
+            if fragment.isInlineFragment() {
                 self.appendDuplicateInlineFragment(fragment, originalFragment);
             } else {
-                string message = string`There can be only one fragment named "${fragment.getName()}".`;
+                string message = string `There can be only one fragment named "${fragment.getName()}".`;
                 Location l1 = originalFragment.getLocation();
                 Location l2 = fragment.getLocation();
                 self.errors.push({message: message, locations: [l1, l2]});

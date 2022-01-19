@@ -20,12 +20,12 @@ import ballerina/test;
     groups: ["fragments", "parser"]
 }
 isolated function testInvalidFragmentNoSelections() returns error? {
-    string document = string`fragment friendFields on User`;
-    Parser parser = new(document);
+    string document = string `fragment friendFields on User`;
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected "{", found <EOF>.`;
+    string expectedMessage = string `Syntax Error: Expected "{", found <EOF>.`;
     test:assertEquals(err.message(), expectedMessage);
 }
 
@@ -33,12 +33,12 @@ isolated function testInvalidFragmentNoSelections() returns error? {
     groups: ["fragments", "parser"]
 }
 isolated function testInvalidFragmentMissingOnKeyword() returns error? {
-    string document = string`fragment friendFields o User`;
-    Parser parser = new(document);
+    string document = string `fragment friendFields o User`;
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected "on", found Name "o".`;
+    string expectedMessage = string `Syntax Error: Expected "on", found Name "o".`;
     test:assertEquals(err.message(), expectedMessage);
 }
 
@@ -46,12 +46,12 @@ isolated function testInvalidFragmentMissingOnKeyword() returns error? {
     groups: ["fragments", "parser"]
 }
 isolated function testInvalidFragmentInvalidTypeType() returns error? {
-    string document = string`fragment friendFields on "User"`;
-    Parser parser = new(document);
+    string document = string `fragment friendFields on "User"`;
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected Name, found String "User".`;
+    string expectedMessage = string `Syntax Error: Expected Name, found String "User".`;
     test:assertEquals(err.message(), expectedMessage);
 }
 
@@ -70,7 +70,7 @@ fragment profileFields on Profile {
     name
     age
 }`;
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
@@ -107,11 +107,11 @@ fragment on on Profile {
     name
     age
 }`;
-    Parser parser = new(document);
+    Parser parser = new (document);
     var result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected Name "on".`;
+    string expectedMessage = string `Syntax Error: Unexpected Name "on".`;
     test:assertEquals(err.message(), expectedMessage);
 }
 
@@ -120,7 +120,7 @@ fragment on on Profile {
 }
 isolated function testMultipleAnonymousOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_anonymous_operations.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
     test:assertEquals(errors.length(), 2);
@@ -162,7 +162,7 @@ query getData {
         age
     }
 }`;
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
     test:assertEquals(errors.length(), 1);
@@ -183,7 +183,7 @@ query getData {
 }
 isolated function testNamedOperationWithAnonymousOperation() returns error? {
     string document = check getGraphQLDocumentFromFile("named_operation_with_anonymous_operation.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
     test:assertEquals(errors.length(), 1);
@@ -204,7 +204,7 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
 }
 isolated function testNamedOperationWithMultipleAnonymousOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("named_operation_with_multiple_anonymous_operations.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
     test:assertEquals(errors.length(), 2);
@@ -235,7 +235,7 @@ isolated function testNamedOperationWithMultipleAnonymousOperations() returns er
 }
 isolated function testThreeAnonymousOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("three_anonymous_operations.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
     test:assertEquals(errors.length(), 3);
@@ -276,12 +276,12 @@ isolated function testThreeAnonymousOperations() returns error? {
 }
 isolated function testMultipleOperationsWithSameName() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_with_same_name.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     ErrorDetail[] errors = documentNode.getErrors();
     test:assertEquals(errors.length(), 2);
     ErrorDetail e1 = {
-        message: string`There can be only one operation named "getData".`,
+        message: string `There can be only one operation named "getData".`,
         locations: [
             {
                 line: 1,
@@ -294,7 +294,7 @@ isolated function testMultipleOperationsWithSameName() returns error? {
         ]
     };
     ErrorDetail e2 = {
-        message: string`There can be only one operation named "getData".`,
+        message: string `There can be only one operation named "getData".`,
         locations: [
             {
                 line: 1,
@@ -315,7 +315,7 @@ isolated function testMultipleOperationsWithSameName() returns error? {
 }
 isolated function testParseAnonymousMutation() returns error? {
     string document = "mutation { setAge(newAge: 24) { name, age } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
@@ -325,7 +325,7 @@ isolated function testParseAnonymousMutation() returns error? {
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "setAge");
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
@@ -341,7 +341,7 @@ isolated function testParseAnonymousMutation() returns error? {
 }
 isolated function testParseNamedMutation() returns error? {
     string document = "mutation SetAge { setAge(newAge: 24) { name, age } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     OperationNode[] operations = documentNode.getOperations();
     test:assertEquals(operations.length(), 1);
@@ -351,7 +351,7 @@ isolated function testParseNamedMutation() returns error? {
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "setAge");
     test:assertEquals(fieldNode.getArguments().length(), 1);
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
@@ -367,11 +367,11 @@ isolated function testParseNamedMutation() returns error? {
 }
 isolated function testMissingArgumentValue() returns error? {
     string document = "{ profile(id: ) { name age }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is Error);
     Error err = <Error>result;
-    test:assertEquals(err.message(), string`Syntax Error: Unexpected ")".`);
+    test:assertEquals(err.message(), string `Syntax Error: Unexpected ")".`);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 15);
 }
@@ -381,11 +381,11 @@ isolated function testMissingArgumentValue() returns error? {
 }
 isolated function testEmptyDocument() returns error? {
     string document = "{ }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is Error);
     Error err = <Error>result;
-    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found "}".`);
+    test:assertEquals(err.message(), string `Syntax Error: Expected Name, found "}".`);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 3);
 }
@@ -395,14 +395,14 @@ isolated function testEmptyDocument() returns error? {
 }
 isolated function testFieldAlias() returns error? {
     string document = "{ firstName: name }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "name");
     string alias = fieldNode.getAlias();
@@ -414,14 +414,14 @@ isolated function testFieldAlias() returns error? {
 }
 isolated function testFieldAliasWithNamedOperation() returns error? {
     string document = "query getName { firstName: name }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "name");
     string alias = fieldNode.getAlias();
@@ -433,11 +433,11 @@ isolated function testFieldAliasWithNamedOperation() returns error? {
 }
 isolated function testInvalidFieldAliasWithoutFieldName() returns error? {
     string document = "query getName { firstName: }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is Error);
     Error err = <Error>result;
-    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found "}".`);
+    test:assertEquals(err.message(), string `Syntax Error: Expected Name, found "}".`);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 28);
 }
@@ -447,11 +447,11 @@ isolated function testInvalidFieldAliasWithoutFieldName() returns error? {
 }
 isolated function testInvalidFieldAliasWithoutAlias() returns error? {
     string document = "query getName { : name }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is Error);
     Error err = <Error>result;
-    test:assertEquals(err.message(), string`Syntax Error: Expected Name, found ":".`);
+    test:assertEquals(err.message(), string `Syntax Error: Expected Name, found ":".`);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 17);
 }
@@ -461,18 +461,18 @@ isolated function testInvalidFieldAliasWithoutAlias() returns error? {
 }
 isolated function testFieldAliasInsideField() returns error? {
     string document = "query getName { profile { firstName: name } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getSelections().length(), 1);
     selection = fieldNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    fieldNode = <FieldNode> selection;
+    fieldNode = <FieldNode>selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "name");
     string alias = fieldNode.getAlias();
@@ -484,14 +484,14 @@ isolated function testFieldAliasInsideField() returns error? {
 }
 isolated function testFieldAliasWithArguments() returns error? {
     string document = "query getName { walt: profile(id: 1) }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = <OperationNode>documentNode.getOperations()[0];
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     string name = fieldNode.getName();
     test:assertEquals(name, "profile");
     string alias = fieldNode.getAlias();
@@ -507,20 +507,20 @@ isolated function testFieldAliasWithArguments() returns error? {
 }
 isolated function testVariables() returns error? {
     string document = "query getName($profileId:Int = 3) { profile(id:$profileId) { name } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["profileId"];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["profileId"];
     test:assertEquals(variableDefinition.getName(), "profileId");
     test:assertEquals(variableDefinition.getTypeName(), "Int");
-    ArgumentNode argValueNode = <ArgumentNode> variableDefinition.getDefaultValue();
-    ArgumentValue argValue = <ArgumentValue> argValueNode.getValue();
+    ArgumentNode argValueNode = <ArgumentNode>variableDefinition.getDefaultValue();
+    ArgumentValue argValue = <ArgumentValue>argValueNode.getValue();
     test:assertEquals(<Scalar>argValue, 3);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "id");
@@ -533,20 +533,20 @@ isolated function testVariables() returns error? {
 }
 isolated function testNonNullTypeVariables() returns error? {
     string document = "query getId($name: String!, $age: Int!) { profile(userName:$name, userAge:$age) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["name"];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["name"];
     test:assertEquals(variableDefinition.getName(), "name");
     test:assertEquals(variableDefinition.getTypeName(), "String!");
-    variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["age"];
+    variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["age"];
     test:assertEquals(variableDefinition.getName(), "age");
     test:assertEquals(variableDefinition.getTypeName(), "Int!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userName");
@@ -563,17 +563,17 @@ isolated function testNonNullTypeVariables() returns error? {
 }
 isolated function testListTypeVariables() returns error? {
     string document = "query getId($name: [[[String!]]!]!) { profile(userName:$name) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["name"];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["name"];
     test:assertEquals(variableDefinition.getName(), "name");
     test:assertEquals(variableDefinition.getTypeName(), "[[[String!]]!]!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userName");
@@ -586,11 +586,11 @@ isolated function testListTypeVariables() returns error? {
 }
 isolated function testInvalidListTypeVariableMissingOpenBracket() returns error? {
     string document = "query getId($name: String!]!) { profile(userName:$name) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected "$", found "]".`;
+    string expectedMessage = string `Syntax Error: Expected "$", found "]".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 27);
@@ -601,11 +601,11 @@ isolated function testInvalidListTypeVariableMissingOpenBracket() returns error?
 }
 isolated function testInvalidListTypeVariableMissingCloseBracket() returns error? {
     string document = "query getId($name: [String![) { profile(userName:$name) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected "]", found "[".`;
+    string expectedMessage = string `Syntax Error: Expected "]", found "[".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 28);
@@ -616,11 +616,11 @@ isolated function testInvalidListTypeVariableMissingCloseBracket() returns error
 }
 isolated function testEmptyListTypeVariable() returns error? {
     string document = "query getId($name: []) { profile(userName:$name) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected Name, found "]".`;
+    string expectedMessage = string `Syntax Error: Expected Name, found "]".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 21);
@@ -630,12 +630,12 @@ isolated function testEmptyListTypeVariable() returns error? {
     groups: ["list", "parser"]
 }
 isolated function testInvalidListTypeArgument() returns error? {
-    string document = string`query { profile(userNames:["Sherlock", "Walter") { id } }`;
-    Parser parser = new(document);
+    string document = string `query { profile(userNames:["Sherlock", "Walter") { id } }`;
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected ")".`;
+    string expectedMessage = string `Syntax Error: Unexpected ")".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 48);
@@ -646,12 +646,12 @@ isolated function testInvalidListTypeArgument() returns error? {
 }
 
 isolated function testListWithInvalidDefaultValue() returns error? {
-    string document = string`query ($detail:Data = [$name, "Sherlock"]) { getId(data: $detail) { id } }`;
-    Parser parser = new(document);
+    string document = string `query ($detail:Data = [$name, "Sherlock"]) { getId(data: $detail) { id } }`;
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    string expectedMessage = string `Syntax Error: Unexpected "$".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 24);
@@ -661,39 +661,39 @@ isolated function testListWithInvalidDefaultValue() returns error? {
     groups: ["list", "parser"]
 }
 isolated function testListTypeArgument() returns error? {
-    string document = string`query { profile(userNames:["Sherlock", 1, true, 3.4]) { id } }`;
-    Parser parser = new(document);
+    string document = string `query { profile(userNames:["Sherlock", 1, true, 3.4]) { id } }`;
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userNames");
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    ArgumentValue[] argumentValue = <ArgumentValue[]>argumentNode.getValue();
     test:assertEquals((argumentValue).length(), 4);
 
-    ArgumentNode listItem = <ArgumentNode> argumentValue[0];
+    ArgumentNode listItem = <ArgumentNode>argumentValue[0];
     test:assertEquals(listItem.getKind(), T_STRING);
-    ArgumentValue listItemValue = <ArgumentValue> listItem.getValue();
+    ArgumentValue listItemValue = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>listItemValue, "Sherlock");
 
-    listItem = <ArgumentNode> argumentValue[1];
+    listItem = <ArgumentNode>argumentValue[1];
     test:assertEquals(listItem.getKind(), T_INT);
-    listItemValue = <ArgumentValue> listItem.getValue();
+    listItemValue = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>listItemValue, 1);
 
-    listItem = <ArgumentNode> argumentValue[2];
+    listItem = <ArgumentNode>argumentValue[2];
     test:assertEquals(listItem.getKind(), T_BOOLEAN);
-    listItemValue = <ArgumentValue> listItem.getValue();
+    listItemValue = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>listItemValue, true);
 
-    listItem = <ArgumentNode> argumentValue[3];
+    listItem = <ArgumentNode>argumentValue[3];
     test:assertEquals(listItem.getKind(), T_FLOAT);
-    listItemValue = <ArgumentValue> listItem.getValue();
+    listItemValue = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>listItemValue, 3.4);
 }
 
@@ -701,49 +701,49 @@ isolated function testListTypeArgument() returns error? {
     groups: ["list", "parser"]
 }
 isolated function testListTypeArgumentWithNestedLists() returns error? {
-    string document = string`query { profile(userNames:[["Sherlock"], [1], [[false]]]) { id } }`;
-    Parser parser = new(document);
+    string document = string `query { profile(userNames:[["Sherlock"], [1], [[false]]]) { id } }`;
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userNames");
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    ArgumentValue[] argumentValue = <ArgumentValue[]>argumentNode.getValue();
     test:assertEquals(argumentValue.length(), 3);
 
-    ArgumentNode listItem = <ArgumentNode> argumentValue[0];
+    ArgumentNode listItem = <ArgumentNode>argumentValue[0];
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    ArgumentValue[] listItemValue = <ArgumentValue[]> listItem.getValue();
-    ArgumentNode innerListItem = <ArgumentNode> listItemValue[0];
+    ArgumentValue[] listItemValue = <ArgumentValue[]>listItem.getValue();
+    ArgumentNode innerListItem = <ArgumentNode>listItemValue[0];
     test:assertEquals(innerListItem.getKind(), T_STRING);
-    ArgumentValue innerListItemValue = <ArgumentValue> innerListItem.getValue();
+    ArgumentValue innerListItemValue = <ArgumentValue>innerListItem.getValue();
     test:assertEquals(<Scalar>innerListItemValue, "Sherlock");
 
-    listItem = <ArgumentNode> argumentValue[1];
+    listItem = <ArgumentNode>argumentValue[1];
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    listItemValue = <ArgumentValue[]> listItem.getValue();
+    listItemValue = <ArgumentValue[]>listItem.getValue();
     test:assertEquals(listItemValue.length(), 1);
-    innerListItem = <ArgumentNode> listItemValue[0];
+    innerListItem = <ArgumentNode>listItemValue[0];
     test:assertEquals(innerListItem.getKind(), T_INT);
-    innerListItemValue = <ArgumentValue> innerListItem.getValue();
+    innerListItemValue = <ArgumentValue>innerListItem.getValue();
     test:assertEquals(<Scalar>innerListItemValue, 1);
 
-    listItem = <ArgumentNode> argumentValue[2];
+    listItem = <ArgumentNode>argumentValue[2];
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    listItemValue = <ArgumentValue[]> listItem.getValue();
+    listItemValue = <ArgumentValue[]>listItem.getValue();
     test:assertEquals(listItemValue.length(), 1);
-    innerListItem = <ArgumentNode> listItemValue[0];
+    innerListItem = <ArgumentNode>listItemValue[0];
     test:assertEquals(innerListItem.getKind(), T_LIST);
-    listItemValue = <ArgumentValue[]> innerListItem.getValue();
+    listItemValue = <ArgumentValue[]>innerListItem.getValue();
     test:assertEquals(listItemValue.length(), 1);
-    innerListItem = <ArgumentNode> listItemValue[0];
+    innerListItem = <ArgumentNode>listItemValue[0];
     test:assertEquals(innerListItem.getKind(), T_BOOLEAN);
-    innerListItemValue = <ArgumentValue> innerListItem.getValue();
+    innerListItemValue = <ArgumentValue>innerListItem.getValue();
     test:assertEquals(<Scalar>innerListItemValue, false);
 }
 
@@ -752,30 +752,30 @@ isolated function testListTypeArgumentWithNestedLists() returns error? {
 }
 
 isolated function testListTypeArgumentWithVariables() returns error? {
-    string document = string`query { profile(userNames:["Sherlock", $name, $user]) { id } }`;
-    Parser parser = new(document);
+    string document = string `query { profile(userNames:["Sherlock", $name, $user]) { id } }`;
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userNames");
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    ArgumentValue[] argumentValue = <ArgumentValue[]>argumentNode.getValue();
     test:assertEquals(argumentValue.length(), 3);
 
-    ArgumentNode listItem = <ArgumentNode> argumentValue[0];
-    ArgumentValue listItemValue = <ArgumentValue> listItem.getValue();
+    ArgumentNode listItem = <ArgumentNode>argumentValue[0];
+    ArgumentValue listItemValue = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>listItemValue, "Sherlock");
 
-    ArgumentNode variableListItem = <ArgumentNode> argumentValue[1];
+    ArgumentNode variableListItem = <ArgumentNode>argumentValue[1];
     test:assertTrue(variableListItem.isVariableDefinition());
     test:assertEquals(variableListItem.getVariableName(), "name");
 
-    variableListItem = <ArgumentNode> argumentValue[2];
+    variableListItem = <ArgumentNode>argumentValue[2];
     test:assertTrue(variableListItem.isVariableDefinition());
     test:assertEquals(variableListItem.getVariableName(), "user");
 }
@@ -785,35 +785,35 @@ isolated function testListTypeArgumentWithVariables() returns error? {
 }
 
 isolated function testListTypeWithinInputObjectVariableDefualtValue() returns error? {
-    string document = string`query ($userDetails: UserDetails = {name: "Jessie", friends: ["walter", null]}){ profile(details: $userDetails) { id } }`;
-    Parser parser = new(document);
+    string document = string `query ($userDetails: UserDetails = {name: "Jessie", friends: ["walter", null]}){ profile(details: $userDetails) { id } }`;
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
 
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["userDetails"];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["userDetails"];
     test:assertEquals(variableDefinition.getName(), "userDetails");
     test:assertEquals(variableDefinition.getTypeName(), "UserDetails");
-    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    ArgumentNode argValue = <ArgumentNode>variableDefinition.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "userDetails");
-    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    ArgumentValue[] defaultValue = <ArgumentValue[]>argValue.getValue();
     test:assertEquals(defaultValue.length(), 2);
 
-    ArgumentNode field1 = <ArgumentNode> defaultValue[0];
+    ArgumentNode field1 = <ArgumentNode>defaultValue[0];
     test:assertEquals(field1.getKind(), T_STRING);
-    ArgumentValue field1Value = <ArgumentValue> field1.getValue();
+    ArgumentValue field1Value = <ArgumentValue>field1.getValue();
     test:assertEquals(<Scalar>field1Value, "Jessie");
 
-    ArgumentNode field2 = <ArgumentNode> defaultValue[1];
+    ArgumentNode field2 = <ArgumentNode>defaultValue[1];
     test:assertEquals(field2.getKind(), T_LIST);
-    ArgumentValue[] field2Value = <ArgumentValue[]> field2.getValue();
+    ArgumentValue[] field2Value = <ArgumentValue[]>field2.getValue();
     test:assertEquals(field2Value.length(), 2);
-    ArgumentNode innerField = <ArgumentNode> field2Value[0];
-    ArgumentValue innerFieldValue = <ArgumentValue> innerField.getValue();
+    ArgumentNode innerField = <ArgumentNode>field2Value[0];
+    ArgumentValue innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>innerFieldValue, "walter");
-    innerField = <ArgumentNode> field2Value[1];
-    innerFieldValue = <ArgumentValue> innerField.getValue();
+    innerField = <ArgumentNode>field2Value[1];
+    innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<null>innerFieldValue, null);
 }
 
@@ -823,56 +823,56 @@ isolated function testListTypeWithinInputObjectVariableDefualtValue() returns er
 
 isolated function testListTypeVariablesWithDefualtValue() returns error? {
     string document = check getGraphQLDocumentFromFile("list_type_variables_with_default_value.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
 
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["bName"];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["bName"];
     test:assertEquals(variableDefinition.getName(), "bName");
     test:assertEquals(variableDefinition.getTypeName(), "[[String]!]");
-    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    ArgumentNode argValue = <ArgumentNode>variableDefinition.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_LIST);
     test:assertEquals(argValue.getName(), "bName");
-    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    ArgumentValue[] defaultValue = <ArgumentValue[]>argValue.getValue();
     test:assertEquals(defaultValue.length(), 2);
 
-    ArgumentNode field1 = <ArgumentNode> defaultValue[0];
+    ArgumentNode field1 = <ArgumentNode>defaultValue[0];
     test:assertEquals(field1.getKind(), T_LIST);
-    ArgumentValue[] field1Value = <ArgumentValue[]> field1.getValue();
-    ArgumentNode innerField = <ArgumentNode> field1Value[0];
-    ArgumentValue innerFieldValue = <ArgumentValue> innerField.getValue();
+    ArgumentValue[] field1Value = <ArgumentValue[]>field1.getValue();
+    ArgumentNode innerField = <ArgumentNode>field1Value[0];
+    ArgumentValue innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>innerFieldValue, "Harry");
 
-    ArgumentNode field2 = <ArgumentNode> defaultValue[1];
+    ArgumentNode field2 = <ArgumentNode>defaultValue[1];
     test:assertEquals(field2.getKind(), T_LIST);
-    ArgumentValue[] field2Value = <ArgumentValue[]> field2.getValue();
+    ArgumentValue[] field2Value = <ArgumentValue[]>field2.getValue();
     test:assertEquals(field2Value.length(), 3);
-    innerField = <ArgumentNode> field2Value[0];
-    innerFieldValue = <ArgumentValue> innerField.getValue();
+    innerField = <ArgumentNode>field2Value[0];
+    innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>innerFieldValue, "SUNDAY");
-    innerField = <ArgumentNode> field2Value[1];
-    innerFieldValue = <ArgumentValue> innerField.getValue();
+    innerField = <ArgumentNode>field2Value[1];
+    innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<null>innerFieldValue, null);
-    innerField = <ArgumentNode> field2Value[2];
-    innerFieldValue = <ArgumentValue> innerField.getValue();
+    innerField = <ArgumentNode>field2Value[2];
+    innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>innerFieldValue, false);
 
-    variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["bAuthor"];
+    variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["bAuthor"];
     test:assertEquals(variableDefinition.getName(), "bAuthor");
     test:assertEquals(variableDefinition.getTypeName(), "[ProfileDetail!]");
-    argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    argValue = <ArgumentNode>variableDefinition.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_LIST);
     test:assertEquals(argValue.getName(), "bAuthor");
-    defaultValue = <ArgumentValue[]> argValue.getValue();
+    defaultValue = <ArgumentValue[]>argValue.getValue();
     test:assertEquals(defaultValue.length(), 1);
 
-    ArgumentNode 'field = <ArgumentNode> defaultValue[0];
+    ArgumentNode 'field = <ArgumentNode>defaultValue[0];
     test:assertEquals('field.getKind(), T_INPUT_OBJECT);
-    ArgumentValue[] fieldValue = <ArgumentValue[]> 'field.getValue();
-    innerField = <ArgumentNode> fieldValue[0];
-    innerFieldValue = <ArgumentValue> innerField.getValue();
+    ArgumentValue[] fieldValue = <ArgumentValue[]>'field.getValue();
+    innerField = <ArgumentNode>fieldValue[0];
+    innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>innerFieldValue, "J.K Rowling");
 }
 
@@ -881,35 +881,35 @@ isolated function testListTypeVariablesWithDefualtValue() returns error? {
 }
 
 isolated function testListTypeArgumentWithInputObjects() returns error? {
-    string document = string`query { profile(userNames:[{age: $age, name: "Jessie" }, {}]) { id } }`;
-    Parser parser = new(document);
+    string document = string `query { profile(userNames:[{age: $age, name: "Jessie" }, {}]) { id } }`;
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "profile");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "userNames");
     test:assertEquals(argumentNode.getKind(), T_LIST);
-    ArgumentValue[] argumentValue = <ArgumentValue[]> argumentNode.getValue();
+    ArgumentValue[] argumentValue = <ArgumentValue[]>argumentNode.getValue();
     test:assertEquals(argumentValue.length(), 2);
 
-    ArgumentNode inputObjectListItem = <ArgumentNode> argumentValue[0];
+    ArgumentNode inputObjectListItem = <ArgumentNode>argumentValue[0];
     test:assertEquals(inputObjectListItem.getKind(), T_INPUT_OBJECT);
-    ArgumentValue[] fields = <ArgumentValue[]> inputObjectListItem.getValue();
+    ArgumentValue[] fields = <ArgumentValue[]>inputObjectListItem.getValue();
     test:assertEquals(fields.length(), 2);
-    ArgumentNode field1 = <ArgumentNode> fields[0];
+    ArgumentNode field1 = <ArgumentNode>fields[0];
     test:assertEquals(field1.isVariableDefinition(), true);
     test:assertEquals(field1.getVariableName(), "age");
-    ArgumentNode field2 = <ArgumentNode> fields[1];
-    ArgumentValue field2Value = <ArgumentValue> field2.getValue();
+    ArgumentNode field2 = <ArgumentNode>fields[1];
+    ArgumentValue field2Value = <ArgumentValue>field2.getValue();
     test:assertEquals(<Scalar>field2Value, "Jessie");
 
-    inputObjectListItem = <ArgumentNode> argumentValue[1];
+    inputObjectListItem = <ArgumentNode>argumentValue[1];
     test:assertEquals(inputObjectListItem.getKind(), T_INPUT_OBJECT);
-    fields = <ArgumentValue[]> inputObjectListItem.getValue();
+    fields = <ArgumentValue[]>inputObjectListItem.getValue();
     test:assertEquals(fields.length(), 0);
 }
 
@@ -917,14 +917,14 @@ isolated function testListTypeArgumentWithInputObjects() returns error? {
     groups: ["list", "directives", "parser"]
 }
 isolated function testListTypeArgumentsInDirecitves() returns error? {
-    string document = string`query { user @skip(if:["Sherlock", { name: $name}, SUNDAY]){ name, age } }`;
-    Parser parser = new(document);
+    string document = string `query { user @skip(if:["Sherlock", { name: $name}, SUNDAY]){ name, age } }`;
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "user");
     DirectiveNode[] directives = fieldNode.getDirectives();
     test:assertEquals(directives.length(), 1);
@@ -934,25 +934,25 @@ isolated function testListTypeArgumentsInDirecitves() returns error? {
     ArgumentNode directiveArgument = directive.getArguments()[0];
     test:assertEquals(directiveArgument.getName(), "if");
     test:assertEquals(directiveArgument.getKind(), T_LIST);
-    ArgumentValue[] argumentValues = <ArgumentValue[]> directiveArgument.getValue();
+    ArgumentValue[] argumentValues = <ArgumentValue[]>directiveArgument.getValue();
     test:assertEquals(argumentValues.length(), 3);
 
-    ArgumentNode listItem = <ArgumentNode> argumentValues[0];
-    ArgumentValue listItemValue = <ArgumentValue> listItem.getValue();
+    ArgumentNode listItem = <ArgumentNode>argumentValues[0];
+    ArgumentValue listItemValue = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>listItemValue, "Sherlock");
 
-    listItem = <ArgumentNode> argumentValues[1];
+    listItem = <ArgumentNode>argumentValues[1];
     test:assertEquals(listItem.getKind(), T_INPUT_OBJECT);
-    ArgumentValue[] inputObjectFields = <ArgumentValue[]> listItem.getValue();
+    ArgumentValue[] inputObjectFields = <ArgumentValue[]>listItem.getValue();
     test:assertEquals(inputObjectFields.length(), 1);
-    ArgumentNode inputObjectFieldValue = <ArgumentNode> inputObjectFields[0];
+    ArgumentNode inputObjectFieldValue = <ArgumentNode>inputObjectFields[0];
     test:assertEquals(inputObjectFieldValue.getName(), "name");
     test:assertTrue(inputObjectFieldValue.isVariableDefinition());
     test:assertEquals(inputObjectFieldValue.getVariableName(), "name");
 
-    listItem = <ArgumentNode> argumentValues[2];
+    listItem = <ArgumentNode>argumentValues[2];
     test:assertEquals(listItem.getKind(), T_IDENTIFIER);
-    ArgumentValue value = <ArgumentValue> listItem.getValue();
+    ArgumentValue value = <ArgumentValue>listItem.getValue();
     test:assertEquals(<Scalar>value, "SUNDAY");
 }
 
@@ -961,11 +961,11 @@ isolated function testListTypeArgumentsInDirecitves() returns error? {
 }
 isolated function testVariablesWithInvalidDefaultValue() returns error? {
     string document = "query getId($name: String = $name) { profile(userName:$name) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    string expectedMessage = string `Syntax Error: Unexpected "$".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 29);
@@ -976,11 +976,11 @@ isolated function testVariablesWithInvalidDefaultValue() returns error? {
 }
 isolated function testInputObjectWithInvalidVariableDefaultValue() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_with_invalid_variable_default_value.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    string expectedMessage = string `Syntax Error: Unexpected "$".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 91);
@@ -991,37 +991,37 @@ isolated function testInputObjectWithInvalidVariableDefaultValue() returns error
 }
 isolated function testInputObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_with_default_value.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode> operationNode.getVaribleDefinitions()["bAuthor"];
+    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["bAuthor"];
     test:assertEquals(variableDefinition.getName(), "bAuthor");
     test:assertEquals(variableDefinition.getTypeName(), "ProfileDetail");
-    ArgumentNode argValue = <ArgumentNode> variableDefinition.getDefaultValue();
+    ArgumentNode argValue = <ArgumentNode>variableDefinition.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "bAuthor");
-    ArgumentValue[] defaultValue = <ArgumentValue[]> argValue.getValue();
+    ArgumentValue[] defaultValue = <ArgumentValue[]>argValue.getValue();
     test:assertEquals(defaultValue.length(), 1);
-    ArgumentNode argField = <ArgumentNode> defaultValue[0];
-    ArgumentValue defaultValueField = <ArgumentValue> argField.getValue();
+    ArgumentNode argField = <ArgumentNode>defaultValue[0];
+    ArgumentValue defaultValueField = <ArgumentValue>argField.getValue();
     test:assertEquals(<Scalar>defaultValueField, "J.K Rowling");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "book");
     ArgumentNode argumentNode = fieldNode.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "info");
-    ArgumentValue[] inputObjectFields = <ArgumentValue[]> argumentNode.getValue();
-    ArgumentNode field1 = <ArgumentNode> inputObjectFields[2];
+    ArgumentValue[] inputObjectFields = <ArgumentValue[]>argumentNode.getValue();
+    ArgumentNode field1 = <ArgumentNode>inputObjectFields[2];
     test:assertEquals(field1.isVariableDefinition(), true);
     test:assertEquals(field1.getVariableName(), "bAuthor");
-    ArgumentNode field2 = <ArgumentNode> inputObjectFields[3];
-    ArgumentValue[] nestedFields = <ArgumentValue[]> field2.getValue();
+    ArgumentNode field2 = <ArgumentNode>inputObjectFields[3];
+    ArgumentValue[] nestedFields = <ArgumentValue[]>field2.getValue();
     test:assertEquals(nestedFields.length(), 1);
-    ArgumentNode innerField = <ArgumentNode> nestedFields[0];
-    ArgumentValue nestedValue = <ArgumentValue> innerField.getValue();
+    ArgumentNode innerField = <ArgumentNode>nestedFields[0];
+    ArgumentValue nestedValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>nestedValue, "End Game");
 }
 
@@ -1030,11 +1030,11 @@ isolated function testInputObjects() returns error? {
 }
 isolated function testInvalidDirectives1() returns error? {
     string document = "query getId { profile @skip(if:true { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected Name, found "{".`;
+    string expectedMessage = string `Syntax Error: Expected Name, found "{".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 37);
@@ -1045,11 +1045,11 @@ isolated function testInvalidDirectives1() returns error? {
 }
 isolated function testInvalidDirectives2() returns error? {
     string document = "query getId { profile @skip(if true) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Expected ":", found "true".`;
+    string expectedMessage = string `Syntax Error: Expected ":", found "true".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 32);
@@ -1060,11 +1060,11 @@ isolated function testInvalidDirectives2() returns error? {
 }
 isolated function testInvalidDirectives3() returns error? {
     string document = "query getId { profile @skip(if:) { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected ")".`;
+    string expectedMessage = string `Syntax Error: Unexpected ")".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 32);
@@ -1075,11 +1075,11 @@ isolated function testInvalidDirectives3() returns error? {
 }
 isolated function testDirectivesWithoutInvalidVariableUsage() returns error? {
     string document = "query getId($skip:Boolean = true ) @skip(if: $skip) { profile { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Unexpected "$".`;
+    string expectedMessage = string `Syntax Error: Unexpected "$".`;
     test:assertEquals(err.message(), expectedMessage);
     test:assertEquals(err.detail()["line"], 1);
     test:assertEquals(err.detail()["column"], 46);
@@ -1090,14 +1090,14 @@ isolated function testDirectivesWithoutInvalidVariableUsage() returns error? {
 }
 isolated function testDirectivesWithoutVariables() returns error? {
     string document = "query getId{ profile @skip { id } }";
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getSelections().length(), 1);
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> operationNode.getSelections()[0];
+    FieldNode fieldNode = <FieldNode>operationNode.getSelections()[0];
     test:assertEquals(fieldNode.getName(), "profile");
     DirectiveNode[] directives = fieldNode.getDirectives();
     test:assertEquals(directives.length(), 1);
@@ -1111,7 +1111,7 @@ isolated function testDirectivesWithoutVariables() returns error? {
 }
 isolated function testDirectivesInUndefinedLocations() returns error? {
     string document = check getGraphQLDocumentFromFile("query_type_directives_in_undefined_location.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
@@ -1155,7 +1155,7 @@ isolated function testDirectivesInUndefinedLocations() returns error? {
 }
 isolated function testDirectivesWithMutation() returns error? {
     string document = check getGraphQLDocumentFromFile("query_type_directives_with_mutation.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
@@ -1169,7 +1169,7 @@ isolated function testDirectivesWithMutation() returns error? {
     test:assertEquals(argumentNode.getName(), "if");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    FieldNode fieldNode = <FieldNode> selection;
+    FieldNode fieldNode = <FieldNode>selection;
 
     test:assertEquals(fieldNode.getName(), "setName");
     directives = fieldNode.getDirectives();
@@ -1187,15 +1187,15 @@ isolated function testDirectivesWithMutation() returns error? {
 }
 isolated function testDirectives() returns error? {
     string document = check getGraphQLDocumentFromFile("query_type_directives.graphql");
-    Parser parser = new(document);
+    Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    FieldNode fieldNode = <FieldNode> operationNode.getSelections()[0];
+    FieldNode fieldNode = <FieldNode>operationNode.getSelections()[0];
     Selection selection = fieldNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
-    fieldNode = <FieldNode> selection;
+    fieldNode = <FieldNode>selection;
 
     test:assertEquals(fieldNode.getName(), "profile");
     DirectiveNode[] directives = fieldNode.getDirectives();
@@ -1209,7 +1209,7 @@ isolated function testDirectives() returns error? {
     test:assertEquals(argumentNode.isVariableDefinition(), true);
     selection = fieldNode.getSelections()[0];
     test:assertTrue(selection is FragmentNode);
-    FragmentNode fragmentNode = <FragmentNode> selection;
+    FragmentNode fragmentNode = <FragmentNode>selection;
 
     test:assertEquals(fragmentNode.getName(), "profile_Person");
     test:assertEquals(fragmentNode.isInlineFragment(), true);
@@ -1224,11 +1224,11 @@ isolated function testDirectives() returns error? {
     test:assertEquals(argumentNode.getName(), "if");
     selection = fragmentNode.getSelections()[1];
     test:assertTrue(selection is FieldNode);
-    fieldNode = <FieldNode> selection;
+    fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "address");
     selection = fieldNode.getSelections()[0];
     test:assertTrue(selection is FragmentNode);
-    fragmentNode = <FragmentNode> selection;
+    fragmentNode = <FragmentNode>selection;
 
     test:assertEquals(fragmentNode.getName(), "personalAddress");
     test:assertEquals(fragmentNode.isInlineFragment(), false);
@@ -1253,7 +1253,7 @@ isolated function testDirectives() returns error? {
 
     selection = fragmentNode.getSelections()[1];
     test:assertTrue(selection is FieldNode);
-    fieldNode = <FieldNode> selection;
+    fieldNode = <FieldNode>selection;
     test:assertEquals(fieldNode.getName(), "street");
     directives = fieldNode.getDirectives();
     test:assertEquals(directives.length(), 2);

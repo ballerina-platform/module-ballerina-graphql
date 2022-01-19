@@ -30,7 +30,7 @@ public class CharReader {
     }
 
     public isolated function peek() returns string {
-        if (self.buffer.length() > 0) {
+        if self.buffer.length() > 0 {
             return self.buffer[0];
         }
         string char = self.read();
@@ -39,11 +39,11 @@ public class CharReader {
     }
 
     public isolated function read() returns string {
-        if (self.buffer.length() > 0) {
+        if self.buffer.length() > 0 {
             return self.buffer.shift();
         }
         CharIteratorNode? next = self.iterator.next();
-        if (next is ()) {
+        if next is () {
             self.eof = true;
             return EOF;
         }

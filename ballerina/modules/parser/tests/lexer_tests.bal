@@ -21,7 +21,7 @@ import ballerina/test;
 }
 isolated function testInvalidCharacter() returns error? {
     string name = "John D<oe";
-    Lexer lexer = new(name);
+    Lexer lexer = new (name);
     Token token = check lexer.read();
 
     Token expectedToken = getExpectedToken("John", T_IDENTIFIER, 1, 1);
@@ -48,7 +48,7 @@ isolated function testInvalidCharacter() returns error? {
 }
 isolated function testIntInput() returns error? {
     string s = "42";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(42, T_INT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -59,7 +59,7 @@ isolated function testIntInput() returns error? {
 }
 isolated function testFloatInput() returns error? {
     string s = "3.14159";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(3.14159, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -70,7 +70,7 @@ isolated function testFloatInput() returns error? {
 }
 isolated function testNegativeInput() returns error? {
     string s = "-3.14159";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(-3.14159, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -81,7 +81,7 @@ isolated function testNegativeInput() returns error? {
 }
 isolated function testPeek() returns error? {
     string s = "test integer -273";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
 
     Token token = check lexer.peek();
     Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
@@ -109,7 +109,7 @@ isolated function testPeek() returns error? {
 }
 isolated function testBooleanInput() returns error? {
     string s = "test false";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -125,7 +125,7 @@ isolated function testBooleanInput() returns error? {
 }
 isolated function testStringInStringInput() returns error? {
     string s = "test \"This is a test string\"";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -140,15 +140,15 @@ isolated function testStringInStringInput() returns error? {
     groups: ["lexer"]
 }
 isolated function testStringWithDoubleQuotes() returns error? {
-    string s = string`test "This is a \"test\" string" inside a string`;
-    Lexer lexer = new(s);
+    string s = string `test "This is a \"test\" string" inside a string`;
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
     token = check lexer.read();
-    expectedToken = getExpectedToken(string`This is a \"test\" string`, T_STRING, 1, 6);
+    expectedToken = getExpectedToken(string `This is a \"test\" string`, T_STRING, 1, 6);
     test:assertEquals(token, expectedToken);
 }
 
@@ -159,7 +159,7 @@ isolated function testUnterminatedString() returns error? {
     string s = string
     `test "This is a \"test\" string
 in multiple lines`;
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -181,8 +181,8 @@ in multiple lines`;
     groups: ["lexer"]
 }
 isolated function testStringWithVariableDefinition() returns error? {
-    string s = string`getName($name : String = "walter")`;
-    Lexer lexer = new(s);
+    string s = string `getName($name : String = "walter")`;
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("getName", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -199,12 +199,12 @@ isolated function testStringWithVariableDefinition() returns error? {
     expectedToken = getExpectedToken("name", T_IDENTIFIER, 1, 10);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.read();// Space
+    token = check lexer.read(); // Space
     token = check lexer.read();
     expectedToken = getExpectedToken(":", T_COLON, 1, 15);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.read();// Space
+    token = check lexer.read(); // Space
     token = check lexer.read();
     expectedToken = getExpectedToken("String", T_IDENTIFIER, 1, 17);
     test:assertEquals(token, expectedToken);
@@ -214,7 +214,7 @@ isolated function testStringWithVariableDefinition() returns error? {
     expectedToken = getExpectedToken("=", T_EQUAL, 1, 24);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.read();// Space
+    token = check lexer.read(); // Space
     token = check lexer.read();
     expectedToken = getExpectedToken("walter", T_STRING, 1, 26);
     test:assertEquals(token, expectedToken);
@@ -225,7 +225,7 @@ isolated function testStringWithVariableDefinition() returns error? {
 }
 isolated function testBlockString() returns error? {
     string document = check getGraphQLDocumentFromFile("block_string.graphql");
-    Lexer lexer = new(document);
+    Lexer lexer = new (document);
     Token token = check lexer.read();
 
     Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);
@@ -266,7 +266,7 @@ isolated function testBlockString() returns error? {
 }
 isolated function testComplexString() returns error? {
     string document = "\n\n\nquery getData {\n    picture(h: 128,,, w: 248)\n}";
-    Lexer lexer = new(document);
+    Lexer lexer = new (document);
 
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("\n", T_NEW_LINE, 1, 1);
@@ -353,7 +353,7 @@ isolated function testComplexString() returns error? {
 }
 isolated function testReadFragmentToken() returns error? {
     string s = "...friends { name }";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("...", T_ELLIPSIS, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -366,7 +366,7 @@ isolated function testReadFragmentToken() returns error? {
 }
 isolated function testReadFragmentTokenWithSpace() returns error? {
     string s = "... friends { name }";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("...", T_ELLIPSIS, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -379,7 +379,7 @@ isolated function testReadFragmentTokenWithSpace() returns error? {
 }
 isolated function testReadFloatWithSimplePowerCharacter() returns error? {
     string s = "4e45";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(4e45, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -390,7 +390,7 @@ isolated function testReadFloatWithSimplePowerCharacter() returns error? {
 }
 isolated function testReadFloatWithDeciamlPoint() returns error? {
     string s = "4.2e45";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(4.2e45, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -401,7 +401,7 @@ isolated function testReadFloatWithDeciamlPoint() returns error? {
 }
 isolated function testReadFloatWithCapitalPowerCharacter() returns error? {
     string s = "4e45";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(4e45, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -412,11 +412,11 @@ isolated function testReadFloatWithCapitalPowerCharacter() returns error? {
 }
 isolated function testReadInvalidFloatDotAferExp() returns error? {
     string s = "4e45.1";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ".".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: ".".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -430,11 +430,11 @@ isolated function testReadInvalidFloatDotAferExp() returns error? {
 }
 isolated function testReadInvalidFloatDashInMiddle() returns error? {
     string s = "4e451-";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: "-".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: "-".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -448,11 +448,11 @@ isolated function testReadInvalidFloatDashInMiddle() returns error? {
 }
 isolated function testReadInvalidFloatNoValueAfterExp() returns error? {
     string s = "4e)";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ")".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: ")".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -466,11 +466,11 @@ isolated function testReadInvalidFloatNoValueAfterExp() returns error? {
 }
 isolated function testReadInvalidFloatNoValueAfterExp2() returns error? {
     string s = "4.5e)";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ")".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: ")".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -484,11 +484,11 @@ isolated function testReadInvalidFloatNoValueAfterExp2() returns error? {
 }
 isolated function testReadInvalidFloatRepeatedExp() returns error? {
     string s = "4e451e";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: "e".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: "e".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -502,11 +502,11 @@ isolated function testReadInvalidFloatRepeatedExp() returns error? {
 }
 isolated function testReadInvalidFloatRepeatedDecimalPoint() returns error? {
     string s = "4.451.34";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ".".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: ".".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -520,11 +520,11 @@ isolated function testReadInvalidFloatRepeatedDecimalPoint() returns error? {
 }
 isolated function testReadInvalidFloatMissingDigitAfterDecimalPoint() returns error? {
     string s = "4.e45";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: "e".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: "e".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -538,11 +538,11 @@ isolated function testReadInvalidFloatMissingDigitAfterDecimalPoint() returns er
 }
 isolated function testReadInvalidFloatDecimalPointAfterExp() returns error? {
     string s = "4.3e.45";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ".".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: ".".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -556,11 +556,11 @@ isolated function testReadInvalidFloatDecimalPointAfterExp() returns error? {
 }
 isolated function testReadInvalidFloatDecimalPointAsExp() returns error? {
     string s = "4.3e2.45";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: ".".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: ".".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -574,7 +574,7 @@ isolated function testReadInvalidFloatDecimalPointAsExp() returns error? {
 }
 isolated function testReadFloatNegativeExp() returns error? {
     string s = "4.451e-34";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken(4.451e-34, T_FLOAT, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -585,11 +585,11 @@ isolated function testReadFloatNegativeExp() returns error? {
 }
 isolated function testReadIntInvalidCharacter() returns error? {
     string s = "431v";
-    Lexer lexer = new(s);
+    Lexer lexer = new (s);
     Token|SyntaxError result = lexer.read();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
-    string expectedMessage = string`Syntax Error: Invalid number, expected digit but got: "v".`;
+    string expectedMessage = string `Syntax Error: Invalid number, expected digit but got: "v".`;
     string message = err.message();
     int line = err.detail()["line"];
     int column = err.detail()["column"];
@@ -603,7 +603,7 @@ isolated function testReadIntInvalidCharacter() returns error? {
 }
 isolated function testReadCommentToken() returns error? {
     string document = check getGraphQLDocumentFromFile("read_comment_token.graphql");
-    Lexer lexer = new(document);
+    Lexer lexer = new (document);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);
     test:assertEquals(token, expectedToken);
@@ -698,12 +698,5 @@ isolated function testReadCommentToken() returns error? {
 }
 
 isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {
-    return {
-        value: value,
-        kind: kind,
-        location: {
-            line: line,
-            column: column
-        }
-    };
+    return {value: value, kind: kind, location: {line: line, column: column}};
 }

@@ -57,9 +57,9 @@ public class OperationNode {
 
     public isolated function addVariableDefinition(VariableDefinitionNode varDef) {
         if self.variables.hasKey(varDef.getName()) {
-            string message = string`There can be only one variable named "$${varDef.getName()}"`;
+            string message = string `There can be only one variable named "$${varDef.getName()}"`;
             Location location = varDef.getLocation();
-            self.errors.push({message: message, locations:[location]});
+            self.errors.push({message: message, locations: [location]});
         } else {
             self.variables[varDef.getName()] = varDef;
         }

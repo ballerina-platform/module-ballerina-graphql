@@ -22,7 +22,7 @@ public class Lexer {
     private Location currentLocation;
 
     public isolated function init(string document) {
-        self.charReader = new(document);
+        self.charReader = new (document);
         self.document = document;
         self.inProgress = true;
         self.buffer = [];
@@ -33,7 +33,7 @@ public class Lexer {
     }
 
     public isolated function reset() {
-        self.charReader = new(self.document);
+        self.charReader = new (self.document);
         self.buffer = [];
     }
 
@@ -41,7 +41,7 @@ public class Lexer {
         int index = n - 1;
         int difference = n - self.buffer.length();
         int i = 0;
-        while (i <= difference) {
+        while i <= difference {
             Token token = check self.readNextToken();
             self.pushToBuffer(token);
             i += 1;
@@ -50,14 +50,14 @@ public class Lexer {
     }
 
     public isolated function hasNext() returns boolean {
-        if (self.buffer.length() > 0) {
+        if self.buffer.length() > 0 {
             return true;
         }
         return self.inProgress;
     }
 
     public isolated function read() returns Token|SyntaxError {
-        if (self.buffer.length() > 0) {
+        if self.buffer.length() > 0 {
             return self.buffer.shift();
         }
         return self.readNextToken();
@@ -65,18 +65,18 @@ public class Lexer {
 
     isolated function readNextToken() returns Token|SyntaxError {
         string char = self.charReader.peek();
-        if (char == EOF) {
+        if char == EOF {
             self.inProgress = false;
             return self.getTokenFromChar(char);
-        } else if (char == DOUBLE_QUOTE) {
+        } else if char == DOUBLE_QUOTE {
             return self.readStringLiteral();
-        } else if (char == DASH || char is Digit) {
+        } else if char == DASH || char is Digit {
             return self.readNumericLiteral(char);
-        } else if (char is Separator || char is SpecialCharacter) {
+        } else if char is Separator || char is SpecialCharacter {
             return self.readSpecialCharacterToken();
-        } else if (char == HASH) {
+        } else if char == HASH {
             return self.readCommentToken();
-        } else if (char == DOT) {
+        } else if char == DOT {
             return self.readEllipsisToken();
         } else {
             return self.readIdentifierToken(char);
@@ -125,7 +125,7 @@ public class Lexer {
             if value is LineTerminator {
                 string message = "Syntax Error: Unterminated string.";
                 return error UnterminatedStringError(message, line = self.currentLocation.line,
-                                                     column = self.currentLocation.column);
+                                                    column = self.currentLocation.column);
             } else {
                 value = self.readNextChar();
                 if value == DOUBLE_QUOTE && previousChar != BACK_SLASH {
@@ -158,7 +158,7 @@ public class Lexer {
                     if value == DOUBLE_QUOTE {
                         previousChar += self.readNextChar();
                         if word.endsWith(BACK_SLASH) {
-                            word = word.substring(0, word.length()-1); //Remove back slash
+                            word = word.substring(0, word.length() - 1); //Remove back slash
                         } else {
                             lines.push(word);
                             break;
@@ -178,13 +178,13 @@ public class Lexer {
         int? commonIndent = ();
         string formatted = "";
         foreach string line in lines {
-            int indent  = self.getLeadingWhiteSpaceCount(line);
+            int indent = self.getLeadingWhiteSpaceCount(line);
             if indent < line.length() && (commonIndent is () || indent < commonIndent) {
                 commonIndent = indent;
             }
         }
         if commonIndent is int {
-            foreach int i in 0..< lines.length() {
+            foreach int i in 0 ..< lines.length() {
                 if commonIndent > lines[i].length() {
                     continue;
                 } else {
@@ -216,17 +216,17 @@ public class Lexer {
     isolated function readNumericLiteral(string fisrtChar) returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         string numeral = self.readNextChar();
-        while (!self.charReader.isEof()) {
+        while !self.charReader.isEof() {
             string value = self.charReader.peek();
-            if (value is Digit) {
+            if value is Digit {
                 value = self.readNextChar();
                 numeral += value.toString();
-            } else if (value == DOT || value is Exp) {
+            } else if value == DOT || value is Exp {
                 return self.readFloatLiteral(numeral, location);
-            } else if (value is Separator || value is SpecialCharacter) {
+            } else if value is Separator || value is SpecialCharacter {
                 break;
             } else {
-                string message = string`Syntax Error: Invalid number, expected digit but got: "${value}".`;
+                string message = string `Syntax Error: Invalid number, expected digit but got: "${value}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
                                                column = self.currentLocation.column);
             }
@@ -242,30 +242,30 @@ public class Lexer {
         boolean isDigitExpected = true;
 
         string numeral = initialString + separator;
-        while (!self.charReader.isEof()) {
+        while !self.charReader.isEof() {
             string value = self.charReader.peek();
-            if (value is Digit) {
+            if value is Digit {
                 value = self.readNextChar();
                 numeral += value;
                 isDashExpected = false;
                 isDigitExpected = false;
-            } else if (value is Exp && isExpExpected && !isDigitExpected) {
+            } else if value is Exp && isExpExpected && !isDigitExpected {
                 value = self.readNextChar();
                 numeral += value;
                 isExpExpected = false;
                 isDashExpected = true;
                 isDigitExpected = true;
-            } else if (value == DASH && isDashExpected) {
+            } else if value == DASH && isDashExpected {
                 value = self.readNextChar();
                 numeral += value;
                 isDashExpected = false;
                 isDigitExpected = true;
-            } else if ((value is Separator || value is SpecialCharacter) && !isDigitExpected) {
+            } else if (value is Separator || value is SpecialCharacter) && !isDigitExpected {
                 break;
             } else {
-                string message = string`Syntax Error: Invalid number, expected digit but got: "${value}".`;
+                string message = string `Syntax Error: Invalid number, expected digit but got: "${value}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
-                                               column = self.currentLocation.column);
+                                                column = self.currentLocation.column);
             }
         }
         float number = check getFloat(numeral, location);
@@ -275,9 +275,9 @@ public class Lexer {
     isolated function readCommentToken() returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         string word = self.readNextChar();
-        while (!self.charReader.isEof()) {
+        while !self.charReader.isEof() {
             string char = self.charReader.peek();
-            if (char is LineTerminator) {
+            if char is LineTerminator {
                 break;
             } else {
                 char = self.readNextChar();
@@ -292,10 +292,10 @@ public class Lexer {
         int i = 0;
         while i < 3 {
             string c = self.readNextChar();
-            if (c != DOT) {
-                string message = string`Syntax Error: Cannot parse the unexpected character "${DOT}".`;
+            if c != DOT {
+                string message = string `Syntax Error: Cannot parse the unexpected character "${DOT}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
-                                                               column = self.currentLocation.column);
+                                                                column = self.currentLocation.column);
             }
             i += 1;
         }
@@ -306,11 +306,11 @@ public class Lexer {
         check validateFirstChar(firstChar, self.currentLocation);
         Location location = self.currentLocation.clone();
         string word = self.readNextChar();
-        while (!self.charReader.isEof()) {
+        while !self.charReader.isEof() {
             string char = self.charReader.peek();
-            if (char is SpecialCharacter) {
+            if char is SpecialCharacter {
                 break;
-            } else if (char is Separator) {
+            } else if char is Separator {
                 break;
             } else {
                 Location charLocation = self.currentLocation.clone();
@@ -321,8 +321,8 @@ public class Lexer {
         }
         TokenType kind = getWordTokenType(word);
         Scalar value = word;
-        if (kind is T_BOOLEAN) {
-            value = <boolean> checkpanic 'boolean:fromString(word);
+        if kind is T_BOOLEAN {
+            value = <boolean>checkpanic 'boolean:fromString(word);
         }
         return {
             value: value,
@@ -336,7 +336,7 @@ public class Lexer {
     }
 
     isolated function updateLocation(string char) {
-        if (char is LineTerminator) {
+        if char is LineTerminator {
             self.currentLocation.line += 1;
             self.currentLocation.column = 1;
         } else {
@@ -345,9 +345,9 @@ public class Lexer {
     }
 
     isolated function readNextChar() returns string {
-         string char = self.charReader.read();
-         self.updateLocation(char);
-         return char;
+        string char = self.charReader.read();
+        self.updateLocation(char);
+        return char;
     }
 
     isolated function getTokenFromChar(string value) returns Token {
@@ -361,33 +361,33 @@ public class Lexer {
 }
 
 isolated function getTokenType(string value) returns TokenType {
-    if (value == OPEN_BRACE) {
+    if value == OPEN_BRACE {
         return T_OPEN_BRACE;
-    } else if (value == CLOSE_BRACE) {
+    } else if value == CLOSE_BRACE {
         return T_CLOSE_BRACE;
-    } else if (value == OPEN_PARENTHESES) {
+    } else if value == OPEN_PARENTHESES {
         return T_OPEN_PARENTHESES;
-    } else if (value == CLOSE_PARENTHESES) {
+    } else if value == CLOSE_PARENTHESES {
         return T_CLOSE_PARENTHESES;
-    } else if (value == DOLLAR) {
+    } else if value == DOLLAR {
         return T_DOLLAR;
-    } else if (value == EQUAL) {
+    } else if value == EQUAL {
         return T_EQUAL;
-    } else if (value == COLON) {
+    } else if value == COLON {
         return T_COLON;
-    } else if (value == COMMA) {
+    } else if value == COMMA {
         return T_COMMA;
-    } else if (value is WhiteSpace) {
+    } else if value is WhiteSpace {
         return T_WHITE_SPACE;
-    } else if (value is EOF) {
+    } else if value is EOF {
         return T_EOF;
-    } else if (value is LineTerminator) {
+    } else if value is LineTerminator {
         return T_NEW_LINE;
-    } else if (value == DOUBLE_QUOTE) {
+    } else if value == DOUBLE_QUOTE {
         return T_STRING;
-    } else if (value is Digit) {
+    } else if value is Digit {
         return T_INT;
-    } else if (value == HASH) {
+    } else if value == HASH {
         return T_COMMENT;
     } else if value == EXCLAMATION {
         return T_EXCLAMATION;
@@ -410,7 +410,7 @@ isolated function getToken(Scalar value, TokenType kind, Location location) retu
 }
 
 isolated function getWordTokenType(string value) returns TokenType {
-    if (value is Boolean) {
+    if value is Boolean {
         return T_BOOLEAN;
     }
     return T_IDENTIFIER;
@@ -418,37 +418,35 @@ isolated function getWordTokenType(string value) returns TokenType {
 
 isolated function getInt(string value, Location location) returns int|InternalError {
     var number = 'int:fromString(value);
-    if (number is error) {
+    if number is error {
         return getInternalError(value, "Int", location);
-    } else {
-        return number;
     }
+    return number;
 }
 
 isolated function getFloat(string value, Location location) returns float|InternalError {
     var number = 'float:fromString(value);
-    if (number is error) {
+    if number is error {
         return getInternalError(value, "Float", location);
-    } else {
-        return number;
     }
+    return number;
 }
 
 isolated function validateChar(string char, Location location) returns InvalidTokenError? {
-    if (!isValidChar(char)) {
-        string message = string`Syntax Error: Cannot parse the unexpected character "${char}".`;
+    if !isValidChar(char) {
+        string message = string `Syntax Error: Cannot parse the unexpected character "${char}".`;
         return error InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function validateFirstChar(string char, Location location) returns InvalidTokenError? {
-    if (!isValidFirstChar(char)) {
-        string message = string`Syntax Error: Cannot parse the unexpected character "${char}".`;
+    if !isValidFirstChar(char) {
+        string message = string `Syntax Error: Cannot parse the unexpected character "${char}".`;
         return error InvalidTokenError(message, line = location.line, column = location.column);
     }
 }
 
 isolated function getInternalError(string value, string kind, Location location) returns InternalError {
-    string message = string`Internal Error: Failed to convert the "${value}" to "${kind}".`;
+    string message = string `Internal Error: Failed to convert the "${value}" to "${kind}".`;
     return error InternalError(message, line = location.line, column = location.column);
 }
