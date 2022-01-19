@@ -31,7 +31,7 @@ class FragmentVisitor {
 
     public isolated function validate() returns ErrorDetail[]? {
         self.visitDocument(self.documentNode);
-        if (self.errors.length() > 0) {
+        if self.errors.length() > 0 {
             return self.errors;
         }
         return;
@@ -44,7 +44,7 @@ class FragmentVisitor {
         }
 
         foreach parser:FragmentNode fragmentNode in documentNode.getFragments().toArray() {
-            if (!self.usedFragments.hasKey(fragmentNode.getName())) {
+            if !self.usedFragments.hasKey(fragmentNode.getName()) {
                 string message = string`Fragment "${fragmentNode.getName()}" is never used.`;
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
                 self.errors.push(errorDetail);

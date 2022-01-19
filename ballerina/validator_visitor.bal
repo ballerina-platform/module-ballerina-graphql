@@ -37,7 +37,7 @@ class ValidatorVisitor {
 
     public isolated function validate() returns ErrorDetail[]? {
         self.visitDocument(self.documentNode);
-        if (self.errors.length() > 0) {
+        if self.errors.length() > 0 {
             return self.errors;
         }
         return;
@@ -150,7 +150,7 @@ class ValidatorVisitor {
                     }
                 }
                 if !isProvidedField {
-                    if ((subInputValue.'type).kind == NON_NULL && schemaArg?.defaultValue is ()) {
+                    if subInputValue.'type.kind == NON_NULL && schemaArg?.defaultValue is () {
                         string inputFieldName = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string`Field "${inputFieldName}" of required type ` +
                         string`"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
@@ -245,10 +245,10 @@ class ValidatorVisitor {
             self.validateEnumArgument(value, valueLocation, actualTypeName, schemaArg);
         } else if getTypeKind(schemaArg.'type) == SCALAR {
             string expectedTypeName = getOfType(schemaArg.'type).name.toString();
-            if (expectedTypeName == actualTypeName) {
+            if expectedTypeName == actualTypeName {
                 return;
             }
-            if (expectedTypeName == FLOAT && actualTypeName == INT) {
+            if expectedTypeName == FLOAT && actualTypeName == INT {
                 return;
             }
             string listError = getListElementError(self.argumentPath);
@@ -301,7 +301,7 @@ class ValidatorVisitor {
                         self.removePath();
                     }
                 } else {
-                    if ((subInputValue.'type).kind == NON_NULL && inputValue?.defaultValue is ()) {
+                    if subInputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
                         string inputField = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string`Field "${inputField}" of required type ` +
                         string`"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
@@ -481,14 +481,14 @@ class ValidatorVisitor {
     isolated function validateFragment(parser:FragmentNode fragmentNode, string schemaTypeName) returns __Type? {
         string fragmentOnTypeName = fragmentNode.getOnType();
         __Type? fragmentOnType = getTypeFromTypeArray(self.schema.types, fragmentOnTypeName);
-        if (fragmentOnType is ()) {
+        if fragmentOnType is () {
             string message = string`Unknown type "${fragmentOnTypeName}".`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
             self.errors.push(errorDetail);
         } else {
             __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, schemaTypeName);
             __Type ofType = getOfType(schemaType);
-            if (fragmentOnType != ofType) {
+            if fragmentOnType != ofType {
                 string message = getFragmetCannotSpreadError(fragmentNode, fragmentNode.getName(), ofType);
                 ErrorDetail errorDetail = getErrorDetailRecord(message, <Location> fragmentNode.getSpreadLocation());
                 self.errors.push(errorDetail);
@@ -526,7 +526,7 @@ class ValidatorVisitor {
     isolated function validateEnumArgument(parser:ArgumentValue value, Location valueLocation, string actualArgType,
                                            __InputValue inputValue) {
         __Type argType = getOfType(inputValue.'type);
-        if (getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER) {
+        if getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER {
             string listError = getListElementError(self.argumentPath);
             string message = string`${listError}Enum "${getTypeNameFromType(argType)}" cannot represent non-enum` +
             string` value: "${value.toString()}"`;
@@ -536,7 +536,7 @@ class ValidatorVisitor {
         }
         __EnumValue[] enumValues = <__EnumValue[]> argType?.enumValues;
         foreach __EnumValue enumValue in enumValues {
-            if (enumValue.name == value) {
+            if enumValue.name == value {
                 return;
             }
         }

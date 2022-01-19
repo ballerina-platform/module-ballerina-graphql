@@ -332,7 +332,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             if context is error {
                 json payload = { errors: [{ message: context.message() }] };
                 http:Response response = new;
-                if (context is AuthnError || context is AuthzError) {
+                if context is AuthnError || context is AuthzError {
                     response.statusCode = http:STATUS_BAD_REQUEST;
                 } else {
                     response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;

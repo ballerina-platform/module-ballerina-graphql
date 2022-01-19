@@ -92,10 +92,10 @@ type __Field record {|
 |};
 
 type __InputValue record {|
-	string name;
-	string description?;
-	__Type 'type;
-	string defaultValue?;
+    string name;
+    string description?;
+    __Type 'type;
+    string defaultValue?;
 |};
 
 enum __TypeKind {

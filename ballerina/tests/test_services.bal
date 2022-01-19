@@ -120,7 +120,7 @@ service /inputs on basicListener {
     }
 
     isolated resource function get isLegal(int age) returns boolean {
-        if (age < 21) {
+        if age < 21 {
             return false;
         }
         return true;
@@ -131,12 +131,16 @@ service /inputs on basicListener {
     }
 
     isolated resource function get quoteById(int id = 0) returns string? {
-        if (id == 0) {
-            return quote1;
-        } else if (id == 1) {
-            return quote2;
-        } else if (id == 2) {
-            return quote3;
+        match id {
+            0 => {
+                return quote1;
+            }
+            1 => {
+                return quote2;
+            }
+            2 => {
+                return quote3;
+            }
         }
         return;
     }
@@ -146,14 +150,14 @@ service /inputs on basicListener {
     }
 
     isolated resource function get isHoliday(Weekday? weekday) returns boolean {
-        if (weekday == SUNDAY || weekday == SATURDAY) {
+        if weekday == SUNDAY || weekday == SATURDAY {
             return true;
         }
         return false;
     }
 
     isolated resource function get getDay(boolean isHoliday) returns Weekday[]{
-        if (isHoliday) {
+        if isHoliday {
             return [SUNDAY, SATURDAY];
         }
         return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
@@ -389,9 +393,9 @@ service /service_objects on serviceTypeListener {
 
 service /records_union on basicListener {
     resource function get profile(int id) returns Person|error? {
-        if (id < people.length()) {
+        if id < people.length() {
             return people[id];
-        } else if (id < 5) {
+        } else if id < 5 {
             return;
         } else {
             return error("Invalid ID provided");
@@ -399,7 +403,7 @@ service /records_union on basicListener {
     }
 
     resource function get information(int id) returns Information {
-        if (id < 5) {
+        if id < 5 {
             return p1;
         } else {
             return a1;
@@ -407,7 +411,7 @@ service /records_union on basicListener {
     }
 
     resource function get details(int id) returns Details {
-        if (id < 5) {
+        if id < 5 {
             return { information: p1 };
         } else {
             return { information: a1 };
@@ -548,19 +552,19 @@ service /special_types on specialTypesTestListener {
     }
 
     isolated resource function get day(int number) returns Weekday|error {
-        if (number < 1 || number > 7) {
+        if number < 1 || number > 7 {
             return error("Invalid number");
-        } else if (number == 1) {
+        } else if number == 1 {
             return MONDAY;
-        } else if (number == 2) {
+        } else if number == 2 {
             return TUESDAY;
-        } else if (number == 3) {
+        } else if number == 3 {
             return WEDNESDAY;
-        } else if (number == 4) {
+        } else if number == 4 {
             return THURSDAY;
-        } else if (number == 5) {
+        } else if number == 5 {
             return FRIDAY;
-        } else if (number == 6) {
+        } else if number == 6 {
             return SATURDAY;
         } else {
             return SUNDAY;
@@ -575,7 +579,7 @@ service /special_types on specialTypesTestListener {
     }
 
     isolated resource function get isHoliday(Weekday weekday) returns boolean {
-        if (weekday == SATURDAY || weekday == SUNDAY) {
+        if weekday == SATURDAY || weekday == SUNDAY {
             return true;
         }
         return false;
@@ -657,7 +661,7 @@ service /snowtooth on serviceTypeListener {
 
 service /unions on serviceTypeListener {
     isolated resource function get profile(int id) returns StudentService|TeacherService {
-        if (id < 100) {
+        if id < 100 {
             return new StudentService(1, "Jesse Pinkman");
         } else {
             return new TeacherService(737, "Walter White", "Chemistry");

@@ -18,21 +18,18 @@ import ballerina/jballerina.java;
 import graphql.parser;
 
 isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] errorDetail) returns OutputObject {
-    if (errorDetail is ErrorDetail) {
+    if errorDetail is ErrorDetail {
         return {
             errors: [errorDetail]
         };
-    } else {
-        return {
-            errors: errorDetail
-        };
     }
+    return {errors: errorDetail};
 }
 
 isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail {
     int line = err.detail()["line"];
     int column = err.detail()["column"];
-    Location location = { line: line, column: column };
+    Location location = {line: line, column: column};
     return {
         message: err.message(),
         locations: [location]
@@ -53,7 +50,7 @@ isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fiel
 
 isolated function executeIntrospection(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata result) =
 @java:Method {
-	'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
 isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {

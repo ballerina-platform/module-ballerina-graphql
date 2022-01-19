@@ -28,13 +28,12 @@ public class Listener {
     # + return - A `graphql:Error` if the listener initialization is failed or else `()`
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration configuration)
     returns Error? {
-        if (listenTo is int) {
-            http:Listener|error httpListener = new(listenTo, configuration);
-            if (httpListener is error) {
+        if listenTo is int {
+            http:Listener|error httpListener = new (listenTo, configuration);
+            if httpListener is error {
                 return error Error("Listener initialization failed", httpListener);
-            } else {
-                self.httpListener = httpListener;
             }
+            self.httpListener = httpListener;
         } else {
             self.httpListener = listenTo;
         }
@@ -51,7 +50,7 @@ public class Listener {
         addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        Engine engine = check new(schema, maxQueryDepth);
+        Engine engine = check new (schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
 
         HttpService httpService = getHttpService(engine, serviceConfig);
@@ -71,7 +70,7 @@ public class Listener {
         HttpService? httpService = getHttpServiceFromGraphqlService(s);
         if httpService is HttpService {
             error? result = self.httpListener.detach(httpService);
-            if (result is error) {
+            if result is error {
                 return error Error("Error occurred while detaching the service", result);
             }
         }

@@ -49,7 +49,6 @@ isolated function getAnonymousOperationInMultipleOperationsError(OperationNode o
 }
 
 isolated function getScalarTypeNameForError(Scalar value) returns string {
-    string result = "";
     if value is int {
         return string `Int "${value}"`;
     }

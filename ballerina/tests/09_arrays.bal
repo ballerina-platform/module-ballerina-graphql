@@ -37,7 +37,7 @@ isolated service class Vehicle {
 
     isolated resource function get registeredYear() returns int|error {
         int? registeredYear = self.registeredYear;
-        if (registeredYear == ()) {
+        if registeredYear == () {
             return error("Registered Year is Not Found");
         } else {
             return registeredYear;

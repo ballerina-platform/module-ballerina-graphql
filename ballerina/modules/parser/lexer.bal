@@ -322,7 +322,12 @@ public class Lexer {
         TokenType kind = getWordTokenType(word);
         Scalar value = word;
         if kind is T_BOOLEAN {
-            value = <boolean>checkpanic 'boolean:fromString(word);
+            boolean|error booleanValue = 'boolean:fromString(word);
+            if booleanValue is boolean {
+                value = booleanValue;
+            } else {
+                panic booleanValue;
+            }
         }
         return {
             value: value,

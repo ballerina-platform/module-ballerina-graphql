@@ -16,11 +16,11 @@
 
 import ballerina/http;
 
-http:Client httpClient = checkpanic new("http://localhost:9000/graphql");
+http:Client httpClient = check new ("http://localhost:9000/graphql");
 
 function getJsonPayloadFromService(string document, string? operationName = ()) returns json|error {
-    if (operationName is string) {
-        return check httpClient->post("/", { query: document, operationName: operationName });
+    if operationName is string {
+        return check httpClient->post("/", {query: document, operationName: operationName});
     }
-    return check httpClient->post("/", { query: document });
+    return check httpClient->post("/", {query: document});
 }
