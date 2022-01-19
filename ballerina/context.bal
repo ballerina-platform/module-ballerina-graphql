@@ -39,27 +39,6 @@ public isolated class Context {
         }
     }
 
-    # Adds a value to the GraphQL context.
-    #
-    # + key - The key for the value to be set
-    # + value - The value to be set
-    # + return - A `graphql:Error` if the key already exists in the context, nil otherwise
-    #
-    # # Deprecated
-    # This function is deprecated and will be removed in a future release. Please use `set` method instead.
-    @deprecated
-    public isolated function add(string 'key, value:Cloneable|isolated object {} value) returns Error? {
-        lock {
-            if self.attributes.hasKey('key) {
-                return error Error(string`Cannot add attribute to the context. Key "${'key}" already exists`);
-            } else if value is value:Cloneable {
-                self.attributes['key] = value.clone();
-            } else {
-                self.attributes['key] = value;
-            }
-        }
-    }
-
     # Retrieves a value using the given key from the GraphQL context.
     #
     # + key - The key corresponding to the required value
