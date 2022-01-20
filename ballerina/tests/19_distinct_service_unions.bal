@@ -44,7 +44,7 @@ isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: string`Cannot query field "name" on type "StudentService|TeacherService". Did you mean to use a fragment on "StudentService" or "TeacherService"?`,
+                message: string`Cannot query field "name" on type "StudentService_TeacherService". Did you mean to use a fragment on "StudentService" or "TeacherService"?`,
                 locations: [
                     {
                         line: 3,

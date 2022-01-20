@@ -48,7 +48,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
  * Utility methods for the Ballerina GraphQL schema generator.
  */
 public class Utils {
-    private static final String UNION_TYPE_NAME_DELIMITER = "|";
+    private static final String UNION_TYPE_NAME_DELIMITER = "_";
 
     private Utils() {}
 

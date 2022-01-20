@@ -670,7 +670,7 @@ service /unions on serviceTypeListener {
         return [s, t];
     }
 
-    isolated resource function get services() returns Services?[] {
+    isolated resource function get services() returns PeopleService?[] {
         StudentService s = new StudentService(1, "Jesse Pinkman");
         TeacherService t = new TeacherService(737, "Walter White", "Chemistry");
         return [s, t, ()];

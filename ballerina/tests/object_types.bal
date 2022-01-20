@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-type Services StudentService|TeacherService;
+type PeopleService StudentService|TeacherService;
 
 type SearchResult Lift|Trail;
 
