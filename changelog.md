@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2552] Fix returning error when querying a union type includes a field returns an object](https://github.com/ballerina-platform/ballerina-standard-library/issues/2552)
 - [[#2571] Fix Service Crashing when Fields Return Nullable, Union Type Arrays](https://github.com/ballerina-platform/ballerina-standard-library/issues/2571)
 - [[#2578] Fix Incorrect Response Returning for GraphQL Scalar Type Arrays](https://github.com/ballerina-platform/ballerina-standard-library/issues/2578)
+- [[#2598] Fix Resolving Union Type Names Incorrectly when the Field is Nullable](https://github.com/ballerina-platform/ballerina-standard-library/issues/2598)
 
 ## [1.1.0] - 2021-12-14
 

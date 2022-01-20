@@ -71,6 +71,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isIgnoreType;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
@@ -394,7 +395,7 @@ public class Engine {
         if (argType.getTag() == TypeTags.UNION_TAG) {
             List<Type> originalMembers = ((UnionType) argType).getOriginalMemberTypes();
             for (Type type : originalMembers) {
-                if (type.getTag() != TypeTags.ERROR_TAG || type.getTag() != TypeTags.NULL_TAG) {
+                if (!isIgnoreType(type)) {
                     nonNullType = type;
                     break;
                 }

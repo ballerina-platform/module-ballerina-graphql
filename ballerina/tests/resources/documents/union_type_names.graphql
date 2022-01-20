@@ -1,0 +1,25 @@
+{
+    __schema {
+        queryType {
+            fields {
+                name
+                type {
+                    name
+                    kind
+                    ofType {
+                        name
+                        kind
+                        ofType {
+                            name
+                            kind
+                            ofType {
+                                name
+                                kind
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

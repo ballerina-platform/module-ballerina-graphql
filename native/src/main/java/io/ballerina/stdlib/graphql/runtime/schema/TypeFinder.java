@@ -220,16 +220,12 @@ public class TypeFinder {
             this.createSchemaType(getTypeNameFromType(unionType), TypeKind.ENUM, unionType);
         } else {
             List<Type> memberTypes = getMemberTypes(unionType);
-            if (memberTypes.size() == 1) {
-                getSchemaTypeFromBalType(memberTypes.get(0));
-            } else {
+            if (memberTypes.size() > 1) {
                 String typeName = getTypeName(unionType);
                 this.createSchemaType(typeName, TypeKind.UNION, unionType);
             }
             for (Type type : memberTypes) {
-                if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
-                    getSchemaTypeFromBalType(type);
-                }
+                getSchemaTypeFromBalType(type);
             }
         }
     }

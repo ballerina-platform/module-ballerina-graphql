@@ -716,7 +716,7 @@ This will be the result:
 #### Union Types
 The Ballerina GraphQL service can return a union of distinct service types. This will be mapped to a GraphQL `UNION` type.
 
-Since Ballerina supports union types by nature, directly returning a union type is also allowed (but not recommended). The recommended way is to define a union type name separately and then use that type name as shown in the following example. If a union type is returned directly without providing a type name, the type name will be `T1|T2|T3|...|Tn`.
+> **Note:** Since Ballerina supports union types by nature, directly returning a union type is also allowed (but not recommended). The recommended way is to define a union type name separately and then use that type name as shown in the following example. If a union type is returned directly without providing a type name (`returns T1|T2|T3`), the type name will be `T1_T2_T3`.
 
 ```ballerina
 import ballerina/graphql;
