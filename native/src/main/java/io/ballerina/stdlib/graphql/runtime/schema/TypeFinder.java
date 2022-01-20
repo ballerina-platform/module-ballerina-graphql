@@ -225,9 +225,7 @@ public class TypeFinder {
                 this.createSchemaType(typeName, TypeKind.UNION, unionType);
             }
             for (Type type : memberTypes) {
-                if (type.getTag() != TypeTags.ERROR_TAG && type.getTag() != TypeTags.NULL_TAG) {
-                    getSchemaTypeFromBalType(type);
-                }
+                getSchemaTypeFromBalType(type);
             }
         }
     }

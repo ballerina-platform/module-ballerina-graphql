@@ -1,0 +1,120 @@
+{
+    "data": {
+        "__schema": {
+            "queryType": {
+                "fields": [
+                    {
+                        "name": "nullableUndefinedUnionTypeArray",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": null,
+                                "kind": "LIST",
+                                "ofType": {
+                                    "name": "StudentService_TeacherService",
+                                    "kind": "UNION",
+                                    "ofType": null
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "nullableArray",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": null,
+                                "kind": "LIST",
+                                "ofType": {
+                                    "name": "PeopleService",
+                                    "kind": "UNION",
+                                    "ofType": null
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "nullableSingleObject",
+                        "type": {
+                            "name": "PeopleService",
+                            "kind": "UNION",
+                            "ofType": null
+                        }
+                    },
+                    {
+                        "name": "nonNullArray",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": null,
+                                "kind": "LIST",
+                                "ofType": {
+                                    "name": null,
+                                    "kind": "NON_NULL",
+                                    "ofType": {
+                                        "name": "PeopleService",
+                                        "kind": "UNION"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "nonNullUndefinedUnionType",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": "StudentService_TeacherService",
+                                "kind": "UNION",
+                                "ofType": null
+                            }
+                        }
+                    },
+                    {
+                        "name": "nullableUndefinedUnionType",
+                        "type": {
+                            "name": "StudentService_TeacherService",
+                            "kind": "UNION",
+                            "ofType": null
+                        }
+                    },
+                    {
+                        "name": "nonNullUndefinedUnionTypeArray",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": null,
+                                "kind": "LIST",
+                                "ofType": {
+                                    "name": null,
+                                    "kind": "NON_NULL",
+                                    "ofType": {
+                                        "name": "StudentService_TeacherService",
+                                        "kind": "UNION"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "nonNullSingleObject",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": "PeopleService",
+                                "kind": "UNION",
+                                "ofType": null
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

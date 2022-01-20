@@ -171,3 +171,14 @@ isolated function testNullableUnionOfDistinctServicesArrayQueryOnSelectedTypes()
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["service", "union"]
+}
+isolated function testUnionTypeNames() returns error? {
+    string document = check getGraphQLDocumentFromFile("union_type_names.graphql");
+    string url = "http://localhost:9092/union_type_names";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("union_type_names.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

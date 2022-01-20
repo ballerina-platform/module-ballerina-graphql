@@ -68,7 +68,7 @@ public class Utils {
         } else {
             List<Type> originalMembers = unionType.getOriginalMemberTypes();
             for (Type type : originalMembers) {
-                if (type.getTag() == TypeTags.ERROR_TAG || type.getTag() == TypeTags.NULL_TAG) {
+                if (isIgnoreType(type)) {
                     continue;
                 }
                 if (type.getTag() == TypeTags.UNION_TAG) {
@@ -122,10 +122,26 @@ public class Utils {
     }
 
     public static String getTypeName(UnionType unionType) {
-        List<Type> memberTypes = getMemberTypes(unionType);
-        return unionType.getName().isBlank() ?
-                memberTypes.stream().map(Type::getName).collect(Collectors.joining(UNION_TYPE_NAME_DELIMITER)) :
-                unionType.getName();
+        if (isEnum(unionType)) {
+            return unionType.getName();
+        }
+        if (!unionType.getName().isBlank()) {
+            return unionType.getName();
+        }
+        List<Type> memberTypes = new ArrayList<>();
+        for (Type type : unionType.getOriginalMemberTypes()) {
+            if (!isIgnoreType(type)) {
+                memberTypes.add(type);
+            }
+        }
+        if (memberTypes.size() == 1) {
+            return getTypeNameFromType(memberTypes.get(0));
+        }
+        return memberTypes.stream().map(Type::getName).collect(Collectors.joining(UNION_TYPE_NAME_DELIMITER));
+    }
+
+    public static boolean isIgnoreType(Type type) {
+        return type.getTag() == TypeTags.ERROR_TAG || type.getTag() == TypeTags.NULL_TAG;
     }
 
     private static String getTypeName(RecordType recordType) {

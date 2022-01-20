@@ -677,6 +677,43 @@ service /unions on serviceTypeListener {
     }
 }
 
+service /union_type_names on serviceTypeListener {
+    private final StudentService s = new StudentService(1, "Jesse Pinkman");
+    private final TeacherService t = new TeacherService(0, "Walter White", "Chemistry");
+
+    isolated resource function get nonNullSingleObject() returns PeopleService {
+        return self.s;
+    }
+
+    isolated resource function get nullableSingleObject() returns PeopleService? {
+        return self.s;
+    }
+
+    isolated resource function get nonNullArray() returns PeopleService[] {
+        return [self.s, self.t];
+    }
+
+    isolated resource function get nullableArray() returns PeopleService?[] {
+        return [self.s, ()];
+    }
+
+    isolated resource function get nonNullUndefinedUnionType() returns StudentService|TeacherService {
+        return self.s;
+    }
+
+    isolated resource function get nonNullUndefinedUnionTypeArray() returns (StudentService|TeacherService)[] {
+        return [self.s];
+    }
+
+    isolated resource function get nullableUndefinedUnionType() returns StudentService|TeacherService? {
+        return self.s;
+    }
+
+    isolated resource function get nullableUndefinedUnionTypeArray() returns (StudentService|TeacherService)?[] {
+        return [self.s, ()];
+    }
+}
+
 service /duplicates on basicListener {
     isolated resource function get profile() returns Person {
         return {
