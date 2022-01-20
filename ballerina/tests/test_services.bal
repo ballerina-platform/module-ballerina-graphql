@@ -156,7 +156,7 @@ service /inputs on basicListener {
         return false;
     }
 
-    isolated resource function get getDay(boolean isHoliday) returns Weekday[]{
+    isolated resource function get getDay(boolean isHoliday) returns Weekday[] {
         if isHoliday {
             return [SUNDAY, SATURDAY];
         }
@@ -412,9 +412,9 @@ service /records_union on basicListener {
 
     resource function get details(int id) returns Details {
         if id < 5 {
-            return { information: p1 };
+            return {information: p1};
         } else {
-            return { information: a1 };
+            return {information: a1};
         }
     }
 

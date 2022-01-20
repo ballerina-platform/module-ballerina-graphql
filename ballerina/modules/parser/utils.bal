@@ -68,9 +68,9 @@ isolated function getErrorMessageTypeNameForError(Token token) returns string {
     } else if kind == T_IDENTIFIER {
         return getScalarTypeNameForError(token.value);
     } else if kind == T_STRING {
-        return string`String "${token.value}"`;
+        return string `String "${token.value}"`;
     }
-    return string`"${token.value}"`;
+    return string `"${token.value}"`;
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {
