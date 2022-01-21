@@ -132,7 +132,7 @@ service /graphql on new graphql:Listener(4000) {
 
 service /graphql on new graphql:Listener(4000) {
     resource function get book(Person? p) returns Book? {
-        if (p is ()) {
+        if p is () {
             return;
         }
         return {

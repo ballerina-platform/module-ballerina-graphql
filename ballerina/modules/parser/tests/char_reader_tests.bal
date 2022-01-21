@@ -21,7 +21,7 @@ import ballerina/test;
 }
 isolated function testCharReaderForSimpleString() {
     string s = "Hello";
-    CharReader reader = new(s);
+    CharReader reader = new (s);
     string c = reader.read();
     string expectedChar = "H";
     test:assertEquals(c, expectedChar);
@@ -52,7 +52,7 @@ isolated function testCharReaderForSimpleString() {
 }
 isolated function testCharReaderForEof() {
     string s = "";
-    CharReader reader = new(s);
+    CharReader reader = new (s);
     string c = reader.read();
     string expectedChar = EOF;
     test:assertEquals(c, expectedChar);
@@ -63,7 +63,7 @@ isolated function testCharReaderForEof() {
 }
 isolated function testCharReaderForAfterEof() {
     string s = "";
-    CharReader reader = new(s);
+    CharReader reader = new (s);
     test:assertFalse(reader.isEof());
     _ = reader.read();
     test:assertTrue(reader.isEof());
@@ -74,7 +74,7 @@ isolated function testCharReaderForAfterEof() {
 }
 isolated function testCharReaderForNewLine() {
     string s = "\n\n\n";
-    CharReader reader = new(s);
+    CharReader reader = new (s);
     string c = reader.read();
     c = reader.read();
     string expectedChar = "\n";

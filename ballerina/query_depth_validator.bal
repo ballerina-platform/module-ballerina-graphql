@@ -16,7 +16,7 @@
 
 import graphql.parser;
 
-class QueryDepthValidator{
+class QueryDepthValidator {
     *parser:Visitor;
 
     private parser:DocumentNode documentNode;
@@ -25,7 +25,7 @@ class QueryDepthValidator{
     private int queryDepthLimit;
     private ErrorDetail[] errors;
 
-    public isolated function init(parser:DocumentNode documentNode, int queryDepthLimit){
+    public isolated function init(parser:DocumentNode documentNode, int queryDepthLimit) {
         self.documentNode = documentNode;
         self.queryDepth = 0;
         self.maxQueryDepth = 0;
@@ -35,7 +35,7 @@ class QueryDepthValidator{
 
     public isolated function validate() returns ErrorDetail[]? {
         self.visitDocument(self.documentNode);
-        if (self.errors.length() > 0) {
+        if self.errors.length() > 0 {
             return self.errors;
         }
         return;
@@ -45,8 +45,8 @@ class QueryDepthValidator{
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
             self.visitOperation(operationNode);
-            if (self.maxQueryDepth > self.queryDepthLimit) {
-                if (operationNode.getName() != parser:ANONYMOUS_OPERATION) {
+            if self.maxQueryDepth > self.queryDepthLimit {
+                if operationNode.getName() != parser:ANONYMOUS_OPERATION {
                     string message = string
                     `Query "${operationNode.getName()}" has depth of ${self.maxQueryDepth}, which exceeds max depth of ${self.queryDepthLimit}`;
                     self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
@@ -78,13 +78,13 @@ class QueryDepthValidator{
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         self.queryDepth += 1;
-        if (fieldNode.getSelections().length() > 0) {
+        if fieldNode.getSelections().length() > 0 {
             parser:Selection[] selections = fieldNode.getSelections();
             foreach parser:Selection subSelection in selections {
                 self.visitSelection(subSelection);
             }
         } else {
-            if (self.queryDepth > self.maxQueryDepth) {
+            if self.queryDepth > self.maxQueryDepth {
                 self.maxQueryDepth = self.queryDepth;
             }
         }

@@ -36,9 +36,8 @@ isolated function authenticateService(ListenerAuthConfig[]? authConfigs, http:Re
             return createForbiddenResponse();
         }
         return;
-    } else {
-        return createUnauthorizedResponse();
     }
+    return createUnauthorizedResponse();
 }
 
 isolated map<ListenerAuthHandler> authHandlers = {};

@@ -29,7 +29,7 @@ service graphql:Service on new graphql:Listener(4000) {
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get color(Location? location) returns float[]? {
-        if (location is Location) {
+        if location is Location {
             return [location.latitude, location.longitude];
         }
         return;

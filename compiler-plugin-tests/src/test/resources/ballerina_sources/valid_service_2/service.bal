@@ -30,7 +30,7 @@ service graphql:Service on new graphql:Listener(4000) {
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get isLegal(int age) returns boolean {
-        if (age < 21) {
+        if age < 21 {
             return false;
         }
         return true;

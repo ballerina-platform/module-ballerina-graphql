@@ -19,7 +19,7 @@ public class Parser {
     private DocumentNode document;
 
     public isolated function init(string text) {
-        self.lexer = new(text);
+        self.lexer = new (text);
         self.document = new;
     }
 
@@ -91,7 +91,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         string onType = check getIdentifierTokenvalue(token);
 
-        FragmentNode fragmentNode = new(name, location, false, onType = onType);
+        FragmentNode fragmentNode = new (name, location, false, onType = onType);
         check self.addDirectivesToSelection(fragmentNode, FRAGMENT_DEFINITION);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
@@ -103,7 +103,7 @@ public class Parser {
 
     isolated function createOperationNode(string name, RootOperationType kind, Location location)
     returns OperationNode|Error {
-        OperationNode operation = new(name, kind, location);
+        OperationNode operation = new (name, kind, location);
         Token token = check self.peekNextNonSeparatorToken();
         if token.kind == T_OPEN_PARENTHESES {
             check self.addVariableDefinition(operation);
@@ -130,10 +130,10 @@ public class Parser {
             }
             token = check self.readNextNonSeparatorToken();
             string varType = check self.getTypeIdentifierTokenValue(token);
-            VariableDefinitionNode varDefinition = new(varName, varType, varDefinitionLocation);
+            VariableDefinitionNode varDefinition = new (varName, varType, varDefinitionLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
-                token = check self.readNextNonSeparatorToken();// consume "=" sign here
+                token = check self.readNextNonSeparatorToken(); // consume "=" sign here
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
                     ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
@@ -185,7 +185,7 @@ public class Parser {
         string alias = check getIdentifierTokenvalue(token);
         string name = check self.getNameWhenAliasPresent(alias);
 
-        FieldNode fieldNode = new(name, token.location, alias);
+        FieldNode fieldNode = new (name, token.location, alias);
         check self.addArgumentsToSelection(fieldNode);
         check self.addDirectivesToSelection(fieldNode, FIELD);
         token = check self.peekNextNonSeparatorToken();
@@ -198,18 +198,18 @@ public class Parser {
     isolated function addNamedFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
-        FragmentNode fragmentNode = new(fragmentName, token.location, false, spreadLocation);
+        FragmentNode fragmentNode = new (fragmentName, token.location, false, spreadLocation);
         check self.addDirectivesToSelection(fragmentNode, FRAGMENT_SPREAD);
         parentNode.addSelection(fragmentNode);
     }
 
     isolated function addInlineFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
-        Token token = check self.readNextNonSeparatorToken();//Consume on keyword
+        Token token = check self.readNextNonSeparatorToken(); //Consume on keyword
         token = check self.readNextNonSeparatorToken();
         Location location = token.location;
         string onType = check getIdentifierTokenvalue(token);
-        string fragmentName = string`${parentNode.getName()}_${onType}`;
-        FragmentNode fragmentNode = new(fragmentName, location, true, spreadLocation, onType);
+        string fragmentName = string `${parentNode.getName()}_${onType}`;
+        FragmentNode fragmentNode = new (fragmentName, location, true, spreadLocation, onType);
         check self.addDirectivesToSelection(fragmentNode, INLINE_FRAGMENT);
         token = check self.peekNextNonSeparatorToken();
         if token.kind != T_OPEN_BRACE {
@@ -261,7 +261,7 @@ public class Parser {
             Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenvalue(token);
-            DirectiveNode directiveNode = new(name, location);
+            DirectiveNode directiveNode = new (name, location);
             directiveNode.addDirectiveLocation(dirLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_OPEN_PARENTHESES {
@@ -315,10 +315,10 @@ public class Parser {
 
     isolated function getInputObjectTypeArgument(string name, Location location,
                                                  boolean isAllowVariableValue = true) returns ArgumentNode|Error {
-        ArgumentNode argumentNode = new(name, location, T_INPUT_OBJECT);
+        ArgumentNode argumentNode = new (name, location, T_INPUT_OBJECT);
         ArgumentValue[] fields = [];
         string[] visitedFields = [];
-        Token token = check self.readNextNonSeparatorToken();// consume open brace here
+        Token token = check self.readNextNonSeparatorToken(); // consume open brace here
         token = check self.peekNextNonSeparatorToken();
         argumentNode.setValueLocation(token.location);
         if token.kind != T_CLOSE_BRACE {
@@ -351,7 +351,8 @@ public class Parser {
                         token = check self.readNextNonSeparatorToken();
                         token = check self.readNextNonSeparatorToken();
                         string varName = check getIdentifierTokenvalue(token);
-                        ArgumentNode nestedVariableFields = new(fieldName, token.location, T_IDENTIFIER, isVarDef = true);
+                        ArgumentNode nestedVariableFields = new (fieldName, token.location, T_IDENTIFIER,
+                                                                 isVarDef = true);
                         nestedVariableFields.addVariableName(varName);
                         fields.push(nestedVariableFields);
                         visitedFields.push(fieldName);
@@ -363,7 +364,7 @@ public class Parser {
                     token = check self.readNextNonSeparatorToken();
                     ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue fieldValue = check getArgumentValue(token);
-                    ArgumentNode inputObjectFieldNode = new(fieldName, fieldLocation, argType);
+                    ArgumentNode inputObjectFieldNode = new (fieldName, fieldLocation, argType);
                     inputObjectFieldNode.setValue(fieldValue);
                     inputObjectFieldNode.setValueLocation(token.location);
                     fields.push(inputObjectFieldNode);
@@ -378,9 +379,9 @@ public class Parser {
     }
 
     isolated function getListTypeArgument(string name, Location location,
-                                          boolean isAllowVariableValue = true) returns ArgumentNode|Error {
-        ArgumentNode argumentNode = new(name, location, T_LIST);
-        Token token = check self.readNextNonSeparatorToken();// consume open bracket here
+                                        boolean isAllowVariableValue = true) returns ArgumentNode|Error {
+        ArgumentNode argumentNode = new (name, location, T_LIST);
+        Token token = check self.readNextNonSeparatorToken(); // consume open bracket here
         ArgumentValue[] listMembers = [];
         token = check self.peekNextNonSeparatorToken();
         argumentNode.setValueLocation(token.location);
@@ -402,18 +403,18 @@ public class Parser {
                         token = check self.readNextNonSeparatorToken(); // consume dollar here
                         token = check self.readNextNonSeparatorToken();
                         string varName = check getIdentifierTokenvalue(token);
-                        ArgumentNode variableValue = new(name, token.location, T_IDENTIFIER, isVarDef = true);
+                        ArgumentNode variableValue = new (name, token.location, T_IDENTIFIER, isVarDef = true);
                         variableValue.addVariableName(varName);
                         listMembers.push(variableValue);
                     } else {
                         return getUnexpectedTokenError(token);
                     }
-                } else if token.kind is ArgumentType  {
+                } else if token.kind is ArgumentType {
                     //list with Scalar values
                     token = check self.readNextNonSeparatorToken();
                     ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue value = check getArgumentValue(token);
-                    ArgumentNode argumentValue = new(name, token.location, argType);
+                    ArgumentNode argumentValue = new (name, token.location, argType);
                     argumentValue.setValue(value);
                     listMembers.push(argumentValue);
                 } else {
@@ -436,7 +437,7 @@ public class Parser {
                 token = check self.readNextNonSeparatorToken();
                 string varName = check getIdentifierTokenvalue(token);
                 ArgumentType argType = <ArgumentType>token.kind;
-                ArgumentNode argument = new(name, token.location, argType, isVarDef = true);
+                ArgumentNode argument = new (name, token.location, argType, isVarDef = true);
                 argument.addVariableName(varName);
                 argument.setValueLocation(token.location);
                 return argument;
@@ -445,7 +446,7 @@ public class Parser {
         } else {
             ArgumentValue value = check getArgumentValue(token);
             ArgumentType argType = <ArgumentType>token.kind;
-            ArgumentNode argument = new(name, location, argType);
+            ArgumentNode argument = new (name, location, argType);
             argument.setValue(value);
             argument.setValueLocation(token.location);
             return argument;
@@ -530,9 +531,8 @@ isolated function getRootOperationType(Token token) returns RootOperationType|Er
 isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
     if token.kind is ArgumentType {
         return token.value == NULL ? () : token.value;
-    } else {
-        return getUnexpectedTokenError(token);
     }
+    return getUnexpectedTokenError(token);
 }
 
 isolated function getOperationNameFromToken(Parser parser) returns string|Error {
@@ -541,7 +541,8 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Error 
         // If this is a named operation, we should consume name token
         token = check parser.readNextNonSeparatorToken();
         return <string>token.value;
-    } else if token.kind == T_OPEN_BRACE || token.kind == T_OPEN_PARENTHESES || token.kind == T_AT {
+    }
+    if token.kind == T_OPEN_BRACE || token.kind == T_OPEN_PARENTHESES || token.kind == T_AT {
         return ANONYMOUS_OPERATION;
     }
     return getUnexpectedTokenError(token);
@@ -550,9 +551,8 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Error 
 isolated function getIdentifierTokenvalue(Token token) returns string|Error {
     if token.kind == T_IDENTIFIER {
         return <string>token.value;
-    } else {
-        return getExpectedNameError(token);
     }
+    return getExpectedNameError(token);
 }
 
 isolated function getLocationFromRootOperationType(RootOperationType operation) returns DirectiveLocation {

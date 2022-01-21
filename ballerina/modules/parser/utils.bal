@@ -49,31 +49,28 @@ isolated function getAnonymousOperationInMultipleOperationsError(OperationNode o
 }
 
 isolated function getScalarTypeNameForError(Scalar value) returns string {
-    string result = "";
-    if (value is int) {
-        result = "Int";
-    } else if (value is float) {
-        result = "Float";
-    } else if (value is boolean) {
-        result = "Boolean";
-    } else {
-        result = "Name";
+    if value is int {
+        return string `Int "${value}"`;
     }
-
-    return string`${result} "${value}"`;
+    if value is float {
+        return string `Float "${value}"`;
+    }
+    if value is boolean {
+        return string `Boolean "${value}"`;
+    }
+    return string `Name "${value}"`;
 }
 
 isolated function getErrorMessageTypeNameForError(Token token) returns string {
     TokenType kind = token.kind;
-    if (kind == T_EOF) {
+    if kind == T_EOF {
         return "<EOF>";
-    } else if (kind == T_IDENTIFIER) {
+    } else if kind == T_IDENTIFIER {
         return getScalarTypeNameForError(token.value);
-    } else if (kind == T_STRING) {
-        return string`String "${token.value}"`;
-    } else {
-        return string`"${token.value}"`;
+    } else if kind == T_STRING {
+        return string `String "${token.value}"`;
     }
+    return string `"${token.value}"`;
 }
 
 isolated function isValidFirstChar(string char) returns boolean = @java:Method {
