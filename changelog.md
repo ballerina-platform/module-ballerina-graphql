@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - [[#1475] Add CORS configure support](https://github.com/ballerina-platform/ballerina-standard-library/issues/1475)
 
+### Changed
+- [[#2529] Remove the `context.add()` method](https://github.com/ballerina-platform/ballerina-standard-library/issues/2529)
+
 ### Fixed
 - [[#2076] Refactor GraphQL error messages](https://github.com/ballerina-platform/ballerina-standard-library/issues/2076)
 - [[#2500] Fix returning NPE when multiple file uploading](https://github.com/ballerina-platform/ballerina-standard-library/issues/2500)
