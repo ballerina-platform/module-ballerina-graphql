@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.compiler.validator;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
+import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
@@ -252,27 +253,29 @@ public class FunctionValidator {
 
     private void validateInputType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
         if (typeSymbol.typeKind() == TypeDescKind.UNION) {
-            validateUnionTypeInputParameter((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
+            validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            validateTypeReferenceInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location, isResourceMethod);
+            validateInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
-            validateArrayTypeInputParameter((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
+            validateInputParameterType((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
+        } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
+            validateInputParameterType((IntersectionTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (!isPrimitiveType(typeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
                           typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
         }
     }
 
-    private void validateArrayTypeInputParameter(ArrayTypeSymbol arrayTypeSymbol, Location location,
-                                                 boolean isResourceMethod) {
+    private void validateInputParameterType(ArrayTypeSymbol arrayTypeSymbol, Location location,
+                                            boolean isResourceMethod) {
         this.arrayDimension++;
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
         validateInputParameterType(memberTypeSymbol, location, isResourceMethod);
         this.arrayDimension--;
     }
 
-    private void validateTypeReferenceInputParameterType(TypeReferenceTypeSymbol typeSymbol, Location location,
-                                                         boolean isResourceMethod) {
+    private void validateInputParameterType(TypeReferenceTypeSymbol typeSymbol, Location location,
+                                            boolean isResourceMethod) {
         TypeSymbol typeDescriptor = typeSymbol.typeDescriptor();
         Symbol typeDefinition = typeSymbol.definition();
         if (typeSymbol.getName().isPresent()) {
@@ -281,17 +284,17 @@ public class FunctionValidator {
                 return;
             }
             if (typeDescriptor.typeKind() == TypeDescKind.RECORD) {
-                validateInputRecordType((RecordTypeSymbol) typeDescriptor, location, isResourceMethod);
+                validateInputParameterType((RecordTypeSymbol) typeDescriptor, location, isResourceMethod);
             } else if (typeDescriptor.typeKind() == TypeDescKind.UNION) {
-                validateUnionTypeInputParameter((UnionTypeSymbol) typeDescriptor, location, isResourceMethod);
+                validateInputParameterType((UnionTypeSymbol) typeDescriptor, location, isResourceMethod);
             } else if (!isPrimitiveType(typeDescriptor)) {
                 updateContext(this.context, CompilationError.INVALID_INPUT_PARAMETER_TYPE, location, typeName);
             }
         }
     }
 
-    private void validateUnionTypeInputParameter(UnionTypeSymbol unionTypeSymbol, Location location,
-                                                 boolean isResourceMethod) {
+    private void validateInputParameterType(UnionTypeSymbol unionTypeSymbol, Location location,
+                                            boolean isResourceMethod) {
         boolean foundDataType = false;
         int dataTypeCount = 0;
         for (TypeSymbol memberType : unionTypeSymbol.userSpecifiedMemberTypes()) {
@@ -310,8 +313,24 @@ public class FunctionValidator {
         }
     }
 
-    private void validateInputRecordType(RecordTypeSymbol recordTypeSymbol, Location location,
-                                         boolean isResourceMethod) {
+    private void validateInputParameterType(IntersectionTypeSymbol intersectionTypeSymbol, Location location,
+                                            boolean isResourceMethod) {
+        List<TypeSymbol> effectiveTypes = new ArrayList<>();
+        for (TypeSymbol typeSymbol : intersectionTypeSymbol.memberTypeDescriptors()) {
+            if (typeSymbol.typeKind() == TypeDescKind.READONLY) {
+                continue;
+            }
+            effectiveTypes.add(typeSymbol);
+        }
+        if (effectiveTypes.size() == 1) {
+            validateInputParameterType(effectiveTypes.get(0), location, isResourceMethod);
+            return;
+        }
+        updateContext(this.context, CompilationError.INVALID_INPUT_TYPE_INTERSECTION, location);
+    }
+
+    private void validateInputParameterType(RecordTypeSymbol recordTypeSymbol, Location location,
+                                            boolean isResourceMethod) {
         if (this.existingReturnTypes.contains(recordTypeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location);
         } else {
