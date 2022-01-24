@@ -9,4 +9,4 @@ license = ["Apache-2.0"]
 distribution = "slbeta6"
 
 [[platform.java11.dependency]]
-path = "../native/build/libs/graphql-native-1.1.1-SNAPSHOT.jar"
+path = "../native/build/libs/graphql-native-1.1.1.jar"
