@@ -48,7 +48,7 @@ public enum ErrorMessage {
     ERROR_120("GraphQL input cannot have multi-dimensional graphql:Upload arrays"),
     ERROR_121("Graphql input type must not be a subtype of `error?`"),
     ERROR_122("Invalid union type for GraphQL input type"),
-    ERROR_123("Invalid intersection type for GraphQL input type");
+    ERROR_123("Invalid intersection type for GraphQL type");
 
     private final String message;
 

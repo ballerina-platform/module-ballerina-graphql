@@ -26,6 +26,16 @@ public type Student record {
     string subject;
 };
 
+public type Book readonly & record {
+    string name;
+    string author;
+};
+
+public type Movie readonly & record {
+    string name;
+    string director;
+};
+
 service /graphql on new graphql:Listener(4000) {
 
     isolated resource function get getName(Person & readonly person) returns string {
@@ -35,5 +45,14 @@ service /graphql on new graphql:Listener(4000) {
     isolated resource function get subject() returns Student & readonly {
         Student student = {name: "Jesse Pinkman", subject: "Arts and Crafts"};
         return student.cloneReadOnly();
+    }
+
+    isolated resource function get director() returns Movie {
+        Movie movie = {name: "Pulp Fiction", director: "Quentin Tarantino"};
+        return movie;
+    }
+
+    isolated resource function get author(Book book) returns string {
+        return book.author;
     }
 }

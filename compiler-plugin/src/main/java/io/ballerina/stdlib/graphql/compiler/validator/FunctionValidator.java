@@ -182,6 +182,11 @@ public class FunctionValidator {
             validateReturnType(arrayTypeSymbol.memberTypeDescriptor(), location);
         } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             validateReturnTypeDefinitions((TypeReferenceTypeSymbol) typeSymbol, location);
+        } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
+            TypeSymbol effectiveType = getEffectiveType((IntersectionTypeSymbol) typeSymbol, location);
+            if (effectiveType != null) {
+                validateReturnType(effectiveType, location);
+            }
         } else if (typeSymbol.typeKind() == TypeDescKind.NIL) {
             // nil alone is invalid - must have a return type
             updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_NIL, location);
@@ -260,6 +265,10 @@ public class FunctionValidator {
             validateInputParameterType((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
             validateInputParameterType((IntersectionTypeSymbol) typeSymbol, location, isResourceMethod);
+        } else if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+            validateInputParameterType((RecordTypeSymbol) typeSymbol, location, isResourceMethod);
+        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+            validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (!isPrimitiveType(typeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
                           typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
@@ -278,19 +287,10 @@ public class FunctionValidator {
                                             boolean isResourceMethod) {
         TypeSymbol typeDescriptor = typeSymbol.typeDescriptor();
         Symbol typeDefinition = typeSymbol.definition();
-        if (typeSymbol.getName().isPresent()) {
-            String typeName = typeSymbol.getName().get();
-            if (typeDefinition.kind() == SymbolKind.ENUM) {
-                return;
-            }
-            if (typeDescriptor.typeKind() == TypeDescKind.RECORD) {
-                validateInputParameterType((RecordTypeSymbol) typeDescriptor, location, isResourceMethod);
-            } else if (typeDescriptor.typeKind() == TypeDescKind.UNION) {
-                validateInputParameterType((UnionTypeSymbol) typeDescriptor, location, isResourceMethod);
-            } else if (!isPrimitiveType(typeDescriptor)) {
-                updateContext(this.context, CompilationError.INVALID_INPUT_PARAMETER_TYPE, location, typeName);
-            }
+        if (typeDefinition.kind() == SymbolKind.ENUM) {
+            return;
         }
+        validateInputParameterType(typeDescriptor, location, isResourceMethod);
     }
 
     private void validateInputParameterType(UnionTypeSymbol unionTypeSymbol, Location location,
@@ -315,6 +315,13 @@ public class FunctionValidator {
 
     private void validateInputParameterType(IntersectionTypeSymbol intersectionTypeSymbol, Location location,
                                             boolean isResourceMethod) {
+        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol, location);
+        if (effectiveType != null) {
+            validateInputParameterType(effectiveType, location, isResourceMethod);
+        }
+    }
+
+    private TypeSymbol getEffectiveType(IntersectionTypeSymbol intersectionTypeSymbol, Location location) {
         List<TypeSymbol> effectiveTypes = new ArrayList<>();
         for (TypeSymbol typeSymbol : intersectionTypeSymbol.memberTypeDescriptors()) {
             if (typeSymbol.typeKind() == TypeDescKind.READONLY) {
@@ -323,10 +330,10 @@ public class FunctionValidator {
             effectiveTypes.add(typeSymbol);
         }
         if (effectiveTypes.size() == 1) {
-            validateInputParameterType(effectiveTypes.get(0), location, isResourceMethod);
-            return;
+            return effectiveTypes.get(0);
         }
-        updateContext(this.context, CompilationError.INVALID_INPUT_TYPE_INTERSECTION, location);
+        updateContext(this.context, CompilationError.INVALID_INTERSECTION_Type, location);
+        return null;
     }
 
     private void validateInputParameterType(RecordTypeSymbol recordTypeSymbol, Location location,

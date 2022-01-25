@@ -151,7 +151,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testIntersectionType() {
+    public void testIntersectionTypes() {
         String packagePath = "valid_service_16";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);

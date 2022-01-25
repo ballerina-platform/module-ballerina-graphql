@@ -46,7 +46,7 @@ public enum CompilationError {
     MULTI_DIMENSIONAL_UPLOAD_ARRAY(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR),
     INVALID_INPUT_TYPE(ErrorMessage.ERROR_121, ErrorCode.GRAPHQL_121, DiagnosticSeverity.ERROR),
     INVALID_INPUT_TYPE_UNION(ErrorMessage.ERROR_122, ErrorCode.GRAPHQL_122, DiagnosticSeverity.ERROR),
-    INVALID_INPUT_TYPE_INTERSECTION(ErrorMessage.ERROR_123, ErrorCode.GRAPHQL_123, DiagnosticSeverity.ERROR);
+    INVALID_INTERSECTION_Type(ErrorMessage.ERROR_123, ErrorCode.GRAPHQL_123, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;
