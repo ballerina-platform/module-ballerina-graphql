@@ -405,11 +405,11 @@ public class Engine {
     }
 
     private static Type getArgumentTypeFromMethod(BString paramName, MethodType method) {
-        Parameter[] parameters = method.getParameters();
         Type paramType = TypeCreator.createArrayType(PredefinedTypes.TYPE_NULL);
-        for (Parameter parameter : parameters) {
+        for (Parameter parameter : method.getParameters()) {
             if (parameter.name.equals(paramName.getValue())) {
                 paramType = parameter.type;
+                break;
             }
         }
         return paramType;

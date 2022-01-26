@@ -16,6 +16,11 @@
 
 type Information Address|Person;
 
+type Species record {
+    string genus;
+    string specificName;
+};
+
 type Details record {
     Information information;
 };

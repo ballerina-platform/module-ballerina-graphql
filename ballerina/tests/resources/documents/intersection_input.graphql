@@ -1,0 +1,21 @@
+query getName {
+    name(species: { genus: "Craspedocephalus", specificName: "trigonocephalus" })
+}
+
+query getProfile {
+    profile {
+        name
+        age
+    }
+}
+
+query getBook {
+    book {
+        name
+        author
+    }
+}
+
+query getCity {
+    city(address: { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" })
+}

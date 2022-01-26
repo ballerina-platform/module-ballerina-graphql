@@ -48,6 +48,10 @@ service object {
 };
 
 service /fileUpload on basicListener {
+    resource function get name() returns string {
+        return "/fileUpload";
+    }
+
     remote function singleFileUpload(Upload file) returns FileInfo|error {
         string contentFromByteStream = check getContentFromByteStream(file.byteStream);
         return {
@@ -1056,5 +1060,23 @@ public isolated distinct service class Animal {
         } else {
             return sound;
         }
+    }
+}
+service /intersection_types on basicListener {
+    isolated resource function get name(Species & readonly species) returns string {
+        return species.specificName;
+    }
+
+    isolated resource function get city(Address address) returns string {
+        return address.city;
+    }
+
+    isolated resource function get profile() returns ProfileDetail & readonly {
+        ProfileDetail profile = {name: "Walter White", age: 52};
+        return profile.cloneReadOnly();
+    }
+
+    isolated resource function get book() returns Book {
+        return {name: "Nineteen Eighty-Four", author: "George Orwell"};
     }
 }

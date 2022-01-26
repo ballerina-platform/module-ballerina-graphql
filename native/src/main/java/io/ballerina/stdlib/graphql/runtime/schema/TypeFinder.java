@@ -22,7 +22,6 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
@@ -43,6 +42,7 @@ import java.util.Map;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getTypeName;
@@ -125,49 +125,39 @@ public class TypeFinder {
 
     private void getInputTypesFromMethod(MethodType methodType) {
         for (Parameter parameter : methodType.getParameters()) {
-            if (parameter.type.getTag() == TypeTags.RECORD_TYPE_TAG) {
-                if (isFileUpload(parameter.type)) {
-                    this.createSchemaType(UPLOAD, TypeKind.SCALAR, parameter.type);
-                } else {
-                    getInputObjectSchemaType(parameter.type);
-                }
-            } else if (parameter.type.getTag() == TypeTags.ARRAY_TAG) {
-                getListSchemaType(parameter.type);
-            } else {
-                getSchemaTypeFromBalType(parameter.type);
-            }
+            getInputTypeFromType(parameter.type);
         }
     }
 
-    private void getInputObjectSchemaType(Type type) {
-        if (!this.typeMap.containsKey(type.getName())) {
+    private void getInputTypeFromType(Type type) {
+        if (this.typeMap.containsKey(type.getName())) {
+            return;
+        }
+        if (isFileUpload(type)) {
+            this.createSchemaType(UPLOAD, TypeKind.SCALAR, type);
+        } else if (type.getTag() == TypeTags.UNION_TAG) {
+            UnionType unionType = (UnionType) type;
+            String typeName = getTypeName(unionType);
+            if (isEnum(unionType)) {
+                this.createSchemaType(typeName, TypeKind.ENUM, unionType);
+            } else {
+                Type effectiveType = getMemberTypes(unionType).get(0);
+                getInputTypeFromType(effectiveType);
+            }
+        } else if (type.getTag() == TypeTags.RECORD_TYPE_TAG) {
             RecordType recordType = (RecordType) type;
             this.createSchemaType(recordType.getName(), TypeKind.INPUT_OBJECT, recordType);
             for (Field field : recordType.getFields().values()) {
-                int tag = field.getFieldType().getTag();
-                if (tag == TypeTags.RECORD_TYPE_TAG) {
-                    getInputObjectSchemaType(field.getFieldType());
-                } else if (tag == TypeTags.ARRAY_TAG) {
-                    getListSchemaType(field.getFieldType());
-                } else {
-                    getSchemaTypeFromBalType(field.getFieldType());
-                }
+                getInputTypeFromType(field.getFieldType());
             }
-        }
-    }
-
-    private void getListSchemaType(Type type) {
-        if (!this.typeMap.containsKey(type.getName())) {
+        } else if (type.getTag() == TypeTags.INTERSECTION_TAG) {
+            Type effectiveType = getEffectiveType(type);
+            getInputTypeFromType(effectiveType);
+        } else if (type.getTag() == TypeTags.ARRAY_TAG) {
             ArrayType arrayType = (ArrayType) type;
-            Type elementType = arrayType.getElementType();
-            int tag = elementType.getTag();
-            if (tag == TypeTags.RECORD_TYPE_TAG) {
-                getInputObjectSchemaType(elementType);
-            } else if (tag == TypeTags.ARRAY_TAG) {
-                getListSchemaType(elementType);
-            } else {
-                getSchemaTypeFromBalType(elementType);
-            }
+            getInputTypeFromType(arrayType.getElementType());
+        } else if (type.getTag() < TypeTags.JSON_TAG) {
+            getSchemaTypeFromBalType(type);
         }
     }
 
@@ -204,8 +194,7 @@ public class TypeFinder {
             Type constrainedType = mapType.getConstrainedType();
             getSchemaTypeFromBalType(constrainedType);
         } else if (tag == TypeTags.INTERSECTION_TAG) {
-            IntersectionType intersectionType = (IntersectionType) type;
-            Type effectiveType = intersectionType.getEffectiveType();
+            Type effectiveType = getEffectiveType(type);
             getSchemaTypeFromBalType(effectiveType);
         } else if (isContext(type)) {
             // Do nothing

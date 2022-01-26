@@ -155,7 +155,16 @@ public class Utils {
     public static Type getEffectiveType(Type type) {
         if (type.getTag() == TypeTags.INTERSECTION_TAG) {
             IntersectionType intersectionType = (IntersectionType) type;
-            return (intersectionType.getEffectiveType());
+            Type effectiveType = intersectionType.getEffectiveType();
+            for (Type memberType : intersectionType.getConstituentTypes()) {
+                if (memberType.getTag() != TypeTags.READONLY_TAG) {
+                    if (memberType.getName().length() < effectiveType.getName().length()) {
+                        effectiveType = memberType;
+                    }
+                    break;
+                }
+            }
+            return effectiveType;
         }
         return type;
     }
