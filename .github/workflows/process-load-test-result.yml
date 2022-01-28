@@ -10,32 +10,46 @@ jobs:
             -   name: Checkout repository
                 uses: actions/checkout@v2
             -   name: Process results
-                if: ${{ github.event.client_payload.status == 'success' }}
+                id: processResults
                 run: |
                     git config --global user.email "ballerina-bot@ballerina.org"
                     git config --global user.name "ballerina-bot"
                     branch_name="load-test-results"
-                    test_scenario="${{ github.event.client_payload.name }}"
                     git pull
-                    git checkout $branch_name || git checkout -b $branch_name
-                    echo ${{ github.event.client_payload.result }} >> load-tests/$test_scenario/results/summary.csv
-                    git add load-tests/$test_scenario/results/summary.csv
-                    git commit -m "Update $test_scenario test results on $(date)"
+                    git checkout -b $branch_name
+                    echo '${{ toJson(github.event.client_payload.results) }}' | jq -c '.[]' |
+                    while read -r result; do
+                        status=$(echo "$result" | jq -r '.status')
+                        test_scenario=$(echo "$result" | jq -r '.name')
+                        if [[ $status == "success" ]]
+                        then
+                            echo $(echo "$result" | jq -r '.result') >> load-tests/$test_scenario/results/summary.csv
+                            git add load-tests/$test_scenario/results/summary.csv
+                            git commit -m "Update $test_scenario test results on $(date)"
+                            printf "::set-output name=hasPassed::true"
+                        else
+                            echo $test_scenario "test has failed with error rate" $(echo "$result" | jq -r '.errorRate')
+                            printf "::set-output name=hasFailed::true"
+                        fi
+                    done
                     git push origin "${branch_name}"
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
             -   name: Create pull request for new summary
-                if: ${{ github.event.client_payload.status == 'success' }}
-                run: gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files"
+                id: createPR
+                if: ${{ steps.processResults.outputs.hasPassed }}
+                run: printf "::set-output name=prUrl::$(gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files")"
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
             -   name: Approve PR
-                if: ${{ github.event.client_payload.status == 'success' }}
-                run: gh pr review --approve
+                if: ${{ steps.processResults.outputs.hasPassed }}
+                run: |
+                    sleep 5
+                    gh pr review --approve ${{ steps.createPR.outputs.prUrl }}
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_REVIEWER_BOT_TOKEN }}
             -   name: Merge PR
-                if: ${{ github.event.client_payload.status == 'success' }}
+                if: ${{ steps.processResults.outputs.hasPassed }}
                 run: |
                     status="NOT COMPLETED"
                     while [ ! -z "$status" ]
@@ -48,8 +62,8 @@ jobs:
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
             -   name: Fail workflow
-                if: ${{ github.event.client_payload.status != 'success' }}
+                if: ${{ steps.processResults.outputs.hasFailed }}
                 run: |
-                    echo "Load test result: "${{ github.event.client_payload.result }}
-                    echo "Load test "${{ github.event.client_payload.name }}" failed with status: "${{ github.event.client_payload.status }} "and error rate: "${{ github.event.client_payload.errorRate }}
+                    echo "One or more load tests have been failed"
+                    echo '${{ toJson(github.event.client_payload.results) }}'
                     exit 1
