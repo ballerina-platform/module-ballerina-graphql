@@ -83,6 +83,22 @@ isolated function getInvalidArgumentValueError(string listIndexOfError, string e
     }
 }
 
+isolated function getCycleRecursiveFragmentError(string spreadName, map<parser:FragmentNode> visitedSpreads)
+    returns ErrorDetail {
+    Location[] locations = [];
+    string[] keys = visitedSpreads.keys();
+    int listIndex = <int>keys.indexOf(spreadName);
+    foreach int i in listIndex ..< keys.length() {
+        parser:FragmentNode fragmentSpread = visitedSpreads.get(keys[i]);
+        locations.push(<Location>fragmentSpread.getSpreadLocation());
+    }
+    string message = string`Cannot spread fragment "${spreadName}" within itself.`;
+    if locations.length() > 1 {
+        message = string`Cannot spread fragment "${spreadName}" within itself via "${keys[listIndex + 1]}".`;
+    }
+    return getErrorDetailRecord(message, locations);
+}
+
 isolated function getOutputObject(Data data, ErrorDetail[] errors) returns OutputObject {
     OutputObject outputObject = {};
     if data.length() > 0 {
