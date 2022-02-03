@@ -4,11 +4,11 @@ This module provides APIs for connecting and interacting with GraphQL endpoints.
 
 GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required and the same structure of the data is returned from the server, preventing the returning of excessively large amounts of data.
 
-The Ballerina GraphQL implementation is using the HTTP as the underlying protocol.
+The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
 
 ### Listener
 
-The `graphql:Listener` is used to listen to a given IP/Port. To create a `graphql:Listener`, an `http:Listener` or a port number can be used.
+The `graphql:Listener` is used to listening to a given IP/Port. To create a `graphql:Listener`, an `http:Listener` or a port number can be used.
 
 #### Create a Standalone `graphql:Listener`
 ```ballerina
@@ -39,7 +39,7 @@ listener graphql:Listener graphqlListener = new (4000, timeout = 10, secureSocke
 ### Service
 The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated.
 
-The GraphQL services are exposed through a single endpoint. The path of the GraphQL service endpoint can be provided via the service path of the GraphQL service. The end point of the following Ballerina GraphQL service will be `/graphql`.
+The GraphQL services are exposed through a single endpoint. The path of the GraphQL service endpoint can be provided via the service path of the GraphQL service. The endpoint of the following Ballerina GraphQL service will be `/graphql`.
 
 ```ballerina
 import ballerina/graphql;
@@ -68,7 +68,7 @@ The `resource` functions inside the service represent the resolvers of the `Quer
 
 When a `resource` function is defined inside a GraphQL service, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
 
->**Note:** A GraphQL service must have at least one resource function defined. Otherwise it will result in a compilation error.
+>**Note:** A GraphQL service must have at least one resource function defined. Otherwise, it will result in a compilation error.
 
 The accessor of the `resource` function should always be `get`. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
 
@@ -92,7 +92,8 @@ The above can be queried using the GraphQL document below:
 
 The result will be the following JSON.
 
-```json
+```js
+on
 {
     "data": {
         "greeting": "Hello, John"
@@ -105,7 +106,7 @@ The `remote` functions inside the GraphQL service represent the resolvers of the
 
 When a `remote` function is defined inside a GraphQL service, the schema will have a `Mutation` operation and the `remote` function will be a field of the `Mutation` object.
 
-For an example, consider the following service that has a `Person` record named `person`. It has a `Query` field named `profile`, which returns the `person` record. It also has two `remote` functions named `updateName` and `updateCity`, which are used as mutations.
+For example, consider the following service that has a `Person` record named `person`. It has a `Query` field named `profile`, which returns the `person` record. It also has two `remote` functions named `updateName` and `updateCity`, which are used as mutations.
 
 ```ballerina
 import ballerina/graphql;
@@ -204,7 +205,7 @@ Additional configurations of a Ballerina GraphQL service can be provided using t
 These configurations include security-related configurations for the GraphQL service.
 
 ##### Security Configurations
-A GraphQL service can be secured by setting `auth` field in the `graphql:ServiceConfig`. Ballerina GraphQL services supports Basic Authentication, JWT Authentication and OAuth2 Authentication.
+A GraphQL service can be secured by setting the `auth` field in the `graphql:ServiceConfig`. Ballerina GraphQL services support Basic Authentication, JWT Authentication, and OAuth2 Authentication.
 
 ```ballerina
 @graphql:SeviceConfig {
@@ -345,7 +346,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-This is similar for any `remote` function, or a `resource` function inside a service object used as a GraphQL object type.
+This is similar to any `remote` function, or a `resource` function inside a service object used as a GraphQL object type.
 
 #### Retrieving Attributes from the Context
 There are two methods to retrieve attributes from the `graphql:Context`.
@@ -366,7 +367,7 @@ resource function get greeting(graphql:Context context) returns string|error {
 ##### `remove()` Function
 This function will remove the attribute for a provided key, and return the value. If the key does not exist, it will return a `graphql:Error`.
 
-> **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
+> **Note:** Even though this is supported, destructive modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
 
 ```ballerina
 resource function get greeting(graphql:Context context) returns string|error {
