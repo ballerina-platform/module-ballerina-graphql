@@ -21,7 +21,7 @@ public enum EpisodeEnum {
 }
 
 public type HumanRecord readonly & record {|
-    readonly string id;
+    string id;
     string name;
     string homePlanet?;
     float height?;
@@ -30,14 +30,14 @@ public type HumanRecord readonly & record {|
 |};
 
 public type DroidRecord readonly & record {|
-    readonly string id;
+    string id;
     string name;
     EpisodeEnum[] appearsIn;
     string primaryFunction?;
 |};
 
 public type StarshipRecord readonly & record {|
-    readonly string id;
+    string id;
     string name;
     float length?;
     float[][] cordinates?;
@@ -50,11 +50,11 @@ public type ReviewRecord readonly & record {|
 |};
 
 public type FriendsEdgeRecord readonly & record {|
-    readonly string characterId;
-    readonly string friendId;
+    string characterId;
+    string friendId;
 |};
 
 public type StarshipEdgeRecord readonly & record {|
-    readonly string characterId;
-    readonly string starshipId;
+    string characterId;
+    string starshipId;
 |};

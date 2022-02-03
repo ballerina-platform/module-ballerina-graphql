@@ -17,7 +17,7 @@
 import starwars.datasource as ds;
 
 # An autonomous mechanical character in the Star Wars universe
-distinct isolated service class Droid {
+distinct service class Droid {
 
     private final readonly & ds:DroidRecord droid;
 

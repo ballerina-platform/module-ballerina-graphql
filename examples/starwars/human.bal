@@ -17,7 +17,7 @@
 import starwars.datasource as ds;
 
 # A humanoid creature from the Star Wars universe
-distinct isolated service class Human {
+distinct service class Human {
 
     private final readonly & ds:HumanRecord human;
 
