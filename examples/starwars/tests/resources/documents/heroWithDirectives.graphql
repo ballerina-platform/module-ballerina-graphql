@@ -1,0 +1,14 @@
+query {
+    hero(episode: EMPIRE) {
+        ...on Human {
+            name @include(if: false)
+            mass @skip(if: false)
+            friends {
+                ...on Droid {
+                    name @include(if: true)
+                    primaryFunction @skip(if: true)
+                }
+            }
+        }
+    }
+}
