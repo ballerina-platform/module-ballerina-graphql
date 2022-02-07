@@ -45,18 +45,14 @@ distinct service class Droid {
         ds:FriendsEdgeRecord[] edges = from var edge in ds:friendsEdgeTable
                         join var droid in droids on edge.characterId equals droid.id
                         select edge;
-        ds:HumanRecord[] humanFriends = from var human in ds:humanTable
+        Human[] humanFriends = from var human in ds:humanTable
                         join var edge in edges on human.id equals edge.friendId
-                        select human;
-        ds:DroidRecord[] droidFriends = from var droid in ds:droidTable
+                        select new Human(human);
+        Droid[] droidFriends = from var droid in ds:droidTable
                         join var edge in edges on droid.id equals edge.friendId
-                        select droid;
-        foreach ds:HumanRecord human in humanFriends {
-            friends.push(new Human(human));
-        }
-        foreach ds:DroidRecord droid in droidFriends {
-            friends.push(new Droid(droid));
-        }
+                        select new Droid(droid);
+        friends.push(...humanFriends);
+        friends.push(...droidFriends);
         return friends;
     }
 

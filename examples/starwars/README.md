@@ -1,4 +1,4 @@
-# GraphQL Starwars API
+# Starwars GraphQL API
 
 ## Overview
  
