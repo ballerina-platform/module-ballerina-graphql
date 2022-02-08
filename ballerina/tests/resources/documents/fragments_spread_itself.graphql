@@ -1,0 +1,13 @@
+query {
+    __schema {
+        queryType {
+            ...FieldFragment
+        } 
+    }
+}
+
+fragment TypeFragment on __Type {
+    type {
+        ...TypeFragment
+    }
+}
