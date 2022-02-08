@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Cannot spread fragment \"TypeFragment\" within itself via  \"FieldFragment\", \"TypeFragment2\", \"FieldFragment2\".",
+            "message": "Cannot spread fragment \"TypeFragment\" within itself via \"FieldFragment\", \"TypeFragment2\", \"FieldFragment2\".",
             "locations": [
                 {
                     "line": 11,

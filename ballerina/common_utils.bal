@@ -103,7 +103,7 @@ isolated function getCycleRecursiveFragmentError(parser:FragmentNode spread, map
         }
         spreadPath += ",";
     }
-    string message = string `Cannot spread fragment "${spread.getName()}" within itself via ${spreadPath}.`;
+    string message = string `Cannot spread fragment "${spread.getName()}" within itself via${spreadPath}.`;
     return getErrorDetailRecord(message, locations);
 }
 
