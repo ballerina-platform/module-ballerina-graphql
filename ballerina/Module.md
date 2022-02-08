@@ -92,8 +92,7 @@ The above can be queried using the GraphQL document below:
 
 The result will be the following JSON.
 
-```js
-on
+```json
 {
     "data": {
         "greeting": "Hello, John"
@@ -367,7 +366,7 @@ resource function get greeting(graphql:Context context) returns string|error {
 ##### `remove()` Function
 This function will remove the attribute for a provided key, and return the value. If the key does not exist, it will return a `graphql:Error`.
 
-> **Note:** Even though this is supported, destructive modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
+> **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
 
 ```ballerina
 resource function get greeting(graphql:Context context) returns string|error {

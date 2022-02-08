@@ -57,7 +57,7 @@ If a GraphQL listener requires to listen to the same port as an existing [`http:
 
 ###### Example: Initializing the Listener using an HTTP Listener
 ```ballerina
-listener http:Listener httpListener = new (9000);
+listener http:Listener httpListener = new (4000);
 listener graphql:Listener graphqlListener = new (httpListener);
 ```
 
@@ -92,7 +92,7 @@ The base path is used to discover the GraphQL service to dispatch the requests. 
 ###### Example: Base Path
 
 ```ballerina
-service hello\-graphql on new http:Listener(4000) {
+service hello\-graphql on new graphql:Listener(4000) {
 
 }
 ```
@@ -120,7 +120,7 @@ service class GraphqlService {
     *graphql:Service;
 
     resource function get greeting() returns string {
-        return "Hello, world";
+        return "Hello, world!";
     }
 }
 
@@ -145,7 +145,7 @@ listener graphql:Listener graphqlListener = new (4000);
 
 graphql:Service graphqlService = @graphql:ServiceConfig {} service object {
     resource function get greeting() returns string {
-        return "Hello, world";
+        return "Hello, world!";
     }
 }
 ```
@@ -768,14 +768,20 @@ The `auth` field is used to provide configurations related to authentication and
 
 The `contextInit` field is used to provide a method to initialize the [`graphql:Context` object](#6-context). It is called per each request to create a `graphql:Context` object.
 
-This function can also be used to perform additional validations to a request.
-
 The context initializer function can return an error if the validation is failed. In such cases, the request will not proceed, and an error will be returned immediately.
 
 Following is the function template for the `contextInit` function.
 
 ```ballerina
 isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context|error {}
+```
+
+When `contextInit` is not provided, a default function will be set as the value of the field. The default function definition is below.
+
+```ballerina
+isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {
+    return new;
+}
 ```
 
 The `contextInit` function can be provided inline, or as a function pointer.
@@ -800,6 +806,27 @@ isolated function initContext(http:RequestContext requestContext, http:Request r
 
 > **Note:** The init function has `http:RequestContext` and `http:Request` objects as inputs. These objects are passed into the function when a request is received. The HTTP headers and the request context can be used to perform additional validations to a request before proceeding to the GraphQL validations. This can be useful to validate the HTTP request before performing the GraphQL operations. The [Imperative Approach in Security](#812-imperative-approach) section will discuss this in detail.
 
+#### 7.1.4 CORS Configurations
+
+The `cors` field is used to configure CORS configurations for the GraphQL service.
+
+###### Example: CORS Configurations
+
+```ballerina
+@graphql:ServiceConfig {
+    cors: {
+        allowOrigins: ["http://www.wso2.com", "http://www.ballerina.io"],
+        allowCredentials: false,
+        allowHeaders: ["CORELATION_ID"],
+        exposeHeaders: ["X-CUSTOM-HEADER"],
+        maxAge: 84900
+    }
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+
 ## 8. Security
 
 ### 8.1 Authentication and Authorization
@@ -815,8 +842,470 @@ This is also known as the configuration-driven approach, which is used for simpl
 
 The service configurations are used to define the authentication and authorization configurations. Users can configure the configurations needed for different authentication schemes and configurations needed for authorizations of each authentication scheme. The configurations can be provided at the service level. The auth handler creation and request authentication/authorization is handled internally without user intervention. The requests that succeeded both authentication and/or authorization phases according to the configurations will be passed to the business logic layer.
 
-##### 8.1.1.1 File User Store
+##### 8.1.1.1 Basic Auth - File User Store
+A GraphQL service can be secured using [File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) Basic auth and optionally by enforcing authorization.
+
+When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from a `TOML` file, that stores the usernames and passwords for authentication and the scopes for authorization.
+
+###### Example: Declarative Basic Auth with File User Store
+
+```ballerina
+@graphql:ServiceConfig {
+    auth: [
+        {
+            fileUserStoreConfig: {},
+            scopes: ["admin"]
+        }
+    ]
+}
+service on new graphql:Listener(4000) {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+The `Config.toml` file below will be used to define the users.
+
+```toml
+[[ballerina.auth.users]]
+username="alice"
+password="alice@123"
+scopes=["developer"]
 
 
+[[ballerina.auth.users]]
+username="bob"
+password="bob@123"
+scopes=["developer", "admin"]
+```
+
+##### 8.1.1.2 Basic Auth - LDAP User Store
+
+A GraphQL service can be secured using [LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store).
+
+
+When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from the configured LDAP, which stores the usernames and passwords for authentication and the scopes for authorization.
+
+###### Example: Declarative Basic Auth with LDAP User Store
+
+```ballerina
+@graphql:ServiceConfig {
+    auth: [
+        {
+            ldapUserStoreConfig: {
+                domainName: "bcssl.lk",
+                connectionUrl: "ldap://localhost:389",
+                connectionName: "cn=admin,dc=bcssl,dc=lk",
+                connectionPassword: "bcssl123",
+                userSearchBase: "ou=Users,dc=bcssl,dc=lk",
+                userEntryObjectClass: "inetOrgPerson",
+                userNameAttribute: "uid",
+                userNameSearchFilter: "(&(objectClass=inetOrgPerson)(uid=?))",
+                userNameListFilter: "(objectClass=inetOrgPerson)",
+                groupSearchBase: ["ou=Groups,dc=bcssl,dc=lk"],
+                groupEntryObjectClass: "groupOfNames",
+                groupNameAttribute: "cn",
+                groupNameSearchFilter: "(&(objectClass=groupOfNames)(cn=?))",
+                groupNameListFilter: "(objectClass=groupOfNames)",
+                membershipAttribute: "member",
+                userRolesCacheEnabled: true,
+                connectionPoolingEnabled: false,
+                connectionTimeout: 5,
+                readTimeout: 60
+            },
+            scopes: ["admin"]
+        }
+    ]
+}
+service /graphql on securedEP {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+##### 8.1.1.3 JWT Auth
+
+A GraphQL service can be secured using [JWT](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
+
+When configured, it validates the JWT sent in the `Authorization` header in the HTTP request that contains the GraphQL document.
+
+###### Example: Declarative JWT Auth
+
+```ballerina
+@graphql:ServiceConfig {
+    auth: [
+        {
+            jwtValidatorConfig: {
+                issuer: "wso2",
+                audience: "ballerina",
+                signatureConfig: {
+                    certFile: "../resource/path/to/public.crt"
+                },
+                scopeKey: "scp"
+            },
+            scopes: ["admin"]
+        }
+    ]
+}
+service /graphql on securedEP {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+##### 8.1.1.4 OAuth2
+
+A GraphQL service can be secured using [OAuth2](https://github.com/ballerina-platform/module-ballerina-oauth2/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
+
+When configured, it validates the OAuth2 token sent in the `Authorization` header in the HTTP request that contains the GraphQL document. This calls the configured OAuth2 introspection endpoint to validate.
+
+###### Example: Declarative OAuth2
+
+```ballerina
+@graphql:ServiceConfig {
+    auth: [
+        {
+            oauth2IntrospectionConfig: {
+                url: "https://localhost:9445/oauth2/introspect",
+                tokenTypeHint: "access_token",
+                scopeKey: "scp",
+                clientConfig: {
+                    customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+                    secureSocket: {
+                        cert: "../resource/path/to/public.crt"
+                    }
+                }
+            },
+            scopes: ["admin"]
+        }
+    ]
+}
+service /graphql on securedEP {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
 
 #### 8.1.2 Imperative Approach
+
+This is also known as the code-driven approach, which is used for advanced use cases, where users need to be worried more about how authentication and authorization work and need to have further customizations. The user has full control of the code-driven approach. The handler creation and authentication/authorization calls are made by the user at the business logic layer.
+
+The [`graphql:Context`](#6-context) object and the [`contextInit`](#713-context-initializer-function) method can be used to achieve this.
+
+##### 8.1.2.1 Basic Auth - File User Store
+
+A file user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
+
+###### Example: Imperative Basic Auth with File User Store
+
+```ballerina
+graphql:FileUserStoreConfig config = {};
+http:ListenerFileUserStoreBasicAuthHandler handler = new (config);
+
+isolated function contextInit(http:RequestContext reqCtx, http:Request request) returns graphql:Context|error {
+    string authorization = check request.getHeader("Authorization");
+    graphql:Context context = new;
+    context.set("Authorization", authorization);
+    return context;
+}
+
+@graphql:ServiceConfig {
+    contextInit: contextInit
+}
+service on new graphql:Listener(4000) {
+    resource function get greeting(graphql:Context context) returns string|error {
+        value:Cloneable|isolated object {} authorization = check context.get("Authorization");
+        if authorization !is string {
+            return error("Failed to authorize");
+        }
+        auth:UserDetails|http:Unauthorized authn = handler.authenticate(Authorization);
+        if authn is http:Unauthorized {
+            return error("Unauthorized");
+        }
+        http:Forbidden? authz = handler.authorize(authn, "admin");
+        if authz is http:Forbidden {
+            return error("Forbidden");
+        }
+        // ...
+    }
+}
+```
+
+The `Config.toml` file below will be used to define the users.
+
+```toml
+[[ballerina.auth.users]]
+username="alice"
+password="alice@123"
+scopes=["developer"]
+
+
+[[ballerina.auth.users]]
+username="bob"
+password="bob@123"
+scopes=["developer", "admin"]
+```
+
+##### 8.1.2.2 Basic Auth - LDAP User Store
+
+A LDAP user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
+
+###### Example: Imperative Basic Auth with LDAP User Store
+
+```ballerina
+graphql:LdapUserStoreConfig config = {
+    domainName: "bcssl.lk",
+    connectionUrl: "ldap://localhost:389",
+    connectionName: "cn=admin,dc=bcssl,dc=lk",
+    connectionPassword: "bcssl123",
+    userSearchBase: "ou=Users,dc=bcssl,dc=lk",
+    userEntryObjectClass: "inetOrgPerson",
+    userNameAttribute: "uid",
+    userNameSearchFilter: "(&(objectClass=inetOrgPerson)(uid=?))",
+    userNameListFilter: "(objectClass=inetOrgPerson)",
+    groupSearchBase: ["ou=Groups,dc=bcssl,dc=lk"],
+    groupEntryObjectClass: "groupOfNames",
+    groupNameAttribute: "cn",
+    groupNameSearchFilter: "(&(objectClass=groupOfNames)(cn=?))",
+    groupNameListFilter: "(objectClass=groupOfNames)",
+    membershipAttribute: "member",
+    userRolesCacheEnabled: true,
+    connectionPoolingEnabled: false,
+    connectionTimeout: 5,
+    readTimeout: 60
+};
+http:ListenerLdapUserStoreBasicAuthHandler handler = new (config);
+
+isolated function contextInit(http:RequestContext reqCtx, http:Request request) returns graphql:Context|error {
+    string authorization = check request.getHeader("Authorization");
+    graphql:Context context = new;
+    context.set("Authorization", authorization);
+    return context;
+}
+
+@graphql:ServiceConfig {
+    contextInit: contextInit
+}
+service on new graphql:Listener(4000) {
+    resource function get greeting(graphql:Context context) returns string|error {
+        value:Cloneable|isolated object {} authorization = check context.get("Authorization");
+        if authorization !is string {
+            return error("Failed to authorize");
+        }
+        auth:UserDetails|http:Unauthorized authn = handler->authenticate(authorization);
+        if authn is http:Unauthorized {
+            return error("Unauthorized");
+        }
+        http:Forbidden? authz = handler->authorize(authn, "admin");
+        if authz is http:Forbidden {
+            return error("Forbidden");
+        }
+        // ...
+    }
+}
+```
+
+##### 8.1.2.3 JWT Auth
+
+A JWT configuration can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
+
+###### Example: Imperative JWT Auth
+
+```ballerina
+graphql:JwtValidatorConfig config = {
+    issuer: "ballerina",
+    audience: ["wso2"],
+    signatureConfig: {
+        jwksConfig: {
+            url: "https://localhost:8080/jwks"
+        }
+    }
+};
+http:ListenerJwtAuthHandler handler = new (config);
+
+isolated function contextInit(http:RequestContext reqCtx, http:Request request) returns graphql:Context|error {
+    string authorization = check request.getHeader("Authorization");
+    graphql:Context context = new;
+    context.set("Authorization", authorization);
+    return context;
+}
+
+@graphql:ServiceConfig {
+    contextInit: contextInit
+}
+service on new graphql:Listener(4000) {
+    resource function get greeting(graphql:Context context) returns string|error {
+        value:Cloneable|isolated object {} authorization = check context.get("Authorization");
+        if authorization !is string {
+            return error("Failed to authorize");
+        }
+        jwt:Payload|http:Unauthorized authn = handler.authenticate(Authorization);
+        if authn is http:Unauthorized {
+            return error("Unauthorized");
+        }
+        http:Forbidden? authz = handler.authorize(authn, "admin");
+        if authz is http:Forbidden {
+            return error("Forbidden");
+        }
+        // ...
+    }
+}
+```
+
+##### 8.1.2.4 OAuth2
+
+An OAuth2 introspection endpoint can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
+
+###### Example: Imperative OAuth2
+
+```ballerina
+graphql:OAuth2IntrospectionConfig config = {
+    url: "https://localhost:8080/oauth2/introspect",
+    tokenTypeHint: "access_token"
+};
+http:ListenerOAuth2Handler handler = new (config);
+
+isolated function contextInit(http:RequestContext reqCtx, http:Request request) returns graphql:Context|error {
+    string authorization = check request.getHeader("Authorization");
+    graphql:Context context = new;
+    context.set("Authorization", authorization);
+    return context;
+}
+
+@graphql:ServiceConfig {
+    contextInit: contextInit
+}
+service on new graphql:Listener(4000) {
+    resource function get greeting(graphql:Context context) returns string|error {
+        value:Cloneable|isolated object {} authorization = check context.get("Authorization");
+        if authorization !is string {
+            return error("Failed to authorize");
+        }
+        oauth2:IntrospectionResponse|http:Unauthorized|http:Forbidden auth = handler->authorize(authorization, "admin");
+        if auth is http:Unauthorized {
+            return error("Unauthorized");
+        } else if auth is http:Forbidden {
+            return error("Forbidden");
+        }
+        // ...
+    }
+}
+```
+
+### 8.2 SSL/TLS and Mutual SSL
+
+The GraphQL listener can connect or interact with a secured client. The `graphql:ListenerSecureSocket` configuration of the listener exposes the secure connection related configurations.
+
+#### 8.2.1 SSL/TLS
+
+The GraphQL listener can connect or interact with an HTTPS client using SSL/TLS. The `graphql:ListenerSecureSocket` can be used to configure the listener to expose an HTTPS connection.
+
+Alternatively, an HTTP listener configured to connect with an HTTPS client can also be used to create the GraphQL listener to expose an HTTPS connection.
+
+###### Example: SSL/TLS Configuration of the GraphQL Listener
+
+```ballerina
+listener graphql:Listener securedGraphqlListener = new(4000,
+    secureSocket = {
+        key: {
+            certFile: "../resource/path/to/public.crt",
+            keyFile: "../resource/path/to/private.key"
+        }
+    }
+);
+
+service on securedGraphqlListener {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+###### Example: GraphQL Listener Using an SSL/TLS Configured HTTP Listener
+
+```ballerina
+listener http:Listener securedHttpListener = new(4000,
+    secureSocket = {
+        key: {
+            certFile: "../resource/path/to/public.crt",
+            keyFile: "../resource/path/to/private.key"
+        }
+    }
+);
+listener graphql:Listener securedGraphqlListener = new (securedHttpListener);
+
+service on securedGraphqlListener {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+#### 8.2.2 Mutual SSL
+
+The GraphQL listener supports mutual SSL, which is a certificate-based authentication process in which two parties (the client and the server) authenticate each other by verifying the digital certificates.
+
+The `graphql:ListenerSecureSocket` configuration can be used to configure mutual SSL for a GraphQL listener.
+
+Alternatively, an HTTP listener configured to connect with a client with mutual SSL can also be used to create the GraphQL listener to expose an HTTPS connection.
+
+###### Example: Mutual SSL Configuration of the GraphQL Listener
+
+```ballerina
+listener graphql:Listener securedGraphqlListener = new(4000,
+    secureSocket = {
+        key: {
+            certFile: "../resource/path/to/public.crt",
+            keyFile: "../resource/path/to/private.key"
+        },
+        mutualSsl: {
+            verifyClient: http:REQUIRE,
+            cert: "../resource/path/to/public.crt"
+        },
+        protocol: {
+            name: http:TLS,
+            versions: ["TLSv1.2", "TLSv1.1"]
+        },
+        ciphers: ["TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"]
+    }
+);
+
+service on securedGraphqlListener {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
+
+###### Example: GraphQL Listener Using a Mutual SSL Configured HTTP Listener
+
+```ballerina
+listener http:Listener securedHttpListener = new(4000,
+    secureSocket = {
+        key: {
+            certFile: "../resource/path/to/public.crt",
+            keyFile: "../resource/path/to/private.key"
+        },
+        mutualSsl: {
+            verifyClient: http:REQUIRE,
+            cert: "../resource/path/to/public.crt"
+        },
+        protocol: {
+            name: http:TLS,
+            versions: ["TLSv1.2", "TLSv1.1"]
+        },
+        ciphers: ["TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"]
+    }
+);
+listener graphql:Listener securedGraphqlListener = new (securedHttpListener);
+
+service on securedGraphqlListener {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+```
