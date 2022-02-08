@@ -289,3 +289,59 @@ isolated function testNestedFragmentsQueryingServiceObjectsWithMultipleFields() 
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["fragments"]
+}
+isolated function testFragmentsWithCycles() returns error? {
+    string document = check getGraphQLDocumentFromFile("fragments_with_cycles.graphql");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("fragments_with_cycles.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments"]
+}
+isolated function testFragmentsWithMultipleCycles() returns error? {
+    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles.graphql");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments"]
+}
+isolated function testFragmentsWithMultipleCyclesInSameFragment() returns error? {
+    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles_in_same_fragment.graphql");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles_in_same_fragment.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments"]
+}
+isolated function testFragmentsSpreadItself() returns error? {
+    string document = check getGraphQLDocumentFromFile("fragments_spread_itself.graphql");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Cannot spread fragment \"TypeFragment\" within itself.",
+                locations: [
+                    {
+                        line: 11,
+                        column: 9
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

@@ -1,0 +1,5 @@
+query ($text:String!) { 
+    search(text: $text) {
+        __typename
+    }
+}

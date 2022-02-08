@@ -23,7 +23,7 @@ apply plugin: 'java'
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
-def examples = ["snowtooth"]
+def examples = ["snowtooth", "starwars"]
 
 dependencies {
     implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
