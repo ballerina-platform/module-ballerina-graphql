@@ -1,10 +1,10 @@
-# Specification: Ballerina HTTP Library
+# Specification: Ballerina GraphQL Library
 
-_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge
-_Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal
-_Created_: 2022/01/06
-_Updated_: 2022/01/06
-_Edition_: Swan Lake
+_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
+_Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
+_Created_: 2022/01/06  
+_Updated_: 2022/02/08  
+_Edition_: Swan Lake  
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)
 
 # Introduction
@@ -13,12 +13,81 @@ This is the specification for the GraphQL standard library of [Ballerina languag
 
 The GraphQL library specification has evolved and may continue to evolve in the future. Released versions of the specification can be found under the relevant GitHub tag.
 
-If you have any feedback or suggestions about the library, start a discussion via a GitHub issue or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in GitHub.
+If you have any feedback or suggestions about the library, start a discussion via a [GitHub issue](https://github.com/ballerina-platform/ballerina-standard-library/issues) or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in GitHub.
 
 Conforming implementation of the specification is released and included in the distribution. Any deviation from the specification is considered a bug.
 
 # Contents
 
+1. [Overview](#1-overview)
+2. [Components](#2-components)
+    * 2.1 [Listener](#21-listener)
+        * 2.1.1 [Initializing the Listener Using Port Number](#211-initializing-the-listener-using-port-number)
+        * 2.1.2 [Initializing the Listener using an HTTP Listener](#212-initializing-the-listener-using-an-http-listener)
+    * 2.2 [Service](#22-service)
+        * 2.2.1 [Service Type](#221-service-type)
+        * 2.2.2 [Service Base Path](#222-service-base-path)
+        * 2.2.3 [Service Declaration](#223-service-declaration)
+        * 2.2.4 [Service Class Declaration](#224-service-class-declaration)
+        * 2.2.5 [Service Constructor Expression](#225-service-constructor-expression)
+    * 2.3 [Parser](#23-parser)
+    * 2.4 [Engine](#24-engine)
+3. [Schema Generation](#3-schema-generation)
+    * 3.1 [Root Types](#31-root-types)
+        * 3.1.1 [The `Query` Type](#311-the-query-type)
+        * 3.1.2 [The `Mutation` Type](#312-the-mutation-type)
+    * 3.2 [Wrapping Types](#32-wrapping-types)
+    * 3.2.1 [`NON_NULL` Type](#321-non_null-type)
+    * 3.2.2 [`LIST` Type](#322-list-type)
+    * 3.3 [Resource Methods](#33-resource-methods)
+        * 3.3.1 [Resource Accessor](#331-resource-accessor)
+        * 3.3.2 [Resource Name](#332-resource-name)
+        * 3.3.3 [Hierarchical Resource Path](#333-hierarchical-resource-path)
+    * 3.4 [Remote Methods](#34-remote-methods)
+        * 3.4.1 [Remote Method Name](#341-remote-method-name)
+4. [Types](#4-types)
+    * 4.1 [Scalars](#41-scalars)
+        * 4.1.1 [Int](#411-int)
+        * 4.1.2 [Float](#412-float)
+        * 4.1.3 [String](#413-string)
+        * 4.1.4 [Boolean](#414-boolean)
+    * 4.2 [Objects](#42-objects)
+        * 4.2.1 [Record Type as Object](#421-record-type-as-object)
+        * 4.2.2 [Service Type as Object](#422-service-type-as-object)
+    * 4.3 [Unions](#43-unions)
+    * 4.4 [Enums](#44-enums)
+    * 4.5 [Input Objects](#45-input-objects)
+5. [Errors](#5-errors)
+    * 5.1 [Error Fields](#51-error-fields)
+        * 5.1.1 [Message](#511-message)
+        * 5.1.2 [Locations](#512-locations)
+        * 5.1.3 [Path](#513-path)
+6. [Context](#6-context)
+    * 6.1 [Set Attribute in Context](#61-set-attribute-in-context)
+    * 6.2 [Get Context Attribute](#62-get-context-attribute)
+    * 6.3 [Remove Attribute from Context](#63-remove-attribute-from-context)
+    * 6.4 [Accessing the Context](#64-accessing-the-context)
+7. [Annotations](#7-annotations)
+    * 7.1 [Service Configuration](#71-service-configuration)
+        * 7.1.1 [Max Query Depth](#711-max-query-depth)
+        * 7.1.2 [Auth Configurations](#712-auth-configurations)
+        * 7.1.3 [Context Initializer Function](#713-context-initializer-function)
+        * 7.1.4 [CORS Configurations](#714-cors-configurations)
+8. [Security](#8-security)
+    * 8.1 [Authentication and Authorization](#81-authentication-and-authorization)
+        * 8.1.1 [Declarative Approach](#811-declarative-approach)
+            * 8.1.1.1 [Basic Auth - File User Store](#8111-basic-auth---file-user-store)
+            * 8.1.1.2 [Basic Auth - LDAP User Store](#8112-basic-auth---ldap-user-store)
+            * 8.1.1.3 [JWT Auth](#8113-jwt-auth)
+            * 8.1.1.4 [OAuth2](#8114-oauth2)
+        * 8.1.2 [Imperative Approach](#812-imperative-approach)
+            * 8.1.2.1 [Basic Auth - File User Store](#8121-basic-auth---file-user-store)
+            * 8.1.2.2 [Basic Auth - LDAP User Store](#8122-basic-auth---ldap-user-store)
+            * 8.1.2.3 [JWT Auth](#8123-jwt-auth)
+            * 8.1.2.4 [OAuth2](#8124-oauth2)
+    * [8.2 [SSL/TLS and Mutual SSL](#82-ssltls-and-mutual-ssl)
+        * 8.2.1 [SSL/TLS](#821-ssltls)
+        * 8.2.2 [Mutual SSL](#822-mutual-ssl)
 
 ## 1. Overview
 
@@ -271,7 +340,7 @@ resource function get greeting() returns string {
 }
 ```
 
-#### Counter Example: Resource Accessor
+###### Counter Example: Resource Accessor
 
 ```ballerina
 resource function post greeting() returns string {
