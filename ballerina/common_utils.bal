@@ -83,19 +83,27 @@ isolated function getInvalidArgumentValueError(string listIndexOfError, string e
     }
 }
 
-isolated function getCycleRecursiveFragmentError(string spreadName, map<parser:FragmentNode> visitedSpreads)
+isolated function getCycleRecursiveFragmentError(parser:FragmentNode spread, map<parser:FragmentNode> visitedSpreads)
     returns ErrorDetail {
     Location[] locations = [];
-    string[] keys = visitedSpreads.keys();
-    int listIndex = <int>keys.indexOf(spreadName);
-    foreach int i in listIndex ..< keys.length() {
-        parser:FragmentNode fragmentSpread = visitedSpreads.get(keys[i]);
+    string spreadPath = "";
+    int listIndex = <int>visitedSpreads.keys().indexOf(spread.getName());
+    string[] spreadPathArray = visitedSpreads.keys().slice(listIndex);
+    if spreadPathArray.length() == 1 {
+        string message = string `Cannot spread fragment "${spread.getName()}" within itself.`;
+        return getErrorDetailRecord(message, <Location>spread.getSpreadLocation());
+    }
+    foreach int i in 1 ..< spreadPathArray.length() {
+        parser:FragmentNode fragmentSpread = visitedSpreads.get(spreadPathArray[i]);
         locations.push(<Location>fragmentSpread.getSpreadLocation());
+        spreadPath += string ` "${spreadPathArray[i]}"`;
+        if i == spreadPathArray.length() - 1 {
+            locations.push(<Location>spread.getSpreadLocation());
+            break;
+        }
+        spreadPath += ",";
     }
-    string message = string`Cannot spread fragment "${spreadName}" within itself.`;
-    if locations.length() > 1 {
-        message = string`Cannot spread fragment "${spreadName}" within itself via "${keys[listIndex + 1]}".`;
-    }
+    string message = string `Cannot spread fragment "${spread.getName()}" within itself via ${spreadPath}.`;
     return getErrorDetailRecord(message, locations);
 }
 

@@ -33,8 +33,10 @@ class FragmentVisitor {
 
     public isolated function validate() returns ErrorDetail[]? {
         foreach parser:FragmentNode fragmentNode in self.documentNode.getFragments() {
+            map<parser:FragmentNode> visitedSpreads = {};
             if !fragmentNode.isInlineFragment() && self.visitedFragments.indexOf(fragmentNode.getName()) is () {
-                self.detectCycles(fragmentNode, {});
+                visitedSpreads[fragmentNode.getName()] = fragmentNode;
+                self.detectCycles(fragmentNode, visitedSpreads);
             }
         }
         if self.errors.length() > 0 {
@@ -125,8 +127,7 @@ class FragmentVisitor {
         foreach parser:Selection fragmentSelection in fragmentDefinition.getSelections() {
             if fragmentSelection is parser:FragmentNode {
                 if visitedSpreads.hasKey(fragmentSelection.getName()) {
-                    ErrorDetail errorDetail =
-                        getCycleRecursiveFragmentError(fragmentSelection.getName(), visitedSpreads);
+                    ErrorDetail errorDetail = getCycleRecursiveFragmentError(fragmentSelection, visitedSpreads);
                     self.errors.push(errorDetail);
                 } else {
                     self.visitedFragments.push(fragmentSelection.getName());

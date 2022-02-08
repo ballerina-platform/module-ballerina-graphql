@@ -297,31 +297,18 @@ isolated function testFragmentsWithCycles() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_cycles.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot spread fragment \"FieldFragment\" within itself via \"TypeFragment2\".",
-                locations: [
-                    {
-                        line: 11,
-                        column: 9
-                    },
-                    {
-                        line: 16,
-                        column: 5
-                    },
-                    {
-                        line: 21,
-                        column: 9
-                    },
-                    {
-                        line: 26,
-                        column: 5
-                    }
-                ]
-            }
-        ]
-    };
+    json expectedPayload = check getJsonContentFromFile("fragments_with_cycles.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments"]
+}
+isolated function testFragmentsWithMultipleCycles() returns error? {
+    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles.graphql");
+    string url = "http://localhost:9091/records";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
