@@ -284,7 +284,7 @@ The Ballerina GraphQL package does not support the `Subscription` type yet.
 
 Wrapping types are used to wrap the named types in GraphQL. A wrapping type has an underlying named type. There are two wrapping types defined in the GraphQL schema.
 
-### 3.2.1 `NON_NULL` Type
+#### 3.2.1 `NON_NULL` Type
 
 `NON_NULL` type is a wrapper type to denote that the resulting value will never be `null`. Ballerina types do not implicitly allow `nil`. Therefore, each type is inherently is a `NON_NULL` type until specified explicitly otherwise. If a type is meant to be a nullable value, it should be unionized with `nil`.
 
@@ -314,7 +314,7 @@ service on new graphql:Listener(4000) {
 
 > **Note:** `?` is syntactic sugar for `|()`.
 
-### 3.2.2 `LIST` Type
+#### 3.2.2 `LIST` Type
 
 The list type represents a list of values of another type. Therefore, `LIST` is considered as a wrapping type. In Ballerina, a `LIST` type is defined using an array. The following represents a field `names` of the type of `LIST` of `String!` type.
 
@@ -955,7 +955,7 @@ scopes=["developer", "admin"]
 
 ##### 8.1.1.2 Basic Auth - LDAP User Store
 
-A GraphQL service can be secured using [LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
+A GraphQL service can be secured using [Basic Auth with LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
 
 When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from the configured LDAP, which stores the usernames and passwords for authentication and the scopes for authorization.
 
@@ -999,7 +999,7 @@ service /graphql on securedEP {
 
 ##### 8.1.1.3 JWT Auth
 
-A GraphQL service can be secured using [JWT](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
+A GraphQL service can be secured using [JWT Auth](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
 
 When configured, it validates the JWT sent in the `Authorization` header in the HTTP request that contains the GraphQL document.
 
