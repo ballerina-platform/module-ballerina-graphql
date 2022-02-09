@@ -874,6 +874,13 @@ The `contextInit` function can be provided inline, or as a function pointer.
 isolated function initContext(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
     // ...
 }
+
+@graphql:ServiceConfig {
+    contextInit: initContext
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
 ```
 
 > **Note:** The init function has `http:RequestContext` and `http:Request` objects as inputs. These objects are passed into the function when a request is received. The HTTP headers and the request context can be used to perform additional validations to a request before proceeding to the GraphQL validations. This can be useful to validate the HTTP request before performing the GraphQL operations. The [Imperative Approach in Security](#812-imperative-approach) section will discuss this in detail.
