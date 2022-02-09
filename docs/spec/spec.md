@@ -1,10 +1,10 @@
 # Specification: Ballerina GraphQL Library
 
-_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
-_Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
-_Created_: 2022/01/06  
-_Updated_: 2022/02/08  
-_Edition_: Swan Lake  
+_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge
+_Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal
+_Created_: 2022/01/06
+_Updated_: 2022/02/08
+_Edition_: Swan Lake
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)
 
 # Introduction
@@ -36,9 +36,10 @@ Conforming implementation of the specification is released and included in the d
     * 3.1 [Root Types](#31-root-types)
         * 3.1.1 [The `Query` Type](#311-the-query-type)
         * 3.1.2 [The `Mutation` Type](#312-the-mutation-type)
+        * 3.1.3 [The `Subscription` Type](#313-the-subscription-type)
     * 3.2 [Wrapping Types](#32-wrapping-types)
-    * 3.2.1 [`NON_NULL` Type](#321-non_null-type)
-    * 3.2.2 [`LIST` Type](#322-list-type)
+        * 3.2.1 [`NON_NULL` Type](#321-non_null-type)
+        * 3.2.2 [`LIST` Type](#322-list-type)
     * 3.3 [Resource Methods](#33-resource-methods)
         * 3.3.1 [Resource Accessor](#331-resource-accessor)
         * 3.3.2 [Resource Name](#332-resource-name)
@@ -85,7 +86,7 @@ Conforming implementation of the specification is released and included in the d
             * 8.1.2.2 [Basic Auth - LDAP User Store](#8122-basic-auth---ldap-user-store)
             * 8.1.2.3 [JWT Auth](#8123-jwt-auth)
             * 8.1.2.4 [OAuth2](#8124-oauth2)
-    * [8.2 [SSL/TLS and Mutual SSL](#82-ssltls-and-mutual-ssl)
+    * 8.2 [SSL/TLS and Mutual SSL](#82-ssltls-and-mutual-ssl)
         * 8.2.1 [SSL/TLS](#821-ssltls)
         * 8.2.2 [Mutual SSL](#822-mutual-ssl)
 
@@ -228,7 +229,7 @@ The Ballerina GraphQL parser is responsible for parsing the incoming GraphQL doc
 
 The GraphQL engine acts as the main processing unit in the Ballerina GraphQL package. It connects all the other components in the Ballerina GraphQL package together.
 
-engine, where it extracts the document from the request, then passes it to the parser. Then the parser will parse the document and return the error, or the syntax tree back to the engine. Then the engine will validate the document against the generated schema, and then if the document is valid, the engine will execute the document.
+When a request is received to the GraphQL Listener, it dispatches the request to the GraphQL engine, where it extracts the document from the request, then passes it to the parser. Then the parser will parse the document and return an error (if there is any) or the syntax tree to the engine. Then the engine will validate the document against the generated schema, and then if the document is valid, the engine will execute the document.
 
 ## 3. Schema Generation
 
@@ -263,7 +264,7 @@ service on new graphql:Listener(4000) {
 
 The `Mutation` type in a GraphQL schema is used to mutate the data. In Ballerina, each `remote` method inside the GraphQL service is mapped to a field in the root `Mutation` type. If no `remote` method is defined in the service, the generated schema will not have a `Mutation` type.
 
-###### Example: Adding a Field to the `Query` Type
+###### Example: Adding a Field to the `Mutation` Type
 
 ```ballerina
 service on new graphql:Listener(4000) {
@@ -275,7 +276,9 @@ service on new graphql:Listener(4000) {
 
 As per the [GraphQL specification](https://spec.graphql.org/June2018/#sec-Mutation), the `Mutation` type is expected to perform side-effects on the underlying data system. Therefore, the mutation operations should be executed serially. This is ensured in the Ballerina GraphQL package. Each remote method invocation in a request is done serially, unlike the resource method invocations, which are executed parallelly.
 
-> **Note:** The Ballerina GraphQL package does not support the `Subscription` type yet.
+#### 3.1.3 The `Subscription` Type
+
+The Ballerina GraphQL package does not support the `Subscription` type yet.
 
 ### 3.2 Wrapping Types
 
@@ -326,7 +329,7 @@ service on new graphql:Listener(4000) {
 
 ### 3.3 Resource Methods
 
-Resource methods are a special kind of method in Ballerina. In the Ballerina GraphQL package, `resource` methods are used to define GraphQL object fields. The `resource` methods in a GraphQL service are validated compile-time.
+Resource methods are a special kind of method in Ballerina. In the Ballerina GraphQL package, `resource` methods are used to define GraphQL object fields. The `resource` methods in a GraphQL service are validated at the compile-time.
 
 #### 3.3.1 Resource Accessor
 
@@ -394,7 +397,7 @@ service graphql:Service on new graphql:Listener(4000) {
 }
 ```
 
-The above example shows how to use hierarchical resource paths to create a hierarchical data model. When the schema is generated using this service, the root `Query` operation has a single field, `profile`, as it is the only path segment at the top level. The type of this field is also `profile`, which is an `Object` type. This object type has three fields: `address`, `name`, and `age`. The type of the `address` field is also `Object` as it is an intermediate path segment (i.e. has child path segments). The name of this object type is `address`. It has three fields: the `number` (type `Int!`), the `street` (type `String`), and the `city` (type `String`). The `name` field is of type `String!`, and the `age` field is of type `Int!`. Check [Types Section](#4-types) for more information on types and fields.
+The above example shows how to use hierarchical resource paths to create a hierarchical data model. When the schema is generated using this service, the root `Query` operation has a single field, `profile`, as it is the only path segment at the top level. The type of this field is also `profile`, which is an `Object` type. This object type has three fields: `address`, `name`, and `age`. The type of the `address` field is also `Object` as it is an intermediate path segment (i.e. has child path segments). The name of this object type is `address`. It has three fields: the `number` (type `Int!`), the `street` (type `String!`), and the `city` (type `String!`). The `name` field is of type `String!`, and the `age` field is of type `Int!`. Check [Types Section](#4-types) for more information on types and fields.
 
 ### 3.4 Remote Methods
 
@@ -507,7 +510,7 @@ In the following example, two `distinct` service types are defined first, `Teach
 ```ballerina
 service on new graphql:Listener(4000) {
     resource function get profile() returns Person {
-        return new Teacher("Walter White", 52);
+        return new Teacher("Walter White", "Chemistry");
     }
 }
 
@@ -912,7 +915,8 @@ This is also known as the configuration-driven approach, which is used for simpl
 The service configurations are used to define the authentication and authorization configurations. Users can configure the configurations needed for different authentication schemes and configurations needed for authorizations of each authentication scheme. The configurations can be provided at the service level. The auth handler creation and request authentication/authorization is handled internally without user intervention. The requests that succeeded both authentication and/or authorization phases according to the configurations will be passed to the business logic layer.
 
 ##### 8.1.1.1 Basic Auth - File User Store
-A GraphQL service can be secured using [File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) Basic auth and optionally by enforcing authorization.
+
+A GraphQL service can be secured using [Basic Auth with File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) and optionally by enforcing authorization.
 
 When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from a `TOML` file, that stores the usernames and passwords for authentication and the scopes for authorization.
 
@@ -951,8 +955,7 @@ scopes=["developer", "admin"]
 
 ##### 8.1.1.2 Basic Auth - LDAP User Store
 
-A GraphQL service can be secured using [LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store).
-
+A GraphQL service can be secured using [LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
 
 When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from the configured LDAP, which stores the usernames and passwords for authentication and the scopes for authorization.
 
@@ -1010,7 +1013,7 @@ When configured, it validates the JWT sent in the `Authorization` header in the 
                 issuer: "wso2",
                 audience: "ballerina",
                 signatureConfig: {
-                    certFile: "../resource/path/to/public.crt"
+                    certFile: "path/to/public.crt"
                 },
                 scopeKey: "scp"
             },
@@ -1044,7 +1047,7 @@ When configured, it validates the OAuth2 token sent in the `Authorization` heade
                 clientConfig: {
                     customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
                     secureSocket: {
-                        cert: "../resource/path/to/public.crt"
+                        cert: "path/to/public.crt"
                     }
                 }
             },
@@ -1091,7 +1094,7 @@ service on new graphql:Listener(4000) {
         if authorization !is string {
             return error("Failed to authorize");
         }
-        auth:UserDetails|http:Unauthorized authn = handler.authenticate(Authorization);
+        auth:UserDetails|http:Unauthorized authn = handler.authenticate(authorization);
         if authn is http:Unauthorized {
             return error("Unauthorized");
         }
@@ -1121,7 +1124,7 @@ scopes=["developer", "admin"]
 
 ##### 8.1.2.2 Basic Auth - LDAP User Store
 
-A LDAP user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
+An LDAP user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
 ###### Example: Imperative Basic Auth with LDAP User Store
 
@@ -1212,7 +1215,7 @@ service on new graphql:Listener(4000) {
         if authorization !is string {
             return error("Failed to authorize");
         }
-        jwt:Payload|http:Unauthorized authn = handler.authenticate(Authorization);
+        jwt:Payload|http:Unauthorized authn = handler.authenticate(authorization);
         if authn is http:Unauthorized {
             return error("Unauthorized");
         }
@@ -1267,7 +1270,7 @@ service on new graphql:Listener(4000) {
 
 ### 8.2 SSL/TLS and Mutual SSL
 
-The GraphQL listener can connect or interact with a secured client. The `graphql:ListenerSecureSocket` configuration of the listener exposes the secure connection related configurations.
+The GraphQL listener can connect or interact with a secured client. The `graphql:ListenerSecureSocket` configuration of the listener exposes the secure connection-related configurations.
 
 #### 8.2.1 SSL/TLS
 
@@ -1281,8 +1284,8 @@ Alternatively, an HTTP listener configured to connect with an HTTPS client can a
 listener graphql:Listener securedGraphqlListener = new(4000,
     secureSocket = {
         key: {
-            certFile: "../resource/path/to/public.crt",
-            keyFile: "../resource/path/to/private.key"
+            certFile: "/path/to/public.crt",
+            keyFile: "/path/to/private.key"
         }
     }
 );
@@ -1300,8 +1303,8 @@ service on securedGraphqlListener {
 listener http:Listener securedHttpListener = new(4000,
     secureSocket = {
         key: {
-            certFile: "../resource/path/to/public.crt",
-            keyFile: "../resource/path/to/private.key"
+            certFile: "/path/to/public.crt",
+            keyFile: "/path/to/private.key"
         }
     }
 );
@@ -1328,12 +1331,12 @@ Alternatively, an HTTP listener configured to connect with a client with mutual 
 listener graphql:Listener securedGraphqlListener = new(4000,
     secureSocket = {
         key: {
-            certFile: "../resource/path/to/public.crt",
-            keyFile: "../resource/path/to/private.key"
+            certFile: "/path/to/public.crt",
+            keyFile: "/path/to/private.key"
         },
         mutualSsl: {
             verifyClient: http:REQUIRE,
-            cert: "../resource/path/to/public.crt"
+            cert: "/path/to/public.crt"
         },
         protocol: {
             name: http:TLS,
@@ -1356,12 +1359,12 @@ service on securedGraphqlListener {
 listener http:Listener securedHttpListener = new(4000,
     secureSocket = {
         key: {
-            certFile: "../resource/path/to/public.crt",
-            keyFile: "../resource/path/to/private.key"
+            certFile: "/path/to/public.crt",
+            keyFile: "/path/to/private.key"
         },
         mutualSsl: {
             verifyClient: http:REQUIRE,
-            cert: "../resource/path/to/public.crt"
+            cert: "/path/to/public.crt"
         },
         protocol: {
             name: http:TLS,
