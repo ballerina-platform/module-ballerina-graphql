@@ -1,0 +1,32 @@
+query {
+    __schema {
+        queryType {
+            ...TypeFragment
+        }
+    }
+}
+
+fragment TypeFragment on __Type {
+    fields {
+        ...FieldFragment
+    }
+    ofType {
+        ...TypeFragment
+    }
+}
+
+fragment FieldFragment on __Field {
+    type {
+        ...TypeFragment2
+    }
+}
+
+fragment TypeFragment2 on __Type {
+    fields {
+        ...FieldFragment2
+    }
+}
+
+fragment FieldFragment2 on __Field {
+    ...FieldFragment
+}

@@ -11,6 +11,8 @@ on:
                 description: 'Cluster name'
                 default: 'graphql-perf-cluster-test'
                 required: false
+    schedule:
+        - cron: '0 0 * * *'
 
 jobs:
     invokeLoadTests:
@@ -18,6 +20,14 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+            - name: Process cluster name
+              id: processClusterName
+              run: |
+                clusterName="${{github.event.inputs.clusterName}}"
+                if [ "$clusterName" = "" ]; then
+                  clusterName="graphql-perf-cluster-test"
+                fi
+                printf "::set-output name=clusterName::%s" $clusterName
             - name: Get latest ballerina runtime artifact
               id: setRuntimeUrl
               shell: bash
@@ -49,4 +59,4 @@ jobs:
                   repo: ballerina-platform/ballerina-performance-cloud
                   ref: refs/heads/main
                   token: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                  inputs: '{ "repo-name": "module-ballerina-graphql", "tests": "${{ steps.formatTestNames.outputs.testNames }}", "zipURL": ${{ steps.setRuntimeUrl.outputs.runtimeUrl}}, "clusterName": "${{ github.event.inputs.clusterName }}", "dispatchType": "graphql-load-test" }'
+                  inputs: '{ "repo-name": "module-ballerina-graphql", "tests": "${{ steps.formatTestNames.outputs.testNames }}", "zipURL": ${{ steps.setRuntimeUrl.outputs.runtimeUrl}}, "clusterName": "${{ steps.processClusterName.outputs.clusterName }}", "dispatchType": "graphql-load-test" }'

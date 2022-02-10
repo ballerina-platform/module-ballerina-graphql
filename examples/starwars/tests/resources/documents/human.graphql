@@ -1,0 +1,10 @@
+query ($id:String!) { 
+    human(id: $id) {
+        name
+        friends { 
+            ...on Droid {
+                name
+            }
+        }
+    }
+}

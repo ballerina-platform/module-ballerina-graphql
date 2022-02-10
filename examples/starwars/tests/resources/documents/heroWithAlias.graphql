@@ -1,0 +1,13 @@
+query {
+    luke:hero(episode: EMPIRE) {
+        ...on Human {
+            name,
+            mass
+        }
+    }
+    hero1:hero(episode: JEDI) {
+        ...on Droid {
+            name
+        }
+    }
+}

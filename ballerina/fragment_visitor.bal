@@ -20,16 +20,28 @@ class FragmentVisitor {
     *parser:Visitor;
 
     private ErrorDetail[] errors;
-    private map<string> usedFragments;
+    private string[] usedFragments;
     private parser:DocumentNode documentNode;
+    private string[] visitedFragments;
 
     public isolated function init(parser:DocumentNode documentNode) {
         self.errors = [];
-        self.usedFragments = {};
+        self.usedFragments = [];
         self.documentNode = documentNode;
+        self.visitedFragments = [];
     }
 
     public isolated function validate() returns ErrorDetail[]? {
+        foreach parser:FragmentNode fragmentNode in self.documentNode.getFragments() {
+            map<parser:FragmentNode> visitedSpreads = {};
+            if !fragmentNode.isInlineFragment() && self.visitedFragments.indexOf(fragmentNode.getName()) is () {
+                visitedSpreads[fragmentNode.getName()] = fragmentNode;
+                self.detectCycles(fragmentNode, visitedSpreads);
+            }
+        }
+        if self.errors.length() > 0 {
+            return self.errors;
+        }
         self.visitDocument(self.documentNode);
         if self.errors.length() > 0 {
             return self.errors;
@@ -44,7 +56,7 @@ class FragmentVisitor {
         }
 
         foreach parser:FragmentNode fragmentNode in documentNode.getFragments().toArray() {
-            if !self.usedFragments.hasKey(fragmentNode.getName()) {
+            if self.usedFragments.indexOf(fragmentNode.getName()) is () {
                 string message = string`Fragment "${fragmentNode.getName()}" is never used.`;
                 ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
                 self.errors.push(errorDetail);
@@ -81,7 +93,7 @@ class FragmentVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.usedFragments[fragmentNode.getName()] = fragmentNode.getName();
+        self.usedFragments.push(fragmentNode.getName());
         foreach parser:Selection selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
         }
@@ -108,6 +120,30 @@ class FragmentVisitor {
         }
         foreach parser:DirectiveNode directive in actualFragmentNode.getDirectives() {
             fragmentNode.addDirective(directive);
+        }
+    }
+
+    isolated function detectCycles(parser:ParentNode fragmentDefinition, map<parser:FragmentNode> visitedSpreads) {
+        foreach parser:Selection fragmentSelection in fragmentDefinition.getSelections() {
+            if fragmentSelection is parser:FragmentNode {
+                if visitedSpreads.hasKey(fragmentSelection.getName()) {
+                    ErrorDetail errorDetail = getCycleRecursiveFragmentError(fragmentSelection, visitedSpreads);
+                    self.errors.push(errorDetail);
+                } else {
+                    self.visitedFragments.push(fragmentSelection.getName());
+                    visitedSpreads[fragmentSelection.getName()] = fragmentSelection;
+                    parser:FragmentNode? nextFragmentDefinition =
+                        self.documentNode.getFragment(fragmentSelection.getName());
+                    if nextFragmentDefinition is parser:FragmentNode {
+                        self.detectCycles(nextFragmentDefinition, visitedSpreads);
+                    }
+                    _ = visitedSpreads.remove(fragmentSelection.getName());
+                }
+            } else if fragmentSelection is parser:FieldNode {
+                self.detectCycles(fragmentSelection, visitedSpreads);
+            } else {
+                panic error("Invalid selection node passed.");
+            }
         }
     }
 

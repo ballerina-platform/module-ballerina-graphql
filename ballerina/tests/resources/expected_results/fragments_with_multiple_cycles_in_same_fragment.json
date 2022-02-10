@@ -1,0 +1,30 @@
+{
+    "errors": [
+        {
+            "message": "Cannot spread fragment \"TypeFragment\" within itself via \"TypeFragment1\".",
+            "locations": [
+                {
+                    "line": 10,
+                    "column": 5
+                },
+                {
+                    "line": 16,
+                    "column": 9
+                }
+            ]
+        },
+        {
+            "message": "Cannot spread fragment \"TypeFragment\" within itself via \"TypeFragment2\".",
+            "locations": [
+                {
+                    "line": 11,
+                    "column": 5
+                },
+                {
+                    "line": 22,
+                    "column": 9
+                }
+            ]
+        }
+    ]
+}
