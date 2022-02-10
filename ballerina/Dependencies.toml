@@ -59,7 +59,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
