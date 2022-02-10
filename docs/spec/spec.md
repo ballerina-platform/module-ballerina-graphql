@@ -615,7 +615,7 @@ A Ballerina GraphQL service can have a field inside the `Mutation` type to handl
 
 #### 5.1.1 `graphql:Upload` Type
 
-The `graphql:Upload` type is a record type that consists the following fields.
+The `graphql:Upload` type is a record type that consists of the following fields.
 
 ##### 5.1.1.1 `fileName` Field
 
@@ -645,7 +645,7 @@ service on new graphql:Listener(4000) {
         string fileName = fileUpload.fileName;
         string mimeType = fileUpload.mimeType;
         string encoding = fileUpload.encoding;
-        stream<byte[], io:Error?> byteStream = fileUpload.byteSteam;
+        stream<byte[], io:Error?> byteStream = fileUpload.byteStream;
 
         // ...
     }
@@ -661,7 +661,7 @@ service on new graphql:Listener(4000) {
             string fileName = fileUpload.fileName;
             string mimeType = fileUpload.mimeType;
             string encoding = fileUpload.encoding;
-            stream<byte[], io:Error?> byteStream = fileUpload.byteSteam;
+            stream<byte[], io:Error?> byteStream = fileUpload.byteStream;
 
             // ...
         }
@@ -682,7 +682,7 @@ This field contains the `JSON-encoded` body of standard GraphQL POST requests wh
 
 #### 5.2.2 `Map` Field
 
-This field contains the `JSON-encoded` map of path(s) of where the file(s) occurred in the operations.
+This field contains the `JSON-encoded` map of the path(s) of where the file(s) occurred in the operations.
 
 #### 5.2.3 File Fields
 
