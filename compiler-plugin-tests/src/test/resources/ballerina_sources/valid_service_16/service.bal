@@ -38,7 +38,7 @@ public type Movie readonly & record {
 
 service /graphql on new graphql:Listener(4000) {
 
-    isolated resource function get getName(Person & readonly person) returns string {
+    isolated resource function get name(Person & readonly person) returns string {
         return person.name;
     }
 
@@ -54,5 +54,23 @@ service /graphql on new graphql:Listener(4000) {
 
     isolated resource function get author(Book book) returns string {
         return book.author;
+    }
+
+    isolated resource function get names(Person[] & readonly people) returns string[] {
+        return people.'map(person => person.name);
+    }
+
+    isolated resource function get subjects() returns Student[] & readonly {
+        Student[] students = [{name: "Jesse Pinkman", subject: "Arts and Crafts"}];
+        return students.cloneReadOnly();
+    }
+
+    isolated resource function get directors() returns Movie[] {
+        Movie[] movies = [{name: "Pulp Fiction", director: "Quentin Tarantino"}];
+        return movies;
+    }
+
+    isolated resource function get authors(Book[] books) returns string[] {
+        return books.map(book => book.author);
     }
 }

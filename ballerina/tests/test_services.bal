@@ -1079,4 +1079,27 @@ service /intersection_types on basicListener {
     isolated resource function get book() returns Book {
         return {name: "Nineteen Eighty-Four", author: "George Orwell"};
     }
+
+    isolated resource function get names(Species[] & readonly species) returns string[] {
+        return species.map(sp => sp.specificName);
+    }
+
+    isolated resource function get cities(Address[] addresses) returns string[] {
+        return addresses.map(address => address.city);
+    }
+
+    isolated resource function get profiles() returns ProfileDetail[] & readonly {
+        ProfileDetail[] profiles = [
+            {name: "Walter White", age: 52},
+            {name: "Jesse Pinkman", age: 25}
+        ];
+        return profiles.cloneReadOnly();
+    }
+
+    isolated resource function get books() returns Book[] {
+        return [
+            {name: "Nineteen Eighty-Four", author: "George Orwell"},
+            {name: "The Magic of Reality", author: "Richard Dawkins"}
+        ];
+    }
 }

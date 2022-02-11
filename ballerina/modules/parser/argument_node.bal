@@ -29,7 +29,7 @@ public class ArgumentNode {
     public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
         self.name = name;
         self.location = location;
-        self.value = [];
+        self.value = ();
         self.valueLocation = location;
         self.kind = kind;
         self.variableDefinition = isVarDef;

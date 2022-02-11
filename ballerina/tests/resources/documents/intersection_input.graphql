@@ -2,6 +2,10 @@ query getName {
     name(species: { genus: "Craspedocephalus", specificName: "trigonocephalus" })
 }
 
+query getCity {
+    city(address: { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" })
+}
+
 query getProfile {
     profile {
         name
@@ -16,6 +20,36 @@ query getBook {
     }
 }
 
-query getCity {
-    city(address: { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" })
+query getNames {
+    names(species: [
+        {
+            genus: "Craspedocephalus",
+            specificName: "trigonocephalus"
+        },
+        {
+            genus: "Kallima",
+            specificName: "philarchus"
+        }
+    ])
+}
+
+query getCities {
+    cities(addresses: [
+        { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" },
+        { number: "9809", street: "Margo Street", city: "Albuquerque" }
+    ])
+}
+
+query getProfiles {
+    profiles {
+        name
+        age
+    }
+}
+
+query getBooks {
+    books {
+        name
+        author
+    }
 }

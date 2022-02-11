@@ -152,7 +152,7 @@ public class Utils {
         return getTypeNameFromType(intersectionType.getEffectiveType());
     }
 
-    public static Type getEffectiveType(Type type) {
+    static Type getEffectiveType(Type type) {
         if (type.getTag() == TypeTags.INTERSECTION_TAG) {
             IntersectionType intersectionType = (IntersectionType) type;
             Type effectiveType = intersectionType.getEffectiveType();

@@ -335,13 +335,13 @@ isolated function testListTypeVariablesWithInputObjects() returns error? {
     string url = "http://localhost:9091/list_inputs";
     json variables = {
         tvSeries: [
-            { 
+            {
                 name: "Breaking Bad",
                 episodes: [
                     {
                         title:"ep1"
                     }
-                ] 
+                ]
             }
         ]
     };
@@ -366,17 +366,17 @@ isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns er
     string url = "http://localhost:9091/list_inputs";
     json variables = {
         tvSeries: [
-            { 
-                name: "Breaking Bad", 
+            {
+                name: "Breaking Bad",
                 episodes: [
                     {
                         title:"ep1"
                     }
                 ]
             },
-            { 
-                name: "Breaking Bad", 
-                episodes:true 
+            {
+                name: "Breaking Bad",
+                episodes:true
             }
         ]
     };
@@ -405,15 +405,15 @@ isolated function testListTypeVariablesWithNestedListInInputObject() returns err
     string url = "http://localhost:9091/list_inputs";
     json variables = {
         tvSeries: [
-            { 
-                name: "GOT", 
+            {
+                name: "GOT",
                 episodes: [
                     {
-                        title:"ep1", 
+                        title:"ep1",
                         newCharacters: ["Sherlock", "Jessie"]
                     },
                     {
-                        title:"ep2", 
+                        title:"ep2",
                         newCharacters: ["Michael", "Jessie"]
                     }
                 ]
@@ -447,15 +447,15 @@ isolated function testListTypeVariableWithInvalidNestedListInInputObject() retur
     string url = "http://localhost:9091/list_inputs";
     json variables = {
         tvSeries: [
-            { 
-                name: "GOT", 
+            {
+                name: "GOT",
                 episodes: [
                     {
-                        title:"ep1", 
+                        title:"ep1",
                         newCharacters: ["Sherlock", "Jessie"]
                     },
                     {
-                        title:"ep2", 
+                        title:"ep2",
                         newCharacters: [true, 1]
                     }
                 ]
@@ -574,11 +574,11 @@ isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!){ getMovie(tvSeries: $tvSeries ) { movieName, director } }`;
     string url = "http://localhost:9091/list_inputs";
     json variables = {
-        tvSeries:{ 
-            name: "Braking Bad", 
+        tvSeries:{
+            name: "Braking Bad",
             episodes: [
                 {
-                    title:"Cancer Man", 
+                    title:"Cancer Man",
                     newCharacters: ["Sherlock", "Jessie"]
                 }
             ]
@@ -604,7 +604,7 @@ isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
 isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
     string url = "http://localhost:9091/list_inputs";
-    json varaibles = {
+    json variables = {
         tvSeries: {
             name: "Breaking Bad",
             episodes: [
@@ -615,7 +615,7 @@ isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() retu
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, varaibles);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
     json expectedPayload = {
         errors: [
             {
@@ -638,7 +638,7 @@ isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() retu
 isolated function testInvalidListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
     string url = "http://localhost:9091/list_inputs";
-    json varaibles = {
+    json variables = {
         tvSeries: {
             name: "Breaking Bad",
             episodes: [
@@ -649,7 +649,7 @@ isolated function testInvalidListTypeWithinInputObjectsWithVariables() returns e
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, varaibles);
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("invalid_list_type_within_input_objects_with_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

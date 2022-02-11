@@ -81,3 +81,81 @@ isolated function testOutputWithIntersectionParameterReference() returns error? 
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["intersection", "input"]
+}
+isolated function testInputWithIntersectionParameterArray() returns error? {
+    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string url = "http://localhost:9091/intersection_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getNames");
+    json expectedPayload = {
+        data: {
+            names: ["trigonocephalus", "philarchus"]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["intersection", "input"]
+}
+isolated function testInputWithIntersectionParameterReferenceArray() returns error? {
+    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string url = "http://localhost:9091/intersection_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getCities");
+    json expectedPayload = {
+        data: {
+            cities: ["Albuquerque", "Albuquerque"]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["intersection"]
+}
+isolated function testOutputWithIntersectionParameterArray() returns error? {
+    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string url = "http://localhost:9091/intersection_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getProfiles");
+    json expectedPayload = {
+        data: {
+            profiles: [
+                {
+                    name: "Walter White",
+                    age: 52
+                },
+                {
+                    name: "Jesse Pinkman",
+                    age: 25
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["intersection"]
+}
+isolated function testOutputWithIntersectionParameterReferenceArray() returns error? {
+    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string url = "http://localhost:9091/intersection_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getBooks");
+    json expectedPayload = {
+        data: {
+            books: [
+                {
+                    name: "Nineteen Eighty-Four",
+                    author: "George Orwell"
+                },
+                {
+                    name: "The Magic of Reality",
+                    author: "Richard Dawkins"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
