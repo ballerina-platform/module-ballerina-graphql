@@ -1,9 +1,9 @@
 query getName {
-    name(species: { genus: "Craspedocephalus", specificName: "trigonocephalus" })
+    name(species: {genus: "Craspedocephalus", specificName: "trigonocephalus"})
 }
 
 query getCity {
-    city(address: { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" })
+    city(address: {number: "308", street: "Negra Arroyo Lane", city: "Albuquerque"})
 }
 
 query getProfile {
@@ -35,8 +35,8 @@ query getNames {
 
 query getCities {
     cities(addresses: [
-        { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" },
-        { number: "9809", street: "Margo Street", city: "Albuquerque" }
+        {number: "308", street: "Negra Arroyo Lane", city: "Albuquerque"},
+        {number: "9809", street: "Margo Street", city: "Albuquerque"}
     ])
 }
 
