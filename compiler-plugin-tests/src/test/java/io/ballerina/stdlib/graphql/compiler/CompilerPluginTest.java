@@ -144,8 +144,15 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testGraphQLSingleFileUpload() {
+    public void testGraphQLFileUpload() {
         String packagePath = "valid_service_15";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testIntersectionTypes() {
+        String packagePath = "valid_service_16";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }

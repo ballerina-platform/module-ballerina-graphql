@@ -227,7 +227,8 @@ isolated function testInputObjectWithMissingVariablesArguments() returns error? 
 }
 
 @test:Config {
-    groups: ["input_objects", "input"]
+    groups: ["input_objects", "input", "enums"],
+    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-lang/issues/35040
 }
 isolated function testInputObjectWithEnumTypeVariables() returns error? {
     string document = "($day:Date!){ isHoliday(date: $day) }";
@@ -247,7 +248,7 @@ isolated function testInputObjectWithEnumTypeVariables() returns error? {
 @test:Config {
     groups: ["input_objects", "input"]
 }
-isolated function testInputObjectWithFragmentsAndVaraibles() returns error? {
+isolated function testInputObjectWithFragmentsAndVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_with_fragment_and_variables.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {
@@ -264,7 +265,7 @@ isolated function testInputObjectWithFragmentsAndVaraibles() returns error? {
 @test:Config {
     groups: ["input_objects", "input"]
 }
-isolated function testInputObjectWithInlineFragmentsAndVaraibles() returns error? {
+isolated function testInputObjectWithInlineFragmentsAndVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {
@@ -328,7 +329,7 @@ isolated function testInputObjectWithInvalidTypeVariables2() returns error? {
 @test:Config {
     groups: ["input_objects", "input"]
 }
-isolated function testInputObjectWithUnexpectedVaraibleValues() returns error? {
+isolated function testInputObjectWithUnexpectedVariableValues() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.graphql");
     string url = "http://localhost:9091/input_objects";
     json variables = {

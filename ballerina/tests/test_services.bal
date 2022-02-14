@@ -48,6 +48,10 @@ service object {
 };
 
 service /fileUpload on basicListener {
+    resource function get name() returns string {
+        return "/fileUpload";
+    }
+
     remote function singleFileUpload(Upload file) returns FileInfo|error {
         string contentFromByteStream = check getContentFromByteStream(file.byteStream);
         return {
@@ -1019,7 +1023,7 @@ service /context on serviceTypeListener {
         }
     }
 
-    isolated resource function get animal() returns Animal {
+    isolated resource function get animal() returns AnimalClass {
         return new;
     }
 
@@ -1042,19 +1046,52 @@ service /context on serviceTypeListener {
     }
 }
 
-public isolated distinct service class Animal {
-    isolated resource function get call(Context context, string sound, int count) returns string {
-        var scope = context.get("scope");
-        if scope is string && scope == "admin" {
-            string call = "";
-            int i = 0;
-            while i < count {
-                call += string`${sound} `;
-                i += 1;
-            }
-            return call;
-        } else {
-            return sound;
-        }
+service /intersection_types on basicListener {
+    isolated resource function get name(Species & readonly species) returns string {
+        return species.specificName;
+    }
+
+    isolated resource function get city(Address address) returns string {
+        return address.city;
+    }
+
+    isolated resource function get profile() returns ProfileDetail & readonly {
+        ProfileDetail profile = {name: "Walter White", age: 52};
+        return profile.cloneReadOnly();
+    }
+
+    isolated resource function get book() returns Book {
+        return {name: "Nineteen Eighty-Four", author: "George Orwell"};
+    }
+
+    isolated resource function get names(Species[] & readonly species) returns string[] {
+        return species.map(sp => sp.specificName);
+    }
+
+    isolated resource function get cities(Address[] addresses) returns string[] {
+        return addresses.map(address => address.city);
+    }
+
+    isolated resource function get profiles() returns ProfileDetail[] & readonly {
+        ProfileDetail[] profiles = [
+            {name: "Walter White", age: 52},
+            {name: "Jesse Pinkman", age: 25}
+        ];
+        return profiles.cloneReadOnly();
+    }
+
+    isolated resource function get books() returns Book[] {
+        return [
+            {name: "Nineteen Eighty-Four", author: "George Orwell"},
+            {name: "The Magic of Reality", author: "Richard Dawkins"}
+        ];
+    }
+
+    isolated resource function get commonName(Animal animal) returns string {
+        return animal.commonName;
+    }
+
+    isolated resource function get ownerName(Pet pet) returns string {
+        return pet.ownerName;
     }
 }
