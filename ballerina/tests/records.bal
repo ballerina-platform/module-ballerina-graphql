@@ -16,6 +16,17 @@
 
 type Information Address|Person;
 
+type Pet record {
+    string name;
+    string ownerName;
+    Animal animal;
+};
+
+type Animal readonly & record {
+    string commonName;
+    Species species;
+};
+
 type Species record {
     string genus;
     string specificName;

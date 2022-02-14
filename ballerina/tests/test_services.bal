@@ -1023,7 +1023,7 @@ service /context on serviceTypeListener {
         }
     }
 
-    isolated resource function get animal() returns Animal {
+    isolated resource function get animal() returns AnimalClass {
         return new;
     }
 
@@ -1046,22 +1046,6 @@ service /context on serviceTypeListener {
     }
 }
 
-public isolated distinct service class Animal {
-    isolated resource function get call(Context context, string sound, int count) returns string {
-        var scope = context.get("scope");
-        if scope is string && scope == "admin" {
-            string call = "";
-            int i = 0;
-            while i < count {
-                call += string`${sound} `;
-                i += 1;
-            }
-            return call;
-        } else {
-            return sound;
-        }
-    }
-}
 service /intersection_types on basicListener {
     isolated resource function get name(Species & readonly species) returns string {
         return species.specificName;
@@ -1101,5 +1085,13 @@ service /intersection_types on basicListener {
             {name: "Nineteen Eighty-Four", author: "George Orwell"},
             {name: "The Magic of Reality", author: "Richard Dawkins"}
         ];
+    }
+
+    isolated resource function get commonName(Animal animal) returns string {
+        return animal.commonName;
+    }
+
+    isolated resource function get ownerName(Pet pet) returns string {
+        return pet.ownerName;
     }
 }

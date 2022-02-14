@@ -1,0 +1,77 @@
+query getName {
+  name(species: { genus: "Craspedocephalus", specificName: "trigonocephalus" })
+}
+
+query getCity {
+  city(
+    address: { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" }
+  )
+}
+
+query getProfile {
+  profile {
+    name
+    age
+  }
+}
+
+query getBook {
+  book {
+    name
+    author
+  }
+}
+
+query getNames {
+  names(
+    species: [
+      { genus: "Craspedocephalus", specificName: "trigonocephalus" }
+      { genus: "Kallima", specificName: "philarchus" }
+    ]
+  )
+}
+
+query getCities {
+  cities(
+    addresses: [
+      { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" }
+      { number: "9809", street: "Margo Street", city: "Albuquerque" }
+    ]
+  )
+}
+
+query getProfiles {
+  profiles {
+    name
+    age
+  }
+}
+
+query getBooks {
+  books {
+    name
+    author
+  }
+}
+
+query getCommonName(
+  $animal: Animal! = {
+    commonName: "Leaf-Nosed Lizard"
+    species: { genus: "Ceratophora", specificName: "tennentii" }
+  }
+) {
+  commonName(animal: $animal)
+}
+
+query getOwnerName {
+  ownerName(
+    pet: {
+      name: "Bob"
+      ownerName: "Sam"
+      animal: {
+        commonName: "Cat"
+        species: { genus: "Felis", specificName: "catus" }
+      }
+    }
+  )
+}

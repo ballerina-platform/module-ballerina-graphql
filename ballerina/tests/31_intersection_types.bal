@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["intersection", "input"]
 }
 isolated function testInputWithIntersectionParameter() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getName");
     json expectedPayload = {
@@ -35,7 +35,7 @@ isolated function testInputWithIntersectionParameter() returns error? {
     groups: ["intersection", "input"]
 }
 isolated function testInputWithIntersectionParameterReference() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getCity");
     json expectedPayload = {
@@ -50,7 +50,7 @@ isolated function testInputWithIntersectionParameterReference() returns error? {
     groups: ["intersection"]
 }
 isolated function testOutputWithIntersectionParameter() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getProfile");
     json expectedPayload = {
@@ -68,7 +68,7 @@ isolated function testOutputWithIntersectionParameter() returns error? {
     groups: ["intersection"]
 }
 isolated function testOutputWithIntersectionParameterReference() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getBook");
     json expectedPayload = {
@@ -86,7 +86,7 @@ isolated function testOutputWithIntersectionParameterReference() returns error? 
     groups: ["intersection", "input"]
 }
 isolated function testInputWithIntersectionParameterArray() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getNames");
     json expectedPayload = {
@@ -101,7 +101,7 @@ isolated function testInputWithIntersectionParameterArray() returns error? {
     groups: ["intersection", "input"]
 }
 isolated function testInputWithIntersectionParameterReferenceArray() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getCities");
     json expectedPayload = {
@@ -116,7 +116,7 @@ isolated function testInputWithIntersectionParameterReferenceArray() returns err
     groups: ["intersection"]
 }
 isolated function testOutputWithIntersectionParameterArray() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getProfiles");
     json expectedPayload = {
@@ -140,7 +140,7 @@ isolated function testOutputWithIntersectionParameterArray() returns error? {
     groups: ["intersection"]
 }
 isolated function testOutputWithIntersectionParameterReferenceArray() returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_input.graphql");
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getBooks");
     json expectedPayload = {
@@ -155,6 +155,45 @@ isolated function testOutputWithIntersectionParameterReferenceArray() returns er
                     author: "Richard Dawkins"
                 }
             ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["intersection", "input"]
+}
+isolated function testInputWithIntersectionReferringNonIntersectionType() returns error? {
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
+    string url = "http://localhost:9091/intersection_types";
+    json variables = {
+        animal: {
+            commonName: "Sri Lankan Tree Nymph",
+            species: {
+                genus: "Idea",
+                specificName: "iasonia"
+            }
+        }
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getCommonName", variables = variables);
+    json expectedPayload = {
+        data: {
+            commonName: "Sri Lankan Tree Nymph"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["intersection", "input"]
+}
+isolated function testInputWithNonIntersectionTypeReferringIntersectionType() returns error? {
+    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
+    string url = "http://localhost:9091/intersection_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getOwnerName");
+    json expectedPayload = {
+        data: {
+            ownerName: "Sam"
         }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
