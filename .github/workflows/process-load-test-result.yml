@@ -64,6 +64,12 @@ jobs:
                     do
                       sleep 20
                       checkCount=$(gh pr status --jq '[.currentBranch .statusCheckRollup[] | select((.conclusion=="SUCCESS") and ((.name=="Build on Ubuntu") or (.name=="Build on Windows") or (.name=="codecov/project")))] | length' --json statusCheckRollup)
+                      failedCount=$(gh pr status --jq '[.currentBranch .statusCheckRollup[] | select((.conclusion=="FAILURE") and ((.name=="Build on Ubuntu") or (.name=="Build on Windows") or (.name=="codecov/project")))]|length' --json statusCheckRollup)
+                      if [[ "$failedCount" != "0" ]]
+                      then
+                        echo "PR Build has failed"
+                        exit 1
+                      fi
                     done
                     sleep 20
                     gh pr merge --merge --delete-branch
