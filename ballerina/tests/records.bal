@@ -168,3 +168,8 @@ public type FileInfo record {
     string encoding;
     string content;
 };
+
+public type Item record {
+    string name;
+    decimal price;
+};

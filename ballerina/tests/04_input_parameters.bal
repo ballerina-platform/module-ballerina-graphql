@@ -119,7 +119,7 @@ isolated function testFloatAsInput() returns error? {
 }
 
 @test:Config {
-    groups: ["inputs", "inpout_coerce"]
+    groups: ["inputs", "input_coerce"]
 }
 isolated function testCoerceIntInputToFloat() returns error? {
     string document = "{ weightInPounds(weightInKg: 1) }";

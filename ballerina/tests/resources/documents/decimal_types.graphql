@@ -1,0 +1,11 @@
+query getTotalInDecimal($prices:[[Decimal!]!]! = [[1.3323232, 4.856343], [5.63535, 6], [5, 7, 8]]){
+    getTotalInDecimal(prices:$prices)
+}
+
+query getSubTotal{
+    getSubTotal(items: [{ name: "soap", price: 64.5555332 }, { name: "sugar", price: 154 }])
+}
+
+query getSubTotalWithDefaultValue($items: [Item!] = [{ name: "soap", price: 64.5555332 }, { name: "sugar", price: 154 }]){
+    getSubTotal(items: $items)
+}

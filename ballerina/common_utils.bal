@@ -146,7 +146,7 @@ isolated function getArgumentTypeKind(string argType) returns parser:ArgumentTyp
         return parser:T_INT;
     } else if argType == STRING {
         return parser:T_STRING;
-    } else if argType == FLOAT {
+    } else if argType == FLOAT || argType == DECIMAL {
         return parser:T_FLOAT;
     } else if argType == BOOLEAN {
         return parser:T_BOOLEAN;
@@ -178,6 +178,8 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
 isolated function getTypeNameFromValue(Scalar value) returns string {
     if value is float {
         return FLOAT;
+    } else if value is decimal {
+        return DECIMAL;
     } else if value is boolean {
         return BOOLEAN;
     } else if value is int {

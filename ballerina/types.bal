@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/io;
 
 # Represents the Scalar types supported by the Ballerina GraphQL module.
-public type Scalar boolean|int|float|string;
+public type Scalar boolean|int|float|string|decimal;
 
 # Represents a GraphQL service.
 public type Service distinct service object {

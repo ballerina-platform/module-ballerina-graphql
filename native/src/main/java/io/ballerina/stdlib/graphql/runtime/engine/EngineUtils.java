@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
+import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
@@ -158,7 +159,7 @@ public class EngineUtils {
             }
             return false;
         }
-        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG;
+        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG || tag == DECIMAL_TAG;
     }
 
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
