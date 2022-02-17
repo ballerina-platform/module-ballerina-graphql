@@ -22,7 +22,6 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.RecordType;
@@ -179,8 +178,7 @@ public class FieldFinder {
             schemaType.setOfType(getSchemaTypeFromType(tableType.getConstrainedType()));
             return schemaType;
         } else if (tag == TypeTags.INTERSECTION_TAG) {
-            IntersectionType intersectionType = (IntersectionType) type;
-            return getSchemaTypeFromType(intersectionType.getEffectiveType());
+            return getSchemaTypeFromType(getEffectiveType(type));
         } else {
             return this.typeMap.get(getTypeNameFromType(type));
         }
@@ -283,29 +281,20 @@ public class FieldFinder {
 
     private void addArgsToSchemaField(MethodType method, SchemaField schemaField) {
         for (Parameter parameter : method.getParameters()) {
-            Type inputType;
-            InputValue inputValue;
             if (isContext(parameter.type)) {
                 continue;
             }
-            if (parameter.type.isNilable()) {
-                inputType = getInputTypeFromNilableType((UnionType) parameter.type);
-                if (inputType.getTag() == TypeTags.ARRAY_TAG) {
-                    SchemaType wrapperType = getSchemaTypeFromType(inputType);
-                    inputValue = new InputValue(parameter.name, wrapperType);
-                } else {
-                    inputValue = new InputValue(parameter.name, this.getType(getTypeNameFromType(inputType)));
-                }
+            Type inputType = getInputType(parameter.type);
+            SchemaType parameterType;
+            if (inputType.getTag() == TypeTags.ARRAY_TAG) {
+                parameterType = getSchemaTypeFromType(inputType);
             } else {
-                inputType = parameter.type;
-                if (inputType.getTag() == TypeTags.ARRAY_TAG) {
-                    SchemaType wrapperType = getNonNullType(getSchemaTypeFromType(inputType));
-                    inputValue = new InputValue(parameter.name, wrapperType);
-                } else {
-                    SchemaType wrapperType = getNonNullType(this.getType(getTypeNameFromType(inputType)));
-                    inputValue = new InputValue(parameter.name, wrapperType);
-                }
+                parameterType = this.getType(getTypeNameFromType(inputType));
             }
+            if (!parameter.type.isNilable()) {
+                parameterType = getNonNullType(parameterType);
+            }
+            InputValue inputValue = new InputValue(parameter.name, parameterType);
             if (parameter.isDefault) {
                 inputValue.setDefaultValue(inputType.getZeroValue().toString());
             }
@@ -319,14 +308,21 @@ public class FieldFinder {
         return wrapperType;
     }
 
-    private static Type getInputTypeFromNilableType(UnionType unionType) {
-        Type result = unionType;
-        for (Type memberType : unionType.getOriginalMemberTypes()) {
-            if (memberType.getTag() == TypeTags.NULL_TAG) {
-                continue;
+    private static Type getInputType(Type type) {
+        if (type.getTag() == TypeTags.UNION_TAG) {
+            UnionType unionType = (UnionType) type;
+            if (isEnum(unionType)) {
+                return type;
             }
-            result = memberType;
+            for (Type memberType : unionType.getOriginalMemberTypes()) {
+                if (memberType.getTag() == TypeTags.NULL_TAG) {
+                    continue;
+                }
+                return memberType;
+            }
+        } else if (type.getTag() == TypeTags.INTERSECTION_TAG) {
+            return getEffectiveType(type);
         }
-        return result;
+        return type;
     }
 }

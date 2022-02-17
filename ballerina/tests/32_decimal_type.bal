@@ -75,13 +75,13 @@ isolated function testDecimalTypeListInput() returns error? {
     string document = "{ getTotalInDecimal(prices: [[1.33, 4.8], [5.6, 6], [5, 7, 8]]) }";
     string url = "http://localhost:9091/decimal_inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
     json expectedPayload = {
         data: {
             getTotalInDecimal: [6.13, 11.6, 20.0]
         }
     };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
 }
 
 @test:Config {
@@ -94,13 +94,13 @@ isolated function testDecimalTypeListWithVariableInput() returns error? {
         prices: [[1.3323232, 4.856343], [5.63535, 6], [5, 7, 8]] 
     };
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
     json expectedPayload = {
         data: {
             getTotalInDecimal: [6.1886662, 11.63535, 20.0]
         }
     };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
 }
 
 @test:Config {
@@ -110,13 +110,13 @@ isolated function testDecimalTypeListWithDefaultInput() returns error? {
     string document = check getGraphQLDocumentFromFile("decimal_types.graphql");
     string url = "http://localhost:9091/decimal_inputs";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getTotalInDecimal");
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
     json expectedPayload = {
         data: {
             getTotalInDecimal: [6.1886662, 11.63535, 20.0]
         }
     };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
 }
 
 @test:Config {
@@ -126,13 +126,13 @@ isolated function testDecimalTypeWithInputObject() returns error? {
     string document = check getGraphQLDocumentFromFile("decimal_types.graphql");
     string url = "http://localhost:9091/decimal_inputs";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getSubTotal");
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
     json expectedPayload = {
         data: {
             getSubTotal: 218.5555332
         }
     };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
 }
 
 @test:Config {
@@ -148,13 +148,13 @@ isolated function testDecimalTypeWithInputObjectVariable() returns error? {
         ]
     };
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
     json expectedPayload = {
         data: {
             getSubTotal: 218.5555332
         }
     };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
 }
 
 @test:Config {
@@ -164,17 +164,17 @@ isolated function testDecimalTypeWithInputObjectDefaultValue() returns error? {
     string document = check getGraphQLDocumentFromFile("decimal_types.graphql");
     string url = "http://localhost:9091/decimal_inputs";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getSubTotalWithDefaultValue");
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
+    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
     json expectedPayload = {
         data: {
             getSubTotal: 218.5555332
         }
     };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
 }
 
 @test:Config {
-    groups: ["inputs", "input_coerce", "decimal1"]
+    groups: ["inputs", "input_coerce", "decimal"]
 }
 isolated function testCoerceIntToDecimal() returns error? {
     string document = "{ convertDecimalToFloat(value: 1) }";

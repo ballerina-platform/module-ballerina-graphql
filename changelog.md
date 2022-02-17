@@ -6,8 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- [[#2620] Allow Intersection Types as Inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/2620)
+
 ### Fixed
 - [[#2640] Fix inter-dependent fragments returning stack overflow error](https://github.com/ballerina-platform/ballerina-standard-library/issues/2640)
+- [[#2649] Fix invalid validation of `decimal` type values](https://github.com/ballerina-platform/ballerina-standard-library/issues/2649)
 
 ## [1.2.0] - 2022-02-01
 
