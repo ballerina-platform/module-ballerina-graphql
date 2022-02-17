@@ -17,6 +17,7 @@ on:
 jobs:
     invokeLoadTests:
         runs-on: ubuntu-latest
+        if: github.repository_owner == 'ballerina-platform'
         steps:
             - name: Checkout
               uses: actions/checkout@v2

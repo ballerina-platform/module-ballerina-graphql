@@ -9,14 +9,14 @@ jobs:
         steps:
             -   name: Checkout repository
                 uses: actions/checkout@v2
+
             -   name: Process results
                 id: processResults
                 run: |
                     git config --global user.email "ballerina-bot@ballerina.org"
                     git config --global user.name "ballerina-bot"
-                    branch_name="load-test-results"
                     git pull
-                    git checkout -b $branch_name
+                    git checkout -b load-test-results
                     echo '${{ toJson(github.event.client_payload.results) }}' | jq -c '.[]' |
                     while read -r result; do
                         status=$(echo "$result" | jq -r '.status')
@@ -32,15 +32,22 @@ jobs:
                             printf "::set-output name=hasFailed::true"
                         fi
                     done
-                    git push origin "${branch_name}"
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+
+            -   name: Push Results
+                if ${{ steps.processResults.outputs.hasPassed }}
+                run: git push origin "load-test-results"
+                env:
+                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+
             -   name: Create pull request for new summary
                 id: createPR
                 if: ${{ steps.processResults.outputs.hasPassed }}
                 run: printf "::set-output name=prUrl::$(gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files")"
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
+
             -   name: Approve PR
                 if: ${{ steps.processResults.outputs.hasPassed }}
                 run: |
@@ -48,14 +55,15 @@ jobs:
                     gh pr review --approve ${{ steps.createPR.outputs.prUrl }}
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_REVIEWER_BOT_TOKEN }}
+
             -   name: Merge PR
                 if: ${{ steps.processResults.outputs.hasPassed }}
                 run: |
-                    status="NOT COMPLETED"
-                    while [ ! -z "$status" ]
+                    checkCount="0"
+                    while [ "$checkCount" != "3" ]
                     do
                       sleep 20
-                      status=$(gh pr status --jq '.currentBranch .statusCheckRollup[] | select(.status!="COMPLETED") | select(.context!="license/cla")' --json statusCheckRollup)
+                      checkCount=$(gh pr status --jq '[.currentBranch .statusCheckRollup[] | select((.conclusion=="SUCCESS") and ((.name=="Build on Ubuntu") or (.name=="Build on Windows") or (.name=="codecov/project")))] | length' --json statusCheckRollup)
                     done
                     sleep 20
                     gh pr merge --merge --delete-branch
