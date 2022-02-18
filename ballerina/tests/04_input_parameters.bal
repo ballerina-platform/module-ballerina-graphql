@@ -119,7 +119,39 @@ isolated function testFloatAsInput() returns error? {
 }
 
 @test:Config {
-    groups: ["inputs", "inpout_coerce"]
+    groups: ["inputs"]
+}
+isolated function testFloatWithPositiveInfinity() returns error? {
+    string document = "{ weightInPounds(weightInKg: 1.7E309) }";
+    string url = "http://localhost:9091/inputs";
+    string actualPayload = check getTextPayloadFromService(url, document);
+    json payloadWithFloatValues = check value:fromJsonFloatString(actualPayload);
+    json expectedPayload = {
+        data: {
+            weightInPounds: float:Infinity
+        }
+    };
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs"]
+}
+isolated function testFloatNegativeInfinity() returns error? {
+    string document = "{ weightInPounds(weightInKg: -1.7E309) }";
+    string url = "http://localhost:9091/inputs";
+    string actualPayload = check getTextPayloadFromService(url, document);
+    json payloadWithFloatValues = check value:fromJsonFloatString(actualPayload);
+    json expectedPayload = {
+        data: {
+            weightInPounds: -float:Infinity
+        }
+    };
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "input_coerce"]
 }
 isolated function testCoerceIntInputToFloat() returns error? {
     string document = "{ weightInPounds(weightInKg: 1) }";

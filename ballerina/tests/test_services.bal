@@ -172,6 +172,33 @@ service /inputs on basicListener {
     }
 }
 
+service /decimal_inputs on basicListener {
+    isolated resource function get convertDecimalToFloat(decimal value) returns float|error {
+        return float:fromString(value.toString());
+    }
+
+    isolated resource function get getTotalInDecimal(decimal[][] prices) returns decimal[] {
+        decimal[] total = [];
+        decimal sumOfNestedList = 0;
+        foreach decimal[] nested in prices {
+            sumOfNestedList = 0;
+            foreach decimal price in nested {
+                sumOfNestedList += price;
+            }
+            total.push(sumOfNestedList);
+        }
+        return total;
+    }
+
+    isolated resource function get getSubTotal(Item[] items) returns decimal {
+        decimal subTotal = 0.0;
+        foreach Item item in items {
+            subTotal += item.price;
+        }
+        return subTotal;
+    }
+}
+
 service /input_objects on basicListener {
     isolated resource function get searchProfile(ProfileDetail profileDetail) returns Person {
         if profileDetail?.age == 28 && profileDetail.name == "Jessie" {

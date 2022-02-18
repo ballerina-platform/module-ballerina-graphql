@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Decimal cannot represent non Decimal value: Infinity",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 32
+                }
+            ]
+        }
+    ]
+}

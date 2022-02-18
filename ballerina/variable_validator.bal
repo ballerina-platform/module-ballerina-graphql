@@ -169,12 +169,10 @@ class VariableValidator {
             json value = self.variables.get(variableName);
             self.setArgumentValue(value, argumentNode, varDef);
         } else if defaultValue is parser:ArgumentNode {
-            boolean hasInvalidValue;
-            parser:ArgumentNode? valueNode;
-            [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(defaultValue, variableType);
-            if hasInvalidValue && valueNode is parser:ArgumentNode {
-                string message = getInvalidDefaultValueError(variableName, varDef.getTypeName(), valueNode);
-                self.errors.push(getErrorDetailRecord(message, valueNode.getValueLocation()));
+            boolean hasInvalidValue = self.hasInvalidDefaultValue(defaultValue, variableType);
+            if hasInvalidValue {
+                string message = getInvalidDefaultValueError(variableName, varDef.getTypeName(), defaultValue);
+                self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
             } else {
                 self.setDefaultValueToArgumentNode(argumentNode, getArgumentTypeIdentifierFromType(variableType),
                         defaultValue.getValue(), defaultValue.getValueLocation());
@@ -193,21 +191,21 @@ class VariableValidator {
         }
     }
 
-    isolated function hasInvalidDefaultValue(parser:ArgumentNode defaultValue, __Type variableType)
-            returns [boolean, parser:ArgumentNode?] {
+    isolated function hasInvalidDefaultValue(parser:ArgumentNode defaultValue, __Type variableType) returns boolean {
         if defaultValue.getKind() == getArgumentTypeIdentifierFromType(variableType) {
             if defaultValue.getKind() == parser:T_LIST {
                 self.validateListTypeDefaultValue(defaultValue, variableType);
-                return [false];
+                return false;
             }
-            return [false];
-        } else if defaultValue.getKind() == parser:T_INT && getArgumentTypeIdentifierFromType(variableType) == parser:T_FLOAT {
-            defaultValue.setValue(<float> defaultValue.getValue());
-            return [false];
+            return false;
+        } else if defaultValue.getKind() == parser:T_INT &&
+            getArgumentTypeIdentifierFromType(variableType) == parser:T_FLOAT {
+            defaultValue.setValue(defaultValue.getValue());
+            return false;
         } else if defaultValue.getValue() is () && variableType.kind != NON_NULL {
-            return [false];
+            return false;
         } else {
-            return [true, defaultValue];
+            return true;
         }
     }
 
@@ -219,13 +217,11 @@ class VariableValidator {
                 self.updatePath(i);
                 parser:ArgumentValue member = members[i];
                 if member is parser:ArgumentNode {
-                    boolean hasInvalidValue;
-                    parser:ArgumentNode? valueNode;
-                    [hasInvalidValue, valueNode] = self.hasInvalidDefaultValue(member, memberType);
-                    if hasInvalidValue && valueNode is parser:ArgumentNode {
-                        string listError = string`${getListElementError(self.argumentPath)}`;
-                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), valueNode);
-                        self.errors.push(getErrorDetailRecord(message, valueNode.getValueLocation()));
+                    boolean hasInvalidValue = self.hasInvalidDefaultValue(member, memberType);
+                    if hasInvalidValue {
+                        string listError = string `${getListElementError(self.argumentPath)}`;
+                        string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), member);
+                        self.errors.push(getErrorDetailRecord(message, member.getValueLocation()));
                     }
                 }
                 self.removePath();
@@ -256,9 +252,7 @@ class VariableValidator {
             argument.setVariableValue(value);
         } else if value is Scalar && getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);
-        } else if value is decimal && getTypeName(argument) == FLOAT {
-            argument.setVariableValue(<float>value);
-        } else if value is int && getTypeName(argument) == FLOAT {
+        } else if getTypeName(argument) == FLOAT && value is decimal|int {
             argument.setVariableValue(value);
         } else {
             string message = string`Variable ${<string> argument.getVariableName()} expected value of type ` +
