@@ -128,7 +128,7 @@ class ValidatorVisitor {
             if fieldValue is parser:ArgumentValue {
                 self.coerceArgumentNodeValue(argumentNode, schemaArg);
                 self.validateArgumentValue(fieldValue, argumentNode.getValueLocation(), getTypeName(argumentNode),
-                    schemaArg);
+                                           schemaArg);
             }
         }
     }
@@ -176,7 +176,7 @@ class ValidatorVisitor {
             if listItems is parser:ArgumentValue[] {
                 __InputValue listItemInputValue = createInputValueForListItem(schemaArg);
                 if listItems.length() > 0 {
-                    foreach int i in 0 ..< listItems.length() {
+                    foreach int i in 0..< listItems.length() {
                         parser:ArgumentValue|parser:ArgumentValue[] item = listItems[i];
                         if item is parser:ArgumentNode {
                             self.updatePath(i);
@@ -224,7 +224,7 @@ class ValidatorVisitor {
             string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
-            string ` ${variableValue.toString()}`;
+                             string ` ${variableValue.toString()}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
             self.errors.push(errorDetail);
         }
@@ -236,7 +236,7 @@ class ValidatorVisitor {
             if schemaArg.'type.kind == NON_NULL {
                 string listError = getListElementError(self.argumentPath);
                 string message = string `${listError}Expected value of type "${getTypeNameFromType(schemaArg.'type)}"` +
-                string `, found null.`;
+                                 string `, found null.`;
                 ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
                 self.errors.push(errorDetail);
             }
@@ -254,7 +254,7 @@ class ValidatorVisitor {
             }
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-            string `${value.toString()}`;
+                             string `${value.toString()}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
         } else {
@@ -284,9 +284,9 @@ class ValidatorVisitor {
                             string expectedTypeName = getOfType(subInputValue.'type).name.toString();
                             string actualTypeName = getTypeNameFromValue(fieldValue);
                             variableValues[subInputValue.name] = self.coerceValue(fieldValue, expectedTypeName,
-                                actualTypeName, location);
+                                                                                  actualTypeName, location);
                             self.validateArgumentValue(fieldValue, location, getTypeNameFromValue(fieldValue),
-                                subInputValue);
+                                                       subInputValue);
                         }
                     } else if fieldValue is map<anydata> {
                         self.updatePath(subInputValue.name);
@@ -301,7 +301,7 @@ class ValidatorVisitor {
                     if subInputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
                         string inputField = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string `Field "${inputField}" of required type ` +
-                        string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
+                                         string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, location));
                     }
                 }
@@ -323,7 +323,7 @@ class ValidatorVisitor {
                 return;
             }
             if variableValues.length() > 0 {
-                foreach int i in 0 ..< variableValues.length() {
+                foreach int i in 0..< variableValues.length() {
                     self.updatePath(i);
                     anydata listItemValue = variableValues[i];
                     if listItemValue is Scalar {
@@ -333,9 +333,9 @@ class ValidatorVisitor {
                             string expectedTypeName = getOfType(listItemInputValue.'type).name.toString();
                             string actualTypeName = getTypeNameFromValue(listItemValue);
                             variableValues[i] = self.coerceValue(listItemValue, expectedTypeName, actualTypeName,
-                                location);
+                                                                 location);
                             self.validateArgumentValue(listItemValue, location, getTypeNameFromValue(listItemValue),
-                                listItemInputValue);
+                                                       listItemInputValue);
                         }
                     } else if listItemValue is map<json> {
                         self.updatePath(listItemInputValue.name);
@@ -384,25 +384,29 @@ class ValidatorVisitor {
 
     isolated function coerceValue(Scalar value, string expectedTypeName, string actualTypeName, Location location)
         returns Scalar {
-        if expectedTypeName == FLOAT && (actualTypeName == INT || actualTypeName == DECIMAL) {
-            float|error coerceValue = float:fromString(value.toString());
-            if coerceValue is float {
-                return coerceValue;
-            } else {
-                string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                string `${value.toString()}`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, location);
-                self.errors.push(errorDetail);
+        if expectedTypeName == FLOAT {
+            if actualTypeName == INT || actualTypeName == DECIMAL {
+                float|error coerceValue = float:fromString(value.toString());
+                if coerceValue is float {
+                    return coerceValue;
+                } else {
+                    string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
+                                     string `${value.toString()}`;
+                    ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+                    self.errors.push(errorDetail);
+                }
             }
-        } else if expectedTypeName == DECIMAL && (actualTypeName == INT || actualTypeName == FLOAT) {
-            decimal|error coerceValue = decimal:fromString(value.toString());
-            if coerceValue is decimal {
-                return coerceValue;
-            } else {
-                string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                string `${value.toString()}`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, location);
-                self.errors.push(errorDetail);
+        } else if expectedTypeName == DECIMAL {
+            if actualTypeName == INT || actualTypeName == FLOAT {
+                decimal|error coerceValue = decimal:fromString(value.toString());
+                if coerceValue is decimal {
+                    return coerceValue;
+                } else {
+                    string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
+                                     string `${value.toString()}`;
+                    ErrorDetail errorDetail = getErrorDetailRecord(message, location);
+                    self.errors.push(errorDetail);
+                }
             }
         }
         return value;
@@ -508,7 +512,7 @@ class ValidatorVisitor {
                     int? index = definedFields.indexOf('field.getName());
                     if index is () {
                         string message = string `Field "${'field.getName()}" is not defined by type ` +
-                        string `"${node.getName()}".`;
+                                         string `"${node.getName()}".`;
                         self.errors.push(getErrorDetailRecord(message, 'field.getLocation()));
                     }
                 }
@@ -530,7 +534,7 @@ class ValidatorVisitor {
         if getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER {
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError}Enum "${getTypeNameFromType(argType)}" cannot represent non-enum` +
-            string ` value: "${value.toString()}"`;
+                             string ` value: "${value.toString()}"`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
             return;
@@ -565,7 +569,7 @@ class ValidatorVisitor {
                     }
                     foreach __InputValue arg in notFoundInputValues {
                         string message = string `Directive "${directive.getName()}" argument "${arg.name}" of type` +
-                        string `"${getTypeNameFromType(arg.'type)}" is required but not provided.`;
+                                         string `"${getTypeNameFromType(arg.'type)}" is required but not provided.`;
                         self.errors.push(getErrorDetailRecord(message, directive.getLocation()));
                     }
                     break;

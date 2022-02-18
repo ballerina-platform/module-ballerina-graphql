@@ -25,6 +25,13 @@ returns json|error {
     return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
 }
 
+isolated function getTextPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
+returns string|error {
+    http:Client httpClient = check new(url);
+    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
+    return response.getTextPayload();
+}
+
 isolated function getJsonPayloadFromRequest(string url, http:Request request) returns json|error {
     http:Client httpClient = check new(url);
     return httpClient->post("/", request);

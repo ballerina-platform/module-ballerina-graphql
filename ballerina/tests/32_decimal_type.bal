@@ -280,3 +280,25 @@ isolated function testDecimalWithMarginalValue() returns error? {
     };
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
+
+@test:Config {
+    groups: ["inputs", "input_coerce", "decimal"]
+}
+isolated function testDecimalWithPositiveInfinity() returns error? {
+    string document = "{ convertDecimalToFloat(value: 1.7E309) }";
+    string url = "http://localhost:9091/decimal_inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("decimal_with_positive_infinity.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "input_coerce", "decimal"]
+}
+isolated function testDecimalWithNegativeInfinity() returns error? {
+    string document = "{ convertDecimalToFloat(value: -1.7E309) }";
+    string url = "http://localhost:9091/decimal_inputs";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("decimal_with_negative_infinity.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
