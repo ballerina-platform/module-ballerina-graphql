@@ -154,7 +154,7 @@ class ValidatorVisitor {
                     if subInputValue.'type.kind == NON_NULL && schemaArg?.defaultValue is () {
                         string inputFieldName = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string `Field "${inputFieldName}" of required type ` +
-                        string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
+                                         string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                     }
                 }
@@ -391,7 +391,7 @@ class ValidatorVisitor {
                     return coerceValue;
                 } else {
                     string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                                     string `${value.toString()}`;
+                                     string `${value}`;
                     ErrorDetail errorDetail = getErrorDetailRecord(message, location);
                     self.errors.push(errorDetail);
                 }
@@ -403,7 +403,7 @@ class ValidatorVisitor {
                     return coerceValue;
                 } else {
                     string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                                     string `${value.toString()}`;
+                                     string `${value}`;
                     ErrorDetail errorDetail = getErrorDetailRecord(message, location);
                     self.errors.push(errorDetail);
                 }
@@ -563,7 +563,7 @@ class ValidatorVisitor {
                             self.visitArgument(argumentNode, {input: inputValue, fieldName: directive.getName()});
                         } else {
                             string message = string `Unknown argument "${argName}" on directive` +
-                            string `"${directive.getName()}".`;
+                                             string `"${directive.getName()}".`;
                             self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                         }
                     }
