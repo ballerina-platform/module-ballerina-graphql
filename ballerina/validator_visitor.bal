@@ -220,11 +220,14 @@ class ValidatorVisitor {
             self.updatePath(argumentNode.getName());
             self.validateListVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
             self.removePath();
+        } else if variableValue is () {
+            self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
         } else {
             string expectedTypeName = getOfType(schemaArg.'type).name.toString();
             string listError = getListElementError(self.argumentPath);
-            string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
-                             string ` ${variableValue.toString()}`;
+            string value = variableValue is () ? "null" : variableValue.toString();
+            string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
+                             string` ${value}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
             self.errors.push(errorDetail);
         }
@@ -296,6 +299,9 @@ class ValidatorVisitor {
                         self.updatePath(subInputValue.name);
                         self.validateListVariableValue(fieldValue, subInputValue, location, fieldName);
                         self.removePath();
+                    } else if fieldValue is () {
+                        string expectedTypeName = getOfType(inputValue.'type).name.toString();
+                        self.validateArgumentValue(fieldValue, location, expectedTypeName, subInputValue);
                     }
                 } else {
                     if subInputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
@@ -345,6 +351,9 @@ class ValidatorVisitor {
                         self.updatePath(listItemInputValue.name);
                         self.validateListVariableValue(listItemValue, listItemInputValue, location, fieldName);
                         self.removePath();
+                    } else if listItemValue is () {
+                        string expectedTypeName = getOfType(listItemInputValue.'type).name.toString();
+                        self.validateArgumentValue(listItemValue, location, expectedTypeName, listItemInputValue);
                     }
                     self.removePath();
                 }
