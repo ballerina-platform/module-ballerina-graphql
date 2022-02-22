@@ -166,6 +166,15 @@ isolated function getOfType(__Type schemaType) returns __Type {
     }
 }
 
+isolated function getOfTypeName(__Type schemaType) returns string {
+    __Type? ofType = schemaType?.ofType;
+    if ofType is () {
+        return <string>schemaType.name;
+    } else {
+        return <string>getOfType(ofType).name;
+    }
+}
+
 isolated function getTypeNameFromType(__Type schemaType) returns string {
     if schemaType.kind == NON_NULL {
         return string`${getTypeNameFromType(<__Type>schemaType?.ofType)}!`;

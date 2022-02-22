@@ -243,7 +243,7 @@ class VariableValidator {
 
     isolated function setArgumentValue(json value, parser:ArgumentNode argument, string variableTypeName,
                                        __Type variableType) {
-        if getOfType(variableType).name.toString() == UPLOAD {
+        if getOfType(variableType).name == UPLOAD {
             return;
         } else if value !is () && (argument.getKind() == parser:T_INPUT_OBJECT ||
             argument.getKind() == parser:T_LIST || argument.getKind() == parser:T_IDENTIFIER) {
