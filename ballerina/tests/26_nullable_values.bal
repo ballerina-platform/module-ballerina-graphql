@@ -245,7 +245,7 @@ isolated function testNullValueInListTypeInputWithVaraibles() returns error? {
 
 @test:Config {
     groups: ["inputs", "variables", "nullable"],
-    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-standard-library/issues/2673
+    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-standard-library/issues/2712
 }
 isolated function testNullValueForNullableInputObjectWithVariableValue() returns error? {
     string url = "http://localhost:9091/null_values";
@@ -266,7 +266,7 @@ isolated function testNullValueForNullableInputObjectWithVariableValue() returns
 
 @test:Config {
     groups: ["list", "variables", "inputs"],
-    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-standard-library/issues/2673
+    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-standard-library/issues/2712
 }
 isolated function testNullValueForNullableListTypeInputWithVaraibles() returns error? {
     string document = string`query ($words: [String]){ concat(words: $words) }`;
