@@ -152,6 +152,8 @@ public class ArgumentHandler {
     private Object getUnionTypeArgument(BObject argumentNode, UnionType unionType) {
         if (isEnum(unionType)) {
             return getScalarArgumentValue(argumentNode);
+        } else if (unionType.isNilable() && argumentNode.get(VALUE_FIELD) == null) {
+            return null;
         }
         Type effectiveType = getEffectiveType(unionType);
         return getArgumentValue(argumentNode, effectiveType);

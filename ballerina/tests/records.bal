@@ -16,6 +16,11 @@
 
 type Information Address|Person;
 
+type Account record {
+    int number;
+    Contact? contact;
+};
+
 type Pet record {
     string name;
     string ownerName;
