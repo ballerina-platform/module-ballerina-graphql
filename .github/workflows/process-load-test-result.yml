@@ -36,7 +36,7 @@ jobs:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
 
             -   name: Push Results
-                if ${{ steps.processResults.outputs.hasPassed }}
+                if: ${{ steps.processResults.outputs.hasPassed }}
                 run: git push origin "load-test-results"
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
