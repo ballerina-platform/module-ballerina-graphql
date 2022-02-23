@@ -119,3 +119,166 @@ isolated function testNullAsResourceFunctionName() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["variables", "inputs", "enums"]
+}
+isolated function testNullAsEnumInputWithVariableValue() returns error? {
+    string document = "($day:Weekday){ isHoliday(weekday: $day) }";
+    json variables = { day: null };
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            isHoliday: false
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "variables", "nullable"]
+}
+isolated function testNullAsScalarInputWithVariableValue() returns error? {
+    string url = "http://localhost:9091/null_values";
+    string document = "($id:Int){ profile(id: $id) { name } }";
+    json variables = {
+        id: null
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Sherlock Holmes"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "variables", "nullable"]
+}
+isolated function testNullValueForNonNullArgumentWithVariableValue() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = "($name: String!){ greet(name: $name) }";
+    json variables = {
+        name: null
+    };
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string `Variable name expected value of type "String!", found null`,
+                locations: [
+                    {
+                        line: 1,
+                        column: 32
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "variables", "nullable"]
+}
+isolated function testNullValueForDefaultableArgumentsWithVariable() returns error? {
+    string url = "http://localhost:9091/null_values";
+    string document = "mutation($name: String){ profile(name: $name) { name } }";
+    json variables = {
+        name: null
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Sherlock Holmes"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "variables", "nullable"]
+}
+isolated function testNullValueInInputObjectFieldWithVariableValue() returns error? {
+    string url = "http://localhost:9091/null_values";
+    string document = "($author: Author){ book(author: $author) { name } }";
+    json variables = {
+        author: {
+            name: null,
+            id: 1
+        }
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            book: {
+                name: "The Art of Electronics"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "variables", "inputs"]
+}
+isolated function testNullValueInListTypeInputWithVaraibles() returns error? {
+    string document = string`query ($words: [String]){ concat(words: $words) }`;
+    string url = "http://localhost:9091/list_inputs";
+    json variables = {
+        words: ["Hello!", null, "GraphQL"]
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            concat:  "Hello! GraphQL"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "variables", "nullable"],
+    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-standard-library/issues/2712
+}
+isolated function testNullValueForNullableInputObjectWithVariableValue() returns error? {
+    string url = "http://localhost:9091/null_values";
+    string document = "($author: Author){ book(author: $author) { name } }";
+    json variables = {
+        author: null
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            book: {
+                name: "The Art of Electronics"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "variables", "inputs"],
+    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-standard-library/issues/2712
+}
+isolated function testNullValueForNullableListTypeInputWithVaraibles() returns error? {
+    string document = string`query ($words: [String]){ concat(words: $words) }`;
+    string url = "http://localhost:9091/list_inputs";
+    json variables = {
+        words: null
+    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            concat:  "Word list is empty"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

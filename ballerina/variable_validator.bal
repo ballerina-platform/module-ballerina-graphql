@@ -70,7 +70,7 @@ class VariableValidator {
         string[] keys = self.variableDefinitions.keys();
         foreach string name in keys {
             if self.visitedVariableDefinitions.indexOf(name) == () {
-                string message = string`Variable "$${name}" is never used.`;
+                string message = string `Variable "$${name}" is never used.`;
                 Location location = self.variableDefinitions.get(name).getLocation();
                 self.errors.push(getErrorDetailRecord(message, location));
             }
@@ -128,11 +128,11 @@ class VariableValidator {
                     self.visitedVariableDefinitions.push(variableName);
                 } else {
                     self.visitedVariableDefinitions.push(variableName);
-                    string message = string`Unknown type "${argumentTypeName}".`;
+                    string message = string `Unknown type "${argumentTypeName}".`;
                     self.errors.push(getErrorDetailRecord(message, variableDefinition.getLocation()));
                 }
             } else {
-                string message = string`Variable "$${variableName}" is not defined.`;
+                string message = string `Variable "$${variableName}" is not defined.`;
                 self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
             }
             self.removePath();
@@ -167,7 +167,7 @@ class VariableValidator {
         if self.variables.hasKey(variableName) {
             argumentNode.setKind(getArgumentTypeIdentifierFromType(variableType));
             json value = self.variables.get(variableName);
-            self.setArgumentValue(value, argumentNode, varDef);
+            self.setArgumentValue(value, argumentNode, varDef.getTypeName(), variableType);
         } else if defaultValue is parser:ArgumentNode {
             boolean hasInvalidValue = self.hasInvalidDefaultValue(defaultValue, variableType);
             if hasInvalidValue {
@@ -175,16 +175,15 @@ class VariableValidator {
                 self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
             } else {
                 self.setDefaultValueToArgumentNode(argumentNode, getArgumentTypeIdentifierFromType(variableType),
-                        defaultValue.getValue(), defaultValue.getValueLocation());
+                                                   defaultValue.getValue(), defaultValue.getValueLocation());
             }
         } else {
             parser:Location location = argumentNode.getLocation();
             if variableType.kind == NON_NULL {
-                string message = string`Variable "$${variableName}" of required type ${varDef.getTypeName()} was `+
-                string`not provided.`;
+                string message = string `Variable "$${variableName}" of required type ${varDef.getTypeName()} was `+
+                                 string `not provided.`;
                 self.errors.push(getErrorDetailRecord(message, location));
             } else {
-                argumentNode.setValue(());
                 argumentNode.setValueLocation(location);
                 argumentNode.setVariableDefinition(false);
             }
@@ -227,7 +226,7 @@ class VariableValidator {
                 self.removePath();
             }
         } else if memberType.kind == NON_NULL  {
-            string listError = string`${getListElementError(self.argumentPath)}`;
+            string listError = string `${getListElementError(self.argumentPath)}`;
             string message = getInvalidDefaultValueError(listError, getTypeNameFromType(variableType), defaultValue);
             self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
         }
@@ -242,21 +241,23 @@ class VariableValidator {
         argumentNode.setVariableDefinition(false);
     }
 
-    public isolated function setArgumentValue(json value, parser:ArgumentNode argument,
-                                              parser:VariableDefinitionNode varDef) {
-        if argument.getKind() == parser:T_INPUT_OBJECT {
-            argument.setVariableValue(value);
-        } else if argument.getKind() == parser:T_LIST {
-            argument.setVariableValue(value);
-        } else if argument.getKind() == parser:T_IDENTIFIER {
+    isolated function setArgumentValue(json value, parser:ArgumentNode argument, string variableTypeName,
+                                       __Type variableType) {
+        if getOfType(variableType).name == UPLOAD {
+            return;
+        } else if value !is () && (argument.getKind() == parser:T_INPUT_OBJECT ||
+            argument.getKind() == parser:T_LIST || argument.getKind() == parser:T_IDENTIFIER) {
             argument.setVariableValue(value);
         } else if value is Scalar && getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);
         } else if getTypeName(argument) == FLOAT && value is decimal|int {
             argument.setVariableValue(value);
+        } else if value is () && variableType.kind != NON_NULL {
+            argument.setVariableValue(value);
         } else {
-            string message = string`Variable ${<string> argument.getVariableName()} expected value of type ` +
-            string`"${varDef.getTypeName()}", found ${value.toString()}`;
+            string invalidValue = value is () ? "null": value.toString();
+            string message = string `Variable ${<string> argument.getVariableName()} expected value of type ` +
+                             string `"${variableTypeName}", found ${invalidValue}`;
             self.errors.push(getErrorDetailRecord(message, argument.getLocation()));
         }
     }
@@ -267,9 +268,9 @@ class VariableValidator {
         __InputValue? inputValue = getInputValueFromArray(inputValues, argNode.getName());
         if inputValue is __InputValue {
             if !self.isVariableUsageAllowed(varType, varDef, inputValue) {
-                string message = string`Variable "${<string>argNode.getVariableName()}" of type `+
-                string`"${varDef.getTypeName()}" used in position expecting type `+
-                string`"${getTypeNameFromType(inputValue.'type)}".`;
+                string message = string `Variable "${<string>argNode.getVariableName()}" of type `+
+                                 string `"${varDef.getTypeName()}" used in position expecting type `+
+                                 string `"${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
             }
         }
