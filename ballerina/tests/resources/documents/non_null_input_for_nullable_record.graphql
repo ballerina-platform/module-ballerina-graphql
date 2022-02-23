@@ -1,0 +1,9 @@
+{
+    city(
+        address: {
+            number: "308"
+            street: "Negra Arroyo Lane"
+            city: "Albequerque"
+        }
+    )
+}

@@ -1,0 +1,5 @@
+{
+    accountNumber(
+        account: { number: 123456, contact: null }
+    )
+}

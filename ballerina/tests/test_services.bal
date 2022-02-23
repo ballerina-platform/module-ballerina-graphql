@@ -1122,3 +1122,23 @@ service /intersection_types on basicListener {
         return pet.ownerName;
     }
 }
+
+service /nullable_inputs on basicListener {
+    resource function get city(Address? address) returns string? {
+        if address is Address {
+            return address.city;
+        }
+        return;
+    }
+
+    resource function get cities(Address[]? addresses) returns string[]? {
+        if addresses is Address[] {
+            return addresses.map(address => address.city);
+        }
+        return;
+    }
+
+    resource function get accountNumber(Account account) returns int {
+        return account.number;
+    }
+}
