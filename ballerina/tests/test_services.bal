@@ -996,7 +996,7 @@ service /null_values on basicListener {
         return p2;
     }
 
-    resource function get book(Author author) returns Book {
+    resource function get book(Author? author) returns Book {
         if author == { name: (), id: 1 } {
             return b1;
         } else if author == { name: "J. K. Rowling", id: 2 } {

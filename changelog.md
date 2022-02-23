@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#2640] Fix inter-dependent fragments returning stack overflow error](https://github.com/ballerina-platform/ballerina-standard-library/issues/2640)
 - [[#2649] Fix incorrectly invalidating `decimal` type inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/2649)
+- [[#2656] Fix compiler plugin crash when recursive record type definitions present](https://github.com/ballerina-platform/ballerina-standard-library/issues/2656)
+- [[#2696] Fix not Allowing to Pass `null` as Variable Input Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/2696)
 
 ## [1.2.0] - 2022-02-01
 
