@@ -122,6 +122,13 @@ isolated service /graphql on new graphql:Listener(4000) {
     isolated resource function get uploadFile(File f) returns string {
         return "Successful";
     }
+}
+
+service on new graphql:Listener(4000) {
+
+    resource function get greeting() returns string {
+        return "Hello";
+    }
 
     remote function upload(File f) returns string {
         return "successful";

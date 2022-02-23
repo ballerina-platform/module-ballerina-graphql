@@ -200,15 +200,17 @@ public class FunctionValidator {
 
     private void validateReturnTypeDefinitions(TypeReferenceTypeSymbol typeReferenceTypeSymbol, Location location) {
         if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.TYPE_DEFINITION) {
-            TypeDefinitionSymbol typeDefinitionSymbol =
-                    (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
+            TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
             if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
                 if (this.existingInputObjectTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
                     updateContext(this.context, CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
                 } else {
+                    if (this.existingReturnTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
+                        return;
+                    }
                     this.existingReturnTypes.add(typeReferenceTypeSymbol.typeDescriptor());
+                    validateRecordFields((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
                 }
-                validateRecordFields((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
             } else {
                 validateReturnType(typeDefinitionSymbol.typeDescriptor(), location);
             }
@@ -341,6 +343,9 @@ public class FunctionValidator {
         if (this.existingReturnTypes.contains(recordTypeSymbol)) {
             updateContext(this.context, CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location);
         } else {
+            if (this.existingInputObjectTypes.contains(recordTypeSymbol)) {
+                return;
+            }
             this.existingInputObjectTypes.add(recordTypeSymbol);
             for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
                 validateInputType(recordFieldSymbol.typeDescriptor(), location, isResourceMethod);

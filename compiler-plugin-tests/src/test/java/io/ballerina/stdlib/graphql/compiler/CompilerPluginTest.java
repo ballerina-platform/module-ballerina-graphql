@@ -158,6 +158,13 @@ public class CompilerPluginTest {
     }
 
     @Test
+    public void testRecursiveRecordTypes() {
+        String packagePath = "valid_service_17";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         String packagePath = "invalid_service_1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -604,13 +611,13 @@ public class CompilerPluginTest {
         assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 122, 52);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 126, 33);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 133, 33);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 133, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 140, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 147, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 154, 5);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {
