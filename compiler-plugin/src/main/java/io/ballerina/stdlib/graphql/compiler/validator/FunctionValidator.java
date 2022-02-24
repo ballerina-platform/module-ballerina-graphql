@@ -59,8 +59,8 @@ import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.FILE_UPLOAD_IDENTIFIER;
+import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_ORG;
-import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_PREFIX;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getMethodSymbol;
 import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.getLocation;
@@ -509,7 +509,7 @@ public class FunctionValidator {
             return true;
         }
         ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
-        return !PACKAGE_PREFIX.equals(moduleSymbol.id().moduleName()) ||
+        return !PACKAGE_NAME.equals(moduleSymbol.id().moduleName()) ||
                 !PACKAGE_ORG.equals(moduleSymbol.id().orgName());
     }
 }

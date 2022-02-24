@@ -17,21 +17,45 @@
 import ballerina/graphql;
 import ballerina/http;
 
-http:Listener httpListener = check new(91021);
+listener http:Listener httpListener1 = new(91021);
+listener http:Listener httpListener2 = check new(91021);
+listener http:Listener httpListener3 = check new http:Listener(91021);
+listener http:Listener httpListener4 = check new http:Listener(91021);
 
 graphql:ListenerConfiguration configs = {
     timeout: 1.0
 };
 
-listener graphql:Listener listener1 = new(httpListener, configs);
+listener graphql:Listener listener1 = new(httpListener1, configs);
+listener graphql:Listener listener2 = check new(httpListener2, configs);
+listener graphql:Listener listener3 = new graphql:Listener(httpListener3, configs);
+listener graphql:Listener listener4 = check new graphql:Listener(httpListener4, configs);
 
-service graphql:Service on new graphql:Listener(httpListener, configs) {
+service graphql:Service on new graphql:Listener(httpListener1, configs) {
     resource function get name() returns string {
             return "John";
     }
 }
 
 service graphql:Service on listener1 {
+    resource function get name() returns string {
+            return "John";
+    }
+}
+
+service graphql:Service on listener2 {
+    resource function get name() returns string {
+            return "John";
+    }
+}
+
+service graphql:Service on listener3 {
+    resource function get name() returns string {
+            return "John";
+    }
+}
+
+service graphql:Service on listener4 {
     resource function get name() returns string {
             return "John";
     }

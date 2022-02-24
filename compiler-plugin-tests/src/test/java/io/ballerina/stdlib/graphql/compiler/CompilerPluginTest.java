@@ -283,14 +283,23 @@ public class CompilerPluginTest {
     public void testListenerInitParameters() {
         String packagePath = "invalid_service_9";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 26, 57);
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 29, 58);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 28, 63);
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 30, 64);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 31, 75);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 32, 81);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 34, 64);
     }
 
     @Test
@@ -376,9 +385,20 @@ public class CompilerPluginTest {
     public void testInvalidListenerInitParameters() {
         String packagePath = "invalid_service_15";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 22, 57);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 24, 58);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 25, 64);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 26, 75);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 27, 81);
     }
 
     @Test
