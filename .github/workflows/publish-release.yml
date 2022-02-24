@@ -29,12 +29,14 @@ jobs:
                     git config --global user.email ${{ secrets.BALLERINA_BOT_EMAIL }}
                     ./gradlew build -x check -x test -x :graphql-examples:build
 
+            -   name: Create lib directory if not exists
+                run: mkdir -p ballerina/lib
+
             -   name: Run Trivy vulnerability scanner
                 uses: aquasecurity/trivy-action@master
                 with:
                     scan-type: 'fs'
-                    scan-ref: '/github/workspace/ballerina'
-                    skip-dirs: 'build'
+                    scan-ref: '/github/workspace/ballerina/lib'
                     format: 'table'
                     timeout: '10m0s'
                     exit-code: '1'
