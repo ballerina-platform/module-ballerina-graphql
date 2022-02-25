@@ -18,9 +18,8 @@
 
 package io.ballerina.stdlib.graphql.compiler.validator;
 
-import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
-import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
@@ -32,7 +31,6 @@ import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.List;
-import java.util.Optional;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
@@ -63,45 +61,43 @@ public class ServiceValidator implements AnalysisTask<SyntaxNodeAnalysisContext>
     }
 
     private boolean isGraphQlService(SyntaxNodeAnalysisContext context) {
-        boolean isGraphQlService = false;
-        SemanticModel semanticModel = context.semanticModel();
-        ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
-        Optional<Symbol> symbol = semanticModel.symbol(serviceDeclarationNode);
-        if (symbol.isPresent()) {
-            ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
-            List<TypeSymbol> listeners = serviceDeclarationSymbol.listenerTypes();
-            if (listeners.size() > 1 && hasGraphqlListener(listeners)) {
-                updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS, serviceDeclarationNode.location());
-            } else {
-                if (listeners.get(0).typeKind() == TypeDescKind.UNION) {
-                    UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listeners.get(0);
-                    List<TypeSymbol> members = unionTypeSymbol.memberTypeDescriptors();
-                    for (TypeSymbol memberSymbol : members) {
-                        isGraphQlService = isGraphqlModuleSymbol(memberSymbol);
-                    }
-                } else {
-                    isGraphQlService = isGraphqlModuleSymbol(listeners.get(0));
-                }
-            }
+        ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
+        if (context.semanticModel().symbol(node).isEmpty()) {
+            return false;
         }
-        return isGraphQlService;
+        if (context.semanticModel().symbol(node).get().kind() != SymbolKind.SERVICE_DECLARATION) {
+            return false;
+        }
+        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
+        if (!hasGraphqlListener(symbol)) {
+            return false;
+        }
+        if (symbol.listenerTypes().size() > 1) {
+            updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS, node.location());
+            return false;
+        }
+        return true;
     }
 
-    private boolean hasGraphqlListener(List<TypeSymbol> listeners) {
-        for (TypeSymbol listener : listeners) {
-            if (listener.typeKind() == TypeDescKind.UNION) {
-                UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) listener;
-                List<TypeSymbol> members = unionTypeSymbol.memberTypeDescriptors();
-                for (TypeSymbol member : members) {
-                    if (isGraphqlModuleSymbol(member)) {
-                        return true;
-                    }
-                }
-            } else {
-                if (isGraphqlModuleSymbol(listener)) {
+    private boolean hasGraphqlListener(ServiceDeclarationSymbol symbol) {
+        for (TypeSymbol listener : symbol.listenerTypes()) {
+            if (isGraphqlListener(listener)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isGraphqlListener(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+            UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
+            for (TypeSymbol member : unionTypeSymbol.memberTypeDescriptors()) {
+                if (isGraphqlModuleSymbol(member)) {
                     return true;
                 }
             }
+        } else {
+            return isGraphqlModuleSymbol(typeSymbol);
         }
         return false;
     }
