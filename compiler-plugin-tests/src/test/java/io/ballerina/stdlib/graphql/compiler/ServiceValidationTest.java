@@ -38,7 +38,7 @@ import java.util.Iterator;
 /**
  * This class includes tests for Ballerina Graphql compiler plugin.
  */
-public class CompilerPluginTest {
+public class ServiceValidationTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources")
             .toAbsolutePath();

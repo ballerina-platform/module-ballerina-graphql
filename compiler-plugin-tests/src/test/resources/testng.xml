@@ -21,7 +21,7 @@
 <suite name="BallerinaGraphqlCompilerPluginTests">
     <test name="UnitTests">
         <classes>
-            <class name="io.ballerina.stdlib.graphql.compiler.CompilerPluginTest"/>
+            <class name="io.ballerina.stdlib.graphql.compiler.ServiceValidationTest"/>
         </classes>
     </test>
 </suite>
