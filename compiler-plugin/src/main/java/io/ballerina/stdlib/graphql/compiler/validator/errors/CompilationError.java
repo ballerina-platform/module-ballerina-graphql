@@ -33,7 +33,7 @@ public enum CompilationError {
     INVALID_MULTIPLE_LISTENERS(ErrorMessage.ERROR_107, ErrorCode.GRAPHQL_107, DiagnosticSeverity.ERROR),
     INVALID_RETURN_TYPE_ERROR(ErrorMessage.ERROR_108, ErrorCode.GRAPHQL_108, DiagnosticSeverity.ERROR),
     INVALID_LISTENER_INIT(ErrorMessage.ERROR_109, ErrorCode.GRAPHQL_109, DiagnosticSeverity.ERROR),
-    INVALID_RETURN_TYPE_MULTIPLE_SERVICES(ErrorMessage.ERROR_110, ErrorCode.GRAPHQL_110, DiagnosticSeverity.ERROR),
+    INVALID_UNION_MEMBER_TYPE(ErrorMessage.ERROR_110, ErrorCode.GRAPHQL_110, DiagnosticSeverity.ERROR),
     INVALID_FIELD_NAME(ErrorMessage.ERROR_111, ErrorCode.GRAPHQL_111, DiagnosticSeverity.ERROR),
     INVALID_RETURN_TYPE_ANY(ErrorMessage.ERROR_112, ErrorCode.GRAPHQL_112, DiagnosticSeverity.ERROR),
     MISSING_RESOURCE_FUNCTIONS(ErrorMessage.ERROR_113, ErrorCode.GRAPHQL_113, DiagnosticSeverity.ERROR),
