@@ -27,13 +27,6 @@ public enum Episode {
     JEDI
 }
 
-type Starship record {
-    readonly string id;
-    string name;
-    float length?;
-    float[][] cordinates?;
-};
-
 public type Review record {
     Episode episode?;
     int stars;
@@ -97,7 +90,10 @@ service /graphql on new graphql:Listener(9000) {
     # Returns a starship by id, or null if starship is not found
     # + return - The Starship
     resource function get starship(string id) returns Starship? {
-        return ds:starshipTable[id];
+        if ds:starshipTable[id] is ds:StarshipRecord {
+            return new Starship(<ds:StarshipRecord> ds:starshipTable[id]);
+        }
+        return;
     }
 
     # Returns search results by text, or null if search item is not found
@@ -119,7 +115,7 @@ service /graphql on new graphql:Listener(9000) {
         if text.includes("starship") {
             ds:StarshipRecord[] starships = from var ship in ds:starshipTable select ship;
             foreach ds:StarshipRecord ship in starships {
-                searchResult.push(ship);
+                searchResult.push(new Starship(ship));
             }
         }
         if searchResult.length() > 0 {
