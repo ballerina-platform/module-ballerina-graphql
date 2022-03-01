@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator;
+package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
@@ -28,13 +28,13 @@ import java.util.List;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphQlService;
 
 /**
- * Validates a Ballerina GraphQL Service.
+ * Generates a GraphQL schema from a Ballerina service.
  */
-public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext> {
-    private final ServiceValidator serviceValidator;
+public class SchemaAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext>  {
+    private final SchemaGenerator schemaGenerator;
 
-    public ServiceAnalysisTask() {
-        this.serviceValidator = new ServiceValidator();
+    public SchemaAnalysisTask() {
+        this.schemaGenerator = new SchemaGenerator();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         if (!isGraphQlService(context)) {
             return;
         }
-        this.serviceValidator.initialize(context);
-        this.serviceValidator.validate();
+        this.schemaGenerator.initialize();
+        this.schemaGenerator.generate();
     }
 }

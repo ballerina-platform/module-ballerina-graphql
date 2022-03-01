@@ -22,17 +22,23 @@ import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
+import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
 
 /**
  * Util class for the compiler plugin.
@@ -128,5 +134,47 @@ public final class Utils {
         }
         ClassSymbol classSymbol = (ClassSymbol) typeDescriptor;
         return classSymbol.qualifiers().containsAll(Arrays.asList(Qualifier.SERVICE, Qualifier.DISTINCT));
+    }
+
+    public static boolean isGraphQlService(SyntaxNodeAnalysisContext context) {
+        ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
+        if (context.semanticModel().symbol(node).isEmpty()) {
+            return false;
+        }
+        if (context.semanticModel().symbol(node).get().kind() != SymbolKind.SERVICE_DECLARATION) {
+            return false;
+        }
+        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
+        if (!hasGraphqlListener(symbol)) {
+            return false;
+        }
+        if (symbol.listenerTypes().size() > 1) {
+            updateContext(context, CompilationError.INVALID_MULTIPLE_LISTENERS, node.location());
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean hasGraphqlListener(ServiceDeclarationSymbol symbol) {
+        for (TypeSymbol listener : symbol.listenerTypes()) {
+            if (isGraphqlListener(listener)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isGraphqlListener(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+            UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
+            for (TypeSymbol member : unionTypeSymbol.memberTypeDescriptors()) {
+                if (isGraphqlModuleSymbol(member)) {
+                    return true;
+                }
+            }
+        } else {
+            return isGraphqlModuleSymbol(typeSymbol);
+        }
+        return false;
     }
 }
