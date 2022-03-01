@@ -180,16 +180,16 @@ function testSearch() returns error? {
                     __typename: "Human"
                 },
                 {
-                    __typename: "StarshipRecord"
+                    __typename: "Starship"
                 },
                 {
-                    __typename: "StarshipRecord"
+                    __typename: "Starship"
                 },
                 {
-                    __typename: "StarshipRecord"
+                    __typename: "Starship"
                 },
                 {
-                    __typename: "StarshipRecord"
+                    __typename: "Starship"
                 }
             ]
         }

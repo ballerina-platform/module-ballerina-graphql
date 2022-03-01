@@ -87,9 +87,9 @@ distinct service class Human {
         ds:StarshipEdgeRecord[] edges = from var edge in ds:starshipEdgeTable
                         join var human in humans on edge.characterId equals human.id
                         select edge;
-        ds:StarshipRecord[] starship = from var ship in ds:starshipTable
+        Starship[] starship = from var ship in ds:starshipTable
                         join var edge in edges on ship.id equals edge.starshipId
-                        select ship;
+                        select new Starship(ship);
         return starship;
     }
 }
