@@ -38,7 +38,7 @@ import java.util.Iterator;
 /**
  * This class includes tests for Ballerina Graphql compiler plugin.
  */
-public class CompilerPluginTest {
+public class ServiceValidationTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources")
             .toAbsolutePath();
@@ -195,7 +195,7 @@ public class CompilerPluginTest {
     public void testInvalidResourceReturnTypes() {
         String packagePath = "invalid_service_4";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 8);
+        Assert.assertEquals(diagnosticResult.errorCount(), 11);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -211,13 +211,22 @@ public class CompilerPluginTest {
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 48, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 55, 5);
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 55, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 61, 5);
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 55, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 67, 5);
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 61, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 61, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 67, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 67, 5);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 74, 5);
@@ -283,14 +292,23 @@ public class CompilerPluginTest {
     public void testListenerInitParameters() {
         String packagePath = "invalid_service_9";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 26, 57);
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 29, 58);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 28, 63);
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 30, 64);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 31, 75);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 32, 81);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 34, 64);
     }
 
     @Test
@@ -317,17 +335,20 @@ public class CompilerPluginTest {
     public void testInvalidResourceReturnTypeUnions() {
         String packagePath = "invalid_service_11";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 20, 5);
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 20, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 26, 5);
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 20, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_MULTIPLE_SERVICES, 32, 5);
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 26, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_UNION_MEMBER_TYPE, 32, 5);
     }
 
     @Test
@@ -376,9 +397,20 @@ public class CompilerPluginTest {
     public void testInvalidListenerInitParameters() {
         String packagePath = "invalid_service_15";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 22, 57);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 24, 58);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 25, 64);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 26, 75);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 27, 81);
     }
 
     @Test

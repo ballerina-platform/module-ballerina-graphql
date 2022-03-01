@@ -34,7 +34,7 @@ public enum ErrorMessage {
     ERROR_107("A GraphQL service cannot be attached to multiple listeners"),
     ERROR_108("A GraphQL field must have a return data type"),
     ERROR_109("http:Listener and graphql:ListenerConfiguration are mutually exclusive"),
-    ERROR_110("GraphQL union type cannot consist non-distinct services"),
+    ERROR_110("Invalid GraphQL union type member. Only distinct service types are allowed"),
     ERROR_111("A GraphQL field name must not begin with \"" + DOUBLE_UNDERSCORES +
                       "\", which is reserved by GraphQL introspection"),
     ERROR_112("A GraphQL field cannot have \"any\" or \"anydata\" as the type, instead use specific types"),

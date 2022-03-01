@@ -19,23 +19,16 @@
 package io.ballerina.stdlib.graphql.compiler.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
-import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
-import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ListenerDeclarationNode;
-import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
-
-import java.util.Optional;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
@@ -46,46 +39,68 @@ import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.upda
 public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
     @Override
     public void perform(SyntaxNodeAnalysisContext context) {
-        Node node = context.node();
-        if (node.kind() == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
-            ExplicitNewExpressionNode expressionNode = (ExplicitNewExpressionNode) node;
-            Optional<Symbol> symbolOpt = context.semanticModel().symbol(expressionNode.typeDescriptor());
-            if (symbolOpt.isPresent() && symbolOpt.get() instanceof TypeReferenceTypeSymbol) {
-                TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) symbolOpt.get()).typeDescriptor();
-                String identifier = typeSymbol.getName().orElse("");
-                if (Utils.LISTENER_IDENTIFIER.equals(identifier) && isGraphqlListener(typeSymbol)) {
-                    SeparatedNodeList<FunctionArgumentNode> functionArgs =
-                            expressionNode.parenthesizedArgList().arguments();
-                    verifyListenerArgType(context, functionArgs);
-                }
-
-            }
-        } else {
-            ImplicitNewExpressionNode expressionNode = (ImplicitNewExpressionNode) node;
-            if (node.parent() instanceof ListenerDeclarationNode) {
-                ListenerDeclarationNode parentNode = (ListenerDeclarationNode) expressionNode.parent();
-                Optional<TypeDescriptorNode> parentTypeOpt = parentNode.typeDescriptor();
-                if (parentTypeOpt.isPresent()) {
-                    Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentTypeOpt.get());
-                    if (parentSymbolOpt.isPresent() && parentSymbolOpt.get() instanceof TypeReferenceTypeSymbol) {
-                        TypeSymbol typeDescriptor = ((TypeReferenceTypeSymbol) parentSymbolOpt.get()).typeDescriptor();
-                        if (isGraphqlListener(typeDescriptor) && expressionNode.parenthesizedArgList().isPresent()) {
-                            SeparatedNodeList<FunctionArgumentNode> functionArgs =
-                                    expressionNode.parenthesizedArgList().get().arguments();
-                            verifyListenerArgType(context, functionArgs);
-                        }
-                    }
-                }
-            }
+        if (context.node().kind() == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
+            ExplicitNewExpressionNode node = (ExplicitNewExpressionNode) context.node();
+            validateExplicitNewListener(context, node);
+        } else if (context.node().kind() == SyntaxKind.IMPLICIT_NEW_EXPRESSION) {
+            ImplicitNewExpressionNode node = (ImplicitNewExpressionNode) context.node();
+            validateImplicitNewExpression(context, node);
         }
     }
 
-    private void verifyListenerArgType(SyntaxNodeAnalysisContext context,
-                                       SeparatedNodeList<FunctionArgumentNode> functionArgs) {
+    private void validateExplicitNewListener(SyntaxNodeAnalysisContext context, ExplicitNewExpressionNode node) {
+        if (context.semanticModel().symbol(node.typeDescriptor()).isEmpty()) {
+            return;
+        }
+        Symbol listenerSymbol = context.semanticModel().symbol(node.typeDescriptor()).get();
+        if (!isGraphqlListener(listenerSymbol)) {
+            return;
+        }
+        SeparatedNodeList<FunctionArgumentNode> functionArgs = node.parenthesizedArgList().arguments();
+        validateListenerArguments(context, functionArgs);
+    }
+
+    private void validateImplicitNewExpression(SyntaxNodeAnalysisContext context, ImplicitNewExpressionNode node) {
+        ListenerDeclarationNode listenerDeclarationNode;
+        if (node.parent().kind() == SyntaxKind.CHECK_EXPRESSION) {
+            if (node.parent().parent().kind() != SyntaxKind.LISTENER_DECLARATION) {
+                return;
+            }
+            listenerDeclarationNode = (ListenerDeclarationNode) node.parent().parent();
+        } else {
+            if (node.parent().kind() != SyntaxKind.LISTENER_DECLARATION) {
+                return;
+            }
+            listenerDeclarationNode = (ListenerDeclarationNode) node.parent();
+        }
+        validateImplicitNewListener(context, node, listenerDeclarationNode);
+    }
+
+    private void validateImplicitNewListener(SyntaxNodeAnalysisContext context, ImplicitNewExpressionNode node,
+                                             ListenerDeclarationNode listenerDeclarationNode) {
+        if (listenerDeclarationNode.typeDescriptor().isEmpty()) {
+            return;
+        }
+        if (context.semanticModel().symbol(listenerDeclarationNode.typeDescriptor().get()).isEmpty()) {
+            return;
+        }
+        Symbol listenerSymbol = context.semanticModel().symbol(listenerDeclarationNode.typeDescriptor().get()).get();
+        if (!isGraphqlListener(listenerSymbol)) {
+            return;
+        }
+        if (node.parenthesizedArgList().isEmpty()) {
+            return;
+        }
+        SeparatedNodeList<FunctionArgumentNode> functionArgs = node.parenthesizedArgList().get().arguments();
+        validateListenerArguments(context, functionArgs);
+    }
+
+    private void validateListenerArguments(SyntaxNodeAnalysisContext context,
+                                           SeparatedNodeList<FunctionArgumentNode> arguments) {
         // two args are valid only if the first arg is numeric (i.e, port and config)
-        if (functionArgs.size() > 1) {
-            PositionalArgumentNode firstArg = (PositionalArgumentNode) functionArgs.get(0);
-            FunctionArgumentNode secondArg = functionArgs.get(1);
+        if (arguments.size() > 1) {
+            PositionalArgumentNode firstArg = (PositionalArgumentNode) arguments.get(0);
+            FunctionArgumentNode secondArg = arguments.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
                 updateContext(context, CompilationError.INVALID_LISTENER_INIT, secondArg.location());

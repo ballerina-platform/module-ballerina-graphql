@@ -18,19 +18,21 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
-import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.ClassSymbol;
+import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
-import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
-import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.tools.diagnostics.Location;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Util class for the compiler plugin.
@@ -41,7 +43,7 @@ public final class Utils {
     }
 
     // compiler plugin constants
-    public static final String PACKAGE_PREFIX = "graphql";
+    public static final String PACKAGE_NAME = "graphql";
     public static final String PACKAGE_ORG = "ballerina";
 
     // resource function constants
@@ -49,52 +51,82 @@ public final class Utils {
     public static final String CONTEXT_IDENTIFIER = "Context";
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
 
-    public static boolean validateModuleId(ModuleSymbol moduleSymbol) {
-        String moduleName = moduleSymbol.id().moduleName();
-        String orgName = moduleSymbol.id().orgName();
-        return moduleName.equals(PACKAGE_PREFIX) && orgName.equals(PACKAGE_ORG);
-    }
-
-    public static MethodSymbol getMethodSymbol(SyntaxNodeAnalysisContext context,
-                                               FunctionDefinitionNode functionDefinitionNode) {
-        MethodSymbol methodSymbol = null;
-        SemanticModel semanticModel = context.semanticModel();
-        Optional<Symbol> symbol = semanticModel.symbol(functionDefinitionNode);
-        if (symbol.isPresent()) {
-            methodSymbol = (MethodSymbol) symbol.get();
+    public static boolean isGraphqlModuleSymbol(TypeSymbol typeSymbol) {
+        if (typeSymbol.getModule().isEmpty()) {
+            return false;
         }
-        return methodSymbol;
-    }
-
-    public static boolean isRemoteFunction(SyntaxNodeAnalysisContext context,
-                                           FunctionDefinitionNode functionDefinitionNode) {
-        return isRemoteFunction(getMethodSymbol(context, functionDefinitionNode));
+        String moduleName = typeSymbol.getModule().get().id().moduleName();
+        String orgName = typeSymbol.getModule().get().id().orgName();
+        return PACKAGE_NAME.equals(moduleName) && PACKAGE_ORG.equals(orgName);
     }
 
     public static boolean isRemoteFunction(MethodSymbol methodSymbol) {
         return methodSymbol.qualifiers().contains(Qualifier.REMOTE);
     }
 
-    public static boolean isGraphqlListener(TypeSymbol listenerType) {
-        if (listenerType.typeKind() == TypeDescKind.UNION) {
-            return ((UnionTypeSymbol) listenerType).memberTypeDescriptors().stream()
-                    .filter(typeDescriptor -> typeDescriptor instanceof TypeReferenceTypeSymbol)
-                    .map(typeReferenceTypeSymbol -> (TypeReferenceTypeSymbol) typeReferenceTypeSymbol)
-                    .anyMatch(typeReferenceTypeSymbol ->
-                                      typeReferenceTypeSymbol.getModule().isPresent()
-                                              && validateModuleId(typeReferenceTypeSymbol.getModule().get()
-                                      ));
+    public static boolean isGraphqlListener(Symbol listenerSymbol) {
+        if (listenerSymbol.kind() != SymbolKind.TYPE) {
+            return false;
         }
+        TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) listenerSymbol).typeDescriptor();
+        if (typeSymbol.typeKind() != TypeDescKind.OBJECT) {
+            return false;
+        }
+        if (!isGraphqlModuleSymbol(typeSymbol)) {
+            return false;
+        }
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        return LISTENER_IDENTIFIER.equals(typeSymbol.getName().get());
+    }
 
-        if (listenerType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            Optional<ModuleSymbol> moduleOpt = ((TypeReferenceTypeSymbol) listenerType).typeDescriptor().getModule();
-            return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
-        }
+    public static boolean isIgnoreType(TypeSymbol typeSymbol) {
+        return typeSymbol.typeKind() == TypeDescKind.NIL || typeSymbol.typeKind() == TypeDescKind.ERROR;
+    }
 
-        if (listenerType.typeKind() == TypeDescKind.OBJECT) {
-            Optional<ModuleSymbol> moduleOpt = listenerType.getModule();
-            return moduleOpt.isPresent() && validateModuleId(moduleOpt.get());
+    public static List<TypeSymbol> getEffectiveTypes(UnionTypeSymbol unionTypeSymbol) {
+        List<TypeSymbol> effectiveTypes = new ArrayList<>();
+        for (TypeSymbol typeSymbol : unionTypeSymbol.memberTypeDescriptors()) {
+            if (!isIgnoreType(typeSymbol)) {
+                effectiveTypes.add(typeSymbol);
+            }
         }
-        return false;
+        return effectiveTypes;
+    }
+
+    public static TypeSymbol getEffectiveType(IntersectionTypeSymbol intersectionTypeSymbol, Location location) {
+        List<TypeSymbol> effectiveTypes = new ArrayList<>();
+        for (TypeSymbol typeSymbol : intersectionTypeSymbol.memberTypeDescriptors()) {
+            if (typeSymbol.typeKind() == TypeDescKind.READONLY) {
+                continue;
+            }
+            effectiveTypes.add(typeSymbol);
+        }
+        if (effectiveTypes.size() == 1) {
+            return effectiveTypes.get(0);
+        }
+        return null;
+    }
+
+    public static boolean isPrimitiveType(TypeSymbol returnType) {
+        return returnType.typeKind().isStringType() ||
+                returnType.typeKind() == TypeDescKind.INT ||
+                returnType.typeKind() == TypeDescKind.FLOAT ||
+                returnType.typeKind() == TypeDescKind.BOOLEAN ||
+                returnType.typeKind() == TypeDescKind.DECIMAL;
+    }
+
+    public static boolean isDistinctServiceReference(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() != TypeDescKind.TYPE_REFERENCE) {
+            return false;
+        }
+        TypeReferenceTypeSymbol typeReferenceTypeSymbol = (TypeReferenceTypeSymbol) typeSymbol;
+        Symbol typeDescriptor = typeReferenceTypeSymbol.typeDescriptor();
+        if (typeDescriptor.kind() != SymbolKind.CLASS) {
+            return false;
+        }
+        ClassSymbol classSymbol = (ClassSymbol) typeDescriptor;
+        return classSymbol.qualifiers().containsAll(Arrays.asList(Qualifier.SERVICE, Qualifier.DISTINCT));
     }
 }

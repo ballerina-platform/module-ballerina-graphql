@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2649] Fix incorrectly invalidating `decimal` type inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/2649)
 - [[#2656] Fix compiler plugin crash when recursive record type definitions present](https://github.com/ballerina-platform/ballerina-standard-library/issues/2656)
 - [[#2696] Fix not Allowing to Pass `null` as Variable Input Value](https://github.com/ballerina-platform/ballerina-standard-library/issues/2696)
+- [[#2733] Fix incorrectly validating listener init parameters when `check` expression is present](https://github.com/ballerina-platform/ballerina-standard-library/issues/2733)
+- [[#2746] Fix incorrectly allowing record types as union type members](https://github.com/ballerina-platform/ballerina-standard-library/issues/2746)
 
 ## [1.2.0] - 2022-02-01
 
