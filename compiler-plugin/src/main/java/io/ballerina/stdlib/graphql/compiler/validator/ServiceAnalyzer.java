@@ -33,6 +33,5 @@ public class ServiceAnalyzer extends CodeAnalyzer {
         codeAnalysisContext.addSyntaxNodeAnalysisTask(new ServiceAnalysisTask(), SyntaxKind.SERVICE_DECLARATION);
         codeAnalysisContext.addSyntaxNodeAnalysisTask(new ListenerValidator(),
                 Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION, SyntaxKind.EXPLICIT_NEW_EXPRESSION));
-
     }
 }
