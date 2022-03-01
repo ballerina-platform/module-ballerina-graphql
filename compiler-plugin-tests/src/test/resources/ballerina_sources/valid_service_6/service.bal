@@ -35,13 +35,13 @@ listener graphql:Listener listener9 = check new graphql:Listener(9000, configs);
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on new graphql:Listener(httpListener) {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
@@ -53,60 +53,60 @@ service graphql:Service on new graphql:Listener(4000, configs) {
 
 service graphql:Service on new graphql:Listener(4000, timeout = 5, server = "0.0.0.0") {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener1 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener2 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener3 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener4 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener5 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener6 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener7 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener8 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener9 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }

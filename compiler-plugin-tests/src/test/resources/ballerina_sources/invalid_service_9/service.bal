@@ -33,30 +33,30 @@ listener graphql:Listener listener4 = check new graphql:Listener(httpListener4, 
 
 service graphql:Service on new graphql:Listener(httpListener1, configs) {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener1 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener2 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener3 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
 
 service graphql:Service on listener4 {
     resource function get name() returns string {
-            return "John";
+        return "John";
     }
 }
