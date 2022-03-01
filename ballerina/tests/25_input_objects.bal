@@ -227,8 +227,7 @@ isolated function testInputObjectWithMissingVariablesArguments() returns error? 
 }
 
 @test:Config {
-    groups: ["input_objects", "input", "enums"],
-    enable: false // TODO: Disabled due to https://github.com/ballerina-platform/ballerina-lang/issues/35040
+    groups: ["input_objects", "input", "enums"]
 }
 isolated function testInputObjectWithEnumTypeVariables() returns error? {
     string document = "($day:Date!){ isHoliday(date: $day) }";
