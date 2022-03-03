@@ -31,6 +31,8 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -183,6 +185,15 @@ public final class Utils {
             }
         } else {
             return isGraphqlModuleSymbol(typeSymbol);
+        }
+        return false;
+    }
+
+    public static boolean hasCompilationErrors(SyntaxNodeAnalysisContext context) {
+        for (Diagnostic diagnostic : context.semanticModel().diagnostics()) {
+            if (diagnostic.diagnosticInfo().severity() == DiagnosticSeverity.ERROR) {
+                return true;
+            }
         }
         return false;
     }

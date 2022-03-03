@@ -20,11 +20,8 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.tools.diagnostics.Diagnostic;
-import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
-import java.util.List;
-
+import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphQlService;
 
 /**
@@ -39,11 +36,8 @@ public class SchemaAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContex
 
     @Override
     public void perform(SyntaxNodeAnalysisContext context) {
-        List<Diagnostic> diagnostics = context.semanticModel().diagnostics();
-        for (Diagnostic diagnostic : diagnostics) {
-            if (diagnostic.diagnosticInfo().severity() == DiagnosticSeverity.ERROR) {
-                return;
-            }
+        if (hasCompilationErrors(context)) {
+            return;
         }
         if (!isGraphQlService(context)) {
             return;
