@@ -48,7 +48,11 @@ public enum ErrorMessage {
     ERROR_120("GraphQL input cannot have multi-dimensional graphql:Upload arrays"),
     ERROR_121("Graphql input type must not be a subtype of `error?`"),
     ERROR_122("Invalid union type for GraphQL input type"),
-    ERROR_123("Invalid intersection type for GraphQL type");
+    ERROR_123("Invalid intersection type for GraphQL type"),
+    ERROR_124("All the resource functions in the GraphQL interface class `{0}` must be implemented in the child class" +
+                      " `{1}`"),
+    ERROR_125("Non-distinct service class `{0}` is used as a GraphQL interface"),
+    ERROR_126("Non-distinct service class `{0}` is used as a GraphQL interface implementation");
 
     private final String message;
 

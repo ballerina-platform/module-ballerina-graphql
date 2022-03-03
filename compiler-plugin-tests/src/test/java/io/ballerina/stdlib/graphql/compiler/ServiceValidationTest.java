@@ -30,10 +30,13 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.wso2.ballerinalang.compiler.diagnostic.BLangDiagnosticLocation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin.
@@ -165,6 +168,34 @@ public class ServiceValidationTest {
     }
 
     @Test
+    public void testInterfaces() {
+        String packagePath = "valid_service_18";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInterfacesImplementingInterfaces() {
+        String packagePath = "valid_service_19";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testMultipleInterfaceImplementations() {
+        String packagePath = "valid_service_20";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testMultipleInterfaceImplementationsWithUnusedInterface() {
+        String packagePath = "valid_service_21";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         String packagePath = "invalid_service_1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -240,25 +271,31 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 20, 38);
+        String message = "Invalid GraphQL input parameter type `json`";
+        assertErrorMessage(diagnostic, message, 20, 38);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 26, 45);
+        message = "Invalid GraphQL input parameter type `map`";
+        assertErrorMessage(diagnostic, message, 26, 45);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 32, 40);
+        message = "Invalid GraphQL input parameter type `byte`";
+        assertErrorMessage(diagnostic, message, 32, 40);
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_INPUT_TYPE_UNION, 43, 39);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 49, 49);
+        message = "Invalid GraphQL input parameter type `byte`";
+        assertErrorMessage(diagnostic, message, 49, 49);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 55, 37);
+        message = "Invalid GraphQL input parameter type `any`";
+        assertErrorMessage(diagnostic, message, 55, 37);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 61, 41);
+        message = "Invalid GraphQL input parameter type `anydata`";
+        assertErrorMessage(diagnostic, message, 61, 41);
     }
 
     @Test
@@ -560,8 +597,7 @@ public class ServiceValidationTest {
         String packagePath = "invalid_service_25";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-        Diagnostic diagnostic = diagnosticIterator.next();
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, 25, 5);
     }
 
@@ -652,6 +688,93 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 154, 5);
     }
 
+    @Test
+    public void testNonDistinctInterfaceImplementation() {
+        String packagePath = "invalid_service_29";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        String message = "Non-distinct service class `Teacher` is used as a GraphQL interface implementation";
+        assertErrorMessage(diagnostic, message, 20, 5);
+    }
+
+    @Test
+    public void testNonDistinctInterface() {
+        String packagePath = "invalid_service_30";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        String message = "Non-distinct service class `Person` is used as a GraphQL interface";
+        assertErrorMessage(diagnostic, message, 20, 5);
+    }
+
+    @Test
+    public void testInterfaceImplementationMissingResourceFunction() {
+        String packagePath = "invalid_service_31";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        String message =
+                "All the resource functions in the GraphQL interface class `Person` must be implemented in the child " +
+                        "class `Student`";
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 20, 5);
+
+        message =
+                "All the resource functions in the GraphQL interface class `Person` must be implemented in the child " +
+                        "class `Teacher`";
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 20, 5);
+    }
+
+    @Test
+    public void testInvalidResourceFunctionsInInterfaceImplementations() {
+        String packagePath = "invalid_service_32";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 67, 32);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 99, 32);
+    }
+
+    @Test
+    public void testInvalidReturnTypesInInterfaceImplementations() {
+        String packagePath = "invalid_service_33";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 103, 32);
+    }
+
+    @Test
+    public void testMultipleInterfaceImplementationsWithMissingResources1() {
+        String packagePath = "invalid_service_34";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        String message =
+                "All the resource functions in the GraphQL interface class `Mammal` must be implemented in the child " +
+                        "class `Dog`";
+        assertErrorMessage(diagnostic, message, 20, 5);
+    }
+
+    @Test
+    public void testMultipleInterfaceImplementationsWithMissingResources2() {
+        String packagePath = "invalid_service_35";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
+        String message =
+                "All the resource functions in the GraphQL interface class `Pet` must be implemented in the child " +
+                        "class `Dog`";
+        assertErrorMessage(diagnostic, message, 24, 5);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         return loadPackage(packagePath).getCompilation().diagnosticResult();
     }
@@ -670,6 +793,12 @@ public class ServiceValidationTest {
     private void assertError(Diagnostic diagnostic, CompilationError compilationError, int line, int column) {
         Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
         Assert.assertEquals(diagnostic.message(), compilationError.getError());
+        assertErrorLocation(diagnostic.location(), line, column);
+    }
+
+    private void assertErrorMessage(Diagnostic diagnostic, String message, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.message(), message);
         assertErrorLocation(diagnostic.location(), line, column);
     }
 
