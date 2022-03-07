@@ -18,21 +18,29 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
-import io.ballerina.compiler.api.symbols.TypeSymbol;
-
 /**
- * Represents the {@code __Type} type in GraphQL schema.
+ * Stores the default types in a GraphQL schema.
  */
-public class Type {
-    private final String name;
-    private final TypeKind typeKind;
-    private final String description;
-    private final TypeSymbol typeSymbol;
+public enum DefaultType {
+    STRING(TypeName.STRING, Description.STRING),
+    INT(TypeName.INT, Description.INT),
+    FLOAT(TypeName.FLOAT, Description.FLOAT),
+    BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN),
+    DECIMAL(TypeName.DECIMAL, Description.DECIMAL);
 
-    public Type(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
-        this.name = name;
-        this.typeKind = typeKind;
+    private final TypeName typeName;
+    private final Description description;
+
+    DefaultType(TypeName typeName, Description description) {
+        this.typeName = typeName;
         this.description = description;
-        this.typeSymbol = typeSymbol;
+    }
+
+    public String getName() {
+        return this.typeName.getName();
+    }
+
+    public String getDescription() {
+        return this.description.getDescription();
     }
 }

@@ -43,6 +43,6 @@ public class SchemaAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContex
             return;
         }
         this.schemaGenerator.initialize();
-        this.schemaGenerator.generate();
+        this.schemaGenerator.generate(context);
     }
 }

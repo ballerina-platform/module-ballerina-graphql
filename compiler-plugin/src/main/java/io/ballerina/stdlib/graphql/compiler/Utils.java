@@ -33,7 +33,6 @@ import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
-import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +102,7 @@ public final class Utils {
         return effectiveTypes;
     }
 
-    public static TypeSymbol getEffectiveType(IntersectionTypeSymbol intersectionTypeSymbol, Location location) {
+    public static TypeSymbol getEffectiveType(IntersectionTypeSymbol intersectionTypeSymbol) {
         List<TypeSymbol> effectiveTypes = new ArrayList<>();
         for (TypeSymbol typeSymbol : intersectionTypeSymbol.memberTypeDescriptors()) {
             if (typeSymbol.typeKind() == TypeDescKind.READONLY) {

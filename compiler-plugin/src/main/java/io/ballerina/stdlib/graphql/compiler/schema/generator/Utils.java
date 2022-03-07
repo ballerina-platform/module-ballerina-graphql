@@ -16,23 +16,11 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types;
-
-import io.ballerina.compiler.api.symbols.TypeSymbol;
+package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 /**
- * Represents the {@code __Type} type in GraphQL schema.
+ * Utility methods for Ballerina GraphQL schema generator.
  */
-public class Type {
-    private final String name;
-    private final TypeKind typeKind;
-    private final String description;
-    private final TypeSymbol typeSymbol;
-
-    public Type(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
-        this.name = name;
-        this.typeKind = typeKind;
-        this.description = description;
-        this.typeSymbol = typeSymbol;
-    }
+public class Utils {
+    public static final String UNION_TYPE_NAME_DELIMITER = "_";
 }

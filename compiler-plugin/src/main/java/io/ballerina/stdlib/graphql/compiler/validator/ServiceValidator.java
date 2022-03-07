@@ -186,7 +186,7 @@ public class ServiceValidator {
         } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             validateReturnTypeReference((TypeReferenceTypeSymbol) typeSymbol, location);
         } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
-            TypeSymbol effectiveType = getEffectiveType((IntersectionTypeSymbol) typeSymbol, location);
+            TypeSymbol effectiveType = getEffectiveType((IntersectionTypeSymbol) typeSymbol);
             if (effectiveType == null) {
                 addDiagnostic(CompilationError.INVALID_INTERSECTION_TYPE, location);
             } else {
@@ -357,7 +357,7 @@ public class ServiceValidator {
 
     private void validateInputParameterType(IntersectionTypeSymbol intersectionTypeSymbol, Location location,
                                             boolean isResourceMethod) {
-        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol, location);
+        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (effectiveType == null) {
             addDiagnostic(CompilationError.INVALID_INTERSECTION_TYPE, location);
         } else {
