@@ -56,3 +56,12 @@ public type CorsConfig record {|
 isolated service class HttpService {
     *http:Service;
 }
+
+# Represent GraphiQL client configurations
+#
+# + enable - Status of the client
+# + path - Path for the client
+public type GraphiQL record {|
+    boolean enable;
+    string path = "graphiql";
+|};

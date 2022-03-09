@@ -289,6 +289,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
+    final readonly & GraphiQL graphiql = getGraphiQLConfig(serviceConfig).cloneReadOnly();
 
     HttpService httpService = @http:ServiceConfig {
         cors: corsConfig
@@ -296,6 +297,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final Engine engine = gqlEngine;
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
+        private final readonly & GraphiQL graphiqlConfig = graphiql;
 
         isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
@@ -327,6 +329,18 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
+        isolated resource function 'default [string path](http:Caller caller) returns http:Response {
+            http:Response response = new;
+            if self.graphiqlConfig.enable && self.graphiqlConfig.path == path {
+                string graphiqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}`;
+                string contentType = CONTENT_TYPE_TEXT_HTML;
+                response.setPayload(self.getHTML(graphiqlURL), contentType = contentType);
+                return response;
+            }
+            response.statusCode = http:STATUS_NOT_FOUND;
+            return response;
+        }
+
         isolated function initContext(http:RequestContext requestContext, http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
@@ -342,6 +356,43 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             } else {
                 return context;
             }
+        }
+
+        isolated function getHTML(string url) returns string {
+            string html = string
+            `<html>
+                <head>
+                    <meta charset="utf-8" />
+                    <title>Simple GraphiQL Example</title>
+                    <link href="https://unpkg.com/graphiql/graphiql.min.css" rel="stylesheet" />
+                </head>
+                <body style="margin: 0;">
+                    <div id="graphiql" style="height: 100vh;"></div>
+
+                    <script
+                    crossorigin
+                    src="https://unpkg.com/react/umd/react.production.min.js"
+                    ></script>
+                    <script
+                    crossorigin
+                    src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"
+                    ></script>
+                    <script
+                    crossorigin
+                    src="https://unpkg.com/graphiql/graphiql.min.js"
+                    ></script>
+
+                    <script>
+                    const fetcher = GraphiQL.createFetcher({ url: '${url}' });
+
+                    ReactDOM.render(
+                        React.createElement(GraphiQL, { fetcher: fetcher }),
+                        document.getElementById('graphiql'),
+                    );
+                    </script>
+                </body>
+            </html>`;
+            return html;
         }
     };
     return httpService;

@@ -20,11 +20,13 @@
 # + auth - Listener authenticaton configurations
 # + contextInit - Function to initialize the context. If not provided, an empty context will be created
 # + cors - The cross origin resource sharing configurations for the service
+# + graphiql - GraphiQL client configurations
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
     ContextInit contextInit = initDefaultContext;
     CorsConfig cors?;
+    GraphiQL graphiql = defaultGraphiQLConfig;
 |};
 
 # The annotation to configure a GraphQL service.

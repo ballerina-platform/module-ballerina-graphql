@@ -40,3 +40,7 @@ __Directive defaultDirectiveInclude = {
 };
 
 final readonly & __Directive[] defaultDirectives = [defaultDirectiveSkip.cloneReadOnly(), defaultDirectiveInclude.cloneReadOnly()];
+
+final readonly & GraphiQL defaultGraphiQLConfig = {
+    enable: false
+};
