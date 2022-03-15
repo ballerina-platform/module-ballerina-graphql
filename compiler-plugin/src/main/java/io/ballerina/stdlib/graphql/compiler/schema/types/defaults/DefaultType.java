@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types;
+package io.ballerina.stdlib.graphql.compiler.schema.types.defaults;
 
 /**
  * Stores the default types in a GraphQL schema.

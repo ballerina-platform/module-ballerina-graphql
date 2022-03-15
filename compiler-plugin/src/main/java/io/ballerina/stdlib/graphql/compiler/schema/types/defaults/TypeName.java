@@ -16,18 +16,25 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.generator;
-
-import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.projects.plugins.CodeAnalysisContext;
-import io.ballerina.projects.plugins.CodeAnalyzer;
+package io.ballerina.stdlib.graphql.compiler.schema.types.defaults;
 
 /**
- * Ballerina compiler plugin code analyzer for generating GraphQL schema.
+ * Stores default type names of a GraphQL schema.
  */
-public class SchemaAnalyzer extends CodeAnalyzer {
-    @Override
-    public void init(CodeAnalysisContext codeAnalysisContext) {
-        codeAnalysisContext.addSyntaxNodeAnalysisTask(new SchemaAnalysisTask(), SyntaxKind.SERVICE_DECLARATION);
+public enum TypeName {
+    STRING("String"),
+    INT("Int"),
+    FLOAT("Float"),
+    BOOLEAN("Boolean"),
+    DECIMAL("Decimal");
+
+    private final String name;
+
+    TypeName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
     }
 }

@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.projects.CodeGeneratorResult;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
@@ -69,8 +70,43 @@ public class SchemaGenerationTest {
     }
 
     @Test
+    public void testResolversReturningInterfaceTypes() {
+        String packagePath = "05_interface_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testResolversReturningIntersectionTypes() {
-        String packagePath = "05_intersection_types";
+        String packagePath = "06_intersection_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testResolversReturningEnumTypes() {
+        String packagePath = "07_enum_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInputScalarTypes() {
+        String packagePath = "08_input_scalar_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInputEnumTypes() {
+        String packagePath = "09_input_enum_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInputRecordTypes() {
+        String packagePath = "10_input_record_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
@@ -82,7 +118,9 @@ public class SchemaGenerationTest {
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        return project.currentPackage();
+        Package currentPackage = project.currentPackage();
+        CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
+        return codeGeneratorResult.updatedPackage().orElse(currentPackage);
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator;
+package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
@@ -28,10 +28,10 @@ import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
 /**
  * Validates Ballerina GraphQL Listener Initializations.

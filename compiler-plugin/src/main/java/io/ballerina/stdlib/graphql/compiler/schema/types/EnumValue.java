@@ -16,11 +16,21 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.generator;
+package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 /**
- * Utility methods for Ballerina GraphQL schema generator.
+ * Represents the {@code __EnumValue} type in GraphQL schema.
  */
-public class Utils {
-    public static final String UNION_TYPE_NAME_DELIMITER = "_";
+public class EnumValue {
+    private final String name;
+    private final String description;
+    private final boolean isDeprecated;
+    private final String deprecationReason;
+
+    public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
+        this.name = name;
+        this.description = description;
+        this.isDeprecated = isDeprecated;
+        this.deprecationReason = deprecationReason;
+    }
 }

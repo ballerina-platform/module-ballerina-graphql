@@ -18,25 +18,23 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.projects.CodeGeneratorResult;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.wso2.ballerinalang.compiler.diagnostic.BLangDiagnosticLocation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin service validation.
@@ -776,13 +774,11 @@ public class ServiceValidationTest {
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {
-        return loadPackage(packagePath).getCompilation().diagnosticResult();
-    }
-
-    private Package loadPackage(String path) {
-        Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        return project.currentPackage();
+        Package currentPackage = project.currentPackage();
+        CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
+        return codeGeneratorResult.reportedDiagnostics();
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

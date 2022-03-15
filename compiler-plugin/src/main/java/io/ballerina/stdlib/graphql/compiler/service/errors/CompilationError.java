@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator.errors;
+package io.ballerina.stdlib.graphql.compiler.service.errors;
 
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 

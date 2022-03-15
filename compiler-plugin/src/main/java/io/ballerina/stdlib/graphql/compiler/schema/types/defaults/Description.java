@@ -16,13 +16,14 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types;
+package io.ballerina.stdlib.graphql.compiler.schema.types.defaults;
 
 /**
  * Stores descriptions for the default types in a GraphQL schema.
  */
 public enum Description {
-    STRING("The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text."),
+    STRING("The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String " +
+                   "type is most often used by GraphQL to represent free-form human-readable text."),
     INT("The `Int` scalar type represents non-fractional signed whole numeric values."),
     FLOAT("The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754]" +
                   "(https://en.wikipedia.org/wiki/IEEE_floating_point)."),

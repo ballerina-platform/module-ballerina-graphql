@@ -20,7 +20,8 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
-import io.ballerina.compiler.api.symbols.Documentable;
+import io.ballerina.compiler.api.symbols.ConstantSymbol;
+import io.ballerina.compiler.api.symbols.EnumSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
@@ -40,12 +41,13 @@ import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.schema.types.DefaultType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
+import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.DefaultType;
+import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.Description;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,29 +56,31 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
-import static io.ballerina.stdlib.graphql.compiler.schema.generator.Utils.UNION_TYPE_NAME_DELIMITER;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
 
 /**
  * Finds the GraphQL types associated with a Ballerina service.
  */
 public class TypeFinder {
-    private final SyntaxNodeAnalysisContext context;
     private final Map<String, Type> typeMap;
+    private final InterfaceFinder interfaceFinder;
 
-    public TypeFinder(SyntaxNodeAnalysisContext context) {
-        this.context = context;
+    public TypeFinder(InterfaceFinder interfaceFinder) {
         this.typeMap = new HashMap<>();
+        this.interfaceFinder = interfaceFinder;
     }
 
     public Map<String, Type> getTypeMap() {
         return this.typeMap;
     }
 
-    public void findTypes() {
-        ServiceDeclarationNode node = (ServiceDeclarationNode) this.context.node();
+    public void findTypes(SyntaxNodeAnalysisContext context) {
+        ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
         // Ignore calling `get` without `isPresent` as it is already checked in the previous validation.
         @SuppressWarnings("OptionalGetWithoutIsPresent")
-        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) this.context.semanticModel().symbol(node).get();
+        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
         for (MethodSymbol methodSymbol : symbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 findTypes((ResourceMethodSymbol) methodSymbol);
@@ -100,7 +104,7 @@ public class TypeFinder {
         }
         if (methodSymbol.typeDescriptor().params().isPresent()) {
             for (ParameterSymbol parameterSymbol : methodSymbol.typeDescriptor().params().get()) {
-                findTypes(parameterSymbol.typeDescriptor());
+                findInputTypes(parameterSymbol.typeDescriptor());
             }
         }
     }
@@ -161,6 +165,8 @@ public class TypeFinder {
             findTypes((TypeDefinitionSymbol) definitionSymbol, typeName);
         } else if (definitionSymbol.kind() == SymbolKind.CLASS) {
             findTypes((ClassSymbol) definitionSymbol, typeName);
+        } else if (definitionSymbol.kind() == SymbolKind.ENUM) {
+            findTypes((EnumSymbol) definitionSymbol, typeName);
         }
     }
 
@@ -176,9 +182,16 @@ public class TypeFinder {
         }
     }
 
-    private void findTypes(ClassSymbol classSymbol, String typeName) {
+    private Type findTypes(ClassSymbol classSymbol, String typeName) {
         String description = getDescription(classSymbol);
-        addType(typeName, TypeKind.OBJECT, description, classSymbol);
+        Type type;
+        if (this.interfaceFinder.isValidInterface(typeName)) {
+            type = addType(typeName, TypeKind.INTERFACE, description, classSymbol);
+            findTypesFromInterface(typeName, type);
+        } else {
+            type = addType(typeName, TypeKind.OBJECT, description, classSymbol);
+        }
+
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 findTypes((ResourceMethodSymbol) methodSymbol);
@@ -186,6 +199,35 @@ public class TypeFinder {
                 findTypes(methodSymbol);
             }
         }
+        return type;
+    }
+
+    private void findTypesFromInterface(String typeName, Type interfaceType) {
+        List<ClassSymbol> implementations = this.interfaceFinder.getImplementations(typeName);
+        for (ClassSymbol implementation : implementations) {
+            // When adding an implementation, the name is already checked. Therefore, no need to check isEmpty().
+            //noinspection OptionalGetWithoutIsPresent
+            Type implementedType = findTypes(implementation, implementation.getName().get());
+            interfaceType.addPossibleType(implementedType);
+            implementedType.addInterface(interfaceType);
+        }
+    }
+
+    private void findTypes(EnumSymbol enumSymbol, String typeName) {
+        String description = getDescription(enumSymbol);
+        Type enumType = addType(typeName, TypeKind.ENUM, description, enumSymbol.typeDescriptor());
+        for (ConstantSymbol enumMember : enumSymbol.members()) {
+            addEnumValueToType(enumType, enumMember);
+        }
+    }
+
+    private void addEnumValueToType(Type type, ConstantSymbol enumMember) {
+        String memberDescription = getDescription(enumMember);
+        String name = enumMember.resolvedValue().orElse("");
+        boolean isDeprecated = enumMember.deprecated();
+        String deprecationReason = getDeprecationReason(enumMember);
+        EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);
+        type.addEnumValue(enumValue);
     }
 
     private void findTypes(RecordTypeSymbol recordTypeSymbol) {
@@ -200,15 +242,24 @@ public class TypeFinder {
 
     private void findTypes(UnionTypeSymbol unionTypeSymbol, String typeName, String description) {
         List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
-        for (TypeSymbol typeSymbol : effectiveTypes) {
-            findTypes(typeSymbol);
-        }
-        if (effectiveTypes.size() < 2) {
+        if (effectiveTypes.size() == 1) {
+            findTypes(effectiveTypes.get(0));
             return;
         }
+
         typeName = typeName == null ? getTypeName(effectiveTypes) : typeName;
         description = description == null ? Description.GENERATED_UNION_TYPE.getDescription() : description;
-        addType(typeName, TypeKind.UNION, description, unionTypeSymbol);
+        Type unionType = addType(typeName, TypeKind.UNION, description, unionTypeSymbol);
+
+        for (TypeSymbol typeSymbol : effectiveTypes) {
+            findTypes(typeSymbol);
+            String memberTypeName = getTypeName(typeSymbol);
+            if (memberTypeName == null) {
+                continue;
+            }
+            Type memberType = this.typeMap.get(memberTypeName);
+            unionType.addPossibleType(memberType);
+        }
     }
 
     private void findTypes(IntersectionTypeSymbol intersectionTypeSymbol, String typeName, String description) {
@@ -221,56 +272,104 @@ public class TypeFinder {
         }
     }
 
+    private void findInputTypes(TypeSymbol typeSymbol) {
+        String typeName = getTypeName(typeSymbol);
+        if (this.typeMap.containsKey(typeName)) {
+            return;
+        }
+        switch (typeSymbol.typeKind()) {
+            case STRING:
+            case STRING_CHAR:
+                addDefaultType(DefaultType.STRING, typeSymbol);
+                break;
+            case INT:
+                addDefaultType(DefaultType.INT, typeSymbol);
+                break;
+            case FLOAT:
+                addDefaultType(DefaultType.FLOAT, typeSymbol);
+                break;
+            case BOOLEAN:
+                addDefaultType(DefaultType.BOOLEAN, typeSymbol);
+                break;
+            case DECIMAL:
+                addDefaultType(DefaultType.DECIMAL, typeSymbol);
+                break;
+            case TYPE_REFERENCE:
+                findInputTypes((TypeReferenceTypeSymbol) typeSymbol, typeName);
+                break;
+            case ARRAY:
+                findInputTypes((ArrayTypeSymbol) typeSymbol);
+                break;
+            case UNION:
+                findInputTypes((UnionTypeSymbol) typeSymbol);
+                break;
+            case INTERSECTION:
+                findInputTypes((IntersectionTypeSymbol) typeSymbol, null, null);
+                break;
+        }
+    }
+
+    private void findInputTypes(TypeReferenceTypeSymbol typeReferenceTypeSymbol, String typeName) {
+        if (typeReferenceTypeSymbol.getName().isEmpty()) {
+            return;
+        }
+        Symbol definitionSymbol = typeReferenceTypeSymbol.definition();
+        if (definitionSymbol.kind() == SymbolKind.TYPE_DEFINITION) {
+            findInputTypes((TypeDefinitionSymbol) definitionSymbol, typeName);
+        } else if (definitionSymbol.kind() == SymbolKind.ENUM) {
+            findTypes((EnumSymbol) definitionSymbol, typeName);
+        }
+    }
+
+    private void findInputTypes(ArrayTypeSymbol arrayTypeSymbol) {
+        findInputTypes(arrayTypeSymbol.memberTypeDescriptor());
+    }
+
+    private void findInputTypes(TypeDefinitionSymbol typeDefinitionSymbol, String typeName) {
+        String description = getDescription(typeDefinitionSymbol);
+        if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+            addType(typeName, TypeKind.INPUT_OBJECT, description, typeDefinitionSymbol.typeDescriptor());
+            findInputTypes((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
+            findInputTypes((UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
+            findInputTypes((IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor(), typeName, description);
+        }
+    }
+
+    private void findInputTypes(UnionTypeSymbol unionTypeSymbol) {
+        List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
+        for (TypeSymbol typeSymbol : effectiveTypes) {
+            findInputTypes(typeSymbol);
+        }
+    }
+
+    private void findInputTypes(IntersectionTypeSymbol intersectionTypeSymbol, String typeName, String description) {
+        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
+        if (typeName == null) {
+            findInputTypes(effectiveType);
+        } else {
+            // TODO: Do we need to store the intersection type here?
+            addType(typeName, TypeKind.INPUT_OBJECT, description, effectiveType);
+        }
+    }
+
+    private void findInputTypes(RecordTypeSymbol recordTypeSymbol) {
+        for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
+            findInputTypes(recordFieldSymbol.typeDescriptor());
+        }
+    }
+
     private void addDefaultType(DefaultType defaultType, TypeSymbol typeSymbol) {
         addType(defaultType.getName(), TypeKind.SCALAR, defaultType.getDescription(), typeSymbol);
     }
 
-    private void addType(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
+    private Type addType(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
         if (!this.typeMap.containsKey(name)) {
             Type type = new Type(name, typeKind, description, typeSymbol);
             this.typeMap.put(name, type);
+            return type;
         }
-    }
-
-    private static String getDescription(Documentable documentable) {
-        if (documentable.documentation().isEmpty()) {
-            return null;
-        }
-        if (documentable.documentation().get().description().isEmpty()) {
-            return null;
-        }
-        return documentable.documentation().get().description().get();
-    }
-
-    private static String getTypeName(TypeSymbol typeSymbol) {
-        switch (typeSymbol.typeKind()) {
-            case STRING:
-            case STRING_CHAR:
-                return DefaultType.STRING.getName();
-            case INT:
-                return DefaultType.INT.getName();
-            case FLOAT:
-                return DefaultType.FLOAT.getName();
-            case BOOLEAN:
-                return DefaultType.BOOLEAN.getName();
-            case DECIMAL:
-                return DefaultType.DECIMAL.getName();
-            default:
-                if (typeSymbol.getName().isEmpty()) {
-                    return null;
-                }
-                return typeSymbol.getName().get();
-        }
-    }
-
-    private static String getTypeName(List<TypeSymbol> memberTypes) {
-        List<String> typeNames = new ArrayList<>();
-        for (TypeSymbol typeSymbol : memberTypes) {
-            if (typeSymbol.getName().isEmpty()) {
-                continue;
-            }
-            typeNames.add(typeSymbol.getName().get());
-        }
-        return String.join(UNION_TYPE_NAME_DELIMITER, typeNames);
+        return this.typeMap.get(name);
     }
 }

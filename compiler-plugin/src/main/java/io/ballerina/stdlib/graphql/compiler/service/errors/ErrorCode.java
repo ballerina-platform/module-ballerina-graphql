@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator.errors;
+package io.ballerina.stdlib.graphql.compiler.service.errors;
 
 /**
  * Compilation error codes used in Ballerina GraphQL package compiler plugin.

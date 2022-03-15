@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator.errors;
+package io.ballerina.stdlib.graphql.compiler.service.errors;
 
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.DOUBLE_UNDERSCORES;
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.DOUBLE_UNDERSCORES;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
 /**
  * Compilation error messages used in Ballerina GraphQL package compiler plugin.

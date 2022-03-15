@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator;
+package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
@@ -41,7 +41,8 @@ import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.validator.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -61,10 +62,10 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.getLocation;
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.isInvalidFieldName;
-import static io.ballerina.stdlib.graphql.compiler.validator.ValidatorUtils.updateContext;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.isInvalidFieldName;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
 /**
  * Validate functions in Ballerina GraphQL services.
@@ -73,15 +74,17 @@ public class ServiceValidator {
     private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
-    private InterfaceValidator interfaceValidator;
+    private InterfaceFinder interfaceFinder;
     private SyntaxNodeAnalysisContext context;
     private int arrayDimension = 0;
+    private boolean errorOccurred;
 
     public void initialize(SyntaxNodeAnalysisContext context) {
         this.context = context;
-        this.interfaceValidator = new InterfaceValidator(context);
+        this.interfaceFinder = new InterfaceFinder();
         this.existingInputObjectTypes.clear();
         this.existingReturnTypes.clear();
+        this.errorOccurred = false;
     }
 
     public void validate() {
@@ -93,13 +96,21 @@ public class ServiceValidator {
         validateService();
     }
 
+    public boolean isErrorOccurred() {
+        return this.errorOccurred;
+    }
+
+    public InterfaceFinder getInterfaceFinder() {
+        return this.interfaceFinder;
+    }
+
     private void validateService() {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
         if (!hasResourceMethods(serviceDeclarationNode)) {
             addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
             return;
         }
-        this.interfaceValidator.populateInterfaces();
+        this.interfaceFinder.populateInterfaces(this.context);
         for (Node node : serviceDeclarationNode.members()) {
             validateServiceMember(node);
         }
@@ -217,7 +228,7 @@ public class ServiceValidator {
         Location classSymbolLocation = getLocation(classSymbol, location);
         String className = classSymbol.getName().get();
         if (isServiceClass(classSymbol)) {
-            if (this.interfaceValidator.isPossibleInterface(className)) {
+            if (this.interfaceFinder.isPossibleInterface(className)) {
                 validateInterfaces(className, classSymbol, location);
             }
             validateServiceClassDefinition(classSymbol, classSymbolLocation);
@@ -231,7 +242,7 @@ public class ServiceValidator {
             addDiagnostic(CompilationError.NON_DISTINCT_INTERFACE_CLASS, location, className);
             return;
         }
-        for (ClassSymbol childClass : this.interfaceValidator.getImplementations(className)) {
+        for (ClassSymbol childClass : this.interfaceFinder.getImplementations(className)) {
             if (childClass.getName().isEmpty()) {
                 continue;
             }
@@ -240,9 +251,11 @@ public class ServiceValidator {
                 addDiagnostic(CompilationError.NON_DISTINCT_INTERFACE_IMPLEMENTATION, location, childClassName);
                 return;
             }
-            if (!this.interfaceValidator.isValidInterfaceImplementation(classSymbol, childClass)) {
-                addDiagnostic(CompilationError.INTERFACE_IMPLEMENTATION_MISSING_RESOURCE, location, className, childClassName);
+            if (!this.interfaceFinder.isValidInterfaceImplementation(classSymbol, childClass)) {
+                addDiagnostic(CompilationError.INTERFACE_IMPLEMENTATION_MISSING_RESOURCE, location, className,
+                              childClassName);
             } else {
+                this.interfaceFinder.addValidInterface(className);
                 validateReturnTypeClass(childClass, location);
             }
         }
@@ -479,10 +492,12 @@ public class ServiceValidator {
     }
 
     private void addDiagnostic(CompilationError compilationError, Location location) {
+        this.errorOccurred = true;
         updateContext(this.context, compilationError, location);
     }
 
     private void addDiagnostic(CompilationError compilationError, Location location, Object... args) {
+        this.errorOccurred = true;
         updateContext(this.context, compilationError, location, args);
     }
 }

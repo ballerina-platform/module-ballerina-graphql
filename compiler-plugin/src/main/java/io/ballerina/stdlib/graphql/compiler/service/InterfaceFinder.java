@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.validator;
+package io.ballerina.stdlib.graphql.compiler.service;
 
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
@@ -39,19 +39,19 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceReference;
 /**
  * Finds and validates possible GraphQL interfaces in a Ballerina service.
  */
-public class InterfaceValidator {
-    private final SyntaxNodeAnalysisContext context;
+public class InterfaceFinder {
     private final Map<String, List<ClassSymbol>> interfaceImplementations;
     private final Map<String, ClassSymbol> possibleInterfaces;
+    private final List<String> validInterfaces;
 
-    public InterfaceValidator(SyntaxNodeAnalysisContext context) {
-        this.context = context;
+    public InterfaceFinder() {
         this.interfaceImplementations = new HashMap<>();
         this.possibleInterfaces = new HashMap<>();
+        this.validInterfaces = new ArrayList<>();
     }
 
-    public void populateInterfaces() {
-        for (Symbol symbol : this.context.semanticModel().moduleSymbols()) {
+    public void populateInterfaces(SyntaxNodeAnalysisContext context) {
+        for (Symbol symbol : context.semanticModel().moduleSymbols()) {
             if (!isServiceClass(symbol)) {
                 continue;
             }
@@ -76,6 +76,10 @@ public class InterfaceValidator {
             addPossibleInterface(interfaceName, interfaceClass);
             addInterfaceImplementation(interfaceName, classSymbol);
         }
+    }
+
+    public boolean isValidInterface(String name) {
+        return this.validInterfaces.contains(name);
     }
 
     public boolean isPossibleInterface(String className) {
@@ -120,5 +124,12 @@ public class InterfaceValidator {
             }
         }
         return resourceMethods;
+    }
+
+    public void addValidInterface(String className) {
+        if (this.validInterfaces.contains(className)) {
+            return;
+        }
+        this.validInterfaces.add(className);
     }
 }
