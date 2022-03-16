@@ -1012,7 +1012,7 @@ Execute the commands below to build from the source.
    ./gradlew clean build -PpublishToCentral=true
    ```
 
-## Contribute to ballerina
+## Contribute to Ballerina
 
 As an open-source project, Ballerina welcomes contributions from the community.
 
