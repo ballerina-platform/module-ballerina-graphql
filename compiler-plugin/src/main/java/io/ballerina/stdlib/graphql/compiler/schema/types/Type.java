@@ -31,6 +31,7 @@ public class Type {
     private final TypeKind typeKind;
     private final String description;
     private final TypeSymbol typeSymbol;
+    private final List<Field> fields;
     private final List<EnumValue> enumValues;
     private final List<Type> possibleTypes;
     private final List<Type> interfaces;
@@ -40,9 +41,10 @@ public class Type {
         this.typeKind = typeKind;
         this.description = description;
         this.typeSymbol = typeSymbol;
+        this.fields = typeKind == TypeKind.OBJECT || typeKind == TypeKind.INTERFACE ? new ArrayList<>() : null;
         this.enumValues = typeKind == TypeKind.ENUM ? new ArrayList<>() : null;
         this.possibleTypes = typeKind == TypeKind.INTERFACE || typeKind == TypeKind.UNION ? new ArrayList<>() : null;
-        this.interfaces = typeKind == TypeKind.OBJECT ? new ArrayList<>() : null;
+        this.interfaces = typeKind == TypeKind.OBJECT || typeKind == TypeKind.INTERFACE ? new ArrayList<>() : null;
     }
 
     public void addEnumValue(EnumValue enumValue) {

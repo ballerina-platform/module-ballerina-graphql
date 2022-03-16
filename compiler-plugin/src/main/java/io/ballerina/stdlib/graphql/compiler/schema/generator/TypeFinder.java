@@ -48,7 +48,7 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.DefaultType;
 import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.Description;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +68,7 @@ public class TypeFinder {
     private final InterfaceFinder interfaceFinder;
 
     public TypeFinder(InterfaceFinder interfaceFinder) {
-        this.typeMap = new HashMap<>();
+        this.typeMap = new LinkedHashMap<>();
         this.interfaceFinder = interfaceFinder;
     }
 
