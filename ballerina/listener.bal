@@ -17,13 +17,10 @@
 import ballerina/http;
 import ballerina/websocket;
 
-import graphql.parser;
-
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
     private websocket:Listener? wsListener;
-    private map<[websocket:Caller, parser:OperationNode]> clientsMap = {};
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
@@ -63,7 +60,7 @@ public class Listener {
         if schema.hasKey(SUBSCRIPTION_FIELD) {
             websocket:Listener|error wsListener = new(self.httpListener);
             if wsListener is error {
-                return error Error("Listener initialization for Subscriptipon failed", wsListener);
+                return error Error("Listener initialization failed", wsListener);
             }
             self.wsListener = wsListener;
         }
@@ -77,7 +74,7 @@ public class Listener {
         }
 
         if self.wsListener is websocket:Listener {
-            UpgradeService wsService = getWebsocketService(engine, schema, self.clientsMap, serviceConfig);
+            UpgradeService wsService = getWebsocketService(engine, schema.cloneReadOnly(), serviceConfig);
             attachWebsocketServiceToGraphqlService(s, wsService);
             result = (<websocket:Listener>self.wsListener).attach(wsService, name);
             if result is error {

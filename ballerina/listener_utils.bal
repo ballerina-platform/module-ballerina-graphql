@@ -348,66 +348,12 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
-isolated function getWebsocketService(Engine engine, __Schema schema, map<[websocket:Caller, parser:OperationNode]> clientsMap, GraphqlServiceConfig? serviceConfig) returns UpgradeService {
-    UpgradeService wsService = isolated service object {
-        resource function get .() returns websocket:Service|websocket:UpgradeError {
-            return service object websocket:Service {
-
-                remote function onClose(websocket:Caller caller, int statusCode, string reason) {
-                    _ = clientsMap.remove(caller.getConnectionId());
-                }
-
-                remote function onTextMessage(websocket:Caller caller, string text) returns error? {
-                    parser:OperationNode node = check validateSubscriptionPayload(text, engine);
-
-                    clientsMap[caller.getConnectionId()] = [caller, node];
-
-
-
-                    stream<any> sourceStream = new(); // = getSubscriptionResponse() -> Not implemented yet
-
-                    record {| any value; |}? next = sourceStream.iterator().next();
-
-                    while next is record {| any value; |} {
-                        check broadcast(next.value, clientsMap);
-                        next = sourceStream.iterator().next();
-                    }
-                }
-            };
+isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema, GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+    return isolated service object {
+        isolated resource function get .() returns websocket:Service|websocket:UpgradeError {
+            return new WsService(gqlEngine, schema);
         }
     };
-    return wsService;
-}
-
-isolated function validateSubscriptionPayload(string text, Engine engine) returns parser:OperationNode|error {
-    json payload = text.toJson();
-    string query = check payload.query;
-    if query != "" {
-        string document = query;
-        string operationName = check payload.operationName;
-        json variables = check payload.variables;
-        if variables is map<json> || variables == () {
-            parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
-            if validationResult is parser:OperationNode {
-                return validationResult;
-            }
-            return error(validationResult.toString());
-        }
-        return error("Invalid format in request parameter: variables");
-    }
-    return error("Query not found");
-}
-
-function broadcast(any value, map<[websocket:Caller, parser:OperationNode]> clientsMap) returns error? {
-    foreach var callerDetails in clientsMap {
-        websocket:Caller caller = callerDetails[0];
-        parser:OperationNode node = callerDetails[1];
-        OutputObject outputObject = {};
-        populateSubscriptionResponse(node, value, outputObject);
-        if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
-            check caller->writeTextMessage(outputObject.toString());
-        }
-    }
 }
 
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
@@ -426,9 +372,4 @@ isolated function attachWebsocketServiceToGraphqlService(Service s, UpgradeServi
 isolated function getWebsocketServiceFromGraphqlService(Service s) returns UpgradeService? =
 @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
-} external;
-
-isolated function populateSubscriptionResponse(parser:OperationNode node, any result, OutputObject data) =
-@java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator"
 } external;

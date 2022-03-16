@@ -47,10 +47,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
-import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
@@ -98,11 +96,16 @@ public class Engine {
         executeResourceMethod(executionContext, service, node, data, paths, pathSegments);
     }
 
-    public static void populateSubscriptionResponse(Environment environment, BObject node, BMap<BString, Object> data,
-                                                    BObject result) {
+    public static void executeSubscription(Environment environment, BObject visitor, BObject node, BValue result) {
+        Future future = environment.markAsync();
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         List<Object> pathSegments = new ArrayList<>();
-        ExecutionContext executionContext = new ExecutionContext(environment, null, null, SUBSCRIPTION);
-        populateResponse(executionContext, node, result, data, pathSegments);
+        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SCHEMA_RECORD);
+        ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
+        callbackHandler.addCallback(resourceCallback);
+        resourceCallback.notifySuccess(result);
     }
 
     public static void executeMutation(Environment environment, BObject visitor, BObject node) {
