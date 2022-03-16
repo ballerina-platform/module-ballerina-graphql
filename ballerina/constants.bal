@@ -40,6 +40,7 @@ const SUBSCRIPTION_TYPE_NAME = "Subscription";
 const NAME_ARGUMENT = "name";
 const DATA_FIELD = "data";
 const ERRORS_FIELD = "errors";
+const SUBSCRIPTION_FIELD = "subscriptionType";
 
 // Scalar type names used in GraphQL
 const INT = "Int";

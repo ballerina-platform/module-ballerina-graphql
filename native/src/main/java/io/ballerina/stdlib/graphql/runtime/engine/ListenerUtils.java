@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.values.BObject;
  */
 public final class ListenerUtils {
     private static final String HTTP_SERVICE = "graphql.http.service";
+    private static final String WS_SERVICE = "graphql.websocket.service";
 
     private ListenerUtils() {}
 
@@ -32,10 +33,22 @@ public final class ListenerUtils {
         graphqlService.addNativeData(HTTP_SERVICE, httpService);
     }
 
+    public static void attachWebsocketServiceToGraphqlService(BObject graphqlService, BObject wsService) {
+        graphqlService.addNativeData(WS_SERVICE, wsService);
+    }
+
     public static Object getHttpServiceFromGraphqlService(BObject graphqlService) {
         Object httpService = graphqlService.getNativeData(HTTP_SERVICE);
         if (httpService instanceof BObject) {
             return httpService;
+        }
+        return null;
+    }
+
+    public static Object getWebsocketServiceFromGraphqlService(BObject graphqlService) {
+        Object wsService = graphqlService.getNativeData(WS_SERVICE);
+        if (wsService instanceof BObject) {
+            return wsService;
         }
         return null;
     }

@@ -93,6 +93,7 @@ public class EngineUtils {
     public static final String DECIMAL = "Decimal";
     public static final String QUERY = "Query";
     public static final String MUTATION = "Mutation";
+    public static final String SUBSCRIPTION = "Subscription";
 
     // Input values
     public static final String KEY = "key";

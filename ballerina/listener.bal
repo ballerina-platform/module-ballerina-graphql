@@ -15,10 +15,15 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/websocket;
+
+import graphql.parser;
 
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
+    private websocket:Listener? wsListener;
+    private map<[websocket:Caller, parser:OperationNode]> clientsMap = {};
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
@@ -34,8 +39,10 @@ public class Listener {
                 return error Error("Listener initialization failed", httpListener);
             }
             self.httpListener = httpListener;
+            self.wsListener  = ();
         } else {
             self.httpListener = listenTo;
+            self.wsListener = ();
         }
     }
 
@@ -53,12 +60,29 @@ public class Listener {
         Engine engine = check new (schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
 
+        if schema.hasKey(SUBSCRIPTION_FIELD) {
+            websocket:Listener|error wsListener = new(self.httpListener);
+            if wsListener is error {
+                return error Error("Listener initialization for Subscriptipon failed", wsListener);
+            }
+            self.wsListener = wsListener;
+        }
+
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 
         error? result = self.httpListener.attach(httpService, name);
         if result is error {
             return error Error("Error occurred while attaching the service", result);
+        }
+
+        if self.wsListener is websocket:Listener {
+            UpgradeService wsService = getWebsocketService(engine, schema, self.clientsMap, serviceConfig);
+            attachWebsocketServiceToGraphqlService(s, wsService);
+            result = (<websocket:Listener>self.wsListener).attach(wsService, name);
+            if result is error {
+                return error Error("Error occurred while attaching the service", result);
+            }
         }
     }
 
@@ -74,6 +98,15 @@ public class Listener {
                 return error Error("Error occurred while detaching the service", result);
             }
         }
+        if self.wsListener is websocket:Listener {
+            UpgradeService? wsService = getWebsocketServiceFromGraphqlService(s);
+            if wsService is UpgradeService {
+                error? result = (<websocket:Listener>self.wsListener).detach(wsService);
+                if result is error {
+                    return error Error("Error occurred while attaching the service", result);
+                }
+            }
+        }
     }
 
     # Starts the attached service.
@@ -83,6 +116,12 @@ public class Listener {
         error? result = self.httpListener.'start();
         if result is error {
             return error Error("Error occurred while starting the service", result);
+        }
+        if self.wsListener is websocket:Listener {
+            result = (<websocket:Listener>self.wsListener).'start();
+            if result is error {
+                return error Error("Error occurred while starting the service", result);
+            }
         }
     }
 
@@ -94,6 +133,12 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while stopping the service", result);
         }
+        if self.wsListener is websocket:Listener {
+            result = (<websocket:Listener>self.wsListener).gracefulStop();
+            if result is error {
+                return error Error("Error occurred while stopping the service", result);
+            }
+        }
     }
 
     # Stops the service listener immediately.
@@ -103,6 +148,12 @@ public class Listener {
         error? result = self.httpListener.immediateStop();
         if result is error {
             return error Error("Error occurred while stopping the service", result);
+        }
+        if self.wsListener is websocket:Listener {
+            result = (<websocket:Listener>self.wsListener).immediateStop();
+            if result is error {
+                return error Error("Error occurred while stopping the service", result);
+            }
         }
     }
 }
