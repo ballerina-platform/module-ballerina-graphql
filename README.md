@@ -302,7 +302,7 @@ The values from the `http:RequestContext` and the `http:Request` can be set as a
 
 Following are examples for providing the context init function.
 
-##### Providing the init function directly
+##### Provide the init function directly
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -319,7 +319,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-##### Providing the init function as a function pointer
+##### Provide the init function as a function pointer
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -340,7 +340,7 @@ service on new graphql:Listener(4000) {
 
 > **Note:** Even if the context init function is not provided, a default, empty context will be created per each request.
 
-#### Using the context in resolver functions
+#### Use the context in resolver functions
 If the `graphql:Context` needs to be accessed, the resolver function has to add it as the first parameter of the function.
 Following is an example:
 
@@ -354,7 +354,7 @@ service on new graphql:Listener(4000) {
 
 This is similar to any `remote` function, or a `resource` function inside a service object used as a GraphQL object type.
 
-#### Retrieving attributes from the context
+#### Retrieve attributes from the context
 There are two methods to retrieve attributes from the `graphql:Context`.
 
 ##### `get()` function
@@ -952,9 +952,9 @@ type name {
 Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina Standard Library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
 This repository only contains the source code for the module.
 
-## Building from the source
+## Build from the source
 
-### Setting up the prerequisites
+### Prerequisites
 
 1. Download and install Java SE Development Kit (JDK) version 11 (from one of the following locations).
 
@@ -1012,7 +1012,7 @@ Execute the commands below to build from the source.
    ./gradlew clean build -PpublishToCentral=true
    ```
 
-## Contributing to ballerina
+## Contribute to ballerina
 
 As an open-source project, Ballerina welcomes contributions from the community.
 

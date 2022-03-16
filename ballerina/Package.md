@@ -295,7 +295,7 @@ The values from the `http:RequestContext` and the `http:Request` can be set as a
 
 Following are examples for providing the context init function.
 
-##### Providing the init function directly
+##### Provide the init function directly
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -312,7 +312,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-##### Providing the init function as a function pointer
+##### Provide the init function as a function pointer
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -333,7 +333,7 @@ service on new graphql:Listener(4000) {
 
 > **Note:** Even if the context init function is not provided, a default, empty context will be created per each request.
 
-#### Using the context in resolver functions
+#### Use the context in resolver functions
 If the `graphql:Context` needs to be accessed, the resolver function has to add it as the first parameter of the function.
 Following is an example:
 
@@ -347,7 +347,7 @@ service on new graphql:Listener(4000) {
 
 This is similar to any `remote` function, or a `resource` function inside a service object used as a GraphQL object type.
 
-#### Retrieving attributes from the context
+#### Retrieve attributes from the context
 There are two methods to retrieve attributes from the `graphql:Context`.
 
 ##### `get()` function
