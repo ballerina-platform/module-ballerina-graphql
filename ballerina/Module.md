@@ -10,14 +10,14 @@ The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
 
 The `graphql:Listener` is used to listening to a given IP/Port. To create a `graphql:Listener`, an `http:Listener` or a port number can be used.
 
-#### Create a Standalone `graphql:Listener`
+#### Create a standalone `graphql:Listener`
 ```ballerina
 import ballerina/graphql;
 
 listener graphql:Listener graphqlListener = new(4000);
 ```
 
-#### Create a `graphql:Listener` Using an `http:Listener`
+#### Create a `graphql:Listener` using an `http:Listener`
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -26,7 +26,7 @@ listener http:Listener httpListener = check new(4000);
 listener graphql:Listener graphqlListener = new(httpListener);
 ```
 
-#### Additional Configurations
+#### Additional configurations
 When initializing the Ballerina GraphQL listener, a set of additional configurations can be provided to configure the listener including security and resiliency settings.
 The configurations that can be passed for this are defined in the `graphql:ListenerConfiguration` record.
 
@@ -63,7 +63,7 @@ service on new graphql:Listener(4000) {
 
 The GraphQL service endpoint URL will be `<host>:<port>`
 
-#### Query Type
+#### Query type
 The `resource` functions inside the service represent the resolvers of the `Query` root type.
 
 When a `resource` function is defined inside a GraphQL service, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
@@ -100,7 +100,7 @@ The result will be the following JSON.
 }
 ```
 
-#### Mutation Type
+#### Mutation type
 The `remote` functions inside the GraphQL service represent the resolvers of the `Mutation` root type.
 
 When a `remote` function is defined inside a GraphQL service, the schema will have a `Mutation` operation and the `remote` function will be a field of the `Mutation` object.
@@ -199,11 +199,11 @@ Result:
 
 See how the result changes the `Person` record. The first mutation changes only the name and it populates the result of the `updateName` field. Then, it will execute the `updateCity` operation and populate the result. This is because the execution of the mutation operations will be done serially in the same order as they are specified in the document.
 
-#### Additional Configurations
+#### Additional configurations
 Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfig`.
 These configurations include security-related configurations for the GraphQL service.
 
-##### Security Configurations
+##### Security configurations
 A GraphQL service can be secured by setting the `auth` field in the `graphql:ServiceConfig`. Ballerina GraphQL services support Basic Authentication, JWT Authentication, and OAuth2 Authentication.
 
 ```ballerina
@@ -232,7 +232,7 @@ service graphql:Service /graphql on new graphql:Listener(4000) {
 }
 ```
 
-##### Maximum Query Depth
+##### Maximum query depth
 When a maximum query depth is provided, all the queries exceeding that limit will be rejected at the validation phase and will not be executed.
 
 ```ballerina
@@ -279,13 +279,13 @@ The result for the above query is the following JSON:
 }
 ```
 
-##### Context Init
+##### Context init
 This field is used to initialize the `graphql:Context` object. Usage of the `graphql:Context` will be described in a separate section.
 
 ### Context
 The `graphql:Context` can be used to pass meta-information among the graphql resolver (`resource`/`remote`) functions. It will be created per each request, with a defined set of attributes. Attributes can be stored in the `graphql:Context` object using key-value pairs. The key should always be a `string`. The type of the value is `value:Cloneable|isolated object {}`. This means the values can be any immutable type, `readonly` value, or an isolated object. These attributes can be set using a function, which can be given as a service configuration parameter.
 
-#### Context Init
+#### Context init
 The `graphql:Context` can be initialized using a function. The function signature is as follows:
 ```ballerina
 isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context|error {}
@@ -295,7 +295,7 @@ The values from the `http:RequestContext` and the `http:Request` can be set as a
 
 Following are examples for providing the context init function.
 
-##### Providing the Init Function Directly
+##### Providing the init function directly
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -312,7 +312,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-##### Providing the Init Function as a Function Pointer
+##### Providing the init function as a function pointer
 ```ballerina
 import ballerina/graphql;
 import ballerina/http;
@@ -333,7 +333,7 @@ service on new graphql:Listener(4000) {
 
 > **Note:** Even if the context init function is not provided, a default, empty context will be created per each request.
 
-#### Using the Context in Resolver Functions
+#### Using the context in resolver functions
 If the `graphql:Context` needs to be accessed, the resolver function has to add it as the first parameter of the function.
 Following is an example:
 
@@ -347,10 +347,10 @@ service on new graphql:Listener(4000) {
 
 This is similar to any `remote` function, or a `resource` function inside a service object used as a GraphQL object type.
 
-#### Retrieving Attributes from the Context
+#### Retrieving attributes from the context
 There are two methods to retrieve attributes from the `graphql:Context`.
 
-##### `get()` Function
+##### `get()` function
 This will return the value of the attribute using the provided key. If the key does not exist, it will return a `graphql:Error`.
 
 ```ballerina
@@ -363,7 +363,7 @@ resource function get greeting(graphql:Context context) returns string|error {
 }
 ```
 
-##### `remove()` Function
+##### `remove()` function
 This function will remove the attribute for a provided key, and return the value. If the key does not exist, it will return a `graphql:Error`.
 
 > **Note:** Even though this is supported, destructive-modification of the `graphql:Context` is discouraged. This is because these modifications may affect the parallel executions in queries.
@@ -381,7 +381,7 @@ resource function get greeting(graphql:Context context) returns string|error {
 ### Types
 The Ballerina GraphQL resources can return the following types:
 
-#### Return Types
+#### Return types
 
 ##### Scalar types
 The following Ballerina types are considered as Scalar types:
@@ -517,7 +517,7 @@ Result:
 }
 ```
 
-#### Service Types
+#### Service types
 When a `resource` function returns a service type, the service type is mapped to a GraphQL `OBJECT` type and the `resource` functions of the service type will be mapped as the fields of the `OBJECT`.
 
 When a service type is returned from a `graphql:Service`, the returning service type should also follow the rules of the `graphql:Service` explained above.
@@ -646,7 +646,7 @@ Result:
 > **Note:** Each element in the array consists only of the required `name` field.
 
 
-#### Optional Types
+#### Optional types
 A Ballerina GraphQL `resource` function can return an optional type. When the return value is `()`, the resulting field in the JSON will be `null`.
 
 ```ballerina
@@ -713,7 +713,7 @@ This will be the result:
 }
 ```
 
-#### Union Types
+#### Union types
 The Ballerina GraphQL service can return a union of distinct service types. This will be mapped to a GraphQL `UNION` type.
 
 > **Note:** Since Ballerina supports union types by nature, directly returning a union type is also allowed (but not recommended). The recommended way is to define a union type name separately and then use that type name as shown in the following example. If a union type is returned directly without providing a type name (`returns T1|T2|T3`), the type name will be `T1_T2_T3`.
@@ -854,7 +854,7 @@ The result will be:
 }
 ```
 
-#### Errors (With union)
+#### Errors
 A Ballerina GraphQL `resource` function can return an `error` with the union of the types mentioned above.
 
 > **Note:** A `resource` or a `remote` function cannot return only an `error`, any subtype of an `error`, or, an `error?`, which will result in a compilation error.
@@ -900,7 +900,7 @@ Result:
 }
 ```
 
-#### Hierarchical Resource Paths
+#### Hierarchical resource paths
 A `resource` function inside a GraphQL service can have hierarchical paths.
 When a hierarchical path is present, each level of the hierarchical path maps to the GraphQL field of the same name, and the type of that field will be mapped to an `OBJECT` type with the same name.
 
