@@ -19,22 +19,28 @@
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 /**
- * Represents the {@code __EnumValue} type in GraphQL schema.
+ * Stores the default scalar types in a GraphQL schema.
  */
-public class EnumValue {
-    private final String name;
-    private final String description;
-    private final boolean isDeprecated;
-    private final String deprecationReason;
+public enum ScalarType {
+    STRING(Name.STRING, Description.STRING),
+    INT(Name.INT, Description.INT),
+    FLOAT(Name.FLOAT, Description.FLOAT),
+    BOOLEAN(Name.BOOLEAN, Description.BOOLEAN),
+    DECIMAL(Name.DECIMAL, Description.DECIMAL);
 
-    public EnumValue(String name, String description) {
-        this(name, description, false, null);
-    }
+    private final Name name;
+    private final Description description;
 
-    public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
+    ScalarType(Name name, Description description) {
         this.name = name;
         this.description = description;
-        this.isDeprecated = isDeprecated;
-        this.deprecationReason = deprecationReason;
+    }
+
+    public String getName() {
+        return this.name.getName();
+    }
+
+    public String getDescription() {
+        return this.description.getDescription();
     }
 }

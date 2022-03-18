@@ -153,7 +153,7 @@ public final class Utils {
         return ((ClassSymbol) symbol).qualifiers().contains(Qualifier.SERVICE);
     }
 
-    public static boolean isGraphQlService(SyntaxNodeAnalysisContext context) {
+    public static boolean isGraphqlService(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
         if (context.semanticModel().symbol(node).isEmpty()) {
             return false;

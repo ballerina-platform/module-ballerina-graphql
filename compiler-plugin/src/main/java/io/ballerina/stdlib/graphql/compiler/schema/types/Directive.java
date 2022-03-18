@@ -18,23 +18,21 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.util.List;
+
 /**
- * Represents the {@code __EnumValue} type in GraphQL schema.
+ * Represents the {@code __Directive} in GraphQL schema.
  */
-public class EnumValue {
+public class Directive {
     private final String name;
     private final String description;
-    private final boolean isDeprecated;
-    private final String deprecationReason;
+    private final List<DirectiveLocation> locations;
+    private final List<InputValue> args;
 
-    public EnumValue(String name, String description) {
-        this(name, description, false, null);
-    }
-
-    public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
+    public Directive(String name, String description, List<DirectiveLocation> locations, List<InputValue> args) {
         this.name = name;
         this.description = description;
-        this.isDeprecated = isDeprecated;
-        this.deprecationReason = deprecationReason;
+        this.locations = locations;
+        this.args = args;
     }
 }

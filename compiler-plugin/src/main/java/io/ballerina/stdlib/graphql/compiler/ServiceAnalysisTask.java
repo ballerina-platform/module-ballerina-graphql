@@ -18,13 +18,15 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
+import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphQlService;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlService;
 
 /**
  * Validates a Ballerina GraphQL Service.
@@ -43,15 +45,19 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         if (hasCompilationErrors(context)) {
             return;
         }
-        if (!isGraphQlService(context)) {
+        if (!isGraphqlService(context)) {
             return;
         }
-        this.serviceValidator.initialize(context);
+        ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
+        // Already checked isEmpty() inside the isGraphqlService() method.
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
+        this.serviceValidator.initialize(context, symbol);
         this.serviceValidator.validate();
         if (this.serviceValidator.isErrorOccurred()) {
             return;
         }
-        this.schemaGenerator.initialize(this.serviceValidator.getInterfaceFinder());
-        this.schemaGenerator.generate(context);
+        this.schemaGenerator.initialize(this.serviceValidator.getInterfaceFinder(), symbol);
+        this.schemaGenerator.generate();
     }
 }

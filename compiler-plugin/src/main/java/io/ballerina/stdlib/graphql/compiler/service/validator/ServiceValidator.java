@@ -64,6 +64,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.hasResourceMethods;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.isInvalidFieldName;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
@@ -76,21 +77,22 @@ public class ServiceValidator {
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
     private InterfaceFinder interfaceFinder;
     private SyntaxNodeAnalysisContext context;
+    private ServiceDeclarationSymbol serviceDeclarationSymbol;
     private int arrayDimension = 0;
     private boolean errorOccurred;
 
-    public void initialize(SyntaxNodeAnalysisContext context) {
+    public void initialize(SyntaxNodeAnalysisContext context, ServiceDeclarationSymbol symbol) {
         this.context = context;
         this.interfaceFinder = new InterfaceFinder();
         this.existingInputObjectTypes.clear();
         this.existingReturnTypes.clear();
         this.errorOccurred = false;
+        this.serviceDeclarationSymbol = symbol;
     }
 
     public void validate() {
         ServiceDeclarationNode node = (ServiceDeclarationNode) this.context.node();
-        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) this.context.semanticModel().symbol(node).get();
-        if (symbol.listenerTypes().size() > 1) {
+        if (this.serviceDeclarationSymbol.listenerTypes().size() > 1) {
             addDiagnostic(CompilationError.INVALID_MULTIPLE_LISTENERS, node.location());
         }
         validateService();
@@ -106,7 +108,7 @@ public class ServiceValidator {
 
     private void validateService() {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
-        if (!hasResourceMethods(serviceDeclarationNode)) {
+        if (!hasResourceMethods(this.serviceDeclarationSymbol)) {
             addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
             return;
         }
@@ -442,8 +444,11 @@ public class ServiceValidator {
     private void validateRecordFields(RecordTypeSymbol recordTypeSymbol, Location location) {
         Map<String, RecordFieldSymbol> recordFieldSymbolMap = recordTypeSymbol.fieldDescriptors();
         for (RecordFieldSymbol recordField : recordFieldSymbolMap.values()) {
+            if (recordField.getName().isEmpty()) {
+                continue;
+            }
             validateReturnType(recordField.typeDescriptor(), location);
-            if (isInvalidFieldName(recordField.getName().orElse(""))) {
+            if (isInvalidFieldName(recordField.getName().get())) {
                 addDiagnostic(CompilationError.INVALID_FIELD_NAME, location);
             }
         }
@@ -467,28 +472,6 @@ public class ServiceValidator {
             return false;
         }
         return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
-    }
-
-    private boolean hasResourceMethods(ServiceDeclarationNode node) {
-        if (this.context.semanticModel().symbol(node).isEmpty()) {
-            return false;
-        }
-        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) this.context.semanticModel().symbol(node).get();
-        for (MethodSymbol methodSymbol : symbol.methods().values()) {
-            if (isResourceMethod(methodSymbol)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasResourceMethods(ClassSymbol classSymbol) {
-        for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
-            if (isResourceMethod(methodSymbol)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void addDiagnostic(CompilationError compilationError, Location location) {

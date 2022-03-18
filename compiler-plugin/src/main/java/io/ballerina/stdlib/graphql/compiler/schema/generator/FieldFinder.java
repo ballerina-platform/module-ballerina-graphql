@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
+import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
@@ -28,9 +29,11 @@ import java.util.Map;
  */
 public class FieldFinder {
     private final Map<String, Type> typeMap;
+    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
 
-    public FieldFinder(Map<String, Type> typeMap) {
+    public FieldFinder(Map<String, Type> typeMap, ServiceDeclarationSymbol serviceDeclarationSymbol) {
         this.typeMap = typeMap;
+        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
     }
 
     public void findFields() {

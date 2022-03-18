@@ -18,27 +18,25 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
-import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.DefaultType;
+import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
-
-import java.util.Map;
 
 /**
  * Generates the GraphQL schema from a given, valid, Ballerina service.
  */
 public class SchemaGenerator {
+    private ServiceDeclarationSymbol serviceDeclarationSymbol;
     private TypeFinder typeFinder;
+    private FieldFinder fieldFinder;
 
-    public void initialize(InterfaceFinder interfaceFinder) {
-        this.typeFinder = new TypeFinder(interfaceFinder);
+    public void initialize(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol serviceDeclarationSymbol) {
+        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
+        this.typeFinder = new TypeFinder(interfaceFinder, serviceDeclarationSymbol);
+        this.fieldFinder = new FieldFinder(this.typeFinder.getTypeMap(), serviceDeclarationSymbol);
     }
 
-    public void generate(SyntaxNodeAnalysisContext context) {
-        this.typeFinder.findTypes(context);
-        Map<String, Type> typeMap = this.typeFinder.getTypeMap();
-        FieldFinder fieldFinder = new FieldFinder(typeMap);
-        fieldFinder.findFields();
+    public void generate() {
+        this.typeFinder.findTypes(this.serviceDeclarationSymbol);
+        this.fieldFinder.findFields();
     }
 }

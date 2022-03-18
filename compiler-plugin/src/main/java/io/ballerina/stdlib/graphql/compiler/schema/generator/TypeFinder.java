@@ -39,13 +39,13 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
-import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
-import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.DefaultType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.Description;
+import io.ballerina.stdlib.graphql.compiler.schema.types.IntrospectionType;
+import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
 import java.util.LinkedHashMap;
@@ -66,28 +66,27 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 public class TypeFinder {
     private final Map<String, Type> typeMap;
     private final InterfaceFinder interfaceFinder;
+    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
 
-    public TypeFinder(InterfaceFinder interfaceFinder) {
-        this.typeMap = new LinkedHashMap<>();
+    public TypeFinder(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol serviceDeclarationSymbol) {
         this.interfaceFinder = interfaceFinder;
+        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
+        this.typeMap = new LinkedHashMap<>();
     }
 
     public Map<String, Type> getTypeMap() {
         return this.typeMap;
     }
 
-    public void findTypes(SyntaxNodeAnalysisContext context) {
-        ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
-        // Ignore calling `get` without `isPresent` as it is already checked in the previous validation.
-        @SuppressWarnings("OptionalGetWithoutIsPresent")
-        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
-        for (MethodSymbol methodSymbol : symbol.methods().values()) {
+    public void findTypes(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+        for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 findTypes((ResourceMethodSymbol) methodSymbol);
             } else if (isRemoteMethod(methodSymbol)) {
                 findTypes(methodSymbol);
             }
         }
+        findDefaultSchemaTypes();
     }
 
     private void findTypes(ResourceMethodSymbol methodSymbol) {
@@ -127,19 +126,19 @@ public class TypeFinder {
         switch (typeSymbol.typeKind()) {
             case STRING:
             case STRING_CHAR:
-                addDefaultType(DefaultType.STRING, typeSymbol);
+                addDefaultScalarType(ScalarType.STRING, typeSymbol);
                 break;
             case INT:
-                addDefaultType(DefaultType.INT, typeSymbol);
+                addDefaultScalarType(ScalarType.INT, typeSymbol);
                 break;
             case FLOAT:
-                addDefaultType(DefaultType.FLOAT, typeSymbol);
+                addDefaultScalarType(ScalarType.FLOAT, typeSymbol);
                 break;
             case BOOLEAN:
-                addDefaultType(DefaultType.BOOLEAN, typeSymbol);
+                addDefaultScalarType(ScalarType.BOOLEAN, typeSymbol);
                 break;
             case DECIMAL:
-                addDefaultType(DefaultType.DECIMAL, typeSymbol);
+                addDefaultScalarType(ScalarType.DECIMAL, typeSymbol);
                 break;
             case TYPE_REFERENCE:
                 findTypes((TypeReferenceTypeSymbol) typeSymbol, typeName);
@@ -222,8 +221,11 @@ public class TypeFinder {
     }
 
     private void addEnumValueToType(Type type, ConstantSymbol enumMember) {
+        if (enumMember.resolvedValue().isEmpty()) {
+            return;
+        }
         String memberDescription = getDescription(enumMember);
-        String name = enumMember.resolvedValue().orElse("");
+        String name = enumMember.resolvedValue().get();
         boolean isDeprecated = enumMember.deprecated();
         String deprecationReason = getDeprecationReason(enumMember);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);
@@ -280,19 +282,19 @@ public class TypeFinder {
         switch (typeSymbol.typeKind()) {
             case STRING:
             case STRING_CHAR:
-                addDefaultType(DefaultType.STRING, typeSymbol);
+                addDefaultScalarType(ScalarType.STRING, typeSymbol);
                 break;
             case INT:
-                addDefaultType(DefaultType.INT, typeSymbol);
+                addDefaultScalarType(ScalarType.INT, typeSymbol);
                 break;
             case FLOAT:
-                addDefaultType(DefaultType.FLOAT, typeSymbol);
+                addDefaultScalarType(ScalarType.FLOAT, typeSymbol);
                 break;
             case BOOLEAN:
-                addDefaultType(DefaultType.BOOLEAN, typeSymbol);
+                addDefaultScalarType(ScalarType.BOOLEAN, typeSymbol);
                 break;
             case DECIMAL:
-                addDefaultType(DefaultType.DECIMAL, typeSymbol);
+                addDefaultScalarType(ScalarType.DECIMAL, typeSymbol);
                 break;
             case TYPE_REFERENCE:
                 findInputTypes((TypeReferenceTypeSymbol) typeSymbol, typeName);
@@ -360,8 +362,8 @@ public class TypeFinder {
         }
     }
 
-    private void addDefaultType(DefaultType defaultType, TypeSymbol typeSymbol) {
-        addType(defaultType.getName(), TypeKind.SCALAR, defaultType.getDescription(), typeSymbol);
+    private void addDefaultScalarType(ScalarType scalarType, TypeSymbol typeSymbol) {
+        addType(scalarType.getName(), TypeKind.SCALAR, scalarType.getDescription(), typeSymbol);
     }
 
     private Type addType(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
@@ -371,5 +373,19 @@ public class TypeFinder {
             return type;
         }
         return this.typeMap.get(name);
+    }
+
+    private void findDefaultSchemaTypes() {
+        for (IntrospectionType type : IntrospectionType.values()) {
+            addType(type.getName(), type.getTypeKind(), type.getDescription(), null);
+        }
+        Type typeKindType = this.typeMap.get(IntrospectionType.TYPE_KIND.getName());
+        for (TypeKind typeKind : TypeKind.values()) {
+            typeKindType.addEnumValue(new EnumValue(typeKind.name(), typeKind.getDescription()));
+        }
+        Type directiveLocationType = this.typeMap.get(IntrospectionType.DIRECTIVE_LOCATION.getName());
+        for (DirectiveLocation location : DirectiveLocation.values()) {
+            directiveLocationType.addEnumValue(new EnumValue(location.name(), location.getDescription()));
+        }
     }
 }

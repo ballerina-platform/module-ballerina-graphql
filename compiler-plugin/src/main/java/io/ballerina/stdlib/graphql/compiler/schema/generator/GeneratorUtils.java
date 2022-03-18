@@ -20,7 +20,7 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.symbols.Documentable;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
-import io.ballerina.stdlib.graphql.compiler.schema.types.defaults.DefaultType;
+import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +37,15 @@ public class GeneratorUtils {
         switch (typeSymbol.typeKind()) {
             case STRING:
             case STRING_CHAR:
-                return DefaultType.STRING.getName();
+                return ScalarType.STRING.getName();
             case INT:
-                return DefaultType.INT.getName();
+                return ScalarType.INT.getName();
             case FLOAT:
-                return DefaultType.FLOAT.getName();
+                return ScalarType.FLOAT.getName();
             case BOOLEAN:
-                return DefaultType.BOOLEAN.getName();
+                return ScalarType.BOOLEAN.getName();
             case DECIMAL:
-                return DefaultType.DECIMAL.getName();
+                return ScalarType.DECIMAL.getName();
             default:
                 if (typeSymbol.getName().isEmpty()) {
                     return null;

@@ -16,31 +16,27 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types.defaults;
+package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 /**
- * Stores the default types in a GraphQL schema.
+ * Represents the {@code __DirectiveLocation} enum in GraphQL schema.
  */
-public enum DefaultType {
-    STRING(TypeName.STRING, Description.STRING),
-    INT(TypeName.INT, Description.INT),
-    FLOAT(TypeName.FLOAT, Description.FLOAT),
-    BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN),
-    DECIMAL(TypeName.DECIMAL, Description.DECIMAL);
+public enum DirectiveLocation {
+    QUERY("Location adjacent to a query operation."),
+    MUTATION("Location adjacent to a mutation operation."),
+    SUBSCRIPTION("Location adjacent to a subscription operation."),
+    FIELD("Location adjacent to a field."),
+    FRAGMENT_DEFINITION("Location adjacent to a fragment definition."),
+    FRAGMENT_SPREAD("Location adjacent to a fragment spread."),
+    INLINE_FRAGMENT("Location adjacent to an inline fragment.");
 
-    private final TypeName typeName;
-    private final Description description;
+    private final String description;
 
-    DefaultType(TypeName typeName, Description description) {
-        this.typeName = typeName;
+    DirectiveLocation(String description) {
         this.description = description;
     }
 
-    public String getName() {
-        return this.typeName.getName();
-    }
-
     public String getDescription() {
-        return this.description.getDescription();
+        return this.description;
     }
 }

@@ -16,21 +16,29 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types.defaults;
+package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 /**
  * Stores default type names of a GraphQL schema.
  */
-public enum TypeName {
+public enum Name {
     STRING("String"),
     INT("Int"),
     FLOAT("Float"),
     BOOLEAN("Boolean"),
-    DECIMAL("Decimal");
+    DECIMAL("Decimal"),
+    SCHEMA("__Schema"),
+    TYPE("__Type"),
+    FIELD("__Field"),
+    INPUT_VALUE("__InputValue"),
+    ENUM_VALUE("__EnumValue"),
+    TYPE_KIND("__TypeKind"),
+    DIRECTIVE("__Directive"),
+    DIRECTIVE_LOCATION("__DirectiveLocation");
 
     private final String name;
 
-    TypeName(String name) {
+    Name(String name) {
         this.name = name;
     }
 
