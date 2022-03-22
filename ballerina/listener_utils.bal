@@ -18,6 +18,7 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/mime;
+import ballerina/websocket;
 
 import graphql.parser;
 
@@ -347,11 +348,28 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
+isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema, GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+    return isolated service object {
+        isolated resource function get .() returns websocket:Service|websocket:UpgradeError {
+            return new WsService(gqlEngine, schema);
+        }
+    };
+}
+
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
 isolated function getHttpServiceFromGraphqlService(Service s) returns HttpService? =
+@java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function attachWebsocketServiceToGraphqlService(Service s, UpgradeService wsService) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getWebsocketServiceFromGraphqlService(Service s) returns UpgradeService? =
 @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

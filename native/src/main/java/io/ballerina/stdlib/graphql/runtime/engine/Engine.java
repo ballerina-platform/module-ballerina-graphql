@@ -47,6 +47,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -94,6 +95,18 @@ public class Engine {
         CallbackHandler callbackHandler = new CallbackHandler(future);
         ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, QUERY);
         executeResourceMethod(executionContext, service, node, data, paths, pathSegments);
+    }
+
+    public static void executeSubscription(Environment environment, BObject visitor, BObject node, BValue result) {
+        Future future = environment.markAsync();
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
+        List<Object> pathSegments = new ArrayList<>();
+        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SUBSCRIPTION);
+        ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
+        callbackHandler.addCallback(resourceCallback);
+        resourceCallback.notifySuccess(result);
     }
 
     public static void executeMutation(Environment environment, BObject visitor, BObject node) {
