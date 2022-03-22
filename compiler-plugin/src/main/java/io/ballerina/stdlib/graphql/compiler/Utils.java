@@ -113,7 +113,7 @@ public final class Utils {
         if (effectiveTypes.size() == 1) {
             return effectiveTypes.get(0);
         }
-        return null;
+        return intersectionTypeSymbol;
     }
 
     public static boolean isPrimitiveType(TypeSymbol returnType) {

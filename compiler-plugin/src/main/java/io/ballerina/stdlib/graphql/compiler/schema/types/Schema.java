@@ -18,7 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -26,10 +26,40 @@ import java.util.Map;
  */
 public class Schema {
     private final String description;
-    private final Map<String, Type> typeMap;
+    private final Map<String, Type> types;
+    private Type queryType;
+    private Type mutationType;
 
     public Schema(String description) {
         this.description = description;
-        this.typeMap = new HashMap<>();
+        this.types = new LinkedHashMap<>();
+    }
+
+    public Type addType(String typeName, Type type) {
+        if (this.types.containsKey(typeName)) {
+            return this.types.get(typeName);
+        }
+        this.types.put(typeName, type);
+        return type;
+    }
+
+    public boolean containsType(String name) {
+        return this.types.containsKey(name);
+    }
+
+    public Type getType(String name) {
+        return this.types.get(name);
+    }
+
+    public Type getQueryType() {
+        return this.queryType;
+    }
+
+    public void setQueryType(Type type) {
+        this.queryType = type;
+    }
+
+    public void setMutationType(Type type) {
+        this.mutationType = type;
     }
 }

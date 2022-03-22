@@ -19,6 +19,8 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
 /**
@@ -27,16 +29,14 @@ import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 public class SchemaGenerator {
     private ServiceDeclarationSymbol serviceDeclarationSymbol;
     private TypeFinder typeFinder;
-    private FieldFinder fieldFinder;
 
     public void initialize(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol serviceDeclarationSymbol) {
         this.serviceDeclarationSymbol = serviceDeclarationSymbol;
         this.typeFinder = new TypeFinder(interfaceFinder, serviceDeclarationSymbol);
-        this.fieldFinder = new FieldFinder(this.typeFinder.getTypeMap(), serviceDeclarationSymbol);
     }
 
     public void generate() {
-        this.typeFinder.findTypes(this.serviceDeclarationSymbol);
-        this.fieldFinder.findFields();
+        Schema schema = this.typeFinder.findType(this.serviceDeclarationSymbol);
+        Type queryType = schema.getQueryType();
     }
 }

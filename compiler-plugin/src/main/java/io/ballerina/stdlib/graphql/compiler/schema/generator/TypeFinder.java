@@ -37,25 +37,26 @@ import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
-import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
-import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
 import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
-import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
+import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.IntrospectionType;
 import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
+import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MUTATION_TYPE_NAME;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.QUERY_TYPE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
@@ -64,160 +65,410 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
  * Finds the GraphQL types associated with a Ballerina service.
  */
 public class TypeFinder {
-    private final Map<String, Type> typeMap;
+    private final Schema schema;
     private final InterfaceFinder interfaceFinder;
-    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
 
     public TypeFinder(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol serviceDeclarationSymbol) {
         this.interfaceFinder = interfaceFinder;
-        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
-        this.typeMap = new LinkedHashMap<>();
+        this.schema = new Schema(getDescription(serviceDeclarationSymbol));
     }
 
-    public Map<String, Type> getTypeMap() {
-        return this.typeMap;
+    public Schema findType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+        Type queryType = getQueryType(serviceDeclarationSymbol);
+        Type mutationType = getMutationType(serviceDeclarationSymbol);
+
+        this.schema.setQueryType(queryType);
+        this.schema.setMutationType(mutationType);
+        addDefaultSchemaTypes();
+        return this.schema;
     }
 
-    public void findTypes(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+    private Type getQueryType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+        Type queryType = new Type(QUERY_TYPE_NAME, TypeKind.OBJECT);
         for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
-                findTypes((ResourceMethodSymbol) methodSymbol);
-            } else if (isRemoteMethod(methodSymbol)) {
-                findTypes(methodSymbol);
+                queryType.addField(getField((ResourceMethodSymbol) methodSymbol));
             }
         }
-        findDefaultSchemaTypes();
+        return addType(QUERY_TYPE_NAME, queryType);
     }
 
-    private void findTypes(ResourceMethodSymbol methodSymbol) {
-        ResourcePath resourcePath = methodSymbol.resourcePath();
-        if (resourcePath.kind() == ResourcePath.Kind.PATH_SEGMENT_LIST) {
-            findTypes((PathSegmentList) resourcePath);
-        }
-        findTypes((MethodSymbol) methodSymbol);
-    }
-
-    private void findTypes(MethodSymbol methodSymbol) {
-        if (methodSymbol.typeDescriptor().returnTypeDescriptor().isPresent()) {
-            findTypes(methodSymbol.typeDescriptor().returnTypeDescriptor().get());
-        }
-        if (methodSymbol.typeDescriptor().params().isPresent()) {
-            for (ParameterSymbol parameterSymbol : methodSymbol.typeDescriptor().params().get()) {
-                findInputTypes(parameterSymbol.typeDescriptor());
+    private Type getMutationType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+        Type mutationType = new Type(MUTATION_TYPE_NAME, TypeKind.OBJECT);
+        for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
+            if (isRemoteMethod(methodSymbol)) {
+                mutationType.addField(getField(methodSymbol));
             }
         }
+        if (!mutationType.getFields().isEmpty()) {
+            return addType(MUTATION_TYPE_NAME, mutationType);
+        }
+        return null;
     }
 
-    private void findTypes(PathSegmentList pathSegmentList) {
-        if (pathSegmentList.list().size() > 1) {
-            for (int i = 0; i < pathSegmentList.list().size() - 1; i++) {
-                PathSegment pathSegment = pathSegmentList.list().get(i);
-                String name = pathSegment.signature();
-                addType(name, TypeKind.OBJECT, null, null);
-            }
+    private Field getField(ResourceMethodSymbol methodSymbol) {
+        PathSegmentList pathSegmentList = (PathSegmentList) methodSymbol.resourcePath();
+        if (pathSegmentList.list().size() == 1) {
+            Type fieldType = getType(methodSymbol);
+            Field field = new Field(pathSegmentList.list().get(0).signature(), getDescription(methodSymbol), fieldType);
+            addArgs(field, methodSymbol);
+            return field;
+        } else {
+            // TODO: Hierarchical paths
+            return null;
         }
     }
 
-    private void findTypes(TypeSymbol typeSymbol) {
-        String typeName = getTypeName(typeSymbol);
-        if (this.typeMap.containsKey(typeName)) {
+    private Field getField(MethodSymbol methodSymbol) {
+        if (methodSymbol.getName().isEmpty()) {
+            return null;
+        }
+        Type fieldType = getType(methodSymbol);
+        Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType);
+        addArgs(field, methodSymbol);
+        return field;
+    }
+
+    private void addArgs(Field field, MethodSymbol methodSymbol) {
+        if (methodSymbol.typeDescriptor().params().isEmpty()) {
             return;
+        }
+        for (ParameterSymbol parameterSymbol : methodSymbol.typeDescriptor().params().get()) {
+            if (parameterSymbol.getName().isEmpty()) {
+                continue;
+            }
+            String parameterName = parameterSymbol.getName().get();
+            String description = getParameterDescription(parameterName, methodSymbol);
+            field.addArg(getArg(parameterName, description, parameterSymbol));
+        }
+    }
+
+    private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
+        Type type = getInputType(parameterSymbol);
+        if (!isNilable(parameterSymbol.typeDescriptor())) {
+            type = getWrapperType(type, TypeKind.NON_NULL);
+        }
+        return new InputValue(parameterName, description, type, null);
+    }
+
+    private Type getType(MethodSymbol methodSymbol) {
+        if (methodSymbol.typeDescriptor().returnTypeDescriptor().isEmpty()) {
+            return null;
+        }
+        TypeSymbol typeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
+        if (isNilable(typeSymbol)) { // TODO: Unify adding wrapping types for record fields and methods.
+            return getType(typeSymbol);
+        }
+        return getWrapperType(getType(typeSymbol), TypeKind.NON_NULL);
+    }
+
+    private Type getType(TypeSymbol typeSymbol) {
+        String typeName = getTypeName(typeSymbol);
+        if (this.schema.containsType(typeName)) {
+            return this.schema.getType(typeName);
         }
         switch (typeSymbol.typeKind()) {
             case STRING:
             case STRING_CHAR:
-                addDefaultScalarType(ScalarType.STRING, typeSymbol);
-                break;
+                return addDefaultScalarType(ScalarType.STRING);
             case INT:
-                addDefaultScalarType(ScalarType.INT, typeSymbol);
-                break;
+                return addDefaultScalarType(ScalarType.INT);
             case FLOAT:
-                addDefaultScalarType(ScalarType.FLOAT, typeSymbol);
-                break;
+                return addDefaultScalarType(ScalarType.FLOAT);
             case BOOLEAN:
-                addDefaultScalarType(ScalarType.BOOLEAN, typeSymbol);
-                break;
+                return addDefaultScalarType(ScalarType.BOOLEAN);
             case DECIMAL:
-                addDefaultScalarType(ScalarType.DECIMAL, typeSymbol);
-                break;
+                return addDefaultScalarType(ScalarType.DECIMAL);
             case TYPE_REFERENCE:
-                findTypes((TypeReferenceTypeSymbol) typeSymbol, typeName);
-                break;
+                return getType((TypeReferenceTypeSymbol) typeSymbol, typeName);
             case ARRAY:
-                findTypes((ArrayTypeSymbol) typeSymbol);
-                break;
+                return getType((ArrayTypeSymbol) typeSymbol);
             case UNION:
-                findTypes((UnionTypeSymbol) typeSymbol, typeName, null);
-                break;
+                return getType(typeName, null, (UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
-                findTypes((IntersectionTypeSymbol) typeSymbol, null, null);
-                break;
+                return getType(null, null, (IntersectionTypeSymbol) typeSymbol);
         }
+        return null;
     }
 
-    private void findTypes(TypeReferenceTypeSymbol typeReferenceTypeSymbol, String typeName) {
-        if (typeReferenceTypeSymbol.getName().isEmpty()) {
-            return;
+    private static boolean isNilable(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
+            return false;
         }
-        Symbol definitionSymbol = typeReferenceTypeSymbol.definition();
-        if (definitionSymbol.kind() == SymbolKind.TYPE_DEFINITION) {
-            findTypes((TypeDefinitionSymbol) definitionSymbol, typeName);
-        } else if (definitionSymbol.kind() == SymbolKind.CLASS) {
-            findTypes((ClassSymbol) definitionSymbol, typeName);
-        } else if (definitionSymbol.kind() == SymbolKind.ENUM) {
-            findTypes((EnumSymbol) definitionSymbol, typeName);
-        }
-    }
-
-    private void findTypes(TypeDefinitionSymbol typeDefinitionSymbol, String typeName) {
-        String description = getDescription(typeDefinitionSymbol);
-        if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            addType(typeName, TypeKind.OBJECT, description, typeDefinitionSymbol.typeDescriptor());
-            findTypes((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
-        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-            findTypes((UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor(), typeName, description);
-        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
-            findTypes((IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor(), typeName, description);
-        }
-    }
-
-    private Type findTypes(ClassSymbol classSymbol, String typeName) {
-        String description = getDescription(classSymbol);
-        Type type;
-        if (this.interfaceFinder.isValidInterface(typeName)) {
-            type = addType(typeName, TypeKind.INTERFACE, description, classSymbol);
-            findTypesFromInterface(typeName, type);
-        } else {
-            type = addType(typeName, TypeKind.OBJECT, description, classSymbol);
-        }
-
-        for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
-            if (isResourceMethod(methodSymbol)) {
-                findTypes((ResourceMethodSymbol) methodSymbol);
-            } else if (isRemoteMethod(methodSymbol)) {
-                findTypes(methodSymbol);
+        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
+        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
+            if (memberType.typeKind() == TypeDescKind.NIL) {
+                return true;
             }
         }
-        return type;
+        return false;
     }
 
-    private void findTypesFromInterface(String typeName, Type interfaceType) {
+    private static Type getWrapperType(Type type, TypeKind typeKind) {
+        return new Type(typeKind, type);
+    }
+
+    private Type addDefaultScalarType(ScalarType scalarType) {
+        return addType(scalarType.getName(), TypeKind.SCALAR, scalarType.getDescription());
+    }
+
+    private Type addType(String name, TypeKind typeKind, String description) {
+        Type type = new Type(name, typeKind, description);
+        return addType(name, type);
+    }
+
+    private Type addType(String name, Type type) {
+        return this.schema.addType(name, type);
+    }
+
+    private Type getType(TypeReferenceTypeSymbol typeSymbol, String name) {
+        if (typeSymbol.getName().isEmpty()) {
+            return null;
+        }
+        Symbol definitionSymbol = typeSymbol.definition();
+        if (definitionSymbol.kind() == SymbolKind.TYPE_DEFINITION) {
+            return getType(name, (TypeDefinitionSymbol) definitionSymbol);
+        } else if (definitionSymbol.kind() == SymbolKind.CLASS) {
+            return getType(name, (ClassSymbol) definitionSymbol);
+        } else if (definitionSymbol.kind() == SymbolKind.ENUM) {
+            return getType(name, (EnumSymbol) definitionSymbol);
+        }
+        return null;
+    }
+
+    private Type getType(ArrayTypeSymbol arrayTypeSymbol) {
+        TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
+        Type memberType = getType(memberTypeSymbol);
+        if (!isNilable(memberTypeSymbol)) {
+            memberType = getWrapperType(memberType, TypeKind.NON_NULL);
+        }
+        return getWrapperType(memberType, TypeKind.LIST);
+    }
+
+    private Type getType(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
+        String description = getDescription(typeDefinitionSymbol);
+        if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+            return getType(name, description, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
+            return getType(name, description, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
+            return getType(name, description, (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        }
+        return null;
+    }
+
+    private Type getType(String name, ClassSymbol classSymbol) {
+        Type objectType;
+        String description = getDescription(classSymbol);
+        if (this.interfaceFinder.isValidInterface(name)) {
+            objectType = addType(name, TypeKind.INTERFACE, description);
+            getTypesFromInterface(name, objectType);
+        } else {
+            objectType = addType(name, TypeKind.OBJECT, description);
+        }
+        for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
+            if (isResourceMethod(methodSymbol)) {
+                objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
+            }
+        }
+        return objectType;
+    }
+
+    private void getTypesFromInterface(String typeName, Type interfaceType) {
         List<ClassSymbol> implementations = this.interfaceFinder.getImplementations(typeName);
         for (ClassSymbol implementation : implementations) {
             // When adding an implementation, the name is already checked. Therefore, no need to check isEmpty().
             //noinspection OptionalGetWithoutIsPresent
-            Type implementedType = findTypes(implementation, implementation.getName().get());
+            Type implementedType = getType(implementation.getName().get(), implementation);
             interfaceType.addPossibleType(implementedType);
             implementedType.addInterface(interfaceType);
         }
     }
 
-    private void findTypes(EnumSymbol enumSymbol, String typeName) {
+    private Type getType(String name, EnumSymbol enumSymbol) {
         String description = getDescription(enumSymbol);
-        Type enumType = addType(typeName, TypeKind.ENUM, description, enumSymbol.typeDescriptor());
+        Type enumType = addType(name, TypeKind.ENUM, description);
         for (ConstantSymbol enumMember : enumSymbol.members()) {
             addEnumValueToType(enumType, enumMember);
         }
+        return enumType;
+    }
+
+    private Type getType(String name, String description, RecordTypeSymbol recordTypeSymbol) {
+        Type objectType = addType(name, TypeKind.OBJECT, description);
+        for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
+            objectType.addField(getField(recordFieldSymbol));
+        }
+        return objectType;
+    }
+
+    private Field getField(RecordFieldSymbol recordFieldSymbol) {
+        if (recordFieldSymbol.getName().isEmpty()) {
+            return null;
+        }
+        String name = recordFieldSymbol.getName().get();
+        String description = getDescription(recordFieldSymbol);
+        Type type = getType(recordFieldSymbol.typeDescriptor());
+        // TODO: Making optional fields nilable is the correct way?
+        if (isNilable(recordFieldSymbol.typeDescriptor()) || recordFieldSymbol.isOptional()) {
+            return new Field(name, description, type);
+        }
+        return new Field(name, description, getWrapperType(type, TypeKind.NON_NULL));
+    }
+
+    private Type getType(String name, String description, UnionTypeSymbol unionTypeSymbol) {
+        List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
+        if (effectiveTypes.size() == 1) {
+            return getType(effectiveTypes.get(0));
+        }
+
+        String typeName = name == null ? getTypeName(effectiveTypes) : name;
+        String typeDescription = description == null ? Description.GENERATED_UNION_TYPE.getDescription() : description;
+        Type unionType = addType(typeName, TypeKind.UNION, typeDescription);
+
+        for (TypeSymbol typeSymbol : effectiveTypes) {
+            Type possibleType = getType(typeSymbol);
+            String memberTypeName = getTypeName(typeSymbol);
+            if (memberTypeName == null) {
+                continue;
+            }
+            unionType.addPossibleType(possibleType);
+        }
+        return unionType;
+    }
+
+    private Type getType(String name, String description, IntersectionTypeSymbol intersectionTypeSymbol) {
+        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
+        if (name == null) {
+            return getType(effectiveType);
+        } else {
+            return getType(name, description, (RecordTypeSymbol) effectiveType);
+        }
+    }
+
+    private void addDefaultSchemaTypes() {
+        for (IntrospectionType type : IntrospectionType.values()) {
+            addType(type.getName(), type.getTypeKind(), type.getDescription());
+        }
+        Type typeKindType = this.schema.getType(IntrospectionType.TYPE_KIND.getName());
+        for (TypeKind typeKind : TypeKind.values()) {
+            typeKindType.addEnumValue(new EnumValue(typeKind.name(), typeKind.getDescription()));
+        }
+        Type directiveLocationType = this.schema.getType(IntrospectionType.DIRECTIVE_LOCATION.getName());
+        for (DirectiveLocation location : DirectiveLocation.values()) {
+            directiveLocationType.addEnumValue(new EnumValue(location.name(), location.getDescription()));
+        }
+    }
+
+    private Type getInputType(ParameterSymbol parameterSymbol) {
+        return getInputType(parameterSymbol.typeDescriptor());
+    }
+
+    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
+        if (methodSymbol.documentation().isEmpty()) {
+            return null;
+        }
+        return methodSymbol.documentation().get().parameterMap().get(parameterName);
+    }
+
+
+    private Type getInputType(TypeSymbol typeSymbol) {
+        String typeName = getTypeName(typeSymbol);
+        if (this.schema.containsType(typeName)) {
+            return this.schema.getType(typeName);
+        }
+        switch (typeSymbol.typeKind()) {
+            case STRING:
+            case STRING_CHAR:
+                return addDefaultScalarType(ScalarType.STRING);
+            case INT:
+                return addDefaultScalarType(ScalarType.INT);
+            case FLOAT:
+                return addDefaultScalarType(ScalarType.FLOAT);
+            case BOOLEAN:
+                return addDefaultScalarType(ScalarType.BOOLEAN);
+            case DECIMAL:
+                return addDefaultScalarType(ScalarType.DECIMAL);
+            case TYPE_REFERENCE:
+                return getInputType((TypeReferenceTypeSymbol) typeSymbol, typeName);
+            case ARRAY:
+                return getInputType((ArrayTypeSymbol) typeSymbol);
+            case UNION:
+                return getInputType((UnionTypeSymbol) typeSymbol);
+            case INTERSECTION:
+                return getInputType(null, null, (IntersectionTypeSymbol) typeSymbol);
+        }
+        return null;
+    }
+
+    private Type getInputType(TypeReferenceTypeSymbol typeReferenceTypeSymbol, String typeName) {
+        if (typeReferenceTypeSymbol.getName().isEmpty()) {
+            return null;
+        }
+        Symbol definitionSymbol = typeReferenceTypeSymbol.definition();
+        if (definitionSymbol.kind() == SymbolKind.TYPE_DEFINITION) {
+            return getInputType(typeName, (TypeDefinitionSymbol) definitionSymbol);
+        } else if (definitionSymbol.kind() == SymbolKind.ENUM) {
+            return getType(typeName, (EnumSymbol) definitionSymbol);
+        }
+        return null;
+    }
+
+    private Type getInputType(ArrayTypeSymbol arrayTypeSymbol) {
+        TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
+        Type memberType = getInputType(memberTypeSymbol);
+        if (!isNilable(memberTypeSymbol)) {
+            memberType = getWrapperType(memberType, TypeKind.NON_NULL);
+        }
+        return getWrapperType(memberType, TypeKind.LIST);
+    }
+
+    private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
+        String description = getDescription(typeDefinitionSymbol);
+        if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+            return getInputType(typeName, description, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
+            return getInputType((UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
+            return getInputType(typeName, description, (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        }
+        return null;
+    }
+
+    private Type getInputType(String name, String description, RecordTypeSymbol recordTypeSymbol) {
+        Type objectType = addType(name, TypeKind.INPUT_OBJECT, description);
+        for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
+            objectType.addInputField(getInputField(recordFieldSymbol));
+        }
+        return objectType;
+    }
+
+    private Type getInputType(UnionTypeSymbol unionTypeSymbol) {
+        List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
+        for (TypeSymbol typeSymbol : effectiveTypes) {
+            return getInputType(typeSymbol);
+        }
+        return null;
+    }
+
+    private Type getInputType(String typeName, String description, IntersectionTypeSymbol intersectionTypeSymbol) {
+        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
+        if (typeName == null) {
+            return getInputType(effectiveType);
+        } else {
+            return getInputType(typeName, description, (RecordTypeSymbol) effectiveType);
+        }
+    }
+
+    private InputValue getInputField(RecordFieldSymbol recordFieldSymbol) {
+        if (recordFieldSymbol.getName().isEmpty()) {
+            return null;
+        }
+        String name = recordFieldSymbol.getName().get();
+        String description = getDescription(recordFieldSymbol);
+        Type type = getInputType(recordFieldSymbol.typeDescriptor());
+        String defaultValue = null;
+        return new InputValue(name, description, type, defaultValue);
     }
 
     private void addEnumValueToType(Type type, ConstantSymbol enumMember) {
@@ -230,162 +481,5 @@ public class TypeFinder {
         String deprecationReason = getDeprecationReason(enumMember);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);
         type.addEnumValue(enumValue);
-    }
-
-    private void findTypes(RecordTypeSymbol recordTypeSymbol) {
-        for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
-            findTypes(recordFieldSymbol.typeDescriptor());
-        }
-    }
-
-    private void findTypes(ArrayTypeSymbol arrayTypeSymbol) {
-        findTypes(arrayTypeSymbol.memberTypeDescriptor());
-    }
-
-    private void findTypes(UnionTypeSymbol unionTypeSymbol, String typeName, String description) {
-        List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
-        if (effectiveTypes.size() == 1) {
-            findTypes(effectiveTypes.get(0));
-            return;
-        }
-
-        typeName = typeName == null ? getTypeName(effectiveTypes) : typeName;
-        description = description == null ? Description.GENERATED_UNION_TYPE.getDescription() : description;
-        Type unionType = addType(typeName, TypeKind.UNION, description, unionTypeSymbol);
-
-        for (TypeSymbol typeSymbol : effectiveTypes) {
-            findTypes(typeSymbol);
-            String memberTypeName = getTypeName(typeSymbol);
-            if (memberTypeName == null) {
-                continue;
-            }
-            Type memberType = this.typeMap.get(memberTypeName);
-            unionType.addPossibleType(memberType);
-        }
-    }
-
-    private void findTypes(IntersectionTypeSymbol intersectionTypeSymbol, String typeName, String description) {
-        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
-        if (typeName == null) {
-            findTypes(effectiveType);
-        } else {
-            // TODO: Do we need to store the intersection type here?
-            addType(typeName, TypeKind.OBJECT, description, effectiveType);
-        }
-    }
-
-    private void findInputTypes(TypeSymbol typeSymbol) {
-        String typeName = getTypeName(typeSymbol);
-        if (this.typeMap.containsKey(typeName)) {
-            return;
-        }
-        switch (typeSymbol.typeKind()) {
-            case STRING:
-            case STRING_CHAR:
-                addDefaultScalarType(ScalarType.STRING, typeSymbol);
-                break;
-            case INT:
-                addDefaultScalarType(ScalarType.INT, typeSymbol);
-                break;
-            case FLOAT:
-                addDefaultScalarType(ScalarType.FLOAT, typeSymbol);
-                break;
-            case BOOLEAN:
-                addDefaultScalarType(ScalarType.BOOLEAN, typeSymbol);
-                break;
-            case DECIMAL:
-                addDefaultScalarType(ScalarType.DECIMAL, typeSymbol);
-                break;
-            case TYPE_REFERENCE:
-                findInputTypes((TypeReferenceTypeSymbol) typeSymbol, typeName);
-                break;
-            case ARRAY:
-                findInputTypes((ArrayTypeSymbol) typeSymbol);
-                break;
-            case UNION:
-                findInputTypes((UnionTypeSymbol) typeSymbol);
-                break;
-            case INTERSECTION:
-                findInputTypes((IntersectionTypeSymbol) typeSymbol, null, null);
-                break;
-        }
-    }
-
-    private void findInputTypes(TypeReferenceTypeSymbol typeReferenceTypeSymbol, String typeName) {
-        if (typeReferenceTypeSymbol.getName().isEmpty()) {
-            return;
-        }
-        Symbol definitionSymbol = typeReferenceTypeSymbol.definition();
-        if (definitionSymbol.kind() == SymbolKind.TYPE_DEFINITION) {
-            findInputTypes((TypeDefinitionSymbol) definitionSymbol, typeName);
-        } else if (definitionSymbol.kind() == SymbolKind.ENUM) {
-            findTypes((EnumSymbol) definitionSymbol, typeName);
-        }
-    }
-
-    private void findInputTypes(ArrayTypeSymbol arrayTypeSymbol) {
-        findInputTypes(arrayTypeSymbol.memberTypeDescriptor());
-    }
-
-    private void findInputTypes(TypeDefinitionSymbol typeDefinitionSymbol, String typeName) {
-        String description = getDescription(typeDefinitionSymbol);
-        if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            addType(typeName, TypeKind.INPUT_OBJECT, description, typeDefinitionSymbol.typeDescriptor());
-            findInputTypes((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
-        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-            findInputTypes((UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
-        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
-            findInputTypes((IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor(), typeName, description);
-        }
-    }
-
-    private void findInputTypes(UnionTypeSymbol unionTypeSymbol) {
-        List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
-        for (TypeSymbol typeSymbol : effectiveTypes) {
-            findInputTypes(typeSymbol);
-        }
-    }
-
-    private void findInputTypes(IntersectionTypeSymbol intersectionTypeSymbol, String typeName, String description) {
-        TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
-        if (typeName == null) {
-            findInputTypes(effectiveType);
-        } else {
-            // TODO: Do we need to store the intersection type here?
-            addType(typeName, TypeKind.INPUT_OBJECT, description, effectiveType);
-        }
-    }
-
-    private void findInputTypes(RecordTypeSymbol recordTypeSymbol) {
-        for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
-            findInputTypes(recordFieldSymbol.typeDescriptor());
-        }
-    }
-
-    private void addDefaultScalarType(ScalarType scalarType, TypeSymbol typeSymbol) {
-        addType(scalarType.getName(), TypeKind.SCALAR, scalarType.getDescription(), typeSymbol);
-    }
-
-    private Type addType(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
-        if (!this.typeMap.containsKey(name)) {
-            Type type = new Type(name, typeKind, description, typeSymbol);
-            this.typeMap.put(name, type);
-            return type;
-        }
-        return this.typeMap.get(name);
-    }
-
-    private void findDefaultSchemaTypes() {
-        for (IntrospectionType type : IntrospectionType.values()) {
-            addType(type.getName(), type.getTypeKind(), type.getDescription(), null);
-        }
-        Type typeKindType = this.typeMap.get(IntrospectionType.TYPE_KIND.getName());
-        for (TypeKind typeKind : TypeKind.values()) {
-            typeKindType.addEnumValue(new EnumValue(typeKind.name(), typeKind.getDescription()));
-        }
-        Type directiveLocationType = this.typeMap.get(IntrospectionType.DIRECTIVE_LOCATION.getName());
-        for (DirectiveLocation location : DirectiveLocation.values()) {
-            directiveLocationType.addEnumValue(new EnumValue(location.name(), location.getDescription()));
-        }
     }
 }

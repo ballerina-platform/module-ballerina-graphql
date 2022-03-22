@@ -24,9 +24,13 @@ package io.ballerina.stdlib.graphql.compiler.schema.types;
 public class InputValue {
     private final String name;
     private final String description;
+    private final Type type;
+    private final String defaultValue;
 
-    public InputValue(String name, String description) {
+    public InputValue(String name, String description, Type type, String defaultValue) {
         this.name = name;
         this.description = description;
+        this.type = type;
+        this.defaultValue = defaultValue;
     }
 }

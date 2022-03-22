@@ -18,15 +18,34 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents the {@code __Field} in GraphQL schema.
  */
 public class Field {
     private final String name;
     private final String description;
+    private final Type type;
+    private final boolean isDeprecated;
+    private final String deprecationReason;
+    private final List<InputValue> args;
 
-    public Field(String name, String description) {
+    public Field(String name, String description, Type type) {
+        this(name, description, type, false, null);
+    }
+
+    public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason) {
         this.name = name;
         this.description = description;
+        this.type = type;
+        this.isDeprecated = isDeprecated;
+        this.deprecationReason = deprecationReason;
+        this.args = new ArrayList<>();
+    }
+
+    public void addArg(InputValue inputValue) {
+        this.args.add(inputValue);
     }
 }

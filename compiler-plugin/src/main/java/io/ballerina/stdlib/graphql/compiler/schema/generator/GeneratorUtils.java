@@ -32,6 +32,9 @@ public class GeneratorUtils {
     private GeneratorUtils() {}
 
     public static final String UNION_TYPE_NAME_DELIMITER = "_";
+    public static final String QUERY_TYPE_NAME = "Query";
+    public static final String MUTATION_TYPE_NAME = "Mutation";
+    public static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
 
     public static String getTypeName(TypeSymbol typeSymbol) {
         switch (typeSymbol.typeKind()) {

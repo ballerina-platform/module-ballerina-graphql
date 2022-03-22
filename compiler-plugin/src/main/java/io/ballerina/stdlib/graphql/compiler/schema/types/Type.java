@@ -18,8 +18,6 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
-import io.ballerina.compiler.api.symbols.TypeSymbol;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,21 +28,62 @@ public class Type {
     private final String name;
     private final TypeKind typeKind;
     private final String description;
-    private final TypeSymbol typeSymbol;
     private final List<Field> fields;
     private final List<EnumValue> enumValues;
     private final List<Type> possibleTypes;
     private final List<Type> interfaces;
+    private final List<InputValue> inputFields;
+    private final Type ofType;
 
-    public Type(String name, TypeKind typeKind, String description, TypeSymbol typeSymbol) {
+    /**
+     * Used to create wrapper (NON_NULL and LIST) types.
+     *
+     * @param typeKind - TypeKind of the wrapper. can be either NON_NULL or LIST
+     * @param ofType - Type to be wrapped
+     */
+    public Type(TypeKind typeKind, Type ofType) {
+        this(null, typeKind, null, ofType);
+    }
+
+    /**
+     * Used to create types without a description.
+     *
+     * @param name - Name of the type
+     * @param typeKind - TypeKind of the type
+     */
+    public Type(String name, TypeKind typeKind) {
+        this(name, typeKind, null);
+    }
+
+    /**
+     * Used to create non-wrapper types.
+     *
+     * @param name - Name of the type
+     * @param typeKind - TypeKind of the type. Cannot be NON_NULL or LIST
+     * @param description - The description of the type from the documentation
+     */
+    public Type(String name, TypeKind typeKind, String description) {
+        this(name, typeKind, description, null);
+    }
+
+    private Type(String name, TypeKind typeKind, String description, Type ofType) {
         this.name = name;
         this.typeKind = typeKind;
         this.description = description;
-        this.typeSymbol = typeSymbol;
         this.fields = typeKind == TypeKind.OBJECT || typeKind == TypeKind.INTERFACE ? new ArrayList<>() : null;
         this.enumValues = typeKind == TypeKind.ENUM ? new ArrayList<>() : null;
         this.possibleTypes = typeKind == TypeKind.INTERFACE || typeKind == TypeKind.UNION ? new ArrayList<>() : null;
         this.interfaces = typeKind == TypeKind.OBJECT || typeKind == TypeKind.INTERFACE ? new ArrayList<>() : null;
+        this.inputFields = typeKind == TypeKind.INPUT_OBJECT ? new ArrayList<>() : null;
+        this.ofType = ofType;
+    }
+
+    public List<Field> getFields() {
+        return this.fields;
+    }
+
+    public void addField(Field field) {
+        this.fields.add(field);
     }
 
     public void addEnumValue(EnumValue enumValue) {
@@ -65,6 +104,10 @@ public class Type {
         this.interfaces.add(type);
     }
 
+    public void addInputField(InputValue inputValue) {
+        this.inputFields.add(inputValue);
+    }
+
     public String getName() {
         return this.name;
     }
@@ -75,10 +118,6 @@ public class Type {
 
     public String getDescription() {
         return this.description;
-    }
-
-    public TypeSymbol getTypeSymbol() {
-        return this.typeSymbol;
     }
 
     public List<EnumValue> getEnumValues() {
