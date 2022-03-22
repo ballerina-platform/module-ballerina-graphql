@@ -59,7 +59,7 @@ public class Listener {
         if schema.hasKey(SUBSCRIPTION_FIELD) {
             websocket:Listener|error wsListener = new(self.httpListener);
             if wsListener is error {
-                return error Error("Listener initialization failed", wsListener);
+                return error Error("Websocket listener initialization failed", wsListener);
             }
             self.wsListener = wsListener;
         }
@@ -77,7 +77,7 @@ public class Listener {
             attachWebsocketServiceToGraphqlService(s, wsService);
             result = wsListener.attach(wsService, name);
             if result is error {
-                return error Error("Error occurred while attaching the service", result);
+                return error Error("Error occurred while attaching the websocket service", result);
             }
         }
     }
@@ -100,7 +100,7 @@ public class Listener {
             if wsService is UpgradeService {
                 error? result = wsListener.detach(wsService);
                 if result is error {
-                    return error Error("Error occurred while attaching the service", result);
+                    return error Error("Error occurred while detaching the websocket service", result);
                 }
             }
         }
@@ -118,7 +118,7 @@ public class Listener {
         if wsListener is websocket:Listener {
             result = wsListener.'start();
             if result is error {
-                return error Error("Error occurred while starting the service", result);
+                return error Error("Error occurred while starting the websocket service", result);
             }
         }
     }
@@ -135,7 +135,7 @@ public class Listener {
         if wsListener is websocket:Listener {
             result = wsListener.gracefulStop();
             if result is error {
-                return error Error("Error occurred while stopping the service", result);
+                return error Error("Error occurred while stopping the websocket service", result);
             }
         }
     }
@@ -152,7 +152,7 @@ public class Listener {
         if wsListener is websocket:Listener {
             result = wsListener.immediateStop();
             if result is error {
-                return error Error("Error occurred while stopping the service", result);
+                return error Error("Error occurred while stopping the websocket service", result);
             }
         }
     }
