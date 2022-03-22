@@ -47,6 +47,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -102,7 +103,7 @@ public class Engine {
         List<Object> pathSegments = new ArrayList<>();
         pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
         CallbackHandler callbackHandler = new CallbackHandler(future);
-        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SCHEMA_RECORD);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SUBSCRIPTION);
         ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
         callbackHandler.addCallback(resourceCallback);
         resourceCallback.notifySuccess(result);

@@ -80,8 +80,8 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
 
 isolated function broadcast(Engine engine, __Schema schema, Context context, any result,
                             map<[websocket:Caller, parser:OperationNode]> clientsMap) returns websocket:Error? {
-    ExecutorVisitor executor = new(engine, schema, context, {}, result);
     foreach var callerDetails in clientsMap {
+        ExecutorVisitor executor = new(engine, schema, context, {}, result);
         websocket:Caller caller = callerDetails[0];
         parser:OperationNode operationNode = callerDetails[1];
         OutputObject outputObject = executor.getExecutorResult(operationNode);

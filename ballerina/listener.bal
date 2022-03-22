@@ -36,11 +36,10 @@ public class Listener {
                 return error Error("Listener initialization failed", httpListener);
             }
             self.httpListener = httpListener;
-            self.wsListener  = ();
         } else {
             self.httpListener = listenTo;
-            self.wsListener = ();
         }
+        self.wsListener = ();
     }
 
     # Attaches the provided service to the Listener.
@@ -72,11 +71,11 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while attaching the service", result);
         }
-
-        if self.wsListener is websocket:Listener {
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
             UpgradeService wsService = getWebsocketService(engine, schema.cloneReadOnly(), serviceConfig);
             attachWebsocketServiceToGraphqlService(s, wsService);
-            result = (<websocket:Listener>self.wsListener).attach(wsService, name);
+            result = wsListener.attach(wsService, name);
             if result is error {
                 return error Error("Error occurred while attaching the service", result);
             }
@@ -95,10 +94,11 @@ public class Listener {
                 return error Error("Error occurred while detaching the service", result);
             }
         }
-        if self.wsListener is websocket:Listener {
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
             UpgradeService? wsService = getWebsocketServiceFromGraphqlService(s);
             if wsService is UpgradeService {
-                error? result = (<websocket:Listener>self.wsListener).detach(wsService);
+                error? result = wsListener.detach(wsService);
                 if result is error {
                     return error Error("Error occurred while attaching the service", result);
                 }
@@ -114,8 +114,9 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while starting the service", result);
         }
-        if self.wsListener is websocket:Listener {
-            result = (<websocket:Listener>self.wsListener).'start();
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            result = wsListener.'start();
             if result is error {
                 return error Error("Error occurred while starting the service", result);
             }
@@ -130,8 +131,9 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while stopping the service", result);
         }
-        if self.wsListener is websocket:Listener {
-            result = (<websocket:Listener>self.wsListener).gracefulStop();
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            result = wsListener.gracefulStop();
             if result is error {
                 return error Error("Error occurred while stopping the service", result);
             }
@@ -146,8 +148,9 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while stopping the service", result);
         }
-        if self.wsListener is websocket:Listener {
-            result = (<websocket:Listener>self.wsListener).immediateStop();
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            result = wsListener.immediateStop();
             if result is error {
                 return error Error("Error occurred while stopping the service", result);
             }
