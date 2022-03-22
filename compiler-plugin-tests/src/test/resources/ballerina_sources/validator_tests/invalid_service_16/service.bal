@@ -73,4 +73,8 @@ service /graphql on new graphql:Listener(4000) {
     resource function get mountain/getTrail() returns Trail {
         return new;
     }
+
+    remote function __addTrail() returns string {
+        return "added";
+    }
 }

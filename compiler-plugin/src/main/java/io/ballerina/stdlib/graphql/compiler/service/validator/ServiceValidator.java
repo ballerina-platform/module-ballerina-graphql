@@ -127,7 +127,7 @@ public class ServiceValidator {
         if (symbol.kind() == SymbolKind.METHOD) {
             MethodSymbol methodSymbol = (MethodSymbol) symbol;
             if (isRemoteMethod(methodSymbol)) {
-                validateMethod(methodSymbol, location);
+                validateRemoteMethod(methodSymbol, location);
             }
         } else if (symbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) symbol;
@@ -141,6 +141,16 @@ public class ServiceValidator {
         validateMethod(methodSymbol, location);
     }
 
+    private void validateRemoteMethod(MethodSymbol methodSymbol, Location location) {
+        if (methodSymbol.getName().isEmpty()) {
+            return;
+        }
+        if (isInvalidFieldName(methodSymbol.getName().get())) {
+            addDiagnostic(CompilationError.INVALID_FIELD_NAME, location);
+        }
+        validateMethod(methodSymbol, location);
+    }
+
     private void validateMethod(MethodSymbol methodSymbol, Location location) {
         if (methodSymbol.typeDescriptor().returnTypeDescriptor().isPresent()) {
             TypeSymbol returnTypeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
@@ -149,18 +159,15 @@ public class ServiceValidator {
         validateInputParameters(methodSymbol, location);
     }
 
-    private void validateResourceAccessorName(MethodSymbol methodSymbol, Location location) {
-        if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
-            ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-            if (resourceMethodSymbol.getName().isPresent()) {
-                if (!resourceMethodSymbol.getName().get().equals(RESOURCE_FUNCTION_GET)) {
-                    Location accessorLocation = getLocation(resourceMethodSymbol, location);
-                    addDiagnostic(CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
-                }
-            } else {
+    private void validateResourceAccessorName(ResourceMethodSymbol resourceMethodSymbol, Location location) {
+        if (resourceMethodSymbol.getName().isPresent()) {
+            if (!resourceMethodSymbol.getName().get().equals(RESOURCE_FUNCTION_GET)) {
                 Location accessorLocation = getLocation(resourceMethodSymbol, location);
                 addDiagnostic(CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
             }
+        } else {
+            Location accessorLocation = getLocation(resourceMethodSymbol, location);
+            addDiagnostic(CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation);
         }
     }
 

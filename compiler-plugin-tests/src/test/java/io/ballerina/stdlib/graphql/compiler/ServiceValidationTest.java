@@ -452,7 +452,7 @@ public class ServiceValidationTest {
     public void testInvalidResourcePath() {
         String packagePath = "invalid_service_16";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 7);
+        Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -475,6 +475,9 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 36, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FIELD_NAME, 77, 5);
     }
 
     @Test
