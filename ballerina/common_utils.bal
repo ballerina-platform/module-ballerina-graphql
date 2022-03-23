@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import graphql.parser;
 
 isolated function getFieldNotFoundErrorMessageFromType(string requiredFieldName, __Type rootType) returns string {
@@ -350,4 +351,96 @@ isolated function getInputObjectFieldFormPath((string|int)[] path, string name) 
         }
     }
     return name;
+}
+
+isolated function getGraphqlPayload(string query, map<anydata>? variables = ()) returns json {
+    json graphqlPayload = {
+        query: query,
+        variables: variables.toJson()
+    };
+    return graphqlPayload;
+}
+
+isolated function handleHttpClientErrorResponse(http:ClientError httpResponse) returns RequestError {
+    if httpResponse is http:ApplicationResponseError {
+        anydata|error data = httpResponse.detail().get("body").ensureType(anydata);
+        if data is error {
+            return error RequestError("GraphQL Client Error", data);
+        }
+        return error RequestError("GraphQL Client Error", body = data);
+    }
+    return error RequestError("GraphQL Client Error", httpResponse);
+}
+
+isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
+    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType(GraphQLErrorArray);
+    if errors is error {
+        return error RequestError("GraphQL Client Error", errors);
+    }
+                
+    if (responseMap.hasKey("data") && !responseMap.hasKey("extensions")) {
+        return error ServerError("GraphQL Server Error", data = responseMap.get("data"), errors = errors);
+    } else if (responseMap.hasKey("extensions") && !responseMap.hasKey("data")) {
+        map<json>? extensionsMap = 
+            (responseMap.get("extensions") is ()) ? () : <map<json>> responseMap.get("extensions");
+        return error ServerError("GraphQL Server Error", errors = errors, extensions = extensionsMap);
+    } else if (responseMap.hasKey("data") && responseMap.hasKey("extensions")) {
+        map<json>? extensionsMap = 
+            (responseMap.get("extensions") is ()) ? () : <map<json>> responseMap.get("extensions") ;
+        return error ServerError("GraphQL Server Error", data = responseMap.get("data"), errors = errors, 
+            extensions = extensionsMap);
+    } else {
+        return error ServerError("GraphQL Server Error", errors = errors);
+    }
+}
+
+isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, map<json> responseMap) 
+                                     returns GenericResponse|record{}|json|RequestError {
+    if targetType is typedesc<GenericResponse> {
+        GenericResponse|error response = responseMap.cloneWithType(targetType);
+        if response is error {
+            return error RequestError("GraphQL Client Error", response);
+        }
+        return response;
+    } else if targetType is typedesc<record{}> {
+        record{}|error response = responseMap.cloneWithType(targetType);
+        if response is error {
+            return error RequestError("GraphQL Client Error", response);
+        }
+        return response;
+    } else if targetType is typedesc<json> {
+        json|error response = responseMap.cloneWithType(targetType);
+        if response is error {
+            return error RequestError("GraphQL Client Error", response);
+        }
+        return response;
+    } else {
+        return error RequestError("GraphQL Client Error, Invalid binding type.");
+    }
+}
+
+isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType, 
+                                               map<json> responseMap) 
+                                               returns GenericResponseWithErrors|record{}|json|RequestError {
+    if targetType is typedesc<GenericResponseWithErrors> {
+        GenericResponseWithErrors|error response = responseMap.cloneWithType(targetType);
+        if response is error {
+            return error RequestError("GraphQL Client Error", response);
+        }
+        return response;
+    } else if targetType is typedesc<record{}> {
+        record{}|error response = responseMap.cloneWithType(targetType);
+        if response is error {
+            return error RequestError("GraphQL Client Error", response);
+        }
+        return response;
+    } else if targetType is typedesc<json> {
+        json|error response = responseMap.cloneWithType(targetType);
+        if response is error {
+            return error RequestError("GraphQL Client Error", response);
+        }
+        return response;
+    } else {
+        return error RequestError("GraphQL Client Error, Invalid binding type.");
+    }
 }
