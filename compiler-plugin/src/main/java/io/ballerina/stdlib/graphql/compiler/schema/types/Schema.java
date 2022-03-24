@@ -30,16 +30,49 @@ public class Schema {
     private Type queryType;
     private Type mutationType;
 
+    /**
+     * Creates the schema.
+     *
+     * @param description - The description of the schema
+     */
     public Schema(String description) {
         this.description = description;
         this.types = new LinkedHashMap<>();
     }
 
-    public Type addType(String typeName, Type type) {
+    /**
+     * Adds a type to the schema and returns it. If the type name already exists, returns the existing type. If the
+     * type name does not exist in the schema, creates the type and returns it.
+     *
+     * @param typeName - The name of the type
+     * @param kind - The TypeKind of the type
+     * @param description - The description of the type
+     *
+     * @return - The created or existing type with the provided name
+     */
+    public Type addType(String typeName, TypeKind kind, String description) {
         if (this.types.containsKey(typeName)) {
             return this.types.get(typeName);
         }
+        Type type = new Type(typeName, kind, description);
         this.types.put(typeName, type);
+        return type;
+    }
+
+    /**
+     * Adds a Scalar type to the schema from a given ScalarType and returns it. If the scalar type already exist,
+     * returns the existing scalar type.
+     *
+     * @param scalarType - The ScalarType to be added
+     *
+     * @return - The created or existing scalar type
+     */
+    public Type addType(ScalarType scalarType) {
+        if (this.types.containsKey(scalarType.getName())) {
+            return this.types.get(scalarType.getName());
+        }
+        Type type = new Type(scalarType.getName(), TypeKind.SCALAR, scalarType.getDescription());
+        this.types.put(scalarType.getName(), type);
         return type;
     }
 
@@ -49,6 +82,10 @@ public class Schema {
 
     public Type getType(String name) {
         return this.types.get(name);
+    }
+
+    public String getDescription() {
+        return this.description;
     }
 
     public Type getQueryType() {

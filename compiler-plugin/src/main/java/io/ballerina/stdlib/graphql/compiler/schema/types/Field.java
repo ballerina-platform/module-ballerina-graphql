@@ -32,7 +32,11 @@ public class Field {
     private final String deprecationReason;
     private final List<InputValue> args;
 
-    public Field(String name, String description, Type type) {
+    public Field(String name, Type type) {
+        this(name, type, null);
+    }
+
+    public Field(String name, Type type, String description) {
         this(name, description, type, false, null);
     }
 
@@ -43,6 +47,10 @@ public class Field {
         this.isDeprecated = isDeprecated;
         this.deprecationReason = deprecationReason;
         this.args = new ArrayList<>();
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public void addArg(InputValue inputValue) {

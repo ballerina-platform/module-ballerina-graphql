@@ -19,16 +19,19 @@
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the {@code __Type} type in GraphQL schema.
  */
 public class Type {
     private final String name;
-    private final TypeKind typeKind;
+    private final TypeKind kind;
     private final String description;
-    private final List<Field> fields;
+    private final Map<String, Field> fields;
     private final List<EnumValue> enumValues;
     private final List<Type> possibleTypes;
     private final List<Type> interfaces;
@@ -38,52 +41,52 @@ public class Type {
     /**
      * Used to create wrapper (NON_NULL and LIST) types.
      *
-     * @param typeKind - TypeKind of the wrapper. can be either NON_NULL or LIST
+     * @param kind - TypeKind of the wrapper. can be either NON_NULL or LIST
      * @param ofType - Type to be wrapped
      */
-    public Type(TypeKind typeKind, Type ofType) {
-        this(null, typeKind, null, ofType);
+    public Type(TypeKind kind, Type ofType) {
+        this(null, kind, null, ofType);
     }
 
     /**
      * Used to create types without a description.
      *
      * @param name - Name of the type
-     * @param typeKind - TypeKind of the type
+     * @param kind - TypeKind of the type
      */
-    public Type(String name, TypeKind typeKind) {
-        this(name, typeKind, null);
+    public Type(String name, TypeKind kind) {
+        this(name, kind, null);
     }
 
     /**
      * Used to create non-wrapper types.
      *
      * @param name - Name of the type
-     * @param typeKind - TypeKind of the type. Cannot be NON_NULL or LIST
+     * @param kind - TypeKind of the type. Cannot be NON_NULL or LIST
      * @param description - The description of the type from the documentation
      */
-    public Type(String name, TypeKind typeKind, String description) {
-        this(name, typeKind, description, null);
+    public Type(String name, TypeKind kind, String description) {
+        this(name, kind, description, null);
     }
 
-    private Type(String name, TypeKind typeKind, String description, Type ofType) {
+    private Type(String name, TypeKind kind, String description, Type ofType) {
         this.name = name;
-        this.typeKind = typeKind;
+        this.kind = kind;
         this.description = description;
-        this.fields = typeKind == TypeKind.OBJECT || typeKind == TypeKind.INTERFACE ? new ArrayList<>() : null;
-        this.enumValues = typeKind == TypeKind.ENUM ? new ArrayList<>() : null;
-        this.possibleTypes = typeKind == TypeKind.INTERFACE || typeKind == TypeKind.UNION ? new ArrayList<>() : null;
-        this.interfaces = typeKind == TypeKind.OBJECT || typeKind == TypeKind.INTERFACE ? new ArrayList<>() : null;
-        this.inputFields = typeKind == TypeKind.INPUT_OBJECT ? new ArrayList<>() : null;
+        this.fields = kind == TypeKind.OBJECT || kind == TypeKind.INTERFACE ? new LinkedHashMap<>() : null;
+        this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
+        this.possibleTypes = kind == TypeKind.INTERFACE || kind == TypeKind.UNION ? new ArrayList<>() : null;
+        this.interfaces = kind == TypeKind.OBJECT || kind == TypeKind.INTERFACE ? new ArrayList<>() : null;
+        this.inputFields = kind == TypeKind.INPUT_OBJECT ? new ArrayList<>() : null;
         this.ofType = ofType;
     }
 
-    public List<Field> getFields() {
-        return this.fields;
+    public Collection<Field> getFields() {
+        return this.fields.values();
     }
 
     public void addField(Field field) {
-        this.fields.add(field);
+        this.fields.put(field.getName(), field);
     }
 
     public void addEnumValue(EnumValue enumValue) {
@@ -112,8 +115,8 @@ public class Type {
         return this.name;
     }
 
-    public TypeKind getTypeKind() {
-        return this.typeKind;
+    public TypeKind getKind() {
+        return this.kind;
     }
 
     public String getDescription() {

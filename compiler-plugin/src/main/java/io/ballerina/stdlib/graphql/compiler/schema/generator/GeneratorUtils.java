@@ -21,6 +21,8 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 import io.ballerina.compiler.api.symbols.Documentable;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
+import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +31,17 @@ import java.util.List;
  * Utility methods for Ballerina GraphQL schema generator.
  */
 public class GeneratorUtils {
-    private GeneratorUtils() {}
+    private GeneratorUtils() {
+    }
 
     public static final String UNION_TYPE_NAME_DELIMITER = "_";
     public static final String QUERY_TYPE_NAME = "Query";
     public static final String MUTATION_TYPE_NAME = "Mutation";
     public static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
+
+    public static final String MAP_KEY_ARGUMENT_NAME = "key";
+    public static final String MAP_KEY_ARGUMENT_DESCRIPTION =
+            "[auto-generated]: The key of the value required from a map";
 
     public static String getTypeName(TypeSymbol typeSymbol) {
         switch (typeSymbol.typeKind()) {
@@ -86,5 +93,9 @@ public class GeneratorUtils {
             return null;
         }
         return documentable.documentation().get().deprecatedDescription().get();
+    }
+
+    public static Type getWrapperType(Type type, TypeKind typeKind) {
+        return new Type(typeKind, type);
     }
 }

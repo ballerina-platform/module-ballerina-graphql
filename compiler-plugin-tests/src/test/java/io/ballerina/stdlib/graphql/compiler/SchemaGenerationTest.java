@@ -125,6 +125,34 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testHierarchicalResourcePaths() {
+        String packagePath = "13_hierarchical_resource_paths";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInputScalarTypesWithDefaultValues() {
+        String packagePath = "14_input_scalar_types_with_default_values";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInputEnumTypesWithDefaultValues() {
+        String packagePath = "15_input_enum_types_with_default_values";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInputRecordTypesWithDefaultValues() {
+        String packagePath = "16_input_record_types_with_default_values";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         return loadPackage(packagePath).getCompilation().diagnosticResult();
     }

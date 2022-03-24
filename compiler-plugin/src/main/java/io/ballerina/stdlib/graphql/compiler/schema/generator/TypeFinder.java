@@ -24,6 +24,7 @@ import io.ballerina.compiler.api.symbols.ConstantSymbol;
 import io.ballerina.compiler.api.symbols.EnumSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ParameterKind;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
@@ -37,16 +38,16 @@ import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
+import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
-import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
 import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.IntrospectionType;
 import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
 import java.util.List;
@@ -55,11 +56,14 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_DESCRIPTION;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_NAME;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MUTATION_TYPE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.QUERY_TYPE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
 
 /**
  * Finds the GraphQL types associated with a Ballerina service.
@@ -79,44 +83,56 @@ public class TypeFinder {
 
         this.schema.setQueryType(queryType);
         this.schema.setMutationType(mutationType);
-        addDefaultSchemaTypes();
+        IntrospectionTypeCreator introspectionTypeCreator = new IntrospectionTypeCreator(this.schema);
+        introspectionTypeCreator.addIntrospectionTypes();
         return this.schema;
     }
 
     private Type getQueryType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
-        Type queryType = new Type(QUERY_TYPE_NAME, TypeKind.OBJECT);
+        Type queryType = addType(TypeName.QUERY.getName(), TypeKind.OBJECT);
         for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 queryType.addField(getField((ResourceMethodSymbol) methodSymbol));
             }
         }
-        return addType(QUERY_TYPE_NAME, queryType);
+        return queryType;
     }
 
     private Type getMutationType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
-        Type mutationType = new Type(MUTATION_TYPE_NAME, TypeKind.OBJECT);
+        Type mutationType = addType(TypeName.MUTATION.getName(), TypeKind.OBJECT);
         for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
             if (isRemoteMethod(methodSymbol)) {
                 mutationType.addField(getField(methodSymbol));
             }
         }
         if (!mutationType.getFields().isEmpty()) {
-            return addType(MUTATION_TYPE_NAME, mutationType);
+            return mutationType;
         }
         return null;
     }
 
     private Field getField(ResourceMethodSymbol methodSymbol) {
-        PathSegmentList pathSegmentList = (PathSegmentList) methodSymbol.resourcePath();
-        if (pathSegmentList.list().size() == 1) {
+        return getField(methodSymbol, ((PathSegmentList) methodSymbol.resourcePath()).list());
+    }
+
+    private Field getField(ResourceMethodSymbol methodSymbol, List<PathSegment> list) {
+        if (list.size() == 1) {
             Type fieldType = getType(methodSymbol);
-            Field field = new Field(pathSegmentList.list().get(0).signature(), getDescription(methodSymbol), fieldType);
+            Field field = new Field(list.get(0).signature(), fieldType, getDescription(methodSymbol));
             addArgs(field, methodSymbol);
             return field;
         } else {
-            // TODO: Hierarchical paths
-            return null;
+            PathSegment pathSegment = list.get(0);
+            Type type = getType(methodSymbol, pathSegment, list);
+            return new Field(pathSegment.signature(), getWrapperType(type, TypeKind.NON_NULL));
         }
+    }
+
+    private Type getType(ResourceMethodSymbol methodSymbol, PathSegment pathSegment, List<PathSegment> list) {
+        Type type = addType(pathSegment.signature(), TypeKind.OBJECT, Description.GENERATED_TYPE.getDescription());
+        List<PathSegment> remainingPathList = list.subList(1, list.size());
+        type.addField(getField(methodSymbol, remainingPathList));
+        return type;
     }
 
     private Field getField(MethodSymbol methodSymbol) {
@@ -124,7 +140,7 @@ public class TypeFinder {
             return null;
         }
         Type fieldType = getType(methodSymbol);
-        Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType);
+        Field field = new Field(methodSymbol.getName().get(), fieldType, getDescription(methodSymbol));
         addArgs(field, methodSymbol);
         return field;
     }
@@ -144,11 +160,9 @@ public class TypeFinder {
     }
 
     private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
-        Type type = getInputType(parameterSymbol);
-        if (!isNilable(parameterSymbol.typeDescriptor())) {
-            type = getWrapperType(type, TypeKind.NON_NULL);
-        }
-        return new InputValue(parameterName, description, type, null);
+        Type type = getInputFieldType(parameterSymbol.typeDescriptor());
+        String defaultValue = getDefaultValue(parameterSymbol);
+        return new InputValue(parameterName, type, description, defaultValue);
     }
 
     private Type getType(MethodSymbol methodSymbol) {
@@ -156,10 +170,7 @@ public class TypeFinder {
             return null;
         }
         TypeSymbol typeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
-        if (isNilable(typeSymbol)) { // TODO: Unify adding wrapping types for record fields and methods.
-            return getType(typeSymbol);
-        }
-        return getWrapperType(getType(typeSymbol), TypeKind.NON_NULL);
+        return getFieldType(typeSymbol);
     }
 
     private Type getType(TypeSymbol typeSymbol) {
@@ -170,15 +181,15 @@ public class TypeFinder {
         switch (typeSymbol.typeKind()) {
             case STRING:
             case STRING_CHAR:
-                return addDefaultScalarType(ScalarType.STRING);
+                return addType(ScalarType.STRING);
             case INT:
-                return addDefaultScalarType(ScalarType.INT);
+                return addType(ScalarType.INT);
             case FLOAT:
-                return addDefaultScalarType(ScalarType.FLOAT);
+                return addType(ScalarType.FLOAT);
             case BOOLEAN:
-                return addDefaultScalarType(ScalarType.BOOLEAN);
+                return addType(ScalarType.BOOLEAN);
             case DECIMAL:
-                return addDefaultScalarType(ScalarType.DECIMAL);
+                return addType(ScalarType.DECIMAL);
             case TYPE_REFERENCE:
                 return getType((TypeReferenceTypeSymbol) typeSymbol, typeName);
             case ARRAY:
@@ -204,21 +215,16 @@ public class TypeFinder {
         return false;
     }
 
-    private static Type getWrapperType(Type type, TypeKind typeKind) {
-        return new Type(typeKind, type);
+    private Type addType(ScalarType scalarType) {
+        return this.schema.addType(scalarType);
     }
 
-    private Type addDefaultScalarType(ScalarType scalarType) {
-        return addType(scalarType.getName(), TypeKind.SCALAR, scalarType.getDescription());
+    private Type addType(String name, TypeKind kind) {
+        return addType(name, kind, null);
     }
 
-    private Type addType(String name, TypeKind typeKind, String description) {
-        Type type = new Type(name, typeKind, description);
-        return addType(name, type);
-    }
-
-    private Type addType(String name, Type type) {
-        return this.schema.addType(name, type);
+    private Type addType(String name, TypeKind kind, String description) {
+        return this.schema.addType(name, kind, description);
     }
 
     private Type getType(TypeReferenceTypeSymbol typeSymbol, String name) {
@@ -238,11 +244,7 @@ public class TypeFinder {
 
     private Type getType(ArrayTypeSymbol arrayTypeSymbol) {
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-        Type memberType = getType(memberTypeSymbol);
-        if (!isNilable(memberTypeSymbol)) {
-            memberType = getWrapperType(memberType, TypeKind.NON_NULL);
-        }
-        return getWrapperType(memberType, TypeKind.LIST);
+        return getFieldType(memberTypeSymbol);
     }
 
     private Type getType(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
@@ -310,10 +312,15 @@ public class TypeFinder {
         String description = getDescription(recordFieldSymbol);
         Type type = getType(recordFieldSymbol.typeDescriptor());
         // TODO: Making optional fields nilable is the correct way?
-        if (isNilable(recordFieldSymbol.typeDescriptor()) || recordFieldSymbol.isOptional()) {
-            return new Field(name, description, type);
+        if (!isNilable(recordFieldSymbol.typeDescriptor()) && !recordFieldSymbol.isOptional()) {
+            type = getWrapperType(type, TypeKind.NON_NULL);
         }
-        return new Field(name, description, getWrapperType(type, TypeKind.NON_NULL));
+        Field field = new Field(name, type, description);
+        if (recordFieldSymbol.typeDescriptor().typeKind() == TypeDescKind.MAP) {
+            Type argType = getWrapperType(addType(ScalarType.STRING), TypeKind.NON_NULL);
+            field.addArg(new InputValue(MAP_KEY_ARGUMENT_NAME, argType, MAP_KEY_ARGUMENT_DESCRIPTION, null));
+        }
+        return field;
     }
 
     private Type getType(String name, String description, UnionTypeSymbol unionTypeSymbol) {
@@ -346,24 +353,6 @@ public class TypeFinder {
         }
     }
 
-    private void addDefaultSchemaTypes() {
-        for (IntrospectionType type : IntrospectionType.values()) {
-            addType(type.getName(), type.getTypeKind(), type.getDescription());
-        }
-        Type typeKindType = this.schema.getType(IntrospectionType.TYPE_KIND.getName());
-        for (TypeKind typeKind : TypeKind.values()) {
-            typeKindType.addEnumValue(new EnumValue(typeKind.name(), typeKind.getDescription()));
-        }
-        Type directiveLocationType = this.schema.getType(IntrospectionType.DIRECTIVE_LOCATION.getName());
-        for (DirectiveLocation location : DirectiveLocation.values()) {
-            directiveLocationType.addEnumValue(new EnumValue(location.name(), location.getDescription()));
-        }
-    }
-
-    private Type getInputType(ParameterSymbol parameterSymbol) {
-        return getInputType(parameterSymbol.typeDescriptor());
-    }
-
     private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
         if (methodSymbol.documentation().isEmpty()) {
             return null;
@@ -380,15 +369,15 @@ public class TypeFinder {
         switch (typeSymbol.typeKind()) {
             case STRING:
             case STRING_CHAR:
-                return addDefaultScalarType(ScalarType.STRING);
+                return addType(ScalarType.STRING);
             case INT:
-                return addDefaultScalarType(ScalarType.INT);
+                return addType(ScalarType.INT);
             case FLOAT:
-                return addDefaultScalarType(ScalarType.FLOAT);
+                return addType(ScalarType.FLOAT);
             case BOOLEAN:
-                return addDefaultScalarType(ScalarType.BOOLEAN);
+                return addType(ScalarType.BOOLEAN);
             case DECIMAL:
-                return addDefaultScalarType(ScalarType.DECIMAL);
+                return addType(ScalarType.DECIMAL);
             case TYPE_REFERENCE:
                 return getInputType((TypeReferenceTypeSymbol) typeSymbol, typeName);
             case ARRAY:
@@ -416,11 +405,7 @@ public class TypeFinder {
 
     private Type getInputType(ArrayTypeSymbol arrayTypeSymbol) {
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-        Type memberType = getInputType(memberTypeSymbol);
-        if (!isNilable(memberTypeSymbol)) {
-            memberType = getWrapperType(memberType, TypeKind.NON_NULL);
-        }
-        return getWrapperType(memberType, TypeKind.LIST);
+        return getInputFieldType(memberTypeSymbol);
     }
 
     private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
@@ -467,8 +452,8 @@ public class TypeFinder {
         String name = recordFieldSymbol.getName().get();
         String description = getDescription(recordFieldSymbol);
         Type type = getInputType(recordFieldSymbol.typeDescriptor());
-        String defaultValue = null;
-        return new InputValue(name, description, type, defaultValue);
+        String defaultValue = getDefaultValue(recordFieldSymbol);
+        return new InputValue(name, type, description, defaultValue);
     }
 
     private void addEnumValueToType(Type type, ConstantSymbol enumMember) {
@@ -481,5 +466,37 @@ public class TypeFinder {
         String deprecationReason = getDeprecationReason(enumMember);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);
         type.addEnumValue(enumValue);
+    }
+
+    private Type getFieldType(TypeSymbol typeSymbol) {
+        Type type = getType(typeSymbol);
+        if (isNilable(typeSymbol)) {
+            return type;
+        }
+        return getWrapperType(type, TypeKind.NON_NULL);
+    }
+
+    private Type getInputFieldType(TypeSymbol typeSymbol) {
+        Type type = getInputType(typeSymbol);
+        if (isNilable(typeSymbol)) {
+            return type;
+        }
+        return getWrapperType(type, TypeKind.NON_NULL);
+    }
+
+    // TODO: Get default value
+    private String getDefaultValue(RecordFieldSymbol recordFieldSymbol) {
+        if (recordFieldSymbol.hasDefaultValue()) {
+            return recordFieldSymbol.signature();
+        }
+        return null;
+    }
+
+    // TODO: Get default value
+    private String getDefaultValue(ParameterSymbol parameterSymbol) {
+        if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
+            return parameterSymbol.signature();
+        }
+        return null;
     }
 }

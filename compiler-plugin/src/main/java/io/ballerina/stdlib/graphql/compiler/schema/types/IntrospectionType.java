@@ -22,14 +22,14 @@ package io.ballerina.stdlib.graphql.compiler.schema.types;
  * Stores the default introspection types in a GraphQL schema.
  */
 public enum IntrospectionType {
-    SCHEMA(TypeKind.OBJECT, Name.SCHEMA.getName(), Description.SCHEMA.getDescription()),
-    TYPE(TypeKind.OBJECT, Name.TYPE.getName(), Description.TYPE.getDescription()),
-    FIELD(TypeKind.OBJECT, Name.FIELD.getName(), Description.FIELD.getDescription()),
-    INPUT_VALUE(TypeKind.OBJECT, Name.INPUT_VALUE.getName(), Description.INPUT_VALUE.getDescription()),
-    ENUM_VALUE(TypeKind.OBJECT, Name.ENUM_VALUE.getName(), Description.ENUM_VALUE.getDescription()),
-    TYPE_KIND(TypeKind.ENUM, Name.TYPE_KIND.getName(), Description.TYPE_KIND.getDescription()),
-    DIRECTIVE(TypeKind.OBJECT, Name.DIRECTIVE.getName(), Description.DIRECTIVE.getDescription()),
-    DIRECTIVE_LOCATION(TypeKind.ENUM, Name.DIRECTIVE_LOCATION.getName(),
+    SCHEMA(TypeKind.OBJECT, TypeName.SCHEMA.getName(), Description.SCHEMA.getDescription()),
+    TYPE(TypeKind.OBJECT, TypeName.TYPE.getName(), Description.TYPE.getDescription()),
+    FIELD(TypeKind.OBJECT, TypeName.FIELD.getName(), Description.FIELD.getDescription()),
+    INPUT_VALUE(TypeKind.OBJECT, TypeName.INPUT_VALUE.getName(), Description.INPUT_VALUE.getDescription()),
+    ENUM_VALUE(TypeKind.OBJECT, TypeName.ENUM_VALUE.getName(), Description.ENUM_VALUE.getDescription()),
+    TYPE_KIND(TypeKind.ENUM, TypeName.TYPE_KIND.getName(), Description.TYPE_KIND.getDescription()),
+    DIRECTIVE(TypeKind.OBJECT, TypeName.DIRECTIVE.getName(), Description.DIRECTIVE.getDescription()),
+    DIRECTIVE_LOCATION(TypeKind.ENUM, TypeName.DIRECTIVE_LOCATION.getName(),
                        Description.DIRECTIVE_LOCATION.getDescription());
 
     private final TypeKind typeKind;

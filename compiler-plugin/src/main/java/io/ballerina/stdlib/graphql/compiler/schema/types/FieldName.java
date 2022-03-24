@@ -19,26 +19,33 @@
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 /**
- * Stores default type names of a GraphQL schema.
+ * Stores the names of the default types in a GraphQL schema.
  */
-public enum Name {
-    STRING("String"),
-    INT("Int"),
-    FLOAT("Float"),
-    BOOLEAN("Boolean"),
-    DECIMAL("Decimal"),
-    SCHEMA("__Schema"),
-    TYPE("__Type"),
-    FIELD("__Field"),
-    INPUT_VALUE("__InputValue"),
-    ENUM_VALUE("__EnumValue"),
-    TYPE_KIND("__TypeKind"),
-    DIRECTIVE("__Directive"),
-    DIRECTIVE_LOCATION("__DirectiveLocation");
+public enum FieldName {
+    DESCRIPTION("description"),
+    TYPES("types"),
+    QUERY_TYPE("queryType"),
+    MUTATION_TYPE("mutationType"),
+    SUBSCRIPTION_TYPE("subscriptionType"),
+    DIRECTIVES("directives"),
+    KIND("kind"),
+    NAME("name"),
+    FIELDS("fields"),
+    INTERFACES("interfaces"),
+    POSSIBLE_TYPES("possibleTypes"),
+    ENUM_VALUES("enumValues"),
+    INPUT_FIELDS("inputFields"),
+    OF_TYPE("ofType"),
+    ARGS("args"),
+    TYPE("type"),
+    IS_DEPRECATED("isDeprecated"),
+    DEPRECATION_REASON("deprecationReason"),
+    DEFAULT_VALUE("defaultValue"),
+    LOCATIONS("locations");
 
     private final String name;
 
-    Name(String name) {
+    FieldName(String name) {
         this.name = name;
     }
 

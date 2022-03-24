@@ -19,22 +19,33 @@
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 /**
- * Represents the {@code __InputValue} in GraphQL schema.
+ * Stores default type names of a GraphQL schema.
  */
-public class InputValue {
-    private final String name;
-    private final String description;
-    private final Type type;
-    private final String defaultValue;
+public enum TypeName {
+    STRING("String"),
+    INT("Int"),
+    FLOAT("Float"),
+    BOOLEAN("Boolean"),
+    DECIMAL("Decimal"),
+    SCHEMA("__Schema"),
+    TYPE("__Type"),
+    FIELD("__Field"),
+    INPUT_VALUE("__InputValue"),
+    ENUM_VALUE("__EnumValue"),
+    TYPE_KIND("__TypeKind"),
+    DIRECTIVE("__Directive"),
+    DIRECTIVE_LOCATION("__DirectiveLocation"),
+    QUERY("Query"),
+    MUTATION("Mutation"),
+    SUBSCRIPTION("Subscription");
 
-    public InputValue(String name, Type type, String defaultValue) {
-        this(name, type, null, defaultValue);
+    private final String name;
+
+    TypeName(String name) {
+        this.name = name;
     }
 
-    public InputValue(String name, Type type, String description, String defaultValue) {
-        this.name = name;
-        this.description = description;
-        this.type = type;
-        this.defaultValue = defaultValue;
+    public String getName() {
+        return this.name;
     }
 }

@@ -31,6 +31,7 @@ public enum Description {
     DECIMAL("The decimal type corresponds to a subset of IEEE 754-2008 128-bit decimal (radix 10) floating point " +
                     "numbers"),
     GENERATED_UNION_TYPE("auto-generated union type from Ballerina"),
+    GENERATED_TYPE("auto-generated type from hierarchical resource path"),
     TYPE("The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as " +
                  "represented by the `__TypeKind` enum.\n\nDepending on the kind of type, certain fields describe" +
                  " information about that type. Scalar types provide no information beyond a name, description and " +
@@ -56,7 +57,13 @@ public enum Description {
                     " field. Directives provide this by describing additional information to the executor."),
     DIRECTIVE_LOCATION(
             "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one " +
-                    "such possible adjacencies.");
+                    "such possible adjacencies."),
+    TYPES("A list of all types supported by this server."),
+    QUERY_TYPE("The type that query operations will be rooted at."),
+    MUTATION_TYPE("If this server supports mutation, the type that mutation operations will be rooted at."),
+    SUBSCRIPTION_TYPE("If this server support subscription, the type that subscription operations will be rooted at."),
+    DIRECTIVES("A list of all directives supported by this server."),
+    DEFAULT_VALUE("A GraphQL-formatted string representing the default value for this input value.");
 
     private final String description;
 

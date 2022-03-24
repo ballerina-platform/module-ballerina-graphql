@@ -38,7 +38,7 @@ public class FieldFinder {
 
     public void findFields() {
         for (Type type : this.typeMap.values()) {
-            if (type.getTypeKind() == TypeKind.OBJECT || type.getTypeKind() == TypeKind.INPUT_OBJECT) {
+            if (type.getKind() == TypeKind.OBJECT || type.getKind() == TypeKind.INPUT_OBJECT) {
                 findFields(type);
             }
         }
