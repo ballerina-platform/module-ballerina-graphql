@@ -28,8 +28,9 @@ public enum Description {
     FLOAT("The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754]" +
                   "(https://en.wikipedia.org/wiki/IEEE_floating_point)."),
     BOOLEAN("The `Boolean` scalar type represents `true` or `false`."),
-    DECIMAL("The decimal type corresponds to a subset of IEEE 754-2008 128-bit decimal (radix 10) floating point " +
+    DECIMAL("The `Decimal` type corresponds to a subset of IEEE 754-2008 128-bit decimal (radix 10) floating point " +
                     "numbers"),
+    UPLOAD("The `Upload` type represents file upload in a GraphQL schema"),
     GENERATED_UNION_TYPE("auto-generated union type from Ballerina"),
     GENERATED_TYPE("auto-generated type from hierarchical resource path"),
     TYPE("The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as " +

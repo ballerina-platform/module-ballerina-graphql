@@ -196,4 +196,14 @@ public final class Utils {
         }
         return false;
     }
+
+    public static boolean isFileUploadParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        if (!isGraphqlModuleSymbol(typeSymbol)) {
+            return false;
+        }
+        return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
+    }
 }

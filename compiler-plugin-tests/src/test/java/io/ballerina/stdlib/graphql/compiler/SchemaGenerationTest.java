@@ -153,6 +153,13 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testNonSchemaInputs() {
+        String packagePath = "17_special_input_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         return loadPackage(packagePath).getCompilation().diagnosticResult();
     }

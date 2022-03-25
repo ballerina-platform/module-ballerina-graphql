@@ -52,11 +52,11 @@ import java.util.Map;
 import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
-import static io.ballerina.stdlib.graphql.compiler.Utils.FILE_UPLOAD_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
@@ -469,16 +469,6 @@ public class ServiceValidator {
             return false;
         }
         return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
-    }
-
-    private boolean isFileUploadParameter(TypeSymbol typeSymbol) {
-        if (typeSymbol.getName().isEmpty()) {
-            return false;
-        }
-        if (!isGraphqlModuleSymbol(typeSymbol)) {
-            return false;
-        }
-        return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     private void addDiagnostic(CompilationError compilationError, Location location) {

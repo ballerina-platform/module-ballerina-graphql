@@ -27,6 +27,7 @@ public enum TypeName {
     FLOAT("Float"),
     BOOLEAN("Boolean"),
     DECIMAL("Decimal"),
+    UPLOAD("Upload"),
     SCHEMA("__Schema"),
     TYPE("__Type"),
     FIELD("__Field"),

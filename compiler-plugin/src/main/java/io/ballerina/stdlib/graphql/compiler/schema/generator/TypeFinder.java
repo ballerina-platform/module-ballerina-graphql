@@ -54,6 +54,7 @@ import java.util.List;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_DESCRIPTION;
@@ -391,6 +392,9 @@ public class TypeFinder {
     }
 
     private Type getInputType(TypeReferenceTypeSymbol typeReferenceTypeSymbol, String typeName) {
+        if (isFileUploadParameter(typeReferenceTypeSymbol)) {
+            return addType(ScalarType.UPLOAD);
+        }
         if (typeReferenceTypeSymbol.getName().isEmpty()) {
             return null;
         }
@@ -409,15 +413,18 @@ public class TypeFinder {
     }
 
     private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
+        TypeSymbol typeDescriptor = typeDefinitionSymbol.typeDescriptor();
         String description = getDescription(typeDefinitionSymbol);
-        if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            return getInputType(typeName, description, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
-        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-            return getInputType((UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
-        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
-            return getInputType(typeName, description, (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        switch (typeDescriptor.typeKind()) {
+            case RECORD:
+                return getInputType(typeName, description, (RecordTypeSymbol) typeDescriptor);
+            case UNION:
+                return getInputType((UnionTypeSymbol) typeDescriptor);
+            case INTERSECTION:
+                return getInputType(typeName, description, (IntersectionTypeSymbol) typeDescriptor);
+            default:
+                return null;
         }
-        return null;
     }
 
     private Type getInputType(String name, String description, RecordTypeSymbol recordTypeSymbol) {
@@ -487,7 +494,7 @@ public class TypeFinder {
     // TODO: Get default value
     private String getDefaultValue(RecordFieldSymbol recordFieldSymbol) {
         if (recordFieldSymbol.hasDefaultValue()) {
-            return recordFieldSymbol.signature();
+            return "";
         }
         return null;
     }
@@ -495,7 +502,7 @@ public class TypeFinder {
     // TODO: Get default value
     private String getDefaultValue(ParameterSymbol parameterSymbol) {
         if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
-            return parameterSymbol.signature();
+            return "";
         }
         return null;
     }

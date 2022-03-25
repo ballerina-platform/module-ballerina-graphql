@@ -26,7 +26,8 @@ public enum ScalarType {
     INT(TypeName.INT, Description.INT),
     FLOAT(TypeName.FLOAT, Description.FLOAT),
     BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN),
-    DECIMAL(TypeName.DECIMAL, Description.DECIMAL);
+    DECIMAL(TypeName.DECIMAL, Description.DECIMAL),
+    UPLOAD(TypeName.UPLOAD, Description.UPLOAD);
 
     private final TypeName typeName;
     private final Description description;
