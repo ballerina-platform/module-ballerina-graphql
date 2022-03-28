@@ -59,8 +59,6 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_DESCRIPTION;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_NAME;
-import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MUTATION_TYPE_NAME;
-import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.QUERY_TYPE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
