@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,10 +30,22 @@ public class Directive {
     private final List<DirectiveLocation> locations;
     private final List<InputValue> args;
 
-    public Directive(String name, String description, List<DirectiveLocation> locations, List<InputValue> args) {
+    public Directive(String name, String description) {
+        this(name, description, new ArrayList<>());
+    }
+
+    public Directive(String name, String description, List<DirectiveLocation> locations) {
         this.name = name;
         this.description = description;
         this.locations = locations;
-        this.args = args;
+        this.args = new ArrayList<>();
+    }
+
+    public void addLocation(DirectiveLocation directiveLocation) {
+        this.locations.add(directiveLocation);
+    }
+
+    public void addArg(InputValue inputValue) {
+        this.args.add(inputValue);
     }
 }

@@ -64,7 +64,11 @@ public enum Description {
     MUTATION_TYPE("If this server supports mutation, the type that mutation operations will be rooted at."),
     SUBSCRIPTION_TYPE("If this server support subscription, the type that subscription operations will be rooted at."),
     DIRECTIVES("A list of all directives supported by this server."),
-    DEFAULT_VALUE("A GraphQL-formatted string representing the default value for this input value.");
+    DEFAULT_VALUE("A GraphQL-formatted string representing the default value for this input value."),
+    SKIP("Directs the executor to skip this field or fragment when the `if` argument is true."),
+    INCLUDE("Directs the executor to include this field or fragment only when the `if` argument is true."),
+    SKIP_IF("Skipped when true."),
+    INCLUDE_IF("Included when true.");
 
     private final String description;
 

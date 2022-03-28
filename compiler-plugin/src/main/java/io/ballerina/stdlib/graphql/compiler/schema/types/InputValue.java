@@ -27,6 +27,10 @@ public class InputValue {
     private final Type type;
     private final String defaultValue;
 
+    public InputValue(String name, Type type) {
+        this(name, type, null, null);
+    }
+
     public InputValue(String name, Type type, String defaultValue) {
         this(name, type, null, defaultValue);
     }

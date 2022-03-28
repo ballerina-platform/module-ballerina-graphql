@@ -40,6 +40,8 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Directive;
+import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
 import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
@@ -50,6 +52,7 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
@@ -68,6 +71,10 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
  * Finds the GraphQL types associated with a Ballerina service.
  */
 public class TypeFinder {
+    private static final String IF_ARG_NAME = "if";
+    private static final String INCLUDE_DIRECTIVE_NAME = "include";
+    private static final String SKIP_DIRECTIVE_NAME = "skip";
+
     private final Schema schema;
     private final InterfaceFinder interfaceFinder;
 
@@ -79,11 +86,11 @@ public class TypeFinder {
     public Schema findType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
         Type queryType = getQueryType(serviceDeclarationSymbol);
         Type mutationType = getMutationType(serviceDeclarationSymbol);
-
         this.schema.setQueryType(queryType);
         this.schema.setMutationType(mutationType);
         IntrospectionTypeCreator introspectionTypeCreator = new IntrospectionTypeCreator(this.schema);
         introspectionTypeCreator.addIntrospectionTypes();
+        addDefaultDirectives();
         return this.schema;
     }
 
@@ -489,7 +496,23 @@ public class TypeFinder {
         return getWrapperType(type, TypeKind.NON_NULL);
     }
 
-    // TODO: Get default value
+    private void addDefaultDirectives() {
+        List<DirectiveLocation> locations = Arrays.asList(DirectiveLocation.FIELD,
+                                                          DirectiveLocation.FRAGMENT_SPREAD,
+                                                          DirectiveLocation.INLINE_FRAGMENT);
+        Directive include = new Directive(INCLUDE_DIRECTIVE_NAME, Description.INCLUDE.getDescription(), locations);
+        include.addArg(getIfInputValue(Description.INCLUDE_IF));
+        this.schema.addDirective(include);
+        Directive skip = new Directive(SKIP_DIRECTIVE_NAME, Description.SKIP.getDescription(), locations);
+        skip.addArg(getIfInputValue(Description.SKIP_IF));
+        this.schema.addDirective(skip);
+    }
+
+    private InputValue getIfInputValue(Description description) {
+        Type type = getWrapperType(addType(ScalarType.BOOLEAN), TypeKind.NON_NULL);
+        return new InputValue(IF_ARG_NAME, type, description.getDescription(), null);
+    }
+
     private String getDefaultValue(RecordFieldSymbol recordFieldSymbol) {
         if (recordFieldSymbol.hasDefaultValue()) {
             return "";
@@ -497,7 +520,6 @@ public class TypeFinder {
         return null;
     }
 
-    // TODO: Get default value
     private String getDefaultValue(ParameterSymbol parameterSymbol) {
         if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
             return "";
