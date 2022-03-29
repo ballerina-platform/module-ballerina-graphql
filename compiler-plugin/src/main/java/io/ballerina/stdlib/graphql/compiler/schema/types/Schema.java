@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +29,9 @@ import java.util.Map;
 public class Schema {
     private final String description;
     private final Map<String, Type> types;
+    private final List<Directive> directives;
     private Type queryType;
     private Type mutationType;
-    private List<Directive> directives;
 
     /**
      * Creates the schema.
@@ -40,6 +41,7 @@ public class Schema {
     public Schema(String description) {
         this.description = description;
         this.types = new LinkedHashMap<>();
+        this.directives = new ArrayList<>();
     }
 
     /**
