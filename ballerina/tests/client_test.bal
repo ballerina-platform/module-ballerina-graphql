@@ -95,6 +95,25 @@ isolated function testClientExecuteWithTypeWithGenericRecord() returns error? {
 @test:Config {
     groups: ["client"]
 }
+isolated function testClientExecuteWithTypeWithAnyDataGenericRecord() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string userName = "Roland";
+    map<anydata> variables = {"userName": userName};
+
+    Client graphqlClient = check new (url);
+    GenericGreetingResponseWithAnyDataRecord actualPayload = check graphqlClient->executeWithType(query, variables);
+    GenericGreetingResponseWithAnyDataRecord expectedPayload = {
+        data: {
+            "greet": "Hello, Roland"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["client"]
+}
 isolated function testClientExecuteWithJson() returns error? {
     string url = "http://localhost:9091/inputs";
     string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
@@ -163,6 +182,25 @@ isolated function testClientExecuteWithGenericRecord() returns error? {
     GenericGreetingResponseWithErrors expectedPayload = {
         data: {
             greet: "Hello, Roland"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithAnyDataGenericRecord() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string userName = "Roland";
+    map<anydata> variables = {"userName": userName};
+
+    Client graphqlClient = check new (url);
+    GenericGreetingResponseWithAnyDataRecordWithErrors actualPayload = check graphqlClient->execute(query, variables);
+    GenericGreetingResponseWithAnyDataRecordWithErrors expectedPayload = {
+        data: {
+            "greet": "Hello, Roland"
         }
     };
     assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
@@ -272,6 +310,11 @@ type GenericGreetingResponse record {|
     map<json?> data?;
 |};
 
+type GenericGreetingResponseWithAnyDataRecord record {|
+    map<json?> extensions?;
+    record {| anydata...; |} data?;
+|};
+
 type GreetingResponseWithErrors record {|
     map<json?> extensions?;
     record {|
@@ -283,6 +326,12 @@ type GreetingResponseWithErrors record {|
 type GenericGreetingResponseWithErrors record {|
     map<json?> extensions?;
     map<json?> data?;
+    ErrorDetail[] errors?;
+|};
+
+type GenericGreetingResponseWithAnyDataRecordWithErrors record {|
+    map<json?> extensions?;
+    record {| anydata...; |} data?;
     ErrorDetail[] errors?;
 |};
 

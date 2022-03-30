@@ -34,5 +34,4 @@ public type RequestError distinct error<record {| anydata body?; |}>;
 # Represents GraphQL API response during GraphQL API server side errors.
 public type ServerError distinct error<record {| json? data?; ErrorDetail[] errors; map<json>? extensions?; |}>;
 
-# Represents a list of GraphQL API server side errors.
 type GraphQLErrorArray ErrorDetail[];

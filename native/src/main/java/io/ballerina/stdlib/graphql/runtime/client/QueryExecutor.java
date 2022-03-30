@@ -28,32 +28,32 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 
 /**
- * This class is used to execute a GraphQL query using the Ballerina GraphQL client.
+ * This class is used to execute a GraphQL document using the Ballerina GraphQL client.
  */
 public class QueryExecutor {
 
     /**
-    * Executes the GraphQL query when the corresponding Ballerina remote operation is invoked.
+    * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
     */
-    public static Object execute(Environment env, BObject client, BString query, Object variables, Object headers,
+    public static Object execute(Environment env, BObject client, BString document, Object variables, Object headers,
                                  BTypedesc targetType) {
-        return invokeClientMethod(env, client, query, variables, headers, targetType, "processExecute");
+        return invokeClientMethod(env, client, document, variables, headers, targetType, "processExecute");
     }
 
     /**
-    * Executes the GraphQL query when the corresponding Ballerina remote operation is invoked.
+    * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
     */
-    public static Object executeWithType(Environment env, BObject client, BString query, Object variables, 
+    public static Object executeWithType(Environment env, BObject client, BString document, Object variables, 
                                          Object headers, BTypedesc targetType) {
-        return invokeClientMethod(env, client, query, variables, headers, targetType, "processExecuteWithType");
+        return invokeClientMethod(env, client, document, variables, headers, targetType, "processExecuteWithType");
     }
 
-    private static Object invokeClientMethod(Environment env, BObject client, BString query, Object variables, 
+    private static Object invokeClientMethod(Environment env, BObject client, BString document, Object variables, 
                                              Object headers, BTypedesc targetType, String methodName) {
         Object[] paramFeed = new Object[8];
         paramFeed[0] = targetType;
         paramFeed[1] = true;
-        paramFeed[2] = query;
+        paramFeed[2] = document;
         paramFeed[3] = true;
         paramFeed[4] = variables;
         paramFeed[5] = true;

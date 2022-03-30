@@ -35,15 +35,15 @@ public isolated client class Client {
     }
 
     # Executes a GraphQL query and data binds the GraphQL response to a record with data and extensions 
-    # which is a subtype of GenericResponse. The errors of the GraphQL response are directed in the Ballerina error path.
+    # which is a subtype of GenericResponse.
     #
-    # + query - The GraphQL query. For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
+    # + document - The GraphQL query or mutation. For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`.
     # + headers - The GraphQL API headers to execute each query 
     # + targetType - The payload, which is expected to be returned after data binding. For example 
     #                `type CountryByCodeResponse record {| map<json?> __extensions?; record {| record{|string name;|}? country; |} data;`
-    # + return - The payload (if the `targetType` is configured) or a `graphql:ClientError` if failed to execute the query
-    remote isolated function executeWithType(string query, map<anydata>? variables = (), 
+    # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
+    remote isolated function executeWithType(string document, map<anydata>? variables = (), 
                                              map<string|string[]>? headers = (), 
                                              typedesc<GenericResponse|record{}|json> targetType = <>) 
                                              returns targetType|ClientError = @java:Method {
@@ -52,37 +52,35 @@ public isolated client class Client {
     } external;
 
     private isolated function processExecuteWithType(typedesc<GenericResponse|record{}|json> targetType, 
-                                                     string query, map<anydata>? variables, 
+                                                     string document, map<anydata>? variables, 
                                                      map<string|string[]>? headers) 
                                                      returns GenericResponse|record{}|json|ClientError {
         http:Request request = new;
-        json graphqlPayload = getGraphqlPayload(query, variables);
+        json graphqlPayload = getGraphqlPayload(document, variables);
         request.setPayload(graphqlPayload);
         json|http:ClientError httpResponse = self.httpClient->post("", request, headers = headers);
 
         if httpResponse is http:ClientError {
-            check handleHttpClientErrorResponse(httpResponse);
-        } else {
-            map<json> responseMap = <map<json>> httpResponse;
-            if responseMap.hasKey("errors") {
-                check handleGraphqlErrorResponse(responseMap);
-            } else {
-                return check performDataBinding(targetType, responseMap);
-            }
-        }
+            return handleHttpClientErrorResponse(httpResponse);
+        } 
+        GenericResponseWithErrors|record{}|json response = check performDataBinding(targetType, httpResponse);
+        map<json> responseMap = <map<json>> httpResponse;
+        if responseMap.hasKey("errors") {
+            return handleGraphqlErrorResponse(responseMap);
+        } 
+        return response;
     }
 
     # Executes a GraphQL query and data binds the GraphQL response to a record with data, extensions and errors 
-    # which is a subtype of GenericResponseWithErrors. The errors of the GraphQL response are directed in the Ballerina 
-    # target type data binding path.
+    # which is a subtype of GenericResponseWithErrors.
     #
-    # + query - The GraphQL query. For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
+    # + document - The GraphQL query or mutation. For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`.
     # + headers - The GraphQL API headers to execute each query 
     # + targetType - The payload (`GenericResponseWithErrors`), which is expected to be returned after data binding. For example 
     #               `type CountryByCodeResponse record {| map<json?> __extensions?; record {| record{|string name;|}? country; |} data; ErrorDetail[] errors?; |};`
-    # + return - The payload (if the `targetType` is configured) or a `graphql:ClientError` if failed to execute the query
-    remote isolated function execute(string query, map<anydata>? variables = (), map<string|string[]>? headers = (), 
+    # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
+    remote isolated function execute(string document, map<anydata>? variables = (), map<string|string[]>? headers = (), 
                                      typedesc<GenericResponseWithErrors|record{}|json> targetType = <>) 
                                      returns targetType|ClientError = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.client.QueryExecutor",
@@ -90,18 +88,16 @@ public isolated client class Client {
     } external;
 
     private isolated function processExecute(typedesc<GenericResponseWithErrors|record{}|json> targetType, 
-                                             string query, map<anydata>? variables, map<string|string[]>? headers) 
+                                             string document, map<anydata>? variables, map<string|string[]>? headers) 
                                              returns GenericResponseWithErrors|record{}|json|ClientError {
         http:Request request = new;
-        json graphqlPayload = getGraphqlPayload(query, variables);
+        json graphqlPayload = getGraphqlPayload(document, variables);
         request.setPayload(graphqlPayload);
         json|http:ClientError httpResponse = self.httpClient->post("", request, headers = headers);
 
         if httpResponse is http:ClientError {
-            check handleHttpClientErrorResponse(httpResponse);
-        } else {
-            map<json> responseMap = <map<json>> httpResponse;
-            return check performDataBindingWithErrors(targetType, responseMap);
-        }
+            return handleHttpClientErrorResponse(httpResponse);
+        } 
+        return check performDataBindingWithErrors(targetType, httpResponse);
     }
 }
