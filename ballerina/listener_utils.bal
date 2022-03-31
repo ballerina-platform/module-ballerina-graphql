@@ -329,18 +329,6 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
-        isolated resource function 'default [string path](http:Caller caller) returns http:Response {
-            http:Response response = new;
-            if self.graphiqlConfig.enable && self.graphiqlConfig.path == path {
-                string graphiqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}`;
-                string contentType = CONTENT_TYPE_TEXT_HTML;
-                response.setPayload(self.getHTML(graphiqlURL), contentType = contentType);
-                return response;
-            }
-            response.statusCode = http:STATUS_NOT_FOUND;
-            return response;
-        }
-
         isolated function initContext(http:RequestContext requestContext, http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
@@ -357,45 +345,32 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
                 return context;
             }
         }
-
-        isolated function getHTML(string url) returns string {
-            string html = string
-            `<html>
-                <head>
-                    <meta charset="utf-8" />
-                    <title>Simple GraphiQL Example</title>
-                    <link href="https://unpkg.com/graphiql/graphiql.min.css" rel="stylesheet" />
-                </head>
-                <body style="margin: 0;">
-                    <div id="graphiql" style="height: 100vh;"></div>
-
-                    <script
-                    crossorigin
-                    src="https://unpkg.com/react/umd/react.production.min.js"
-                    ></script>
-                    <script
-                    crossorigin
-                    src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"
-                    ></script>
-                    <script
-                    crossorigin
-                    src="https://unpkg.com/graphiql/graphiql.min.js"
-                    ></script>
-
-                    <script>
-                    const fetcher = GraphiQL.createFetcher({ url: '${url}' });
-
-                    ReactDOM.render(
-                        React.createElement(GraphiQL, { fetcher: fetcher }),
-                        document.getElementById('graphiql'),
-                    );
-                    </script>
-                </body>
-            </html>`;
-            return html;
-        }
     };
     return httpService;
+}
+
+isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig) returns HttpService {
+    final CorsConfig corsConfig = getCorsConfig(serviceConfig);
+
+    HttpService graphiqlService = @http:ServiceConfig {
+        cors: corsConfig
+    } isolated service object {
+
+        isolated resource function get .(http:Caller caller) returns http:Response {
+            http:Response response = new;
+            string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}`;
+            string|error htmlAsString = getHTMLContentFromResources(graphqlURL);
+            if htmlAsString is error {
+                json payload = {errors: [{message: htmlAsString.message()}]};
+                response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+                response.setPayload(payload);
+                return response;
+            }
+            response.setPayload(htmlAsString, CONTENT_TYPE_TEXT_HTML);
+            return response;
+        }
+    };
+    return graphiqlService;
 }
 
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
@@ -404,5 +379,22 @@ isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpS
 
 isolated function getHttpServiceFromGraphqlService(Service s) returns HttpService? =
 @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function attachGraphiQLServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getGraphiQLServiceFromGraphqlService(Service s) returns HttpService? =
+@java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function validateGraphiQLPath(string path) returns Error? = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getHTMLContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

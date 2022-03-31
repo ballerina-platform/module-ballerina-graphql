@@ -73,3 +73,41 @@ function testInvalidMaxQueryDepth() returns error? {
     Error err = <Error>result;
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");
 }
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testInvalidGraphiQLPath1() returns error? {
+    Error? result = wrappedListener.attach(invalidGraphiQLPathConfigService1);
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
+}
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testInvalidGraphiQLPath2() returns error? {
+    Error? result = wrappedListener.attach(invalidGraphiQLPathConfigService2);
+    test:assertTrue(result is Error);
+    Error err = <Error>result;
+    test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
+}
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testGraphiQLPathWhenClientDisabled() returns error? {
+    Error? result = wrappedListener.attach(invalidGraphiQLPathConfigService3);
+    test:assertFalse(result is Error);
+}
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testGraphiQLDefaultPath() returns error? {
+    Error? result = wrappedListener.attach(graphiQLDefaultPathConfigService);
+    test:assertFalse(result is Error);
+    result = wrappedListener.detach(graphiQLDefaultPathConfigService);
+    test:assertFalse(result is Error);
+}
