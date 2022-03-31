@@ -21,12 +21,12 @@ import ballerina/test;
 }
 isolated function testClientExecuteWithTypeWithJson() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    json actualPayload = check graphqlClient->executeWithType(query, variables);
+    json actualPayload = check graphqlClient->executeWithType(document, variables);
     json expectedPayload = {
         "data": {
             "greet": "Hello, Roland"
@@ -40,12 +40,12 @@ isolated function testClientExecuteWithTypeWithJson() returns error? {
 }
 isolated function testClientExecuteWithTypeWithOpenRecord() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    record{} actualPayload = check graphqlClient->executeWithType(query, variables);
+    record{} actualPayload = check graphqlClient->executeWithType(document, variables);
     record{} expectedPayload = {
         "data": {
             "greet": "Hello, Roland"
@@ -59,12 +59,12 @@ isolated function testClientExecuteWithTypeWithOpenRecord() returns error? {
 }
 isolated function testClientExecuteWithTypeWithKnownRecord() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    GreetingResponse actualPayload = check graphqlClient->executeWithType(query, variables);
+    GreetingResponse actualPayload = check graphqlClient->executeWithType(document, variables);
     GreetingResponse expectedPayload = {
         data: {
             greet: "Hello, Roland"
@@ -78,12 +78,12 @@ isolated function testClientExecuteWithTypeWithKnownRecord() returns error? {
 }
 isolated function testClientExecuteWithTypeWithGenericRecord() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    GenericGreetingResponse actualPayload = check graphqlClient->executeWithType(query, variables);
+    GenericGreetingResponse actualPayload = check graphqlClient->executeWithType(document, variables);
     GenericGreetingResponse expectedPayload = {
         data: {
             greet: "Hello, Roland"
@@ -95,33 +95,14 @@ isolated function testClientExecuteWithTypeWithGenericRecord() returns error? {
 @test:Config {
     groups: ["client"]
 }
-isolated function testClientExecuteWithTypeWithAnyDataGenericRecord() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
-    string userName = "Roland";
-    map<anydata> variables = {"userName": userName};
-
-    Client graphqlClient = check new (url);
-    GenericGreetingResponseWithAnyDataRecord actualPayload = check graphqlClient->executeWithType(query, variables);
-    GenericGreetingResponseWithAnyDataRecord expectedPayload = {
-        data: {
-            "greet": "Hello, Roland"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
-}
-
-@test:Config {
-    groups: ["client"]
-}
 isolated function testClientExecuteWithJson() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    json actualPayload = check graphqlClient->execute(query, variables);
+    json actualPayload = check graphqlClient->execute(document, variables);
     json expectedPayload = {
         "data": {
             "greet": "Hello, Roland"
@@ -135,12 +116,12 @@ isolated function testClientExecuteWithJson() returns error? {
 }
 isolated function testClientExecuteWithOpenRecord() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    record{} actualPayload = check graphqlClient->execute(query, variables);
+    record{} actualPayload = check graphqlClient->execute(document, variables);
     record{} expectedPayload = {
         "data": {
             "greet": "Hello, Roland"
@@ -154,12 +135,12 @@ isolated function testClientExecuteWithOpenRecord() returns error? {
 }
 isolated function testClientExecuteWithKnownRecord() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    GreetingResponseWithErrors actualPayload = check graphqlClient->execute(query, variables);
+    GreetingResponseWithErrors actualPayload = check graphqlClient->execute(document, variables);
     GreetingResponseWithErrors expectedPayload = {
         data: {
             greet: "Hello, Roland"
@@ -173,12 +154,12 @@ isolated function testClientExecuteWithKnownRecord() returns error? {
 }
 isolated function testClientExecuteWithGenericRecord() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    GenericGreetingResponseWithErrors actualPayload = check graphqlClient->execute(query, variables);
+    GenericGreetingResponseWithErrors actualPayload = check graphqlClient->execute(document, variables);
     GenericGreetingResponseWithErrors expectedPayload = {
         data: {
             greet: "Hello, Roland"
@@ -190,37 +171,31 @@ isolated function testClientExecuteWithGenericRecord() returns error? {
 @test:Config {
     groups: ["client"]
 }
-isolated function testClientExecuteWithAnyDataGenericRecord() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
-    string userName = "Roland";
-    map<anydata> variables = {"userName": userName};
-
-    Client graphqlClient = check new (url);
-    GenericGreetingResponseWithAnyDataRecordWithErrors actualPayload = check graphqlClient->execute(query, variables);
-    GenericGreetingResponseWithAnyDataRecordWithErrors expectedPayload = {
-        data: {
-            "greet": "Hello, Roland"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
-}
-
-@test:Config {
-    groups: ["client"]
-}
 isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ gree (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ gree (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    json|ClientError actualPayload = graphqlClient->executeWithType(query, variables);
-    if actualPayload is ClientError {
-        if actualPayload is RequestError {
-            test:assertEquals(actualPayload.message(), "GraphQL Client Error");
+    json|ClientError payload = graphqlClient->executeWithType(document, variables);
+    if payload is ClientError {
+        if payload is RequestError {
+            json actualPayload = payload.detail()?.body.toJson();
+            json expectedPayload = {
+                errors: [
+                    {
+                        message: "Cannot query field \"gree\" on type \"Query\".",
+                        locations: [{"line":1,"column":37}]
+                    }
+                ]
+            };
+            assertJsonValuesWithOrder(actualPayload, expectedPayload);
+        } else {
+            test:assertFail("Invalid error type");
         }
+    } else {
+        test:assertFail("Json response received for an invalid request");
     }
 }
 
@@ -229,16 +204,29 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
 }
 isolated function testClientExecuteWithInvalidRequest() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ gree (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ gree (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    json|ClientError actualPayload = graphqlClient->execute(query, variables);
-    if actualPayload is ClientError {
-        if actualPayload is RequestError {
-            test:assertEquals(actualPayload.message(), "GraphQL Client Error");
+    json|ClientError payload = graphqlClient->execute(document, variables);
+    if payload is ClientError {
+        if payload is RequestError {
+            json actualPayload = payload.detail()?.body.toJson();
+            json expectedPayload = {
+                errors: [
+                    {
+                        message: "Cannot query field \"gree\" on type \"Query\".",
+                        locations: [{"line":1,"column":37}]
+                    }
+                ]
+            };
+            assertJsonValuesWithOrder(actualPayload, expectedPayload);
+        } else {
+            test:assertFail("Invalid error type");
         }
+    } else {
+        test:assertFail("Json response received for an invalid request");
     }
 }
 
@@ -247,15 +235,54 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
 }
 isolated function testClientExecuteWithTypeWithInvalidBindingType() returns error? {
     string url = "http://localhost:9091/inputs";
-    string query = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
+    string document = string `query Greeting ($userName:String!){ greet (name: $userName) }`;
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    string|ClientError actualPayload = graphqlClient->executeWithType(query, variables);
+    string|ClientError actualPayload = graphqlClient->executeWithType(document, variables);
     if actualPayload is ClientError {
         if actualPayload is RequestError {
             test:assertEquals(actualPayload.message(), "GraphQL Client Error");
+        } else {
+            test:assertFail("Invalid error type");
+        }
+    } else {
+        test:assertFail("Response received for an invalid binding type request");
+    }
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithPartialDataRequest() returns error? {
+    string url = "http://localhost:9095/special_types";
+    string document = string `query { specialHolidays }`;
+
+    Client graphqlClient = check new (url);
+    json|ClientError payload = graphqlClient->executeWithType(document);
+    if payload is ClientError {
+        if payload is ServerError {
+            json actualPayload = payload.detail().toJson();
+            json expectedPayload = {
+                data: {
+                    specialHolidays: ["TUESDAY", null, "THURSDAY"]
+                },
+                errors: [
+                    {
+                        message: "Holiday!",
+                        locations: [
+                            {
+                                line: 1,
+                                column: 9
+                            }
+                        ],
+                        path: ["specialHolidays", 1]
+                    }
+                ],
+                extensions: null
+            };
+            assertJsonValuesWithOrder(actualPayload, expectedPayload);
         }
     }
 }
@@ -263,12 +290,125 @@ isolated function testClientExecuteWithTypeWithInvalidBindingType() returns erro
 @test:Config {
     groups: ["client"]
 }
-isolated function testClientExecuteWithTypeWithMutation() returns error? {
-    string url = "http://localhost:9091/mutations";
-    string query = string `mutation { setName(name: "Heisenberg") { name } }`;
+isolated function testClientExecuteWithPartialDataRequest() returns error? {
+    string url = "http://localhost:9095/special_types";
+    string document = string `query { specialHolidays }`;
 
     Client graphqlClient = check new (url);
-    SetNameResponse actualPayload = check graphqlClient->executeWithType(query);
+    json actualPayload = check graphqlClient->execute(document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Holiday!",
+                locations: [
+                    {
+                        line: 1,
+                        column: 9
+                    }
+                ],
+                path: ["specialHolidays", 1]
+            }
+        ],
+        data: {
+            specialHolidays: ["TUESDAY", null, "THURSDAY"]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperationNameInRequest() returns error? {
+    string url = "http://localhost:9091/validation";
+    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+
+    Client graphqlClient = check new (url);
+    json|ClientError payload = graphqlClient->executeWithType(document);
+    if payload is ClientError {
+        if payload is RequestError {
+            json actualPayload = payload.detail()?.body.toJson();
+            json expectedPayload = {
+                errors: [
+                    {
+                        message: "Must provide operation name if query contains multiple operations.",
+                        locations: []
+                    }
+                ]
+            };
+            assertJsonValuesWithOrder(actualPayload, expectedPayload);
+        } else {
+            test:assertFail("Invalid error type");
+        }
+    } else {
+        test:assertFail("Json response received for a request with multiple operations without operation name");
+    }
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInRequest() returns error? {
+    string url = "http://localhost:9091/validation";
+    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+
+    Client graphqlClient = check new (url);
+    json|ClientError payload = graphqlClient->execute(document);
+    if payload is ClientError {
+        if payload is RequestError {
+            json actualPayload = payload.detail()?.body.toJson();
+            json expectedPayload = {
+                errors: [
+                    {
+                        message: "Must provide operation name if query contains multiple operations.",
+                        locations: []
+                    }
+                ]
+            };
+            assertJsonValuesWithOrder(actualPayload, expectedPayload);
+        } else {
+            test:assertFail("Invalid error type");
+        }
+    } else {
+        test:assertFail("Json response received for a request with multiple operations without operation name");
+    }
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithMultipleOperationsWithOperationNameInRequest() returns error? {
+    string url = "http://localhost:9091/validation";
+    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->executeWithType(document, operationName = "getName");
+    json expectedPayload = {"data":{"name":"James Moriarty"}};
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithMultipleOperationsWithOperationNameInRequest() returns error? {
+    string url = "http://localhost:9091/validation";
+    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->execute(document, operationName = "getName");
+    json expectedPayload = {"data":{"name":"James Moriarty"}};
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithMutation() returns error? {
+    string url = "http://localhost:9091/mutations";
+    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
+
+    Client graphqlClient = check new (url);
+    SetNameResponse actualPayload = check graphqlClient->executeWithType(document);
     SetNameResponse expectedPayload = {
         data: {
             setName: {
@@ -284,15 +424,291 @@ isolated function testClientExecuteWithTypeWithMutation() returns error? {
 }
 isolated function testClientExecuteWithMutation() returns error? {
     string url = "http://localhost:9091/mutations";
-    string query = string `mutation { setName(name: "Heisenberg") { name } }`;
+    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
 
     Client graphqlClient = check new (url);
-    SetNameResponseWithErrors actualPayload = check graphqlClient->execute(query);
+    SetNameResponseWithErrors actualPayload = check graphqlClient->execute(document);
     SetNameResponseWithErrors expectedPayload = {
         data: {
             setName: {
                 name: "Heisenberg"
             }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithAlias() returns error? {
+    string url = "http://localhost:9091/duplicates";
+    string document = check getGraphQLDocumentFromFile("alias.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = {
+        data: {
+            sherlock: {
+                name: "Sherlock Holmes",
+                address: {
+                    city: "London"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithAlias() returns error? {
+    string url = "http://localhost:9091/duplicates";
+    string document = check getGraphQLDocumentFromFile("alias.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->execute(document);
+    json expectedPayload = {
+        data: {
+            sherlock: {
+                name: "Sherlock Holmes",
+                address: {
+                    city: "London"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithEnum() returns error? {
+    string url = "http://localhost:9095/special_types";
+    string document = "query { time { weekday } }";
+    
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = {
+        data: {
+            time: {
+                weekday: "MONDAY"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithEnum() returns error? {
+    string url = "http://localhost:9095/special_types";
+    string document = "query { time { weekday } }";
+    
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->execute(document);
+    json expectedPayload = {
+        data: {
+            time: {
+                weekday: "MONDAY"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithFragmentsOnRecordObjects() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
+    
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithFragmentsOnRecordObjects() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
+    
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->execute(document);
+    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithNestedFragments() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithNestedFragments() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->execute(document);
+    json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithInlineFragment() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithInlineFragment() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
+
+    Client graphqlClient = check new (url);
+    json actualPayload = check graphqlClient->execute(document);
+    json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithBallerinaRecordAsGraphqlObject() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = "query getPerson { detective { name, address { street } } }";
+    
+    Client graphqlClient = check new (url);
+    PersonResponse actualPayload = check graphqlClient->executeWithType(document);
+    PersonResponse expectedPayload = {
+        data: {
+            detective: {
+                name: "Sherlock Holmes",
+                address: {
+                    street: "Baker Street"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithBallerinaRecordAsGraphqlObject() returns error? {
+    string url = "http://localhost:9091/records";
+    string document = "query getPerson { detective { name, address { street } } }";
+    
+    Client graphqlClient = check new (url);
+    PersonResponseWithErrors actualPayload = check graphqlClient->execute(document);
+    PersonResponseWithErrors expectedPayload = {
+        data: {
+            detective: {
+                name: "Sherlock Holmes",
+                address: {
+                    street: "Baker Street"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithTypeWithRecordTypeArrays() returns error? {
+    string document = "{ people { name address { city } } }";
+    string url = "http://localhost:9091/records";
+    
+    Client graphqlClient = check new (url);
+    PeopleResponse actualPayload = check graphqlClient->executeWithType(document);
+    PeopleResponse expectedPayload = {
+        data: {
+            people: [
+                {
+                    name: "Sherlock Holmes",
+                    address: {
+                        city: "London"
+                    }
+                },
+                {
+                    name: "Walter White",
+                    address: {
+                        city: "Albuquerque"
+                    }
+                },
+                {
+                    name: "Tom Marvolo Riddle",
+                    address: {
+                        city: "Hogwarts"
+                    }
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteWithRecordTypeArrays() returns error? {
+    string document = "{ people { name address { city } } }";
+    string url = "http://localhost:9091/records";
+    
+    Client graphqlClient = check new (url);
+    PeopleResponseWithErrors actualPayload = check graphqlClient->executeWithType(document);
+    PeopleResponseWithErrors expectedPayload = {
+        data: {
+            people: [
+                {
+                    name: "Sherlock Holmes",
+                    address: {
+                        city: "London"
+                    }
+                },
+                {
+                    name: "Walter White",
+                    address: {
+                        city: "Albuquerque"
+                    }
+                },
+                {
+                    name: "Tom Marvolo Riddle",
+                    address: {
+                        city: "Hogwarts"
+                    }
+                }
+            ]
         }
     };
     assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
@@ -310,11 +726,6 @@ type GenericGreetingResponse record {|
     map<json?> data?;
 |};
 
-type GenericGreetingResponseWithAnyDataRecord record {|
-    map<json?> extensions?;
-    record {| anydata...; |} data?;
-|};
-
 type GreetingResponseWithErrors record {|
     map<json?> extensions?;
     record {|
@@ -326,12 +737,6 @@ type GreetingResponseWithErrors record {|
 type GenericGreetingResponseWithErrors record {|
     map<json?> extensions?;
     map<json?> data?;
-    ErrorDetail[] errors?;
-|};
-
-type GenericGreetingResponseWithAnyDataRecordWithErrors record {|
-    map<json?> extensions?;
-    record {| anydata...; |} data?;
     ErrorDetail[] errors?;
 |};
 
@@ -352,4 +757,52 @@ type SetNameResponseWithErrors record {|
         |} setName;
     |} data;
     ErrorDetail[] errors?;
+|};
+
+type PersonResponse record {|
+    map<json?> extensions?;
+    PersonDataResponse data;
+|};
+
+type PersonResponseWithErrors record {|
+    map<json?> extensions?;
+    PersonDataResponse data;
+    ErrorDetail[] errors?;
+|};
+
+type PersonDataResponse record {|
+    DetectiveResponse detective;
+|};
+
+type DetectiveResponse record {|
+    string name;
+    AddressResponse address;
+|};
+
+type AddressResponse record {|
+    string street;
+|};
+
+type PeopleResponse record {|
+    map<json?> extensions?;
+    PeopleDataResponse data;
+|};
+
+type PeopleResponseWithErrors record {|
+    map<json?> extensions?;
+    PeopleDataResponse data;
+    ErrorDetail[] errors?;
+|};
+
+type PeopleDataResponse record {|
+    PersonInfoResponse[] people;
+|};
+
+type PersonInfoResponse record {|
+    string name;
+    AddressInfoResponse address;
+|};
+
+type AddressInfoResponse record {|
+    string city;
 |};

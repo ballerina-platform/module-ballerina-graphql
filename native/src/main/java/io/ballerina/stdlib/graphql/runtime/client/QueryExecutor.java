@@ -35,30 +35,35 @@ public class QueryExecutor {
     /**
     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
     */
-    public static Object execute(Environment env, BObject client, BString document, Object variables, Object headers,
-                                 BTypedesc targetType) {
-        return invokeClientMethod(env, client, document, variables, headers, targetType, "processExecute");
+    public static Object execute(Environment env, BObject client, BString document, Object variables,
+                                 Object operationName, Object headers, BTypedesc targetType) {
+        return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
+                "processExecute");
     }
 
     /**
     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
     */
-    public static Object executeWithType(Environment env, BObject client, BString document, Object variables, 
-                                         Object headers, BTypedesc targetType) {
-        return invokeClientMethod(env, client, document, variables, headers, targetType, "processExecuteWithType");
+    public static Object executeWithType(Environment env, BObject client, BString document, Object variables,
+                                         Object operationName, Object headers, BTypedesc targetType) {
+        return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
+                "processExecuteWithType");
     }
 
-    private static Object invokeClientMethod(Environment env, BObject client, BString document, Object variables, 
-                                             Object headers, BTypedesc targetType, String methodName) {
-        Object[] paramFeed = new Object[8];
+    private static Object invokeClientMethod(Environment env, BObject client, BString document, Object variables,
+                                             Object operationName, Object headers, BTypedesc targetType,
+                                             String methodName) {
+        Object[] paramFeed = new Object[10];
         paramFeed[0] = targetType;
         paramFeed[1] = true;
         paramFeed[2] = document;
         paramFeed[3] = true;
         paramFeed[4] = variables;
         paramFeed[5] = true;
-        paramFeed[6] = headers;
+        paramFeed[6] = operationName;
         paramFeed[7] = true;
+        paramFeed[8] = headers;
+        paramFeed[9] = true;
         return invokeClientMethod(env, client, methodName, paramFeed);
     }
 

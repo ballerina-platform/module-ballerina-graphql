@@ -353,10 +353,12 @@ isolated function getInputObjectFieldFormPath((string|int)[] path, string name) 
     return name;
 }
 
-isolated function getGraphqlPayload(string query, map<anydata>? variables = ()) returns json {
+isolated function getGraphqlPayload(string query, map<anydata>? variables = (), string? operationName = ()) 
+                                    returns json {
     return {
         query: query,
-        variables: variables.toJson()
+        variables: variables.toJson(),
+        operationName: operationName
     };
 }
 
