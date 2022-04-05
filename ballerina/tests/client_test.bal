@@ -179,24 +179,18 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
 
     Client graphqlClient = check new (url);
     json|ClientError payload = graphqlClient->executeWithType(document, variables);
-    if payload is ClientError {
-        if payload is RequestError {
-            json actualPayload = payload.detail()?.body.toJson();
-            json expectedPayload = {
-                errors: [
-                    {
-                        message: "Cannot query field \"gree\" on type \"Query\".",
-                        locations: [{"line":1,"column":37}]
-                    }
-                ]
-            };
-            assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        } else {
-            test:assertFail("Invalid error type");
-        }
-    } else {
-        test:assertFail("Json response received for an invalid request");
-    }
+    test:assertTrue(payload is RequestError);
+    RequestError err = <RequestError>payload;
+    json actualPayload = err.detail()?.body.toJson();
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Cannot query field \"gree\" on type \"Query\".",
+                locations: [{"line":1,"column":37}]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -210,24 +204,18 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
 
     Client graphqlClient = check new (url);
     json|ClientError payload = graphqlClient->execute(document, variables);
-    if payload is ClientError {
-        if payload is RequestError {
-            json actualPayload = payload.detail()?.body.toJson();
-            json expectedPayload = {
-                errors: [
-                    {
-                        message: "Cannot query field \"gree\" on type \"Query\".",
-                        locations: [{"line":1,"column":37}]
-                    }
-                ]
-            };
-            assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        } else {
-            test:assertFail("Invalid error type");
-        }
-    } else {
-        test:assertFail("Json response received for an invalid request");
-    }
+    test:assertTrue(payload is RequestError);
+    RequestError err = <RequestError>payload;
+    json actualPayload = err.detail()?.body.toJson();
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Cannot query field \"gree\" on type \"Query\".",
+                locations: [{"line":1,"column":37}]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -240,16 +228,10 @@ isolated function testClientExecuteWithTypeWithInvalidBindingType() returns erro
     map<anydata> variables = {"userName": userName};
 
     Client graphqlClient = check new (url);
-    string|ClientError actualPayload = graphqlClient->executeWithType(document, variables);
-    if actualPayload is ClientError {
-        if actualPayload is RequestError {
-            test:assertEquals(actualPayload.message(), "GraphQL Client Error");
-        } else {
-            test:assertFail("Invalid error type");
-        }
-    } else {
-        test:assertFail("Response received for an invalid binding type request");
-    }
+    string|ClientError payload = graphqlClient->executeWithType(document, variables);
+    test:assertTrue(payload is RequestError);
+    RequestError actualPayload = <RequestError>payload;
+    test:assertEquals(actualPayload.message(), "GraphQL Client Error");
 }
 
 @test:Config {
@@ -261,30 +243,28 @@ isolated function testClientExecuteWithTypeWithPartialDataRequest() returns erro
 
     Client graphqlClient = check new (url);
     json|ClientError payload = graphqlClient->executeWithType(document);
-    if payload is ClientError {
-        if payload is ServerError {
-            json actualPayload = payload.detail().toJson();
-            json expectedPayload = {
-                data: {
-                    specialHolidays: ["TUESDAY", null, "THURSDAY"]
-                },
-                errors: [
+    test:assertTrue(payload is ServerError);
+    ServerError err = <ServerError>payload;
+    json actualPayload = err.detail().toJson();
+    json expectedPayload = {
+        data: {
+            specialHolidays: ["TUESDAY", null, "THURSDAY"]
+        },
+        errors: [
+            {
+                message: "Holiday!",
+                locations: [
                     {
-                        message: "Holiday!",
-                        locations: [
-                            {
-                                line: 1,
-                                column: 9
-                            }
-                        ],
-                        path: ["specialHolidays", 1]
+                        line: 1,
+                        column: 9
                     }
                 ],
-                extensions: null
-            };
-            assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        }
-    }
+                path: ["specialHolidays", 1]
+            }
+        ],
+        extensions: null
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -325,24 +305,18 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
 
     Client graphqlClient = check new (url);
     json|ClientError payload = graphqlClient->executeWithType(document);
-    if payload is ClientError {
-        if payload is RequestError {
-            json actualPayload = payload.detail()?.body.toJson();
-            json expectedPayload = {
-                errors: [
-                    {
-                        message: "Must provide operation name if query contains multiple operations.",
-                        locations: []
-                    }
-                ]
-            };
-            assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        } else {
-            test:assertFail("Invalid error type");
-        }
-    } else {
-        test:assertFail("Json response received for a request with multiple operations without operation name");
-    }
+    test:assertTrue(payload is RequestError);
+    RequestError err = <RequestError>payload;
+    json actualPayload = err.detail()?.body.toJson();
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Must provide operation name if query contains multiple operations.",
+                locations: []
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -354,24 +328,18 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
 
     Client graphqlClient = check new (url);
     json|ClientError payload = graphqlClient->execute(document);
-    if payload is ClientError {
-        if payload is RequestError {
-            json actualPayload = payload.detail()?.body.toJson();
-            json expectedPayload = {
-                errors: [
-                    {
-                        message: "Must provide operation name if query contains multiple operations.",
-                        locations: []
-                    }
-                ]
-            };
-            assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        } else {
-            test:assertFail("Invalid error type");
-        }
-    } else {
-        test:assertFail("Json response received for a request with multiple operations without operation name");
-    }
+    test:assertTrue(payload is RequestError);
+    RequestError err = <RequestError>payload;
+    json actualPayload = err.detail()?.body.toJson();
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Must provide operation name if query contains multiple operations.",
+                locations: []
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
