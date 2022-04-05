@@ -289,7 +289,6 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
-    final readonly & GraphiQL graphiql = getGraphiQLConfig(serviceConfig).cloneReadOnly();
 
     HttpService httpService = @http:ServiceConfig {
         cors: corsConfig
@@ -297,7 +296,6 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final Engine engine = gqlEngine;
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
-        private final readonly & GraphiQL graphiqlConfig = graphiql;
 
         isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
@@ -350,11 +348,13 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 }
 
 isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig) returns HttpService {
+    final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
     HttpService graphiqlService = @http:ServiceConfig {
         cors: corsConfig
     } isolated service object {
+        private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
         isolated resource function get .(http:Caller caller) returns http:Response {
             http:Response response = new;

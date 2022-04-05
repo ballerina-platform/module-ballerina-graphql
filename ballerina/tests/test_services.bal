@@ -98,6 +98,19 @@ service object {
     }
 };
 
+Service graphiQLConfigService =
+@ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "ballerina/graphiql"
+    }
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
 service /fileUpload on basicListener {
     resource function get name() returns string {
         return "/fileUpload";

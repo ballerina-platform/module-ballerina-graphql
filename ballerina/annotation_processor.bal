@@ -42,11 +42,11 @@ isolated function getContextInit(GraphqlServiceConfig? serviceConfig) returns Co
     return initDefaultContext;
 }
 
-isolated function getGraphiQLConfig(GraphqlServiceConfig? serviceConfig) returns GraphiQL {
+isolated function getGraphiQLConfig(GraphqlServiceConfig? serviceConfig) returns GraphiQL? {
     if serviceConfig is GraphqlServiceConfig {
         return serviceConfig.graphiql;
     }
-    return defaultGraphiQLConfig;
+    return;
 }
 
 isolated function getServiceConfig(Service serviceObject) returns GraphqlServiceConfig? {
