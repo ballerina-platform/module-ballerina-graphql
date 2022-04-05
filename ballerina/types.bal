@@ -56,3 +56,25 @@ public type CorsConfig record {|
 isolated service class HttpService {
     *http:Service;
 }
+
+// GraphQL client related data binding types representation
+
+# Represents the target type binding record with data and extensions of a GraphQL response for `executeWithType` method.
+#
+# + extensions -  Meta information on protocol extensions from the GraphQL server
+# + data -  The requested data from the GraphQL server
+public type GenericResponse record {|
+   map<json?> extensions?;
+   record {| anydata...; |}|map<json?> data?;
+|};
+
+# Represents the target type binding record with data, extensions and errors of a GraphQL response for `execute` method.
+#
+# + extensions - Meta information on protocol extensions from the GraphQL server
+# + data - The requested data from the GraphQL server
+# + errors - The errors occurred (if present) while processing the GraphQL request.
+public type GenericResponseWithErrors record {|
+   map<json?> extensions?;
+   record {| anydata...; |}|map<json?> data?;
+   ErrorDetail[] errors?;
+|};

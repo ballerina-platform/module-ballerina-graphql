@@ -46,7 +46,7 @@ type Location record {|
     *parser:Location;
 |};
 
-type ErrorDetail record {|
+public type ErrorDetail record {|
     *parser:ErrorDetail;
 |};
 
