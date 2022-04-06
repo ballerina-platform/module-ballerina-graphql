@@ -64,7 +64,8 @@ public class Listener {
 
         if graphiql is GraphiQL && graphiql.enable {
             check validateGraphiQLPath(graphiql.path);
-            HttpService graphiqlService = getGraphiQLService(serviceConfig);
+            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
+            HttpService graphiqlService = getGraphiQLService(serviceConfig, gqlServiceBasePath);
             attachGraphiQLServiceToGraphqlService(s, graphiqlService);
             result = self.httpListener.attach(graphiqlService, graphiql.path);
             if result is error {

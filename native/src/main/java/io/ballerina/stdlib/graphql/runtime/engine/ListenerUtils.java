@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
@@ -28,6 +29,9 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -39,9 +43,10 @@ public final class ListenerUtils {
     private static final String HTTP_SERVICE = "graphql.http.service";
     private static final String GRAPHIQL_SERVICE = "graphql.graphiql.service";
 
-    private static final String BASE_PATH = "http://localhost:9000/";
+    private static final String SAMPLE_URL = "http://localhost:9000/";
     public static final String GRAPHIQL_RESOURCE = "graphiql.html";
     private static final String REGEX_URL = "${url}";
+    private static final String FORWARD_SLASH = "/";
 
     private ListenerUtils() {}
 
@@ -70,7 +75,7 @@ public final class ListenerUtils {
     }
 
     public static Object validateGraphiQLPath(BString path) {
-        String uri = BASE_PATH + path;
+        String uri = SAMPLE_URL + path;
         try {
             new URL(uri).toURI();
             return null;
@@ -79,6 +84,37 @@ public final class ListenerUtils {
         } catch (MalformedURLException e) {
             return createError("Invalid path provided for GraphiQL client", ERROR_TYPE);
         }
+    }
+
+    public static BString getBasePath(Object serviceName) {
+        if (serviceName instanceof BArray) {
+            List<String> strings = Arrays.stream(((BArray) serviceName).getStringArray()).map(
+                    ListenerUtils::unescapeValue).collect(Collectors.toList());
+            String basePath = String.join(FORWARD_SLASH, strings);
+            return sanitizeBasePath(basePath);
+        } else {
+            String path = ((BString) serviceName).getValue().trim();
+            if (path.startsWith(FORWARD_SLASH)) {
+                path = path.substring(1);
+            }
+            String[] pathSplits = path.split(FORWARD_SLASH);
+            List<String> strings =
+                    Arrays.stream(pathSplits).map(ListenerUtils::unescapeValue).collect(Collectors.toList());
+            String basePath = String.join(FORWARD_SLASH, strings);
+            return sanitizeBasePath(basePath);
+        }
+    }
+
+    public static String unescapeValue(String segment) {
+        if (!segment.contains("\\")) {
+            return segment.trim();
+        }
+        return segment.replace("\\", "").trim();
+    }
+
+    public static BString sanitizeBasePath(String basePath) {
+        basePath = basePath.replace("//", FORWARD_SLASH);
+        return StringUtils.fromString(basePath.trim());
     }
 
     public static Object getHTMLContentFromResources(BString url) {

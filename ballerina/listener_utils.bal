@@ -347,7 +347,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
-isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig) returns HttpService {
+isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
@@ -358,7 +358,7 @@ isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig) return
 
         isolated resource function get .(http:Caller caller) returns http:Response {
             http:Response response = new;
-            string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}`;
+            string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
             string|error htmlAsString = getHTMLContentFromResources(graphqlURL);
             if htmlAsString is error {
                 json payload = {errors: [{message: htmlAsString.message()}]};
@@ -396,5 +396,9 @@ isolated function validateGraphiQLPath(string path) returns Error? = @java:Metho
 } external;
 
 isolated function getHTMLContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getBasePath(string[]|string gqlBasePath) returns string = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

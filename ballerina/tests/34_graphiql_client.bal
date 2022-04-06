@@ -61,9 +61,14 @@ function testGraphiQLPathWhenClientDisabled() returns error? {
     groups: ["listener", "graphiql"]
 }
 function testGraphiQLDefaultPath() returns error? {
-    Error? result = wrappedListener.attach(graphiQLDefaultPathConfigService, "defaultPath");
+    Error? result = wrappedListener.attach(graphiQLDefaultPathConfigService, ["graphql", "/ballerina"]);
     test:assertFalse(result is Error);
-
+    string url = "http://localhost:9090";
+    http:Client httpClient = check new(url);
+    http:Response|error response = httpClient->get("/graphiql");
+    test:assertFalse(response is error);
+    http:Response graphiqlResponse = check response;
+    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
     result = wrappedListener.detach(graphiQLDefaultPathConfigService);
     test:assertFalse(result is Error);
 }
@@ -72,7 +77,7 @@ function testGraphiQLDefaultPath() returns error? {
     groups: ["listener", "graphiql"]
 }
 function testGraphiQL() returns error? {
-    Error? result = wrappedListener.attach(graphiQLConfigService);
+    Error? result = wrappedListener.attach(graphiQLConfigService, "/ballerina-graphql");
     test:assertFalse(result is Error);
     string url = "http://localhost:9090";
     http:Client httpClient = check new(url);
@@ -81,5 +86,21 @@ function testGraphiQL() returns error? {
     http:Response graphiqlResponse = check response;
     test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
     result = wrappedListener.detach(graphiQLDefaultPathConfigService);
+    test:assertFalse(result is Error);
+}
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testGraphiQLWithDefaultBasePath() returns error? {
+    Error? result = basicListener.attach(graphiQLDefaultPathConfigService);
+    test:assertFalse(result is Error);
+    string url = "http://localhost:9091";
+    http:Client httpClient = check new(url);
+    http:Response|error response = httpClient->get("/graphiql");
+    test:assertFalse(response is error);
+    http:Response graphiqlResponse = check response;
+    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
+    result = basicListener.detach(graphiQLDefaultPathConfigService);
     test:assertFalse(result is Error);
 }
