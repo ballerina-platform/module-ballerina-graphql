@@ -61,7 +61,7 @@ function testGraphiQLPathWhenClientDisabled() returns error? {
     groups: ["listener", "graphiql"]
 }
 function testGraphiQLDefaultPath() returns error? {
-    Error? result = wrappedListener.attach(graphiQLDefaultPathConfigService, ["graphql", "/ballerina"]);
+    Error? result = wrappedListener.attach(graphiQLDefaultPathConfigService, ["graphql", "/\\ballerina"]);
     test:assertFalse(result is Error);
     string url = "http://localhost:9090";
     http:Client httpClient = check new(url);

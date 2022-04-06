@@ -22,3 +22,16 @@ public type AuthnError distinct Error;
 
 # Represents the authorization error type.
 public type AuthzError distinct Error;
+
+// GraphQL client related errors representation
+
+# Represents GraphQL client related generic errors.
+public type ClientError RequestError|ServerError;
+
+# Represents GraphQL client side or network level errors.
+public type RequestError distinct error<record {| anydata body?; |}>;
+
+# Represents GraphQL API response during GraphQL API server side errors.
+public type ServerError distinct error<record {| json? data?; ErrorDetail[] errors; map<json>? extensions?; |}>;
+
+type GraphQLErrorArray ErrorDetail[];
