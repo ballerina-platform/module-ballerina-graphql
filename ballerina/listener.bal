@@ -49,7 +49,7 @@ public class Listener {
         __Schema schema = check createSchema(s);
         addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        Graphiql graphiql = getGraphiQLConfig(serviceConfig);
+        Graphiql graphiql = getGraphiqlConfig(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         Engine engine = check new (schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
@@ -62,10 +62,10 @@ public class Listener {
         }
 
         if graphiql.enable {
-            check validateGraphiQLPath(graphiql.path);
+            check validateGraphiqlPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            HttpService graphiqlService = getGraphiQLService(serviceConfig, gqlServiceBasePath);
-            attachGraphiQLServiceToGraphqlService(s, graphiqlService);
+            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
+            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
             result = self.httpListener.attach(graphiqlService, graphiql.path);
             if result is error {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
@@ -86,7 +86,7 @@ public class Listener {
             }
         }
 
-        HttpService? graphiqlService = getGraphiQLServiceFromGraphqlService(s);
+        HttpService? graphiqlService = getGraphiqlServiceFromGraphqlService(s);
         if graphiqlService is HttpService {
             error? result = self.httpListener.detach(graphiqlService);
             if result is error {

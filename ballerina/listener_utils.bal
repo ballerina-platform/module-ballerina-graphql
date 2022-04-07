@@ -347,7 +347,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
-isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
+isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
@@ -381,16 +381,16 @@ isolated function getHttpServiceFromGraphqlService(Service s) returns HttpServic
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function attachGraphiQLServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
+isolated function attachGraphiqlServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function getGraphiQLServiceFromGraphqlService(Service s) returns HttpService? =
+isolated function getGraphiqlServiceFromGraphqlService(Service s) returns HttpService? =
 @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function validateGraphiQLPath(string path) returns Error? = @java:Method {
+isolated function validateGraphiqlPath(string path) returns Error? = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 

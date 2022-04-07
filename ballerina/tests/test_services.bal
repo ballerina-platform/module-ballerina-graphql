@@ -47,7 +47,7 @@ service object {
     }
 };
 
-Service invalidGraphiQLPathConfigService1 =
+Service invalidGraphiqlPathConfigService1 =
 @ServiceConfig {
     graphiql: {
         enable: true,
@@ -60,7 +60,7 @@ service object {
     }
 };
 
-Service invalidGraphiQLPathConfigService2 =
+Service invalidGraphiqlPathConfigService2 =
 @ServiceConfig {
     graphiql: {
         enable: true,
@@ -73,7 +73,7 @@ service object {
     }
 };
 
-Service invalidGraphiQLPathConfigService3 =
+Service invalidGraphiqlPathConfigService3 =
 @ServiceConfig {
     graphiql: {
         enable: false,
@@ -86,7 +86,7 @@ service object {
     }
 };
 
-Service graphiQLDefaultPathConfigService =
+Service graphiqlDefaultPathConfigService =
 @ServiceConfig {
     graphiql: {
         enable: true
@@ -98,7 +98,7 @@ service object {
     }
 };
 
-Service graphiQLConfigService =
+Service graphiqlConfigService =
 @ServiceConfig {
     graphiql: {
         enable: true,

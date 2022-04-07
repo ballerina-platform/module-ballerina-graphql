@@ -54,7 +54,7 @@ public final class ListenerUtils {
         graphqlService.addNativeData(HTTP_SERVICE, httpService);
     }
 
-    public static void attachGraphiQLServiceToGraphqlService(BObject graphqlService, BObject httpService) {
+    public static void attachGraphiqlServiceToGraphqlService(BObject graphqlService, BObject httpService) {
         graphqlService.addNativeData(GRAPHIQL_SERVICE, httpService);
     }
 
@@ -66,7 +66,7 @@ public final class ListenerUtils {
         return null;
     }
 
-    public static Object getGraphiQLServiceFromGraphqlService(BObject graphqlService) {
+    public static Object getGraphiqlServiceFromGraphqlService(BObject graphqlService) {
         Object graphiqlService = graphqlService.getNativeData(GRAPHIQL_SERVICE);
         if (graphiqlService instanceof BObject) {
             return graphiqlService;
@@ -74,7 +74,7 @@ public final class ListenerUtils {
         return null;
     }
 
-    public static Object validateGraphiQLPath(BString path) {
+    public static Object validateGraphiqlPath(BString path) {
         String uri = SAMPLE_URL + path;
         try {
             new URL(uri).toURI();
