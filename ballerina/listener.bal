@@ -49,11 +49,10 @@ public class Listener {
         __Schema schema = check createSchema(s);
         addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        GraphiQL? graphiql = getGraphiQLConfig(serviceConfig);
+        Graphiql? graphiql = getGraphiQLConfig(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         Engine engine = check new (schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
-
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 
@@ -62,14 +61,14 @@ public class Listener {
             return error Error("Error occurred while attaching the service", result);
         }
 
-        if graphiql is GraphiQL && graphiql.enable {
+        if graphiql is Graphiql && graphiql.enable {
             check validateGraphiQLPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
             HttpService graphiqlService = getGraphiQLService(serviceConfig, gqlServiceBasePath);
             attachGraphiQLServiceToGraphqlService(s, graphiqlService);
             result = self.httpListener.attach(graphiqlService, graphiql.path);
             if result is error {
-                return error Error("Error occured while attaching the GraphiQL service", result);
+                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
             }
         }
     }
@@ -91,7 +90,7 @@ public class Listener {
         if graphiqlService is HttpService {
             error? result = self.httpListener.detach(graphiqlService);
             if result is error {
-                return error Error("Error occurred while detaching the GraphiQL service", result);
+                return error Error("Error occurred while detaching the GraphiQL endpoint", result);
             }
         }
     }

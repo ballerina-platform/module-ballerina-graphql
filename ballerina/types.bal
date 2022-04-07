@@ -56,8 +56,8 @@ public type CorsConfig record {|
 #
 # + enable - Status of the client
 # + path - Path for the client
-public type GraphiQL record {|
-    boolean enable;
+public type Graphiql record {|
+    boolean enable = false;
     string path = "graphiql";
 |};
 

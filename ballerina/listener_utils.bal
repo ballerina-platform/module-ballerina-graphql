@@ -356,16 +356,15 @@ isolated function getGraphiQLService(GraphqlServiceConfig? serviceConfig, string
     } isolated service object {
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
-        isolated resource function get .(http:Caller caller) returns http:Response {
-            http:Response response = new;
+        isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
             string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
-            string|error htmlAsString = getHTMLContentFromResources(graphqlURL);
+            string|error htmlAsString = getHtmlContentFromResources(graphqlURL);
             if htmlAsString is error {
-                json payload = {errors: [{message: htmlAsString.message()}]};
-                response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-                response.setPayload(payload);
-                return response;
+                return {
+                    body: htmlAsString.message()
+                };
             }
+            http:Response response = new;
             response.setPayload(htmlAsString, CONTENT_TYPE_TEXT_HTML);
             return response;
         }
@@ -395,7 +394,7 @@ isolated function validateGraphiQLPath(string path) returns Error? = @java:Metho
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function getHTMLContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
+isolated function getHtmlContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 

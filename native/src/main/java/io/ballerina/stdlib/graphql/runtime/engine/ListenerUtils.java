@@ -79,9 +79,7 @@ public final class ListenerUtils {
         try {
             new URL(uri).toURI();
             return null;
-        } catch (URISyntaxException e) {
-            return createError("Invalid path provided for GraphiQL client", ERROR_TYPE);
-        } catch (MalformedURLException e) {
+        } catch (URISyntaxException | MalformedURLException  e) {
             return createError("Invalid path provided for GraphiQL client", ERROR_TYPE);
         }
     }
@@ -117,7 +115,7 @@ public final class ListenerUtils {
         return StringUtils.fromString(basePath.trim());
     }
 
-    public static Object getHTMLContentFromResources(BString url) {
+    public static Object getHtmlContentFromResources(BString url) {
         InputStream htmlAsStream = ClassLoader.getSystemResourceAsStream(GRAPHIQL_RESOURCE);
         try {
             byte[] bytes = htmlAsStream.readAllBytes();

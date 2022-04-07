@@ -26,7 +26,7 @@ public type GraphqlServiceConfig record {|
     ListenerAuthConfig[] auth?;
     ContextInit contextInit = initDefaultContext;
     CorsConfig cors?;
-    GraphiQL graphiql?;
+    Graphiql graphiql?;
 |};
 
 # The annotation to configure a GraphQL service.

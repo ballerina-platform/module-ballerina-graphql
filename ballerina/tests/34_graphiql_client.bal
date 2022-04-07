@@ -44,7 +44,7 @@ function testGraphiQLWithSamePathAsGraphQLService() returns error? {
     Error? result = basicListener.attach(graphiQLConfigService, "ballerina/graphiql");
     test:assertTrue(result is Error);
     Error err = <Error>result;
-    test:assertEquals(err.message(), "Error occured while attaching the GraphiQL service");
+    test:assertEquals(err.message(), "Error occurred while attaching the GraphiQL endpoint");
 }
 
 @test:Config {
@@ -85,7 +85,7 @@ function testGraphiQL() returns error? {
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;
     test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
-    result = wrappedListener.detach(graphiQLDefaultPathConfigService);
+    result = wrappedListener.detach(graphiQLConfigService);
     test:assertFalse(result is Error);
 }
 
@@ -103,4 +103,28 @@ function testGraphiQLWithDefaultBasePath() returns error? {
     test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
     result = basicListener.detach(graphiQLDefaultPathConfigService);
     test:assertFalse(result is Error);
+}
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testGraphiQL1() returns error? {
+    string url = "http://localhost:9091/";
+    http:Client httpClient = check new(url);
+    http:Response|error response = httpClient->get("graphiql/interface");
+    test:assertFalse(response is error);
+    http:Response graphiqlResponse = check response;
+    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
+}
+
+@test:Config {
+    groups: ["listener", "graphiql"]
+}
+function testGraphiQL2() returns error? {
+    string url = "http://localhost:9092/";
+    http:Client httpClient = check new(url);
+    http:Response|error response = httpClient->get("graphiql");
+    test:assertFalse(response is error);
+    http:Response graphiqlResponse = check response;
+    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
 }

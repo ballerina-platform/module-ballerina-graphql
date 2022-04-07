@@ -111,6 +111,29 @@ service object {
     }
 };
 
+@ServiceConfig {
+    graphiql: {
+        enable: true
+    }
+}
+service /graphiql/test on serviceTypeListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "graphiql/interface"
+    }
+}
+service /graphiqlClient on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
 service /fileUpload on basicListener {
     resource function get name() returns string {
         return "/fileUpload";

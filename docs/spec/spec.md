@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/04/05
+_Updated_: 2022/04/05 
 _Edition_: Swan Lake  
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)  
 
@@ -1036,7 +1036,7 @@ service on new graphql:Listener(4000) {
     // ...
 }
 ```
-> **Note:** The optional field `path` accepts a valid string for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+> **Note:** The field enable accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
 
 ## 9. Security
 
@@ -1525,9 +1525,9 @@ service on securedGraphqlListener {
 
 ### 10.1 GraphiQL client
 
-The Ballerina GraphQL package provides an integrated GraphiQL client tool which is implemented using the CDN assets. The GraphiQL client provides a Graphical User Interface to execute the GraphQL queries. To enable the GraphiQL client, configuration should be provided as mentioned in the [GraphiQL configuration](#815-graphiql-configurations) section.
+The Ballerina GraphQL package provides an integrated GraphiQL client tool which is provided by the GraphQL Foundation. The client is implemented using CDN assets and it provides a Graphical User Interface to execute the GraphQL queries. To enable the GraphiQL client, configuration should be provided as mentioned in the [GraphiQL configuration](#815-graphiql-configurations) section.
 
-If the configurations are provided correctly, the GraphiQL client tool will be served at the given path when service starts. The client can be access via a web browser.
+If the configurations are provided correctly, the GraphiQL client tool will be served at the given path when the service starts. The client can be accessed via a web browser.
 
 ###### Example: Enable GraphiQL Client
 
@@ -1544,4 +1544,4 @@ service on new graphql:Listener(4000) {
     }
 }
 ````
-> **Note:** It's recommended not to enable the GraphiQL client in production level due to security concerns.
+> **Note:** The GraphiQL client is used as a tool to help developers when writing a GraphQL service, and It is recommended not to enable it in production environments.
