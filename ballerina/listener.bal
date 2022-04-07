@@ -49,7 +49,7 @@ public class Listener {
         __Schema schema = check createSchema(s);
         addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        Graphiql? graphiql = getGraphiQLConfig(serviceConfig);
+        Graphiql graphiql = getGraphiQLConfig(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         Engine engine = check new (schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
@@ -61,7 +61,7 @@ public class Listener {
             return error Error("Error occurred while attaching the service", result);
         }
 
-        if graphiql is Graphiql && graphiql.enable {
+        if graphiql.enable {
             check validateGraphiQLPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
             HttpService graphiqlService = getGraphiQLService(serviceConfig, gqlServiceBasePath);
