@@ -52,6 +52,15 @@ public type CorsConfig record {|
     *http:CorsConfig;
 |};
 
+# Represent GraphiQL client configurations
+#
+# + enable - Status of the client
+# + path - Path for the client
+public type Graphiql record {|
+    boolean enable = false;
+    string path = "graphiql";
+|};
+
 # Internal HTTP service class for GraphQL services
 isolated service class HttpService {
     *http:Service;
