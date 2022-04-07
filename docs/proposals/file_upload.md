@@ -3,7 +3,7 @@
 _Owners_: @ThisaruGuruge @DimuthuMadushan     
 _Reviewers_: @shafreenAnfar @ThisaruGuruge       
 _Created_: 2021/12/17   
-_Updated_: 2021/12/17     
+_Updated_: 2022/04/07
 _Issue_: [#1882](https://github.com/ballerina-platform/ballerina-standard-library/issues/1882)
 
 ## Summary
@@ -52,7 +52,7 @@ HTTP Multipart Request for GraphQL file upload consists of the following fields.
 
 * `Map` - `JSON-encoded` map of paths of the file that occurred in the operation. Map `key` is the `name` of the file in multipart request and the `value` is an array of paths.
 ```curl
-“Map”: { “0”: ["file"] },
+“Map”: { “0”: ["variables.file"] },
 ```
 
 * `File` - The field includes the file with a unique name.
@@ -61,7 +61,7 @@ Sample `curl` request for single file upload:
 ```curl
 curl localhost:9090/graphql \
   -F operations='{ "query": "mutation($file: Upload!) { fileUpload(file: $file) { link } }", "variables": { "file": null } }' \
-  -F map='{ "0": ["file"] }' \
+  -F map='{ "0": ["variables.file"] }' \
   -F 0=@file1.png
 ```
 
@@ -69,7 +69,7 @@ Sample `curl` request for multiple file upload:
 ```curl
 curl localhost:9090/graphql \
   -F operations='{ "query": "mutation($file: [Upload!]) { filesUpload(file: $file) { link } }", "variables": { "file": [null, null] } }' \
-  -F map='{ "0": ["file.0"], "1": ["file.1"]}' \
+  -F map='{ "0": ["variables.file.0"], "1": ["variables.file.1"]}' \
   -F 0=@file1.png
   -F 1=@file2.png
 ```

@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/02/09  
+_Updated_: 2022/04/07
 _Edition_: Swan Lake  
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)  
 
@@ -693,7 +693,7 @@ Each file extracted from the `operations` object with a unique name must be adde
 ```shell
 curl http://sample.com \
     -F operations='{ "query": "mutation($file: Upload!) { fileUpload(file: $file) { link } }", "variables": { "file": null } }' \
-    -F map='{ "0": ["file"] }' \
+    -F map='{ "0": ["variables.file"] }' \
     -F 0=@file1.png
 ```
 
@@ -702,7 +702,7 @@ curl http://sample.com \
 ```shell
 curl localhost:9090/graphql \
     -F operations='{ "query": "mutation($file: [Upload!]) { filesUpload(file: $file) { link } }", "variables": { "file": [null, null] } }' \
-    -F map='{ "0": ["file.0"], "1": ["file.1"]}' \
+    -F map='{ "0": ["variables.file.0"], "1": ["variables.file.1"]}' \
     -F 0=@file1.png
     -F 1=@file2.png
 ```
