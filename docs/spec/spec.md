@@ -82,6 +82,7 @@ The conforming implementation of the specification is released and included in t
         * 8.1.2 [Auth Configurations](#812-auth-configurations)
         * 8.1.3 [Context Initializer Function](#813-context-initializer-function)
         * 8.1.4 [CORS Configurations](#814-cors-configurations)
+        * 8.1.5 [GraphiQL Configurations](#815-graphiql-configurations)
 9. [Security](#9-security)
     * 9.1 [Authentication and Authorization](#91-authentication-and-authorization)
         * 9.1.1 [Declarative Approach](#911-declarative-approach)
@@ -97,6 +98,8 @@ The conforming implementation of the specification is released and included in t
     * 9.2 [SSL/TLS and Mutual SSL](#92-ssltls-and-mutual-ssl)
         * 9.2.1 [SSL/TLS](#921-ssltls)
         * 9.2.2 [Mutual SSL](#922-mutual-ssl)
+10. [Tools](#10-tools)
+    * 10.1 [GraphiQL Client](#101-graphiql-client)
 
 ## 1. Overview
 
@@ -1016,6 +1019,25 @@ service on new graphql:Listener(4000) {
 }
 ```
 
+#### 8.1.5 GraphiQL Configurations
+
+The `graphiql` field is used to provide the GraphiQL client configuration to enable the GraphiQL client for a given GraphQL service.
+
+###### Example: GraphiQL Configurations
+
+```ballerina
+@graphql:ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "/ballerina/graphiql"
+    }
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+> **Note:** The field enable accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+
 ## 9. Security
 
 ### 9.1 Authentication and Authorization
@@ -1498,3 +1520,28 @@ service on securedGraphqlListener {
     }
 }
 ```
+
+## 10. Tools
+
+### 10.1 GraphiQL client
+
+The Ballerina GraphQL package provides an integrated GraphiQL client tool which is provided by the GraphQL Foundation. The client is implemented using CDN assets and it provides a Graphical User Interface to execute the GraphQL queries. To enable the GraphiQL client, configuration should be provided as mentioned in the [GraphiQL configuration](#815-graphiql-configurations) section.
+
+If the configurations are provided correctly, the GraphiQL client tool will be served at the given path when the service starts. The client can be accessed via a web browser.
+
+###### Example: Enable GraphiQL Client
+
+```ballerina
+@graphql:ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "/ballerina/graphiql"
+    }
+}
+service on new graphql:Listener(4000) {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+````
+> **Note:** The GraphiQL client is used as a tool to help developers when writing a GraphQL service, and It is recommended not to enable it in production environments.
