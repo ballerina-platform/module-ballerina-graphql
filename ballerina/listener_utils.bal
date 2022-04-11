@@ -210,9 +210,9 @@ isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> varia
             return createResponse("Undefine file path found in multipart request ‘map’", http:STATUS_BAD_REQUEST);
         }
         if path is string {
-            http:Response? validateVariablePathResult = validateVariablePath(variables, path);
-            if validateVariablePathResult is () {
-                files[path] = <Upload> fileInfo[key];
+            http:Response|string validateVariablePathResult = validateVariablePath(variables, path);
+            if validateVariablePathResult is string {
+                files[validateVariablePathResult] = <Upload> fileInfo[key];
                 continue;
             }
             return validateVariablePathResult;
@@ -222,31 +222,35 @@ isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> varia
     return;
 }
 
-isolated function validateVariablePath(map<json> variables, string path) returns http:Response? {
+isolated function validateVariablePath(map<json> variables, string receivedPath) returns http:Response|string {
     //replace variable's null value with file path
-    string varName = path;
-    if path.includes(".") {
-        varName = path.substring(0, <int> path.indexOf("."));
-        string indexPart = path.substring((<int> path.indexOf(".") + 1), path.length());
-        int|error index = 'int:fromString(indexPart);
-        if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
-            json[] arrayValue = <json[]> variables.get(varName);
-            if index < arrayValue.length() {
-                if arrayValue[index] == null {
-                    arrayValue[index] = path;
-                    variables[varName] = arrayValue;
-                    return;
+    string path = receivedPath;
+    if path.includes(PARAM_VARIABLES) && path.includes(".") {
+        path = path.substring((<int>path.indexOf(".")) + 1);
+        if path.includes(".") {
+            string varName = path.substring(0, <int> path.indexOf("."));
+            string indexPart = path.substring((<int> path.indexOf(".") + 1));
+            int|error index = 'int:fromString(indexPart);
+            if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
+                json[] arrayValue = <json[]> variables.get(varName);
+                if index < arrayValue.length() {
+                    if arrayValue[index] == null {
+                        arrayValue[index] = path;
+                        variables[varName] = arrayValue;
+                        return path;
+                    }
+                    return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
                 }
-                return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
             }
+            return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+        } else if !variables.hasKey(path) {
+            return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+        } else if variables.get(path) != null {
+            return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
         }
-        return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
-    } else if !variables.hasKey(varName) {
-        return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
-    } else if variables.get(varName) != null {
-        return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
+        return path;
     }
-    return;
+    return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
 }
 
 isolated function createUploadInfoMap(map<Upload> files, map<json> variables)
