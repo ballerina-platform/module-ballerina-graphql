@@ -3,7 +3,7 @@
 _Owners_: @ThisaruGuruge @DimuthuMadushan     
 _Reviewers_: @shafreenAnfar @ThisaruGuruge       
 _Created_: 2021/12/17   
-_Updated_: 2022/04/07
+_Updated_: 2022/04/07   
 _Issue_: [#1882](https://github.com/ballerina-platform/ballerina-standard-library/issues/1882)
 
 ## Summary
