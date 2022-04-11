@@ -1142,3 +1142,38 @@ service /nullable_inputs on basicListener {
         return account.number;
     }
 }
+
+service /subscriptions on basicListener {
+
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1,2,3,4,5];
+        return intArray.toStream();
+    }
+    isolated resource function subscribe stringMessages() returns stream<string, error?> {
+        string[] stringArray = ["1","2","3","4","5"];
+        return stringArray.toStream();
+    }
+    isolated resource function subscribe people() returns stream<PersonTest, error?> {
+        PersonTest[] people = [new PersonTest("Jim Halpert", 30), new PersonTest("Dwight Schrute", 32)];
+        return people.toStream();
+    }
+}
+public service class PersonTest {
+
+    private string name;
+    private int age;
+
+    isolated function init(string name, int age) {
+        self.name = name;
+        self.age = age;
+    }
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+    isolated resource function get age() returns int {
+        return self.age;
+    }
+}

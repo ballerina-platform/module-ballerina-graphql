@@ -51,6 +51,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.POSSIBLE_TY
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
@@ -81,6 +83,9 @@ public class SchemaRecordGenerator {
         schemaRecord.put(QUERY_TYPE_FIELD, this.typeRecords.get(QUERY));
         if (this.typeRecords.containsKey(MUTATION)) {
             schemaRecord.put(MUTATION_TYPE_FIELD, this.typeRecords.get(MUTATION));
+        }
+        if (this.typeRecords.containsKey(SUBSCRIPTION)) {
+            schemaRecord.put(SUBSCRIPTION_TYPE_FIELD, this.typeRecords.get(SUBSCRIPTION));
         }
         return schemaRecord;
     }

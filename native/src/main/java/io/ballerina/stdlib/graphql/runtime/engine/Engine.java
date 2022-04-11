@@ -21,11 +21,14 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
+import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.async.StrandMetadata;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -39,6 +42,7 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
@@ -97,7 +101,7 @@ public class Engine {
         executeResourceMethod(executionContext, service, node, data, paths, pathSegments);
     }
 
-    public static void executeSubscription(Environment environment, BObject visitor, BObject node, BValue result) {
+    public static void executeSubscription(Environment environment, BObject visitor, BObject node, Object result) {
         Future future = environment.markAsync();
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         List<Object> pathSegments = new ArrayList<>();
@@ -108,7 +112,6 @@ public class Engine {
         callbackHandler.addCallback(resourceCallback);
         resourceCallback.notifySuccess(result);
     }
-
     public static void executeMutation(Environment environment, BObject visitor, BObject node) {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
@@ -140,7 +143,7 @@ public class Engine {
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
                 getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
-                                   RESOURCE_STRAND_METADATA);
+                        RESOURCE_STRAND_METADATA);
                 return;
             }
         }
@@ -155,7 +158,7 @@ public class Engine {
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(fieldName.getValue())) {
                 getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments,
-                                   REMOTE_STRAND_METADATA);
+                        REMOTE_STRAND_METADATA);
                 return;
             }
         }
@@ -171,11 +174,57 @@ public class Engine {
         if (service.getType().isIsolated() && service.getType().isIsolated(method.getName())) {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncConcurrently(service, method.getName(), null,
-                                                   strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         } else {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncSequentially(service, method.getName(), null,
-                                                   strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         }
+    }
+    public static Object getSubscriptionResult(Environment env, BObject visitor, BString operationName) {
+        Future subscriptionFutureResult = env.markAsync();
+        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
+        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        ServiceType serviceType = (ServiceType) service.getType();
+        UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            if (Objects.equals(String.valueOf(operationName), resourceMethod.getResourcePath()[0])) {
+                if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
+                    env.getRuntime()
+                            .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                                    null, new Callback() {
+                                        @Override
+                                        public void notifySuccess(Object result) {
+
+                                            subscriptionFutureResult.complete(result);
+                                        }
+
+                                        @Override
+                                        public void notifyFailure(BError bError) {
+
+                                            subscriptionFutureResult.complete(bError);
+                                        }
+                                    }, null, typeUnion, (Object) null);
+                } else {
+                    env.getRuntime()
+                            .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                                    null, new Callback() {
+                                        @Override
+                                        public void notifySuccess(Object result) {
+
+                                            subscriptionFutureResult.complete(result);
+                                        }
+
+                                        @Override
+                                        public void notifyFailure(BError bError) {
+
+                                            subscriptionFutureResult.complete(bError);
+                                        }
+                                    }, null, typeUnion, (Object) null);
+                }
+            }
+        }
+
+        return null;
     }
 }

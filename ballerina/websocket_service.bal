@@ -14,9 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
 import ballerina/websocket;
-
+// import ballerina/io;
 import graphql.parser;
 
 isolated service class WsService {
@@ -25,18 +24,16 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private map<[websocket:Caller, parser:OperationNode]> clientsMap;
     
     isolated function init(Engine engine, __Schema schema) {
         self.engine = engine;
         self.schema = schema.cloneReadOnly();
         self.context = new();
-        self.clientsMap = {};
     }
                 
     isolated remote function onClose(websocket:Caller caller, int statusCode, string reason) {
         lock {
-            _ = self.clientsMap.remove(caller.getConnectionId());
+            // _ = self.clientsMap.remove(caller.getConnectionId());
         }
     }
 
@@ -44,17 +41,37 @@ isolated service class WsService {
         lock {
             parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
             if node is parser:OperationNode {
-                self.clientsMap[caller.getConnectionId()] = [caller, node];
-
-                stream<any, io:Error?> sourceStream = new(); // receiving stream from "getSubscriptionResponse(...)" -> Not implemented yet
-                any|io:Error? next = sourceStream.iterator().next();
-
-                while next !is io:Error? {
-                    check broadcast(self.engine, self.schema, self.context, next, self.clientsMap);
-                    next = sourceStream.iterator().next();
+                parser:Selection selection = node.getSelections()[0];
+                string methodName = "";
+                if (selection is parser:FieldNode) {
+                    methodName = selection.getName(); 
+                } else {
+                    while (selection is parser:FragmentNode) {
+                        selection = selection.getSelections()[0];
+                    } 
+                    methodName = (<parser:FieldNode> selection).getName();
                 }
+                stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, self.context, methodName); 
+                
+                if sourceStream is stream<any,error?>{
+                    record{|any value;|}|error? next = sourceStream.iterator().next();
+
+                    while next !is error? {
+                        ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
+                        OutputObject outputObject = executor.getExecutorResult(node);
+                        ResponseFormatter responseFormatter = new(self.schema);
+                        OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
+                        if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
+                            check caller->writeTextMessage(coercedOutputObject.toString());
+                        }
+                        next = sourceStream.iterator().next();
+                    }
+                }  
+                
+            } else {
+                check caller->writeTextMessage((<ErrorDetail>node).message);
             }
-            check caller->writeTextMessage((<ErrorDetail>node).message);
+            
         }
     }
 }
@@ -62,6 +79,9 @@ isolated service class WsService {
 isolated function validateSubscriptionPayload(string text, Engine engine) returns parser:OperationNode|ErrorDetail {
     json payload = text.toJson();
     var document = payload.query;
+    if document is error {
+        document = payload;
+    }
     var variables = payload.variables;
     variables = variables is error ? () : variables;
     if document is string && document != "" {
@@ -78,15 +98,7 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
     return {message: "Query not found"};
 }
 
-isolated function broadcast(Engine engine, __Schema schema, Context context, any result,
-                            map<[websocket:Caller, parser:OperationNode]> clientsMap) returns websocket:Error? {
-    foreach var callerDetails in clientsMap {
-        ExecutorVisitor executor = new(engine, schema, context, {}, result);
-        websocket:Caller caller = callerDetails[0];
-        parser:OperationNode operationNode = callerDetails[1];
-        OutputObject outputObject = executor.getExecutorResult(operationNode);
-        if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
-            check caller->writeTextMessage(outputObject.toString());
-        }
-    }
+isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context, string operationName) returns stream<any,error?>|error {
+    ExecutorVisitor executor = new(engine, schema, context, {}, null);
+    return <stream<any,error?>|error> getSubscriptionResult(executor, operationName);
 }

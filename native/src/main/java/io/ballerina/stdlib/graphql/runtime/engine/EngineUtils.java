@@ -63,9 +63,11 @@ public class EngineUtils {
     // Schema related record field names
     public static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
     public static final BString MUTATION_TYPE_FIELD = StringUtils.fromString("mutationType");
+    public static final BString SUBSCRIPTION_TYPE_FIELD = StringUtils.fromString("subscriptionType");
     public static final BString TYPES_FIELD = StringUtils.fromString("types");
     public static final BString TYPE_FIELD = StringUtils.fromString("type");
     public static final BString NAME_FIELD = StringUtils.fromString("name");
+    public static final BString SELECTION_FIELD = StringUtils.fromString("selections");
     public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
@@ -97,6 +99,10 @@ public class EngineUtils {
 
     // Input values
     public static final String KEY = "key";
+
+    //Accessor names
+    public static final String GET_ACCESSOR = "get";
+    public static final String SUBSCRIBE_ACCESSOR = "subscribe";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");

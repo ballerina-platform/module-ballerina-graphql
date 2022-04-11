@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.StreamType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -38,6 +39,7 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
@@ -45,11 +47,14 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FALSE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INCLUDE_DEPRECATED;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
@@ -75,9 +80,13 @@ public class FieldFinder {
     public void populateFields() {
         this.addSchemaTypeFields();
         SchemaType mutationType = populateFieldsForMutationType();
+        SchemaType subscriptionType = populateFieldsForSubscriptionType();
         populateFieldsForQueryType();
         if (mutationType != null) {
             this.typeMap.put(MUTATION, mutationType);
+        }
+        if (subscriptionType != null) {
+            this.typeMap.put(SUBSCRIPTION, subscriptionType);
         }
         this.addAdditionalInputValuesToTypeFields();
     }
@@ -93,6 +102,23 @@ public class FieldFinder {
         }
         return mutationType;
     }
+
+    public SchemaType populateFieldsForSubscriptionType() {
+        SchemaType subscriptionType = null;
+        if (this.typeMap.containsKey(SUBSCRIPTION)) {
+            subscriptionType = this.typeMap.remove(SUBSCRIPTION);
+            ServiceType serviceType = (ServiceType) subscriptionType.getBalType();
+            for (ResourceMethodType resourceMethodType : serviceType.getResourceMethods()) {
+                if (Objects.equals(resourceMethodType.getAccessor(), SUBSCRIBE_ACCESSOR)) {
+                    String[] resourcePath = resourceMethodType.getResourcePath();
+                    subscriptionType.addField(
+                            getFieldsFromSubscriptionResourceMethodType(resourceMethodType, resourcePath));
+                }
+            }
+        }
+        return subscriptionType;
+    }
+
 
     public void populateFieldsForQueryType() {
         for (SchemaType schemaType : this.typeMap.values()) {
@@ -121,7 +147,7 @@ public class FieldFinder {
 
     private void addSchemaTypeFields() {
         SchemaType schemaType = new SchemaType(SCHEMA_RECORD, TypeKind.OBJECT,
-                                               ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD).getType());
+                ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD).getType());
         this.typeMap.put(SCHEMA_RECORD, schemaType);
     }
 
@@ -232,8 +258,10 @@ public class FieldFinder {
     private void getFieldsFromServiceType(SchemaType schemaType) {
         ServiceType serviceType = (ServiceType) schemaType.getBalType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            String[] resourcePath = resourceMethod.getResourcePath();
-            schemaType.addField(getFieldsFromResourceMethodType(resourceMethod, resourcePath));
+            if (Objects.equals(resourceMethod.getAccessor(), GET_ACCESSOR)) {
+                String[] resourcePath = resourceMethod.getResourcePath();
+                schemaType.addField(getFieldsFromResourceMethodType(resourceMethod, resourcePath));
+            }
         }
     }
 
@@ -258,6 +286,15 @@ public class FieldFinder {
         return schemaField;
     }
 
+    private SchemaField getFieldsFromSubscriptionResourceMethodType
+            (ResourceMethodType resourceMethod, String[] resourcePath) {
+        SchemaField schemaField = new SchemaField(resourcePath[0]);
+        StreamType streamType = (StreamType) resourceMethod.getType().getReturnType();
+        Type type = streamType.getConstrainedType();
+        setTypeForField(type, schemaField);
+        addArgsToSchemaField(resourceMethod, schemaField);
+        return schemaField;
+    }
     private void setTypeForField(MethodType method, SchemaField schemaField) {
         Type resourceReturnType = method.getType().getReturnType();
         SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
@@ -269,6 +306,15 @@ public class FieldFinder {
         }
     }
 
+    private void setTypeForField(Type resourceReturnType, SchemaField schemaField) {
+        SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
+        if (resourceReturnType.isNilable()) {
+            schemaField.setType(fieldType);
+        } else {
+            SchemaType nonNullType = getNonNullType(fieldType);
+            schemaField.setType(nonNullType);
+        }
+    }
     private void setTypeForField(Field field, SchemaField schemaField) {
         SchemaType fieldType = getSchemaTypeFromType(field.getFieldType());
         if (field.getFieldType().isNilable() || !isRequired(field)) {

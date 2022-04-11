@@ -60,3 +60,7 @@ isolated function executeIntrospection(ExecutorVisitor visitor, parser:FieldNode
 isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
+
+isolated function getSubscriptionResult(ExecutorVisitor visitor, string operationName) returns any = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
