@@ -1,0 +1,3 @@
+subscription getFilteredValues($value: Int!) { 
+    filterValues(value: $value) 
+}

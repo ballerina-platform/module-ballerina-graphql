@@ -21,7 +21,6 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
-import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.types.MethodType;
@@ -112,6 +111,7 @@ public class Engine {
         callbackHandler.addCallback(resourceCallback);
         resourceCallback.notifySuccess(result);
     }
+
     public static void executeMutation(Environment environment, BObject visitor, BObject node) {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
@@ -143,7 +143,7 @@ public class Engine {
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (isPathsMatching(resourceMethod, paths)) {
                 getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
-                        RESOURCE_STRAND_METADATA);
+                                   RESOURCE_STRAND_METADATA);
                 return;
             }
         }
@@ -158,7 +158,7 @@ public class Engine {
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(fieldName.getValue())) {
                 getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments,
-                        REMOTE_STRAND_METADATA);
+                                   REMOTE_STRAND_METADATA);
                 return;
             }
         }
@@ -174,57 +174,39 @@ public class Engine {
         if (service.getType().isIsolated() && service.getType().isIsolated(method.getName())) {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncConcurrently(service, method.getName(), null,
-                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+                                                   strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         } else {
             executionContext.getEnvironment().getRuntime()
                     .invokeMethodAsyncSequentially(service, method.getName(), null,
-                            strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
+                                                   strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         }
     }
-    public static Object getSubscriptionResult(Environment env, BObject visitor, BString operationName) {
+
+    public static Object getSubscriptionResult(Environment env, BObject visitor, BObject node) {
         Future subscriptionFutureResult = env.markAsync();
+        SubscriptionCallback subscriptionCallback = new SubscriptionCallback(subscriptionFutureResult);
+        CallbackHandler callbackHandler = new CallbackHandler(subscriptionFutureResult);
+        ExecutionContext executionContext = new ExecutionContext(env, visitor, callbackHandler, SUBSCRIPTION);
+        BString fieldName = node.getStringValue(NAME_FIELD);
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
         ServiceType serviceType = (ServiceType) service.getType();
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            if (Objects.equals(String.valueOf(operationName), resourceMethod.getResourcePath()[0])) {
+            if (Objects.equals(String.valueOf(fieldName), resourceMethod.getResourcePath()[0])) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, resourceMethod);
+                Object[] args = argumentHandler.getArguments(node);
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
                             .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                    null, new Callback() {
-                                        @Override
-                                        public void notifySuccess(Object result) {
-
-                                            subscriptionFutureResult.complete(result);
-                                        }
-
-                                        @Override
-                                        public void notifyFailure(BError bError) {
-
-                                            subscriptionFutureResult.complete(bError);
-                                        }
-                                    }, null, typeUnion, (Object) null);
+                                                           null, subscriptionCallback, null, typeUnion, args);
                 } else {
                     env.getRuntime()
                             .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                    null, new Callback() {
-                                        @Override
-                                        public void notifySuccess(Object result) {
-
-                                            subscriptionFutureResult.complete(result);
-                                        }
-
-                                        @Override
-                                        public void notifyFailure(BError bError) {
-
-                                            subscriptionFutureResult.complete(bError);
-                                        }
-                                    }, null, typeUnion, (Object) null);
+                                                           null, subscriptionCallback, null, typeUnion, args);
                 }
             }
         }
-
         return null;
     }
 }

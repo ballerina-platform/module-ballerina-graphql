@@ -15,8 +15,8 @@
 // under the License.
 
 import ballerina/websocket;
-// import ballerina/io;
 import graphql.parser;
+import ballerina/lang.value;
 
 isolated service class WsService {
     *websocket:Service;
@@ -30,44 +30,34 @@ isolated service class WsService {
         self.schema = schema.cloneReadOnly();
         self.context = new();
     }
-                
-    isolated remote function onClose(websocket:Caller caller, int statusCode, string reason) {
-        lock {
-            // _ = self.clientsMap.remove(caller.getConnectionId());
-        }
-    }
 
     isolated remote function onTextMessage(websocket:Caller caller, string data) returns websocket:Error? {
         lock {
             parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
             if node is parser:OperationNode {
                 parser:Selection selection = node.getSelections()[0];
-                string methodName = "";
-                if (selection is parser:FieldNode) {
-                    methodName = selection.getName(); 
-                } else {
-                    while (selection is parser:FragmentNode) {
-                        selection = selection.getSelections()[0];
-                    } 
-                    methodName = (<parser:FieldNode> selection).getName();
-                }
-                stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, self.context, methodName); 
-                
+                while (selection is parser:FragmentNode) {
+                    selection = selection.getSelections()[0];
+                } 
+                parser:FieldNode fieldNode = <parser:FieldNode> selection;
+                stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, 
+                                                                                self.context, fieldNode);                 
                 if sourceStream is stream<any,error?>{
                     record{|any value;|}|error? next = sourceStream.iterator().next();
-
                     while next !is error? {
                         ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
                         OutputObject outputObject = executor.getExecutorResult(node);
                         ResponseFormatter responseFormatter = new(self.schema);
-                        OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
+                        OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, 
+                                                                                                    node);
                         if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
                             check caller->writeTextMessage(coercedOutputObject.toString());
                         }
                         next = sourceStream.iterator().next();
                     }
-                }  
-                
+                } else {
+                    check caller->writeTextMessage(sourceStream.toString());
+                }                
             } else {
                 check caller->writeTextMessage((<ErrorDetail>node).message);
             }
@@ -77,11 +67,12 @@ isolated service class WsService {
 }
 
 isolated function validateSubscriptionPayload(string text, Engine engine) returns parser:OperationNode|ErrorDetail {
-    json payload = text.toJson();
-    var document = payload.query;
-    if document is error {
-        document = payload;
+    json|error payload = value:fromJsonString(text);
+    if payload is error {
+        return {message: "Invalid Subscription Query"};
     }
+    var document = payload.query;
+    document = document is error ? payload : document;
     var variables = payload.variables;
     variables = variables is error ? () : variables;
     if document is string && document != "" {
@@ -98,7 +89,8 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
     return {message: "Query not found"};
 }
 
-isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context, string operationName) returns stream<any,error?>|error {
+isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context, 
+                                          parser:FieldNode node) returns stream<any,error?>|error {
     ExecutorVisitor executor = new(engine, schema, context, {}, null);
-    return <stream<any,error?>|error> getSubscriptionResult(executor, operationName);
+    return <stream<any,error?>|error> getSubscriptionResult(executor, node);
 }

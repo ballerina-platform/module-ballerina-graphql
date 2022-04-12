@@ -1,0 +1,14 @@
+subscription getCharacters { 
+    ...personFields
+}
+
+fragment personFields on Subscription {
+    ...characterFields
+}
+
+fragment characterFields on Subscription {
+    characters {
+        name
+        age       
+    } 
+}

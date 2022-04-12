@@ -147,7 +147,7 @@ public class FieldFinder {
 
     private void addSchemaTypeFields() {
         SchemaType schemaType = new SchemaType(SCHEMA_RECORD, TypeKind.OBJECT,
-                ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD).getType());
+                                               ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD).getType());
         this.typeMap.put(SCHEMA_RECORD, schemaType);
     }
 
