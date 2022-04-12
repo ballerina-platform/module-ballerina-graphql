@@ -44,8 +44,9 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
