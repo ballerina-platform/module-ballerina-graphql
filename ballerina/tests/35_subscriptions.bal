@@ -16,79 +16,59 @@
 
 import ballerina/test;
 import ballerina/websocket;
-import ballerina/lang.value;
 
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testSubscription() returns error? {
-    string document = string`subscription getMessages { messages }`;
+isolated function testSubscriptions() returns error? {
+    string document = string`subscription getNames { name }`;
     string url = "ws://localhost:9091/subscriptions";
-    json payload = {
-        query: document,
-        variables: ()
-    };
     websocket:Client wsClient = check new(url);
-    string payloadText = payload.toJsonString();
-    check wsClient->writeTextMessage(payloadText);
-    string textResponse = check wsClient->readTextMessage();
-    foreach int i in 1..< 4 {
-        json actualPayload = check value:fromJsonString(textResponse);
-        json expectedPayload = { data : { messages: i }};
-        assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        textResponse = check wsClient->readTextMessage();
-    }
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = { data : { name: "Walter" }};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = { data : { name: "Skyler" }};
+    check validateWebSocketResponse(wsClient, expectedPayload);   
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionsWithMultipleClients() returns error? {
-    string document1 = string`subscription { messages }`;
+    string document = string`subscription { messages }`;
     string url = "ws://localhost:9091/subscriptions";
-    json payload = {query: document1,variables: ()};
     websocket:Client wsClient1 = check new(url);
     websocket:Client wsClient2 = check new(url);
-    string payloadText = payload.toJsonString();
-    check wsClient1->writeTextMessage(payload.toJsonString());
-    check wsClient2->writeTextMessage(payload.toJsonString());
-    string textResponse1 = check wsClient1->readTextMessage();
-    string textResponse2 = check wsClient2->readTextMessage();
+    check writeWebSocketTextMessage(document, wsClient1);
+    check writeWebSocketTextMessage(document, wsClient2);
     foreach int i in 1..< 4 {
-        json actualPayload1 = check value:fromJsonString(textResponse1);       
-        json actualPayload2 = check value:fromJsonString(textResponse2);
         json expectedPayload = { data : { messages: i }};
-        assertJsonValuesWithOrder(actualPayload1, expectedPayload);
-        assertJsonValuesWithOrder(actualPayload2, expectedPayload);
-        textResponse1 = check wsClient1->readTextMessage();
-        textResponse2 = check wsClient2->readTextMessage();
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        check validateWebSocketResponse(wsClient2, expectedPayload);
     }
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testDifferentSubscriptionsWithMultipleClients() returns error? {
-    string document1 = string`subscription getMessages { messages }`;
-    string document2 = string`subscription getStringMessages { stringMessages }`;
+isolated function testMultipleSubscriptionsWithMultipleClients() returns error? {
+    string document1 = string`
+        subscription getMessages { 
+            messages 
+        }
+        subscription getStringMessages { 
+            stringMessages 
+        }`;
     string url = "ws://localhost:9091/subscriptions";
-    json payload1 = {query: document1,variables: ()};
-    json payload2 = {query: document2,variables: ()};
     websocket:Client wsClient1 = check new(url);
     websocket:Client wsClient2 = check new(url);
-    check wsClient1->writeTextMessage(payload1.toJsonString());
-    check wsClient2->writeTextMessage(payload2.toJsonString());
-    string textResponse1 = check wsClient1->readTextMessage();
-    string textResponse2 = check wsClient2->readTextMessage();
+    check writeWebSocketTextMessage(document1, wsClient1, {}, "getMessages");
+    check writeWebSocketTextMessage(document1, wsClient2, {}, "getStringMessages");
     foreach int i in 1..< 4 {
-        json actualPayload1 = check value:fromJsonString(textResponse1);
         json expectedPayload1 = { data : { messages: i }};       
-        assertJsonValuesWithOrder(actualPayload1, expectedPayload1);
-        textResponse1 = check wsClient1->readTextMessage();
-        json actualPayload2 = check value:fromJsonString(textResponse2);
+        check validateWebSocketResponse(wsClient1, expectedPayload1);
         json expectedPayload2 = { data : { stringMessages: i.toString() }};
-        assertJsonValuesWithOrder(actualPayload2, expectedPayload2);
-        textResponse2 = check wsClient2->readTextMessage();
+        check validateWebSocketResponse(wsClient2, expectedPayload2);
     }
 }
 
@@ -98,24 +78,32 @@ isolated function testDifferentSubscriptionsWithMultipleClients() returns error?
 isolated function testSubscriptionsWithServiceObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9091/subscriptions";
-    json payload = {query: document,variables: ()};
     websocket:Client wsClient = check new(url);
-    string payloadText = payload.toJsonString();
-    check wsClient->writeTextMessage(payloadText);
-    string textResponse = check wsClient->readTextMessage();
-    json actualPayload = check value:fromJsonString(textResponse);
-    json expectedPayload = { data : { characters: { name: "Jim Halpert", age: 30 }}};
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-    textResponse = check wsClient->readTextMessage();
-    actualPayload = check value:fromJsonString(textResponse);
-    expectedPayload = { data : { characters: { name: "Dwight Schrute", age: 32 }}};
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = { data : { students: { id: 1, name: "Eren Yeager" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = { data : { students: { id: 2, name: "Mikasa Ackerman" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testQueryOnServiceWithSubscriptions() returns error? {
+isolated function testSubscriptionsWithRecords() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = { data : { books: { name: "Crime and Punishment", author: "Fyodor Dostoevsky" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = { data : { books: { name: "A Game of Thrones", author: "George R.R. Martin" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testQueryWithSameSubscriptionFieldName() returns error? {
     string document = string`query { name }`;
     string url = "http://localhost:9091/subscriptions";
     json actualPayload = check getJsonPayloadFromService(url, document);
@@ -127,18 +115,14 @@ isolated function testQueryOnServiceWithSubscriptions() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubscriptionRequest() returns error? {
-    string document = string`subscription { name }`;
+    string document = string`subscription { invalidField }`;
     string url = "ws://localhost:9091/subscriptions";
-    json payload = {query: document,variables: ()};
     websocket:Client wsClient = check new(url);
-    string payloadText = payload.toJsonString();
-    check wsClient->writeTextMessage(payloadText);
-    string textResponse = check wsClient->readTextMessage();
-    json actualPayload = check value:fromJsonString(textResponse);
+    check writeWebSocketTextMessage(document, wsClient);
     json expectedPayload = {
         errors: [
             {
-                message: string`Cannot query field "name" on type "Subscription".`,
+                message: string`Cannot query field "invalidField" on type "Subscription".`,
                 locations: [
                     {
                         line: 1,
@@ -148,7 +132,7 @@ isolated function testInvalidSubscriptionRequest() returns error? {
             }
         ]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {
@@ -157,18 +141,12 @@ isolated function testInvalidSubscriptionRequest() returns error? {
 isolated function testSubscriptionsWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
     string url = "ws://localhost:9091/subscriptions";
-    json payload = {query: document,variables: ()};
     websocket:Client wsClient = check new(url);
-    string payloadText = payload.toJsonString();
-    check wsClient->writeTextMessage(payloadText);
-    string textResponse = check wsClient->readTextMessage();
-    json actualPayload = check value:fromJsonString(textResponse);
-    json expectedPayload = { data : { characters: { name: "Jim Halpert", age: 30 }}};
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-    textResponse = check wsClient->readTextMessage();
-    actualPayload = check value:fromJsonString(textResponse);
-    expectedPayload = { data : { characters: { name: "Dwight Schrute", age: 32 }}};
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = { data : { students: { id: 1, name: "Eren Yeager" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = { data : { students: { id: 2, name: "Mikasa Ackerman" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {
@@ -178,15 +156,34 @@ isolated function testSubscriptionsWithVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
     json variables = { "value": 4 };
     string url = "ws://localhost:9091/subscriptions";
-    json payload = {query: document,variables: variables};
     websocket:Client wsClient = check new(url);
-    string payloadText = payload.toJsonString();
-    check wsClient->writeTextMessage(payloadText);
-    string textResponse = check wsClient->readTextMessage();
+    check writeWebSocketTextMessage(document, wsClient, variables);
     foreach int i in 1..< 3 {
-        json actualPayload = check value:fromJsonString(textResponse);
         json expectedPayload = { data : { filterValues: i }};
-        assertJsonValuesWithOrder(actualPayload, expectedPayload);
-        textResponse = check wsClient->readTextMessage();
+        check validateWebSocketResponse(wsClient, expectedPayload);
     }
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testInvalidSubscriptionWithMultipleRootFields() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_root_fields.graphql");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {
+        errors: [
+            {
+                message: string`Subscription operations must have exactly one root field.`,
+                locations: [
+                    {
+                        line: 3,
+                        column: 5
+                    }
+                ]
+            }
+        ]
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }

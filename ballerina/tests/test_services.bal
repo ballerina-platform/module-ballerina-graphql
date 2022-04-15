@@ -1148,6 +1148,11 @@ service /subscriptions on basicListener {
         return "Walter White";
     }
 
+    isolated resource function subscribe name() returns stream<string, error?> {
+        string[] names = ["Walter", "Skyler", "Hank"];
+        return names.toStream();
+    }
+
     isolated resource function subscribe messages() returns stream<int, error?> {
         int[] intArray = [1,2,3,4,5];
         return intArray.toStream();
@@ -1158,9 +1163,16 @@ service /subscriptions on basicListener {
         return stringArray.toStream();
     }
 
-    resource function subscribe characters() returns stream<Character, error?> {
-        Character[] characters = [new Character("Jim Halpert", 30), new Character("Dwight Schrute", 32)];
-        return characters.toStream();
+    isolated resource function subscribe books() returns stream<Book, error?> {
+        Book book1 = {name: "Crime and Punishment", author: "Fyodor Dostoevsky"};
+        Book book2 = {name: "A Game of Thrones", author: "George R.R. Martin"};
+        Book[] books = [book1, book2];
+        return books.toStream();
+    }
+
+    resource function subscribe students() returns stream<StudentService, error?> {
+        StudentService[] students = [new StudentService(1, "Eren Yeager"), new StudentService(2, "Mikasa Ackerman")];
+        return students.toStream();
     }
 
     resource function subscribe filterValues(int value) returns stream<int, error?> {
@@ -1172,23 +1184,5 @@ service /subscriptions on basicListener {
             }   
         }
         return filteredArray.toStream();
-    }
-}
-
-public service class Character {
-    private string name;
-    private int age;
-
-    function init(string name, int age) {
-        self.name = name;
-        self.age = age;
-    }
-
-    resource function get name() returns string {
-        return self.name;
-    }
-
-    resource function get age() returns int {
-        return self.age;
     }
 }

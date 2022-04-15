@@ -154,13 +154,22 @@ public class Parser {
 
     isolated function addSelections(ParentNode parentNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
+        boolean hasRootField = false;
         while token.kind != T_CLOSE_BRACE {
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_ELLIPSIS {
                 check self.addFragment(parentNode);
-            } else {
+            } else if !hasRootField {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
-                parentNode.addSelection(fieldNode);
+                parentNode.addSelection(fieldNode);                
+                if parentNode is OperationNode {
+                    if parentNode.getKind() == OPERATION_SUBSCRIPTION {
+                        hasRootField = true;
+                    }
+                }
+            } else {
+                string message = "Subscription operations must have exactly one root field.";
+                return error InvalidTokenError(message, line = token.location.line, column = token.location.column);
             }
             token = check self.peekNextNonSeparatorToken();
         }

@@ -127,8 +127,7 @@ public class TypeFinder {
 
     private void getTypesFromSubscriptionResourceMethod(ResourceMethodType resourceMethod) {
         getInputTypesFromMethod(resourceMethod);
-        Type type = resourceMethod.getType().getReturnType();
-        StreamType streamType = (StreamType) type;
+        StreamType streamType = (StreamType) resourceMethod.getType().getReturnType();
         getSchemaTypeFromBalType(streamType.getConstrainedType());
     }
 

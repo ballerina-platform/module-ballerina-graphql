@@ -1,14 +1,14 @@
-subscription getCharacters { 
+subscription getStudents { 
     ...personFields
 }
 
 fragment personFields on Subscription {
-    ...characterFields
+    ...studentFields
 }
 
-fragment characterFields on Subscription {
-    characters {
-        name
-        age       
+fragment studentFields on Subscription {
+    students {
+        id
+        name       
     } 
 }

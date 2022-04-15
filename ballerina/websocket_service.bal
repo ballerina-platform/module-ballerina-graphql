@@ -36,13 +36,13 @@ isolated service class WsService {
             parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
             if node is parser:OperationNode {
                 parser:Selection selection = node.getSelections()[0];
-                while (selection is parser:FragmentNode) {
+                while selection is parser:FragmentNode {
                     selection = selection.getSelections()[0];
                 } 
                 parser:FieldNode fieldNode = <parser:FieldNode> selection;
                 stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, 
                                                                                 self.context, fieldNode);                 
-                if sourceStream is stream<any,error?>{
+                if sourceStream is stream<any,error?> {
                     record{|any value;|}|error? next = sourceStream.iterator().next();
                     while next !is error? {
                         ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
@@ -61,7 +61,6 @@ isolated service class WsService {
             } else {
                 check caller->writeTextMessage((<ErrorDetail>node).message);
             }
-            
         }
     }
 }
@@ -78,7 +77,7 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
     if document is string && document != "" {
         if variables is map<json> || variables is () {
             parser:OperationNode|OutputObject validationResult = engine.validate(document, getOperationName(payload),
-                                                                                 variables);
+                                                                                 variables);  
             if validationResult is parser:OperationNode {
                 return validationResult;
             }

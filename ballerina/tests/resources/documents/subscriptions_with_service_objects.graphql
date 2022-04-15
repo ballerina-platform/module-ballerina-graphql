@@ -1,6 +1,6 @@
-subscription getCharacters { 
-    characters {
-        name 
-        age  
+subscription getStudents { 
+    students {
+        id
+        name       
     } 
 }

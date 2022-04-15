@@ -1,0 +1,4 @@
+subscription getFields { 
+    name
+    messages
+}
