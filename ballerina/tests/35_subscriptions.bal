@@ -51,25 +51,23 @@ isolated function testSubscriptionsWithMultipleClients() returns error? {
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testMultipleSubscriptionsWithMultipleClients() returns error? {
-    string document1 = string`
-        subscription getMessages { 
-            messages 
-        }
-        subscription getStringMessages { 
-            stringMessages 
-        }`;
+isolated function testSubscriptionsWithMultipleOperations() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_operations.graphql");
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient1 = check new(url);
     websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document1, wsClient1, {}, "getMessages");
-    check writeWebSocketTextMessage(document1, wsClient2, {}, "getStringMessages");
+    check writeWebSocketTextMessage(document, wsClient1, {}, "getMessages");
+    check writeWebSocketTextMessage(document, wsClient2, {}, "getStringMessages");
     foreach int i in 1..< 4 {
-        json expectedPayload1 = { data : { messages: i }};       
-        check validateWebSocketResponse(wsClient1, expectedPayload1);
-        json expectedPayload2 = { data : { stringMessages: i.toString() }};
-        check validateWebSocketResponse(wsClient2, expectedPayload2);
+        json expectedPayload = { data : { messages: i }};       
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        expectedPayload = { data : { stringMessages: i.toString() }};
+        check validateWebSocketResponse(wsClient2, expectedPayload);
     }
+    string httpUrl = "http://localhost:9091/subscriptions";
+    json actualPayload = check getJsonPayloadFromService(httpUrl, document, {}, "getName");
+    json expectedPayload = { data: { name: "Walter White" } };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -119,19 +117,7 @@ isolated function testInvalidSubscriptionRequest() returns error? {
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Cannot query field "invalidField" on type "Subscription".`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 16
-                    }
-                ]
-            }
-        ]
-    };
+    json expectedPayload = check getJsonContentFromFile("subscription_invalid_field.json");
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -172,18 +158,6 @@ isolated function testInvalidSubscriptionWithMultipleRootFields() returns error?
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Subscription operations must have exactly one root field.`,
-                locations: [
-                    {
-                        line: 3,
-                        column: 5
-                    }
-                ]
-            }
-        ]
-    };
+    json expectedPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields.json");
     check validateWebSocketResponse(wsClient, expectedPayload);
 }

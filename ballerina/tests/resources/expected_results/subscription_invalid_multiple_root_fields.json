@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Subscription operations must have exactly one root field.",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}
