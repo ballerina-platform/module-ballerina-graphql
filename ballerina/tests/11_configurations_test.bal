@@ -98,7 +98,7 @@ isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? 
 }
 isolated function testCorsConfigurationWithWildCard() returns error? {
     string url = "http://localhost:9091";
-    var headers = {
+    map<string|string[]> headers = {
         ["origin"]:"http://www.wso2.com",
         ["access-control-request-method"]:["POST"],
         ["access-control-request-headers"]:["X-Content-Type-Options"]
@@ -117,7 +117,7 @@ isolated function testCorsConfigurationWithWildCard() returns error? {
 }
 isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
     string url = "http://localhost:9091";
-    var headers = {
+    map<string|string[]> headers = {
         ["origin"]:"http://www.wso2.com",
         ["access-control-request-method"]:["POST"],
         ["access-control-request-headers"]:["X-PINGOTHER"]

@@ -31,7 +31,7 @@ isolated function testInvalidCharacter() returns error? {
     expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 1, 5);
     test:assertEquals(token, expectedToken);
 
-    var next = lexer.read();
+    Token|SyntaxError next = lexer.read();
     test:assertTrue(next is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>next;
     string message = err.message();
@@ -165,7 +165,7 @@ in multiple lines`;
     test:assertEquals(token, expectedToken);
 
     token = check lexer.read(); // Space
-    var result = lexer.read();
+    Token|SyntaxError result = lexer.read();
     test:assertTrue(result is UnterminatedStringError);
     UnterminatedStringError err = <UnterminatedStringError>result;
     string expectedMessage = "Syntax Error: Unterminated string.";
