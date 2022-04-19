@@ -45,18 +45,16 @@ class RootFieldVisitor {
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection is parser:FragmentNode {
-            self.visitSelection(selection.getSelections()[0]);
+            self.visitFragment(selection);
         } else {
-            self.fieldNodes.push(<parser:FieldNode>selection);
+            self.visitField(<parser:FieldNode>selection);
         }
     }
-
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        // Do nothing
+        self.fieldNodes.push(fieldNode);
     }
-
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        // Do nothing
+        self.visitSelection(fragmentNode.getSelections()[0]);
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {

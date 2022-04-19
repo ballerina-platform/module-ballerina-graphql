@@ -63,7 +63,8 @@ class SubscriptionVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        if fieldNode.getName().substring(0,2) == "__" {
+        if fieldNode.getName() == SCHEMA_FIELD || fieldNode.getName() == TYPE_FIELD || 
+           fieldNode.getName() == TYPE_NAME_FIELD {
             self.addIntrospectionErrorDetail(fieldNode, <string>data);              
         }
     }
@@ -85,7 +86,7 @@ class SubscriptionVisitor {
                          ? string`Subscription "${operationName}" must select only one top level field.`
                          : string`Anonymous Subscription must select only one top level field.`;   
         if selection is parser:FragmentNode {
-            ErrorDetail errorDetail = getErrorDetailRecord(message, (<parser:FragmentNode>selection).getLocation());
+            ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
         } else {
             ErrorDetail errorDetail = getErrorDetailRecord(message, (<parser:FieldNode>selection).getLocation());

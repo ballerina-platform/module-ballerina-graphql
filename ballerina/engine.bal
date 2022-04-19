@@ -99,9 +99,9 @@ isolated class Engine {
         }
 
         SubscriptionVisitor subscriptionVisitor = new(document);
-        ErrorDetail[]? subscriptionErrors = subscriptionVisitor.validate();
-        if subscriptionErrors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(subscriptionErrors);
+        errors = subscriptionVisitor.validate();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
         }
 
         DuplicateFieldRemover duplicateFieldRemover = new(document);

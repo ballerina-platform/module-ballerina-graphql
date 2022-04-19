@@ -110,18 +110,6 @@ isolated function testQueryWithSameSubscriptionFieldName() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testInvalidSubscription() returns error? {
-    string document = string`subscription { invalidField }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = check getJsonContentFromFile("subscription_invalid_field.json");
-    check validateWebSocketResponse(wsClient, expectedPayload);
-}
-
-@test:Config {
     groups: ["fragments", "subscriptions"]
 }
 isolated function testSubscriptionWithFragments() returns error? {
@@ -151,6 +139,30 @@ isolated function testSubscriptionWithVariables() returns error? {
 }
 
 @test:Config {
+    groups: ["introspection", "typename", "subscriptions"]
+}
+isolated function testSubscriptionWithIntrsopectionInFields() returns error? {
+    string document = string`subscription { students { __typename } }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = { data: { students: { __typename:"StudentService" }}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testInvalidSubscription() returns error? {
+    string document = string`subscription { invalidField }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = check getJsonContentFromFile("subscription_invalid_field.json");
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubscriptionWithMultipleRootFields() returns error? {
@@ -163,7 +175,7 @@ isolated function testInvalidSubscriptionWithMultipleRootFields() returns error?
 }
 
 @test:Config {
-    groups: ["introspection", "subscriptions"]
+    groups: ["introspection", "typename", "subscriptions"]
 }
 isolated function testInvalidSubscriptionWithIntrospections() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_introspections.graphql");
