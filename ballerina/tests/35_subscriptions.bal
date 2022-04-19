@@ -20,7 +20,7 @@ import ballerina/websocket;
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testSubscriptions() returns error? {
+isolated function testSubscription() returns error? {
     string document = string`subscription getNames { name }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
@@ -34,7 +34,7 @@ isolated function testSubscriptions() returns error? {
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testSubscriptionsWithMultipleClients() returns error? {
+isolated function testSubscriptionWithMultipleClients() returns error? {
     string document = string`subscription { messages }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient1 = check new(url);
@@ -71,9 +71,9 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["service", "subscriptions"]
 }
-isolated function testSubscriptionsWithServiceObjects() returns error? {
+isolated function testSubscriptionWithServiceObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
@@ -85,9 +85,9 @@ isolated function testSubscriptionsWithServiceObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["records", "subscriptions"]
 }
-isolated function testSubscriptionsWithRecords() returns error? {
+isolated function testSubscriptionWithRecords() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
@@ -112,7 +112,7 @@ isolated function testQueryWithSameSubscriptionFieldName() returns error? {
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testInvalidSubscriptionRequest() returns error? {
+isolated function testInvalidSubscription() returns error? {
     string document = string`subscription { invalidField }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
@@ -124,7 +124,7 @@ isolated function testInvalidSubscriptionRequest() returns error? {
 @test:Config {
     groups: ["fragments", "subscriptions"]
 }
-isolated function testSubscriptionsWithFragments() returns error? {
+isolated function testSubscriptionWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
@@ -136,9 +136,9 @@ isolated function testSubscriptionsWithFragments() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["variables", "subscriptions"]
 }
-isolated function testSubscriptionsWithVariables() returns error? {
+isolated function testSubscriptionWithVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
     json variables = { "value": 4 };
     string url = "ws://localhost:9091/subscriptions";
@@ -159,5 +159,29 @@ isolated function testInvalidSubscriptionWithMultipleRootFields() returns error?
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
     json expectedPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields.json");
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["introspection", "subscriptions"]
+}
+isolated function testInvalidSubscriptionWithIntrospections() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_introspections.graphql");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = check getJsonContentFromFile("subscription_invalid_introspections.json");
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["fragments", "subscriptions"]
+}
+isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_root_fields_in_fragments.graphql");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields_in_fragments.json");
     check validateWebSocketResponse(wsClient, expectedPayload);
 }

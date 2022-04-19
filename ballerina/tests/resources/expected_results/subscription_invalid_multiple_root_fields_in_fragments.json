@@ -1,10 +1,10 @@
 {
     "errors": [
         {
-            "message": "Anonymous Subscription must select only one top level field.",
+            "message": "Subscription \"getStudents\" must select only one top level field.",
             "locations": [
                 {
-                    "line": 3,
+                    "line": 14,
                     "column": 5
                 }
             ]

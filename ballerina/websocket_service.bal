@@ -35,11 +35,8 @@ isolated service class WsService {
         lock {
             parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
             if node is parser:OperationNode {
-                parser:Selection selection = node.getSelections()[0];
-                while selection is parser:FragmentNode {
-                    selection = selection.getSelections()[0];
-                } 
-                parser:FieldNode fieldNode = <parser:FieldNode> selection;
+                RootFieldVisitor rootFieldVisitor = new(node);
+                parser:FieldNode fieldNode = rootFieldVisitor.getRootFieldNode();
                 stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, 
                                                                                 self.context, fieldNode);                 
                 if sourceStream is stream<any,error?> {
@@ -48,8 +45,7 @@ isolated service class WsService {
                         ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
                         OutputObject outputObject = executor.getExecutorResult(node);
                         ResponseFormatter responseFormatter = new(self.schema);
-                        OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, 
-                                                                                                    node);
+                        OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
                         if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
                             check caller->writeTextMessage(coercedOutputObject.toString());
                         }
@@ -70,14 +66,12 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
     if payload is error {
         return {message: "Invalid Subscription Query"};
     }
-    var document = payload.query;
-    document = document is error ? payload : document;
-    var variables = payload.variables;
-    variables = variables is error ? () : variables;
+    json|error document = payload.query;
+    json|error variables = payload.variables;
     if document is string && document != "" {
         if variables is map<json> || variables is () {
             parser:OperationNode|OutputObject validationResult = engine.validate(document, getOperationName(payload),
-                                                                                 variables);  
+                                                                                 variables);
             if validationResult is parser:OperationNode {
                 return validationResult;
             }
@@ -91,5 +85,5 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context, 
                                           parser:FieldNode node) returns stream<any,error?>|error {
     ExecutorVisitor executor = new(engine, schema, context, {}, null);
-    return <stream<any,error?>|error> getSubscriptionResult(executor, node);
+    return <stream<any,error?>|error>getSubscriptionResult(executor, node);
 }

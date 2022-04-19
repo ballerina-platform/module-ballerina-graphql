@@ -1,9 +1,11 @@
 query getName {
     name
 }
+
 subscription getMessages { 
     messages 
 }
+
 subscription getStringMessages { 
     stringMessages 
 }

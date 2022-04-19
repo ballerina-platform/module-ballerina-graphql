@@ -98,6 +98,12 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errors);
         }
 
+        SubscriptionVisitor subscriptionVisitor = new(document);
+        ErrorDetail[]? subscriptionErrors = subscriptionVisitor.validate();
+        if subscriptionErrors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(subscriptionErrors);
+        }
+
         DuplicateFieldRemover duplicateFieldRemover = new(document);
         duplicateFieldRemover.remove();
         return;

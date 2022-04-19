@@ -143,8 +143,7 @@ public class Engine {
                                       BMap<BString, Object> data, List<String> paths, List<Object> pathSegments) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            if (isPathsMatching(resourceMethod, paths) &&
-                Objects.equals(resourceMethod.getAccessor(), GET_ACCESSOR)) {
+            if (Objects.equals(resourceMethod.getAccessor(), GET_ACCESSOR) && isPathsMatching(resourceMethod, paths)) {
                 getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
                                    RESOURCE_STRAND_METADATA);
                 return;

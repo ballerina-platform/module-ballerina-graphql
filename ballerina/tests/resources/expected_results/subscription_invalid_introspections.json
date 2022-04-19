@@ -1,10 +1,10 @@
 {
     "errors": [
         {
-            "message": "Anonymous Subscription must select only one top level field.",
+            "message": "Subscription \"sub\" must not select an introspection top level field.",
             "locations": [
                 {
-                    "line": 3,
+                    "line": 2,
                     "column": 5
                 }
             ]

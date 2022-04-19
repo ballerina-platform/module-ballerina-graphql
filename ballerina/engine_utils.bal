@@ -48,8 +48,7 @@ isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fiel
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeSubscription(ExecutorVisitor visitor, 
-                                      parser:FieldNode fieldNode, any result) = @java:Method {
+isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode fieldNode, any result) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
