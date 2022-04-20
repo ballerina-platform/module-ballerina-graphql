@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.CodeGeneratorResult;
+import io.ballerina.projects.CodeModifierResult;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
@@ -160,6 +161,13 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testMutationOperation() {
+        String packagePath = "18_mutation_operation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         return loadPackage(packagePath).getCompilation().diagnosticResult();
     }
@@ -169,7 +177,9 @@ public class SchemaGenerationTest {
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
         Package currentPackage = project.currentPackage();
         CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
-        return codeGeneratorResult.updatedPackage().orElse(currentPackage);
+        currentPackage = codeGeneratorResult.updatedPackage().orElse(currentPackage);
+        CodeModifierResult codeModifierResult = currentPackage.runCodeModifierPlugins();
+        return codeModifierResult.updatedPackage().orElse(currentPackage);
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

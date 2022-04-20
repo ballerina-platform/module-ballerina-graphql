@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -27,7 +28,8 @@ import java.util.Map;
 /**
  * Represents the {@code __Type} type in GraphQL schema.
  */
-public class Type {
+public class Type implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final TypeKind kind;
     private final String description;
@@ -133,5 +135,9 @@ public class Type {
 
     public List<Type> getInterfaces() {
         return this.interfaces;
+    }
+
+    public Type getOfType() {
+        return this.ofType;
     }
 }

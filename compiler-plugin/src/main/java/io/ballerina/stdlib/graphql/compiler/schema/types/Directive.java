@@ -18,13 +18,15 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Represents the {@code __Directive} in GraphQL schema.
  */
-public class Directive {
+public class Directive implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
     private final List<DirectiveLocation> locations;
@@ -47,5 +49,21 @@ public class Directive {
 
     public void addArg(InputValue inputValue) {
         this.args.add(inputValue);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public List<DirectiveLocation> getLocations() {
+        return this.locations;
+    }
+
+    public List<InputValue> getArgs() {
+        return this.args;
     }
 }

@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// tests for invalid return types in return type service class definitions - 2 errors expected
 import ballerina/graphql;
 
 service graphql:Service on new graphql:Listener(4000) {
@@ -42,7 +41,7 @@ service graphql:Service on new graphql:Listener(4000) {
 }
 
 distinct service class GeneralGreeting {
-    // invalid json - 1
+
     resource function get greeting() returns json {
         json j1 = "Apple";
         return j1;
@@ -50,7 +49,6 @@ distinct service class GeneralGreeting {
 }
 
 distinct service class Status {
-    // invalid byte - 2
     resource function get greeting() returns byte {
          byte a = 12;
          return a;
@@ -58,7 +56,6 @@ distinct service class Status {
 }
 
 distinct service class FirstName {
-    // valid
     resource function get name() returns string {
         return "James";
     }

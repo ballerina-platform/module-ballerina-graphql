@@ -18,10 +18,13 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.io.Serializable;
+
 /**
  * Represents the {@code __EnumValue} type in GraphQL schema.
  */
-public class EnumValue {
+public class EnumValue implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
     private final boolean isDeprecated;
@@ -36,5 +39,21 @@ public class EnumValue {
         this.description = description;
         this.isDeprecated = isDeprecated;
         this.deprecationReason = deprecationReason;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public boolean isDeprecated() {
+        return this.isDeprecated;
+    }
+
+    public String getDeprecationReason() {
+        return this.deprecationReason;
     }
 }

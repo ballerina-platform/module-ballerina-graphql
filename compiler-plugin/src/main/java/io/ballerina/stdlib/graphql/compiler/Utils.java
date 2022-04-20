@@ -22,6 +22,7 @@ import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
+import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
@@ -53,13 +54,14 @@ public final class Utils {
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String CONTEXT_IDENTIFIER = "Context";
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
+    public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
 
-    public static boolean isGraphqlModuleSymbol(TypeSymbol typeSymbol) {
-        if (typeSymbol.getModule().isEmpty()) {
+    public static boolean isGraphqlModuleSymbol(Symbol symbol) {
+        if (symbol.getModule().isEmpty()) {
             return false;
         }
-        String moduleName = typeSymbol.getModule().get().id().moduleName();
-        String orgName = typeSymbol.getModule().get().id().orgName();
+        String moduleName = symbol.getModule().get().id().moduleName();
+        String orgName = symbol.getModule().get().id().orgName();
         return PACKAGE_NAME.equals(moduleName) && PACKAGE_ORG.equals(orgName);
     }
 
@@ -205,5 +207,9 @@ public final class Utils {
             return false;
         }
         return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
+    }
+
+    public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
+        return resourceMethodSymbol.getName().orElse(null);
     }
 }

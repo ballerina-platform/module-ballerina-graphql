@@ -18,9 +18,6 @@
 
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
-import io.ballerina.compiler.api.symbols.ClassSymbol;
-import io.ballerina.compiler.api.symbols.MethodSymbol;
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
@@ -28,8 +25,6 @@ import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.Location;
-
-import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 
 /**
  * Utility functions for the Ballerina GraphQL compiler validations.
@@ -40,6 +35,7 @@ public final class ValidatorUtils {
 
     public static final String DOUBLE_UNDERSCORES = "__";
     public static final String RESOURCE_FUNCTION_GET = "get";
+    public static final String RESOURCE_FUNCTION_SUBSCRIBE = "subscribe";
 
     public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
                                      Location location) {
@@ -66,23 +62,5 @@ public final class ValidatorUtils {
 
     public static boolean isInvalidFieldName(String fieldName) {
         return fieldName.startsWith(DOUBLE_UNDERSCORES);
-    }
-
-    public static boolean hasResourceMethods(ServiceDeclarationSymbol symbol) {
-        for (MethodSymbol methodSymbol : symbol.methods().values()) {
-            if (isResourceMethod(methodSymbol)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean hasResourceMethods(ClassSymbol classSymbol) {
-        for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
-            if (isResourceMethod(methodSymbol)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,12 +27,14 @@ import java.util.Map;
 /**
  * Represents the {@code Schema} type in GraphQL schema.
  */
-public class Schema {
+public class Schema implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String description;
     private final Map<String, Type> types;
     private final List<Directive> directives;
     private Type queryType;
-    private Type mutationType;
+    private Type mutationType = null;
+    private Type subscriptionType = null;
 
     /**
      * Creates the schema.
@@ -102,6 +105,18 @@ public class Schema {
 
     public void setMutationType(Type type) {
         this.mutationType = type;
+    }
+
+    public Type getMutationType() {
+        return this.mutationType;
+    }
+
+    public void setSubscriptionType(Type type) {
+        this.subscriptionType = type;
+    }
+
+    public Type getSubscriptionType() {
+        return this.subscriptionType;
     }
 
     public void addDirective(Directive directive) {

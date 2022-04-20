@@ -20,10 +20,16 @@ package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
+
+import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlService;
@@ -32,12 +38,10 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlService;
  * Validates a Ballerina GraphQL Service.
  */
 public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext> {
-    private final ServiceValidator serviceValidator;
-    private final SchemaGenerator schemaGenerator;
+    private final Map<DocumentId, GraphqlModifierContext> modifierContextMap;
 
-    public ServiceAnalysisTask() {
-        this.serviceValidator = new ServiceValidator();
-        this.schemaGenerator = new SchemaGenerator();
+    public ServiceAnalysisTask(Map<DocumentId, GraphqlModifierContext> nodeMap) {
+        this.modifierContextMap = nodeMap;
     }
 
     @Override
@@ -52,12 +56,37 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         // Already checked isEmpty() inside the isGraphqlService() method.
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
-        this.serviceValidator.initialize(context, symbol);
-        this.serviceValidator.validate();
-        if (this.serviceValidator.isErrorOccurred()) {
+        InterfaceFinder interfaceFinder = new InterfaceFinder();
+        interfaceFinder.populateInterfaces(context);
+        ServiceValidator serviceValidator = validateService(context, symbol, interfaceFinder);
+        if (serviceValidator.isErrorOccurred()) {
             return;
         }
-        this.schemaGenerator.initialize(this.serviceValidator.getInterfaceFinder(), symbol);
-        this.schemaGenerator.generate();
+        DocumentId documentId = context.documentId();
+        Schema schema = generateSchema(interfaceFinder, symbol);
+        addToModifierContextMap(documentId, node, schema);
+    }
+
+    private ServiceValidator validateService(SyntaxNodeAnalysisContext context, ServiceDeclarationSymbol symbol,
+                                             InterfaceFinder interfaceFinder) {
+        ServiceValidator serviceValidator = new ServiceValidator(context, symbol, interfaceFinder);
+        serviceValidator.validate();
+        return serviceValidator;
+    }
+
+    private Schema generateSchema(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol symbol) {
+        SchemaGenerator schemaGenerator = new SchemaGenerator(symbol, interfaceFinder);
+        return schemaGenerator.generate();
+    }
+
+    private void addToModifierContextMap(DocumentId documentId, ServiceDeclarationNode node, Schema schema) {
+        if (this.modifierContextMap.containsKey(documentId)) {
+            GraphqlModifierContext modifierContext = this.modifierContextMap.get(documentId);
+            modifierContext.add(node, schema);
+        } else {
+            GraphqlModifierContext modifierContext = new GraphqlModifierContext();
+            modifierContext.add(node, schema);
+            this.modifierContextMap.put(documentId, modifierContext);
+        }
     }
 }

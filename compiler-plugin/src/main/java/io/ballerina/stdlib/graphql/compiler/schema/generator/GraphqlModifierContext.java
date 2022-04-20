@@ -18,23 +18,27 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
+import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
-import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Generates the GraphQL schema from a given, valid, Ballerina service.
+ * Stores the mapping between a Ballerina service and the generated GraphQL schema.
  */
-public class SchemaGenerator {
-    private ServiceDeclarationSymbol serviceDeclarationSymbol;
-    private TypeFinder typeFinder;
+public class GraphqlModifierContext {
+    private final Map<ServiceDeclarationNode, Schema> nodeSchemaMap;
 
-    public SchemaGenerator(ServiceDeclarationSymbol serviceDeclarationSymbol, InterfaceFinder interfaceFinder) {
-        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
-        this.typeFinder = new TypeFinder(interfaceFinder, serviceDeclarationSymbol);
+    public GraphqlModifierContext() {
+        this.nodeSchemaMap = new HashMap<>();
     }
 
-    public Schema generate() {
-        return this.typeFinder.findType(this.serviceDeclarationSymbol);
+    public void add(ServiceDeclarationNode node, Schema schema) {
+        this.nodeSchemaMap.put(node, schema);
+    }
+
+    public Map<ServiceDeclarationNode, Schema> getNodeSchemaMap() {
+        return this.nodeSchemaMap;
     }
 }

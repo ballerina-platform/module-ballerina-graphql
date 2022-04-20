@@ -41,7 +41,7 @@ public enum CompilationError {
     INVALID_RESOURCE_INPUT_OBJECT_PARAM(ErrorMessage.ERROR_115, ErrorCode.GRAPHQL_115, DiagnosticSeverity.ERROR),
     INVALID_LOCATION_FOR_CONTEXT_PARAMETER(ErrorMessage.ERROR_116, ErrorCode.GRAPHQL_116, DiagnosticSeverity.ERROR),
     INVALID_PATH_PARAMETERS(ErrorMessage.ERROR_117, ErrorCode.GRAPHQL_117, DiagnosticSeverity.ERROR),
-    MISSING_RESOURCE_NAME(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
+    INVALID_RESOURCE_PATH(ErrorMessage.ERROR_118, ErrorCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
     INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION(ErrorMessage.ERROR_119, ErrorCode.GRAPHQL_119, DiagnosticSeverity.ERROR),
     MULTI_DIMENSIONAL_UPLOAD_ARRAY(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR),
     INVALID_INPUT_TYPE(ErrorMessage.ERROR_121, ErrorCode.GRAPHQL_121, DiagnosticSeverity.ERROR),
@@ -49,7 +49,11 @@ public enum CompilationError {
     INVALID_INTERSECTION_TYPE(ErrorMessage.ERROR_123, ErrorCode.GRAPHQL_123, DiagnosticSeverity.ERROR),
     INTERFACE_IMPLEMENTATION_MISSING_RESOURCE(ErrorMessage.ERROR_124, ErrorCode.GRAPHQL_124, DiagnosticSeverity.ERROR),
     NON_DISTINCT_INTERFACE_CLASS(ErrorMessage.ERROR_125, ErrorCode.GRAPHQL_125, DiagnosticSeverity.ERROR),
-    NON_DISTINCT_INTERFACE_IMPLEMENTATION(ErrorMessage.ERROR_126, ErrorCode.GRAPHQL_126, DiagnosticSeverity.ERROR);
+    NON_DISTINCT_INTERFACE_IMPLEMENTATION(ErrorMessage.ERROR_126, ErrorCode.GRAPHQL_126, DiagnosticSeverity.ERROR),
+    INVALID_HIERARCHICAL_RESOURCE_PATH(ErrorMessage.ERROR_127, ErrorCode.GRAPHQL_127, DiagnosticSeverity.ERROR),
+    INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE(ErrorMessage.ERROR_128, ErrorCode.GRAPHQL_128, DiagnosticSeverity.ERROR),
+    INVALID_ROOT_RESOURCE_ACCESSOR(ErrorMessage.ERROR_128, ErrorCode.GRAPHQL_128, DiagnosticSeverity.ERROR),
+    SCHEMA_GENERATION_FAILED(ErrorMessage.ERROR_130, ErrorCode.GRAPHQL_130, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

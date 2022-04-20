@@ -18,13 +18,15 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Represents the {@code __Field} in GraphQL schema.
  */
-public class Field {
+public class Field implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
     private final Type type;
@@ -55,5 +57,25 @@ public class Field {
 
     public void addArg(InputValue inputValue) {
         this.args.add(inputValue);
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public boolean isDeprecated() {
+        return this.isDeprecated;
+    }
+
+    public String getDeprecationReason() {
+        return this.deprecationReason;
+    }
+
+    public List<InputValue> getArgs() {
+        return this.args;
     }
 }

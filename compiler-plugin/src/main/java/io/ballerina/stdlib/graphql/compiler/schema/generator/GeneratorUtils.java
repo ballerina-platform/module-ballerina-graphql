@@ -42,6 +42,8 @@ public class GeneratorUtils {
     public static final String MAP_KEY_ARGUMENT_NAME = "key";
     public static final String MAP_KEY_ARGUMENT_DESCRIPTION =
             "[auto-generated]: The key of the value required from a map";
+    public static final String SCHEMA_STRING_FIELD = "schemaString";
+    public static final String COLON = ":";
 
     public static String getTypeName(TypeSymbol typeSymbol) {
         switch (typeSymbol.typeKind()) {

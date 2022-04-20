@@ -55,6 +55,7 @@ import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 import java.util.Arrays;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
@@ -66,6 +67,7 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
 /**
  * Finds the GraphQL types associated with a Ballerina service.
@@ -84,37 +86,41 @@ public class TypeFinder {
     }
 
     public Schema findType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
-        Type queryType = getQueryType(serviceDeclarationSymbol);
-        Type mutationType = getMutationType(serviceDeclarationSymbol);
-        this.schema.setQueryType(queryType);
-        this.schema.setMutationType(mutationType);
-        IntrospectionTypeCreator introspectionTypeCreator = new IntrospectionTypeCreator(this.schema);
-        introspectionTypeCreator.addIntrospectionTypes();
-        addDefaultDirectives();
+        findRootTypes(serviceDeclarationSymbol);
+        findIntrospectionTypes();
         return this.schema;
     }
 
-    private Type getQueryType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+    private void findIntrospectionTypes() {
+        IntrospectionTypeCreator introspectionTypeCreator = new IntrospectionTypeCreator(this.schema);
+        introspectionTypeCreator.addIntrospectionTypes();
+        addDefaultDirectives();
+    }
+
+    private void findRootTypes(ServiceDeclarationSymbol serviceDeclarationSymbol) {
         Type queryType = addType(TypeName.QUERY.getName(), TypeKind.OBJECT);
         for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
-                queryType.addField(getField((ResourceMethodSymbol) methodSymbol));
-            }
-        }
-        return queryType;
-    }
-
-    private Type getMutationType(ServiceDeclarationSymbol serviceDeclarationSymbol) {
-        Type mutationType = addType(TypeName.MUTATION.getName(), TypeKind.OBJECT);
-        for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
-            if (isRemoteMethod(methodSymbol)) {
+                ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
+                String accessor = getAccessor(resourceMethodSymbol);
+                if (RESOURCE_FUNCTION_GET.equals(accessor)) {
+                    queryType.addField(getField((resourceMethodSymbol)));
+                } else {
+                    Type subscriptionType = addType(TypeName.SUBSCRIPTION.getName(), TypeKind.OBJECT);
+                    subscriptionType.addField(getField(resourceMethodSymbol));
+                }
+            } else if (isRemoteMethod(methodSymbol)) {
+                Type mutationType = addType(TypeName.MUTATION.getName(), TypeKind.OBJECT);
                 mutationType.addField(getField(methodSymbol));
             }
         }
-        if (!mutationType.getFields().isEmpty()) {
-            return mutationType;
+        this.schema.setQueryType(queryType);
+        if (this.schema.containsType(TypeName.MUTATION.getName())) {
+            this.schema.setMutationType(this.schema.getType(TypeName.MUTATION.getName()));
         }
-        return null;
+        if (this.schema.containsType(TypeName.SUBSCRIPTION.getName())) {
+            this.schema.setSubscriptionType(this.schema.getType(TypeName.SUBSCRIPTION.getName()));
+        }
     }
 
     private Field getField(ResourceMethodSymbol methodSymbol) {

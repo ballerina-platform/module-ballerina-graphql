@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.CodeGeneratorResult;
+import io.ballerina.projects.CodeModifierResult;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
@@ -194,6 +195,13 @@ public class ServiceValidationTest {
     }
 
     @Test
+    public void testSubscriptionResources() {
+        String packagePath = "valid_service_22";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         String packagePath = "invalid_service_1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -215,9 +223,14 @@ public class ServiceValidationTest {
     public void testInvalidResourceAccessor() {
         String packagePath = "invalid_service_3";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 20, 23);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_ROOT_RESOURCE_ACCESSOR, 20, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
     }
 
     @Test
@@ -390,42 +403,63 @@ public class ServiceValidationTest {
     public void testInvalidAccessorsInServicesReturningFromResources() {
         String packagePath = "invalid_service_12";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
+        // Same erroneous class is used in two different GraphQL services. Hence, the duplication of errors.
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 46, 23);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 44, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 53, 23);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 44, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 50, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 50, 23);
     }
 
     @Test
     public void testInvalidReturnTypesInServicesReturningFromResources() {
         String packagePath = "invalid_service_13";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
+        // Same erroneous class is used in two different GraphQL services. Hence, the duplication of errors.
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 46, 23);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 45, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 54, 23);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 45, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 52, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 52, 23);
     }
 
     @Test
     public void testInvalidInputParametersInServicesReturningFromResources() {
         String packagePath = "invalid_service_14";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
+        // Same erroneous class is used in two different GraphQL services. Hence, the duplication of errors.
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 46, 48);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 44, 48);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 53, 46);
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 44, 48);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 50, 46);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.INVALID_INPUT_PARAMETER_TYPE, 50, 46);
     }
 
     @Test
@@ -637,7 +671,7 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_PATH_PARAMETERS, 24, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.MISSING_RESOURCE_NAME, 28, 5);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_PATH, 28, 5);
     }
 
     @Test
@@ -776,12 +810,31 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 24, 5);
     }
 
+    @Test
+    public void testInvalidSubscribeService() {
+        String packagePath = "invalid_service_36";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 31, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 61, 32);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
         Package currentPackage = project.currentPackage();
         CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
-        return codeGeneratorResult.reportedDiagnostics();
+        currentPackage = codeGeneratorResult.updatedPackage().orElse(currentPackage);
+        CodeModifierResult codeModifierResult = currentPackage.runCodeModifierPlugins();
+        return codeModifierResult.reportedDiagnostics();
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

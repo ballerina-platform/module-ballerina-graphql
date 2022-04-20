@@ -18,18 +18,17 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
+import java.io.Serializable;
+
 /**
  * Represents the {@code __InputValue} in GraphQL schema.
  */
-public class InputValue {
+public class InputValue implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
     private final Type type;
     private final String defaultValue;
-
-    public InputValue(String name, Type type) {
-        this(name, type, null, null);
-    }
 
     public InputValue(String name, Type type, String defaultValue) {
         this(name, type, null, defaultValue);
@@ -40,5 +39,21 @@ public class InputValue {
         this.description = description;
         this.type = type;
         this.defaultValue = defaultValue;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public String getDefaultValue() {
+        return this.defaultValue;
     }
 }
