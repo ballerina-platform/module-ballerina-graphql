@@ -52,19 +52,19 @@ isolated function handlePostRequests(Engine engine, Context context, http:Reques
 isolated function getResponseFromJsonPayload(Engine engine, Context context, http:Request request,
                                              map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     json|http:ClientError payload = request.getJsonPayload();
-    if payload is json {
-        json|error document = payload.query;
-        json|error variables = payload.variables;
-        variables = variables is error ? () : variables;
-        if document is string && document != "" {
-            if variables is map<json> || variables is () {
-                return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
-            } else {
-                return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
-            }
-        }
+    if payload is http:ClientError {
+        return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
     }
-    return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
+    json|error document = payload.query;
+    if document !is string || document == "" {
+        return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
+    }
+    json|error variables = payload.variables;
+    variables = variables is error ? () : variables;
+    if variables is map<json> || variables is () {
+        return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
+    }
+    return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
 }
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
