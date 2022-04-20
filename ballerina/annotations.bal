@@ -20,12 +20,14 @@
 # + auth - Listener authenticaton configurations
 # + contextInit - Function to initialize the context. If not provided, an empty context will be created
 # + cors - The cross origin resource sharing configurations for the service
+# + graphiql - GraphiQL client configurations
 # + schemaString - The generated schema. This is auto-generated at the compile-time
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
     ContextInit contextInit = initDefaultContext;
     CorsConfig cors?;
+    Graphiql graphiql = {};
     readonly string schemaString = "";
 |};
 
