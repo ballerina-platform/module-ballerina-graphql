@@ -36,7 +36,7 @@ isolated service class WsService {
             parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
             if node is parser:OperationNode {
                 RootFieldVisitor rootFieldVisitor = new(node);
-                parser:FieldNode fieldNode = rootFieldVisitor.getRootFieldNode();
+                parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
                 stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, 
                                                                                 self.context, fieldNode);                 
                 if sourceStream is stream<any,error?> {
@@ -64,7 +64,7 @@ isolated service class WsService {
 isolated function validateSubscriptionPayload(string text, Engine engine) returns parser:OperationNode|ErrorDetail {
     json|error payload = value:fromJsonString(text);
     if payload is error {
-        return {message: "Invalid Subscription Query"};
+        return {message: "Invalid Subscription Payload"};
     }
     json|error document = payload.query;
     json|error variables = payload.variables;

@@ -88,8 +88,8 @@ class SubscriptionVisitor {
         if selection is parser:FragmentNode {
             ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
-        } else {
-            ErrorDetail errorDetail = getErrorDetailRecord(message, (<parser:FieldNode>selection).getLocation());
+        } else if selection is parser:FieldNode {
+            ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
         }
     }

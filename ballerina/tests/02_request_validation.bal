@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/websocket;
 import ballerina/test;
 import ballerina/url;
 
@@ -141,4 +142,52 @@ isolated function testInvalidRequestBody() returns error? {
     request.setHeader("Content-Type", "application/json");
     string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
     test:assertEquals(payload, "Invalid request body");
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket"]
+}
+isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
+    string document = "";
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    string expectedPayload = "Query not found";
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket"]
+}
+isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    json payload = { query: () };
+    check wsClient->writeTextMessage(payload.toJsonString());
+    string expectedPayload = "Query not found";
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket"]
+}
+isolated function testInvalidVariableInWebSocketPayload() returns error? {
+    string document = string`subscription getNames { name }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient, []);
+    string expectedPayload = "Invalid format in request parameter: variables";
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket"]
+}
+isolated function testInvalidWebSocketPayload() returns error? {
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    string payload = "";
+    check wsClient->writeTextMessage(payload);
+    string expectedPayload = "Invalid Subscription Payload";
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }

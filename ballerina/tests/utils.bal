@@ -112,8 +112,12 @@ isolated function writeWebSocketTextMessage(string document, websocket:Client ws
 }
 
 isolated function validateWebSocketResponse(websocket:Client wsClient,
-                                            json expectedPayload) returns websocket:Error?|error {
+                                            json|string expectedPayload) returns websocket:Error?|error {
     string textResponse = check wsClient->readTextMessage();
-    json actualPayload = check value:fromJsonString(textResponse);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    json|error actualPayload = value:fromJsonString(textResponse);
+    if actualPayload is error {
+        test:assertEquals(textResponse, expectedPayload);
+    } else {
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    } 
 }

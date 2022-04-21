@@ -160,8 +160,8 @@ public class Parser {
                 check self.addFragment(parentNode);
             } else {
                 FieldNode fieldNode = check self.addSelectionToNode(parentNode);
-                parentNode.addSelection(fieldNode);                
-            } 
+                parentNode.addSelection(fieldNode);
+            }
             token = check self.peekNextNonSeparatorToken();
         }
         // If it comes to this, token.kind == T_CLOSE_BRACE. We consume it

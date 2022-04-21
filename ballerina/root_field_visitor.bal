@@ -19,17 +19,17 @@ import graphql.parser;
 class RootFieldVisitor {
     *parser:Visitor;
 
-    private parser:FieldNode[] fieldNodes;
+    private parser:FieldNode? fieldNode;
     private parser:OperationNode operationNode;
 
     public isolated function init(parser:OperationNode operationNode) {
         self.operationNode = operationNode;
-        self.fieldNodes = [];
+        self.fieldNode = ();
     }
 
-    public isolated function getRootFieldNode() returns parser:FieldNode {
+    public isolated function getRootFieldNode() returns parser:FieldNode? {
         self.visitOperation(self.operationNode);
-        return self.fieldNodes[0];
+        return self.fieldNode;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -50,9 +50,11 @@ class RootFieldVisitor {
             self.visitField(<parser:FieldNode>selection);
         }
     }
+
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        self.fieldNodes.push(fieldNode);
+        self.fieldNode = fieldNode;
     }
+
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.visitSelection(fragmentNode.getSelections()[0]);
     }

@@ -65,7 +65,7 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
     string httpUrl = "http://localhost:9091/subscriptions";
-    json actualPayload = check getJsonPayloadFromService(httpUrl, document, {}, "getName");
+    json actualPayload = check getJsonPayloadFromService(httpUrl, document, operationName = "getName");
     json expectedPayload = { data: { name: "Walter White" } };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -141,7 +141,7 @@ isolated function testSubscriptionWithVariables() returns error? {
 @test:Config {
     groups: ["introspection", "typename", "subscriptions"]
 }
-isolated function testSubscriptionWithIntrsopectionInFields() returns error? {
+isolated function testSubscriptionWithIntrospectionInFields() returns error? {
     string document = string`subscription { students { __typename } }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);

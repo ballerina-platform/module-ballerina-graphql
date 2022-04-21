@@ -98,14 +98,14 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errors);
         }
 
+        DuplicateFieldRemover duplicateFieldRemover = new(document);
+        duplicateFieldRemover.remove();
+        
         SubscriptionVisitor subscriptionVisitor = new(document);
         errors = subscriptionVisitor.validate();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
-
-        DuplicateFieldRemover duplicateFieldRemover = new(document);
-        duplicateFieldRemover.remove();
         return;
     }
 
