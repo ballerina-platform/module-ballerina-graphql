@@ -1149,7 +1149,7 @@ service /subscriptions on basicListener {
     }
 
     isolated resource function subscribe name() returns stream<string, error?> {
-        string[] names = ["Walter", "Skyler", "Hank"];
+        string[] names = ["Walter", "Skyler"];
         return names.toStream();
     }
 

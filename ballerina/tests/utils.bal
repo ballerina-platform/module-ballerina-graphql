@@ -111,8 +111,8 @@ isolated function writeWebSocketTextMessage(string document, websocket:Client ws
     return wsClient->writeTextMessage(payload.toJsonString());
 }
 
-isolated function validateWebSocketResponse(websocket:Client wsClient,
-                                            json|string expectedPayload) returns websocket:Error?|error {
+isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload)
+    returns websocket:Error?|error {
     string textResponse = check wsClient->readTextMessage();
     json|error actualPayload = value:fromJsonString(textResponse);
     if actualPayload is error {

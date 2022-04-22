@@ -56,9 +56,9 @@ class SubscriptionVisitor {
 
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection is parser:FragmentNode {
-            self.visitFragment(<parser:FragmentNode>selection, data);
-        } else {
-            self.visitField(<parser:FieldNode>selection, data);
+            self.visitFragment(selection, data);
+        } else if selection is parser:FieldNode {
+            self.visitField(selection, data);
         }
     }
 
@@ -94,11 +94,11 @@ class SubscriptionVisitor {
         }
     }
 
-    public isolated function addIntrospectionErrorDetail(parser:Selection selection, string operationName) {
+    public isolated function addIntrospectionErrorDetail(parser:FieldNode selection, string operationName) {
         string message = operationName != "<anonymous>"  
                          ? string`Subscription "${operationName}" must not select an introspection top level field.`
                          : string`Anonymous Subscription must not select an introspection top level field.`;   
-        ErrorDetail errorDetail = getErrorDetailRecord(message, (<parser:FieldNode>selection).getLocation());
+        ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
         self.errors.push(errorDetail);
     }
 }

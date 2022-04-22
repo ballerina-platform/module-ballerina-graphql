@@ -46,8 +46,8 @@ class RootFieldVisitor {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
-        } else {
-            self.visitField(<parser:FieldNode>selection);
+        } else if selection is parser:FieldNode {
+            self.visitField(selection);
         }
     }
 
