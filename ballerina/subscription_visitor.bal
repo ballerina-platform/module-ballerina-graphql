@@ -94,11 +94,11 @@ class SubscriptionVisitor {
         }
     }
 
-    public isolated function addIntrospectionErrorDetail(parser:FieldNode selection, string operationName) {
+    public isolated function addIntrospectionErrorDetail(parser:FieldNode fieldNode, string operationName) {
         string message = operationName != "<anonymous>"  
                          ? string`Subscription "${operationName}" must not select an introspection top level field.`
                          : string`Anonymous Subscription must not select an introspection top level field.`;   
-        ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
+        ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
         self.errors.push(errorDetail);
     }
 }
