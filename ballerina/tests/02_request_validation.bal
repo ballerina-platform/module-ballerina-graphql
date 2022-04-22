@@ -15,9 +15,9 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/websocket;
 import ballerina/test;
 import ballerina/url;
+import ballerina/websocket;
 
 @test:Config {
     groups: ["request_validation", "listener"]

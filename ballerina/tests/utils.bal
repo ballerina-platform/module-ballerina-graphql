@@ -16,10 +16,10 @@
 
 import ballerina/file;
 import ballerina/http;
-import ballerina/websocket;
 import ballerina/io;
-import ballerina/test;
 import ballerina/lang.value;
+import ballerina/test;
+import ballerina/websocket;
 
 isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {

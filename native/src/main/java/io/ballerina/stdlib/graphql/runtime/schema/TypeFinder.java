@@ -39,7 +39,6 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
@@ -89,7 +88,7 @@ public class TypeFinder {
     private void createTypesFromRootService() {
         this.createSchemaType(QUERY, TypeKind.OBJECT, serviceType);
         for (ResourceMethodType resourceMethod : this.serviceType.getResourceMethods()) {
-            if (Objects.equals(resourceMethod.getAccessor(), GET_ACCESSOR)) {
+            if (GET_ACCESSOR.equals(resourceMethod.getAccessor())) {
                 getTypesFromResourceMethod(resourceMethod, resourceMethod.getResourcePath());
             } else {
                 this.createSchemaType(SUBSCRIPTION, TypeKind.OBJECT, serviceType);

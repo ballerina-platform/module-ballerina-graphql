@@ -41,7 +41,6 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
@@ -143,7 +142,7 @@ public class Engine {
                                       BMap<BString, Object> data, List<String> paths, List<Object> pathSegments) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            if (Objects.equals(resourceMethod.getAccessor(), GET_ACCESSOR) && isPathsMatching(resourceMethod, paths)) {
+            if (GET_ACCESSOR.equals(resourceMethod.getAccessor()) && isPathsMatching(resourceMethod, paths)) {
                 getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
                                    RESOURCE_STRAND_METADATA);
                 return;
@@ -195,8 +194,8 @@ public class Engine {
         ServiceType serviceType = (ServiceType) service.getType();
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            if (Objects.equals(String.valueOf(fieldName), resourceMethod.getResourcePath()[0]) &&
-                Objects.equals(resourceMethod.getAccessor(), SUBSCRIBE_ACCESSOR)) {
+            if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
+                fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, resourceMethod);
                 Object[] args = argumentHandler.getArguments(node);
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {

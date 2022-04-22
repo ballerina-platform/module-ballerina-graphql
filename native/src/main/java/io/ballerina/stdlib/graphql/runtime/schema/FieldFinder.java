@@ -39,7 +39,6 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static io.ballerina.runtime.api.TypeTags.STREAM_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
@@ -109,7 +108,7 @@ public class FieldFinder {
             subscriptionType = this.typeMap.remove(SUBSCRIPTION);
             ServiceType serviceType = (ServiceType) subscriptionType.getBalType();
             for (ResourceMethodType resourceMethodType : serviceType.getResourceMethods()) {
-                if (Objects.equals(resourceMethodType.getAccessor(), SUBSCRIBE_ACCESSOR)) {
+                if (SUBSCRIBE_ACCESSOR.equals(resourceMethodType.getAccessor())) {
                     String[] resourcePath = resourceMethodType.getResourcePath();
                     subscriptionType.addField(getFieldsFromResourceMethodType(resourceMethodType, resourcePath));
                 }

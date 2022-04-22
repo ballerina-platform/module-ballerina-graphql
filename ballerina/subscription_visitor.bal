@@ -29,10 +29,10 @@ class SubscriptionVisitor {
 
     public isolated function validate() returns ErrorDetail[]? {
         self.visitDocument(self.documentNode);
-        if self.errors.length() > 0 {
-            return self.errors;
+        if self.errors.length() == 0 {
+            return;
         }
-        return;
+        return self.errors;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -43,14 +43,15 @@ class SubscriptionVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        if operationNode.getKind() == parser:OPERATION_SUBSCRIPTION {
-            parser:Selection[] selections = operationNode.getSelections();
-            if selections.length() > 1 {
-                self.addErrorDetail(selections[1], operationNode.getName()); 
-            }            
-            foreach parser:Selection selection in selections {
-                self.visitSelection(selection, operationNode.getName());
-            }
+        if operationNode.getKind() != parser:OPERATION_SUBSCRIPTION {
+            return;
+        }
+        parser:Selection[] selections = operationNode.getSelections();
+        if selections.length() > 1 {
+            self.addErrorDetail(selections[1], operationNode.getName());
+        }
+        foreach parser:Selection selection in selections {
+            self.visitSelection(selection, operationNode.getName());
         }
     }
 
@@ -63,9 +64,9 @@ class SubscriptionVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        if fieldNode.getName() == SCHEMA_FIELD || fieldNode.getName() == TYPE_FIELD || 
+        if fieldNode.getName() == SCHEMA_FIELD || fieldNode.getName() == TYPE_FIELD ||
            fieldNode.getName() == TYPE_NAME_FIELD {
-            self.addIntrospectionErrorDetail(fieldNode, <string>data);              
+            self.addIntrospectionErrorDetail(fieldNode, <string>data);
         }
     }
 
@@ -82,9 +83,9 @@ class SubscriptionVisitor {
     }
 
     public isolated function addErrorDetail(parser:Selection selection, string operationName) {
-        string message = operationName != "<anonymous>"  
+        string message = operationName != "<anonymous>"
                          ? string`Subscription "${operationName}" must select only one top level field.`
-                         : string`Anonymous Subscription must select only one top level field.`;   
+                         : string`Anonymous Subscription must select only one top level field.`;
         if selection is parser:FragmentNode {
             ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
@@ -95,9 +96,9 @@ class SubscriptionVisitor {
     }
 
     public isolated function addIntrospectionErrorDetail(parser:FieldNode fieldNode, string operationName) {
-        string message = operationName != "<anonymous>"  
+        string message = operationName != "<anonymous>"
                          ? string`Subscription "${operationName}" must not select an introspection top level field.`
-                         : string`Anonymous Subscription must not select an introspection top level field.`;   
+                         : string`Anonymous Subscription must not select an introspection top level field.`;
         ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
         self.errors.push(errorDetail);
     }

@@ -23,7 +23,7 @@ import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.values.BError;
 
 /**
- * Callback class for the async invocation of the Ballerina subscriptions.
+ * Callback class for the async invocation of the GraphQL subscription resources.
  */
 public class SubscriptionCallback implements Callback {
     private final Future subscriptionFutureResult;

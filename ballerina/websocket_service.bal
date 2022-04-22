@@ -14,9 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/lang.value;
 import ballerina/websocket;
 import graphql.parser;
-import ballerina/lang.value;
 
 isolated service class WsService {
     *websocket:Service;
@@ -67,19 +67,19 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
         return {message: "Invalid Subscription Payload"};
     }
     json|error document = payload.query;
+    if !(document is string) || document == "" {
+        return {message: "Query not found"};
+    }
     json|error variables = payload.variables;
-    if document is string && document != "" {
-        if variables is map<json> || variables is () {
-            parser:OperationNode|OutputObject validationResult = engine.validate(document, getOperationName(payload),
-                                                                                 variables);
-            if validationResult is parser:OperationNode {
-                return validationResult;
-            }
-            return {message: validationResult.toJsonString()};
-        }
+    if !(variables is map<json>) && variables != () {
         return {message: "Invalid format in request parameter: variables"};
     }
-    return {message: "Query not found"};
+    parser:OperationNode|OutputObject validationResult = engine.validate(document, getOperationName(payload),
+                                                                         variables);
+    if validationResult is parser:OperationNode {
+        return validationResult;
+    }
+    return {message: validationResult.toJsonString()};
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context, 
