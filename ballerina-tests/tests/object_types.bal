@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
+
 type PeopleService StudentService|TeacherService;
 
 type SearchResult Lift|Trail;
@@ -225,7 +227,7 @@ public distinct isolated service class School {
 }
 
 public isolated distinct service class AnimalClass {
-    isolated resource function get call(Context context, string sound, int count) returns string {
+    isolated resource function get call(graphql:Context context, string sound, int count) returns string {
         var scope = context.get("scope");
         if scope is string && scope == "admin" {
             string call = "";

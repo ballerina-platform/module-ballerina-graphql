@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/test;
 
 @test:Config {
@@ -25,7 +26,7 @@ isolated function testClientExecuteWithTypeWithJson() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document, variables);
     json expectedPayload = {
         "data": {
@@ -44,9 +45,9 @@ isolated function testClientExecuteWithTypeWithOpenRecord() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
-    record{} actualPayload = check graphqlClient->executeWithType(document, variables);
-    record{} expectedPayload = {
+    graphql:Client graphqlClient = check new (url);
+    record {} actualPayload = check graphqlClient->executeWithType(document, variables);
+    record {} expectedPayload = {
         "data": {
             "greet": "Hello, Roland"
         }
@@ -63,7 +64,7 @@ isolated function testClientExecuteWithTypeWithKnownRecord() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     GreetingResponse actualPayload = check graphqlClient->executeWithType(document, variables);
     GreetingResponse expectedPayload = {
         data: {
@@ -82,7 +83,7 @@ isolated function testClientExecuteWithTypeWithGenericRecord() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     GenericGreetingResponse actualPayload = check graphqlClient->executeWithType(document, variables);
     GenericGreetingResponse expectedPayload = {
         data: {
@@ -101,7 +102,7 @@ isolated function testClientExecuteWithJson() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document, variables);
     json expectedPayload = {
         "data": {
@@ -120,9 +121,9 @@ isolated function testClientExecuteWithOpenRecord() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
-    record{} actualPayload = check graphqlClient->execute(document, variables);
-    record{} expectedPayload = {
+    graphql:Client graphqlClient = check new (url);
+    record {} actualPayload = check graphqlClient->execute(document, variables);
+    record {} expectedPayload = {
         "data": {
             "greet": "Hello, Roland"
         }
@@ -139,7 +140,7 @@ isolated function testClientExecuteWithKnownRecord() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     GreetingResponseWithErrors actualPayload = check graphqlClient->execute(document, variables);
     GreetingResponseWithErrors expectedPayload = {
         data: {
@@ -158,7 +159,7 @@ isolated function testClientExecuteWithGenericRecord() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     GenericGreetingResponseWithErrors actualPayload = check graphqlClient->execute(document, variables);
     GenericGreetingResponseWithErrors expectedPayload = {
         data: {
@@ -177,16 +178,16 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
-    json|ClientError payload = graphqlClient->executeWithType(document, variables);
-    test:assertTrue(payload is RequestError);
-    RequestError err = <RequestError>payload;
+    graphql:Client graphqlClient = check new (url);
+    json|graphql:ClientError payload = graphqlClient->executeWithType(document, variables);
+    test:assertTrue(payload is graphql:RequestError);
+    graphql:RequestError err = <graphql:RequestError>payload;
     json actualPayload = err.detail()?.body.toJson();
     json expectedPayload = {
         errors: [
             {
                 message: "Cannot query field \"gree\" on type \"Query\".",
-                locations: [{"line":1,"column":37}]
+                locations: [{"line": 1, "column": 37}]
             }
         ]
     };
@@ -202,16 +203,16 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
-    json|ClientError payload = graphqlClient->execute(document, variables);
-    test:assertTrue(payload is RequestError);
-    RequestError err = <RequestError>payload;
+    graphql:Client graphqlClient = check new (url);
+    json|graphql:ClientError payload = graphqlClient->execute(document, variables);
+    test:assertTrue(payload is graphql:RequestError);
+    graphql:RequestError err = <graphql:RequestError>payload;
     json actualPayload = err.detail()?.body.toJson();
     json expectedPayload = {
         errors: [
             {
                 message: "Cannot query field \"gree\" on type \"Query\".",
-                locations: [{"line":1,"column":37}]
+                locations: [{"line": 1, "column": 37}]
             }
         ]
     };
@@ -227,10 +228,10 @@ isolated function testClientExecuteWithTypeWithInvalidBindingType() returns erro
     string userName = "Roland";
     map<anydata> variables = {"userName": userName};
 
-    Client graphqlClient = check new (url);
-    string|ClientError payload = graphqlClient->executeWithType(document, variables);
-    test:assertTrue(payload is RequestError);
-    RequestError actualPayload = <RequestError>payload;
+    graphql:Client graphqlClient = check new (url);
+    string|graphql:ClientError payload = graphqlClient->executeWithType(document, variables);
+    test:assertTrue(payload is graphql:RequestError);
+    graphql:RequestError actualPayload = <graphql:RequestError>payload;
     test:assertEquals(actualPayload.message(), "GraphQL Client Error");
 }
 
@@ -241,10 +242,10 @@ isolated function testClientExecuteWithTypeWithPartialDataRequest() returns erro
     string url = "http://localhost:9095/special_types";
     string document = string `query { specialHolidays }`;
 
-    Client graphqlClient = check new (url);
-    json|ClientError payload = graphqlClient->executeWithType(document);
-    test:assertTrue(payload is ServerError);
-    ServerError err = <ServerError>payload;
+    graphql:Client graphqlClient = check new (url);
+    json|graphql:ClientError payload = graphqlClient->executeWithType(document);
+    test:assertTrue(payload is graphql:ServerError);
+    graphql:ServerError err = <graphql:ServerError>payload;
     json actualPayload = err.detail().toJson();
     json expectedPayload = {
         data: {
@@ -274,7 +275,7 @@ isolated function testClientExecuteWithPartialDataRequest() returns error? {
     string url = "http://localhost:9095/special_types";
     string document = string `query { specialHolidays }`;
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = {
         errors: [
@@ -303,10 +304,10 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
     string url = "http://localhost:9091/validation";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
-    Client graphqlClient = check new (url);
-    json|ClientError payload = graphqlClient->executeWithType(document);
-    test:assertTrue(payload is RequestError);
-    RequestError err = <RequestError>payload;
+    graphql:Client graphqlClient = check new (url);
+    json|graphql:ClientError payload = graphqlClient->executeWithType(document);
+    test:assertTrue(payload is graphql:RequestError);
+    graphql:RequestError err = <graphql:RequestError>payload;
     json actualPayload = err.detail()?.body.toJson();
     json expectedPayload = {
         errors: [
@@ -326,10 +327,10 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
     string url = "http://localhost:9091/validation";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
-    Client graphqlClient = check new (url);
-    json|ClientError payload = graphqlClient->execute(document);
-    test:assertTrue(payload is RequestError);
-    RequestError err = <RequestError>payload;
+    graphql:Client graphqlClient = check new (url);
+    json|graphql:ClientError payload = graphqlClient->execute(document);
+    test:assertTrue(payload is graphql:RequestError);
+    graphql:RequestError err = <graphql:RequestError>payload;
     json actualPayload = err.detail()?.body.toJson();
     json expectedPayload = {
         errors: [
@@ -349,9 +350,9 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithOperationNa
     string url = "http://localhost:9091/validation";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document, operationName = "getName");
-    json expectedPayload = {"data":{"name":"James Moriarty"}};
+    json expectedPayload = {"data": {"name": "James Moriarty"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -362,9 +363,9 @@ isolated function testClientExecuteWithMultipleOperationsWithOperationNameInRequ
     string url = "http://localhost:9091/validation";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document, operationName = "getName");
-    json expectedPayload = {"data":{"name":"James Moriarty"}};
+    json expectedPayload = {"data": {"name": "James Moriarty"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -375,7 +376,7 @@ isolated function testClientExecuteWithTypeWithMutation() returns error? {
     string url = "http://localhost:9091/mutations";
     string document = string `mutation { setName(name: "Heisenberg") { name } }`;
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     SetNameResponse actualPayload = check graphqlClient->executeWithType(document);
     SetNameResponse expectedPayload = {
         data: {
@@ -394,7 +395,7 @@ isolated function testClientExecuteWithMutation() returns error? {
     string url = "http://localhost:9091/mutations";
     string document = string `mutation { setName(name: "Heisenberg") { name } }`;
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     SetNameResponseWithErrors actualPayload = check graphqlClient->execute(document);
     SetNameResponseWithErrors expectedPayload = {
         data: {
@@ -413,7 +414,7 @@ isolated function testClientExecuteWithTypeWithAlias() returns error? {
     string url = "http://localhost:9091/duplicates";
     string document = check getGraphQLDocumentFromFile("alias.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = {
         data: {
@@ -435,7 +436,7 @@ isolated function testClientExecuteWithAlias() returns error? {
     string url = "http://localhost:9091/duplicates";
     string document = check getGraphQLDocumentFromFile("alias.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = {
         data: {
@@ -456,8 +457,8 @@ isolated function testClientExecuteWithAlias() returns error? {
 isolated function testClientExecuteWithTypeWithEnum() returns error? {
     string url = "http://localhost:9095/special_types";
     string document = "query { time { weekday } }";
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = {
         data: {
@@ -475,8 +476,8 @@ isolated function testClientExecuteWithTypeWithEnum() returns error? {
 isolated function testClientExecuteWithEnum() returns error? {
     string url = "http://localhost:9095/special_types";
     string document = "query { time { weekday } }";
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = {
         data: {
@@ -494,8 +495,8 @@ isolated function testClientExecuteWithEnum() returns error? {
 isolated function testClientExecuteWithTypeWithFragmentsOnRecordObjects() returns error? {
     string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -507,8 +508,8 @@ isolated function testClientExecuteWithTypeWithFragmentsOnRecordObjects() return
 isolated function testClientExecuteWithFragmentsOnRecordObjects() returns error? {
     string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -521,7 +522,7 @@ isolated function testClientExecuteWithTypeWithNestedFragments() returns error? 
     string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -534,7 +535,7 @@ isolated function testClientExecuteWithNestedFragments() returns error? {
     string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -547,7 +548,7 @@ isolated function testClientExecuteWithTypeWithInlineFragment() returns error? {
     string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -560,7 +561,7 @@ isolated function testClientExecuteWithInlineFragment() returns error? {
     string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
 
-    Client graphqlClient = check new (url);
+    graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -572,8 +573,8 @@ isolated function testClientExecuteWithInlineFragment() returns error? {
 isolated function testClientExecuteWithTypeWithBallerinaRecordAsGraphqlObject() returns error? {
     string url = "http://localhost:9091/records";
     string document = "query getPerson { detective { name, address { street } } }";
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     PersonResponse actualPayload = check graphqlClient->executeWithType(document);
     PersonResponse expectedPayload = {
         data: {
@@ -594,8 +595,8 @@ isolated function testClientExecuteWithTypeWithBallerinaRecordAsGraphqlObject() 
 isolated function testClientExecuteWithBallerinaRecordAsGraphqlObject() returns error? {
     string url = "http://localhost:9091/records";
     string document = "query getPerson { detective { name, address { street } } }";
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     PersonResponseWithErrors actualPayload = check graphqlClient->execute(document);
     PersonResponseWithErrors expectedPayload = {
         data: {
@@ -616,8 +617,8 @@ isolated function testClientExecuteWithBallerinaRecordAsGraphqlObject() returns 
 isolated function testClientExecuteWithTypeWithRecordTypeArrays() returns error? {
     string document = "{ people { name address { city } } }";
     string url = "http://localhost:9091/records";
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     PeopleResponse actualPayload = check graphqlClient->executeWithType(document);
     PeopleResponse expectedPayload = {
         data: {
@@ -652,8 +653,8 @@ isolated function testClientExecuteWithTypeWithRecordTypeArrays() returns error?
 isolated function testClientExecuteWithRecordTypeArrays() returns error? {
     string document = "{ people { name address { city } } }";
     string url = "http://localhost:9091/records";
-    
-    Client graphqlClient = check new (url);
+
+    graphql:Client graphqlClient = check new (url);
     PeopleResponseWithErrors actualPayload = check graphqlClient->executeWithType(document);
     PeopleResponseWithErrors expectedPayload = {
         data: {
@@ -699,13 +700,13 @@ type GreetingResponseWithErrors record {|
     record {|
         string greet;
     |} data;
-    ErrorDetail[] errors?;
+    graphql:ErrorDetail[] errors?;
 |};
 
 type GenericGreetingResponseWithErrors record {|
     map<json?> extensions?;
     map<json?> data?;
-    ErrorDetail[] errors?;
+    graphql:ErrorDetail[] errors?;
 |};
 
 type SetNameResponse record {|
@@ -724,7 +725,7 @@ type SetNameResponseWithErrors record {|
             string name;
         |} setName;
     |} data;
-    ErrorDetail[] errors?;
+    graphql:ErrorDetail[] errors?;
 |};
 
 type PersonResponse record {|
@@ -735,7 +736,7 @@ type PersonResponse record {|
 type PersonResponseWithErrors record {|
     map<json?> extensions?;
     PersonDataResponse data;
-    ErrorDetail[] errors?;
+    graphql:ErrorDetail[] errors?;
 |};
 
 type PersonDataResponse record {|
@@ -759,7 +760,7 @@ type PeopleResponse record {|
 type PeopleResponseWithErrors record {|
     map<json?> extensions?;
     PeopleDataResponse data;
-    ErrorDetail[] errors?;
+    graphql:ErrorDetail[] errors?;
 |};
 
 type PeopleDataResponse record {|

@@ -14,16 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/test;
+import ballerina/graphql;
 import ballerina/http;
+import ballerina/test;
 
 @test:Config {
     groups: ["listener", "graphiql"]
 }
 function testInvalidGraphiqlPath1() returns error? {
-    Error? result = wrappedListener.attach(invalidGraphiqlPathConfigService1, "graphiql1");
-    test:assertTrue(result is Error);
-    Error err = <Error>result;
+    graphql:Error? result = wrappedListener.attach(invalidGraphiqlPathConfigService1, "graphiql1");
+    test:assertTrue(result is graphql:Error);
+    graphql:Error err = <graphql:Error>result;
     test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
 }
 
@@ -31,9 +32,9 @@ function testInvalidGraphiqlPath1() returns error? {
     groups: ["listener", "graphiql"]
 }
 function testInvalidGraphiqlPath2() returns error? {
-    Error? result = wrappedListener.attach(invalidGraphiqlPathConfigService2, "graphiql2");
-    test:assertTrue(result is Error);
-    Error err = <Error>result;
+    graphql:Error? result = wrappedListener.attach(invalidGraphiqlPathConfigService2, "graphiql2");
+    test:assertTrue(result is graphql:Error);
+    graphql:Error err = <graphql:Error>result;
     test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
 }
 
@@ -41,9 +42,9 @@ function testInvalidGraphiqlPath2() returns error? {
     groups: ["listener", "graphiql"]
 }
 function testGraphiqlWithSamePathAsGraphQLService() returns error? {
-    Error? result = basicListener.attach(graphiqlConfigService, "ballerina/graphiql");
-    test:assertTrue(result is Error);
-    Error err = <Error>result;
+    graphql:Error? result = basicListener.attach(graphiqlConfigService, "ballerina/graphiql");
+    test:assertTrue(result is graphql:Error);
+    graphql:Error err = <graphql:Error>result;
     test:assertEquals(err.message(), "Error occurred while attaching the GraphiQL endpoint");
 }
 
@@ -51,18 +52,18 @@ function testGraphiqlWithSamePathAsGraphQLService() returns error? {
     groups: ["listener", "graphiql"]
 }
 function testGraphiqlPathWhenClientDisabled() returns error? {
-    Error? result = wrappedListener.attach(invalidGraphiqlPathConfigService3, "clientDisabled");
-    test:assertFalse(result is Error);
+    graphql:Error? result = wrappedListener.attach(invalidGraphiqlPathConfigService3, "clientDisabled");
+    test:assertFalse(result is graphql:Error);
     result = wrappedListener.detach(invalidGraphiqlPathConfigService3);
-    test:assertFalse(result is Error);
+    test:assertFalse(result is graphql:Error);
 }
 
 @test:Config {
     groups: ["listener", "graphiql"]
 }
 function testGraphiqlDefaultPath() returns error? {
-    Error? result = wrappedListener.attach(graphiqlDefaultPathConfigService, ["graphql", "/\\ballerina"]);
-    test:assertFalse(result is Error);
+    graphql:Error? result = wrappedListener.attach(graphiqlDefaultPathConfigService, ["graphql", "/\\ballerina"]);
+    test:assertFalse(result is graphql:Error);
     string url = "http://localhost:9090";
     http:Client httpClient = check new(url);
     http:Response|error response = httpClient->get("/graphiql");
@@ -70,15 +71,15 @@ function testGraphiqlDefaultPath() returns error? {
     http:Response graphiqlResponse = check response;
     test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
     result = wrappedListener.detach(graphiqlDefaultPathConfigService);
-    test:assertFalse(result is Error);
+    test:assertFalse(result is graphql:Error);
 }
 
 @test:Config {
     groups: ["listener", "graphiql"]
 }
 function testGraphiql() returns error? {
-    Error? result = wrappedListener.attach(graphiqlConfigService, "/ballerina-graphql");
-    test:assertFalse(result is Error);
+    graphql:Error? result = wrappedListener.attach(graphiqlConfigService, "/ballerina-graphql");
+    test:assertFalse(result is graphql:Error);
     string url = "http://localhost:9090";
     http:Client httpClient = check new(url);
     http:Response|error response = httpClient->get("/ballerina/graphiql");
@@ -86,15 +87,15 @@ function testGraphiql() returns error? {
     http:Response graphiqlResponse = check response;
     test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
     result = wrappedListener.detach(graphiqlConfigService);
-    test:assertFalse(result is Error);
+    test:assertFalse(result is graphql:Error);
 }
 
 @test:Config {
     groups: ["listener", "graphiql"]
 }
 function testGraphiqlWithDefaultBasePath() returns error? {
-    Error? result = basicListener.attach(graphiqlDefaultPathConfigService);
-    test:assertFalse(result is Error);
+    graphql:Error? result = basicListener.attach(graphiqlDefaultPathConfigService);
+    test:assertFalse(result is graphql:Error);
     string url = "http://localhost:9091";
     http:Client httpClient = check new(url);
     http:Response|error response = httpClient->get("/graphiql");
@@ -102,7 +103,7 @@ function testGraphiqlWithDefaultBasePath() returns error? {
     http:Response graphiqlResponse = check response;
     test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
     result = basicListener.detach(graphiqlDefaultPathConfigService);
-    test:assertFalse(result is Error);
+    test:assertFalse(result is graphql:Error);
 }
 
 @test:Config {

@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/test;
 
 @test:Config {
@@ -24,8 +25,8 @@ function testDetachAndAttach() returns error? {
     check wrappedListener.detach(simpleService1);
     check wrappedListener.attach(simpleService1, "graphql");
     error? attachResult = trap wrappedListener.attach(simpleService1, "graphql");
-    test:assertTrue(attachResult is Error);
-    Error err = <Error>attachResult;
+    test:assertTrue(attachResult is graphql:Error);
+    graphql:Error err = <graphql:Error>attachResult;
     string expectedErrorMessage = "Error occurred while attaching the service";
     test:assertEquals(err.message(), expectedErrorMessage);
 
@@ -68,8 +69,8 @@ function testAttachAndDetachMultipleServices() returns error? {
     groups: ["listener", "configs"]
 }
 function testInvalidMaxQueryDepth() returns error? {
-    Error? result = wrappedListener.attach(invalidMaxQueryDepthService, "invalid");
-    test:assertTrue(result is Error);
-    Error err = <Error>result;
+    graphql:Error? result = wrappedListener.attach(invalidMaxQueryDepthService, "invalid");
+    test:assertTrue(result is graphql:Error);
+    graphql:Error err = <graphql:Error>result;
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");
 }

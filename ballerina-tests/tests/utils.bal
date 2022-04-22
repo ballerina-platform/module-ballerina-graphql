@@ -19,6 +19,8 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/test;
 
+const CONTENT_TYPE_TEXT_HTML = "text/html";
+
 isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
     http:Client httpClient = check new(url);

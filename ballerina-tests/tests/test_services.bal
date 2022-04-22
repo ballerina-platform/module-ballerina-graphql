@@ -14,10 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/http;
 import ballerina/lang.runtime;
 
-Service simpleService1 = service object {
+graphql:Service simpleService1 = service object {
     isolated resource function get name() returns string {
         return "Walter White";
     }
@@ -27,7 +28,7 @@ Service simpleService1 = service object {
     }
 };
 
-Service simpleService2 = service object {
+graphql:Service simpleService2 = service object {
     isolated resource function get name() returns string {
         return "Walter White";
     }
@@ -37,8 +38,8 @@ Service simpleService2 = service object {
     }
 };
 
-Service invalidMaxQueryDepthService =
-@ServiceConfig {
+graphql:Service invalidMaxQueryDepthService =
+@graphql:ServiceConfig {
     maxQueryDepth: 0
 }
 service object {
@@ -47,8 +48,8 @@ service object {
     }
 };
 
-Service invalidGraphiqlPathConfigService1 =
-@ServiceConfig {
+graphql:Service invalidGraphiqlPathConfigService1 =
+@graphql:ServiceConfig {
     graphiql: {
         enable: true,
         path: "/ballerina graphql"
@@ -60,8 +61,8 @@ service object {
     }
 };
 
-Service invalidGraphiqlPathConfigService2 =
-@ServiceConfig {
+graphql:Service invalidGraphiqlPathConfigService2 =
+@graphql:ServiceConfig {
     graphiql: {
         enable: true,
         path: "/ballerina_+#@#$!"
@@ -73,8 +74,8 @@ service object {
     }
 };
 
-Service invalidGraphiqlPathConfigService3 =
-@ServiceConfig {
+graphql:Service invalidGraphiqlPathConfigService3 =
+@graphql:ServiceConfig {
     graphiql: {
         enable: false,
         path: "/ballerina graphql"
@@ -86,8 +87,8 @@ service object {
     }
 };
 
-Service graphiqlDefaultPathConfigService =
-@ServiceConfig {
+graphql:Service graphiqlDefaultPathConfigService =
+@graphql:ServiceConfig {
     graphiql: {
         enable: true
     }
@@ -98,8 +99,8 @@ service object {
     }
 };
 
-Service graphiqlConfigService =
-@ServiceConfig {
+graphql:Service graphiqlConfigService =
+@graphql:ServiceConfig {
     graphiql: {
         enable: true,
         path: "ballerina/graphiql"
@@ -111,7 +112,7 @@ service object {
     }
 };
 
-@ServiceConfig {
+@graphql:ServiceConfig {
     graphiql: {
         enable: true
     }
@@ -122,7 +123,7 @@ service /graphiql/test on serviceTypeListener {
     }
 }
 
-@ServiceConfig {
+@graphql:ServiceConfig {
     graphiql: {
         enable: true,
         path: "graphiql/interface"
@@ -139,7 +140,7 @@ service /fileUpload on basicListener {
         return "/fileUpload";
     }
 
-    remote function singleFileUpload(Upload file) returns FileInfo|error {
+    remote function singleFileUpload(graphql:Upload file) returns FileInfo|error {
         string contentFromByteStream = check getContentFromByteStream(file.byteStream);
         return {
             fileName: file.fileName,
@@ -149,10 +150,10 @@ service /fileUpload on basicListener {
         };
     }
 
-    remote function multipleFileUpload(Upload[] files) returns FileInfo[]|error {
+    remote function multipleFileUpload(graphql:Upload[] files) returns FileInfo[]|error {
         FileInfo[] fileInfo = [];
-        foreach int i in 0..< files.length() {
-            Upload file = files[i];
+        foreach int i in 0 ..< files.length() {
+            graphql:Upload file = files[i];
             string contentFromByteStream = check getContentFromByteStream(file.byteStream);
             fileInfo.push({
                 fileName: file.fileName,
@@ -290,15 +291,21 @@ service /input_objects on basicListener {
     isolated resource function get searchProfile(ProfileDetail profileDetail) returns Person {
         if profileDetail?.age == 28 && profileDetail.name == "Jessie" {
             return {
-                name: "Jessie Pinkman", age: 26, address: { number: "23B", street: "Negra Arroyo Lane", city: "Albuquerque" }
+                name: "Jessie Pinkman",
+                age: 26,
+                address: {number: "23B", street: "Negra Arroyo Lane", city: "Albuquerque"}
             };
         } else if profileDetail?.age == 30 || profileDetail.name == "Walter" {
             return {
-                name: "Walter White", age: 50, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
+                name: "Walter White",
+                age: 50,
+                address: {number: "9809", street: "Margo Street", city: "Albuquerque"}
             };
         } else {
             return {
-                name: "Sherlock Holmes", age: 40, address: { number: "221/B", street: "Baker Street", city: "London" }
+                name: "Sherlock Holmes",
+                age: 40,
+                address: {number: "221/B", street: "Baker Street", city: "London"}
             };
         }
     }
@@ -309,10 +316,10 @@ service /input_objects on basicListener {
         } else if info.bookName == "Harry Potter" {
             return [b9, b10];
         } else if info.author.name == "J.K Rowling" {
-           return [b9, b10];
+            return [b9, b10];
         } else if info?.movie?.movieName == "Harry Potter" {
             return [b9, b10];
-        } else if info?.movie?.director == "Chris Columbus" || info?.movie?.director == "Dexter Fletcher"{
+        } else if info?.movie?.director == "Chris Columbus" || info?.movie?.director == "Dexter Fletcher" {
             return [b7, b8, b9, b10];
         } else {
             return [b7, b8, b9, b10];
@@ -368,15 +375,21 @@ service /list_inputs on basicListener {
         foreach ProfileDetail profile in profileDetail {
             if profile?.age == 28 && profile.name == "Jessie" {
                 results.push({
-                    name: "Jessie Pinkman", age: 26, address: { number: "23B", street: "Negra Arroyo Lane", city: "Albuquerque" }
+                    name: "Jessie Pinkman",
+                    age: 26,
+                    address: {number: "23B", street: "Negra Arroyo Lane", city: "Albuquerque"}
                 });
             } else if profile?.age == 30 || profile.name == "Walter" {
                 results.push({
-                    name: "Walter White", age: 50, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
+                    name: "Walter White",
+                    age: 50,
+                    address: {number: "9809", street: "Margo Street", city: "Albuquerque"}
                 });
             } else {
                 results.push({
-                    name: "Sherlock Holmes", age: 40, address: { number: "221/B", street: "Baker Street", city: "London" }
+                    name: "Sherlock Holmes",
+                    age: 40,
+                    address: {number: "221/B", street: "Baker Street", city: "London"}
                 });
             }
         }
@@ -394,7 +407,7 @@ service /list_inputs on basicListener {
                 Episode[] episodes = <Episode[]>item?.episodes;
                 foreach Episode epi in episodes {
                     if epi?.newCharacters is string[] {
-                        string[] characters = <string[]> epi?.newCharacters;
+                        string[] characters = <string[]>epi?.newCharacters;
                         foreach string name in characters {
                             if name == "Sara" || name == "Michael" || name == "Lincoln" {
                                 results = [m4, m5, m6];
@@ -413,7 +426,7 @@ service /list_inputs on basicListener {
             Episode[] episodes = <Episode[]>tvSeries?.episodes;
             foreach Episode episode in episodes {
                 if episode?.newCharacters is string[] {
-                    string[] characters = <string[]> episode?.newCharacters;
+                    string[] characters = <string[]>episode?.newCharacters;
                     foreach string name in characters {
                         if name == "Sara" || name == "Michael" || name == "Lincoln" {
                             results = [m4, m5, m6];
@@ -436,7 +449,7 @@ service /list_inputs on basicListener {
     }
 
     isolated resource function get isIncludeHoliday(Weekday[] days = [MONDAY, FRIDAY]) returns boolean {
-        if days.indexOf(<Weekday> SUNDAY) != () || days.indexOf(<Weekday> SATURDAY) != () {
+        if days.indexOf(<Weekday>SUNDAY) != () || days.indexOf(<Weekday>SATURDAY) != () {
             return true;
         }
         return false;
@@ -446,19 +459,25 @@ service /list_inputs on basicListener {
 service /records on basicListener {
     isolated resource function get detective() returns Person {
         return {
-            name: "Sherlock Holmes", age: 40, address: { number: "221/B", street: "Baker Street", city: "London" }
+            name: "Sherlock Holmes",
+            age: 40,
+            address: {number: "221/B", street: "Baker Street", city: "London"}
         };
     }
 
     isolated resource function get teacher() returns Person {
         return {
-            name: "Walter White", age: 50, address: { number: "308", street: "Negra Arroyo Lane", city: "Albuquerque" }
+            name: "Walter White",
+            age: 50,
+            address: {number: "308", street: "Negra Arroyo Lane", city: "Albuquerque"}
         };
     }
 
     isolated resource function get student() returns Person {
         return {
-            name: "Jesse Pinkman", age: 25, address: { number: "9809", street: "Margo Street", city: "Albuquerque" }
+            name: "Jesse Pinkman",
+            age: 25,
+            address: {number: "9809", street: "Margo Street", city: "Albuquerque"}
         };
     }
 
@@ -491,16 +510,16 @@ service /service_objects on serviceTypeListener {
     }
 
     isolated resource function get allVehicles() returns Vehicle[] {
-        Vehicle v1 = new("V1", "Benz", 2005);
-        Vehicle v2 = new("V2", "BMW", 2010);
-        Vehicle v3 = new("V3", "Ford");
+        Vehicle v1 = new ("V1", "Benz", 2005);
+        Vehicle v2 = new ("V2", "BMW", 2010);
+        Vehicle v3 = new ("V3", "Ford");
         return [v1, v2, v3];
     }
 
     isolated resource function get searchVehicles(string keyword) returns Vehicle[]? {
-        Vehicle v1 = new("V1", "Benz");
-        Vehicle v2 = new("V2", "BMW");
-        Vehicle v3 = new("V3", "Ford");
+        Vehicle v1 = new ("V1", "Benz");
+        Vehicle v2 = new ("V2", "BMW");
+        Vehicle v3 = new ("V3", "Ford");
         return [v1, v2, v3];
     }
 
@@ -548,7 +567,7 @@ service /timeoutService on timeoutListener {
     }
 }
 
-@ServiceConfig {
+@graphql:ServiceConfig {
     maxQueryDepth: 2
 }
 service /depthLimitService on basicListener {
@@ -565,13 +584,13 @@ service /depthLimitService on basicListener {
     }
 }
 
-@ServiceConfig {
+@graphql:ServiceConfig {
     cors: {
-        allowOrigins : ["*"],
-        allowCredentials : true,
+        allowOrigins: ["*"],
+        allowCredentials: true,
         allowHeaders: ["X-Content-Type-Options"],
         exposeHeaders: ["X-CUSTOM-HEADER"],
-        allowMethods : ["*"],
+        allowMethods: ["*"],
         maxAge: 84900
     }
 }
@@ -581,13 +600,13 @@ service /corsConfigService1 on basicListener {
     }
 }
 
-@ServiceConfig {
+@graphql:ServiceConfig {
     cors: {
-        allowOrigins : ["http://www.wso2.com"],
-        allowCredentials : true,
+        allowOrigins: ["http://www.wso2.com"],
+        allowCredentials: true,
         allowHeaders: ["X-Content-Type-Options", "X-PINGOTHER"],
         exposeHeaders: ["X-HEADER"],
-        allowMethods : ["POST"]
+        allowMethods: ["POST"]
     }
 }
 service /corsConfigService2 on basicListener {
@@ -634,7 +653,7 @@ service /snowtooth on hierarchicalPathListener {
 
 service /hierarchical on hierarchicalPathListener {
     isolated resource function get profile/personal() returns HierarchicalName {
-        return new();
+        return new ();
     }
 }
 
@@ -723,22 +742,30 @@ service /special_types on specialTypesTestListener {
 service /snowtooth on serviceTypeListener {
     isolated resource function get allLifts(Status? status) returns Lift[] {
         if status is Status {
-            return from var lift in liftTable where lift.status == status select new(lift);
+            return from var lift in liftTable
+                where lift.status == status
+                select new (lift);
         } else {
-            return from var lift in liftTable select new(lift);
+            return from var lift in liftTable
+                select new (lift);
         }
     }
 
     isolated resource function get allTrails(Status? status) returns Trail[] {
         if status is Status {
-            return from var trail in trailTable where trail.status == status select new(trail);
+            return from var trail in trailTable
+                where trail.status == status
+                select new (trail);
         } else {
-            return from var trail in trailTable select new(trail);
+            return from var trail in trailTable
+                select new (trail);
         }
     }
 
     isolated resource function get lift(string id) returns Lift? {
-        LiftRecord[] lifts = from var lift in liftTable where lift.id == id select lift;
+        LiftRecord[] lifts = from var lift in liftTable
+            where lift.id == id
+            select lift;
         if lifts.length() > 0 {
             return new Lift(lifts[0]);
         }
@@ -746,7 +773,9 @@ service /snowtooth on serviceTypeListener {
     }
 
     isolated resource function get trail(string id) returns Trail? {
-        TrailRecord[] trails = from var trail in trailTable where trail.id == id select trail;
+        TrailRecord[] trails = from var trail in trailTable
+            where trail.id == id
+            select trail;
         if trails.length() > 0 {
             return new Trail(trails[0]);
         }
@@ -754,19 +783,27 @@ service /snowtooth on serviceTypeListener {
     }
 
     isolated resource function get liftCount(Status status) returns int {
-        LiftRecord[] lifts = from var lift in liftTable where lift.status == status select lift;
+        LiftRecord[] lifts = from var lift in liftTable
+            where lift.status == status
+            select lift;
         return lifts.length();
     }
 
     isolated resource function get trailCount(Status status) returns int {
-        TrailRecord[] trails = from var trail in trailTable where trail.status == status select trail;
+        TrailRecord[] trails = from var trail in trailTable
+            where trail.status == status
+            select trail;
         return trails.length();
     }
 
     isolated resource function get search(Status status) returns SearchResult[] {
         SearchResult[] searchResults = [];
-        Trail[] trails = from var trail in trailTable where trail.status == status select new(trail);
-        Lift[] lifts = from var lift in liftTable where lift.status == status select new(lift);
+        Trail[] trails = from var trail in trailTable
+            where trail.status == status
+            select new (trail);
+        Lift[] lifts = from var lift in liftTable
+            where lift.status == status
+            select new (lift);
         foreach Trail trail in trails {
             searchResults.push(trail);
         }
@@ -839,7 +876,9 @@ service /union_type_names on serviceTypeListener {
 service /duplicates on basicListener {
     isolated resource function get profile() returns Person {
         return {
-            name: "Sherlock Holmes", age: 40, address: { number: "221/B", street: "Baker Street", city: "London" }
+            name: "Sherlock Holmes",
+            age: 40,
+            address: {number: "221/B", street: "Baker Street", city: "London"}
         };
     }
 
@@ -869,7 +908,7 @@ service /noAuth on secureListener {
 }
 
 // Basic auth secured service
-@ServiceConfig {
+@graphql:ServiceConfig {
     auth: [
         {
             fileUserStoreConfig: {},
@@ -884,7 +923,7 @@ service /basicAuth on secureListener {
 }
 
 // JWT auth secured service
-@ServiceConfig {
+@graphql:ServiceConfig {
     auth: [
         {
             jwtValidatorConfig: {
@@ -912,7 +951,7 @@ service /jwtAuth on secureListener {
 }
 
 // OAuth2 auth secured service
-@ServiceConfig {
+@graphql:ServiceConfig {
     auth: [
         {
             oauth2IntrospectionConfig: {
@@ -921,10 +960,10 @@ service /jwtAuth on secureListener {
                 scopeKey: "scp",
                 clientConfig: {
                     secureSocket: {
-                       cert: {
-                           path: TRUSTSTORE_PATH,
-                           password: "ballerina"
-                       }
+                        cert: {
+                            path: TRUSTSTORE_PATH,
+                            password: "ballerina"
+                        }
                     }
                 }
             },
@@ -940,7 +979,7 @@ service /oauth2 on secureListener {
 
 // Testing multiple auth configurations support.
 // OAuth2, Basic auth & JWT auth secured service
-@ServiceConfig {
+@graphql:ServiceConfig {
     auth: [
         {
             oauth2IntrospectionConfig: {
@@ -949,10 +988,10 @@ service /oauth2 on secureListener {
                 scopeKey: "scp",
                 clientConfig: {
                     secureSocket: {
-                       cert: {
-                           path: TRUSTSTORE_PATH,
-                           password: "ballerina"
-                       }
+                        cert: {
+                            path: TRUSTSTORE_PATH,
+                            password: "ballerina"
+                        }
                     }
                 }
             },
@@ -988,7 +1027,7 @@ service /multipleAuth on secureListener {
 }
 
 // JWT auth secured service (without scopes)
-@ServiceConfig {
+@graphql:ServiceConfig {
     auth: [
         {
             jwtValidatorConfig: {
@@ -1012,6 +1051,7 @@ service /noScopes on secureListener {
         return "Hello World!";
     }
 }
+
 // **************** Security-Related Services ****************
 
 isolated service /mutations on basicListener {
@@ -1020,7 +1060,7 @@ isolated service /mutations on basicListener {
 
     isolated function init() {
         self.p = p2.clone();
-        self.t = new(1, "Walter Bishop", "Physics");
+        self.t = new (1, "Walter Bishop", "Physics");
     }
 
     isolated resource function get person() returns Person {
@@ -1031,7 +1071,7 @@ isolated service /mutations on basicListener {
 
     isolated remote function setName(string name) returns Person {
         lock {
-            Person p = { name: name, age: self.p.age, address: self.p.address };
+            Person p = {name: name, age: self.p.age, address: self.p.address};
             self.p = p;
             return self.p;
         }
@@ -1084,9 +1124,9 @@ service /null_values on basicListener {
     }
 
     resource function get book(Author? author) returns Book {
-        if author == { name: (), id: 1 } {
+        if author == {name: (), id: 1} {
             return b1;
-        } else if author == { name: "J. K. Rowling", id: 2 } {
+        } else if author == {name: "J. K. Rowling", id: 2} {
             return {
                 name: "Harry Potter and the Prisnor of the Azkaban",
                 author: "J. K. Rowling"
@@ -1103,15 +1143,16 @@ service /null_values on basicListener {
     }
 }
 
-@ServiceConfig {
-    contextInit: isolated function (http:RequestContext requestContext, http:Request request) returns Context|error {
-        Context context = new;
+@graphql:ServiceConfig {
+    contextInit:
+    isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context context = new;
         context.set("scope", check request.getHeader("scope"));
         return context;
     }
 }
 service /context on serviceTypeListener {
-    isolated resource function get profile(Context context) returns Person|error {
+    isolated resource function get profile(graphql:Context context) returns Person|error {
         var scope = check context.get("scope");
         if scope is string && scope == "admin" {
             return {
@@ -1128,7 +1169,7 @@ service /context on serviceTypeListener {
         }
     }
 
-    isolated resource function get name(Context context, string name) returns string|error {
+    isolated resource function get name(graphql:Context context, string name) returns string|error {
         var scope = check context.get("scope");
         if scope is string && scope == "admin" {
             return name;
@@ -1141,7 +1182,7 @@ service /context on serviceTypeListener {
         return new;
     }
 
-    remote function update(Context context) returns (Person|error)[]|error {
+    remote function update(graphql:Context context) returns (Person|error)[]|error {
         var scope = check context.get("scope");
         if scope is string && scope == "admin" {
             return people;
@@ -1150,7 +1191,7 @@ service /context on serviceTypeListener {
         }
     }
 
-    remote function updateNullable(Context context) returns (Person|error?)[]|error {
+    remote function updateNullable(graphql:Context context) returns (Person|error?)[]|error {
         var scope = check context.get("scope");
         if scope is string && scope == "admin" {
             return people;

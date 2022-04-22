@@ -14,19 +14,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/http;
 
-listener http:Listener httpListener = new(9090);
-listener Listener wrappedListener = new(httpListener);
+listener http:Listener httpListener = new (9090);
+listener graphql:Listener wrappedListener = new (httpListener);
 
-listener Listener basicListener = new(9091);
-listener Listener serviceTypeListener = new(9092);
-listener Listener timeoutListener = new(9093, { timeout: 1.0 });
-listener Listener hierarchicalPathListener = new Listener(9094);
-listener Listener specialTypesTestListener = new Listener(9095);
-listener Listener secureListener = new Listener(9096,
-    secureSocket = { key: { path: KEYSTORE_PATH, password: "ballerina" } });
-listener Listener authTestListener = new Listener(9097);
+listener graphql:Listener basicListener = new (9091);
+listener graphql:Listener serviceTypeListener = new (9092);
+listener graphql:Listener timeoutListener = new (9093, {timeout: 1.0});
+listener graphql:Listener hierarchicalPathListener = new (9094);
+listener graphql:Listener specialTypesTestListener = new (9095);
+listener graphql:Listener secureListener = new (9096, secureSocket = {
+    key: {
+        path: KEYSTORE_PATH,
+        password: "ballerina"
+    }
+});
+listener graphql:Listener authTestListener = new (9097);
 
 // The mock authorization server, based with https://hub.docker.com/repository/docker/ldclakmal/ballerina-sts
-listener http:Listener sts = new(9445, { secureSocket: { key: { path: KEYSTORE_PATH, password: "ballerina" } } });
+listener http:Listener sts = new (9445, {secureSocket: {key: {path: KEYSTORE_PATH, password: "ballerina"}}});
