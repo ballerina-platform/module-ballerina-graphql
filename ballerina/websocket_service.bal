@@ -24,7 +24,7 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    
+
     isolated function init(Engine engine, __Schema schema) {
         self.engine = engine;
         self.schema = schema.cloneReadOnly();
@@ -37,10 +37,10 @@ isolated service class WsService {
             if node is parser:OperationNode {
                 RootFieldVisitor rootFieldVisitor = new(node);
                 parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-                stream<any,error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema, 
-                                                                                self.context, fieldNode);                 
-                if sourceStream is stream<any,error?> {
-                    record{|any value;|}|error? next = sourceStream.iterator().next();
+                stream<any, error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema,
+                                                                                self.context, fieldNode);
+                if sourceStream is stream<any, error?> {
+                    record {|any value;|}|error? next = sourceStream.iterator().next();
                     while next !is error? {
                         ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
                         OutputObject outputObject = executor.getExecutorResult(node);
@@ -53,7 +53,7 @@ isolated service class WsService {
                     }
                 } else {
                     check caller->writeTextMessage(sourceStream.toString());
-                }                
+                }
             } else {
                 check caller->writeTextMessage((<ErrorDetail>node).message);
             }
@@ -82,8 +82,8 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
     return {message: validationResult.toJsonString()};
 }
 
-isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context, 
-                                          parser:FieldNode node) returns stream<any,error?>|error {
+isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
+                                          parser:FieldNode node) returns stream<any, error?>|error {
     ExecutorVisitor executor = new(engine, schema, context, {}, null);
-    return <stream<any,error?>|error>getSubscriptionResult(executor, node);
+    return <stream<any, error?>|error>getSubscriptionResult(executor, node);
 }

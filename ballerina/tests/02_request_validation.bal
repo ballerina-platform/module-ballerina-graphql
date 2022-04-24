@@ -162,7 +162,7 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
-    json payload = { query: () };
+    json payload = {query: ()};
     check wsClient->writeTextMessage(payload.toJsonString());
     string expectedPayload = "Query not found";
     check validateWebSocketResponse(wsClient, expectedPayload);
@@ -172,7 +172,7 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     groups: ["request_validation", "websocket"]
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
-    string document = string`subscription getNames { name }`;
+    string document = string `subscription getNames { name }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient, []);

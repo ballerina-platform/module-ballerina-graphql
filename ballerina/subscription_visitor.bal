@@ -65,7 +65,7 @@ class SubscriptionVisitor {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         if fieldNode.getName() == SCHEMA_FIELD || fieldNode.getName() == TYPE_FIELD ||
-           fieldNode.getName() == TYPE_NAME_FIELD {
+            fieldNode.getName() == TYPE_NAME_FIELD {
             self.addIntrospectionErrorDetail(fieldNode, <string>data);
         }
     }
@@ -84,8 +84,8 @@ class SubscriptionVisitor {
 
     public isolated function addErrorDetail(parser:Selection selection, string operationName) {
         string message = operationName != "<anonymous>"
-                         ? string`Subscription "${operationName}" must select only one top level field.`
-                         : string`Anonymous Subscription must select only one top level field.`;
+                        ? string `Subscription "${operationName}" must select only one top level field.`
+                        : string `Anonymous Subscription must select only one top level field.`;
         if selection is parser:FragmentNode {
             ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
@@ -97,8 +97,8 @@ class SubscriptionVisitor {
 
     public isolated function addIntrospectionErrorDetail(parser:FieldNode fieldNode, string operationName) {
         string message = operationName != "<anonymous>"
-                         ? string`Subscription "${operationName}" must not select an introspection top level field.`
-                         : string`Anonymous Subscription must not select an introspection top level field.`;
+                        ? string `Subscription "${operationName}" must not select an introspection top level field.`
+                        : string `Anonymous Subscription must not select an introspection top level field.`;
         ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
         self.errors.push(errorDetail);
     }

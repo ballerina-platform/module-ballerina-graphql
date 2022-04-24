@@ -37,7 +37,7 @@ class RootFieldVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        parser:Selection[] selections = operationNode.getSelections();     
+        parser:Selection[] selections = operationNode.getSelections();
         foreach parser:Selection selection in selections {
             self.visitSelection(selection);
         }

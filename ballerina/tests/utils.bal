@@ -107,7 +107,7 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
 
 isolated function writeWebSocketTextMessage(string document, websocket:Client wsClient, json? variables = {},
                                             string? operationName = ()) returns websocket:Error? {
-    json payload = { query: document, variables: variables, operationName: operationName };
+    json payload = {query: document, variables: variables, operationName: operationName};
     return wsClient->writeTextMessage(payload.toJsonString());
 }
 
@@ -119,5 +119,5 @@ isolated function validateWebSocketResponse(websocket:Client wsClient, json expe
         test:assertEquals(textResponse, expectedPayload);
     } else {
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
-    } 
+    }
 }

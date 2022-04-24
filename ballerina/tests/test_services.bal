@@ -1154,12 +1154,12 @@ service /subscriptions on basicListener {
     }
 
     isolated resource function subscribe messages() returns stream<int, error?> {
-        int[] intArray = [1,2,3,4,5];
+        int[] intArray = [1, 2, 3, 4, 5];
         return intArray.toStream();
     }
 
     isolated resource function subscribe stringMessages() returns stream<string?, error?> {
-        string[] stringArray = ["1","2","3","4","5"];
+        string[] stringArray = ["1", "2", "3", "4", "5"];
         return stringArray.toStream();
     }
 
@@ -1176,12 +1176,12 @@ service /subscriptions on basicListener {
     }
 
     resource function subscribe filterValues(int value) returns stream<int, error?> {
-        int[] intArray = [1,2,3,4,5];
+        int[] intArray = [1, 2, 3, 4, 5];
         int[] filteredArray = [];
         foreach int i in intArray {
             if i < value {
                 filteredArray.push(i);
-            }   
+            }
         }
         return filteredArray.toStream();
     }

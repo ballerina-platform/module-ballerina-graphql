@@ -21,28 +21,28 @@ import ballerina/websocket;
     groups: ["subscriptions"]
 }
 isolated function testSubscription() returns error? {
-    string document = string`subscription getNames { name }`;
+    string document = string `subscription getNames { name }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = { data : { name: "Walter" }};
+    json expectedPayload = {data: {name: "Walter"}};
     check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = { data : { name: "Skyler" }};
-    check validateWebSocketResponse(wsClient, expectedPayload);   
+    expectedPayload = {data: {name: "Skyler"}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithMultipleClients() returns error? {
-    string document = string`subscription { messages }`;
+    string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient1 = check new(url);
     websocket:Client wsClient2 = check new(url);
     check writeWebSocketTextMessage(document, wsClient1);
     check writeWebSocketTextMessage(document, wsClient2);
-    foreach int i in 1..< 4 {
-        json expectedPayload = { data : { messages: i }};
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i}};
         check validateWebSocketResponse(wsClient1, expectedPayload);
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
@@ -58,15 +58,15 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
     websocket:Client wsClient2 = check new(url);
     check writeWebSocketTextMessage(document, wsClient1, {}, "getMessages");
     check writeWebSocketTextMessage(document, wsClient2, {}, "getStringMessages");
-    foreach int i in 1..< 4 {
-        json expectedPayload = { data : { messages: i }};       
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i}};
         check validateWebSocketResponse(wsClient1, expectedPayload);
-        expectedPayload = { data : { stringMessages: i.toString() }};
+        expectedPayload = {data: {stringMessages: i.toString()}};
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
     string httpUrl = "http://localhost:9091/subscriptions";
     json actualPayload = check getJsonPayloadFromService(httpUrl, document, operationName = "getName");
-    json expectedPayload = { data: { name: "Walter White" } };
+    json expectedPayload = {data: {name: "Walter White"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -78,9 +78,9 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = { data : { students: { id: 1, name: "Eren Yeager" }}};
+    json expectedPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = { data : { students: { id: 2, name: "Mikasa Ackerman" }}};
+    expectedPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -92,9 +92,9 @@ isolated function testSubscriptionWithRecords() returns error? {
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = { data : { books: { name: "Crime and Punishment", author: "Fyodor Dostoevsky" }}};
+    json expectedPayload = {data: {books: {name: "Crime and Punishment", author: "Fyodor Dostoevsky"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = { data : { books: { name: "A Game of Thrones", author: "George R.R. Martin" }}};
+    expectedPayload = {data: {books: {name: "A Game of Thrones", author: "George R.R. Martin"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -102,10 +102,10 @@ isolated function testSubscriptionWithRecords() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testQueryWithSameSubscriptionFieldName() returns error? {
-    string document = string`query { name }`;
+    string document = string `query { name }`;
     string url = "http://localhost:9091/subscriptions";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = { data : { name: "Walter White"}};
+    json expectedPayload = {data: {name: "Walter White"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -117,9 +117,9 @@ isolated function testSubscriptionWithFragments() returns error? {
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = { data : { students: { id: 1, name: "Eren Yeager" }}};
+    json expectedPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = { data : { students: { id: 2, name: "Mikasa Ackerman" }}};
+    expectedPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -128,12 +128,12 @@ isolated function testSubscriptionWithFragments() returns error? {
 }
 isolated function testSubscriptionWithVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
-    json variables = { "value": 4 };
+    json variables = {"value": 4};
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient, variables);
-    foreach int i in 1..< 3 {
-        json expectedPayload = { data : { filterValues: i }};
+    foreach int i in 1 ..< 3 {
+        json expectedPayload = {data: {filterValues: i}};
         check validateWebSocketResponse(wsClient, expectedPayload);
     }
 }
@@ -142,11 +142,11 @@ isolated function testSubscriptionWithVariables() returns error? {
     groups: ["introspection", "typename", "subscriptions"]
 }
 isolated function testSubscriptionWithIntrospectionInFields() returns error? {
-    string document = string`subscription { students { __typename } }`;
+    string document = string `subscription { students { __typename } }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = { data: { students: { __typename:"StudentService" }}};
+    json expectedPayload = {data: {students: {__typename: "StudentService"}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -154,7 +154,7 @@ isolated function testSubscriptionWithIntrospectionInFields() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubscription() returns error? {
-    string document = string`subscription { invalidField }`;
+    string document = string `subscription { invalidField }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
