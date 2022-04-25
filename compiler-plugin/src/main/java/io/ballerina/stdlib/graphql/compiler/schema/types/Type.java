@@ -137,6 +137,10 @@ public class Type implements Serializable {
         return this.interfaces;
     }
 
+    public List<InputValue> getInputFields() {
+        return this.inputFields;
+    }
+
     public Type getOfType() {
         return this.ofType;
     }

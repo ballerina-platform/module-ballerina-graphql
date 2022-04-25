@@ -87,6 +87,10 @@ public class Schema implements Serializable {
         return this.types.containsKey(name);
     }
 
+    public Map<String, Type> getTypes() {
+        return this.types;
+    }
+
     public Type getType(String name) {
         return this.types.get(name);
     }

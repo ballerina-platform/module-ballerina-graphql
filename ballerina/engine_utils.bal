@@ -36,7 +36,7 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function createSchema(Service s) returns __Schema|Error = @java:Method {
+isolated function createSchema(string schemaString) returns __Schema|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 

@@ -46,9 +46,10 @@ public class Listener {
     # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
     #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
-        __Schema schema = check createSchema(s);
-        addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
+        string schemaString = getSchemaString(serviceConfig);
+        __Schema schema = check createSchema(schemaString);
+        addDefaultDirectives(schema);
         Graphiql graphiql = getGraphiqlConfig(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         Engine engine = check new (schema, maxQueryDepth);

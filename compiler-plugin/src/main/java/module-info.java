@@ -20,4 +20,6 @@ module io.ballerina.stdlib.graphql.compiler {
     requires io.ballerina.lang;
     requires io.ballerina.tools.api;
     requires io.ballerina.parser;
+
+    exports io.ballerina.stdlib.graphql.compiler.schema.types;
 }

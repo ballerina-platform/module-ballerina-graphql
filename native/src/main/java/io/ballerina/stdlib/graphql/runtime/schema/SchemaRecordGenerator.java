@@ -23,11 +23,11 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.stdlib.graphql.runtime.schema.types.InputValue;
-import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
-import io.ballerina.stdlib.graphql.runtime.schema.types.SchemaField;
-import io.ballerina.stdlib.graphql.runtime.schema.types.SchemaType;
-import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
+import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
+import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +51,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.POSSIBLE_TY
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
@@ -82,55 +84,58 @@ public class SchemaRecordGenerator {
         if (this.typeRecords.containsKey(MUTATION)) {
             schemaRecord.put(MUTATION_TYPE_FIELD, this.typeRecords.get(MUTATION));
         }
+        if (this.typeRecords.containsKey(SUBSCRIPTION)) {
+            schemaRecord.put(SUBSCRIPTION_TYPE_FIELD, this.typeRecords.get(SUBSCRIPTION));
+        }
         return schemaRecord;
     }
 
     private void populateTypeRecordMap() {
-        for (SchemaType schemaType : this.schema.getTypes().values()) {
+        for (Type type : this.schema.getTypes().values()) {
             BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
-            typeRecord.put(NAME_FIELD, StringUtils.fromString(schemaType.getName()));
-            typeRecord.put(KIND_FIELD, StringUtils.fromString(schemaType.getKind().toString()));
-            if (schemaType.getKind() == TypeKind.OBJECT) {
+            typeRecord.put(NAME_FIELD, StringUtils.fromString(type.getName()));
+            typeRecord.put(KIND_FIELD, StringUtils.fromString(type.getKind().toString()));
+            if (type.getKind() == TypeKind.OBJECT) {
                 typeRecord.put(INTERFACES_FIELD, getInterfacesArray());
             }
-            this.typeRecords.put(schemaType.getName(), typeRecord);
+            this.typeRecords.put(type.getName(), typeRecord);
         }
     }
 
     private void populateFieldsOfTypes() {
-        for (SchemaType schemaType : this.schema.getTypes().values()) {
-            if (schemaType.getKind() == TypeKind.OBJECT) {
-                BMap<BString, Object> typeRecord = this.typeRecords.get(schemaType.getName());
-                typeRecord.put(FIELDS_FIELD, getFieldsArray(schemaType));
-            } else if (schemaType.getKind() == TypeKind.INPUT_OBJECT) {
-                BMap<BString, Object> typeRecord = this.typeRecords.get(schemaType.getName());
-                typeRecord.put(INPUT_FIELDS_FIELD, getInputFieldsArray(schemaType));
+        for (Type type : this.schema.getTypes().values()) {
+            if (type.getKind() == TypeKind.OBJECT) {
+                BMap<BString, Object> typeRecord = this.typeRecords.get(type.getName());
+                typeRecord.put(FIELDS_FIELD, getFieldsArray(type));
+            } else if (type.getKind() == TypeKind.INPUT_OBJECT) {
+                BMap<BString, Object> typeRecord = this.typeRecords.get(type.getName());
+                typeRecord.put(INPUT_FIELDS_FIELD, getInputFieldsArray(type));
             }
         }
     }
 
-    private BMap<BString, Object> getTypeRecord(SchemaType schemaType) {
+    private BMap<BString, Object> getTypeRecord(Type type) {
         BMap<BString, Object> typeRecord;
-        if (this.typeRecords.containsKey(schemaType.getName())) {
-            typeRecord = this.typeRecords.get(schemaType.getName());
+        if (this.typeRecords.containsKey(type.getName())) {
+            typeRecord = this.typeRecords.get(type.getName());
         } else {
             typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
-            typeRecord.put(NAME_FIELD, StringUtils.fromString(schemaType.getName()));
-            typeRecord.put(KIND_FIELD, StringUtils.fromString(schemaType.getKind().toString()));
+            typeRecord.put(NAME_FIELD, StringUtils.fromString(type.getName()));
+            typeRecord.put(KIND_FIELD, StringUtils.fromString(type.getKind().toString()));
         }
-        if (schemaType.getKind() == TypeKind.LIST || schemaType.getKind() == TypeKind.NON_NULL) {
-            typeRecord.put(OF_TYPE_FIELD, getTypeRecord(schemaType.getOfType()));
-        } else if (schemaType.getKind() == TypeKind.UNION) {
-            typeRecord.put(POSSIBLE_TYPES_FIELD, getPossibleTypesArray(schemaType));
-        } else if (schemaType.getKind() == TypeKind.ENUM) {
-            typeRecord.put(ENUM_VALUES_FIELD, getEnumValuesArray(schemaType));
+        if (type.getKind() == TypeKind.LIST || type.getKind() == TypeKind.NON_NULL) {
+            typeRecord.put(OF_TYPE_FIELD, getTypeRecord(type.getOfType()));
+        } else if (type.getKind() == TypeKind.UNION) {
+            typeRecord.put(POSSIBLE_TYPES_FIELD, getPossibleTypesArray(type));
+        } else if (type.getKind() == TypeKind.ENUM) {
+            typeRecord.put(ENUM_VALUES_FIELD, getEnumValuesArray(type));
         }
         return typeRecord;
     }
 
-    private BArray getEnumValuesArray(SchemaType schemaType) {
+    private BArray getEnumValuesArray(Type type) {
         BArray enumValuesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD));
-        for (Object enumValue : schemaType.getEnumValues()) {
+        for (Object enumValue : type.getEnumValues()) {
             BMap<BString, Object> enumValueRecord = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD);
             enumValueRecord.put(NAME_FIELD, enumValue);
             enumValuesArray.append(enumValueRecord);
@@ -138,9 +143,9 @@ public class SchemaRecordGenerator {
         return enumValuesArray;
     }
 
-    private BArray getPossibleTypesArray(SchemaType schemaType) {
+    private BArray getPossibleTypesArray(Type type) {
         BArray possibleTypesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
-        for (SchemaType possibleType : schemaType.getPossibleTypes()) {
+        for (Type possibleType : type.getPossibleTypes()) {
             possibleTypesArray.append(getTypeRecord(possibleType));
         }
         return possibleTypesArray;
@@ -150,33 +155,33 @@ public class SchemaRecordGenerator {
         return getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
     }
 
-    private BArray getFieldsArray(SchemaType schemaType) {
+    private BArray getFieldsArray(Type type) {
         BArray fieldsArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), FIELD_RECORD));
-        for (SchemaField schemaField : schemaType.getFields()) {
-            fieldsArray.append(getFieldRecord(schemaField));
+        for (Field field : type.getFields()) {
+            fieldsArray.append(getFieldRecord(field));
         }
         return fieldsArray;
     }
 
-    private BArray getInputFieldsArray(SchemaType schemaType) {
+    private BArray getInputFieldsArray(Type type) {
         BArray inputFieldsArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD));
-        for (InputValue inputField : schemaType.getInputFields()) {
+        for (InputValue inputField : type.getInputFields()) {
             inputFieldsArray.append(getInputValueRecordFromInputValue(inputField));
         }
         return inputFieldsArray;
     }
 
-    private BMap<BString, Object> getFieldRecord(SchemaField schemaField) {
+    private BMap<BString, Object> getFieldRecord(Field field) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
-        fieldRecord.put(NAME_FIELD, StringUtils.fromString(schemaField.getName()));
-        fieldRecord.put(TYPE_FIELD, getTypeRecord(schemaField.getType()));
-        fieldRecord.put(ARGS_FIELD, getInputValueArray(schemaField));
+        fieldRecord.put(NAME_FIELD, StringUtils.fromString(field.getName()));
+        fieldRecord.put(TYPE_FIELD, getTypeRecord(field.getType()));
+        fieldRecord.put(ARGS_FIELD, getInputValueArray(field));
         return fieldRecord;
     }
 
-    private BArray getInputValueArray(SchemaField schemaField) {
+    private BArray getInputValueArray(Field field) {
         BArray inputValueArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD));
-        for (InputValue inputValue : schemaField.getArgs()) {
+        for (InputValue inputValue : field.getArgs()) {
             inputValueArray.append(getInputValueRecordFromInputValue(inputValue));
         }
         return inputValueArray;

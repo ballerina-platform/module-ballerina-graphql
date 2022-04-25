@@ -32,12 +32,15 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
-import io.ballerina.stdlib.graphql.runtime.schema.FieldFinder;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
-import io.ballerina.stdlib.graphql.runtime.schema.TypeFinder;
-import io.ballerina.stdlib.graphql.runtime.schema.types.Schema;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
@@ -61,16 +64,9 @@ public class Engine {
     private Engine() {
     }
 
-    public static Object createSchema(BObject service) {
+    public static Object createSchema(BString schemaString) {
         try {
-            ServiceType serviceType = (ServiceType) service.getType();
-            TypeFinder typeFinder = new TypeFinder(serviceType);
-            typeFinder.populateTypes();
-
-            FieldFinder fieldFinder = new FieldFinder(typeFinder.getTypeMap());
-            fieldFinder.populateFields();
-            Schema schema = new Schema(fieldFinder.getTypeMap());
-
+            Schema schema = getDecodedSchema(schemaString);
             SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
             return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
@@ -164,5 +160,25 @@ public class Engine {
                     .invokeMethodAsyncSequentially(service, method.getName(), null,
                                                    strandMetadata, callback, null, PredefinedTypes.TYPE_NULL, args);
         }
+    }
+
+    private static Schema getDecodedSchema(BString schemaBString) {
+        // TODO: Return error instead of null
+        if (schemaBString == null) {
+            return null;
+        }
+        if (schemaBString.getValue().isBlank() || schemaBString.getValue().isEmpty()) {
+            return null;
+        }
+        String schemaString = schemaBString.getValue();
+        byte[] decodedString = Base64.getDecoder().decode(schemaString.getBytes(StandardCharsets.UTF_8));
+        try {
+            ByteArrayInputStream byteStream = new ByteArrayInputStream(decodedString);
+            ObjectInputStream inputStream = new ObjectInputStream(byteStream);
+            return (Schema) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            // TODO: Return error
+        }
+        return null;
     }
 }
