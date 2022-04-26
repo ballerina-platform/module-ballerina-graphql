@@ -112,5 +112,9 @@ test {
     dependsOn(ballerinaTest)
 }
 
+clean {
+    delete("${projectDir}/target")
+}
+
 build.dependsOn ":${packageName}-ballerina:build"
 test.dependsOn ":${packageName}-ballerina:build"
