@@ -108,7 +108,7 @@ fragment on on Profile {
     age
 }`;
     Parser parser = new (document);
-    var result = parser.parse();
+    DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
     InvalidTokenError err = <InvalidTokenError>result;
     string expectedMessage = string `Syntax Error: Unexpected Name "on".`;

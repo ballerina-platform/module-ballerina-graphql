@@ -51,20 +51,20 @@ isolated function handlePostRequests(Engine engine, Context context, http:Reques
 
 isolated function getResponseFromJsonPayload(Engine engine, Context context, http:Request request,
                                              map<Upload|Upload[]> fileInfo = {}) returns http:Response {
-    var payload = request.getJsonPayload();
-    if payload is json {
-        var document = payload.query;
-        var variables = payload.variables;
-        variables = variables is error ? () : variables;
-        if document is string && document != "" {
-            if variables is map<json> || variables is () {
-                return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
-            } else {
-                return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
-            }
-        }
+    json|http:ClientError payload = request.getJsonPayload();
+    if payload is http:ClientError {
+        return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
     }
-    return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
+    json|error document = payload.query;
+    if document !is string || document == "" {
+        return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
+    }
+    json|error variables = payload.variables;
+    variables = variables is error ? () : variables;
+    if variables is map<json> || variables is () {
+        return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
+    }
+    return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
 }
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
@@ -93,7 +93,7 @@ isolated function createResponse(json payload, int? statusCode = ()) returns htt
 }
 
 isolated function getOperationName(json payload) returns string? {
-    var operationName = payload.operationName;
+    json|error operationName = payload.operationName;
     if operationName is string {
         return operationName;
     }
@@ -210,9 +210,9 @@ isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> varia
             return createResponse("Undefine file path found in multipart request ‘map’", http:STATUS_BAD_REQUEST);
         }
         if path is string {
-            http:Response? validateVariablePathResult = validateVariablePath(variables, path);
-            if validateVariablePathResult is () {
-                files[path] = <Upload> fileInfo[key];
+            http:Response|string validateVariablePathResult = validateVariablePath(variables, path);
+            if validateVariablePathResult is string {
+                files[validateVariablePathResult] = <Upload> fileInfo[key];
                 continue;
             }
             return validateVariablePathResult;
@@ -222,31 +222,35 @@ isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> varia
     return;
 }
 
-isolated function validateVariablePath(map<json> variables, string path) returns http:Response? {
+isolated function validateVariablePath(map<json> variables, string receivedPath) returns http:Response|string {
     //replace variable's null value with file path
-    string varName = path;
-    if path.includes(".") {
-        varName = path.substring(0, <int> path.indexOf("."));
-        string indexPart = path.substring((<int> path.indexOf(".") + 1), path.length());
-        int|error index = 'int:fromString(indexPart);
-        if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
-            json[] arrayValue = <json[]> variables.get(varName);
-            if index < arrayValue.length() {
-                if arrayValue[index] == null {
-                    arrayValue[index] = path;
-                    variables[varName] = arrayValue;
-                    return;
+    string path = receivedPath;
+    if path.includes(PARAM_VARIABLES) && path.includes(".") {
+        path = path.substring((<int>path.indexOf(".")) + 1);
+        if path.includes(".") {
+            string varName = path.substring(0, <int> path.indexOf("."));
+            string indexPart = path.substring((<int> path.indexOf(".") + 1));
+            int|error index = 'int:fromString(indexPart);
+            if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
+                json[] arrayValue = <json[]> variables.get(varName);
+                if index < arrayValue.length() {
+                    if arrayValue[index] == null {
+                        arrayValue[index] = path;
+                        variables[varName] = arrayValue;
+                        return path;
+                    }
+                    return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
                 }
-                return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
             }
+            return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+        } else if !variables.hasKey(path) {
+            return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
+        } else if variables.get(path) != null {
+            return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
         }
-        return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
-    } else if !variables.hasKey(varName) {
-        return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
-    } else if variables.get(varName) != null {
-        return createResponse("Variable value should be `null`", http:STATUS_BAD_REQUEST);
+        return path;
     }
-    return;
+    return createResponse("Undefined variable found in multipart request `map`", http:STATUS_BAD_REQUEST);
 }
 
 isolated function createUploadInfoMap(map<Upload> files, map<json> variables)
@@ -347,11 +351,57 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
+isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
+    final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
+    final CorsConfig corsConfig = getCorsConfig(serviceConfig);
+
+    HttpService graphiqlService = @http:ServiceConfig {
+        cors: corsConfig
+    } isolated service object {
+        private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
+
+        isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
+            string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
+            string|error htmlAsString = getHtmlContentFromResources(graphqlURL);
+            if htmlAsString is error {
+                return {
+                    body: htmlAsString.message()
+                };
+            }
+            http:Response response = new;
+            response.setPayload(htmlAsString, CONTENT_TYPE_TEXT_HTML);
+            return response;
+        }
+    };
+    return graphiqlService;
+}
+
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
 isolated function getHttpServiceFromGraphqlService(Service s) returns HttpService? =
 @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function attachGraphiqlServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getGraphiqlServiceFromGraphqlService(Service s) returns HttpService? =
+@java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function validateGraphiqlPath(string path) returns Error? = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getHtmlContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getBasePath(string[]|string gqlBasePath) returns string = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

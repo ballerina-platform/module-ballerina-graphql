@@ -44,8 +44,9 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
@@ -59,7 +60,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
@@ -267,7 +268,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -276,6 +277,7 @@ dependencies = [
 org = "ballerina"
 name = "os"
 version = "1.2.1"
+scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
