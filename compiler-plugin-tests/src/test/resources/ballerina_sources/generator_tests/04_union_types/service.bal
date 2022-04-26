@@ -25,7 +25,15 @@ service on new graphql:Listener(9000) {
         return new ("Walter White", "Chemistry");
     }
 
+    resource function get profileOptional() returns Teacher|Student? {
+        return new ("Walter White", "Chemistry");
+    }
+
     resource function get profileUnion() returns Person {
+        return new ("Jesse Pinkman", 1);
+    }
+
+    resource function get profileUnionOptional() returns Person? {
         return new ("Jesse Pinkman", 1);
     }
 }

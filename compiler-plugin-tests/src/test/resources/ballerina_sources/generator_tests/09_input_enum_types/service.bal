@@ -36,4 +36,8 @@ isolated service on new graphql:Listener(9000) {
     isolated resource function get isHoliday(Weekday weekday) returns boolean {
         return weekday == SUNDAY || weekday == SATURDAY;
     }
+
+    isolated resource function get isHolidayOptional(Weekday? weekday) returns boolean {
+        return weekday == SUNDAY || weekday == SATURDAY;
+    }
 }

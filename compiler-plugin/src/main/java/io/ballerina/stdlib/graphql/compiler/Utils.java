@@ -96,8 +96,10 @@ public final class Utils {
 
     public static List<TypeSymbol> getEffectiveTypes(UnionTypeSymbol unionTypeSymbol) {
         List<TypeSymbol> effectiveTypes = new ArrayList<>();
-        for (TypeSymbol typeSymbol : unionTypeSymbol.memberTypeDescriptors()) {
-            if (!isIgnoreType(typeSymbol)) {
+        for (TypeSymbol typeSymbol : unionTypeSymbol.userSpecifiedMemberTypes()) {
+            if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+                effectiveTypes.addAll(getEffectiveTypes((UnionTypeSymbol) typeSymbol));
+            } else if (!isIgnoreType(typeSymbol)) {
                 effectiveTypes.add(typeSymbol);
             }
         }

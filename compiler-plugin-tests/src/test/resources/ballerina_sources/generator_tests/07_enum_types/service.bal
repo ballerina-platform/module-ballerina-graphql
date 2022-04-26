@@ -33,7 +33,12 @@ public enum Weekday {
 }
 
 isolated service on new graphql:Listener(9000) {
+
     isolated resource function get day() returns Weekday {
+        return SUNDAY;
+    }
+
+    isolated resource function get optionalDay() returns Weekday? {
         return SUNDAY;
     }
 }
