@@ -1143,14 +1143,15 @@ service /nullable_inputs on basicListener {
     }
 }
 
+public string[] namesArray = ["Walter", "Skyler"];
+
 service /subscriptions on basicListener {
     isolated resource function get name() returns string {
         return "Walter White";
     }
 
-    isolated resource function subscribe name() returns stream<string, error?> {
-        string[] names = ["Walter", "Skyler"];
-        return names.toStream();
+    resource function subscribe name() returns stream<string, error?> {
+        return namesArray.toStream();
     }
 
     isolated resource function subscribe messages() returns stream<int, error?> {
@@ -1159,23 +1160,24 @@ service /subscriptions on basicListener {
     }
 
     isolated resource function subscribe stringMessages() returns stream<string?, error?> {
-        string[] stringArray = ["1", "2", "3", "4", "5"];
+        string?[] stringArray = [(), "1", "2", "3", "4", "5"];
         return stringArray.toStream();
     }
 
     isolated resource function subscribe books() returns stream<Book, error?> {
-        Book book1 = {name: "Crime and Punishment", author: "Fyodor Dostoevsky"};
-        Book book2 = {name: "A Game of Thrones", author: "George R.R. Martin"};
-        Book[] books = [book1, book2];
+        Book[] books = [
+            {name: "Crime and Punishment", author: "Fyodor Dostoevsky"},
+            {name: "A Game of Thrones", author: "George R.R. Martin"}
+        ];
         return books.toStream();
     }
 
-    resource function subscribe students() returns stream<StudentService, error?> {
+    isolated resource function subscribe students() returns stream<StudentService, error?> {
         StudentService[] students = [new StudentService(1, "Eren Yeager"), new StudentService(2, "Mikasa Ackerman")];
         return students.toStream();
     }
 
-    resource function subscribe filterValues(int value) returns stream<int, error?> {
+    isolated resource function subscribe filterValues(int value) returns stream<int, error?> {
         int[] intArray = [1, 2, 3, 4, 5];
         int[] filteredArray = [];
         foreach int i in intArray {
@@ -1184,5 +1186,15 @@ service /subscriptions on basicListener {
             }
         }
         return filteredArray.toStream();
+    }
+
+    isolated resource function subscribe values() returns stream<int> {
+        int[] array = [];
+        int _ = array.remove(0);
+        return array.toStream();
+    }
+
+    isolated resource function subscribe multipleValues() returns stream<(Book|Course)>|error {
+        return [b7, c1].toStream();
     }
 }

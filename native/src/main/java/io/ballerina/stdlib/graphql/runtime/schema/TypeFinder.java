@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.runtime.api.TypeTags.STREAM_TAG;
+import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
@@ -126,8 +128,23 @@ public class TypeFinder {
 
     private void getTypesFromSubscriptionResourceMethod(ResourceMethodType resourceMethod) {
         getInputTypesFromMethod(resourceMethod);
-        StreamType streamType = (StreamType) resourceMethod.getType().getReturnType();
-        getSchemaTypeFromBalType(streamType.getConstrainedType());
+        StreamType streamType = null;
+        if (resourceMethod.getType().getReturnType().getTag() == STREAM_TAG) {
+            streamType = (StreamType) resourceMethod.getType().getReturnType();
+        } else if (resourceMethod.getType().getReturnType().getTag() == UNION_TAG) {
+            List<Type> memberTypes = ((UnionType) resourceMethod.getType().getReturnType()).getMemberTypes();
+            for (Type memberType: memberTypes) {
+                if (memberType.getTag() == STREAM_TAG) {
+                    streamType = (StreamType) memberType;
+                    break;
+                }
+            }
+        }
+        if (streamType == null) {
+            throw createError("Invalid return type for subscription: return type must consist a stream", ERROR_TYPE);
+        } else {
+            getSchemaTypeFromBalType(streamType.getConstrainedType());
+        }
     }
 
     private void getTypesFromHierarchicalResource(ResourceMethodType resourceMethod, String[] resourcePath) {

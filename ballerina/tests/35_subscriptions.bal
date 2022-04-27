@@ -24,7 +24,8 @@ isolated function testSubscription() returns error? {
     string document = string `subscription getNames { name }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
+    json payload = {query: document};
+    check wsClient->writeTextMessage(payload.toJsonString());
     json expectedPayload = {data: {name: "Walter"}};
     check validateWebSocketResponse(wsClient, expectedPayload);
     expectedPayload = {data: {name: "Skyler"}};
@@ -58,15 +59,17 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
     websocket:Client wsClient2 = check new(url);
     check writeWebSocketTextMessage(document, wsClient1, {}, "getMessages");
     check writeWebSocketTextMessage(document, wsClient2, {}, "getStringMessages");
+    json expectedPayload = {data: {stringMessages: null}};
+    check validateWebSocketResponse(wsClient2, expectedPayload); 
     foreach int i in 1 ..< 4 {
-        json expectedPayload = {data: {messages: i}};
+        expectedPayload = {data: {messages: i}};
         check validateWebSocketResponse(wsClient1, expectedPayload);
         expectedPayload = {data: {stringMessages: i.toString()}};
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
     string httpUrl = "http://localhost:9091/subscriptions";
     json actualPayload = check getJsonPayloadFromService(httpUrl, document, operationName = "getName");
-    json expectedPayload = {data: {name: "Walter White"}};
+    expectedPayload = {data: {name: "Walter White"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -187,6 +190,18 @@ isolated function testInvalidSubscriptionWithIntrospections() returns error? {
 }
 
 @test:Config {
+    groups: ["introspection", "typename", "subscriptions"]
+}
+isolated function testInvalidAnonymousSubscriptionOperationWithIntrospections() returns error? {
+    string document = string `subscription { __typename }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = check getJsonContentFromFile("subscription_anonymous_with_invalid_introspections.json");
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
     groups: ["fragments", "subscriptions"]
 }
 isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() returns error? {
@@ -195,5 +210,31 @@ isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() ret
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
     json expectedPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields_in_fragments.json");
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testSubscriptionFunctionWithErrors() returns error? {
+    string document = string `subscription getNames { values }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {errors: [{message: "Invalid return value"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["union", "subscriptions"]
+}
+isolated function testSubscriptionWithUnionType() returns error? {
+    string document = check getGraphQLDocumentFromFile("union_types_in_subscriptions.graphql");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {data: {multipleValues: {name: "The Sign of Four", author: "Athur Conan Doyle"}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = {data: {multipleValues: {name: "Electronics", code: 106}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }

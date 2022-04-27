@@ -115,9 +115,7 @@ isolated function validateWebSocketResponse(websocket:Client wsClient, json expe
     returns websocket:Error?|error {
     string textResponse = check wsClient->readTextMessage();
     json|error actualPayload = value:fromJsonString(textResponse);
-    if actualPayload is error {
-        test:assertEquals(textResponse, expectedPayload);
-    } else {
+    if actualPayload !is error {
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
 }

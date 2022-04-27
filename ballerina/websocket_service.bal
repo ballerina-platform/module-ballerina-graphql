@@ -37,7 +37,7 @@ isolated service class WsService {
             if node is parser:OperationNode {
                 RootFieldVisitor rootFieldVisitor = new(node);
                 parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-                stream<any, error?>|error sourceStream = getSubscriptionResponse(self.engine, self.schema,
+                stream<any, error?>|json sourceStream = getSubscriptionResponse(self.engine, self.schema,
                                                                                 self.context, fieldNode);
                 if sourceStream is stream<any, error?> {
                     record {|any value;|}|error? next = sourceStream.iterator().next();
@@ -52,7 +52,7 @@ isolated service class WsService {
                         next = sourceStream.iterator().next();
                     }
                 } else {
-                    check caller->writeTextMessage(sourceStream.toString());
+                    check caller->writeTextMessage(sourceStream.toJsonString());
                 }
             } else {
                 check caller->writeTextMessage((<ErrorDetail>node).message);
@@ -64,15 +64,18 @@ isolated service class WsService {
 isolated function validateSubscriptionPayload(string text, Engine engine) returns parser:OperationNode|ErrorDetail {
     json|error payload = value:fromJsonString(text);
     if payload is error {
-        return {message: "Invalid Subscription Payload"};
+        json errorMessage = {errors: [{message: "Invalid subscription payload"}]};
+        return {message: errorMessage.toJsonString()};
     }
     json|error document = payload.query;
-    if !(document is string) || document == "" {
-        return {message: "Query not found"};
+    if document !is string || document == "" {
+        json errorMessage = {errors: [{message: "Query not found"}]};
+        return {message: errorMessage.toJsonString()};
     }
-    json|error variables = payload.variables;
-    if !(variables is map<json>) && variables != () {
-        return {message: "Invalid format in request parameter: variables"};
+    json|error variables = payload.variables is error ? () : payload.variables;
+    if variables !is map<json> && variables != () {
+        json errorMessage = {errors: [{message: "Invalid format in request parameter: variables"}]};
+        return {message: errorMessage.toJsonString()};
     }
     parser:OperationNode|OutputObject validationResult = engine.validate(document, getOperationName(payload),
                                                                          variables);
@@ -83,7 +86,11 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          parser:FieldNode node) returns stream<any, error?>|error {
+                                          parser:FieldNode node) returns stream<any, error?>|json {
     ExecutorVisitor executor = new(engine, schema, context, {}, null);
-    return <stream<any, error?>|error>getSubscriptionResult(executor, node);
+    any|error result = getSubscriptionResult(executor, node);
+    if result !is stream<any, error?> {
+        return {errors: [{message: "Invalid return value"}]};
+    }
+    return <stream<any, error?>>result;
 }

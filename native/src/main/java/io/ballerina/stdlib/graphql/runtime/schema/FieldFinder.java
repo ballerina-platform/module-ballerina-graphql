@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.runtime.api.TypeTags.STREAM_TAG;
+import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
@@ -285,6 +286,14 @@ public class FieldFinder {
         Type resourceReturnType = method.getType().getReturnType();
         if (resourceReturnType.getTag() == STREAM_TAG) {
             resourceReturnType = ((StreamType) resourceReturnType).getConstrainedType();
+        } else if (resourceReturnType.getTag() == UNION_TAG) {
+            List<Type> memberTypes = ((UnionType) resourceReturnType).getMemberTypes();
+            for (Type type: memberTypes) {
+                if (type.getTag() == STREAM_TAG) {
+                    resourceReturnType = ((StreamType) type).getConstrainedType();
+                    break;
+                }
+            }
         }
         SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
         if (resourceReturnType.isNilable()) {
