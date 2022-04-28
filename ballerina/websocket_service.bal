@@ -32,31 +32,29 @@ isolated service class WsService {
     }
 
     isolated remote function onTextMessage(websocket:Caller caller, string data) returns websocket:Error? {
-        lock {
-            parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
-            if node is parser:OperationNode {
-                RootFieldVisitor rootFieldVisitor = new(node);
-                parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-                stream<any, error?>|json sourceStream = getSubscriptionResponse(self.engine, self.schema,
-                                                                                self.context, fieldNode);
-                if sourceStream is stream<any, error?> {
-                    record {|any value;|}|error? next = sourceStream.iterator().next();
-                    while next !is error? {
-                        ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
-                        OutputObject outputObject = executor.getExecutorResult(node);
-                        ResponseFormatter responseFormatter = new(self.schema);
-                        OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
-                        if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
-                            check caller->writeTextMessage(coercedOutputObject.toString());
-                        }
-                        next = sourceStream.iterator().next();
+        parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
+        if node is parser:OperationNode {
+            RootFieldVisitor rootFieldVisitor = new(node);
+            parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
+            stream<any, error?>|json sourceStream = getSubscriptionResponse(self.engine, self.schema,
+                                                                            self.context, fieldNode);
+            if sourceStream is stream<any, error?> {
+                record {|any value;|}|error? next = sourceStream.iterator().next();
+                while next !is error? {
+                    ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
+                    OutputObject outputObject = executor.getExecutorResult(node);
+                    ResponseFormatter responseFormatter = new(self.schema);
+                    OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
+                    if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
+                        check caller->writeTextMessage(coercedOutputObject.toString());
                     }
-                } else {
-                    check caller->writeTextMessage(sourceStream.toJsonString());
+                    next = sourceStream.iterator().next();
                 }
             } else {
-                check caller->writeTextMessage((<ErrorDetail>node).message);
+                check caller->writeTextMessage(sourceStream.toJsonString());
             }
+        } else {
+            check caller->writeTextMessage((<ErrorDetail>node).message);
         }
     }
 }

@@ -21,7 +21,7 @@ import ballerina/websocket;
     groups: ["subscriptions"]
 }
 isolated function testSubscription() returns error? {
-    string document = string `subscription getNames { name }`;
+    string document = string `subscription { name }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new(url);
     json payload = {query: document};
@@ -127,6 +127,20 @@ isolated function testSubscriptionWithFragments() returns error? {
 }
 
 @test:Config {
+    groups: ["union", "subscriptions"]
+}
+isolated function testSubscriptionWithUnionType() returns error? {
+    string document = check getGraphQLDocumentFromFile("union_types_in_subscriptions.graphql");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {data: {multipleValues: {name: "The Sign of Four", author: "Athur Conan Doyle"}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = {data: {multipleValues: {name: "Electronics", code: 106}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
     groups: ["variables", "subscriptions"]
 }
 isolated function testSubscriptionWithVariables() returns error? {
@@ -222,19 +236,5 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
     json expectedPayload = {errors: [{message: "Invalid return value"}]};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-}
-
-@test:Config {
-    groups: ["union", "subscriptions"]
-}
-isolated function testSubscriptionWithUnionType() returns error? {
-    string document = check getGraphQLDocumentFromFile("union_types_in_subscriptions.graphql");
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {multipleValues: {name: "The Sign of Four", author: "Athur Conan Doyle"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {multipleValues: {name: "Electronics", code: 106}}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
