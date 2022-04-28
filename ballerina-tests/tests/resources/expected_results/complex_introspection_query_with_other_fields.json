@@ -3,12 +3,12 @@
         "__schema": {
             "types": [
                 {
-                    "name": "__TypeKind",
-                    "kind": "ENUM"
-                },
-                {
                     "name": "__Field",
                     "kind": "OBJECT"
+                },
+                {
+                    "name": "__TypeKind",
+                    "kind": "ENUM"
                 },
                 {
                     "name": "TeacherService",

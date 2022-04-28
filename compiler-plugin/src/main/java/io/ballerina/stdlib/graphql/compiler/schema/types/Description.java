@@ -34,7 +34,7 @@ public enum Description {
     GENERATED_UNION_TYPE("auto-generated union type from Ballerina"),
     GENERATED_TYPE("auto-generated type from hierarchical resource path"),
     TYPE("The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as " +
-                 "represented by the `__TypeKind` enum.\n\nDepending on the kind of type, certain fields describe" +
+                 "represented by the `__TypeKind` enum.\\n\\nDepending on the kind of type, certain fields describe" +
                  " information about that type. Scalar types provide no information beyond a name, description and " +
                  "optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types " +
                  "provide the fields they describe. Abstract types, Union and Interface, provide the Object types " +
@@ -53,7 +53,7 @@ public enum Description {
     TYPE_KIND("An enum describing what kind of type a given `__Type` is."),
     DIRECTIVE(
             "A Directive provides a way to describe alternate runtime execution and type validation behavior in a " +
-                    "GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution " +
+                    "GraphQL document.\\n\\nIn some cases, you need to provide options to alter GraphQL's execution " +
                     "behavior in ways field arguments will not suffice, such as conditionally including or skipping a" +
                     " field. Directives provide this by describing additional information to the executor."),
     DIRECTIVE_LOCATION(

@@ -220,7 +220,7 @@ public class IntrospectionTypeCreator {
     }
 
     private InputValue getIncludeDeprecatedArg() {
-        return new InputValue(INCLUDE_DEPRECATED_ARG_NAME, getBooleanType(), INCLUDE_DEPRECATED_DEFAULT_VALUE);
+        return new InputValue(INCLUDE_DEPRECATED_ARG_NAME, getBooleanType(), null, INCLUDE_DEPRECATED_DEFAULT_VALUE);
     }
 
     private Type getNonNullStringType() {
@@ -248,7 +248,7 @@ public class IntrospectionTypeCreator {
     }
 
     private Type getInputValueType() {
-        return this.schema.getType(IntrospectionField.INPUT_FIELDS.getName());
+        return this.schema.getType(IntrospectionType.INPUT_VALUE.getName());
     }
 
     private static Field getIntrospectionField(IntrospectionField introspectionField, Type type) {

@@ -4,10 +4,10 @@
             "queryType": {
                 "fields": [
                     {
-                        "name": "city",
+                        "name": "name",
                         "args": [
                             {
-                                "defaultValue": null,
+                                "defaultValue": "",
                                 "type": {
                                     "kind": "NON_NULL",
                                     "name": null,
@@ -33,6 +33,22 @@
                         ]
                     },
                     {
+                        "name": "city",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
                         "name": "street",
                         "args": [
                             {
@@ -41,22 +57,6 @@
                                     "kind": "SCALAR",
                                     "name": "String",
                                     "ofType": null
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "name",
-                        "args": [
-                            {
-                                "defaultValue": "",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
                                 }
                             }
                         ]

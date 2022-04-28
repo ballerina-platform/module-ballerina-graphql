@@ -20,11 +20,11 @@
                     ]
                 },
                 {
-                    "name": "__TypeKind",
+                    "name": "__Field",
                     "inputFields": null
                 },
                 {
-                    "name": "__Field",
+                    "name": "__TypeKind",
                     "inputFields": null
                 },
                 {

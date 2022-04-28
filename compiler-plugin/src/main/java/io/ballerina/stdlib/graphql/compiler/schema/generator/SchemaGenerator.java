@@ -26,8 +26,8 @@ import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
  * Generates the GraphQL schema from a given, valid, Ballerina service.
  */
 public class SchemaGenerator {
-    private ServiceDeclarationSymbol serviceDeclarationSymbol;
-    private TypeFinder typeFinder;
+    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
+    private final TypeFinder typeFinder;
 
     public SchemaGenerator(ServiceDeclarationSymbol serviceDeclarationSymbol, InterfaceFinder interfaceFinder) {
         this.serviceDeclarationSymbol = serviceDeclarationSymbol;

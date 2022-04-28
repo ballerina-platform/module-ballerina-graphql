@@ -23,6 +23,7 @@ import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ConstantSymbol;
 import io.ballerina.compiler.api.symbols.EnumSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
+import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ParameterKind;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
@@ -32,6 +33,7 @@ import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TableTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -256,7 +258,7 @@ public class TypeFinder {
 
     private Type getType(ArrayTypeSymbol arrayTypeSymbol) {
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-        return getFieldType(memberTypeSymbol);
+        return getWrapperType(getFieldType(memberTypeSymbol), TypeKind.LIST);
     }
 
     private Type getType(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
@@ -267,6 +269,8 @@ public class TypeFinder {
             return getType(name, description, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
             return getType(name, description, (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
+            return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         }
         return null;
     }
@@ -322,16 +326,20 @@ public class TypeFinder {
         }
         String name = recordFieldSymbol.getName().get();
         String description = getDescription(recordFieldSymbol);
-        Type type = getType(recordFieldSymbol.typeDescriptor());
-        // TODO: Making optional fields nilable is the correct way?
-        if (!isNilable(recordFieldSymbol.typeDescriptor()) && !recordFieldSymbol.isOptional()) {
-            type = getWrapperType(type, TypeKind.NON_NULL);
-        }
-        Field field = new Field(name, type, description);
-        if (recordFieldSymbol.typeDescriptor().typeKind() == TypeDescKind.MAP) {
+        Field field = new Field(name, description);
+        TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
+        Type type;
+        if (typeSymbol.typeKind() == TypeDescKind.MAP) {
+            type = getType(((MapTypeSymbol) typeSymbol).typeParam());
             Type argType = getWrapperType(addType(ScalarType.STRING), TypeKind.NON_NULL);
             field.addArg(new InputValue(MAP_KEY_ARGUMENT_NAME, argType, MAP_KEY_ARGUMENT_DESCRIPTION, null));
+        } else {
+            type = getType(typeSymbol);
         }
+        if (!isNilable(typeSymbol) && !recordFieldSymbol.isOptional()) {
+            type = getWrapperType(type, TypeKind.NON_NULL);
+        }
+        field.setType(type);
         return field;
     }
 
@@ -363,6 +371,12 @@ public class TypeFinder {
         } else {
             return getType(name, description, (RecordTypeSymbol) effectiveType);
         }
+    }
+
+    private Type getType(TableTypeSymbol tableTypeSymbol) {
+        TypeSymbol typeSymbol = tableTypeSymbol.rowTypeParameter();
+        Type type = getType(typeSymbol);
+        return getWrapperType(getWrapperType(type, TypeKind.NON_NULL), TypeKind.LIST);
     }
 
     private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
@@ -420,7 +434,7 @@ public class TypeFinder {
 
     private Type getInputType(ArrayTypeSymbol arrayTypeSymbol) {
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-        return getInputFieldType(memberTypeSymbol);
+        return getWrapperType(getInputFieldType(memberTypeSymbol), TypeKind.LIST);
     }
 
     private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
@@ -470,6 +484,9 @@ public class TypeFinder {
         String name = recordFieldSymbol.getName().get();
         String description = getDescription(recordFieldSymbol);
         Type type = getInputType(recordFieldSymbol.typeDescriptor());
+        if (!isNilable(recordFieldSymbol.typeDescriptor()) && !recordFieldSymbol.isOptional()) {
+            type = getWrapperType(type, TypeKind.NON_NULL);
+        }
         String defaultValue = getDefaultValue(recordFieldSymbol);
         return new InputValue(name, type, description, defaultValue);
     }
@@ -479,7 +496,8 @@ public class TypeFinder {
             return;
         }
         String memberDescription = getDescription(enumMember);
-        String name = enumMember.resolvedValue().get();
+        // TODO:
+        String name = enumMember.resolvedValue().get().replaceAll("\"", "");
         boolean isDeprecated = enumMember.deprecated();
         String deprecationReason = getDeprecationReason(enumMember);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);

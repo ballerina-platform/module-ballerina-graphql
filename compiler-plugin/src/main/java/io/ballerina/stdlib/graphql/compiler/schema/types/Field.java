@@ -29,10 +29,14 @@ public class Field implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
-    private final Type type;
+    private Type type;
     private final boolean isDeprecated;
     private final String deprecationReason;
     private final List<InputValue> args;
+
+    public Field(String name, String description) {
+        this(name, description, null, false, null);
+    }
 
     public Field(String name, Type type) {
         this(name, type, null);
@@ -77,5 +81,9 @@ public class Field implements Serializable {
 
     public List<InputValue> getArgs() {
         return this.args;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 }

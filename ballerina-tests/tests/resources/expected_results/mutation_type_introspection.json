@@ -8,13 +8,13 @@
                         "name": "setName"
                     },
                     {
-                        "name": "setTeacherSubject"
-                    },
-                    {
                         "name": "setCity"
                     },
                     {
                         "name": "setTeacherName"
+                    },
+                    {
+                        "name": "setTeacherSubject"
                     }
                 ]
             }

@@ -4,34 +4,14 @@
             "queryType": {
                 "fields": [
                     {
-                        "name": "nullableUndefinedUnionTypeArray",
+                        "name": "nonNullSingleObject",
                         "type": {
                             "name": null,
                             "kind": "NON_NULL",
                             "ofType": {
-                                "name": null,
-                                "kind": "LIST",
-                                "ofType": {
-                                    "name": "StudentService_TeacherService",
-                                    "kind": "UNION",
-                                    "ofType": null
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "name": "nullableArray",
-                        "type": {
-                            "name": null,
-                            "kind": "NON_NULL",
-                            "ofType": {
-                                "name": null,
-                                "kind": "LIST",
-                                "ofType": {
-                                    "name": "PeopleService",
-                                    "kind": "UNION",
-                                    "ofType": null
-                                }
+                                "name": "PeopleService",
+                                "kind": "UNION",
+                                "ofType": null
                             }
                         }
                     },
@@ -63,6 +43,22 @@
                         }
                     },
                     {
+                        "name": "nullableArray",
+                        "type": {
+                            "name": null,
+                            "kind": "NON_NULL",
+                            "ofType": {
+                                "name": null,
+                                "kind": "LIST",
+                                "ofType": {
+                                    "name": "PeopleService",
+                                    "kind": "UNION",
+                                    "ofType": null
+                                }
+                            }
+                        }
+                    },
+                    {
                         "name": "nonNullUndefinedUnionType",
                         "type": {
                             "name": null,
@@ -72,14 +68,6 @@
                                 "kind": "UNION",
                                 "ofType": null
                             }
-                        }
-                    },
-                    {
-                        "name": "nullableUndefinedUnionType",
-                        "type": {
-                            "name": "StudentService_TeacherService",
-                            "kind": "UNION",
-                            "ofType": null
                         }
                     },
                     {
@@ -102,14 +90,26 @@
                         }
                     },
                     {
-                        "name": "nonNullSingleObject",
+                        "name": "nullableUndefinedUnionType",
+                        "type": {
+                            "name": "StudentService_TeacherService",
+                            "kind": "UNION",
+                            "ofType": null
+                        }
+                    },
+                    {
+                        "name": "nullableUndefinedUnionTypeArray",
                         "type": {
                             "name": null,
                             "kind": "NON_NULL",
                             "ofType": {
-                                "name": "PeopleService",
-                                "kind": "UNION",
-                                "ofType": null
+                                "name": null,
+                                "kind": "LIST",
+                                "ofType": {
+                                    "name": "StudentService_TeacherService",
+                                    "kind": "UNION",
+                                    "ofType": null
+                                }
                             }
                         }
                     }

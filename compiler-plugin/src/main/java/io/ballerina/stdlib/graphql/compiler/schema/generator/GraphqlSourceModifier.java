@@ -84,7 +84,11 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             ModulePartNode updatedRootNode = modifyDocument(sourceModifierContext, rootNode, modifierContext);
             SyntaxTree syntaxTree = module.document(documentId).syntaxTree().modifyWith(updatedRootNode);
             TextDocument textDocument = syntaxTree.textDocument();
-            sourceModifierContext.modifySourceFile(textDocument, documentId);
+            if (module.documentIds().contains(documentId)) {
+                sourceModifierContext.modifySourceFile(textDocument, documentId);
+            } else {
+                sourceModifierContext.modifyTestSourceFile(textDocument, documentId);
+            }
         }
     }
 

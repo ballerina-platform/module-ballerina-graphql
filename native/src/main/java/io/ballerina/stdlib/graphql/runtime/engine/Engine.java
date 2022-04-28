@@ -64,6 +64,7 @@ public class Engine {
     private Engine() {
     }
 
+    // TODO: Interfaces
     public static Object createSchema(BString schemaString) {
         try {
             Schema schema = getDecodedSchema(schemaString);
@@ -71,6 +72,8 @@ public class Engine {
             return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {
             return createError("Error occurred while creating the schema", ERROR_TYPE, e);
+        } catch (NullPointerException e) {
+            return createError("Failed to generate schema", ERROR_TYPE);
         }
     }
 

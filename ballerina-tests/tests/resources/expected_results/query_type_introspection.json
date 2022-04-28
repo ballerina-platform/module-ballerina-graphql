@@ -5,10 +5,10 @@
                 "kind": "OBJECT",
                 "fields": [
                     {
-                        "name": "birthdate"
+                        "name": "name"
                     },
                     {
-                        "name": "name"
+                        "name": "birthdate"
                     },
                     {
                         "name": "ids"

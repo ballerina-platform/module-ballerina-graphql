@@ -7,10 +7,17 @@
                     "enumValues": null
                 },
                 {
+                    "name": "__Field",
+                    "enumValues": null
+                },
+                {
                     "name": "__TypeKind",
                     "enumValues": [
                         {
-                            "name": "INPUT_OBJECT"
+                            "name": "SCALAR"
+                        },
+                        {
+                            "name": "OBJECT"
                         },
                         {
                             "name": "INTERFACE"
@@ -19,25 +26,18 @@
                             "name": "UNION"
                         },
                         {
+                            "name": "ENUM"
+                        },
+                        {
+                            "name": "INPUT_OBJECT"
+                        },
+                        {
                             "name": "LIST"
                         },
                         {
                             "name": "NON_NULL"
-                        },
-                        {
-                            "name": "ENUM"
-                        },
-                        {
-                            "name": "OBJECT"
-                        },
-                        {
-                            "name": "SCALAR"
                         }
                     ]
-                },
-                {
-                    "name": "__Field",
-                    "enumValues": null
                 },
                 {
                     "name": "Query",
@@ -59,25 +59,25 @@
                     "name": "__DirectiveLocation",
                     "enumValues": [
                         {
-                            "name": "INLINE_FRAGMENT"
-                        },
-                        {
-                            "name": "FRAGMENT_SPREAD"
-                        },
-                        {
-                            "name": "FRAGMENT_DEFINITION"
-                        },
-                        {
-                            "name": "FIELD"
-                        },
-                        {
-                            "name": "SUBSCRIPTION"
+                            "name": "QUERY"
                         },
                         {
                             "name": "MUTATION"
                         },
                         {
-                            "name": "QUERY"
+                            "name": "SUBSCRIPTION"
+                        },
+                        {
+                            "name": "FIELD"
+                        },
+                        {
+                            "name": "FRAGMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FRAGMENT_SPREAD"
+                        },
+                        {
+                            "name": "INLINE_FRAGMENT"
                         }
                     ]
                 },

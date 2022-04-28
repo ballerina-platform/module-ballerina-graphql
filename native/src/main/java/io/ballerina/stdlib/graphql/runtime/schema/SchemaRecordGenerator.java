@@ -23,6 +23,7 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
 import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
@@ -31,10 +32,11 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DEFAULT_VALUE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DEPRECATION_REASON_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DESCRIPTION_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
@@ -42,6 +44,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELD_RECOR
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_FIELDS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERFACES_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_DEPRECATED_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION_TYPE_FIELD;
@@ -75,18 +78,15 @@ public class SchemaRecordGenerator {
 
     public BMap<BString, Object> getSchemaRecord() {
         BMap<BString, Object> schemaRecord = ValueCreator.createRecordValue(getModule(), SCHEMA_RECORD);
+        schemaRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(this.schema.getDescription()));
         BArray typesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
         for (BMap<BString, Object> typeRecord : this.typeRecords.values()) {
             typesArray.append(typeRecord);
         }
         schemaRecord.put(TYPES_FIELD, typesArray);
         schemaRecord.put(QUERY_TYPE_FIELD, this.typeRecords.get(QUERY));
-        if (this.typeRecords.containsKey(MUTATION)) {
-            schemaRecord.put(MUTATION_TYPE_FIELD, this.typeRecords.get(MUTATION));
-        }
-        if (this.typeRecords.containsKey(SUBSCRIPTION)) {
-            schemaRecord.put(SUBSCRIPTION_TYPE_FIELD, this.typeRecords.get(SUBSCRIPTION));
-        }
+        schemaRecord.put(MUTATION_TYPE_FIELD, this.typeRecords.get(MUTATION));
+        schemaRecord.put(SUBSCRIPTION_TYPE_FIELD, this.typeRecords.get(SUBSCRIPTION));
         return schemaRecord;
     }
 
@@ -95,20 +95,26 @@ public class SchemaRecordGenerator {
             BMap<BString, Object> typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
             typeRecord.put(NAME_FIELD, StringUtils.fromString(type.getName()));
             typeRecord.put(KIND_FIELD, StringUtils.fromString(type.getKind().toString()));
-            if (type.getKind() == TypeKind.OBJECT) {
-                typeRecord.put(INTERFACES_FIELD, getInterfacesArray());
-            }
+            typeRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(type.getDescription()));
             this.typeRecords.put(type.getName(), typeRecord);
         }
     }
 
     private void populateFieldsOfTypes() {
-        for (Type type : this.schema.getTypes().values()) {
-            if (type.getKind() == TypeKind.OBJECT) {
-                BMap<BString, Object> typeRecord = this.typeRecords.get(type.getName());
+        for (Map.Entry<String, Type> entry : this.schema.getTypes().entrySet()) {
+            Type type = entry.getValue();
+            BMap<BString, Object> typeRecord = this.typeRecords.get(entry.getKey());
+            if (type.getKind() == TypeKind.OBJECT || type.getKind() == TypeKind.INTERFACE) {
                 typeRecord.put(FIELDS_FIELD, getFieldsArray(type));
-            } else if (type.getKind() == TypeKind.INPUT_OBJECT) {
-                BMap<BString, Object> typeRecord = this.typeRecords.get(type.getName());
+                typeRecord.put(INTERFACES_FIELD, getInterfacesArray(type));
+            }
+            if (type.getKind() == TypeKind.INTERFACE || entry.getValue().getKind() == TypeKind.UNION) {
+                typeRecord.put(POSSIBLE_TYPES_FIELD, getPossibleTypesArray(type));
+            }
+            if (type.getKind() == TypeKind.ENUM) {
+                typeRecord.put(ENUM_VALUES_FIELD, getEnumValuesArray(type));
+            }
+            if (type.getKind() == TypeKind.INPUT_OBJECT) {
                 typeRecord.put(INPUT_FIELDS_FIELD, getInputFieldsArray(type));
             }
         }
@@ -122,25 +128,29 @@ public class SchemaRecordGenerator {
             typeRecord = ValueCreator.createRecordValue(getModule(), TYPE_RECORD);
             typeRecord.put(NAME_FIELD, StringUtils.fromString(type.getName()));
             typeRecord.put(KIND_FIELD, StringUtils.fromString(type.getKind().toString()));
+            typeRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(type.getDescription()));
         }
         if (type.getKind() == TypeKind.LIST || type.getKind() == TypeKind.NON_NULL) {
             typeRecord.put(OF_TYPE_FIELD, getTypeRecord(type.getOfType()));
-        } else if (type.getKind() == TypeKind.UNION) {
-            typeRecord.put(POSSIBLE_TYPES_FIELD, getPossibleTypesArray(type));
-        } else if (type.getKind() == TypeKind.ENUM) {
-            typeRecord.put(ENUM_VALUES_FIELD, getEnumValuesArray(type));
         }
         return typeRecord;
     }
 
     private BArray getEnumValuesArray(Type type) {
         BArray enumValuesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD));
-        for (Object enumValue : type.getEnumValues()) {
-            BMap<BString, Object> enumValueRecord = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD);
-            enumValueRecord.put(NAME_FIELD, enumValue);
-            enumValuesArray.append(enumValueRecord);
+        for (EnumValue enumValue : type.getEnumValues()) {
+            enumValuesArray.append(getEnumValueRecord(enumValue));
         }
         return enumValuesArray;
+    }
+
+    private BMap<BString, Object> getEnumValueRecord(EnumValue enumValue) {
+        BMap<BString, Object> enumValueRecord = ValueCreator.createRecordValue(getModule(), ENUM_VALUE_RECORD);
+        enumValueRecord.put(NAME_FIELD, StringUtils.fromString(enumValue.getName()));
+        enumValueRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(enumValue.getDescription()));
+        enumValueRecord.put(IS_DEPRECATED_FIELD, enumValue.isDeprecated());
+        enumValueRecord.put(DEPRECATION_REASON_FIELD, StringUtils.fromString(enumValue.getDeprecationReason()));
+        return enumValueRecord;
     }
 
     private BArray getPossibleTypesArray(Type type) {
@@ -151,8 +161,12 @@ public class SchemaRecordGenerator {
         return possibleTypesArray;
     }
 
-    private BArray getInterfacesArray() {
-        return getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
+    private BArray getInterfacesArray(Type type) {
+        BArray interfacesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), TYPE_RECORD));
+        for (Type interfaceType : type.getInterfaces()) {
+            interfacesArray.append(getTypeRecord(interfaceType));
+        }
+        return interfacesArray;
     }
 
     private BArray getFieldsArray(Type type) {
@@ -174,8 +188,11 @@ public class SchemaRecordGenerator {
     private BMap<BString, Object> getFieldRecord(Field field) {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(field.getName()));
-        fieldRecord.put(TYPE_FIELD, getTypeRecord(field.getType()));
+        fieldRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(field.getDescription()));
+        fieldRecord.put(TYPE_FIELD, getTypeRecord(field.getType())); // TODO:
         fieldRecord.put(ARGS_FIELD, getInputValueArray(field));
+        fieldRecord.put(IS_DEPRECATED_FIELD, field.isDeprecated());
+        fieldRecord.put(DEPRECATION_REASON_FIELD, StringUtils.fromString(field.getDeprecationReason()));
         return fieldRecord;
     }
 
@@ -190,10 +207,9 @@ public class SchemaRecordGenerator {
     private BMap<BString, Object> getInputValueRecordFromInputValue(InputValue inputValue) {
         BMap<BString, Object> inputValueRecord = ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD);
         inputValueRecord.put(NAME_FIELD, StringUtils.fromString(inputValue.getName()));
+        inputValueRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(inputValue.getDescription()));
         inputValueRecord.put(TYPE_FIELD, getTypeRecord(inputValue.getType()));
-        if (Objects.nonNull(inputValue.getDefaultValue())) {
-            inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
-        }
+        inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
         return inputValueRecord;
     }
 }

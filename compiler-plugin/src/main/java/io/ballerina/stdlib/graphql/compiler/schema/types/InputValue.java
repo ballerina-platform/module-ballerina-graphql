@@ -30,10 +30,6 @@ public class InputValue implements Serializable {
     private final Type type;
     private final String defaultValue;
 
-    public InputValue(String name, Type type, String defaultValue) {
-        this(name, type, null, defaultValue);
-    }
-
     public InputValue(String name, Type type, String description, String defaultValue) {
         this.name = name;
         this.description = description;

@@ -4,13 +4,13 @@
             "kind": "OBJECT",
             "fields": [
                 {
-                    "name": "address"
-                },
-                {
                     "name": "name"
                 },
                 {
                     "name": "age"
+                },
+                {
+                    "name": "address"
                 }
             ]
         }
