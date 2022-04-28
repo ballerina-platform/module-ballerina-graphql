@@ -11,3 +11,6 @@ distribution = "2201.0.1"
 
 [[platform.java11.dependency]]
 path = "../native/build/libs/graphql-native-1.2.2-SNAPSHOT.jar"
+
+[[platform.java11.dependency]]
+path = "../compiler-plugin/build/libs/graphql-compiler-plugin-1.2.2-SNAPSHOT.jar"
