@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#1936] Integrate GraphiQL Client into GraphQL Package](https://github.com/ballerina-platform/ballerina-standard-library/issues/1936)
+
+### Changed
+- [[#2838] Remove Spec Deviations in GraphQL File Upload](https://github.com/ballerina-platform/ballerina-standard-library/issues/2838)
+
+## [1.2.1] - 2022-03-08
+
+### Added
 - [[#2620] Allow Intersection Types as Inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/2620)
 
 ### Fixed

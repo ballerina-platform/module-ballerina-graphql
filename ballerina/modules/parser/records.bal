@@ -34,8 +34,10 @@ public type Location record {|
 # + message - The details of the error
 # + locations - The locations in the GraphQL document related to the error
 # + path - The GraphQL resource path of the error
+# + extensions - Additional information to errors
 public type ErrorDetail record {|
     string message;
     Location[] locations?;
     (int|string)[] path?;
+    map<anydata> extensions?;
 |};

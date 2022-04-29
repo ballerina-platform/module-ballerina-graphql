@@ -52,6 +52,7 @@ public class Listener {
         __Schema schema = check createSchema(s);
         addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
+        Graphiql graphiql = getGraphiqlConfig(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         Engine engine = check new (schema, maxQueryDepth);
         attachServiceToEngine(s, engine);
@@ -71,6 +72,7 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while attaching the service", result);
         }
+        
         websocket:Listener? wsListener = self.wsListener;
         if wsListener is websocket:Listener {
             UpgradeService wsService = getWebsocketService(engine, schema.cloneReadOnly(), serviceConfig);
@@ -78,6 +80,17 @@ public class Listener {
             result = wsListener.attach(wsService, name);
             if result is error {
                 return error Error("Error occurred while attaching the websocket service", result);
+            }
+        }
+
+        if graphiql.enable {
+            check validateGraphiqlPath(graphiql.path);
+            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
+            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
+            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
+            result = self.httpListener.attach(graphiqlService, graphiql.path);
+            if result is error {
+                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
             }
         }
     }
@@ -94,6 +107,7 @@ public class Listener {
                 return error Error("Error occurred while detaching the service", result);
             }
         }
+        
         websocket:Listener? wsListener = self.wsListener;
         if wsListener is websocket:Listener {
             UpgradeService? wsService = getWebsocketServiceFromGraphqlService(s);
@@ -102,6 +116,14 @@ public class Listener {
                 if result is error {
                     return error Error("Error occurred while detaching the websocket service", result);
                 }
+            }
+        }
+
+        HttpService? graphiqlService = getGraphiqlServiceFromGraphqlService(s);
+        if graphiqlService is HttpService {
+            error? result = self.httpListener.detach(graphiqlService);
+            if result is error {
+                return error Error("Error occurred while detaching the GraphiQL endpoint", result);
             }
         }
     }
