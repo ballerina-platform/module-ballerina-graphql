@@ -47,6 +47,93 @@ service object {
     }
 };
 
+Service invalidGraphiqlPathConfigService1 =
+@ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "/ballerina graphql"
+    }
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
+Service invalidGraphiqlPathConfigService2 =
+@ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "/ballerina_+#@#$!"
+    }
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
+Service invalidGraphiqlPathConfigService3 =
+@ServiceConfig {
+    graphiql: {
+        enable: false,
+        path: "/ballerina graphql"
+    }
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
+Service graphiqlDefaultPathConfigService =
+@ServiceConfig {
+    graphiql: {
+        enable: true
+    }
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
+Service graphiqlConfigService =
+@ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "ballerina/graphiql"
+    }
+}
+service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
+
+@ServiceConfig {
+    graphiql: {
+        enable: true
+    }
+}
+service /graphiql/test on serviceTypeListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "graphiql/interface"
+    }
+}
+service /graphiqlClient on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
 service /fileUpload on basicListener {
     resource function get name() returns string {
         return "/fileUpload";

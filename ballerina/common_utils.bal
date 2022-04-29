@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import graphql.parser;
 
 isolated function getFieldNotFoundErrorMessageFromType(string requiredFieldName, __Type rootType) returns string {
@@ -350,4 +351,74 @@ isolated function getInputObjectFieldFormPath((string|int)[] path, string name) 
         }
     }
     return name;
+}
+
+isolated function getGraphqlPayload(string query, map<anydata>? variables = (), string? operationName = ()) 
+                                    returns json {
+    return {
+        query: query,
+        variables: variables.toJson(),
+        operationName: operationName
+    };
+}
+
+isolated function handleHttpClientErrorResponse(http:ClientError clientError) returns RequestError {
+    if clientError is http:ApplicationResponseError {
+        anydata|error data = clientError.detail().get("body").ensureType(anydata);
+        if data is error {
+            return error RequestError("GraphQL Client Error", data);
+        }
+        return error RequestError("GraphQL Client Error", body = data);
+    }
+    return error RequestError("GraphQL Client Error", clientError);
+}
+
+isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
+    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType(GraphQLErrorArray);
+    if errors is error {
+        return error RequestError("GraphQL Client Error", errors);
+    }
+    json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
+    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () : 
+        <map<json>> responseMap.get("extensions")) : ();
+    return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
+}
+
+isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, json graphqlResponse) 
+                                     returns GenericResponse|record{}|json|RequestError {
+    do {
+        if targetType is typedesc<GenericResponse> {
+            GenericResponse response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        } else if targetType is typedesc<record{}> {
+            record{} response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        } else if targetType is typedesc<json> {
+            json response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        }
+    } on fail error e {
+        return error RequestError("GraphQL Client Error",  e);
+    }
+    return error RequestError("GraphQL Client Error, Invalid binding type.");
+}
+
+isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType, 
+                                               json graphqlResponse) 
+                                               returns GenericResponseWithErrors|record{}|json|RequestError {
+    do {
+        if targetType is typedesc<GenericResponseWithErrors> {
+            GenericResponseWithErrors response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        } else if targetType is typedesc<record{}> {
+            record{} response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        } else if targetType is typedesc<json> {
+            json response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        }
+    } on fail error e {
+        return error RequestError("GraphQL Client Error",  e);
+    }
+    return error RequestError("GraphQL Client Error, Invalid binding type.");
 }

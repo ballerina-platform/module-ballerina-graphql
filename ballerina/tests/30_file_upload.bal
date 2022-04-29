@@ -32,7 +32,7 @@ function testSingleFileUpload() returns error? {
         "variables": variables
     }; 
 
-    json pathMap =  { "0": ["file"]};
+    json pathMap =  { "0": ["variables.file"]};
 
     mime:Entity operations = new;
     mime:ContentDisposition contentDisposition1 = new;
@@ -82,9 +82,9 @@ function testMultipleFileUpload() returns error? {
     }; 
 
     json pathMap =  {
-        "0": ["fileList.0"],
-        "1": ["fileList.1"],
-        "2": ["fileList.2"]
+        "0": ["variables.fileList.0"],
+        "1": ["variables.fileList.1"],
+        "2": ["variables.fileList.2"]
     };
 
     mime:Entity operations = new;
@@ -152,7 +152,58 @@ function testMultipleFileUpload() returns error? {
 @test:Config {
     groups: ["file_upload"]
 }
-isolated function testUndefinedVariableWithMultipartRequest() returns error? {
+isolated function testUndefinedVariableWithMultipartRequest1() returns error? {
+    string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) { fileName }}`;
+    json variables = {"files": [null]} ;
+
+    json operation = {
+        "query":document,
+        "variables": variables
+    };
+
+    json pathMap =  {
+        "0": ["variables.files.1"]
+    };
+
+    mime:Entity operations = new;
+    mime:ContentDisposition contentDisposition1 = new;
+    contentDisposition1.name = "operations";
+    contentDisposition1.disposition = "form-data";
+    operations.setContentDisposition(contentDisposition1);
+    operations.setJson(operation);
+
+    mime:Entity path = new;
+    mime:ContentDisposition contentDisposition2 = new;
+    contentDisposition2.name = "map";
+    contentDisposition2.disposition = "form-data";
+    path.setContentDisposition(contentDisposition2);
+    path.setJson(pathMap);
+
+    mime:Entity jsonFilePart = new;
+    mime:ContentDisposition contentDisposition3 = new;
+    contentDisposition3.name = "0";
+    contentDisposition3.disposition = "form-data";
+    contentDisposition3.fileName = "sample1.json";
+    jsonFilePart.setContentDisposition(contentDisposition3);
+    jsonFilePart.setFileAsEntityBody("./tests/resources/files/sample1.json", contentType = mime:APPLICATION_JSON);
+
+    mime:Entity[] bodyParts = [operations, path, jsonFilePart];
+    http:Request request = new;
+    request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
+
+    http:Client httpClient = check new("http://localhost:9091");
+    http:Response response = check httpClient->post("/fileUpload", request);
+    int statusCode = response.statusCode;
+    test:assertEquals(statusCode, 400);
+    string actualPaylaod = check response.getTextPayload();
+    string expectedMessage = "Undefined variable found in multipart request `map`";
+    test:assertEquals(actualPaylaod, expectedMessage);
+}
+
+@test:Config {
+    groups: ["file_upload"]
+}
+isolated function testUndefinedVariableWithMultipartRequest2() returns error? {
     string document = string`mutation($files: [Upload!]!){ multipleFileUpload(files: $files) { fileName }}`;
     json variables = {"files": [null]} ;
 
@@ -213,7 +264,7 @@ isolated function testMissingContentInMultipartRequest() returns error? {
     };
 
     json pathMap =  {
-        "0": ["files.0"]
+        "0": ["variables.files.0"]
     };
 
     mime:Entity operations = new;
@@ -264,7 +315,7 @@ isolated function testInvalidMapFieldInMultipartRequest() returns error? {
     };
 
     json pathMap =  {
-        "0": "files.0"
+        "0": "variables.files.0"
     };
 
     mime:Entity operations = new;
@@ -366,7 +417,7 @@ function testNonNullVariableValueWithMutipartRequest() returns error? {
         "variables": variables
     };
 
-    json pathMap =  { "0": ["file"]};
+    json pathMap =  { "0": ["variables.file"]};
 
     mime:Entity operations = new;
     mime:ContentDisposition contentDisposition1 = new;

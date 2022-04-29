@@ -53,6 +53,15 @@ public type CorsConfig record {|
     *http:CorsConfig;
 |};
 
+# Represent GraphiQL client configurations
+#
+# + enable - Status of the client
+# + path - Path for the client
+public type Graphiql record {|
+    boolean enable = false;
+    string path = "graphiql";
+|};
+
 # Internal HTTP service class for GraphQL services
 isolated service class HttpService {
     *http:Service;
@@ -62,3 +71,25 @@ isolated service class HttpService {
 isolated service class UpgradeService {
     *websocket:UpgradeService;
 }
+
+// GraphQL client related data binding types representation
+
+# Represents the target type binding record with data and extensions of a GraphQL response for `executeWithType` method.
+#
+# + extensions -  Meta information on protocol extensions from the GraphQL server
+# + data -  The requested data from the GraphQL server
+public type GenericResponse record {|
+   map<json?> extensions?;
+   record {| anydata...; |}|map<json?> data?;
+|};
+
+# Represents the target type binding record with data, extensions and errors of a GraphQL response for `execute` method.
+#
+# + extensions - Meta information on protocol extensions from the GraphQL server
+# + data - The requested data from the GraphQL server
+# + errors - The errors occurred (if present) while processing the GraphQL request.
+public type GenericResponseWithErrors record {|
+   map<json?> extensions?;
+   record {| anydata...; |}|map<json?> data?;
+   ErrorDetail[] errors?;
+|};

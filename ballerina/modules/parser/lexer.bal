@@ -422,7 +422,7 @@ isolated function getWordTokenType(string value) returns TokenType {
 }
 
 isolated function getInt(string value, Location location) returns int|InternalError {
-    var number = 'int:fromString(value);
+    int|error number = 'int:fromString(value);
     if number is error {
         return getInternalError(value, "Int", location);
     }
@@ -430,7 +430,7 @@ isolated function getInt(string value, Location location) returns int|InternalEr
 }
 
 isolated function getFloat(string value, Location location) returns float|InternalError {
-    var number = 'float:fromString(value);
+    float|error number = 'float:fromString(value);
     if number is error {
         return getInternalError(value, "Float", location);
     }
