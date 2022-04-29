@@ -17,7 +17,9 @@
 import ballerina/file;
 import ballerina/http;
 import ballerina/io;
+import ballerina/lang.value;
 import ballerina/test;
+import ballerina/websocket;
 
 isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
@@ -101,4 +103,19 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
         next = byteStream.iterator().next();
     }
     return 'string:fromBytes(content);
+}
+
+isolated function writeWebSocketTextMessage(string document, websocket:Client wsClient, json? variables = {},
+                                            string? operationName = ()) returns websocket:Error? {
+    json payload = {query: document, variables: variables, operationName: operationName};
+    return wsClient->writeTextMessage(payload.toJsonString());
+}
+
+isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload)
+    returns websocket:Error?|error {
+    string textResponse = check wsClient->readTextMessage();
+    json|error actualPayload = value:fromJsonString(textResponse);
+    if actualPayload !is error {
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
 }

@@ -100,6 +100,12 @@ isolated class Engine {
 
         DuplicateFieldRemover duplicateFieldRemover = new(document);
         duplicateFieldRemover.remove();
+
+        SubscriptionVisitor subscriptionVisitor = new(document);
+        errors = subscriptionVisitor.validate();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
         return;
     }
 

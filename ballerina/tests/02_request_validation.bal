@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/test;
 import ballerina/url;
+import ballerina/websocket;
 
 @test:Config {
     groups: ["request_validation", "listener"]
@@ -141,4 +142,52 @@ isolated function testInvalidRequestBody() returns error? {
     request.setHeader("Content-Type", "application/json");
     string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
     test:assertEquals(payload, "Invalid request body");
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions"]
+}
+isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
+    string document = "";
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {"errors": [{"message": "Query not found"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions"]
+}
+isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    json payload = {query: ()};
+    check wsClient->writeTextMessage(payload.toJsonString());
+    json expectedPayload = {"errors": [{"message": "Query not found"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions"]
+}
+isolated function testInvalidVariableInWebSocketPayload() returns error? {
+    string document = string `subscription getNames { name }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient, []);
+    json expectedPayload = {"errors": [{"message": "Invalid format in request parameter: variables"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions"]
+}
+isolated function testInvalidWebSocketPayload() returns error? {
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:Client wsClient = check new(url);
+    string payload = "";
+    check wsClient->writeTextMessage(payload);
+    json expectedPayload = {"errors": [{"message": "Invalid subscription payload"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }

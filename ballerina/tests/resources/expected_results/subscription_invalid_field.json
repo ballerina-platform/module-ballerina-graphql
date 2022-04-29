@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Cannot query field \"invalidField\" on type \"Subscription\".",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 16
+                }
+            ]
+        }
+    ]
+}

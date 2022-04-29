@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.StreamType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -39,6 +40,8 @@ import io.ballerina.stdlib.graphql.runtime.schema.types.TypeKind;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.runtime.api.TypeTags.STREAM_TAG;
+import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.BOOLEAN;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
@@ -50,6 +53,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.STRING;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
@@ -75,9 +80,13 @@ public class FieldFinder {
     public void populateFields() {
         this.addSchemaTypeFields();
         SchemaType mutationType = populateFieldsForMutationType();
+        SchemaType subscriptionType = populateFieldsForSubscriptionType();
         populateFieldsForQueryType();
         if (mutationType != null) {
             this.typeMap.put(MUTATION, mutationType);
+        }
+        if (subscriptionType != null) {
+            this.typeMap.put(SUBSCRIPTION, subscriptionType);
         }
         this.addAdditionalInputValuesToTypeFields();
     }
@@ -92,6 +101,21 @@ public class FieldFinder {
             }
         }
         return mutationType;
+    }
+
+    public SchemaType populateFieldsForSubscriptionType() {
+        SchemaType subscriptionType = null;
+        if (this.typeMap.containsKey(SUBSCRIPTION)) {
+            subscriptionType = this.typeMap.remove(SUBSCRIPTION);
+            ServiceType serviceType = (ServiceType) subscriptionType.getBalType();
+            for (ResourceMethodType resourceMethodType : serviceType.getResourceMethods()) {
+                if (SUBSCRIBE_ACCESSOR.equals(resourceMethodType.getAccessor())) {
+                    String[] resourcePath = resourceMethodType.getResourcePath();
+                    subscriptionType.addField(getFieldsFromResourceMethodType(resourceMethodType, resourcePath));
+                }
+            }
+        }
+        return subscriptionType;
     }
 
     public void populateFieldsForQueryType() {
@@ -260,6 +284,17 @@ public class FieldFinder {
 
     private void setTypeForField(MethodType method, SchemaField schemaField) {
         Type resourceReturnType = method.getType().getReturnType();
+        if (resourceReturnType.getTag() == STREAM_TAG) {
+            resourceReturnType = ((StreamType) resourceReturnType).getConstrainedType();
+        } else if (resourceReturnType.getTag() == UNION_TAG) {
+            List<Type> memberTypes = ((UnionType) resourceReturnType).getMemberTypes();
+            for (Type type: memberTypes) {
+                if (type.getTag() == STREAM_TAG) {
+                    resourceReturnType = ((StreamType) type).getConstrainedType();
+                    break;
+                }
+            }
+        }
         SchemaType fieldType = getSchemaTypeFromType(resourceReturnType);
         if (resourceReturnType.isNilable()) {
             schemaField.setType(fieldType);

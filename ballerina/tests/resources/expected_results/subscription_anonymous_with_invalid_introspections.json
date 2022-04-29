@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Anonymous Subscription must not select an introspection top level field.",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 16
+                }
+            ]
+        }
+    ]
+}

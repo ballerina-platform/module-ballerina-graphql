@@ -29,6 +29,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.StreamType;
 import io.ballerina.runtime.api.types.TableType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -39,9 +40,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.runtime.api.TypeTags.STREAM_TAG;
+import static io.ballerina.runtime.api.TypeTags.UNION_TAG;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getScalarTypeName;
@@ -85,7 +90,12 @@ public class TypeFinder {
     private void createTypesFromRootService() {
         this.createSchemaType(QUERY, TypeKind.OBJECT, serviceType);
         for (ResourceMethodType resourceMethod : this.serviceType.getResourceMethods()) {
-            getTypesFromResourceMethod(resourceMethod, resourceMethod.getResourcePath());
+            if (GET_ACCESSOR.equals(resourceMethod.getAccessor())) {
+                getTypesFromResourceMethod(resourceMethod, resourceMethod.getResourcePath());
+            } else {
+                this.createSchemaType(SUBSCRIPTION, TypeKind.OBJECT, serviceType);
+                getTypesFromSubscriptionResourceMethod(resourceMethod);
+            }
         }
         if (this.serviceType.getRemoteMethods().length > 0) {
             this.createSchemaType(MUTATION, TypeKind.OBJECT, serviceType);
@@ -114,6 +124,27 @@ public class TypeFinder {
     private void getTypesFromRemoteMethod(RemoteMethodType remoteMethod) {
         getInputTypesFromMethod(remoteMethod);
         getSchemaTypeFromBalType(remoteMethod.getType().getReturnType());
+    }
+
+    private void getTypesFromSubscriptionResourceMethod(ResourceMethodType resourceMethod) {
+        getInputTypesFromMethod(resourceMethod);
+        StreamType streamType = null;
+        if (resourceMethod.getType().getReturnType().getTag() == STREAM_TAG) {
+            streamType = (StreamType) resourceMethod.getType().getReturnType();
+        } else if (resourceMethod.getType().getReturnType().getTag() == UNION_TAG) {
+            List<Type> memberTypes = ((UnionType) resourceMethod.getType().getReturnType()).getMemberTypes();
+            for (Type memberType: memberTypes) {
+                if (memberType.getTag() == STREAM_TAG) {
+                    streamType = (StreamType) memberType;
+                    break;
+                }
+            }
+        }
+        if (streamType == null) {
+            throw createError("Invalid return type for subscription: return type must consist a stream", ERROR_TYPE);
+        } else {
+            getSchemaTypeFromBalType(streamType.getConstrainedType());
+        }
     }
 
     private void getTypesFromHierarchicalResource(ResourceMethodType resourceMethod, String[] resourcePath) {

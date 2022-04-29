@@ -1142,3 +1142,59 @@ service /nullable_inputs on basicListener {
         return account.number;
     }
 }
+
+public string[] namesArray = ["Walter", "Skyler"];
+
+service /subscriptions on basicListener {
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    resource function subscribe name() returns stream<string, error?> {
+        return namesArray.toStream();
+    }
+
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        return intArray.toStream();
+    }
+
+    isolated resource function subscribe stringMessages() returns stream<string?, error?> {
+        string?[] stringArray = [(), "1", "2", "3", "4", "5"];
+        return stringArray.toStream();
+    }
+
+    isolated resource function subscribe books() returns stream<Book, error?> {
+        Book[] books = [
+            {name: "Crime and Punishment", author: "Fyodor Dostoevsky"},
+            {name: "A Game of Thrones", author: "George R.R. Martin"}
+        ];
+        return books.toStream();
+    }
+
+    isolated resource function subscribe students() returns stream<StudentService, error?> {
+        StudentService[] students = [new StudentService(1, "Eren Yeager"), new StudentService(2, "Mikasa Ackerman")];
+        return students.toStream();
+    }
+
+    isolated resource function subscribe filterValues(int value) returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        int[] filteredArray = [];
+        foreach int i in intArray {
+            if i < value {
+                filteredArray.push(i);
+            }
+        }
+        return filteredArray.toStream();
+    }
+
+    isolated resource function subscribe values() returns stream<int> {
+        int[] array = [];
+        int _ = array.remove(0);
+        return array.toStream();
+    }
+
+    isolated resource function subscribe multipleValues() returns stream<(Book|Course)>|error {
+        return [b7, c1].toStream();
+    }
+}
