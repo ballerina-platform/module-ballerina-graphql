@@ -52,7 +52,6 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         if (!isGraphqlService(context)) {
             return;
         }
-
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
         // Already checked isEmpty() inside the isGraphqlService() method.
         @SuppressWarnings("OptionalGetWithoutIsPresent")

@@ -126,4 +126,8 @@ public class Schema implements Serializable {
     public void addDirective(Directive directive) {
         this.directives.add(directive);
     }
+
+    public List<Directive> getDirectives() {
+        return this.directives;
+    }
 }

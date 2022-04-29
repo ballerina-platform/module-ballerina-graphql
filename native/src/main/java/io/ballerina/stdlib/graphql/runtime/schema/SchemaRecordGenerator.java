@@ -18,11 +18,17 @@
 
 package io.ballerina.stdlib.graphql.runtime.schema;
 
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.FiniteType;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.graphql.compiler.schema.types.Directive;
+import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
 import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
@@ -30,13 +36,18 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DEFAULT_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DEPRECATION_REASON_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DESCRIPTION_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DIRECTIVES_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DIRECTIVE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FIELDS_FIELD;
@@ -46,6 +57,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INPUT_VALUE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERFACES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.IS_DEPRECATED_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.LOCATIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION_TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -87,6 +99,8 @@ public class SchemaRecordGenerator {
         schemaRecord.put(QUERY_TYPE_FIELD, this.typeRecords.get(QUERY));
         schemaRecord.put(MUTATION_TYPE_FIELD, this.typeRecords.get(MUTATION));
         schemaRecord.put(SUBSCRIPTION_TYPE_FIELD, this.typeRecords.get(SUBSCRIPTION));
+        schemaRecord.put(DIRECTIVES_FIELD, getDirectives());
+        schemaRecord.freezeDirect();
         return schemaRecord;
     }
 
@@ -190,15 +204,15 @@ public class SchemaRecordGenerator {
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(field.getName()));
         fieldRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(field.getDescription()));
         fieldRecord.put(TYPE_FIELD, getTypeRecord(field.getType())); // TODO:
-        fieldRecord.put(ARGS_FIELD, getInputValueArray(field));
+        fieldRecord.put(ARGS_FIELD, getInputValueArray(field.getArgs()));
         fieldRecord.put(IS_DEPRECATED_FIELD, field.isDeprecated());
         fieldRecord.put(DEPRECATION_REASON_FIELD, StringUtils.fromString(field.getDeprecationReason()));
         return fieldRecord;
     }
 
-    private BArray getInputValueArray(Field field) {
+    private BArray getInputValueArray(List<InputValue> inputValues) {
         BArray inputValueArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), INPUT_VALUE_RECORD));
-        for (InputValue inputValue : field.getArgs()) {
+        for (InputValue inputValue : inputValues) {
             inputValueArray.append(getInputValueRecordFromInputValue(inputValue));
         }
         return inputValueArray;
@@ -211,5 +225,44 @@ public class SchemaRecordGenerator {
         inputValueRecord.put(TYPE_FIELD, getTypeRecord(inputValue.getType()));
         inputValueRecord.put(DEFAULT_VALUE_FIELD, StringUtils.fromString(inputValue.getDefaultValue()));
         return inputValueRecord;
+    }
+
+    private BArray getDirectives() {
+        BArray directivesArray = getArrayTypeFromBMap(ValueCreator.createRecordValue(getModule(), DIRECTIVE_RECORD));
+        for (Directive directive : this.schema.getDirectives()) {
+            directivesArray.append(getDirectiveRecord(directive));
+        }
+        return directivesArray;
+    }
+
+    private BMap<BString, Object> getDirectiveRecord(Directive directive) {
+        BMap<BString, Object> directiveRecord = ValueCreator.createRecordValue(getModule(), DIRECTIVE_RECORD);
+        directiveRecord.put(NAME_FIELD, StringUtils.fromString(directive.getName()));
+        directiveRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(directive.getDescription()));
+        directiveRecord.put(LOCATIONS_FIELD, getDirectiveLocationsArray(directive));
+        directiveRecord.put(ARGS_FIELD, getInputValueArray(directive.getArgs()));
+        return directiveRecord;
+    }
+
+    private BArray getDirectiveLocationsArray(Directive directive) {
+        BArray directiveLocationsArray = ValueCreator.createArrayValue(getDirectiveLocationType());
+        for (DirectiveLocation location : directive.getLocations()) {
+            directiveLocationsArray.append(StringUtils.fromString(location.toString()));
+        }
+        return directiveLocationsArray;
+    }
+
+    private FiniteType getFiniteType(DirectiveLocation directiveLocation) {
+        BString value = StringUtils.fromString(directiveLocation.toString());
+        return TypeCreator.createFiniteType(directiveLocation.toString(), Set.of(value), 0);
+    }
+
+    private ArrayType getDirectiveLocationType() {
+        List<io.ballerina.runtime.api.types.Type> directiveLocationsList = new ArrayList<>();
+        for (DirectiveLocation directiveLocation : DirectiveLocation.values()) {
+            directiveLocationsList.add(getFiniteType(directiveLocation));
+        }
+        UnionType unionType = TypeCreator.createUnionType(directiveLocationsList);
+        return TypeCreator.createArrayType(unionType);
     }
 }

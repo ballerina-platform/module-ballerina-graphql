@@ -59,6 +59,8 @@ public class EngineUtils {
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
     public static final String ENUM_VALUE_RECORD = "__EnumValue";
+    public static final String DIRECTIVE_RECORD = "__Directive";
+    public static final String DIRECTIVE_LOCATION_ENUM = "__DirectiveLocation";
 
     // Schema related record field names
     public static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
@@ -70,6 +72,7 @@ public class EngineUtils {
     public static final BString DESCRIPTION_FIELD = StringUtils.fromString("description");
     public static final BString DEPRECATION_REASON_FIELD = StringUtils.fromString("deprecationReason");
     public static final BString IS_DEPRECATED_FIELD = StringUtils.fromString("isDeprecated");
+    public static final BString DIRECTIVES_FIELD = StringUtils.fromString("directives");
     public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
@@ -115,7 +118,7 @@ public class EngineUtils {
 
     // Record fields
     static final BString LOCATION_FIELD = StringUtils.fromString("location");
-    static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
+    public static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
     static final BString PATH_FIELD = StringUtils.fromString("path");
     static final BString MESSAGE_FIELD = StringUtils.fromString("message");
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");

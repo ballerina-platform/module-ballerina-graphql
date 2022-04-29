@@ -47,12 +47,21 @@ public class Listener {
     #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        string schemaString = getSchemaString(serviceConfig);
-        __Schema schema = check createSchema(schemaString);
-        addDefaultDirectives(schema);
         Graphiql graphiql = getGraphiqlConfig(serviceConfig);
+        if graphiql.enable {
+            check validateGraphiqlPath(graphiql.path);
+            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
+            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
+            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
+            error? result = self.httpListener.attach(graphiqlService, graphiql.path);
+            if result is error {
+                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
+            }
+        }
+
+        string schemaString = getSchemaString(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        Engine engine = check new (schema, maxQueryDepth);
+        Engine engine = check new (schemaString, maxQueryDepth);
         attachServiceToEngine(s, engine);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
@@ -60,17 +69,6 @@ public class Listener {
         error? result = self.httpListener.attach(httpService, name);
         if result is error {
             return error Error("Error occurred while attaching the service", result);
-        }
-
-        if graphiql.enable {
-            check validateGraphiqlPath(graphiql.path);
-            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
-            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
-            result = self.httpListener.attach(graphiqlService, graphiql.path);
-            if result is error {
-                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
-            }
         }
     }
 
