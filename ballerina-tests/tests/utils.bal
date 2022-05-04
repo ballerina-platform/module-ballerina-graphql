@@ -20,6 +20,7 @@ import ballerina/io;
 import ballerina/test;
 
 const CONTENT_TYPE_TEXT_HTML = "text/html";
+const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 
 isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {

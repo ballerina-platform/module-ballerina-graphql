@@ -182,6 +182,13 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testSchemaGenerationWithContextInit() {
+        String packagePath = "21_context_init";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         return loadPackage(packagePath).getCompilation().diagnosticResult();
     }

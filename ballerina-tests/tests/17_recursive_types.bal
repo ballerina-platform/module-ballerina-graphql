@@ -68,7 +68,7 @@ isolated function testReturningUnionOfServiceObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "service", "union", "fragments"]
+    groups: ["introspection", "service", "union", "fragments", "test"]
 }
 isolated function testGraphQLPlaygroundIntrospectionQuery() returns error? {
     string document = check getGraphQLDocumentFromFile("graphql_playground_introspection_query.graphql");

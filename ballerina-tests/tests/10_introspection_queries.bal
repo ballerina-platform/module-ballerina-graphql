@@ -185,17 +185,6 @@ isolated function testQueryingSubFieldsOnTypeName() returns error? {
 }
 
 @test:Config {
-    groups: ["union", "introspection", "typename"]
-}
-isolated function testTypeNameIntrospectionOnUnionOfRecordTypes() returns error? {
-    string graphqlUrl = "http://localhost:9091/records_union";
-    string document = string`query { learningSources { __typename ... on Book { name } } }`;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("type_name_introspection_on_union_of_record_types.json");
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
     groups: ["introspection", "typename"]
 }
 isolated function testTypeNameIntrospectionOnServiceTypes() returns error? {
@@ -348,5 +337,16 @@ isolated function testIntrospectionOnInputsWithDefaultValues() returns error? {
     string document = check getGraphQLDocumentFromFile("introspection_on_inputs_with_default_values.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("introspection_on_inputs_with_default_values.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["introspection", "directive_location"]
+}
+isolated function testDirectiveLocations() returns error? {
+    string graphqlUrl = "http://localhost:9091/validation";
+    string document = "{__schema { directives { locations } } }";
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("directive_locations.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

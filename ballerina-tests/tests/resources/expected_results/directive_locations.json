@@ -1,0 +1,22 @@
+{
+    "data": {
+        "__schema": {
+            "directives": [
+                {
+                    "locations": [
+                        "FIELD",
+                        "FRAGMENT_SPREAD",
+                        "INLINE_FRAGMENT"
+                    ]
+                },
+                {
+                    "locations": [
+                        "FIELD",
+                        "FRAGMENT_SPREAD",
+                        "INLINE_FRAGMENT"
+                    ]
+                }
+            ]
+        }
+    }
+}

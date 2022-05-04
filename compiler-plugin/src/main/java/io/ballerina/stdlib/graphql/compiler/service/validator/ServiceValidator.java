@@ -52,14 +52,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.CONTEXT_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
@@ -490,16 +489,6 @@ public class ServiceValidator {
                 addDiagnostic(CompilationError.INVALID_FIELD_NAME, location);
             }
         }
-    }
-
-    private boolean isContextParameter(TypeSymbol typeSymbol) {
-        if (typeSymbol.getName().isEmpty()) {
-            return false;
-        }
-        if (!isGraphqlModuleSymbol(typeSymbol)) {
-            return false;
-        }
-        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     private void addDiagnostic(CompilationError compilationError, Location location) {

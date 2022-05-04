@@ -38,6 +38,7 @@ import java.util.List;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
+import static io.ballerina.runtime.api.TypeTags.FINITE_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
@@ -161,13 +162,14 @@ public class EngineUtils {
             if (isEnum((UnionType) type)) {
                 return true;
             }
-            List<Type> memberType = getMemberTypes((UnionType) type);
-            if (memberType.size() == 1) {
-                return isScalarType(memberType.get(0));
+            List<Type> memberTypes = getMemberTypes((UnionType) type);
+            if (memberTypes.size() == 1) {
+                return isScalarType(memberTypes.get(0));
             }
             return false;
         }
-        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG || tag == DECIMAL_TAG;
+        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG || tag == DECIMAL_TAG ||
+                tag == FINITE_TYPE_TAG;
     }
 
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {

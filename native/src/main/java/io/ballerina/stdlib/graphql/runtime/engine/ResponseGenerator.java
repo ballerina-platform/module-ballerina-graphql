@@ -170,7 +170,7 @@ public class ResponseGenerator {
         BArray resultArray = ValueCreator.createArrayValue(getArrayType(result.getElementType()));
         for (int i = 0; i < result.size(); i++) {
             List<Object> updatedPathSegments = updatePathSegments(pathSegments, i);
-            if (isScalarType(resultArray.getElementType())) {
+            if (isScalarType(result.getElementType())) {
                 if (result.get(i) instanceof BError) {
                     resultArray.append(null);
                     BError bError = (BError) result.get(i);

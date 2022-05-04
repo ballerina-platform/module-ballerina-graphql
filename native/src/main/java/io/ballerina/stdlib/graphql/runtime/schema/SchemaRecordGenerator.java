@@ -20,8 +20,9 @@ package io.ballerina.stdlib.graphql.runtime.schema;
 
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.flags.SymbolFlags;
+import io.ballerina.runtime.api.flags.TypeFlags;
 import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
@@ -245,24 +246,21 @@ public class SchemaRecordGenerator {
     }
 
     private BArray getDirectiveLocationsArray(Directive directive) {
-        BArray directiveLocationsArray = ValueCreator.createArrayValue(getDirectiveLocationType());
+        BArray directiveLocationsArray = ValueCreator.createArrayValue(getDirectiveLocationArrayType());
         for (DirectiveLocation location : directive.getLocations()) {
             directiveLocationsArray.append(StringUtils.fromString(location.toString()));
         }
         return directiveLocationsArray;
     }
 
-    private FiniteType getFiniteType(DirectiveLocation directiveLocation) {
-        BString value = StringUtils.fromString(directiveLocation.toString());
-        return TypeCreator.createFiniteType(directiveLocation.toString(), Set.of(value), 0);
-    }
-
-    private ArrayType getDirectiveLocationType() {
-        List<io.ballerina.runtime.api.types.Type> directiveLocationsList = new ArrayList<>();
+    private ArrayType getDirectiveLocationArrayType() {
+        List<io.ballerina.runtime.api.types.Type> memberTypes = new ArrayList<>();
         for (DirectiveLocation directiveLocation : DirectiveLocation.values()) {
-            directiveLocationsList.add(getFiniteType(directiveLocation));
+            memberTypes.add(TypeCreator.createFiniteType(directiveLocation.toString(),
+                                                         Set.of(StringUtils.fromString(directiveLocation.toString())),
+                                                         TypeFlags.ANYDATA));
         }
-        UnionType unionType = TypeCreator.createUnionType(directiveLocationsList);
-        return TypeCreator.createArrayType(unionType);
+        UnionType enumType = TypeCreator.createUnionType(memberTypes, TypeFlags.ANYDATA, SymbolFlags.ENUM);
+        return TypeCreator.createArrayType(enumType);
     }
 }

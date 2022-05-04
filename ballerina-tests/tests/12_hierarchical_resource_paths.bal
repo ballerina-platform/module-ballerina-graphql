@@ -85,15 +85,7 @@ isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? 
     string document = "{ profile { name { address { street } } } }";
     string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    address: null
-                }
-            }
-        }
-    };
+    json expectedPayload = { data: null };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

@@ -211,6 +211,16 @@ public final class Utils {
         return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
+    public static boolean isContextParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        if (!isGraphqlModuleSymbol(typeSymbol)) {
+            return false;
+        }
+        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
+    }
+
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
         return resourceMethodSymbol.getName().orElse(null);
     }

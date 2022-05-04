@@ -60,6 +60,7 @@ import java.util.List;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
@@ -164,7 +165,7 @@ public class TypeFinder {
             return;
         }
         for (ParameterSymbol parameterSymbol : methodSymbol.typeDescriptor().params().get()) {
-            if (parameterSymbol.getName().isEmpty()) {
+            if (isContextParameter(parameterSymbol.typeDescriptor()) || parameterSymbol.getName().isEmpty()) {
                 continue;
             }
             String parameterName = parameterSymbol.getName().get();

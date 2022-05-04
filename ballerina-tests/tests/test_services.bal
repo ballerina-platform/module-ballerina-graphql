@@ -15,28 +15,8 @@
 // under the License.
 
 import ballerina/graphql;
-// import ballerina/http;
+import ballerina/http;
 import ballerina/lang.runtime;
-
-graphql:Service simpleService1 = service object {
-    isolated resource function get name() returns string {
-        return "Walter White";
-    }
-
-    isolated resource function get id() returns int {
-        return 1;
-    }
-};
-
-graphql:Service simpleService2 = service object {
-    isolated resource function get name() returns string {
-        return "Walter White";
-    }
-
-    isolated resource function get id() returns int {
-        return 1;
-    }
-};
 
 graphql:Service invalidMaxQueryDepthService =
 @graphql:ServiceConfig {
@@ -74,19 +54,6 @@ service object {
     }
 };
 
-graphql:Service invalidGraphiqlPathConfigService3 =
-@graphql:ServiceConfig {
-    graphiql: {
-        enable: false,
-        path: "/ballerina graphql"
-    }
-}
-service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
 graphql:Service graphiqlDefaultPathConfigService =
 @graphql:ServiceConfig {
     graphiql: {
@@ -114,10 +81,45 @@ service object {
 
 @graphql:ServiceConfig {
     graphiql: {
+        enable: false,
+        path: "/ballerina graphql"
+    }
+}
+service /invalid_graphiql on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@graphql:ServiceConfig {
+    graphiql: {
         enable: true
     }
 }
-service /graphiql/test on serviceTypeListener {
+service /graphiql/test on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@graphql:ServiceConfig {
+    graphiql: {
+        enable: true,
+        path: "ballerina/graphiql"
+    }
+}
+service on basicListener {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+}
+
+@graphql:ServiceConfig {
+    graphiql: {
+        enable: true
+    }
+}
+service on serviceTypeListener {
     isolated resource function get greet() returns string {
         return "Hello";
     }
@@ -529,38 +531,6 @@ service /service_objects on serviceTypeListener {
         return new TeacherService(737, "Walter White", "Chemistry");
     }
 }
-
-// service /records_union on basicListener {
-//     resource function get profile(int id) returns Person|error? {
-//         if id < people.length() {
-//             return people[id];
-//         } else if id < 5 {
-//             return;
-//         } else {
-//             return error("Invalid ID provided");
-//         }
-//     }
-
-//     resource function get information(int id) returns Information {
-//         if id < 5 {
-//             return p1;
-//         } else {
-//             return a1;
-//         }
-//     }
-
-//     resource function get details(int id) returns Details {
-//         if id < 5 {
-//             return {information: p1};
-//         } else {
-//             return {information: a1};
-//         }
-//     }
-
-//     resource function get learningSources() returns (Book|Course)[] {
-//         return [b1, b2, b3, b4, c1, c2, c3];
-//     }
-// }
 
 service /timeoutService on timeoutListener {
     isolated resource function get greet() returns string {
@@ -1145,63 +1115,63 @@ service /null_values on basicListener {
     }
 }
 
-// @graphql:ServiceConfig {
-//     contextInit:
-//     isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
-//         graphql:Context context = new;
-//         context.set("scope", check request.getHeader("scope"));
-//         return context;
-//     }
-// }
-// service /context on serviceTypeListener {
-//     isolated resource function get profile(graphql:Context context) returns Person|error {
-//         var scope = check context.get("scope");
-//         if scope is string && scope == "admin" {
-//             return {
-//                 name: "Walter White",
-//                 age: 51,
-//                 address: {
-//                     number: "308",
-//                     street: "Negra Arroyo Lane",
-//                     city: "Albuquerque"
-//                 }
-//             };
-//         } else {
-//             return error("You don't have permission to retrieve data");
-//         }
-//     }
+@graphql:ServiceConfig {
+    contextInit:
+    isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context context = new;
+        context.set("scope", check request.getHeader("scope"));
+        return context;
+    }
+}
+service /context on serviceTypeListener {
+    isolated resource function get profile(graphql:Context context) returns Person|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return {
+                name: "Walter White",
+                age: 51,
+                address: {
+                    number: "308",
+                    street: "Negra Arroyo Lane",
+                    city: "Albuquerque"
+                }
+            };
+        } else {
+            return error("You don't have permission to retrieve data");
+        }
+    }
 
-//     isolated resource function get name(graphql:Context context, string name) returns string|error {
-//         var scope = check context.get("scope");
-//         if scope is string && scope == "admin" {
-//             return name;
-//         } else {
-//             return error("You don't have permission to retrieve data");
-//         }
-//     }
+    isolated resource function get name(graphql:Context context, string name) returns string|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return name;
+        } else {
+            return error("You don't have permission to retrieve data");
+        }
+    }
 
-//     isolated resource function get animal() returns AnimalClass {
-//         return new;
-//     }
+    isolated resource function get animal() returns AnimalClass {
+        return new;
+    }
 
-//     remote function update(graphql:Context context) returns (Person|error)[]|error {
-//         var scope = check context.get("scope");
-//         if scope is string && scope == "admin" {
-//             return people;
-//         } else {
-//             return [p1, error("You don't have permission to retrieve data"), p3];
-//         }
-//     }
+    remote function update(graphql:Context context) returns (Person|error)[]|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return people;
+        } else {
+            return [p1, error("You don't have permission to retrieve data"), p3];
+        }
+    }
 
-//     remote function updateNullable(graphql:Context context) returns (Person|error?)[]|error {
-//         var scope = check context.get("scope");
-//         if scope is string && scope == "admin" {
-//             return people;
-//         } else {
-//             return [p1, error("You don't have permission to retrieve data"), p3];
-//         }
-//     }
-// }
+    remote function updateNullable(graphql:Context context) returns (Person|error?)[]|error {
+        var scope = check context.get("scope");
+        if scope is string && scope == "admin" {
+            return people;
+        } else {
+            return [p1, error("You don't have permission to retrieve data"), p3];
+        }
+    }
+}
 
 service /intersection_types on basicListener {
     isolated resource function get name(Species & readonly species) returns string {
