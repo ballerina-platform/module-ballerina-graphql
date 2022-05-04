@@ -18,6 +18,7 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/mime;
+import ballerina/websocket;
 
 import graphql.parser;
 
@@ -301,7 +302,8 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
 
-        isolated resource function get .(http:RequestContext requestContext, http:Request request) returns http:Response {
+        isolated resource function get .(http:RequestContext requestContext, 
+                                         http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
@@ -316,7 +318,8 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
-        isolated resource function post .(http:RequestContext requestContext, http:Request request) returns http:Response {
+        isolated resource function post .(http:RequestContext requestContext, 
+                                          http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
@@ -331,7 +334,8 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
-        isolated function initContext(http:RequestContext requestContext, http:Request request) returns Context|http:Response {
+        isolated function initContext(http:RequestContext requestContext, 
+                                      http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
                 json payload = {errors: [{message: context.message()}]};
@@ -349,6 +353,15 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         }
     };
     return httpService;
+}
+
+isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema, 
+                                      GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+    return isolated service object {
+        isolated resource function get .() returns websocket:Service|websocket:UpgradeError {
+            return new WsService(gqlEngine, schema);
+        }
+    };
 }
 
 isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
@@ -403,5 +416,14 @@ isolated function getHtmlContentFromResources(string graphqlUrl) returns string|
 } external;
 
 isolated function getBasePath(string[]|string gqlBasePath) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function attachWebsocketServiceToGraphqlService(Service s, UpgradeService wsService) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function getWebsocketServiceFromGraphqlService(Service s) returns UpgradeService? =
+@java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

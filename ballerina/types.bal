@@ -16,6 +16,7 @@
 
 import ballerina/http;
 import ballerina/io;
+import ballerina/websocket;
 
 # Represents the Scalar types supported by the Ballerina GraphQL module.
 public type Scalar boolean|int|float|string|decimal;
@@ -64,6 +65,11 @@ public type Graphiql record {|
 # Internal HTTP service class for GraphQL services
 isolated service class HttpService {
     *http:Service;
+}
+
+# Internal Websocket service class for GraphQL subscription
+isolated service class UpgradeService {
+    *websocket:UpgradeService;
 }
 
 // GraphQL client related data binding types representation

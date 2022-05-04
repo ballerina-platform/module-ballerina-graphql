@@ -74,6 +74,7 @@ public class EngineUtils {
     public static final BString DEPRECATION_REASON_FIELD = StringUtils.fromString("deprecationReason");
     public static final BString IS_DEPRECATED_FIELD = StringUtils.fromString("isDeprecated");
     public static final BString DIRECTIVES_FIELD = StringUtils.fromString("directives");
+    public static final BString SELECTION_FIELD = StringUtils.fromString("selections");
     public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
@@ -105,6 +106,10 @@ public class EngineUtils {
 
     // Input values
     public static final String KEY = "key";
+
+    //Accessor names
+    public static final String GET_ACCESSOR = "get";
+    public static final String SUBSCRIBE_ACCESSOR = "subscribe";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
@@ -168,8 +173,7 @@ public class EngineUtils {
             }
             return false;
         }
-        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG || tag == DECIMAL_TAG ||
-                tag == FINITE_TYPE_TAG;
+        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG || tag == DECIMAL_TAG;
     }
 
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {

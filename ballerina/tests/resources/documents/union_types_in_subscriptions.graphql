@@ -1,0 +1,16 @@
+subscription unionTypes { 
+    multipleValues {
+        ...bookFragment
+        ...courseFragment
+    } 
+}
+
+fragment bookFragment on Book {
+    name
+    author
+}
+
+fragment courseFragment on Course {
+    name
+    code
+}

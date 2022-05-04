@@ -1,0 +1,6 @@
+subscription getStudents { 
+    students {
+        id
+        name       
+    } 
+}

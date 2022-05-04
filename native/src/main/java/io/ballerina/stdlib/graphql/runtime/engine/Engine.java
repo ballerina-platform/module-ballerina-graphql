@@ -22,10 +22,12 @@ import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.async.StrandMetadata;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -45,11 +47,14 @@ import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -95,6 +100,18 @@ public class Engine {
         executeResourceMethod(executionContext, service, node, data, paths, pathSegments);
     }
 
+    public static void executeSubscription(Environment environment, BObject visitor, BObject node, Object result) {
+        Future future = environment.markAsync();
+        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
+        List<Object> pathSegments = new ArrayList<>();
+        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
+        CallbackHandler callbackHandler = new CallbackHandler(future);
+        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SUBSCRIPTION);
+        ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
+        callbackHandler.addCallback(resourceCallback);
+        resourceCallback.notifySuccess(result);
+    }
+
     public static void executeMutation(Environment environment, BObject visitor, BObject node) {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
@@ -124,7 +141,7 @@ public class Engine {
                                       BMap<BString, Object> data, List<String> paths, List<Object> pathSegments) {
         ServiceType serviceType = (ServiceType) service.getType();
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            if (isPathsMatching(resourceMethod, paths)) {
+            if (GET_ACCESSOR.equals(resourceMethod.getAccessor()) && isPathsMatching(resourceMethod, paths)) {
                 getExecutionResult(executionContext, service, node, resourceMethod, data, pathSegments,
                                    RESOURCE_STRAND_METADATA);
                 return;
@@ -181,6 +198,35 @@ public class Engine {
             return (Schema) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             // TODO: Return error
+        }
+        return null;
+    }
+
+    public static Object getSubscriptionResult(Environment env, BObject visitor, BObject node) {
+        Future subscriptionFutureResult = env.markAsync();
+        SubscriptionCallback subscriptionCallback = new SubscriptionCallback(subscriptionFutureResult);
+        CallbackHandler callbackHandler = new CallbackHandler(subscriptionFutureResult);
+        ExecutionContext executionContext = new ExecutionContext(env, visitor, callbackHandler, SUBSCRIPTION);
+        BString fieldName = node.getStringValue(NAME_FIELD);
+        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
+        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        ServiceType serviceType = (ServiceType) service.getType();
+        UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
+                fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, resourceMethod);
+                Object[] args = argumentHandler.getArguments(node);
+                if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
+                    env.getRuntime()
+                            .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                                                           null, subscriptionCallback, null, typeUnion, args);
+                } else {
+                    env.getRuntime()
+                            .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                                                           null, subscriptionCallback, null, typeUnion, args);
+                }
+            }
         }
         return null;
     }
