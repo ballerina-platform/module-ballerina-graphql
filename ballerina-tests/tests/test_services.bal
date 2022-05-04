@@ -1245,7 +1245,7 @@ service /nullable_inputs on basicListener {
 
 public string[] namesArray = ["Walter", "Skyler"];
 
-service /subscriptions on basicListener {
+service graphql:Service /subscriptions on basicListener {
     isolated resource function get name() returns string {
         return "Walter White";
     }
@@ -1294,7 +1294,9 @@ service /subscriptions on basicListener {
         return array.toStream();
     }
 
-    isolated resource function subscribe multipleValues() returns stream<(Book|Course)>|error {
-        return [b7, c1].toStream();
+    isolated resource function subscribe multipleValues() returns stream<(PeopleService)>|error {
+        StudentService s = new StudentService(1, "Jesse Pinkman");
+        TeacherService t = new TeacherService(0, "Walter White", "Chemistry");
+        return [s, t].toStream();
     }
 }

@@ -170,16 +170,31 @@ public class ServiceValidator {
         } else {
             addDiagnostic(CompilationError.INVALID_RESOURCE_PATH, location);
         }
-        if (methodSymbol.typeDescriptor().returnTypeDescriptor().isPresent()) {
-            TypeSymbol returnTypeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
-            if (returnTypeSymbol.typeKind() != TypeDescKind.STREAM) {
+        validateSubscriptionMethod(methodSymbol, location);
+        validateInputParameters(methodSymbol, location);
+    }
+
+    private void validateSubscriptionMethod(MethodSymbol methodSymbol, Location location) {
+        if (methodSymbol.typeDescriptor().returnTypeDescriptor().isEmpty()) {
+            return;
+        }
+        TypeSymbol returnTypeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
+        if (returnTypeSymbol.typeKind() == TypeDescKind.UNION) {
+            List<TypeSymbol> effectiveTypes = getEffectiveTypes((UnionTypeSymbol) returnTypeSymbol);
+            if (effectiveTypes.size() != 1) {
                 addDiagnostic(CompilationError.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location);
+                return;
             } else {
-                StreamTypeSymbol typeSymbol = (StreamTypeSymbol) returnTypeSymbol;
-                validateReturnType(typeSymbol.typeParameter(), location);
+                returnTypeSymbol = effectiveTypes.get(0);
             }
         }
-        validateInputParameters(methodSymbol, location);
+
+        if (returnTypeSymbol.typeKind() != TypeDescKind.STREAM) {
+            addDiagnostic(CompilationError.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location);
+        } else {
+            StreamTypeSymbol typeSymbol = (StreamTypeSymbol) returnTypeSymbol;
+            validateReturnType(typeSymbol.typeParameter(), location);
+        }
     }
 
     private void validateRemoteMethod(MethodSymbol methodSymbol, Location location) {

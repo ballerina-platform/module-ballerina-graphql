@@ -28,6 +28,10 @@ isolated class Engine {
         self.schema = check createSchema(schemaString);
     }
 
+    isolated function getSchema() returns readonly & __Schema {
+        return self.schema;
+    }
+
     isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if result is OutputObject {

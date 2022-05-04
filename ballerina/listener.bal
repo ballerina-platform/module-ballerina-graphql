@@ -62,14 +62,6 @@ public class Listener {
             }
         }
 
-        if schema.hasKey(SUBSCRIPTION_FIELD) {
-                    websocket:Listener|error wsListener = new(self.httpListener);
-                    if wsListener is error {
-                        return error Error("Websocket listener initialization failed", wsListener);
-                    }
-                    self.wsListener = wsListener;
-                }
-
         string schemaString = getSchemaString(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         Engine engine = check new (schemaString, maxQueryDepth);
@@ -80,6 +72,15 @@ public class Listener {
         error? result = self.httpListener.attach(httpService, name);
         if result is error {
             return error Error("Error occurred while attaching the service", result);
+        }
+
+        __Type? subscriptionType = engine.getSchema().subscriptionType;
+        if subscriptionType is __Type {
+            websocket:Listener|error wsListener = new(self.httpListener);
+            if wsListener is error {
+                return error Error("Websocket listener initialization failed", wsListener);
+            }
+            self.wsListener = wsListener;
         }
     }
 

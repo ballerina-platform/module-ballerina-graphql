@@ -38,7 +38,6 @@ import java.util.List;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
-import static io.ballerina.runtime.api.TypeTags.FINITE_TYPE_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;

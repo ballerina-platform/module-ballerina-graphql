@@ -31,6 +31,7 @@ import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
+import io.ballerina.compiler.api.symbols.StreamTypeSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TableTypeSymbol;
@@ -213,6 +214,8 @@ public class TypeFinder {
                 return getType(typeName, null, (UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
                 return getType(null, null, (IntersectionTypeSymbol) typeSymbol);
+            case STREAM:
+                return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
         }
         return null;
     }
