@@ -36,7 +36,6 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
-import io.ballerina.stdlib.graphql.runtime.schema.SchemaRecordGenerator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

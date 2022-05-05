@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.runtime.schema;
+package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
@@ -48,6 +48,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DEFAULT_VAL
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DEPRECATION_REASON_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DESCRIPTION_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DIRECTIVES_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DIRECTIVE_LOCATION_ENUM;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DIRECTIVE_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENUM_VALUE_RECORD;
@@ -72,7 +73,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTIO
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPE_RECORD;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getArrayTypeFromBMap;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getArrayTypeFromBMap;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -254,13 +255,14 @@ public class SchemaRecordGenerator {
     }
 
     private ArrayType getDirectiveLocationArrayType() {
-        List<io.ballerina.runtime.api.types.Type> memberTypes = new ArrayList<>();
+        List<io.ballerina.runtime.api.types.Type> memberTypes = new ArrayList<>(DirectiveLocation.values().length);
         for (DirectiveLocation directiveLocation : DirectiveLocation.values()) {
             memberTypes.add(TypeCreator.createFiniteType(directiveLocation.toString(),
                                                          Set.of(StringUtils.fromString(directiveLocation.toString())),
                                                          TypeFlags.ANYDATA));
         }
-        UnionType enumType = TypeCreator.createUnionType(memberTypes, TypeFlags.ANYDATA, SymbolFlags.ENUM);
+        UnionType enumType = TypeCreator.createUnionType(memberTypes, DIRECTIVE_LOCATION_ENUM, getModule(), 0, false,
+                                                         SymbolFlags.READONLY | SymbolFlags.ENUM);
         return TypeCreator.createArrayType(enumType);
     }
 }

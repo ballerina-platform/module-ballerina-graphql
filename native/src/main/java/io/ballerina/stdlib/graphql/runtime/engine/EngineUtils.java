@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.Type;
@@ -41,8 +42,6 @@ import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -203,5 +202,38 @@ public class EngineUtils {
             updatedPathSegments.add(segment);
         }
         return updatedPathSegments;
+    }
+
+    public static boolean isEnum(UnionType unionType) {
+        return SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM);
+    }
+
+    public static List<Type> getMemberTypes(UnionType unionType) {
+        List<Type> members = new ArrayList<>();
+        if (isEnum(unionType)) {
+            members.add(unionType);
+        } else {
+            List<Type> originalMembers = unionType.getOriginalMemberTypes();
+            for (Type type : originalMembers) {
+                if (isIgnoreType(type)) {
+                    continue;
+                }
+                if (type.getTag() == TypeTags.UNION_TAG) {
+                    members.addAll(getMemberTypes((UnionType) type));
+                } else {
+                    members.add(type);
+                }
+            }
+        }
+        return members;
+    }
+
+    public static BArray getArrayTypeFromBMap(BMap<BString, Object> recordValue) {
+        ArrayType arrayType = TypeCreator.createArrayType(recordValue.getType());
+        return ValueCreator.createArrayValue(arrayType);
+    }
+
+    public static boolean isIgnoreType(Type type) {
+        return type.getTag() == TypeTags.ERROR_TAG || type.getTag() == TypeTags.NULL_TAG;
     }
 }

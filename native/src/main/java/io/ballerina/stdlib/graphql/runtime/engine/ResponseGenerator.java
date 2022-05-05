@@ -55,10 +55,10 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpdateResourcePathsList;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 
 /**
  * Used to generate the response for a GraphQL request in Ballerina.
