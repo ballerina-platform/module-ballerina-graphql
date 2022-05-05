@@ -7,7 +7,7 @@ keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.0.1"
+distribution = "2201.1.0"
 
 [[platform.java11.dependency]]
 path = "../native/build/libs/graphql-native-1.2.2-SNAPSHOT.jar"
