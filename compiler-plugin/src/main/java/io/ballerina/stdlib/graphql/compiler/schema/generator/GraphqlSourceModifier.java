@@ -134,24 +134,30 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
 
     private MetadataNode getMetadataNodeFromExistingMetadata(MetadataNode metadataNode, String schemaString) {
         NodeList<AnnotationNode> annotationNodes = NodeFactory.createNodeList();
-        for (AnnotationNode annotationNode : metadataNode.annotations()) {
-            annotationNode = updateAnnotationNode(annotationNode, schemaString);
+        if (metadataNode.annotations().isEmpty()) {
+            AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString);
             annotationNodes = annotationNodes.add(annotationNode);
+        } else {
+            for (AnnotationNode annotationNode : metadataNode.annotations()) {
+                annotationNode = updateAnnotationNode(annotationNode, schemaString);
+                annotationNodes = annotationNodes.add(annotationNode);
+            }
         }
         return NodeFactory.createMetadataNode(metadataNode.documentationString().orElse(null), annotationNodes);
     }
 
     private AnnotationNode updateAnnotationNode(AnnotationNode annotationNode, String schemaString) {
-        if (isGraphqlServiceConfig(annotationNode)) {
-            if (annotationNode.annotValue().isPresent()) {
-                SeparatedNodeList<MappingFieldNode> updatedFields =
-                        getUpdatedFields(annotationNode.annotValue().get(), schemaString);
-                MappingConstructorExpressionNode node =
-                        NodeFactory.createMappingConstructorExpressionNode(
-                                NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
-                                NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
-                return annotationNode.modify().withAnnotValue(node).apply();
-            }
+        if (!isGraphqlServiceConfig(annotationNode)) {
+            return annotationNode;
+        }
+        if (annotationNode.annotValue().isPresent()) {
+            SeparatedNodeList<MappingFieldNode> updatedFields =
+                    getUpdatedFields(annotationNode.annotValue().get(), schemaString);
+            MappingConstructorExpressionNode node =
+                    NodeFactory.createMappingConstructorExpressionNode(
+                            NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
+                            NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
+            return annotationNode.modify().withAnnotValue(node).apply();
         }
         return getSchemaStringAnnotation(schemaString);
     }

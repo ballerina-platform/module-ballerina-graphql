@@ -56,7 +56,9 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
@@ -213,7 +215,7 @@ public class TypeFinder {
             case UNION:
                 return getType(typeName, null, (UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
-                return getType(null, null, (IntersectionTypeSymbol) typeSymbol);
+                return getType(null, null, null, (IntersectionTypeSymbol) typeSymbol);
             case STREAM:
                 return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
         }
@@ -267,12 +269,20 @@ public class TypeFinder {
 
     private Type getType(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
         String description = getDescription(typeDefinitionSymbol);
+        Map<String, String> parameterMap;
+        if (typeDefinitionSymbol.documentation().isEmpty()) {
+            parameterMap = new HashMap<>();
+        } else {
+            parameterMap = typeDefinitionSymbol.documentation().get().parameterMap();
+        }
         if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            return getType(name, description, (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+            RecordTypeSymbol recordType = (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+            return getType(name, description, parameterMap, recordType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
             return getType(name, description, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
-            return getType(name, description, (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+            IntersectionTypeSymbol intersectionType = (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+            return getType(name, description, parameterMap, intersectionType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         }
@@ -316,20 +326,21 @@ public class TypeFinder {
         return enumType;
     }
 
-    private Type getType(String name, String description, RecordTypeSymbol recordTypeSymbol) {
+    private Type getType(String name, String description, Map<String, String> fieldMap,
+                         RecordTypeSymbol recordTypeSymbol) {
         Type objectType = addType(name, TypeKind.OBJECT, description);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
-            objectType.addField(getField(recordFieldSymbol));
+            String fieldDescription = fieldMap.get(recordFieldSymbol.getName().orElse(""));
+            objectType.addField(getField(recordFieldSymbol, fieldDescription));
         }
         return objectType;
     }
 
-    private Field getField(RecordFieldSymbol recordFieldSymbol) {
+    private Field getField(RecordFieldSymbol recordFieldSymbol, String description) {
         if (recordFieldSymbol.getName().isEmpty()) {
             return null;
         }
         String name = recordFieldSymbol.getName().get();
-        String description = getDescription(recordFieldSymbol);
         Field field = new Field(name, description);
         TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
         Type type;
@@ -368,12 +379,16 @@ public class TypeFinder {
         return unionType;
     }
 
-    private Type getType(String name, String description, IntersectionTypeSymbol intersectionTypeSymbol) {
+    private Type getType(String name, String description, Map<String, String> parameterMap,
+                         IntersectionTypeSymbol intersectionTypeSymbol) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (name == null) {
             return getType(effectiveType);
         } else {
-            return getType(name, description, (RecordTypeSymbol) effectiveType);
+            if (parameterMap == null) {
+                parameterMap = new HashMap<>();
+            }
+            return getType(name, description, parameterMap, (RecordTypeSymbol) effectiveType);
         }
     }
 
@@ -500,7 +515,6 @@ public class TypeFinder {
             return;
         }
         String memberDescription = getDescription(enumMember);
-        // TODO:
         String name = enumMember.resolvedValue().get().replaceAll("\"", "");
         boolean isDeprecated = enumMember.deprecated();
         String deprecationReason = getDeprecationReason(enumMember);

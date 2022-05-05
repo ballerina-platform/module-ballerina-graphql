@@ -194,3 +194,21 @@ public type Item record {
     string name;
     decimal price;
 };
+
+# Represents a shape
+#
+# + name - Name of the shape
+# + edges - Number of edges in the shape
+public type Shape record {
+    string name;
+    int edges;
+};
+
+# Represents an instrument
+#
+# + name - Name of the instrument
+# + method - Method the instrument generate the sound
+public type Instrument readonly & record {
+    string name;
+    string method;
+};

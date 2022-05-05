@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.async.StrandMetadata;
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
@@ -69,7 +70,6 @@ public class Engine {
     private Engine() {
     }
 
-    // TODO: Interfaces
     public static Object createSchema(BString schemaString) {
         try {
             Schema schema = getDecodedSchema(schemaString);
@@ -183,12 +183,11 @@ public class Engine {
     }
 
     private static Schema getDecodedSchema(BString schemaBString) {
-        // TODO: Return error instead of null
         if (schemaBString == null) {
-            return null;
+            throw createError("Schema generation failed due to null schema string", ERROR_TYPE);
         }
         if (schemaBString.getValue().isBlank() || schemaBString.getValue().isEmpty()) {
-            return null;
+            throw createError("Schema generation failed due to empty schema string", ERROR_TYPE);
         }
         String schemaString = schemaBString.getValue();
         byte[] decodedString = Base64.getDecoder().decode(schemaString.getBytes(StandardCharsets.UTF_8));
@@ -197,9 +196,9 @@ public class Engine {
             ObjectInputStream inputStream = new ObjectInputStream(byteStream);
             return (Schema) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            // TODO: Return error
+            BError cause = ErrorCreator.createError(StringUtils.fromString(e.getMessage()));
+            throw createError("Schema generation failed due to exception", ERROR_TYPE, cause);
         }
-        return null;
     }
 
     public static Object getSubscriptionResult(Environment env, BObject visitor, BObject node) {

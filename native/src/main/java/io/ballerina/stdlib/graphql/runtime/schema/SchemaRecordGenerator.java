@@ -204,7 +204,7 @@ public class SchemaRecordGenerator {
         BMap<BString, Object> fieldRecord = ValueCreator.createRecordValue(getModule(), FIELD_RECORD);
         fieldRecord.put(NAME_FIELD, StringUtils.fromString(field.getName()));
         fieldRecord.put(DESCRIPTION_FIELD, StringUtils.fromString(field.getDescription()));
-        fieldRecord.put(TYPE_FIELD, getTypeRecord(field.getType())); // TODO:
+        fieldRecord.put(TYPE_FIELD, getTypeRecord(field.getType()));
         fieldRecord.put(ARGS_FIELD, getInputValueArray(field.getArgs()));
         fieldRecord.put(IS_DEPRECATED_FIELD, field.isDeprecated());
         fieldRecord.put(DEPRECATION_REASON_FIELD, StringUtils.fromString(field.getDeprecationReason()));

@@ -350,3 +350,14 @@ isolated function testDirectiveLocations() returns error? {
     json expectedPayload = check getJsonContentFromFile("directive_locations.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["introspection", "documentation"]
+}
+isolated function testDocumentation() returns error? {
+    string graphqlUrl = "http://localhost:9091/documentation";
+    string document = check getGraphQLDocumentFromFile("documentation.graphql");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("documentation.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

@@ -1300,3 +1300,34 @@ service graphql:Service /subscriptions on basicListener {
         return [s, t].toStream();
     }
 }
+
+# GraphQL service with documentation.
+service graphql:Service /documentation on basicListener {
+
+    # Greets a person with provided name.
+    #
+    # + name - The name of the person
+    # + return - The personalized greeting message
+    isolated resource function get greeting(string name) returns string {
+        return string`Hello ${name}`;
+    }
+
+    # Returns a predefined instrument.
+    #
+    # + return - Details of the Guitar
+    isolated resource function get instrument() returns Instrument {
+        return {
+            name: "Guitar",
+            method: "Strings"
+        };
+    }
+
+    # Updates a shape in the database.
+    #
+    # + name - Name of the new shape
+    # + edges - Number of edges of the new shape
+    # + return - The newly created shape
+    remote function addShape(string name, int edges) returns Shape {
+        return {name: name, edges: edges};
+    }
+}
