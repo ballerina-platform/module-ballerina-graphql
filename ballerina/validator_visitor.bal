@@ -68,6 +68,10 @@ class ValidatorVisitor {
             self.validateUnionTypeField(selection, parentType, parentField);
             return;
         }
+        if parentType.kind == INTERFACE {
+            self.validateInterfaceTypeField(selection, parentType, parentField);
+            return;
+        }
         if selection is parser:FragmentNode {
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if fragmentOnType is __Type {
@@ -451,6 +455,23 @@ class ValidatorVisitor {
         }
     }
 
+    isolated function validateInterfaceTypeField(parser:Selection selection, __Type parentType, __Field parentField) {
+        if selection is parser:FieldNode {
+            self.visitField(selection, parentField);
+        } else if selection is parser:FragmentNode {
+            __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, selection.getOnType());
+            if requiredType is __Type {
+                __Field subField = createField(parentField.name, requiredType);
+                self.visitFragment(selection, subField);
+            } else {
+                string message = getFragmetCannotSpreadError(selection, selection.getName(), parentType);
+                self.errors.push(getErrorDetailRecord(message, <Location>selection.getSpreadLocation()));
+            }
+        } else {
+            panic error("Invalid selection node passed.");
+        }
+    }
+
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
     }
@@ -671,7 +692,7 @@ isolated function getTypeFromTypeArray(__Type[] types, string typeName) returns 
 }
 
 isolated function hasFields(__Type fieldType) returns boolean {
-    if fieldType.kind == OBJECT || fieldType.kind == UNION {
+    if fieldType.kind == OBJECT || fieldType.kind == UNION || fieldType.kind == INTERFACE {
         return true;
     }
     return false;

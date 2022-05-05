@@ -1,0 +1,16 @@
+{
+    characters {
+        ...HumanFragment
+        ...DroidFragment
+    }
+}
+
+fragment HumanFragment on Human {
+    name
+    id
+}
+
+fragment DroidFragment on Droid {
+    name
+    year
+}

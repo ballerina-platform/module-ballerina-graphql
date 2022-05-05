@@ -33,9 +33,5 @@ listener graphql:Listener secureListener = new (9096, secureSocket = {
 });
 listener graphql:Listener authTestListener = new (9097);
 
-listener graphql:Listener graphiqlListener1 = new (9098);
-listener graphql:Listener graphiqlListener2 = new (9099);
-listener graphql:Listener graphiqlListener3 = new (9100);
-
 // The mock authorization server, based with https://hub.docker.com/repository/docker/ldclakmal/ballerina-sts
 listener http:Listener sts = new (9445, {secureSocket: {key: {path: KEYSTORE_PATH, password: "ballerina"}}});
