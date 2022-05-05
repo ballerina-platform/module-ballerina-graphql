@@ -25,9 +25,9 @@ isolated service class WsService {
     private final readonly & __Schema schema;
     private final Context context;
 
-    isolated function init(Engine engine, __Schema schema) {
+    isolated function init(Engine engine, __Schema & readonly schema) {
         self.engine = engine;
-        self.schema = schema.cloneReadOnly();
+        self.schema = schema;
         self.context = new();
     }
 

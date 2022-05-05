@@ -74,13 +74,24 @@ public class Listener {
             return error Error("Error occurred while attaching the service", result);
         }
 
-        __Type? subscriptionType = engine.getSchema().subscriptionType;
+        __Schema & readonly schema = engine.getSchema();
+        __Type? subscriptionType = schema.subscriptionType;
         if subscriptionType is __Type {
             websocket:Listener|error wsListener = new(self.httpListener);
             if wsListener is error {
                 return error Error("Websocket listener initialization failed", wsListener);
             }
             self.wsListener = wsListener;
+        }
+
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            UpgradeService wsService = getWebsocketService(engine, schema, serviceConfig);
+            attachWebsocketServiceToGraphqlService(s, wsService);
+            result = wsListener.attach(wsService, name);
+            if result is error {
+                return error Error("Error occurred while attaching the websocket service", result);
+            }
         }
     }
 
