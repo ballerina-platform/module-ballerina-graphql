@@ -1,0 +1,59 @@
+{
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "__Field"
+                },
+                {
+                    "name": "__TypeKind"
+                },
+                {
+                    "name": "Query"
+                },
+                {
+                    "name": "Address"
+                },
+                {
+                    "name": "__Schema"
+                },
+                {
+                    "name": "__Type"
+                },
+                {
+                    "name": "__EnumValue"
+                },
+                {
+                    "name": "__DirectiveLocation"
+                },
+                {
+                    "name": "String"
+                },
+                {
+                    "name": "Student"
+                },
+                {
+                    "name": "Int"
+                },
+                {
+                    "name": "Book"
+                },
+                {
+                    "name": "__InputValue"
+                },
+                {
+                    "name": "Course"
+                },
+                {
+                    "name": "Boolean"
+                },
+                {
+                    "name": "Person"
+                },
+                {
+                    "name": "__Directive"
+                }
+            ]
+        }
+    }
+}

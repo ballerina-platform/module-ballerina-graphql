@@ -45,8 +45,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isIgnoreType;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isIgnoreType;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 
@@ -106,7 +106,7 @@ public class ArgumentHandler {
     }
 
     private BMap<BString, Object> getInputObjectArgument(BObject argumentNode, RecordType recordType) {
-        BMap<BString, Object> recordValue = ValueCreator.createMapValue(recordType);
+        BMap<BString, Object> recordValue = ValueCreator.createRecordValue(recordType);
         if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
             BMap<BString, Object> variablesMap = argumentNode.getMapValue(VARIABLE_VALUE_FIELD);
             return JsonUtils.convertJSONToRecord(variablesMap, recordType);

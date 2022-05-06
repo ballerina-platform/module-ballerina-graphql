@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Subscription \"sub\" must not select an introspection top level field.",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

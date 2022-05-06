@@ -1,0 +1,15 @@
+subscription getStudents { 
+    ...studentFields
+}
+
+fragment studentFields on Subscription {
+    ...personFields
+}
+
+fragment personFields on Subscription {
+    students {
+        id
+        name       
+    } 
+    name
+}

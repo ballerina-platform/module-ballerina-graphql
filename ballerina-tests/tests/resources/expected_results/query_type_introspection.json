@@ -1,0 +1,26 @@
+{
+    "data": {
+        "__schema": {
+            "queryType": {
+                "kind": "OBJECT",
+                "fields": [
+                    {
+                        "name": "name"
+                    },
+                    {
+                        "name": "birthdate"
+                    },
+                    {
+                        "name": "ids"
+                    },
+                    {
+                        "name": "idsWithErrors"
+                    },
+                    {
+                        "name": "friends"
+                    }
+                ]
+            }
+        }
+    }
+}

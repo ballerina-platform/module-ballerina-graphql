@@ -56,46 +56,47 @@ type OutputObject record {|
 |};
 
 type __Schema record {|
+    string? description = ();
     __Type[] types;
     __Type queryType;
-    __Type mutationType?;
-    __Type subscriptionType?;
+    __Type? mutationType = ();
+    __Type? subscriptionType = ();
     __Directive[] directives = [];
 |};
 
 type __Type record {|
     __TypeKind kind;
     string? name = ();
-    string description?;
-    __Field[] fields?;
-    __Type[] interfaces?;
-    __Type[] possibleTypes?;
-    __EnumValue[] enumValues?;
-    __InputValue[] inputFields?;
-    __Type ofType?;
+    string? description = ();
+    __Field[]? fields = ();
+    __Type[]? interfaces = ();
+    __Type[]? possibleTypes = ();
+    __EnumValue[]? enumValues = ();
+    __InputValue[]? inputFields = ();
+    __Type? ofType = ();
 |};
 
 type __EnumValue record {|
     string name;
-    string description?;
+    string? description = ();
     boolean isDeprecated = false;
-    string deprecationReason?;
+    string? deprecationReason = ();
 |};
 
 type __Field record {|
     string name;
-    string description?;
+    string? description = ();
     __InputValue[] args;
     __Type 'type;
     boolean isDeprecated = false;
-    string deprecationReason?;
+    string? deprecationReason = ();
 |};
 
 type __InputValue record {|
     string name;
-    string description?;
+    string? description = ();
     __Type 'type;
-    string defaultValue?;
+    string? defaultValue = ();
 |};
 
 enum __TypeKind {
@@ -111,8 +112,8 @@ enum __TypeKind {
 
 type __Directive record {|
     string name;
-    string description?;
-    __DirectiveLocation[] locations?;
+    string? description = ();
+    __DirectiveLocation[] locations = [];
     __InputValue[] args = [];
 |};
 

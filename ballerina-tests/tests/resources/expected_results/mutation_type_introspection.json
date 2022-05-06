@@ -1,0 +1,23 @@
+{
+    "data": {
+        "__schema": {
+            "mutationType": {
+                "kind": "OBJECT",
+                "fields": [
+                    {
+                        "name": "setName"
+                    },
+                    {
+                        "name": "setCity"
+                    },
+                    {
+                        "name": "setTeacherName"
+                    },
+                    {
+                        "name": "setTeacherSubject"
+                    }
+                ]
+            }
+        }
+    }
+}

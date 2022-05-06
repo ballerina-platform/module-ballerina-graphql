@@ -1,0 +1,16 @@
+subscription unionTypes {
+    multipleValues {
+        ...StudentFragment
+        ...TeacherFragment
+    }
+}
+
+fragment StudentFragment on StudentService {
+    id
+    name
+}
+
+fragment TeacherFragment on TeacherService {
+    name
+    subject
+}

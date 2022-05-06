@@ -27,6 +27,7 @@ include ':graphql-native'
 include ':graphql-compiler-plugin'
 include ':graphql-ballerina'
 include ':graphql-compiler-plugin-tests'
+include ':graphql-ballerina-tests'
 include ':graphql-examples'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
@@ -34,6 +35,7 @@ project(':graphql-native').projectDir = file("native")
 project(':graphql-compiler-plugin').projectDir = file("compiler-plugin")
 project(':graphql-ballerina').projectDir = file("ballerina")
 project(':graphql-compiler-plugin-tests').projectDir = file("compiler-plugin-tests")
+project(':graphql-ballerina-tests').projectDir = file("ballerina-tests")
 project(':graphql-examples').projectDir = file("examples")
 
 gradleEnterprise {

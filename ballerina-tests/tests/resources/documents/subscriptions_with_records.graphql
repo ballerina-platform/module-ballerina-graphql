@@ -1,0 +1,6 @@
+subscription { 
+    books {
+        name 
+        author  
+    } 
+}

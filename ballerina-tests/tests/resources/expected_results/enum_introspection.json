@@ -1,0 +1,145 @@
+{
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "Company",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Field",
+                    "enumValues": null
+                },
+                {
+                    "name": "__TypeKind",
+                    "enumValues": [
+                        {
+                            "name": "SCALAR"
+                        },
+                        {
+                            "name": "OBJECT"
+                        },
+                        {
+                            "name": "INTERFACE"
+                        },
+                        {
+                            "name": "UNION"
+                        },
+                        {
+                            "name": "ENUM"
+                        },
+                        {
+                            "name": "INPUT_OBJECT"
+                        },
+                        {
+                            "name": "LIST"
+                        },
+                        {
+                            "name": "NON_NULL"
+                        }
+                    ]
+                },
+                {
+                    "name": "Query",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Schema",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Type",
+                    "enumValues": null
+                },
+                {
+                    "name": "__EnumValue",
+                    "enumValues": null
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "enumValues": [
+                        {
+                            "name": "QUERY"
+                        },
+                        {
+                            "name": "MUTATION"
+                        },
+                        {
+                            "name": "SUBSCRIPTION"
+                        },
+                        {
+                            "name": "FIELD"
+                        },
+                        {
+                            "name": "FRAGMENT_DEFINITION"
+                        },
+                        {
+                            "name": "FRAGMENT_SPREAD"
+                        },
+                        {
+                            "name": "INLINE_FRAGMENT"
+                        }
+                    ]
+                },
+                {
+                    "name": "Time",
+                    "enumValues": null
+                },
+                {
+                    "name": "String",
+                    "enumValues": null
+                },
+                {
+                    "name": "Int",
+                    "enumValues": null
+                },
+                {
+                    "name": "Contact",
+                    "enumValues": null
+                },
+                {
+                    "name": "Weekday",
+                    "enumValues": [
+                        {
+                            "name": "SATURDAY"
+                        },
+                        {
+                            "name": "FRIDAY"
+                        },
+                        {
+                            "name": "THURSDAY"
+                        },
+                        {
+                            "name": "WEDNESDAY"
+                        },
+                        {
+                            "name": "TUESDAY"
+                        },
+                        {
+                            "name": "MONDAY"
+                        },
+                        {
+                            "name": "SUNDAY"
+                        }
+                    ]
+                },
+                {
+                    "name": "Worker",
+                    "enumValues": null
+                },
+                {
+                    "name": "__InputValue",
+                    "enumValues": null
+                },
+                {
+                    "name": "Boolean",
+                    "enumValues": null
+                },
+                {
+                    "name": "__Directive",
+                    "enumValues": null
+                }
+            ]
+        }
+    }
+}

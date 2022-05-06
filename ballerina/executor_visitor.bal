@@ -25,13 +25,15 @@ class ExecutorVisitor {
     private ErrorDetail[] errors;
     private Context context;
     private map<Upload|Upload[]> fileInfo;
+    private any result;
 
-    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo) {
+    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo, any result = ()) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
         self.fileInfo = fileInfo;
         self.data = {};
+        self.result = result;
         self.errors = [];
     }
 
@@ -75,6 +77,8 @@ class ExecutorVisitor {
                 executeQuery(self, fieldNode);
             } else if operationType == parser:OPERATION_MUTATION {
                 executeMutation(self, fieldNode);
+            } else if operationType == parser:OPERATION_SUBSCRIPTION {
+                executeSubscription(self, fieldNode, self.result);
             }
         }
     }

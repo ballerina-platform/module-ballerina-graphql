@@ -41,6 +41,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
  */
 public final class ListenerUtils {
     private static final String HTTP_SERVICE = "graphql.http.service";
+    private static final String WS_SERVICE = "graphql.websocket.service";
     private static final String GRAPHIQL_SERVICE = "graphql.graphiql.service";
 
     private static final String SAMPLE_URL = "http://localhost:9000/";
@@ -52,6 +53,10 @@ public final class ListenerUtils {
 
     public static void attachHttpServiceToGraphqlService(BObject graphqlService, BObject httpService) {
         graphqlService.addNativeData(HTTP_SERVICE, httpService);
+    }
+
+    public static void attachWebsocketServiceToGraphqlService(BObject graphqlService, BObject wsService) {
+        graphqlService.addNativeData(WS_SERVICE, wsService);
     }
 
     public static void attachGraphiqlServiceToGraphqlService(BObject graphqlService, BObject httpService) {
@@ -66,6 +71,14 @@ public final class ListenerUtils {
         return null;
     }
 
+    public static Object getWebsocketServiceFromGraphqlService(BObject graphqlService) {
+        Object wsService = graphqlService.getNativeData(WS_SERVICE);
+        if (wsService instanceof BObject) {
+            return wsService;
+        }
+        return null;
+    }
+    
     public static Object getGraphiqlServiceFromGraphqlService(BObject graphqlService) {
         Object graphiqlService = graphqlService.getNativeData(GRAPHIQL_SERVICE);
         if (graphiqlService instanceof BObject) {

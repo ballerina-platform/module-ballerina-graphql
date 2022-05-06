@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/04/07  
+_Updated_: 2022/05/05  
 _Edition_: Swan Lake  
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)  
 
@@ -46,6 +46,7 @@ The conforming implementation of the specification is released and included in t
         * 3.3.3 [Hierarchical Resource Path](#333-hierarchical-resource-path)
     * 3.4 [Remote Methods](#34-remote-methods)
         * 3.4.1 [Remote Method Name](#341-remote-method-name)
+    * 3.5 [Documentation](#35-documentation)
 4. [Types](#4-types)
     * 4.1 [Scalars](#41-scalars)
         * 4.1.1 [Int](#411-int)
@@ -58,6 +59,7 @@ The conforming implementation of the specification is released and included in t
     * 4.3 [Unions](#43-unions)
     * 4.4 [Enums](#44-enums)
     * 4.5 [Input Objects](#45-input-objects)
+    * 4.6 [Interfaces](#46-interfaces)
 5. [File Upload](#5-file-upload)
     * 5.1 [File Upload Endpoint](#51-file-upload-endpoint)
         * 5.1.1 [`graphql:Upload` Type](#511-graphqlupload-type)
@@ -257,7 +259,7 @@ Root types are a special set of types in a GraphQL schema. These types are assoc
 
 #### 3.1.1 The `Query` Type
 
-The `Query` type is the main root type in a GraphQL schema. It is used to query the schema. The `Query` must be defined for a GraphQL schema to be valid. In Ballerina, the service itself is the schema, and each `resource` method inside a GraphQL service is mapped to a field in the root `Query` type.
+The `Query` type is the main root type in a GraphQL schema. It is used to query the schema. The `Query` must be defined for a GraphQL schema to be valid. In Ballerina, the service itself is the schema, and each `resource` method with the `get` accessor inside a GraphQL service is mapped to a field in the root `Query` type.
 
 ###### Example: Adding a Field to the `Query` Type
 
@@ -269,7 +271,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-> **Note:** Since the `Query` type must be defined in a GraphQL schema, a Ballerina GraphQL service must have at least one resource method. Otherwise, the service will cause a compilation error.
+> **Note:** Since the `Query` type must be defined in a GraphQL schema, a Ballerina GraphQL service must have at least one resource method with the `get` accessor. Otherwise, the service will cause a compilation error.
 
 #### 3.1.2 The `Mutation` Type
 
@@ -289,7 +291,19 @@ As per the [GraphQL specification](https://spec.graphql.org/June2018/#sec-Mutati
 
 #### 3.1.3 The `Subscription` Type
 
-The Ballerina GraphQL package does not support the `Subscription` type yet.
+The `Subscription` type in a GraphQL schema us used to continuously fetch data from a GraphQL service. In Ballerina, the service itself is the schema, and each `resource` method with the `subscribe` accessor inside a GraphQL service is mapped to a field in the root `Subscription` type.
+
+###### Example: Adding a Field to the `Subscription` Type
+
+```ballerina
+service on new graphql:Listener(4000) {
+    resource function subscribe greeting() returns stream<stream> {
+        return ["Walter", "Skyler", "Walter Jr.", "Holly"].toStream();
+    }
+}
+```
+
+> **Note:**: A resource method with `subscribe` accessor must return a Ballerina `stream` type.
 
 ### 3.2 Wrapping Types
 
@@ -344,7 +358,7 @@ Resource methods are a special kind of method in Ballerina. In the Ballerina Gra
 
 #### 3.3.1 Resource Accessor
 
-The only allowed accessor in Ballerina GraphQL resource is `get`. Any other accessor usage will result in a compilation error.
+The only allowed accessors in Ballerina GraphQL resource are `get` and `subscribe`. Any other accessor usage will result in a compilation error.
 
 ###### Example: Resource Accessor
 
@@ -419,6 +433,41 @@ The `remote` methods are used to define the fields of the `Mutation` type in a G
 #### 3.4.1 Remote Method Name
 
 The name of the `remote` method is the name of the corresponding GraphQL field in the `Mutation` type.
+
+### 3.5 Documentation
+
+A GraphQL schema can have documentation for the types, fields, schema, etc. 
+
+In Ballerina, the Ballerina doc comments can be used to add documentation for the generated schema.
+
+###### Example: Documentation
+
+```ballerina
+# Service to query people database.
+service on new graphql:Listener(9090) {
+    
+    # Returns a person with the given ID.
+    # 
+    # + id - The ID of the person
+    # + return - The person with the given ID
+    resource function get person(int id) returns Person {
+        // ...
+    }
+    
+    # Represents a person.
+    #
+    # + id - The ID of the person
+    # + name - The name of the person
+    # + age - The age of the person
+    public type Person record {
+        int id;
+        string name;
+        int age;
+    };
+}
+```
+
+This will generate the documentation for all the fields of the `Query` type including the field descriptions of the `Person` type.
 
 ## 4. Types
 
@@ -607,6 +656,69 @@ type Book record {
     string author;
 };
 ```
+
+### 4.6 Interfaces
+
+In GraphQL, an interface can be used to define a set of common fields for objects. Then the `Object` types can implement the interface with the common fields and optionally, additional fields.
+
+In Ballerina, a `distinct` `service` classes can be used to define GraphQL interfaces. Then other `distinct` `service` classes can be used to implement the interface. All the service classes that are implementing the interface must contain the same resource methods, and they can define additional resource methods.
+
+###### Example: Interfaces
+```ballerina
+public isolated distinct service class Person {
+    final string name;
+
+    isolated function init(string name) {
+        self.name = name;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+}
+
+# Represents a Student as a class.
+public isolated distinct service class Student {
+    *Person;
+    final string name;
+    final int id;
+
+    isolated function init(string name, int id) {
+        self.name = name;
+        self.id = id;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get id() returns int {
+        return self.id;
+    }
+}
+
+# Represents a Teacher as a class.
+public isolated distinct service class Teacher {
+    *Person;
+    final string name;
+    final string subject;
+
+    isolated function init(string name, string subject) {
+        self.name = name;
+        self.subject = subject;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get subject() returns string {
+        return self.subject;
+    }
+}
+```
+
+In the above example, the `Human` class is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Human` interface.
 
 ## 5. File Upload
 

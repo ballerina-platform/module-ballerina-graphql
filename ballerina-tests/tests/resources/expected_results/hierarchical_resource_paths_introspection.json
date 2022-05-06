@@ -1,0 +1,207 @@
+{
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "__Field",
+                    "fields": [
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "args"
+                        },
+                        {
+                            "name": "type"
+                        },
+                        {
+                            "name": "isDeprecated"
+                        },
+                        {
+                            "name": "deprecationReason"
+                        }
+                    ]
+                },
+                {
+                    "name": "__TypeKind",
+                    "fields": null
+                },
+                {
+                    "name": "address",
+                    "fields": [
+                        {
+                            "name": "city"
+                        },
+                        {
+                            "name": "street"
+                        },
+                        {
+                            "name": "number"
+                        }
+                    ]
+                },
+                {
+                    "name": "Query",
+                    "fields": [
+                        {
+                            "name": "profile"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Schema",
+                    "fields": [
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "types"
+                        },
+                        {
+                            "name": "queryType"
+                        },
+                        {
+                            "name": "mutationType"
+                        },
+                        {
+                            "name": "subscriptionType"
+                        },
+                        {
+                            "name": "directives"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Type",
+                    "fields": [
+                        {
+                            "name": "kind"
+                        },
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "fields"
+                        },
+                        {
+                            "name": "interfaces"
+                        },
+                        {
+                            "name": "possibleTypes"
+                        },
+                        {
+                            "name": "enumValues"
+                        },
+                        {
+                            "name": "inputFields"
+                        },
+                        {
+                            "name": "ofType"
+                        }
+                    ]
+                },
+                {
+                    "name": "__EnumValue",
+                    "fields": [
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "isDeprecated"
+                        },
+                        {
+                            "name": "deprecationReason"
+                        }
+                    ]
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "fields": null
+                },
+                {
+                    "name": "profile",
+                    "fields": [
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "age"
+                        },
+                        {
+                            "name": "address"
+                        }
+                    ]
+                },
+                {
+                    "name": "String",
+                    "fields": null
+                },
+                {
+                    "name": "Int",
+                    "fields": null
+                },
+                {
+                    "name": "name",
+                    "fields": [
+                        {
+                            "name": "first"
+                        },
+                        {
+                            "name": "last"
+                        },
+                        {
+                            "name": "address"
+                        }
+                    ]
+                },
+                {
+                    "name": "__InputValue",
+                    "fields": [
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "type"
+                        },
+                        {
+                            "name": "defaultValue"
+                        }
+                    ]
+                },
+                {
+                    "name": "Boolean",
+                    "fields": null
+                },
+                {
+                    "name": "__Directive",
+                    "fields": [
+                        {
+                            "name": "name"
+                        },
+                        {
+                            "name": "description"
+                        },
+                        {
+                            "name": "locations"
+                        },
+                        {
+                            "name": "args"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
