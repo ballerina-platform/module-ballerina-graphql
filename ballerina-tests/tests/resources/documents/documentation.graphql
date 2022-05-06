@@ -1,0 +1,48 @@
+{
+    __schema {
+        description
+        queryType {
+            fields {
+                ...FieldFragment
+            }
+        }
+        mutationType {
+            fields {
+                ...FieldFragment
+            }
+        }
+    }
+}
+
+fragment FieldFragment on __Field {
+    name
+    description
+    type {
+        ...FieldTypeFragment
+    }
+    args {
+        name
+        description
+    }
+}
+
+fragment FieldTypeFragment on __Type {
+    name
+    description
+    fields {
+        name
+        description
+    }
+    ofType {
+        ...TypeFragment
+    }
+}
+
+fragment TypeFragment on __Type {
+    name
+    description
+    fields {
+        name
+        description
+    }
+}

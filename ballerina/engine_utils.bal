@@ -36,7 +36,7 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function createSchema(Service s) returns __Schema|Error = @java:Method {
+isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
@@ -48,11 +48,20 @@ isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fiel
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
+isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode fieldNode, any result) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
 isolated function executeIntrospection(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata result) =
 @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
 isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
+isolated function getSubscriptionResult(ExecutorVisitor visitor,
+                                        parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;

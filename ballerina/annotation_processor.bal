@@ -53,3 +53,10 @@ isolated function getServiceConfig(Service serviceObject) returns GraphqlService
     typedesc<any> serviceType = typeof serviceObject;
     return serviceType.@ServiceConfig;
 }
+
+isolated function getSchemaString(GraphqlServiceConfig? serviceConfig) returns string {
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.schemaString;
+    }
+    return "";
+}

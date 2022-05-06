@@ -15,10 +15,12 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/websocket;
 
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
+    private websocket:Listener? wsListener;
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
     # provided to initialize the listener.
@@ -37,6 +39,7 @@ public class Listener {
         } else {
             self.httpListener = listenTo;
         }
+        self.wsListener = ();
     }
 
     # Attaches the provided service to the Listener.
@@ -46,12 +49,22 @@ public class Listener {
     # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
     #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
-        __Schema schema = check createSchema(s);
-        addDefaultDirectives(schema);
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
         Graphiql graphiql = getGraphiqlConfig(serviceConfig);
+        if graphiql.enable {
+            check validateGraphiqlPath(graphiql.path);
+            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
+            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
+            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
+            error? result = self.httpListener.attach(graphiqlService, graphiql.path);
+            if result is error {
+                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
+            }
+        }
+
+        string schemaString = getSchemaString(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        Engine engine = check new (schema, maxQueryDepth);
+        Engine engine = check new (schemaString, maxQueryDepth);
         attachServiceToEngine(s, engine);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
@@ -61,14 +74,23 @@ public class Listener {
             return error Error("Error occurred while attaching the service", result);
         }
 
-        if graphiql.enable {
-            check validateGraphiqlPath(graphiql.path);
-            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
-            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
-            result = self.httpListener.attach(graphiqlService, graphiql.path);
+        __Schema & readonly schema = engine.getSchema();
+        __Type? subscriptionType = schema.subscriptionType;
+        if subscriptionType is __Type {
+            websocket:Listener|error wsListener = new(self.httpListener);
+            if wsListener is error {
+                return error Error("Websocket listener initialization failed", wsListener);
+            }
+            self.wsListener = wsListener;
+        }
+
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            UpgradeService wsService = getWebsocketService(engine, schema, serviceConfig);
+            attachWebsocketServiceToGraphqlService(s, wsService);
+            result = wsListener.attach(wsService, name);
             if result is error {
-                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
+                return error Error("Error occurred while attaching the websocket service", result);
             }
         }
     }
@@ -83,6 +105,17 @@ public class Listener {
             error? result = self.httpListener.detach(httpService);
             if result is error {
                 return error Error("Error occurred while detaching the service", result);
+            }
+        }
+
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            UpgradeService? wsService = getWebsocketServiceFromGraphqlService(s);
+            if wsService is UpgradeService {
+                error? result = wsListener.detach(wsService);
+                if result is error {
+                    return error Error("Error occurred while detaching the websocket service", result);
+                }
             }
         }
 
@@ -103,6 +136,13 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while starting the service", result);
         }
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            result = wsListener.'start();
+            if result is error {
+                return error Error("Error occurred while starting the websocket service", result);
+            }
+        }
     }
 
     # Gracefully stops the graphql listener. Already accepted requests will be served before the connection closure.
@@ -113,6 +153,13 @@ public class Listener {
         if result is error {
             return error Error("Error occurred while stopping the service", result);
         }
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            result = wsListener.gracefulStop();
+            if result is error {
+                return error Error("Error occurred while stopping the websocket service", result);
+            }
+        }
     }
 
     # Stops the service listener immediately.
@@ -122,6 +169,13 @@ public class Listener {
         error? result = self.httpListener.immediateStop();
         if result is error {
             return error Error("Error occurred while stopping the service", result);
+        }
+        websocket:Listener? wsListener = self.wsListener;
+        if wsListener is websocket:Listener {
+            result = wsListener.immediateStop();
+            if result is error {
+                return error Error("Error occurred while stopping the websocket service", result);
+            }
         }
     }
 }

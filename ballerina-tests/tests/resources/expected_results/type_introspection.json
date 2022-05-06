@@ -1,0 +1,18 @@
+{
+    "data": {
+        "__type": {
+            "kind": "OBJECT",
+            "fields": [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "age"
+                },
+                {
+                    "name": "address"
+                }
+            ]
+        }
+    }
+}

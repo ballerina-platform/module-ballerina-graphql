@@ -1,0 +1,92 @@
+{
+    "data": {
+        "__schema": {
+            "description": "GraphQL service with documentation.",
+            "queryType": {
+                "fields": [
+                    {
+                        "name": "greeting",
+                        "description": "Greets a person with provided name.\n",
+                        "type": {
+                            "name": null,
+                            "description": null,
+                            "fields": null,
+                            "ofType": {
+                                "name": "String",
+                                "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
+                                "fields": null
+                            }
+                        },
+                        "args": [
+                            {
+                                "name": "name",
+                                "description": "The name of the person"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "instrument",
+                        "description": "Returns a predefined instrument.\n",
+                        "type": {
+                            "name": null,
+                            "description": null,
+                            "fields": null,
+                            "ofType": {
+                                "name": "Instrument",
+                                "description": "Represents an instrument\n",
+                                "fields": [
+                                    {
+                                        "name": "name",
+                                        "description": "Name of the instrument"
+                                    },
+                                    {
+                                        "name": "method",
+                                        "description": "Method the instrument generate the sound"
+                                    }
+                                ]
+                            }
+                        },
+                        "args": []
+                    }
+                ]
+            },
+            "mutationType": {
+                "fields": [
+                    {
+                        "name": "addShape",
+                        "description": "Updates a shape in the database.\n",
+                        "type": {
+                            "name": null,
+                            "description": null,
+                            "fields": null,
+                            "ofType": {
+                                "name": "Shape",
+                                "description": "Represents a shape\n",
+                                "fields": [
+                                    {
+                                        "name": "name",
+                                        "description": "Name of the shape"
+                                    },
+                                    {
+                                        "name": "edges",
+                                        "description": "Number of edges in the shape"
+                                    }
+                                ]
+                            }
+                        },
+                        "args": [
+                            {
+                                "name": "name",
+                                "description": "Name of the new shape"
+                            },
+                            {
+                                "name": "edges",
+                                "description": "Number of edges of the new shape"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

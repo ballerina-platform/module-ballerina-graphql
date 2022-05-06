@@ -20,12 +20,16 @@ isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
 
-    isolated function init(__Schema schema, int? maxQueryDepth) returns Error? {
-        self.schema = schema.cloneReadOnly();
+    isolated function init(string schemaString, int? maxQueryDepth) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
+        self.schema = check createSchema(schemaString);
+    }
+
+    isolated function getSchema() returns readonly & __Schema {
+        return self.schema;
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
@@ -100,6 +104,12 @@ isolated class Engine {
 
         DuplicateFieldRemover duplicateFieldRemover = new(document);
         duplicateFieldRemover.remove();
+
+        SubscriptionVisitor subscriptionVisitor = new(document);
+        errors = subscriptionVisitor.validate();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
         return;
     }
 

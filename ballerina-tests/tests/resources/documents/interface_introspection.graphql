@@ -1,0 +1,12 @@
+{
+    __schema {
+        types {
+            name
+            kind
+            possibleTypes {
+                name
+                kind
+            }
+        }
+    }
+}

@@ -96,6 +96,7 @@ subprojects {
         ballerinaStdLibs "io.ballerina.stdlib:uuid-ballerina:${stdlibUuidVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:observe-ballerina:${observeVersion}"
         ballerinaStdLibs "io.ballerina:observe-ballerina:${observeInternalVersion}"
+        ballerinaStdLibs "io.ballerina.stdlib:websocket-ballerina:${stdlibWebsocketVersion}"
     }
 }
 
@@ -104,6 +105,7 @@ task build {
     dependsOn(':graphql-compiler-plugin:build')
     dependsOn(':graphql-ballerina:build')
     dependsOn(':graphql-compiler-plugin-tests:test')
+    dependsOn(':graphql-ballerina-tests:test')
     dependsOn(':graphql-examples:build')
 }
 

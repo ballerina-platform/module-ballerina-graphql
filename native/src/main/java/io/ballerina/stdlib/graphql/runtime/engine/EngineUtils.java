@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.Type;
@@ -41,8 +42,6 @@ import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.getMemberTypes;
-import static io.ballerina.stdlib.graphql.runtime.schema.Utils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -59,13 +58,21 @@ public class EngineUtils {
     public static final String TYPE_RECORD = "__Type";
     public static final String INPUT_VALUE_RECORD = "__InputValue";
     public static final String ENUM_VALUE_RECORD = "__EnumValue";
+    public static final String DIRECTIVE_RECORD = "__Directive";
+    public static final String DIRECTIVE_LOCATION_ENUM = "__DirectiveLocation";
 
     // Schema related record field names
     public static final BString QUERY_TYPE_FIELD = StringUtils.fromString("queryType");
     public static final BString MUTATION_TYPE_FIELD = StringUtils.fromString("mutationType");
+    public static final BString SUBSCRIPTION_TYPE_FIELD = StringUtils.fromString("subscriptionType");
     public static final BString TYPES_FIELD = StringUtils.fromString("types");
     public static final BString TYPE_FIELD = StringUtils.fromString("type");
     public static final BString NAME_FIELD = StringUtils.fromString("name");
+    public static final BString DESCRIPTION_FIELD = StringUtils.fromString("description");
+    public static final BString DEPRECATION_REASON_FIELD = StringUtils.fromString("deprecationReason");
+    public static final BString IS_DEPRECATED_FIELD = StringUtils.fromString("isDeprecated");
+    public static final BString DIRECTIVES_FIELD = StringUtils.fromString("directives");
+    public static final BString SELECTION_FIELD = StringUtils.fromString("selections");
     public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
@@ -93,9 +100,14 @@ public class EngineUtils {
     public static final String DECIMAL = "Decimal";
     public static final String QUERY = "Query";
     public static final String MUTATION = "Mutation";
+    public static final String SUBSCRIPTION = "Subscription";
 
     // Input values
     public static final String KEY = "key";
+
+    //Accessor names
+    public static final String GET_ACCESSOR = "get";
+    public static final String SUBSCRIBE_ACCESSOR = "subscribe";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
@@ -110,7 +122,7 @@ public class EngineUtils {
 
     // Record fields
     static final BString LOCATION_FIELD = StringUtils.fromString("location");
-    static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
+    public static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
     static final BString PATH_FIELD = StringUtils.fromString("path");
     static final BString MESSAGE_FIELD = StringUtils.fromString("message");
     static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
@@ -153,9 +165,9 @@ public class EngineUtils {
             if (isEnum((UnionType) type)) {
                 return true;
             }
-            List<Type> memberType = getMemberTypes((UnionType) type);
-            if (memberType.size() == 1) {
-                return isScalarType(memberType.get(0));
+            List<Type> memberTypes = getMemberTypes((UnionType) type);
+            if (memberTypes.size() == 1) {
+                return isScalarType(memberTypes.get(0));
             }
             return false;
         }
@@ -190,5 +202,38 @@ public class EngineUtils {
             updatedPathSegments.add(segment);
         }
         return updatedPathSegments;
+    }
+
+    public static boolean isEnum(UnionType unionType) {
+        return SymbolFlags.isFlagOn(unionType.getFlags(), SymbolFlags.ENUM);
+    }
+
+    public static List<Type> getMemberTypes(UnionType unionType) {
+        List<Type> members = new ArrayList<>();
+        if (isEnum(unionType)) {
+            members.add(unionType);
+        } else {
+            List<Type> originalMembers = unionType.getOriginalMemberTypes();
+            for (Type type : originalMembers) {
+                if (isIgnoreType(type)) {
+                    continue;
+                }
+                if (type.getTag() == TypeTags.UNION_TAG) {
+                    members.addAll(getMemberTypes((UnionType) type));
+                } else {
+                    members.add(type);
+                }
+            }
+        }
+        return members;
+    }
+
+    public static BArray getArrayTypeFromBMap(BMap<BString, Object> recordValue) {
+        ArrayType arrayType = TypeCreator.createArrayType(recordValue.getType());
+        return ValueCreator.createArrayValue(arrayType);
+    }
+
+    public static boolean isIgnoreType(Type type) {
+        return type.getTag() == TypeTags.ERROR_TAG || type.getTag() == TypeTags.NULL_TAG;
     }
 }

@@ -1,3 +1,11 @@
+fixes:
+    - "ballerina/graphql/*/::../ballerina/"
+
+ignore:
+    - "ballerina-tests"
+    - "compiler-plugin-tests"
+    - "compiler-plugin"
+
 coverage:
     precision: 2
     round: down

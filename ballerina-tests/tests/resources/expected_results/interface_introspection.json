@@ -1,0 +1,92 @@
+{
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "Human",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__Field",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__TypeKind",
+                    "kind": "ENUM",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "Query",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "Character",
+                    "kind": "INTERFACE",
+                    "possibleTypes": [
+                        {
+                            "name": "Human",
+                            "kind": "OBJECT"
+                        },
+                        {
+                            "name": "Droid",
+                            "kind": "OBJECT"
+                        }
+                    ]
+                },
+                {
+                    "name": "__Schema",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__Type",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__EnumValue",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "kind": "ENUM",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "String",
+                    "kind": "SCALAR",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "Int",
+                    "kind": "SCALAR",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "Droid",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__InputValue",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "Boolean",
+                    "kind": "SCALAR",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "__Directive",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                }
+            ]
+        }
+    }
+}

@@ -22,6 +22,7 @@
     <test name="UnitTests">
         <classes>
             <class name="io.ballerina.stdlib.graphql.compiler.ServiceValidationTest"/>
+            <class name="io.ballerina.stdlib.graphql.compiler.SchemaGenerationTest"/>
         </classes>
     </test>
 </suite>
