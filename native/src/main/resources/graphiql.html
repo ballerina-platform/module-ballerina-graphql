@@ -22,34 +22,25 @@ SOFTWARE. -->
 
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title>Simple GraphiQL Example</title>
-    <link href="https://unpkg.com/graphiql/graphiql.min.css" rel="stylesheet" />
-</head>
-<body style="margin: 0;">
-<div id="graphiql" style="height: 100vh;"></div>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Ballerina GraphiQL Client</title>
+        <link href="https://unpkg.com/graphiql/graphiql.min.css" rel="stylesheet"/>
+    </head>
+    <body style="margin: 0;"    >
+        <div id="graphiql" style="height: 100vh;"></div>
 
-<script
-        crossorigin
-        src="https://unpkg.com/react/umd/react.production.min.js"
-></script>
-<script
-        crossorigin
-        src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"
-></script>
-<script
-        crossorigin
-        src="https://unpkg.com/graphiql/graphiql.min.js"
-></script>
+        <script crossorigin src="https://unpkg.com/react/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/graphiql/graphiql.min.js"></script>
 
-<script>
-        const fetcher = GraphiQL.createFetcher({ url: "${url}" });
+        <script>
+                const fetcher = GraphiQL.createFetcher({ url: "${url}" });
 
-        ReactDOM.render(
-            React.createElement(GraphiQL, { fetcher: fetcher }),
-            document.getElementById('graphiql'),
-        );
+                ReactDOM.render(
+                    React.createElement(GraphiQL, { fetcher: fetcher }),
+                    document.getElementById('graphiql'),
+                );
         </script>
-</body>
+    </body>
 </html>
