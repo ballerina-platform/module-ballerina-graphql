@@ -244,7 +244,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -269,7 +269,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
