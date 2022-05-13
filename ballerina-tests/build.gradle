@@ -119,3 +119,6 @@ build.dependsOn ":${packageName}-ballerina:build"
 build.dependsOn ":${packageName}-compiler-plugin:build"
 test.dependsOn ":${packageName}-ballerina:build"
 test.dependsOn ":${packageName}-compiler-plugin:build"
+
+publishToMavenLocal.dependsOn build
+publish.dependsOn build
