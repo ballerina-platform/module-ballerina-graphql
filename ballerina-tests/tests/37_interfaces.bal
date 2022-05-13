@@ -48,3 +48,36 @@ isolated function testInterfaceField() returns error? {
     json expectedPayload = check getJsonContentFromFile("interface_field.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["interfaces"]
+}
+isolated function testInterfacesWithNestedFragments() returns error? {
+    string document = check getGraphQLDocumentFromFile("interfaces_with_nested_fragments.graphql");
+    string url = "http://localhost:9098/interfaces";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interfaces_with_nested_fragments.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interfaces"]
+}
+isolated function testInterfacesWithInvalidField() returns error? {
+    string document = check getGraphQLDocumentFromFile("interfaces_with_invalid_field.graphql");
+    string url = "http://localhost:9098/interfaces";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = check getJsonContentFromFile("interfaces_with_invalid_field.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interfaces"]
+}
+isolated function testInterfacesWithTypeNameIntrospection() returns error? {
+    string document = check getGraphQLDocumentFromFile("interfaces_with_type_name_introspection.graphql");
+    string url = "http://localhost:9098/interfaces";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interfaces_with_type_name_introspection.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

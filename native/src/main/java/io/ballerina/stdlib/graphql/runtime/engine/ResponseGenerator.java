@@ -34,6 +34,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTable;
 import io.ballerina.runtime.api.values.BValue;
+import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +46,14 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_F
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FRAGMENT_NODE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KEY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.KIND_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ON_TYPE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.POSSIBLE_TYPES_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SELECTIONS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPENAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.TYPES_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
@@ -56,6 +61,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.copyAndUpda
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getMemberTypes;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getTypeFromTypeArray;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
@@ -110,7 +116,7 @@ public class ResponseGenerator {
                 BString typeName = StringUtils.fromString(subNode.getType().getName());
                 data.put(node.getStringValue(ALIAS_FIELD), subData);
                 if (FRAGMENT_NODE.equals(typeName)) {
-                    if (service.getType().getName().equals(subNode.getStringValue(ON_TYPE_FIELD).getValue())) {
+                    if (isValidOnType(executionContext, service, subNode)) {
                         executeResourceForFragmentNodes(executionContext, service, subNode, subData, paths,
                                                         pathSegments);
                     }
@@ -279,5 +285,29 @@ public class ResponseGenerator {
             }
         }
         return recordType.getName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean isValidOnType(ExecutionContext executionContext, BObject service, BObject node) {
+        String typeName = service.getType().getName();
+        BString onTypeName = node.getStringValue(ON_TYPE_FIELD);
+        if (typeName.equals(onTypeName.getValue())) {
+            return true;
+        }
+        BMap<BString, Object> schema = executionContext.getVisitor().getMapValue(SCHEMA_FIELD);
+        BArray types = schema.getArrayValue(TYPES_FIELD);
+        BMap<BString, Object> onType = getTypeFromTypeArray(onTypeName.getValue(), types);
+        if (onType == null) {
+            return false;
+        }
+        if (!TypeKind.INTERFACE.toString().equals(onType.getStringValue(KIND_FIELD).getValue())) {
+            return false;
+        }
+        BArray possibleTypes = onType.getArrayValue(POSSIBLE_TYPES_FIELD);
+        if (possibleTypes == null) {
+            return false;
+        }
+        BMap<BString, Object> possibleType = getTypeFromTypeArray(typeName, possibleTypes);
+        return possibleType != null;
     }
 }

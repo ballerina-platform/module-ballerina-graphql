@@ -17,13 +17,19 @@
 import ballerina/http;
 import graphql.parser;
 
-isolated function getFieldNotFoundErrorMessageFromType(string requiredFieldName, __Type rootType) returns string {
+isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type rootType) returns string {
     string typeName = getTypeNameFromType(rootType);
-    return getFieldNotFoundErrorMessage(requiredFieldName, typeName);
+    if rootType.kind == UNION {
+        return getInvalidFieldOnUnionTypeError(fieldName, rootType);
+    }
+    if rootType.kind == INTERFACE {
+        return getInvalidFieldOnInterfaceError(fieldName, typeName);
+    }
+    return getFieldNotFoundErrorMessage(fieldName, typeName);
 }
 
-isolated function getFieldNotFoundErrorMessage(string requiredFieldName, string rootType) returns string {
-    return string`Cannot query field "${requiredFieldName}" on type "${rootType}".`;
+isolated function getFieldNotFoundErrorMessage(string fieldName, string rootType) returns string {
+    return string`Cannot query field "${fieldName}" on type "${rootType}".`;
 }
 
 isolated function getNoSubfieldsErrorMessage(__Field 'field) returns string {
@@ -52,6 +58,10 @@ isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type union
         onTypes += string` or "${getOfType(possibleTypes[i]).name.toString()}"`;
     }
     return string`Cannot query field "${fieldName}" on type "${unionType.name.toString()}". Did you mean to use a fragment on ${onTypes}?`;
+}
+
+isolated function getInvalidFieldOnInterfaceError(string fieldName, string typeName) returns string {
+    return string`Cannot query field "${fieldName}" on type "${typeName}". Did you mean to use a fragment on a subtype?`;
 }
 
 isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
@@ -353,7 +363,7 @@ isolated function getInputObjectFieldFormPath((string|int)[] path, string name) 
     return name;
 }
 
-isolated function getGraphqlPayload(string query, map<anydata>? variables = (), string? operationName = ()) 
+isolated function getGraphqlPayload(string query, map<anydata>? variables = (), string? operationName = ())
                                     returns json {
     return {
         query: query,
@@ -379,12 +389,12 @@ isolated function handleGraphqlErrorResponse(map<json> responseMap) returns Requ
         return error RequestError("GraphQL Client Error", errors);
     }
     json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
-    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () : 
+    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () :
         <map<json>> responseMap.get("extensions")) : ();
     return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
 }
 
-isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, json graphqlResponse) 
+isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, json graphqlResponse)
                                      returns GenericResponse|record{}|json|RequestError {
     do {
         if targetType is typedesc<GenericResponse> {
@@ -403,8 +413,8 @@ isolated function performDataBinding(typedesc<GenericResponse|record{}|json> tar
     return error RequestError("GraphQL Client Error, Invalid binding type.");
 }
 
-isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType, 
-                                               json graphqlResponse) 
+isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType,
+                                               json graphqlResponse)
                                                returns GenericResponseWithErrors|record{}|json|RequestError {
     do {
         if targetType is typedesc<GenericResponseWithErrors> {

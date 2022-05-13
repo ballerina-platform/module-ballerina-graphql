@@ -1,0 +1,16 @@
+{
+    "data": {
+        "characters": [
+            {
+                "__typename": "Human",
+                "name": "Luke Skywalker",
+                "id": 1
+            },
+            {
+                "__typename": "Droid",
+                "name": "R2D2",
+                "year": 1977
+            }
+        ]
+    }
+}

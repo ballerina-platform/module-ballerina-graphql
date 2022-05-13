@@ -23,7 +23,6 @@ class ValidatorVisitor {
     private final parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
-    private __Directive[] defaultDirectives;
     private (string|int)[] argumentPath;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode) {
@@ -31,7 +30,6 @@ class ValidatorVisitor {
         self.documentNode = documentNode;
         self.errors = [];
         self.usedFragments = {};
-        self.defaultDirectives = schema.directives;
         self.argumentPath = [];
     }
 
@@ -51,12 +49,11 @@ class ValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        __Field? schemaFieldForOperation =
-            createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
+        __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
         self.validateDirectiveArguments(operationNode);
-        if schemaFieldForOperation is __Field {
+        if operationField is __Field {
             foreach parser:Selection selection in operationNode.getSelections() {
-                self.visitSelection(selection, schemaFieldForOperation);
+                self.visitSelection(selection, operationField);
             }
         }
     }
@@ -64,14 +61,6 @@ class ValidatorVisitor {
     public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = <__Type>getOfType(parentField.'type);
-        if parentType.kind == UNION {
-            self.validateUnionTypeField(selection, parentType, parentField);
-            return;
-        }
-        if parentType.kind == INTERFACE {
-            self.validateInterfaceTypeField(selection, parentType, parentField);
-            return;
-        }
         if selection is parser:FragmentNode {
             __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
             if fragmentOnType is __Type {
@@ -432,46 +421,6 @@ class ValidatorVisitor {
         }
     }
 
-    isolated function validateUnionTypeField(parser:Selection selection, __Type parentType, __Field parentField) {
-        if selection is parser:FieldNode {
-            __Field? subField = getRequierdFieldFromType(parentType, self.schema.types, selection);
-            if subField is __Field {
-                self.visitField(selection, subField);
-            } else {
-                string message = getInvalidFieldOnUnionTypeError(selection.getAlias(), parentType);
-                self.errors.push(getErrorDetailRecord(message, selection.getLocation()));
-            }
-        } else if selection is parser:FragmentNode {
-            __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, selection.getOnType());
-            if requiredType is __Type {
-                __Field subField = createField(parentField.name, requiredType);
-                self.visitFragment(selection, subField);
-            } else {
-                string message = getFragmetCannotSpreadError(selection, selection.getName(), parentType);
-                self.errors.push(getErrorDetailRecord(message, <Location>selection.getSpreadLocation()));
-            }
-        } else {
-            panic error("Invalid selection node passed.");
-        }
-    }
-
-    isolated function validateInterfaceTypeField(parser:Selection selection, __Type parentType, __Field parentField) {
-        if selection is parser:FieldNode {
-            self.visitField(selection, parentField);
-        } else if selection is parser:FragmentNode {
-            __Type? requiredType = getTypeFromTypeArray(<__Type[]>parentType?.possibleTypes, selection.getOnType());
-            if requiredType is __Type {
-                __Field subField = createField(parentField.name, requiredType);
-                self.visitFragment(selection, subField);
-            } else {
-                string message = getFragmetCannotSpreadError(selection, selection.getName(), parentType);
-                self.errors.push(getErrorDetailRecord(message, <Location>selection.getSpreadLocation()));
-            }
-        } else {
-            panic error("Invalid selection node passed.");
-        }
-    }
-
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
     }
@@ -524,6 +473,13 @@ class ValidatorVisitor {
             __Type schemaType = <__Type>getTypeFromTypeArray(self.schema.types, schemaTypeName);
             __Type ofType = getOfType(schemaType);
             if fragmentOnType != ofType {
+                if ofType.kind == INTERFACE || ofType.kind == UNION {
+                    __Type[] possibleTypes = <__Type[]>ofType.possibleTypes;
+                    __Type? possibleType = getTypeFromTypeArray(possibleTypes, fragmentOnTypeName);
+                    if possibleType == fragmentOnType {
+                        return;
+                    }
+                }
                 string message = getFragmetCannotSpreadError(fragmentNode, fragmentNode.getName(), ofType);
                 ErrorDetail errorDetail = getErrorDetailRecord(message, <Location>fragmentNode.getSpreadLocation());
                 self.errors.push(errorDetail);
@@ -582,7 +538,7 @@ class ValidatorVisitor {
 
     isolated function validateDirectiveArguments(parser:ParentNode node) {
         foreach parser:DirectiveNode directive in node.getDirectives() {
-            foreach __Directive defaultDirective in self.defaultDirectives {
+            foreach __Directive defaultDirective in self.schema.directives {
                 if directive.getName() == defaultDirective.name {
                     __InputValue[] notFoundInputValues = copyInputValueArray(defaultDirective.args);
                     foreach parser:ArgumentNode argumentNode in directive.getArguments() {
