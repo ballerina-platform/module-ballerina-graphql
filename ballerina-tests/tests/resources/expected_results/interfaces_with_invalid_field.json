@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Cannot query field \"age\" on type \"Character\". Did you mean to use a fragment on a subtype?",
+            "locations": [
+                {
+                    "line": 9,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

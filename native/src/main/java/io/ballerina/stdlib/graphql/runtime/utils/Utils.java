@@ -62,13 +62,6 @@ public class Utils {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), cause, null);
     }
 
-    public static String[] removeFirstElementFromArray(String[] array) {
-        int length = array.length - 1;
-        String[] result = new String[length];
-        System.arraycopy(array, 1, result, 0, length);
-        return result;
-    }
-
     public static boolean isContext(Type type) {
         return isGraphqlModule(type) && type.getName().equals(CONTEXT_OBJECT);
     }

@@ -47,6 +47,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
  */
+@SuppressWarnings("unchecked")
 public class EngineUtils {
 
     private EngineUtils() {
@@ -72,7 +73,6 @@ public class EngineUtils {
     public static final BString DEPRECATION_REASON_FIELD = StringUtils.fromString("deprecationReason");
     public static final BString IS_DEPRECATED_FIELD = StringUtils.fromString("isDeprecated");
     public static final BString DIRECTIVES_FIELD = StringUtils.fromString("directives");
-    public static final BString SELECTION_FIELD = StringUtils.fromString("selections");
     public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
@@ -85,19 +85,6 @@ public class EngineUtils {
     public static final BString INTERFACES_FIELD = StringUtils.fromString("interfaces");
     public static final BString VARIABLE_VALUE_FIELD = StringUtils.fromString("variableValue");
     public static final BString VARIABLE_DEFINITION = StringUtils.fromString("variableDefinition");
-
-    // Schema related values
-    public static final String INCLUDE_DEPRECATED = "includeDeprecated";
-    public static final String FALSE = "false";
-    public static final int T_INPUT_OBJECT = 22;
-    public static final int T_LIST = 23;
-
-    // Schema related type names
-    public static final String INTEGER = "Int";
-    public static final String STRING = "String";
-    public static final String BOOLEAN = "Boolean";
-    public static final String FLOAT = "Float";
-    public static final String DECIMAL = "Decimal";
     public static final String QUERY = "Query";
     public static final String MUTATION = "Mutation";
     public static final String SUBSCRIPTION = "Subscription";
@@ -130,6 +117,7 @@ public class EngineUtils {
     static final BString VALUE_FIELD = StringUtils.fromString("value");
     static final BString VARIABLE_NAME_FIELD = StringUtils.fromString("variableName");
     static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
+    static final BString SCHEMA_FIELD = StringUtils.fromString("schema");
 
     // Node Types
     static final BString FRAGMENT_NODE = StringUtils.fromString("FragmentNode");
@@ -235,5 +223,15 @@ public class EngineUtils {
 
     public static boolean isIgnoreType(Type type) {
         return type.getTag() == TypeTags.ERROR_TAG || type.getTag() == TypeTags.NULL_TAG;
+    }
+
+    public static BMap<BString, Object> getTypeFromTypeArray(String typeName, BArray types) {
+        for (int i = 0; i < types.size(); i++) {
+            BMap<BString, Object> type = (BMap<BString, Object>) types.get(i);
+            if (type.getStringValue(NAME_FIELD).getValue().equals(typeName)) {
+                return type;
+            }
+        }
+        return null;
     }
 }
