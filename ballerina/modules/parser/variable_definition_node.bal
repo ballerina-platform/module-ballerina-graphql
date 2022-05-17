@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class VariableDefinitionNode {
+public class VariableNode {
     *Node;
 
     private string name;

@@ -122,7 +122,7 @@ public class Parser {
             }
             Location varDefinitionLocation = token.location.clone();
             token = check self.readNextNonSeparatorToken();
-            string varName = check getIdentifierTokenvalue(token);
+            string name = check getIdentifierTokenvalue(token);
             Location varLocation = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
@@ -130,24 +130,24 @@ public class Parser {
             }
             token = check self.readNextNonSeparatorToken();
             string varType = check self.getTypeIdentifierTokenValue(token);
-            VariableDefinitionNode varDefinition = new (varName, varType, varDefinitionLocation);
+            VariableNode variableNode = new (name, varType, varDefinitionLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
                 token = check self.readNextNonSeparatorToken(); // consume "=" sign here
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
-                    ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
-                    varDefinition.setDefaultValue(value);
+                    ArgumentNode value = check self.getInputObjectTypeArgument(name, varLocation, false);
+                    variableNode.setDefaultValue(value);
                 } else if token.kind == T_OPEN_BRACKET {
-                    ArgumentNode value = check self.getListTypeArgument(varName, varLocation, false);
-                    varDefinition.setDefaultValue(value);
+                    ArgumentNode value = check self.getListTypeArgument(name, varLocation, false);
+                    variableNode.setDefaultValue(value);
                 } else {
-                    ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation, false);
-                    varDefinition.setDefaultValue(value);
+                    ArgumentNode value = check self.getScalarTypeArgument(name, varLocation, false);
+                    variableNode.setDefaultValue(value);
                 }
                 token = check self.peekNextNonSeparatorToken();
             }
-            operationNode.addVariableDefinition(varDefinition);
+            operationNode.addVariableDefinition(variableNode);
         }
         token = check self.readNextNonSeparatorToken();
     }

@@ -512,10 +512,10 @@ isolated function testVariables() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["profileId"];
-    test:assertEquals(variableDefinition.getName(), "profileId");
-    test:assertEquals(variableDefinition.getTypeName(), "Int");
-    ArgumentNode argValueNode = <ArgumentNode>variableDefinition.getDefaultValue();
+    VariableNode variableNode = <VariableNode>operationNode.getVaribleDefinitions()["profileId"];
+    test:assertEquals(variableNode.getName(), "profileId");
+    test:assertEquals(variableNode.getTypeName(), "Int");
+    ArgumentNode argValueNode = <ArgumentNode>variableNode.getDefaultValue();
     ArgumentValue argValue = <ArgumentValue>argValueNode.getValue();
     test:assertEquals(<Scalar>argValue, 3);
     Selection selection = operationNode.getSelections()[0];
@@ -538,12 +538,12 @@ isolated function testNonNullTypeVariables() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["name"];
-    test:assertEquals(variableDefinition.getName(), "name");
-    test:assertEquals(variableDefinition.getTypeName(), "String!");
-    variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["age"];
-    test:assertEquals(variableDefinition.getName(), "age");
-    test:assertEquals(variableDefinition.getTypeName(), "Int!");
+    VariableNode variableNode = <VariableNode>operationNode.getVaribleDefinitions()["name"];
+    test:assertEquals(variableNode.getName(), "name");
+    test:assertEquals(variableNode.getTypeName(), "String!");
+    variableNode = <VariableNode>operationNode.getVaribleDefinitions()["age"];
+    test:assertEquals(variableNode.getName(), "age");
+    test:assertEquals(variableNode.getTypeName(), "Int!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode>selection;
@@ -568,9 +568,9 @@ isolated function testListTypeVariables() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 1);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["name"];
-    test:assertEquals(variableDefinition.getName(), "name");
-    test:assertEquals(variableDefinition.getTypeName(), "[[[String!]]!]!");
+    VariableNode variableNode = <VariableNode>operationNode.getVaribleDefinitions()["name"];
+    test:assertEquals(variableNode.getName(), "name");
+    test:assertEquals(variableNode.getTypeName(), "[[[String!]]!]!");
     Selection selection = operationNode.getSelections()[0];
     test:assertTrue(selection is FieldNode);
     FieldNode fieldNode = <FieldNode>selection;
@@ -791,10 +791,10 @@ isolated function testListTypeWithinInputObjectVariableDefualtValue() returns er
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
 
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["userDetails"];
-    test:assertEquals(variableDefinition.getName(), "userDetails");
-    test:assertEquals(variableDefinition.getTypeName(), "UserDetails");
-    ArgumentNode argValue = <ArgumentNode>variableDefinition.getDefaultValue();
+    VariableNode variableNode = <VariableNode>operationNode.getVaribleDefinitions()["userDetails"];
+    test:assertEquals(variableNode.getName(), "userDetails");
+    test:assertEquals(variableNode.getTypeName(), "UserDetails");
+    ArgumentNode argValue = <ArgumentNode>variableNode.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "userDetails");
     ArgumentValue[] defaultValue = <ArgumentValue[]>argValue.getValue();
@@ -829,10 +829,10 @@ isolated function testListTypeVariablesWithDefualtValue() returns error? {
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
 
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["bName"];
-    test:assertEquals(variableDefinition.getName(), "bName");
-    test:assertEquals(variableDefinition.getTypeName(), "[[String]!]");
-    ArgumentNode argValue = <ArgumentNode>variableDefinition.getDefaultValue();
+    VariableNode variableNode = <VariableNode>operationNode.getVaribleDefinitions()["bName"];
+    test:assertEquals(variableNode.getName(), "bName");
+    test:assertEquals(variableNode.getTypeName(), "[[String]!]");
+    ArgumentNode argValue = <ArgumentNode>variableNode.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_LIST);
     test:assertEquals(argValue.getName(), "bName");
     ArgumentValue[] defaultValue = <ArgumentValue[]>argValue.getValue();
@@ -859,10 +859,10 @@ isolated function testListTypeVariablesWithDefualtValue() returns error? {
     innerFieldValue = <ArgumentValue>innerField.getValue();
     test:assertEquals(<Scalar>innerFieldValue, false);
 
-    variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["bAuthor"];
-    test:assertEquals(variableDefinition.getName(), "bAuthor");
-    test:assertEquals(variableDefinition.getTypeName(), "[ProfileDetail!]");
-    argValue = <ArgumentNode>variableDefinition.getDefaultValue();
+    variableNode = <VariableNode>operationNode.getVaribleDefinitions()["bAuthor"];
+    test:assertEquals(variableNode.getName(), "bAuthor");
+    test:assertEquals(variableNode.getTypeName(), "[ProfileDetail!]");
+    argValue = <ArgumentNode>variableNode.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_LIST);
     test:assertEquals(argValue.getName(), "bAuthor");
     defaultValue = <ArgumentValue[]>argValue.getValue();
@@ -996,10 +996,10 @@ isolated function testInputObjects() returns error? {
     test:assertEquals(documentNode.getOperations().length(), 1);
     OperationNode operationNode = documentNode.getOperations()[0];
     test:assertEquals(operationNode.getVaribleDefinitions().length(), 2);
-    VariableDefinitionNode variableDefinition = <VariableDefinitionNode>operationNode.getVaribleDefinitions()["bAuthor"];
-    test:assertEquals(variableDefinition.getName(), "bAuthor");
-    test:assertEquals(variableDefinition.getTypeName(), "ProfileDetail");
-    ArgumentNode argValue = <ArgumentNode>variableDefinition.getDefaultValue();
+    VariableNode variableNode = <VariableNode>operationNode.getVaribleDefinitions()["bAuthor"];
+    test:assertEquals(variableNode.getName(), "bAuthor");
+    test:assertEquals(variableNode.getTypeName(), "ProfileDetail");
+    ArgumentNode argValue = <ArgumentNode>variableNode.getDefaultValue();
     test:assertEquals(argValue.getKind(), T_INPUT_OBJECT);
     test:assertEquals(argValue.getName(), "bAuthor");
     ArgumentValue[] defaultValue = <ArgumentValue[]>argValue.getValue();
