@@ -29,6 +29,10 @@ public class VariableNode {
         self.defaultValue = ();
     }
 
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitVariable(self, data);
+    }
+
     public isolated function getName() returns string {
         return self.name;
     }

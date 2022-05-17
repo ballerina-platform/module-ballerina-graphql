@@ -21,4 +21,6 @@ public type Visitor object {
     public isolated function visitField(FieldNode fieldNode, anydata data = ());
     public isolated function visitArgument(ArgumentNode argumentNode, anydata data = ());
     public isolated function visitFragment(FragmentNode fragmentNode, anydata data = ());
+    public isolated function visitDirective(DirectiveNode directiveNode, anydata data = ());
+    public isolated function visitVariable(VariableNode variableNode, anydata data = ());
 };

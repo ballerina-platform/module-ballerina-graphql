@@ -572,6 +572,13 @@ class ValidatorVisitor {
         _ = self.argumentPath.pop();
     }
 
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+
+    }
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+
+    }
 }
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,

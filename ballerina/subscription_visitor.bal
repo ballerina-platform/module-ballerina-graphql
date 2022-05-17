@@ -102,4 +102,12 @@ class SubscriptionVisitor {
         ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
         self.errors.push(errorDetail);
     }
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+
+    }
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+
+    }
 }

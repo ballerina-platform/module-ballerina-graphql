@@ -35,6 +35,10 @@ public class OperationNode {
         self.directives = [];
     }
 
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitOperation(self, data);
+    }
+
     public isolated function getName() returns string {
         return self.name;
     }

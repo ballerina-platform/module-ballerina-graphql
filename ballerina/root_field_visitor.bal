@@ -62,4 +62,12 @@ class RootFieldVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
         // Do nothing
     }
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+
+    }
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+
+    }
 }

@@ -29,6 +29,10 @@ public class DirectiveNode {
         self.directiveLocations = [];
     }
 
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitDirective(self, data);
+    }
+
     public isolated function getName() returns string {
         return self.name;
     }

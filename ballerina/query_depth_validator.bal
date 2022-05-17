@@ -104,4 +104,12 @@ class QueryDepthValidator {
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
     }
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+
+    }
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+
+    }
 }

@@ -36,6 +36,10 @@ public class FragmentNode {
         self.directives = [];
     }
 
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitFragment(self, data);
+    }
+
     public isolated function getName() returns string {
         return self.name;
     }

@@ -37,6 +37,10 @@ public class ArgumentNode {
         self.variableValue = ();
     }
 
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitArgument(self, data);
+    }
+
     public isolated function getName() returns string {
         return self.name;
     }

@@ -15,6 +15,7 @@
 // under the License.
 
 public type Node object {
+    public isolated function accept(Visitor visitor, anydata data = ());
     public isolated function getName() returns string;
     public isolated function getLocation() returns Location;
 };

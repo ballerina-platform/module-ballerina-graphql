@@ -33,6 +33,10 @@ public class FieldNode {
         self.directives = [];
     }
 
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitField(self, data);
+    }
+
     public isolated function getName() returns string {
         return self.name;
     }
