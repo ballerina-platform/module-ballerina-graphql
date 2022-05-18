@@ -25,7 +25,6 @@ class VariableValidator {
     private string[] visitedVariableDefinitions;
     private ErrorDetail[] errors;
     map<parser:VariableNode> variableDefinitions;
-    private __Directive[] defaultDirectives;
     private (string|int)[] argumentPath;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode, map<json>? variableValues) {
@@ -35,7 +34,6 @@ class VariableValidator {
         self.errors = [];
         self.variables = variableValues == () ? {} : variableValues;
         self.variableDefinitions = {};
-        self.defaultDirectives = schema.directives;
         self.argumentPath = [];
     }
 
@@ -343,7 +341,7 @@ class VariableValidator {
     isolated function validateDirectiveVariables(parser:ParentNode node) {
         foreach parser:DirectiveNode directive in node.getDirectives() {
             boolean isDefinedDirective = false;
-            foreach __Directive defaultDirective in self.defaultDirectives {
+            foreach __Directive defaultDirective in self.schema.directives {
                 if directive.getName() == defaultDirective.name {
                     isDefinedDirective = true;
                     foreach parser:ArgumentNode argument in directive.getArguments() {
