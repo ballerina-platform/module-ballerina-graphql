@@ -21,13 +21,11 @@ class DirectiveVisitor {
 
     private final __Schema schema;
     private parser:DocumentNode documentNode;
-    private __Directive[] defaultDirectives;
     private ErrorDetail[] errors;
 
     isolated function init(__Schema schema, parser:DocumentNode documentNode) {
         self.schema = schema;
         self.documentNode = documentNode;
-        self.defaultDirectives = schema.directives;
         self.errors = [];
     }
 
@@ -133,7 +131,7 @@ class DirectiveVisitor {
                 self.errors.push(errorDetail);
             } else {
                 boolean isUndefinedDirective = true;
-                foreach __Directive defaultDirective in self.defaultDirectives {
+                foreach __Directive defaultDirective in self.schema.directives {
                     if directive.getName() == defaultDirective.name {
                         isUndefinedDirective = false;
                         [skip, include] = self.validateDefaultDirectives(directive, defaultDirective, skip, include);
