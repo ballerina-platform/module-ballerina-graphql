@@ -101,12 +101,6 @@ isolated function getOperationName(json payload) returns string? {
     return;
 }
 
-isolated function addDefaultDirectives(__Schema schema) {
-    foreach __Directive directive in defaultDirectives {
-        schema.directives.push(directive);
-    }
-}
-
 isolated function getResponseFromMultipartPayload(Engine engine, Context context, http:Request request)
     returns http:Response {
     map<Upload> fileInfo = {};
@@ -302,7 +296,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
 
-        isolated resource function get .(http:RequestContext requestContext, 
+        isolated resource function get .(http:RequestContext requestContext,
                                          http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
@@ -318,7 +312,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
-        isolated resource function post .(http:RequestContext requestContext, 
+        isolated resource function post .(http:RequestContext requestContext,
                                           http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
@@ -334,7 +328,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             }
         }
 
-        isolated function initContext(http:RequestContext requestContext, 
+        isolated function initContext(http:RequestContext requestContext,
                                       http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
@@ -355,7 +349,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
-isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema, 
+isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema,
                                       GraphqlServiceConfig? serviceConfig) returns UpgradeService {
     return isolated service object {
         isolated resource function get .() returns websocket:Service|websocket:UpgradeError {
