@@ -15,7 +15,7 @@
 // under the License.
 
 public class ArgumentNode {
-    *Node;
+    *NamedNode;
 
     private string name;
     private Location location;

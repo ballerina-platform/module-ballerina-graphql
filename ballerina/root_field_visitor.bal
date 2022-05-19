@@ -37,13 +37,13 @@ class RootFieldVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        parser:Selection[] selections = operationNode.getSelections();
-        foreach parser:Selection selection in selections {
+        parser:SelectionNode[] selections = operationNode.getSelections();
+        foreach parser:SelectionNode selection in selections {
             self.visitSelection(selection);
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
         } else if selection is parser:FieldNode {

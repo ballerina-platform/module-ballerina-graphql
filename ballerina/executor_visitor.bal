@@ -47,12 +47,12 @@ class ExecutorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        foreach parser:Selection selection in operationNode.getSelections() {
+        foreach parser:SelectionNode selection in operationNode.getSelections() {
             self.visitSelection(selection, data);
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection, data);
         } else if selection is parser:FieldNode {
@@ -88,7 +88,7 @@ class ExecutorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
     }

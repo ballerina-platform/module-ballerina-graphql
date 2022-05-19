@@ -15,12 +15,12 @@
 // under the License.
 
 public class OperationNode {
-    *ParentNode;
+    *SelectionParentNode;
 
     private string name;
     private RootOperationType kind;
     private Location location;
-    private Selection[] selections;
+    private SelectionNode[] selections;
     private map<VariableNode> variables;
     private ErrorDetail[] errors;
     private DirectiveNode[] directives;
@@ -51,11 +51,11 @@ public class OperationNode {
         return self.location;
     }
 
-    public isolated function addSelection(Selection selection) {
+    public isolated function addSelection(SelectionNode selection) {
         self.selections.push(selection);
     }
 
-    public isolated function getSelections() returns Selection[] {
+    public isolated function getSelections() returns SelectionNode[] {
         return self.selections;
     }
 

@@ -14,8 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Node object {
-    public isolated function accept(Visitor visitor, anydata data = ());
-    public isolated function getName() returns string;
-    public isolated function getLocation() returns Location;
+public type SelectionParentNode object {
+    *NamedNode;
+    public isolated function addSelection(SelectionNode selection);
+    public isolated function getSelections() returns SelectionNode[];
+    public isolated function addDirective(DirectiveNode directive);
+    public isolated function getDirectives() returns DirectiveNode[];
 };

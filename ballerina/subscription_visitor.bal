@@ -46,16 +46,16 @@ class SubscriptionVisitor {
         if operationNode.getKind() != parser:OPERATION_SUBSCRIPTION {
             return;
         }
-        parser:Selection[] selections = operationNode.getSelections();
+        parser:SelectionNode[] selections = operationNode.getSelections();
         if selections.length() > 1 {
             self.addErrorDetail(selections[1], operationNode.getName());
         }
-        foreach parser:Selection selection in selections {
+        foreach parser:SelectionNode selection in selections {
             self.visitSelection(selection, operationNode.getName());
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection, data);
         } else if selection is parser:FieldNode {
@@ -82,7 +82,7 @@ class SubscriptionVisitor {
         // Do nothing
     }
 
-    public isolated function addErrorDetail(parser:Selection selection, string operationName) {
+    public isolated function addErrorDetail(parser:SelectionNode selection, string operationName) {
         string message = operationName != "<anonymous>"
                         ? string `Subscription "${operationName}" must select only one top level field.`
                         : string `Anonymous Subscription must select only one top level field.`;

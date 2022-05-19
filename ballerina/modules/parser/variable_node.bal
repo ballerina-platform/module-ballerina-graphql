@@ -15,7 +15,7 @@
 // under the License.
 
 public class VariableNode {
-    *Node;
+    *NamedNode;
 
     private string name;
     private string typeName;

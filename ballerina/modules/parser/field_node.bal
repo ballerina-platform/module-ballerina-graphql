@@ -15,13 +15,13 @@
 // under the License.
 
 public class FieldNode {
-    *ParentNode;
+    *SelectionNode;
 
     private final string name;
     private final string alias;
     private Location location;
     private ArgumentNode[] arguments;
-    private Selection[] selections;
+    private SelectionNode[] selections;
     private DirectiveNode[] directives;
 
     public isolated function init(string name, Location location, string alias) {
@@ -57,11 +57,11 @@ public class FieldNode {
         return self.arguments;
     }
 
-    public isolated function addSelection(Selection selection) {
+    public isolated function addSelection(SelectionNode selection) {
         self.selections.push(selection);
     }
 
-    public isolated function getSelections() returns Selection[] {
+    public isolated function getSelections() returns SelectionNode[] {
         return self.selections;
     }
 

@@ -38,12 +38,12 @@ class DuplicateFieldRemover {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         self.removeDuplicateSelections(operationNode.getSelections());
-        foreach parser:Selection selection in operationNode.getSelections() {
+        foreach parser:SelectionNode selection in operationNode.getSelections() {
             self.visitSelection(selection);
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
         } else if selection is parser:FieldNode {
@@ -55,14 +55,14 @@ class DuplicateFieldRemover {
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         self.removeDuplicateSelections(fieldNode.getSelections());
-        foreach parser:Selection selection in fieldNode.getSelections() {
+        foreach parser:SelectionNode selection in fieldNode.getSelections() {
             self.visitSelection(selection);
         }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.removeDuplicateSelections(fragmentNode.getSelections());
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
         }
     }
@@ -71,12 +71,12 @@ class DuplicateFieldRemover {
         // Do nothing
     }
 
-    private isolated function removeDuplicateSelections(parser:Selection[] selections) {
+    private isolated function removeDuplicateSelections(parser:SelectionNode[] selections) {
         map<parser:FieldNode> visitedFields = {};
         map<parser:FragmentNode> visitedFragments = {};
         int i = 0;
         while i < selections.length() {
-            parser:Selection selection = selections[i];
+            parser:SelectionNode selection = selections[i];
             if selection is parser:FragmentNode {
                 if visitedFragments.hasKey(selection.getOnType()) {
                     self.appendDuplicates(selection, visitedFragments.get(selection.getOnType()));
@@ -100,8 +100,8 @@ class DuplicateFieldRemover {
         }
     }
 
-    private isolated function appendDuplicates(parser:ParentNode duplicate, parser:ParentNode original) {
-        foreach parser:Selection selection in duplicate.getSelections() {
+    private isolated function appendDuplicates(parser:SelectionParentNode duplicate, parser:SelectionParentNode original) {
+        foreach parser:SelectionNode selection in duplicate.getSelections() {
             original.addSelection(selection);
         }
     }

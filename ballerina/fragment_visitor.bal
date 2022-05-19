@@ -66,12 +66,12 @@ class FragmentVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        foreach parser:Selection selection in operationNode.getSelections() {
+        foreach parser:SelectionNode selection in operationNode.getSelections() {
             self.visitSelection(selection);
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.appendNamedFragmentFields(selection);
             self.visitFragment(selection);
@@ -83,7 +83,7 @@ class FragmentVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        foreach parser:Selection selection in fieldNode.getSelections() {
+        foreach parser:SelectionNode selection in fieldNode.getSelections() {
             self.visitSelection(selection);
         }
     }
@@ -94,7 +94,7 @@ class FragmentVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.usedFragments.push(fragmentNode.getName());
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
         }
     }
@@ -115,7 +115,7 @@ class FragmentVisitor {
 
     isolated function appendFields(parser:FragmentNode actualFragmentNode, parser:FragmentNode fragmentNode) {
         fragmentNode.setOnType(actualFragmentNode.getOnType());
-        foreach parser:Selection fragmentSelection in actualFragmentNode.getSelections() {
+        foreach parser:SelectionNode fragmentSelection in actualFragmentNode.getSelections() {
             fragmentNode.addSelection(fragmentSelection);
         }
         foreach parser:DirectiveNode directive in actualFragmentNode.getDirectives() {
@@ -123,8 +123,8 @@ class FragmentVisitor {
         }
     }
 
-    isolated function detectCycles(parser:ParentNode fragmentDefinition, map<parser:FragmentNode> visitedSpreads) {
-        foreach parser:Selection fragmentSelection in fragmentDefinition.getSelections() {
+    isolated function detectCycles(parser:SelectionParentNode fragmentDefinition, map<parser:FragmentNode> visitedSpreads) {
+        foreach parser:SelectionNode fragmentSelection in fragmentDefinition.getSelections() {
             if fragmentSelection is parser:FragmentNode {
                 if visitedSpreads.hasKey(fragmentSelection.getName()) {
                     ErrorDetail errorDetail = getCycleRecursiveFragmentError(fragmentSelection, visitedSpreads);

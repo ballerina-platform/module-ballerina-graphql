@@ -61,7 +61,7 @@ class VariableValidator {
         }
         self.validateDirectiveVariables(operationNode);
         if schemaFieldForOperation is __Field {
-            foreach parser:Selection selection in operationNode.getSelections() {
+            foreach parser:SelectionNode selection in operationNode.getSelections() {
                 self.visitSelection(selection, schemaFieldForOperation);
             }
         }
@@ -76,7 +76,7 @@ class VariableValidator {
         self.visitedVariableDefinitions = [];
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection, data);
         } else if selection is parser:FieldNode {
@@ -96,8 +96,8 @@ class VariableValidator {
             self.visitArgument(argument, inputValues);
         }
         if fieldNode.getSelections().length() > 0 {
-            parser:Selection[] selections = fieldNode.getSelections();
-            foreach parser:Selection subSelection in selections {
+            parser:SelectionNode[] selections = fieldNode.getSelections();
+            foreach parser:SelectionNode subSelection in selections {
                 self.visitSelection(subSelection, data);
             }
         }
@@ -105,7 +105,7 @@ class VariableValidator {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.validateDirectiveVariables(fragmentNode);
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
     }
@@ -338,7 +338,7 @@ class VariableValidator {
         }
     }
 
-    isolated function validateDirectiveVariables(parser:ParentNode node) {
+    isolated function validateDirectiveVariables(parser:SelectionParentNode node) {
         foreach parser:DirectiveNode directive in node.getDirectives() {
             boolean isDefinedDirective = false;
             foreach __Directive defaultDirective in self.schema.directives {

@@ -52,13 +52,13 @@ class ValidatorVisitor {
         __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
         self.validateDirectiveArguments(operationNode);
         if operationField is __Field {
-            foreach parser:Selection selection in operationNode.getSelections() {
+            foreach parser:SelectionNode selection in operationNode.getSelections() {
                 self.visitSelection(selection, operationField);
             }
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = <__Type>getOfType(parentField.'type);
         if selection is parser:FragmentNode {
@@ -100,7 +100,7 @@ class ValidatorVisitor {
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         } else {
-            foreach parser:Selection selection in fieldNode.getSelections() {
+            foreach parser:SelectionNode selection in fieldNode.getSelections() {
                 self.visitSelection(selection, requiredField);
             }
         }
@@ -416,7 +416,7 @@ class ValidatorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.validateDirectiveArguments(fragmentNode);
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             self.visitSelection(selection, data);
         }
     }
@@ -536,7 +536,7 @@ class ValidatorVisitor {
         self.errors.push(errorDetail);
     }
 
-    isolated function validateDirectiveArguments(parser:ParentNode node) {
+    isolated function validateDirectiveArguments(parser:SelectionParentNode node) {
         foreach parser:DirectiveNode directive in node.getDirectives() {
             foreach __Directive defaultDirective in self.schema.directives {
                 if directive.getName() == defaultDirective.name {

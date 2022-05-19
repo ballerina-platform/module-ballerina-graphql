@@ -52,10 +52,10 @@ class DirectiveVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        parser:Selection[] selections = operationNode.getSelections();
+        parser:SelectionNode[] selections = operationNode.getSelections();
         int i = 0;
         while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:ParentNode>selections[i]).getDirectives());
+            boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
             if isIncluded {
                 self.visitSelection(selections[i]);
                 i += 1;
@@ -65,7 +65,7 @@ class DirectiveVisitor {
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
         } else if selection is parser:FieldNode {
@@ -76,10 +76,10 @@ class DirectiveVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        parser:Selection[] selections = fieldNode.getSelections();
+        parser:SelectionNode[] selections = fieldNode.getSelections();
         int i = 0;
         while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:ParentNode>selections[i]).getDirectives());
+            boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
             if isIncluded {
                 self.visitSelection(selections[i]);
                 i += 1;
@@ -90,10 +90,10 @@ class DirectiveVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        parser:Selection[] selections = fragmentNode.getSelections();
+        parser:SelectionNode[] selections = fragmentNode.getSelections();
         int i = 0;
         while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:ParentNode>selections[i]).getDirectives());
+            boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
             if isIncluded {
                 self.visitSelection(selections[i]);
                 i += 1;

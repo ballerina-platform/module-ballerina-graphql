@@ -61,12 +61,12 @@ class QueryDepthValidator {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        foreach parser:Selection selection in operationNode.getSelections() {
+        foreach parser:SelectionNode selection in operationNode.getSelections() {
             self.visitSelection(selection);
         }
     }
 
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
+    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
         if selection is parser:FragmentNode {
             self.visitFragment(selection);
         } else if selection is parser:FieldNode {
@@ -79,8 +79,8 @@ class QueryDepthValidator {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         self.queryDepth += 1;
         if fieldNode.getSelections().length() > 0 {
-            parser:Selection[] selections = fieldNode.getSelections();
-            foreach parser:Selection subSelection in selections {
+            parser:SelectionNode[] selections = fieldNode.getSelections();
+            foreach parser:SelectionNode subSelection in selections {
                 self.visitSelection(subSelection);
             }
         } else {
@@ -92,7 +92,7 @@ class QueryDepthValidator {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             self.visitSelection(selection);
         }
     }
