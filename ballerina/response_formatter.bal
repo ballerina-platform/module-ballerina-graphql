@@ -164,6 +164,15 @@ class ResponseFormatter {
                 __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
                 __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, onType);
                 return self.getField(exactType, fieldName, onType);
+            } else if parentType.kind is INTERFACE {
+                __Field[] fields = <__Field[]>parentType?.fields;
+                __Field? exactField = getFieldFromFieldArray(fields, fieldName);
+                if exactField is __Field {
+                    return exactField;
+                }
+                __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
+                __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, <string>onType);
+                return self.getField(exactType, fieldName, onType);
             }
             __Field[] fields = <__Field[]>parentType?.fields;
             return <__Field>getFieldFromFieldArray(fields, fieldName);

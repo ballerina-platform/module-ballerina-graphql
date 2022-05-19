@@ -26,6 +26,18 @@ public isolated distinct service class Character {
     }
 }
 
+public isolated distinct service class Ship {
+    final string id;
+
+    public isolated function init(string id) {
+        self.id = id;
+    }
+
+    isolated resource function get id() returns string {
+        return self.id;
+    }
+}
+
 public isolated distinct service class Human {
     *Character;
 
@@ -63,5 +75,29 @@ public isolated distinct service class Droid {
 
     isolated resource function get year() returns int {
         return self.year;
+    }
+}
+
+public isolated distinct service class Starship {
+    *Ship;
+
+    final string id;
+    final string driver;
+
+    public isolated function init(string id, string driver) {
+        self.id = id;
+        self.driver = driver;
+    }
+
+    isolated resource function get id() returns string {
+        return self.id;
+    }
+
+    isolated resource function get driver(string name) returns string {
+        return self.driver;
+    }
+
+    isolated resource function get enemyShips() returns Ship[] {
+        return [new Starship("E3", "Han"), new Starship("E4", "Leia")];
     }
 }

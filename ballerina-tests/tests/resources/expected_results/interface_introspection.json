@@ -72,6 +72,21 @@
                     "possibleTypes": null
                 },
                 {
+                    "name": "Starship",
+                    "kind": "OBJECT",
+                    "possibleTypes": null
+                },
+                {
+                    "name": "Ship",
+                    "kind": "INTERFACE",
+                    "possibleTypes": [
+                        {
+                            "name": "Starship",
+                            "kind": "OBJECT"
+                        }
+                    ]
+                },
+                {
                     "name": "__InputValue",
                     "kind": "OBJECT",
                     "possibleTypes": null

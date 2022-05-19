@@ -1,0 +1,32 @@
+{
+    "data": {
+        "ships": [
+            {
+                "id": "E1",
+                "enemyShips": [
+                    {
+                        "id": "E3",
+                        "driver": "Han"
+                    },
+                    {
+                        "id": "E4",
+                        "driver": "Leia"
+                    }
+                ]
+            },
+            {
+                "id": "E2",
+                "enemyShips": [
+                    {
+                        "id": "E3",
+                        "driver": "Han"
+                    },
+                    {
+                        "id": "E4",
+                        "driver": "Leia"
+                    }
+                ]
+            }
+        ]
+    }
+}
