@@ -26,44 +26,33 @@ class DuplicateFieldRemover {
     }
 
     public isolated function remove() {
-        self.visitDocument(self.documentNode);
+        self.documentNode.accept(self);
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        parser:OperationNode[] operations = documentNode.getOperations();
-        foreach parser:OperationNode operationNode in operations {
-            self.visitOperation(operationNode);
+        foreach parser:OperationNode operationNode in documentNode.getOperations() {
+            operationNode.accept(self);
         }
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         self.removeDuplicateSelections(operationNode.getSelections());
         foreach parser:SelectionNode selection in operationNode.getSelections() {
-            self.visitSelection(selection);
-        }
-    }
-
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
-        } else {
-            panic error("Invalid selection node passed.");
+            selection.accept(self);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         self.removeDuplicateSelections(fieldNode.getSelections());
         foreach parser:SelectionNode selection in fieldNode.getSelections() {
-            self.visitSelection(selection);
+            selection.accept(self);
         }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.removeDuplicateSelections(fragmentNode.getSelections());
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
-            self.visitSelection(selection);
+            selection.accept(self);
         }
     }
 
@@ -107,10 +96,10 @@ class DuplicateFieldRemover {
     }
 
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-
+        // Do nothing
     }
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
+        // Do nothing
     }
 }

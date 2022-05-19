@@ -30,7 +30,7 @@ class DirectiveVisitor {
     }
 
     public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
+        self.documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -43,7 +43,7 @@ class DirectiveVisitor {
         while i < operations.length() {
             boolean isIncluded = self.checkDirectives(operations[i].getDirectives());
             if isIncluded {
-                self.visitOperation(operations[i]);
+                operations[i].accept(self);
                 i += 1;
             } else {
                 _ = operations.remove(i);
@@ -57,21 +57,11 @@ class DirectiveVisitor {
         while i < selections.length() {
             boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
             if isIncluded {
-                self.visitSelection(selections[i]);
+                selections[i].accept(self);
                 i += 1;
             } else {
                 _ = selections.remove(i);
             }
-        }
-    }
-
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
-        } else {
-            panic error("Invalid selection node passed.");
         }
     }
 
@@ -81,7 +71,7 @@ class DirectiveVisitor {
         while i < selections.length() {
             boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
             if isIncluded {
-                self.visitSelection(selections[i]);
+                selections[i].accept(self);
                 i += 1;
             } else {
                 _ = selections.remove(i);
@@ -95,7 +85,7 @@ class DirectiveVisitor {
         while i < selections.length() {
             boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
             if isIncluded {
-                self.visitSelection(selections[i]);
+                selections[i].accept(self);
                 i += 1;
             } else {
                 _ = selections.remove(i);

@@ -38,7 +38,7 @@ class VariableValidator {
     }
 
     public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
+        self.documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -48,7 +48,7 @@ class VariableValidator {
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
-            self.visitOperation(operationNode);
+            operationNode.accept(self);
         }
     }
 
@@ -62,7 +62,7 @@ class VariableValidator {
         self.validateDirectiveVariables(operationNode);
         if schemaFieldForOperation is __Field {
             foreach parser:SelectionNode selection in operationNode.getSelections() {
-                self.visitSelection(selection, schemaFieldForOperation);
+                selection.accept(self, schemaFieldForOperation);
             }
         }
         string[] keys = self.variableDefinitions.keys();
@@ -76,16 +76,6 @@ class VariableValidator {
         self.visitedVariableDefinitions = [];
     }
 
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection, data);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection, data);
-        } else {
-            panic error("Invalid selection node passed.");
-        }
-    }
-
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = getOfType(parentField.'type);
@@ -93,12 +83,12 @@ class VariableValidator {
         __InputValue[] inputValues = requiredFieldValue is __Field ? requiredFieldValue.args : [];
         self.validateDirectiveVariables(fieldNode);
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
-            self.visitArgument(argument, inputValues);
+            argument.accept(self, inputValues);
         }
         if fieldNode.getSelections().length() > 0 {
             parser:SelectionNode[] selections = fieldNode.getSelections();
             foreach parser:SelectionNode subSelection in selections {
-                self.visitSelection(subSelection, data);
+                subSelection.accept(self, data);
             }
         }
     }
@@ -106,7 +96,7 @@ class VariableValidator {
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.validateDirectiveVariables(fragmentNode);
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, data);
+            selection.accept(self, data);
         }
     }
 
@@ -151,7 +141,7 @@ class VariableValidator {
             if argumentNode.getValue() is parser:ArgumentValue[] {
                 foreach parser:ArgumentValue argField in <parser:ArgumentValue[]>argumentNode.getValue() {
                     if argField is parser:ArgumentNode {
-                        self.visitArgument(argField, inputValues);
+                        argField.accept(self, inputValues);
                     }
                 }
             }
@@ -345,7 +335,7 @@ class VariableValidator {
                 if directive.getName() == defaultDirective.name {
                     isDefinedDirective = true;
                     foreach parser:ArgumentNode argument in directive.getArguments() {
-                        self.visitArgument(argument, defaultDirective.args);
+                        argument.accept(self, defaultDirective.args);
                     }
                     break;
                 }

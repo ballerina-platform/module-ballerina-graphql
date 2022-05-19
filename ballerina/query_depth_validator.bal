@@ -34,7 +34,7 @@ class QueryDepthValidator {
     }
 
     public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
+        self.documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -44,7 +44,7 @@ class QueryDepthValidator {
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
-            self.visitOperation(operationNode);
+            operationNode.accept(self);
             if self.maxQueryDepth > self.queryDepthLimit {
                 if operationNode.getName() != parser:ANONYMOUS_OPERATION {
                     string message = string
@@ -62,17 +62,7 @@ class QueryDepthValidator {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:SelectionNode selection in operationNode.getSelections() {
-            self.visitSelection(selection);
-        }
-    }
-
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
-        } else {
-            panic error("Invalid selection node passed.");
+            selection.accept(self);
         }
     }
 
@@ -81,7 +71,7 @@ class QueryDepthValidator {
         if fieldNode.getSelections().length() > 0 {
             parser:SelectionNode[] selections = fieldNode.getSelections();
             foreach parser:SelectionNode subSelection in selections {
-                self.visitSelection(subSelection);
+                subSelection.accept(self);
             }
         } else {
             if self.queryDepth > self.maxQueryDepth {
@@ -93,7 +83,7 @@ class QueryDepthValidator {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
-            self.visitSelection(selection);
+            selection.accept(self);
         }
     }
 
@@ -106,10 +96,10 @@ class QueryDepthValidator {
     }
 
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-
+        // Do nothing
     }
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
+        // Do nothing
     }
 }

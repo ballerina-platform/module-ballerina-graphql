@@ -42,7 +42,7 @@ class FragmentVisitor {
         if self.errors.length() > 0 {
             return self.errors;
         }
-        self.visitDocument(self.documentNode);
+        self.documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -52,7 +52,7 @@ class FragmentVisitor {
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         self.documentNode = documentNode;
         foreach parser:OperationNode operation in documentNode.getOperations() {
-            self.visitOperation(operation);
+            operation.accept(self);
         }
 
         foreach parser:FragmentNode fragmentNode in documentNode.getFragments().toArray() {
@@ -67,24 +67,13 @@ class FragmentVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:SelectionNode selection in operationNode.getSelections() {
-            self.visitSelection(selection);
-        }
-    }
-
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.appendNamedFragmentFields(selection);
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
-        } else {
-            panic error("Invalid selection node passed.");
+            selection.accept(self);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         foreach parser:SelectionNode selection in fieldNode.getSelections() {
-            self.visitSelection(selection);
+            selection.accept(self);
         }
     }
 
@@ -93,9 +82,10 @@ class FragmentVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        self.appendNamedFragmentFields(fragmentNode);
         self.usedFragments.push(fragmentNode.getName());
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
-            self.visitSelection(selection);
+            selection.accept(self);
         }
     }
 
@@ -152,10 +142,10 @@ class FragmentVisitor {
     }
 
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-
+        // Do nothing
     }
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
+        // Do nothing
     }
 }

@@ -43,8 +43,6 @@ type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
 
 public type ArgumentType T_INT|T_FLOAT|T_BOOLEAN|T_STRING|T_IDENTIFIER|T_INPUT_OBJECT|T_LIST;
 
-public type Selection FieldNode|FragmentNode;
-
 public type ArgumentValue ArgumentNode|Scalar?;
 
 # Represents the types of operations valid in Ballerina GraphQL.

@@ -38,7 +38,7 @@ class ExecutorVisitor {
     }
 
     isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
-        self.visitOperation(operationNode, operationNode.getKind());
+        operationNode.accept(self, operationNode.getKind());
         return getOutputObject(self.data, self.errors);
     }
 
@@ -48,17 +48,7 @@ class ExecutorVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:SelectionNode selection in operationNode.getSelections() {
-            self.visitSelection(selection, data);
-        }
-    }
-
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection, data);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection, data);
-        } else {
-            panic error("Invalid selection node passed.");
+            selection.accept(self, data);
         }
     }
 
@@ -89,15 +79,15 @@ class ExecutorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, data);
+            selection.accept(self, data);
         }
     }
 
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-
+        // Do nothing
     }
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
+        // Do nothing
     }
 }

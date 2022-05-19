@@ -28,7 +28,7 @@ class SubscriptionVisitor {
     }
 
     public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
+        self.documentNode.accept(self);
         if self.errors.length() == 0 {
             return;
         }
@@ -38,7 +38,7 @@ class SubscriptionVisitor {
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
-            self.visitOperation(operationNode);
+            operationNode.accept(self);
         }
     }
 
@@ -51,15 +51,7 @@ class SubscriptionVisitor {
             self.addErrorDetail(selections[1], operationNode.getName());
         }
         foreach parser:SelectionNode selection in selections {
-            self.visitSelection(selection, operationNode.getName());
-        }
-    }
-
-    public isolated function visitSelection(parser:SelectionNode selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection, data);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection, data);
+            selection.accept(self, operationNode.getName());
         }
     }
 
@@ -74,7 +66,7 @@ class SubscriptionVisitor {
         if fragmentNode.getSelections().length() > 1 {
             self.addErrorDetail(fragmentNode.getSelections()[1], <string>data);
         } else {
-            self.visitSelection(fragmentNode.getSelections()[0], data);
+            fragmentNode.getSelections()[0].accept(self, data);
         }
     }
 
