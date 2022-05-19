@@ -65,7 +65,7 @@ isolated function testUnknownNestedFragments() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "validation", "test"]
+    groups: ["fragments", "validation"]
 }
 isolated function testFragmentOnInvalidType() returns error? {
     string document = check getGraphQLDocumentFromFile("fragment_on_invalid_type.graphql");

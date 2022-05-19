@@ -38,52 +38,25 @@ class DirectiveVisitor {
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        parser:OperationNode[] operations = documentNode.getOperations();
-        int i = 0;
-        while i < operations.length() {
-            boolean isIncluded = self.checkDirectives(operations[i].getDirectives());
-            if isIncluded {
-                operations[i].accept(self);
-                i += 1;
-            } else {
-                _ = operations.remove(i);
-            }
-        }
+        self.updateSelections(documentNode.getOperations());
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        parser:SelectionNode[] selections = operationNode.getSelections();
-        int i = 0;
-        while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
-            if isIncluded {
-                selections[i].accept(self);
-                i += 1;
-            } else {
-                _ = selections.remove(i);
-            }
-        }
+        self.updateSelections(operationNode.getSelections());
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        parser:SelectionNode[] selections = fieldNode.getSelections();
-        int i = 0;
-        while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
-            if isIncluded {
-                selections[i].accept(self);
-                i += 1;
-            } else {
-                _ = selections.remove(i);
-            }
-        }
+        self.updateSelections(fieldNode.getSelections());
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        parser:SelectionNode[] selections = fragmentNode.getSelections();
+        self.updateSelections(fragmentNode.getSelections());
+    }
+
+    private isolated function updateSelections(parser:SelectionParentNode[] selections) {
         int i = 0;
         while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:SelectionParentNode>selections[i]).getDirectives());
+            boolean isIncluded = self.checkDirectives(selections[i].getDirectives());
             if isIncluded {
                 selections[i].accept(self);
                 i += 1;
@@ -111,9 +84,7 @@ class DirectiveVisitor {
         map<parser:DirectiveNode> visitedDirectives = {};
         boolean skip = false;
         boolean include = true;
-        int i = 0;
-        while i < directives.length() {
-            parser:DirectiveNode directive = directives[i];
+        foreach parser:DirectiveNode directive in directives {
             if visitedDirectives.hasKey(directive.getName()) {
                 string message = string`The directive "${directive.getName()}" can only be used once at this location.`;
                 Location location1 = (visitedDirectives.get(directive.getName())).getLocation();
@@ -135,7 +106,6 @@ class DirectiveVisitor {
                 }
                 visitedDirectives[directive.getName()] = directive;
             }
-            i += 1;
         }
         return [skip, include];
     }
@@ -177,6 +147,6 @@ class DirectiveVisitor {
     }
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
+        // Do nothing
     }
 }
