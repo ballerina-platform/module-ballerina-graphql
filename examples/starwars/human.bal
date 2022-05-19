@@ -18,6 +18,7 @@ import starwars.datasource as ds;
 
 # A humanoid creature from the Star Wars universe
 distinct service class Human {
+    *Character;
 
     private final readonly & ds:HumanRecord human;
 
@@ -58,19 +59,16 @@ distinct service class Human {
     # This human's friends, or an empty list if they have none
     # + return - The friends
     resource function get friends() returns Character[] {
-        ds:HumanRecord[] humans = [self.human];
         Character[] friends = [];
         ds:FriendsEdgeRecord[] edges = from var edge in ds:friendsEdgeTable
-                        join var human in humans on edge.characterId equals human.id
+                        join var human in [self.human] on edge.characterId equals human.id
                         select edge;
-        Human[] humanFriends = from var human in ds:humanTable
+        friends.push(...from var human in ds:humanTable
                         join var edge in edges on human.id equals edge.friendId
-                        select new Human(human);
-        Droid[] droidFriends = from var droid in ds:droidTable
+                        select new Human(human));
+        friends.push(...from var droid in ds:droidTable
                         join var edge in edges on droid.id equals edge.friendId
-                        select new Droid(droid);
-        friends.push(...humanFriends);
-        friends.push(...droidFriends);
+                        select new Droid(droid));
         return friends;
     }
 
@@ -83,9 +81,8 @@ distinct service class Human {
     # A list of starships this person has piloted, or an empty list if none
     # + return - The startships
     resource function get starships() returns Starship[] {
-        ds:HumanRecord[] humans = [self.human];
         ds:StarshipEdgeRecord[] edges = from var edge in ds:starshipEdgeTable
-                        join var human in humans on edge.characterId equals human.id
+                        join var human in [self.human] on edge.characterId equals human.id
                         select edge;
         Starship[] starship = from var ship in ds:starshipTable
                         join var edge in edges on ship.id equals edge.starshipId

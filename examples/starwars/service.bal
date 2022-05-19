@@ -17,8 +17,6 @@
 import ballerina/graphql;
 import starwars.datasource as ds;
 
-type Character Human|Droid;
-
 type SearchResult Human|Droid|Starship;
 
 public enum Episode {
