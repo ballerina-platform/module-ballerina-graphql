@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#1936] Integrate GraphiQL Client into GraphQL Package](https://github.com/ballerina-platform/ballerina-standard-library/issues/1936)
 - [[#2532] Introduce GraphQL Subscription Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/2532)
 - [[#2698] Support GraphQL Documentation](https://github.com/ballerina-platform/ballerina-standard-library/issues/2698)
-- [[#1364] Support GraphQL Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/1364)
 
 ### Changed
 - [[#2838] Remove Spec Deviations in GraphQL File Upload](https://github.com/ballerina-platform/ballerina-standard-library/issues/2838)
