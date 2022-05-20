@@ -17,7 +17,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#2800] Fix Allowing Field Names Starting with `__` in Mutations](https://github.com/ballerina-platform/ballerina-standard-library/issues/2800)
-- [[#2934] Fix Interface Type Arrays Returning Type Cast Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/2934)
 
 ## [1.2.1] - 2022-03-08
 
