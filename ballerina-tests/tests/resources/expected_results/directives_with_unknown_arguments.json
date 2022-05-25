@@ -1,7 +1,16 @@
 {
     "errors": [
         {
-            "message": "Unknown argument \"id\" on directive\"include\".",
+            "message": "Directive \"include\" may not be used on QUERY.",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 17
+                }
+            ]
+        },
+        {
+            "message": "Unknown argument \"id\" on directive \"include\".",
             "locations": [
                 {
                     "line": 1,
@@ -19,7 +28,7 @@
             ]
         },
         {
-            "message": "Unknown argument \"name\" on directive\"skip\".",
+            "message": "Unknown argument \"name\" on directive \"skip\".",
             "locations": [
                 {
                     "line": 2,
@@ -28,7 +37,7 @@
             ]
         },
         {
-            "message": "Unknown argument \"day\" on directive\"skip\".",
+            "message": "Unknown argument \"day\" on directive \"skip\".",
             "locations": [
                 {
                     "line": 3,
@@ -46,7 +55,7 @@
             ]
         },
         {
-            "message": "Unknown argument \"value\" on directive\"include\".",
+            "message": "Unknown argument \"value\" on directive \"include\".",
             "locations": [
                 {
                     "line": 3,
@@ -55,7 +64,7 @@
             ]
         },
         {
-            "message": "Unknown argument \"id\" on directive\"include\".",
+            "message": "Unknown argument \"id\" on directive \"include\".",
             "locations": [
                 {
                     "line": 6,

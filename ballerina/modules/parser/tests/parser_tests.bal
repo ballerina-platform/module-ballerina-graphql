@@ -1119,14 +1119,12 @@ isolated function testDirectivesInUndefinedLocations() returns error? {
     test:assertEquals(directives.length(), 2);
     DirectiveNode directive = directives[0];
     test:assertEquals(directive.getName(), "skip");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], QUERY);
+    test:assertEquals(directive.getDirectiveLocation(), QUERY);
     ArgumentNode argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
     directive = directives[1];
     test:assertEquals(directive.getName(), "include");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], QUERY);
+    test:assertEquals(directive.getDirectiveLocation(), QUERY);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
 
@@ -1137,15 +1135,13 @@ isolated function testDirectivesInUndefinedLocations() returns error? {
     test:assertEquals(directives.length(), 2);
     directive = directives[0];
     test:assertEquals(directive.getName(), "skip");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], FRAGMENT_DEFINITION);
+    test:assertEquals(directive.getDirectiveLocation(), FRAGMENT_DEFINITION);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
     test:assertEquals(argumentNode.isVariableDefinition(), true);
     directive = directives[1];
     test:assertEquals(directive.getName(), "include");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], FRAGMENT_DEFINITION);
+    test:assertEquals(directive.getDirectiveLocation(), FRAGMENT_DEFINITION);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
 }
@@ -1163,8 +1159,7 @@ isolated function testDirectivesWithMutation() returns error? {
     test:assertEquals(directives.length(), 1);
     DirectiveNode directive = directives[0];
     test:assertEquals(directive.getName(), "skip");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], MUTATION);
+    test:assertEquals(directive.getDirectiveLocation(), MUTATION);
     ArgumentNode argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
     SelectionNode selection = operationNode.getSelections()[0];
@@ -1176,8 +1171,7 @@ isolated function testDirectivesWithMutation() returns error? {
     test:assertEquals(directives.length(), 1);
     directive = directives[0];
     test:assertEquals(directive.getName(), "include");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], FIELD);
+    test:assertEquals(directive.getDirectiveLocation(), FIELD);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
 }
@@ -1202,8 +1196,7 @@ isolated function testDirectives() returns error? {
     test:assertEquals(directives.length(), 1);
     DirectiveNode directive = directives[0];
     test:assertEquals(directive.getName(), "skip");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], FIELD);
+    test:assertEquals(directive.getDirectiveLocation(), FIELD);
     ArgumentNode argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
     test:assertEquals(argumentNode.isVariableDefinition(), true);
@@ -1217,8 +1210,7 @@ isolated function testDirectives() returns error? {
     test:assertEquals(directives.length(), 1);
     directive = directives[0];
     test:assertEquals(directive.getName(), "include");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], INLINE_FRAGMENT);
+    test:assertEquals(directive.getDirectiveLocation(), INLINE_FRAGMENT);
     test:assertEquals(directive.getArguments().length(), 1);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
@@ -1236,8 +1228,7 @@ isolated function testDirectives() returns error? {
     test:assertEquals(directives.length(), 2);
     directive = directives[0];
     test:assertEquals(directive.getName(), "include");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], FRAGMENT_SPREAD);
+    test:assertEquals(directive.getDirectiveLocation(), FRAGMENT_SPREAD);
     test:assertEquals(directive.getArguments().length(), 1);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");
@@ -1259,8 +1250,7 @@ isolated function testDirectives() returns error? {
     test:assertEquals(directives.length(), 2);
     directive = directives[0];
     test:assertEquals(directive.getName(), "skip");
-    test:assertEquals(directive.getDirectiveLocations().length(), 1);
-    test:assertEquals(directive.getDirectiveLocations()[0], FIELD);
+    test:assertEquals(directive.getDirectiveLocation(), FIELD);
     test:assertEquals(directive.getArguments().length(), 1);
     argumentNode = directive.getArguments()[0];
     test:assertEquals(argumentNode.getName(), "if");

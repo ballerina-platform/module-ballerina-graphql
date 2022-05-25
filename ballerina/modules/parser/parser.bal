@@ -262,8 +262,7 @@ public class Parser {
             Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenvalue(token);
-            DirectiveNode directiveNode = new (name, location);
-            directiveNode.addDirectiveLocation(directiveLocation);
+            DirectiveNode directiveNode = new (name, location, directiveLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_OPEN_PARENTHESES {
                 check self.addArgumentsToDirective(directiveNode, directiveLocation);

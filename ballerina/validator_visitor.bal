@@ -531,23 +531,12 @@ class ValidatorVisitor {
         foreach parser:DirectiveNode directive in node.getDirectives() {
             foreach __Directive defaultDirective in self.schema.directives {
                 if directive.getName() == defaultDirective.name {
-                    __InputValue[] notFoundInputValues = copyInputValueArray(defaultDirective.args);
                     foreach parser:ArgumentNode argumentNode in directive.getArguments() {
                         string argName = argumentNode.getName();
                         __InputValue? inputValue = getInputValueFromArray(defaultDirective.args, argName);
                         if inputValue is __InputValue {
-                            _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
                             argumentNode.accept(self, {input: inputValue, fieldName: directive.getName()});
-                        } else {
-                            string message = string `Unknown argument "${argName}" on directive` +
-                                             string `"${directive.getName()}".`;
-                            self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
                         }
-                    }
-                    foreach __InputValue arg in notFoundInputValues {
-                        string message = string `Directive "${directive.getName()}" argument "${arg.name}" of type` +
-                                         string `"${getTypeNameFromType(arg.'type)}" is required but not provided.`;
-                        self.errors.push(getErrorDetailRecord(message, directive.getLocation()));
                     }
                     break;
                 }

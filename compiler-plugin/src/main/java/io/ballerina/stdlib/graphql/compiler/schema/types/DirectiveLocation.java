@@ -28,7 +28,19 @@ public enum DirectiveLocation {
     FIELD("Location adjacent to a field."),
     FRAGMENT_DEFINITION("Location adjacent to a fragment definition."),
     FRAGMENT_SPREAD("Location adjacent to a fragment spread."),
-    INLINE_FRAGMENT("Location adjacent to an inline fragment.");
+    INLINE_FRAGMENT("Location adjacent to an inline fragment."),
+    VARIABLE_DEFINITION("Location adjacent to a variable definition."),
+    SCHEMA("Location adjacent to a schema definition."),
+    SCALAR("Location adjacent to a scalar definition."),
+    OBJECT("Location adjacent to an object type definition."),
+    FIELD_DEFINITION("Location adjacent to a field definition."),
+    ARGUMENT_DEFINITION("Location adjacent to an argument definition."),
+    INTERFACE("Location adjacent to an interface definition."),
+    UNION("Location adjacent to a union definition."),
+    ENUM("Location adjacent to an enum definition."),
+    ENUM_VALUE("Location adjacent to an enum value definition."),
+    INPUT_OBJECT("Location adjacent to an input object type definition."),
+    INPUT_FIELD_DEFINITION("Location adjacent to an input object field definition.");
 
     private final String description;
 

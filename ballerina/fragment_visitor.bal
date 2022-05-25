@@ -20,13 +20,13 @@ class FragmentVisitor {
     *parser:Visitor;
 
     private ErrorDetail[] errors;
-    private string[] usedFragments;
+    private map<parser:FragmentNode> usedFragments;
     private parser:DocumentNode documentNode;
     private string[] visitedFragments;
 
     public isolated function init(parser:DocumentNode documentNode) {
         self.errors = [];
-        self.usedFragments = [];
+        self.usedFragments = {};
         self.documentNode = documentNode;
         self.visitedFragments = [];
     }
@@ -55,13 +55,13 @@ class FragmentVisitor {
             operation.accept(self);
         }
 
-        foreach parser:FragmentNode fragmentNode in documentNode.getFragments().toArray() {
-            if self.usedFragments.indexOf(fragmentNode.getName()) is () {
-                string message = string`Fragment "${fragmentNode.getName()}" is never used.`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
+        foreach [string, parser:FragmentNode] entry in documentNode.getFragments().entries() {
+            if !self.usedFragments.hasKey(entry[0]) {
+                string message = string`Fragment "${entry[0]}" is never used.`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, entry[1].getLocation());
                 self.errors.push(errorDetail);
             }
-            _ = documentNode.getFragments().remove(fragmentNode.getName());
+            _ = documentNode.getFragments().remove(entry[0]);
         }
     }
 
@@ -83,7 +83,7 @@ class FragmentVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.appendNamedFragmentFields(fragmentNode);
-        self.usedFragments.push(fragmentNode.getName());
+        self.usedFragments[fragmentNode.getName()] = fragmentNode;
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             selection.accept(self);
         }
@@ -113,24 +113,24 @@ class FragmentVisitor {
         }
     }
 
-    isolated function detectCycles(parser:SelectionParentNode fragmentDefinition, map<parser:FragmentNode> visitedSpreads) {
-        foreach parser:SelectionNode fragmentSelection in fragmentDefinition.getSelections() {
-            if fragmentSelection is parser:FragmentNode {
-                if visitedSpreads.hasKey(fragmentSelection.getName()) {
-                    ErrorDetail errorDetail = getCycleRecursiveFragmentError(fragmentSelection, visitedSpreads);
+    isolated function detectCycles(parser:SelectionParentNode fragmentNode, map<parser:FragmentNode> visitedSpreads) {
+        foreach parser:SelectionNode selectionNode in fragmentNode.getSelections() {
+            if selectionNode is parser:FragmentNode {
+                if visitedSpreads.hasKey(selectionNode.getName()) {
+                    ErrorDetail errorDetail = getCycleRecursiveFragmentError(selectionNode, visitedSpreads);
                     self.errors.push(errorDetail);
                 } else {
-                    self.visitedFragments.push(fragmentSelection.getName());
-                    visitedSpreads[fragmentSelection.getName()] = fragmentSelection;
+                    self.visitedFragments.push(selectionNode.getName());
+                    visitedSpreads[selectionNode.getName()] = selectionNode;
                     parser:FragmentNode? nextFragmentDefinition =
-                        self.documentNode.getFragment(fragmentSelection.getName());
+                        self.documentNode.getFragment(selectionNode.getName());
                     if nextFragmentDefinition is parser:FragmentNode {
                         self.detectCycles(nextFragmentDefinition, visitedSpreads);
                     }
-                    _ = visitedSpreads.remove(fragmentSelection.getName());
+                    _ = visitedSpreads.remove(selectionNode.getName());
                 }
-            } else if fragmentSelection is parser:FieldNode {
-                self.detectCycles(fragmentSelection, visitedSpreads);
+            } else if selectionNode is parser:FieldNode {
+                self.detectCycles(selectionNode, visitedSpreads);
             } else {
                 panic error("Invalid selection node passed.");
             }

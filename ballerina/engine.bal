@@ -96,7 +96,12 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errors);
         }
 
-        DirectiveVisitor directiveVisitor = new(self.schema, document);
+        DirectiveValidatorVisitor directiveValidatorVisitor = new(self.schema);
+        errors = directiveValidatorVisitor.validate(document);
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
+        DefaultDirectiveVisitor directiveVisitor = new(self.schema, document);
         errors = directiveVisitor.validate();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
