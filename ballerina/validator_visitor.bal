@@ -49,7 +49,6 @@ class ValidatorVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
-        self.validateDirectiveArguments(operationNode);
         if operationField is __Field {
             foreach parser:SelectionNode selection in operationNode.getSelections() {
                 selection.accept(self, operationField);

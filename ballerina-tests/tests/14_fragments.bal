@@ -302,7 +302,7 @@ isolated function testFragmentsWithCycles() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "test"]
+    groups: ["fragments"]
 }
 isolated function testFragmentsWithMultipleCycles() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles.graphql");
