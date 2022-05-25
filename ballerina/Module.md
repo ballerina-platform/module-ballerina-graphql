@@ -64,13 +64,13 @@ service on new graphql:Listener(4000) {
 The GraphQL service endpoint URL will be `<host>:<port>`
 
 #### Query type
-The `resource` functions inside the service represent the resolvers of the `Query` root type.
+The `resource` functions inside the GraphQL service can represent the resolvers of the `Query` root type.
 
-When a `resource` function is defined inside a GraphQL service, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
+When a `resource` function is defined inside a GraphQL service with the `get` accessor, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
 
 >**Note:** A GraphQL service must have at least one resource function defined. Otherwise, it will result in a compilation error.
 
-The accessor of the `resource` function should always be `get`. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
+The accessor of the `resource` function should always be `get` for a field to be considered as a `Query` field. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
 
 ```ballerina
 import ballerina/graphql;
@@ -198,6 +198,46 @@ Result:
 ```
 
 See how the result changes the `Person` record. The first mutation changes only the name and it populates the result of the `updateName` field. Then, it will execute the `updateCity` operation and populate the result. This is because the execution of the mutation operations will be done serially in the same order as they are specified in the document.
+
+#### Subscription Type
+
+The subscription type can be used to continuously fetch the data from a GraphQL service.
+
+The `resource` functions inside the GraphQL service with the `subscribe` accessor can represent the resolvers of the `Subscription` root type.
+
+When a `resource` function is defined inside a GraphQL service with the `subscribe` accessor, the generated schema will have a `Subscription` root type and the `resource` function will be a field of the `Subscription` object.
+
+The accessor of the `resource` function should always be `subscribe` for a field to be considered as a `Subscription` field. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
+
+The `resource` functions that belongs to `Subscription` type must return a stream of `any` type. Any other return type will result in a compilation error.
+
+The return type
+```ballerina
+import ballerina/graphql;
+
+service graphql:Service /graphql on new graphql:Listener(4000) {
+    resource function subscribe messages() returns stream<string> {
+        return ["Walter", "Jesse", "Mike"].toStream();
+    }
+}
+```
+
+The above can be queried using the GraphQL document below:
+
+```graphql
+subscription {
+    messages
+}
+```
+
+When a subscription type is defined, a websocket service will be created to call the subscription. The above service
+will create the service as follows:
+
+```
+ws://<host>:4000/graphql
+```
+
+This can be accessed using a websocket client. When the returned stream has a new entry, it will be broadcasted to the subscribers.
 
 #### Additional configurations
 Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfig`.
