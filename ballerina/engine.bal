@@ -69,29 +69,35 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(document.getErrors());
         }
 
-        FragmentVisitor fragmentVisitor = new(document);
-        ErrorDetail[]? errors = fragmentVisitor.validate();
+        FragmentCycleFinderVisitor fragmentCycleFinderVisitor = new (document.getFragments());
+        document.accept(fragmentCycleFinderVisitor);
+        ErrorDetail[]? errors = fragmentCycleFinderVisitor.getErrors();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
+        FragmentVisitor fragmentVisitor = new(document.getFragments());
+        errors = fragmentVisitor.validate(document);
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
 
         if self.maxQueryDepth is int {
             int queryDepth = <int> self.maxQueryDepth;
-            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, queryDepth);
-            errors = queryDepthValidator.validate();
+            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(queryDepth);
+            errors = queryDepthValidator.validate(document);
             if errors is ErrorDetail[] {
                 return getOutputObjectFromErrorDetail(errors);
             }
         }
 
-        VariableValidator variableValidator = new(self.schema, document, variables);
-        errors = variableValidator.validate();
+        VariableValidator variableValidator = new(self.schema, variables);
+        errors = variableValidator.validate(document);
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
 
-        ValidatorVisitor validator = new(self.schema, document);
-        errors = validator.validate();
+        ValidatorVisitor validator = new(self.schema);
+        errors = validator.validate(document);
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
@@ -107,8 +113,8 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errors);
         }
 
-        DuplicateFieldRemover duplicateFieldRemover = new(document);
-        duplicateFieldRemover.remove();
+        DuplicateFieldRemover duplicateFieldRemover = new;
+        document.accept(duplicateFieldRemover);
 
         SubscriptionVisitor subscriptionVisitor = new(document);
         errors = subscriptionVisitor.validate();

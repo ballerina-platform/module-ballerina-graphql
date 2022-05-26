@@ -20,16 +20,14 @@ class VariableValidator {
     *parser:Visitor;
 
     private final __Schema schema;
-    private parser:DocumentNode documentNode;
     private map<json> variables;
     private string[] visitedVariableDefinitions;
     private ErrorDetail[] errors;
     map<parser:VariableNode> variableDefinitions;
     private (string|int)[] argumentPath;
 
-    isolated function init(__Schema schema, parser:DocumentNode documentNode, map<json>? variableValues) {
+    isolated function init(__Schema schema, map<json>? variableValues) {
         self.schema = schema;
-        self.documentNode = documentNode;
         self.visitedVariableDefinitions = [];
         self.errors = [];
         self.variables = variableValues == () ? {} : variableValues;
@@ -37,8 +35,8 @@ class VariableValidator {
         self.argumentPath = [];
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        self.documentNode.accept(self);
+    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
+        documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -359,11 +357,7 @@ class VariableValidator {
         _ = self.argumentPath.pop();
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    }
-
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

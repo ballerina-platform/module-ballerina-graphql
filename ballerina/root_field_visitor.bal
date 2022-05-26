@@ -32,9 +32,7 @@ class RootFieldVisitor {
         return self.fieldNode;
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         parser:SelectionNode[] selections = operationNode.getSelections();
@@ -51,15 +49,9 @@ class RootFieldVisitor {
         fragmentNode.getSelections()[0].accept(self);
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

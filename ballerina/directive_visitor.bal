@@ -66,9 +66,7 @@ class DefaultDirectiveVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     private isolated function includeField(parser:DirectiveNode[] directives) returns boolean {
         boolean isSkipped = false;
@@ -93,11 +91,7 @@ class DefaultDirectiveVisitor {
         }
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

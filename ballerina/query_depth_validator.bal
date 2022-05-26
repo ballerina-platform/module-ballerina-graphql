@@ -19,22 +19,20 @@ import graphql.parser;
 class QueryDepthValidator {
     *parser:Visitor;
 
-    private parser:DocumentNode documentNode;
     private int queryDepth;
     private int maxQueryDepth;
     private int queryDepthLimit;
     private ErrorDetail[] errors;
 
-    public isolated function init(parser:DocumentNode documentNode, int queryDepthLimit) {
-        self.documentNode = documentNode;
+    public isolated function init(int queryDepthLimit) {
         self.queryDepth = 0;
         self.maxQueryDepth = 0;
         self.queryDepthLimit = queryDepthLimit;
         self.errors = [];
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        self.documentNode.accept(self);
+    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
+        documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -87,19 +85,13 @@ class QueryDepthValidator {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
-    }
-
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-        // Do nothing
-    }
-
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-        // Do nothing
     }
 }

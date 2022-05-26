@@ -42,9 +42,7 @@ class ExecutorVisitor {
         return getOutputObject(self.data, self.errors);
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:SelectionNode selection in operationNode.getSelections() {
@@ -73,9 +71,7 @@ class ExecutorVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
@@ -83,11 +79,7 @@ class ExecutorVisitor {
         }
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

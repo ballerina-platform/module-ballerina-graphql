@@ -28,7 +28,7 @@ isolated service class WsService {
     isolated function init(Engine engine, __Schema & readonly schema) {
         self.engine = engine;
         self.schema = schema;
-        self.context = new();
+        self.context = new;
     }
 
     isolated remote function onTextMessage(websocket:Caller caller, string data) returns websocket:Error? {

@@ -19,16 +19,6 @@ import graphql.parser;
 class DuplicateFieldRemover {
     *parser:Visitor;
 
-    private parser:DocumentNode documentNode;
-
-    public isolated function init(parser:DocumentNode documentNode) {
-        self.documentNode = documentNode;
-    }
-
-    public isolated function remove() {
-        self.documentNode.accept(self);
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         foreach parser:OperationNode operationNode in documentNode.getOperations() {
             operationNode.accept(self);
@@ -56,9 +46,7 @@ class DuplicateFieldRemover {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     private isolated function removeDuplicateSelections(parser:SelectionNode[] selections) {
         map<parser:FieldNode> visitedFields = {};
@@ -95,11 +83,7 @@ class DuplicateFieldRemover {
         }
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

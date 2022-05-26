@@ -20,21 +20,19 @@ class ValidatorVisitor {
     *parser:Visitor;
 
     private final __Schema schema;
-    private final parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
     private (string|int)[] argumentPath;
 
-    isolated function init(__Schema schema, parser:DocumentNode documentNode) {
+    isolated function init(__Schema schema) {
         self.schema = schema;
-        self.documentNode = documentNode;
         self.errors = [];
         self.usedFragments = {};
         self.argumentPath = [];
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        self.documentNode.accept(self);
+    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
+        documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -551,13 +549,9 @@ class ValidatorVisitor {
         _ = self.argumentPath.pop();
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    }
-
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,

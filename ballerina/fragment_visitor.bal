@@ -21,28 +21,16 @@ class FragmentVisitor {
 
     private ErrorDetail[] errors;
     private map<parser:FragmentNode> usedFragments;
-    private parser:DocumentNode documentNode;
-    private string[] visitedFragments;
+    private map<parser:FragmentNode> fragments;
 
-    public isolated function init(parser:DocumentNode documentNode) {
+    public isolated function init(map<parser:FragmentNode> fragments) {
         self.errors = [];
         self.usedFragments = {};
-        self.documentNode = documentNode;
-        self.visitedFragments = [];
+        self.fragments = fragments;
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        foreach parser:FragmentNode fragmentNode in self.documentNode.getFragments() {
-            map<parser:FragmentNode> visitedSpreads = {};
-            if !fragmentNode.isInlineFragment() && self.visitedFragments.indexOf(fragmentNode.getName()) is () {
-                visitedSpreads[fragmentNode.getName()] = fragmentNode;
-                self.detectCycles(fragmentNode, visitedSpreads);
-            }
-        }
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        self.documentNode.accept(self);
+    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
+        documentNode.accept(self);
         if self.errors.length() > 0 {
             return self.errors;
         }
@@ -50,7 +38,6 @@ class FragmentVisitor {
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        self.documentNode = documentNode;
         foreach parser:OperationNode operation in documentNode.getOperations() {
             operation.accept(self);
         }
@@ -77,9 +64,7 @@ class FragmentVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do Nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         self.appendNamedFragmentFields(fragmentNode);
@@ -90,16 +75,15 @@ class FragmentVisitor {
     }
 
     isolated function appendNamedFragmentFields(parser:FragmentNode fragmentNode) {
-        parser:DocumentNode documentNode = self.documentNode;
-        parser:FragmentNode? actualFragmentNode = documentNode.getFragment(fragmentNode.getName());
-        if actualFragmentNode is () {
-            string message = string`Unknown fragment "${fragmentNode.getName()}".`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
-            self.errors.push(errorDetail);
-        } else {
+        if self.fragments.hasKey(fragmentNode.getName()) {
+            parser:FragmentNode actualFragmentNode = self.fragments.get(fragmentNode.getName());
             if !fragmentNode.isInlineFragment() && fragmentNode.getSelections().length() == 0 {
                 self.appendFields(actualFragmentNode, fragmentNode);
             }
+        } else {
+            string message = string`Unknown fragment "${fragmentNode.getName()}".`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
+            self.errors.push(errorDetail);
         }
     }
 
@@ -113,39 +97,11 @@ class FragmentVisitor {
         }
     }
 
-    isolated function detectCycles(parser:SelectionParentNode fragmentNode, map<parser:FragmentNode> visitedSpreads) {
-        foreach parser:SelectionNode selectionNode in fragmentNode.getSelections() {
-            if selectionNode is parser:FragmentNode {
-                if visitedSpreads.hasKey(selectionNode.getName()) {
-                    ErrorDetail errorDetail = getCycleRecursiveFragmentError(selectionNode, visitedSpreads);
-                    self.errors.push(errorDetail);
-                } else {
-                    self.visitedFragments.push(selectionNode.getName());
-                    visitedSpreads[selectionNode.getName()] = selectionNode;
-                    parser:FragmentNode? nextFragmentDefinition =
-                        self.documentNode.getFragment(selectionNode.getName());
-                    if nextFragmentDefinition is parser:FragmentNode {
-                        self.detectCycles(nextFragmentDefinition, visitedSpreads);
-                    }
-                    _ = visitedSpreads.remove(selectionNode.getName());
-                }
-            } else if selectionNode is parser:FieldNode {
-                self.detectCycles(selectionNode, visitedSpreads);
-            } else {
-                panic error("Invalid selection node passed.");
-            }
-        }
-    }
-
     isolated function getErrors() returns ErrorDetail[] {
         return self.errors;
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

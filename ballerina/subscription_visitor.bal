@@ -70,9 +70,7 @@ class SubscriptionVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function addErrorDetail(parser:SelectionNode selection, string operationName) {
         string message = operationName != "<anonymous>"
@@ -95,11 +93,7 @@ class SubscriptionVisitor {
         self.errors.push(errorDetail);
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    }
-
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }
