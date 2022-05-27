@@ -27,7 +27,9 @@ class ExecutorVisitor {
     private map<Upload|Upload[]> fileInfo;
     private any result;
 
-    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo, any result = ()) {
+    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo,
+        any result = ()) {
+
         self.engine = engine;
         self.schema = schema;
         self.context = context;
@@ -37,16 +39,11 @@ class ExecutorVisitor {
         self.errors = [];
     }
 
-    isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
-        operationNode.accept(self, operationNode.getKind());
-        return getOutputObject(self.data, self.errors);
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         foreach parser:SelectionNode selection in operationNode.getSelections() {
-            selection.accept(self, data);
+            selection.accept(self, operationNode.getKind());
         }
     }
 
@@ -82,4 +79,8 @@ class ExecutorVisitor {
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getOutput() returns OutputObject {
+        return getOutputObject(self.data, self.errors);
+    }
 }

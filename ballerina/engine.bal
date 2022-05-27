@@ -32,7 +32,9 @@ isolated class Engine {
         return self.schema;
     }
 
-    isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
+    isolated function validate(string documentString, string? operationName, map<json>? variables)
+        returns parser:OperationNode|OutputObject {
+
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if result is OutputObject {
             return result;
@@ -46,10 +48,24 @@ isolated class Engine {
         }
     }
 
-    isolated function execute(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo)
-        returns OutputObject {
-        ExecutorVisitor executor = new (self, self.schema, context, fileInfo);
-        OutputObject outputObject = executor.getExecutorResult(operationNode);
+    isolated function getResult(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo,
+        any result = ()) returns OutputObject {
+
+        DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
+        DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
+
+        parser:Visitor[] updatingVisitors = [
+            defaultDirectiveProcessor,
+            duplicateFieldRemover
+        ];
+
+        foreach parser:Visitor visitor in updatingVisitors {
+            operationNode.accept(visitor);
+        }
+
+        ExecutorVisitor executor = new (self, self.schema, context, fileInfo, result);
+        operationNode.accept(executor);
+        OutputObject outputObject = executor.getOutput();
         ResponseFormatter responseFormatter = new (self.schema);
         return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
     }
@@ -69,63 +85,22 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(document.getErrors());
         }
 
-        FragmentCycleFinderVisitor fragmentCycleFinderVisitor = new (document.getFragments());
-        document.accept(fragmentCycleFinderVisitor);
-        ErrorDetail[]? errors = fragmentCycleFinderVisitor.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
+        ValidatorVisitor[] validators = [
+            new FragmentCycleFinderVisitor(document.getFragments()),
+            new FragmentValidatorVisitor(document.getFragments()),
+            new QueryDepthValidatorVisitor(self.maxQueryDepth),
+            new VariableValidatorVisitor(self.schema, variables),
+            new FieldValidatorVisitor(self.schema),
+            new DirectiveValidatorVisitor(self.schema),
+            new SubscriptionValidatorVisitor()
+        ];
 
-        FragmentVisitor fragmentVisitor = new (document.getFragments());
-        document.accept(fragmentVisitor);
-        errors = fragmentVisitor.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        QueryDepthValidator queryDepthValidator = new QueryDepthValidator(self.maxQueryDepth);
-        document.accept(queryDepthValidator);
-        errors = queryDepthValidator.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        VariableValidator variableValidator = new (self.schema, variables);
-        document.accept(variableValidator);
-        errors = variableValidator.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        ValidatorVisitor validator = new (self.schema);
-        document.accept(validator);
-        errors = validator.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        DirectiveValidatorVisitor directiveValidatorVisitor = new (self.schema);
-        document.accept(directiveValidatorVisitor);
-        errors = directiveValidatorVisitor.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        DefaultDirectiveVisitor directiveVisitor = new (self.schema);
-        document.accept(directiveVisitor);
-        errors = directiveVisitor.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        DuplicateFieldRemover duplicateFieldRemover = new;
-        document.accept(duplicateFieldRemover);
-
-        SubscriptionVisitor subscriptionVisitor = new;
-        document.accept(subscriptionVisitor);
-        errors = subscriptionVisitor.getErrors();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
+        foreach ValidatorVisitor validator in validators {
+            document.accept(validator);
+            ErrorDetail[]? errors = validator.getErrors();
+            if errors is ErrorDetail[] {
+                return getOutputObjectFromErrorDetail(errors);
+            }
         }
         return;
     }

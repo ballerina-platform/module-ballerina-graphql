@@ -16,8 +16,8 @@
 
 import graphql.parser;
 
-class VariableValidator {
-    *parser:Visitor;
+class VariableValidatorVisitor {
+    *ValidatorVisitor;
 
     private final __Schema schema;
     private map<json> variables;
@@ -353,7 +353,7 @@ class VariableValidator {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
-    isolated function getErrors() returns ErrorDetail[]? {
+    public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
     }
 }

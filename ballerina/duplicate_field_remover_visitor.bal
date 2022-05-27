@@ -16,7 +16,7 @@
 
 import graphql.parser;
 
-class DuplicateFieldRemover {
+class DuplicateFieldRemoverVisitor {
     *parser:Visitor;
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
