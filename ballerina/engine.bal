@@ -48,9 +48,9 @@ isolated class Engine {
 
     isolated function execute(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo)
         returns OutputObject {
-        ExecutorVisitor executor = new(self, self.schema, context, fileInfo);
+        ExecutorVisitor executor = new (self, self.schema, context, fileInfo);
         OutputObject outputObject = executor.getExecutorResult(operationNode);
-        ResponseFormatter responseFormatter = new(self.schema);
+        ResponseFormatter responseFormatter = new (self.schema);
         return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
     }
 
@@ -75,40 +75,45 @@ isolated class Engine {
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
-        FragmentVisitor fragmentVisitor = new(document.getFragments());
-        errors = fragmentVisitor.validate(document);
+
+        FragmentVisitor fragmentVisitor = new (document.getFragments());
+        document.accept(fragmentVisitor);
+        errors = fragmentVisitor.getErrors();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
 
-        if self.maxQueryDepth is int {
-            int queryDepth = <int> self.maxQueryDepth;
-            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(queryDepth);
-            errors = queryDepthValidator.validate(document);
-            if errors is ErrorDetail[] {
-                return getOutputObjectFromErrorDetail(errors);
-            }
-        }
-
-        VariableValidator variableValidator = new(self.schema, variables);
-        errors = variableValidator.validate(document);
+        QueryDepthValidator queryDepthValidator = new QueryDepthValidator(self.maxQueryDepth);
+        document.accept(queryDepthValidator);
+        errors = queryDepthValidator.getErrors();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
 
-        ValidatorVisitor validator = new(self.schema);
-        errors = validator.validate(document);
+        VariableValidator variableValidator = new (self.schema, variables);
+        document.accept(variableValidator);
+        errors = variableValidator.getErrors();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
 
-        DirectiveValidatorVisitor directiveValidatorVisitor = new(self.schema);
-        errors = directiveValidatorVisitor.validate(document);
+        ValidatorVisitor validator = new (self.schema);
+        document.accept(validator);
+        errors = validator.getErrors();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
-        DefaultDirectiveVisitor directiveVisitor = new(self.schema, document);
-        errors = directiveVisitor.validate();
+
+        DirectiveValidatorVisitor directiveValidatorVisitor = new (self.schema);
+        document.accept(directiveValidatorVisitor);
+        errors = directiveValidatorVisitor.getErrors();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
+
+        DefaultDirectiveVisitor directiveVisitor = new (self.schema);
+        document.accept(directiveVisitor);
+        errors = directiveVisitor.getErrors();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
@@ -116,8 +121,9 @@ isolated class Engine {
         DuplicateFieldRemover duplicateFieldRemover = new;
         document.accept(duplicateFieldRemover);
 
-        SubscriptionVisitor subscriptionVisitor = new(document);
-        errors = subscriptionVisitor.validate();
+        SubscriptionVisitor subscriptionVisitor = new;
+        document.accept(subscriptionVisitor);
+        errors = subscriptionVisitor.getErrors();
         if errors is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(errors);
         }
@@ -130,7 +136,7 @@ isolated class Engine {
             if document.getOperations().length() == 1 {
                 return document.getOperations()[0];
             } else {
-                string message = string`Must provide operation name if query contains multiple operations.`;
+                string message = string `Must provide operation name if query contains multiple operations.`;
                 ErrorDetail errorDetail = {
                     message: message,
                     locations: []
@@ -143,7 +149,7 @@ isolated class Engine {
                     return operationNode;
                 }
             }
-            string message = string`Unknown operation named "${operationName}".`;
+            string message = string `Unknown operation named "${operationName}".`;
             ErrorDetail errorDetail = {
                 message: message,
                 locations: []

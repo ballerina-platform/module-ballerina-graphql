@@ -20,19 +20,9 @@ class SubscriptionVisitor {
     *parser:Visitor;
 
     private ErrorDetail[] errors;
-    private parser:DocumentNode documentNode;
 
-    public isolated function init(parser:DocumentNode documentNode) {
+    public isolated function init() {
         self.errors = [];
-        self.documentNode = documentNode;
-    }
-
-    public isolated function validate() returns ErrorDetail[]? {
-        self.documentNode.accept(self);
-        if self.errors.length() == 0 {
-            return;
-        }
-        return self.errors;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -96,4 +86,8 @@ class SubscriptionVisitor {
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }

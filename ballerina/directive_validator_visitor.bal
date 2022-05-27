@@ -31,11 +31,6 @@ class DirectiveValidatorVisitor {
         self.missingArguments = [];
     }
 
-    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
-        documentNode.accept(self);
-        return self.errors.length() > 0 ? self.errors : ();
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         foreach parser:OperationNode operationNode in documentNode.getOperations() {
             operationNode.accept(self);
@@ -117,5 +112,9 @@ class DirectiveValidatorVisitor {
                                 string `"${getTypeNameFromType(arg.'type)}" is required but not provided.`;
             self.errors.push(getErrorDetailRecord(message, directiveNode.getLocation()));
         }
+    }
+
+    public isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
     }
 }

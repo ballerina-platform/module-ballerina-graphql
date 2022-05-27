@@ -31,14 +31,6 @@ class ValidatorVisitor {
         self.argumentPath = [];
     }
 
-    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
-        documentNode.accept(self);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         foreach parser:OperationNode operationNode in documentNode.getOperations() {
             operationNode.accept(self);
@@ -408,10 +400,6 @@ class ValidatorVisitor {
         return value;
     }
 
-    isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
-    }
-
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
         __InputValue[] inputValues = schemaField.args;
@@ -552,6 +540,10 @@ class ValidatorVisitor {
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,

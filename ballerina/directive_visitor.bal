@@ -20,21 +20,11 @@ class DefaultDirectiveVisitor {
     *parser:Visitor;
 
     private final __Schema schema;
-    private parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
 
-    isolated function init(__Schema schema, parser:DocumentNode documentNode) {
+    isolated function init(__Schema schema) {
         self.schema = schema;
-        self.documentNode = documentNode;
         self.errors = [];
-    }
-
-    public isolated function validate() returns ErrorDetail[]? {
-        self.documentNode.accept(self);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -94,4 +84,8 @@ class DefaultDirectiveVisitor {
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    public isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }

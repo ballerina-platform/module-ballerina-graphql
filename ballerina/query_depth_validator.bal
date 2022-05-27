@@ -24,22 +24,17 @@ class QueryDepthValidator {
     private int queryDepthLimit;
     private ErrorDetail[] errors;
 
-    public isolated function init(int queryDepthLimit) {
+    public isolated function init(int? queryDepthLimit) {
         self.queryDepth = 0;
         self.maxQueryDepth = 0;
-        self.queryDepthLimit = queryDepthLimit;
+        self.queryDepthLimit = queryDepthLimit is int ? queryDepthLimit : 0;
         self.errors = [];
     }
 
-    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
-        documentNode.accept(self);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
+        if self.queryDepthLimit == 0 {
+            return;
+        }
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
             operationNode.accept(self);
@@ -91,7 +86,7 @@ class QueryDepthValidator {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
-    isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
     }
 }

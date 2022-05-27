@@ -29,14 +29,6 @@ class FragmentVisitor {
         self.fragments = fragments;
     }
 
-    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
-        documentNode.accept(self);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         foreach parser:OperationNode operation in documentNode.getOperations() {
             operation.accept(self);
@@ -97,11 +89,11 @@ class FragmentVisitor {
         }
     }
 
-    isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
-    }
-
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }

@@ -35,14 +35,6 @@ class VariableValidator {
         self.argumentPath = [];
     }
 
-    public isolated function validate(parser:DocumentNode documentNode) returns ErrorDetail[]? {
-        documentNode.accept(self);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
@@ -360,4 +352,8 @@ class VariableValidator {
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }
