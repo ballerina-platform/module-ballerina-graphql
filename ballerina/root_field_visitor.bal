@@ -28,26 +28,16 @@ class RootFieldVisitor {
     }
 
     public isolated function getRootFieldNode() returns parser:FieldNode? {
-        self.visitOperation(self.operationNode);
+        self.operationNode.accept(self);
         return self.fieldNode;
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        parser:Selection[] selections = operationNode.getSelections();
-        foreach parser:Selection selection in selections {
-            self.visitSelection(selection);
-        }
-    }
-
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
+        parser:SelectionNode[] selections = operationNode.getSelections();
+        foreach parser:SelectionNode selection in selections {
+            selection.accept(self);
         }
     }
 
@@ -56,10 +46,12 @@ class RootFieldVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.visitSelection(fragmentNode.getSelections()[0]);
+        fragmentNode.getSelections()[0].accept(self);
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 }

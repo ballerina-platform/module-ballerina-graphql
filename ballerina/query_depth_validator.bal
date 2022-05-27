@@ -19,32 +19,25 @@ import graphql.parser;
 class QueryDepthValidator {
     *parser:Visitor;
 
-    private parser:DocumentNode documentNode;
     private int queryDepth;
     private int maxQueryDepth;
     private int queryDepthLimit;
     private ErrorDetail[] errors;
 
-    public isolated function init(parser:DocumentNode documentNode, int queryDepthLimit) {
-        self.documentNode = documentNode;
+    public isolated function init(int? queryDepthLimit) {
         self.queryDepth = 0;
         self.maxQueryDepth = 0;
-        self.queryDepthLimit = queryDepthLimit;
+        self.queryDepthLimit = queryDepthLimit is int ? queryDepthLimit : 0;
         self.errors = [];
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
+        if self.queryDepthLimit == 0 {
+            return;
+        }
         parser:OperationNode[] operations = documentNode.getOperations();
         foreach parser:OperationNode operationNode in operations {
-            self.visitOperation(operationNode);
+            operationNode.accept(self);
             if self.maxQueryDepth > self.queryDepthLimit {
                 if operationNode.getName() != parser:ANONYMOUS_OPERATION {
                     string message = string
@@ -61,27 +54,17 @@ class QueryDepthValidator {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection);
-        }
-    }
-
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
-        } else {
-            panic error("Invalid selection node passed.");
+        foreach parser:SelectionNode selection in operationNode.getSelections() {
+            selection.accept(self);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         self.queryDepth += 1;
         if fieldNode.getSelections().length() > 0 {
-            parser:Selection[] selections = fieldNode.getSelections();
-            foreach parser:Selection subSelection in selections {
-                self.visitSelection(subSelection);
+            parser:SelectionNode[] selections = fieldNode.getSelections();
+            foreach parser:SelectionNode subSelection in selections {
+                subSelection.accept(self);
             }
         } else {
             if self.queryDepth > self.maxQueryDepth {
@@ -92,16 +75,18 @@ class QueryDepthValidator {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection);
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+            selection.accept(self);
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
-    isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
     }
 }

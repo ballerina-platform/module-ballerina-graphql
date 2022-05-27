@@ -16,86 +16,39 @@
 
 import graphql.parser;
 
-class DirectiveVisitor {
+class DefaultDirectiveVisitor {
     *parser:Visitor;
 
     private final __Schema schema;
-    private parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
 
-    isolated function init(__Schema schema, parser:DocumentNode documentNode) {
+    isolated function init(__Schema schema) {
         self.schema = schema;
-        self.documentNode = documentNode;
         self.errors = [];
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        parser:OperationNode[] operations = documentNode.getOperations();
-        int i = 0;
-        while i < operations.length() {
-            boolean isIncluded = self.checkDirectives(operations[i].getDirectives());
-            if isIncluded {
-                self.visitOperation(operations[i]);
-                i += 1;
-            } else {
-                _ = operations.remove(i);
-            }
-        }
+        self.updateSelections(documentNode.getOperations());
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        parser:Selection[] selections = operationNode.getSelections();
-        int i = 0;
-        while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:ParentNode>selections[i]).getDirectives());
-            if isIncluded {
-                self.visitSelection(selections[i]);
-                i += 1;
-            } else {
-                _ = selections.remove(i);
-            }
-        }
-    }
-
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection);
-        } else {
-            panic error("Invalid selection node passed.");
-        }
+        self.updateSelections(operationNode.getSelections());
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        parser:Selection[] selections = fieldNode.getSelections();
-        int i = 0;
-        while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:ParentNode>selections[i]).getDirectives());
-            if isIncluded {
-                self.visitSelection(selections[i]);
-                i += 1;
-            } else {
-                _ = selections.remove(i);
-            }
-        }
+        self.updateSelections(fieldNode.getSelections());
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        parser:Selection[] selections = fragmentNode.getSelections();
+        self.updateSelections(fragmentNode.getSelections());
+    }
+
+    private isolated function updateSelections(parser:SelectionParentNode[] selections) {
         int i = 0;
         while i < selections.length() {
-            boolean isIncluded = self.checkDirectives((<parser:ParentNode>selections[i]).getDirectives());
+            boolean isIncluded = self.includeField(selections[i].getDirectives());
             if isIncluded {
-                self.visitSelection(selections[i]);
+                selections[i].accept(self);
                 i += 1;
             } else {
                 _ = selections.remove(i);
@@ -103,83 +56,36 @@ class DirectiveVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
-    private isolated function checkDirectives(parser:DirectiveNode[] directives) returns boolean {
-        boolean skip;
-        boolean include;
-        [skip, include] = self.validateDirectives(directives);
-        if !skip && include {
-            return true;
-        }
-        return false;
-    }
-
-    private isolated function validateDirectives(parser:DirectiveNode[] directives) returns [boolean, boolean] {
-        map<parser:DirectiveNode> visitedDirectives = {};
-        boolean skip = false;
-        boolean include = true;
-        int i = 0;
-        while i < directives.length() {
-            parser:DirectiveNode directive = directives[i];
-            if visitedDirectives.hasKey(directive.getName()) {
-                string message = string`The directive "${directive.getName()}" can only be used once at this location.`;
-                Location location1 = (visitedDirectives.get(directive.getName())).getLocation();
-                ErrorDetail errorDetail = getErrorDetailRecord(message, [location1, directive.getLocation()]);
-                self.errors.push(errorDetail);
-            } else {
-                boolean isUndefinedDirective = true;
-                foreach __Directive defaultDirective in self.schema.directives {
-                    if directive.getName() == defaultDirective.name {
-                        isUndefinedDirective = false;
-                        [skip, include] = self.validateDefaultDirectives(directive, defaultDirective, skip, include);
-                        break;
-                    }
-                }
-                if isUndefinedDirective {
-                    string message = string`Unknown directive "${directive.getName()}".`;
-                    ErrorDetail errorDetail = getErrorDetailRecord(message, directive.getLocation());
-                    self.errors.push(errorDetail);
-                }
-                visitedDirectives[directive.getName()] = directive;
-            }
-            i += 1;
-        }
-        return [skip, include];
-    }
-
-    private isolated function validateDefaultDirectives(parser:DirectiveNode directive, __Directive defaultDirective,
-                                                        boolean skip, boolean include) returns [boolean, boolean] {
-        boolean isSkipped = skip;
-        boolean isIncluded = include;
-        parser:DirectiveLocation dirLocation = directive.getDirectiveLocations()[0];
-        parser:DirectiveLocation[] defaultDirectiveLocations = <parser:DirectiveLocation[]> defaultDirective?.locations;
-        if defaultDirectiveLocations.indexOf(dirLocation) is () {
-            string message = string`Directive "${directive.getName()}" may not be used on ${dirLocation.toString()}.`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, directive.getLocation());
-            self.errors.push(errorDetail);
-        } else {
+    private isolated function includeField(parser:DirectiveNode[] directives) returns boolean {
+        boolean isSkipped = false;
+        boolean isIncluded = true;
+        foreach parser:DirectiveNode directive in directives {
             if directive.getName() == SKIP {
-                parser:ArgumentNode argNode = directive.getArguments()[0];
-                if argNode.isVariableDefinition() {
-                    isSkipped = <boolean>argNode.getVariableValue();
-                } else {
-                    parser:ArgumentValue value = <parser:ArgumentValue> argNode.getValue();
-                    isSkipped = <boolean>value;
-                }
-            } else {
-                parser:ArgumentNode argNode = directive.getArguments()[0];
-                if argNode.isVariableDefinition() {
-                    isIncluded = <boolean>argNode.getVariableValue();
-                } else {
-                    parser:ArgumentValue value = <parser:ArgumentValue> argNode.getValue();
-                    isIncluded = <boolean>value;
-                }
+                isSkipped = self.getDirectiveArgumentValue(directive);
+            } else if directive.getName() == INCLUDE {
+                isIncluded = self.getDirectiveArgumentValue(directive);
             }
         }
-        return [isSkipped, isIncluded];
+        return !isSkipped && isIncluded;
     }
 
+    private isolated function getDirectiveArgumentValue(parser:DirectiveNode directiveNode) returns boolean {
+        parser:ArgumentNode argumentNode = directiveNode.getArguments()[0];
+        if argumentNode.isVariableDefinition() {
+            return <boolean>argumentNode.getVariableValue();
+        } else {
+            parser:ArgumentValue value = <parser:ArgumentValue> argumentNode.getValue();
+            return <boolean>value;
+        }
+    }
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    public isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }

@@ -15,14 +15,14 @@
 // under the License.
 
 public class FragmentNode {
-    *ParentNode;
+    *SelectionNode;
 
     private string name;
     private Location location;
     private Location? spreadLocation;
     private string onType;
     private boolean inlineFragment;
-    private Selection[] selections;
+    private SelectionNode[] selections;
     private DirectiveNode[] directives;
 
     public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
@@ -34,6 +34,10 @@ public class FragmentNode {
         self.inlineFragment = inlineFragment;
         self.selections = [];
         self.directives = [];
+    }
+
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitFragment(self, data);
     }
 
     public isolated function getName() returns string {
@@ -48,11 +52,11 @@ public class FragmentNode {
         return self.onType;
     }
 
-    public isolated function addSelection(Selection selection) {
+    public isolated function addSelection(SelectionNode selection) {
         self.selections.push(selection);
     }
 
-    public isolated function getSelections() returns Selection[] {
+    public isolated function getSelections() returns SelectionNode[] {
         return self.selections;
     }
 

@@ -20,57 +20,29 @@ class ValidatorVisitor {
     *parser:Visitor;
 
     private final __Schema schema;
-    private final parser:DocumentNode documentNode;
     private ErrorDetail[] errors;
     private map<string> usedFragments;
     private (string|int)[] argumentPath;
 
-    isolated function init(__Schema schema, parser:DocumentNode documentNode) {
+    isolated function init(__Schema schema) {
         self.schema = schema;
-        self.documentNode = documentNode;
         self.errors = [];
         self.usedFragments = {};
         self.argumentPath = [];
     }
 
-    public isolated function validate() returns ErrorDetail[]? {
-        self.visitDocument(self.documentNode);
-        if self.errors.length() > 0 {
-            return self.errors;
-        }
-        return;
-    }
-
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        parser:OperationNode[] operations = documentNode.getOperations();
-        foreach parser:OperationNode operationNode in operations {
-            self.visitOperation(operationNode);
+        foreach parser:OperationNode operationNode in documentNode.getOperations() {
+            operationNode.accept(self);
         }
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
-        self.validateDirectiveArguments(operationNode);
         if operationField is __Field {
-            foreach parser:Selection selection in operationNode.getSelections() {
-                self.visitSelection(selection, operationField);
+            foreach parser:SelectionNode selection in operationNode.getSelections() {
+                selection.accept(self, operationField);
             }
-        }
-    }
-
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        __Field parentField = <__Field>data;
-        __Type parentType = <__Type>getOfType(parentField.'type);
-        if selection is parser:FragmentNode {
-            __Type? fragmentOnType = self.validateFragment(selection, <string>parentType.name);
-            if fragmentOnType is __Type {
-                parentField = createField(getOfTypeName(fragmentOnType), fragmentOnType);
-                self.visitFragment(selection, parentField);
-            }
-        } else if selection is parser:FieldNode {
-            self.visitField(selection, parentField);
-        } else {
-            panic error("Invalid selection node passed.");
         }
     }
 
@@ -100,8 +72,22 @@ class ValidatorVisitor {
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             return;
         } else {
-            foreach parser:Selection selection in fieldNode.getSelections() {
-                self.visitSelection(selection, requiredField);
+            foreach parser:SelectionNode selection in fieldNode.getSelections() {
+                selection.accept(self, requiredField);
+            }
+        }
+    }
+
+    public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        __Field parentField = <__Field>data;
+        __Type parentType = <__Type>getOfType(parentField.'type);
+        __Type? fragmentOnType = self.validateFragment(fragmentNode, <string>parentType.name);
+
+        if fragmentOnType is __Type {
+            parentField = createField(getOfTypeName(fragmentOnType), fragmentOnType);
+            self.validateDirectiveArguments(fragmentNode);
+            foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+                selection.accept(self, data);
             }
         }
     }
@@ -139,7 +125,7 @@ class ValidatorVisitor {
                 boolean isProvidedField = false;
                 foreach parser:ArgumentValue fieldValue in fields {
                     if fieldValue is parser:ArgumentNode && fieldValue.getName() == inputField.name {
-                        self.visitArgument(fieldValue, {input: subInputValue, fieldName: fieldName});
+                        fieldValue.accept(self, {input: subInputValue, fieldName: fieldName});
                         isProvidedField = true;
                     }
                 }
@@ -173,7 +159,7 @@ class ValidatorVisitor {
                         parser:ArgumentValue|parser:ArgumentValue[] item = listItems[i];
                         if item is parser:ArgumentNode {
                             self.updatePath(i);
-                            self.visitArgument(item, {input: listItemInputValue, fieldName: fieldName});
+                            item.accept(self, {input: listItemInputValue, fieldName: fieldName});
                             self.removePath();
                         }
                     }
@@ -414,17 +400,6 @@ class ValidatorVisitor {
         return value;
     }
 
-    public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.validateDirectiveArguments(fragmentNode);
-        foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, data);
-        }
-    }
-
-    isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
-    }
-
     isolated function checkArguments(__Type parentType, parser:FieldNode fieldNode, __Field schemaField) {
         parser:ArgumentNode[] arguments = fieldNode.getArguments();
         __InputValue[] inputValues = schemaField.args;
@@ -445,7 +420,7 @@ class ValidatorVisitor {
                 __InputValue? inputValue = getInputValueFromArray(inputValues, argName);
                 if inputValue is __InputValue {
                     _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
-                    self.visitArgument(argumentNode, {input: inputValue, fieldName: fieldNode.getName()});
+                    argumentNode.accept(self, {input: inputValue, fieldName: fieldNode.getName()});
                 } else {
                     string parentName = parentType.name is string ? <string>parentType.name : "";
                     string message = getUnknownArgumentErrorMessage(argName, parentName, fieldNode.getName());
@@ -483,8 +458,9 @@ class ValidatorVisitor {
                 string message = getFragmetCannotSpreadError(fragmentNode, fragmentNode.getName(), ofType);
                 ErrorDetail errorDetail = getErrorDetailRecord(message, <Location>fragmentNode.getSpreadLocation());
                 self.errors.push(errorDetail);
+            } else {
+                return fragmentOnType;
             }
-            return fragmentOnType;
         }
         return;
     }
@@ -536,27 +512,16 @@ class ValidatorVisitor {
         self.errors.push(errorDetail);
     }
 
-    isolated function validateDirectiveArguments(parser:ParentNode node) {
+    isolated function validateDirectiveArguments(parser:SelectionParentNode node) {
         foreach parser:DirectiveNode directive in node.getDirectives() {
             foreach __Directive defaultDirective in self.schema.directives {
                 if directive.getName() == defaultDirective.name {
-                    __InputValue[] notFoundInputValues = copyInputValueArray(defaultDirective.args);
                     foreach parser:ArgumentNode argumentNode in directive.getArguments() {
                         string argName = argumentNode.getName();
                         __InputValue? inputValue = getInputValueFromArray(defaultDirective.args, argName);
                         if inputValue is __InputValue {
-                            _ = notFoundInputValues.remove(<int>notFoundInputValues.indexOf(inputValue));
-                            self.visitArgument(argumentNode, {input: inputValue, fieldName: directive.getName()});
-                        } else {
-                            string message = string `Unknown argument "${argName}" on directive` +
-                                             string `"${directive.getName()}".`;
-                            self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+                            argumentNode.accept(self, {input: inputValue, fieldName: directive.getName()});
                         }
-                    }
-                    foreach __InputValue arg in notFoundInputValues {
-                        string message = string `Directive "${directive.getName()}" argument "${arg.name}" of type` +
-                                         string `"${getTypeNameFromType(arg.'type)}" is required but not provided.`;
-                        self.errors.push(getErrorDetailRecord(message, directive.getLocation()));
                     }
                     break;
                 }
@@ -572,6 +537,13 @@ class ValidatorVisitor {
         _ = self.argumentPath.pop();
     }
 
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
 }
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,

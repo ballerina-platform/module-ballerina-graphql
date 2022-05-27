@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class VariableDefinitionNode {
-    *Node;
+public class VariableNode {
+    *NamedNode;
 
     private string name;
     private string typeName;
@@ -27,6 +27,10 @@ public class VariableDefinitionNode {
         self.typeName = typeName;
         self.location = location;
         self.defaultValue = ();
+    }
+
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitVariable(self, data);
     }
 
     public isolated function getName() returns string {

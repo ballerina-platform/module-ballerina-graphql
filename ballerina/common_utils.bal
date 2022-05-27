@@ -83,7 +83,8 @@ isolated function getInvalidDefaultValueError(string variableName, string typeNa
     return string`Variable "${variableName}" expected value of type "${typeName}", found ${errorValue}`;
 }
 
-isolated function getInvalidArgumentValueError(string listIndexOfError, string expectedTypeName, parser:ArgumentValue value) returns string {
+isolated function getInvalidArgumentValueError(string listIndexOfError, string expectedTypeName,
+                                               parser:ArgumentValue value) returns string {
     if value is parser:ArgumentNode {
         string errorValue = getErrorValueInString(value);
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;

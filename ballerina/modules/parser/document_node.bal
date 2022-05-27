@@ -15,6 +15,8 @@
 // under the License.
 
 public class DocumentNode {
+    *Node;
+
     private map<OperationNode> operations;
     private map<FragmentNode> fragments;
     private ErrorDetail[] errors;
@@ -25,6 +27,10 @@ public class DocumentNode {
         self.fragments = {};
         self.errors = [];
         self.isFirstAnonymousOperationErrorPushed = false;
+    }
+
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitDocument(self, data);
     }
 
     public isolated function addOperation(OperationNode operation) {
@@ -71,8 +77,8 @@ public class DocumentNode {
     }
 
     private isolated function appendDuplicateInlineFragment(FragmentNode duplicate, FragmentNode original) {
-        foreach Selection selections in duplicate.getSelections() {
-            original.addSelection(selections);
+        foreach SelectionNode selection in duplicate.getSelections() {
+            original.addSelection(selection);
         }
     }
 
