@@ -1,4 +1,4 @@
-# Proposal: GraphQL Context
+# Proposal: GraphQL Subscriptions
 
 _Owners_: @Nuvindu @ThisaruGuruge @DimuthuMadushan @shafreenAnfar     
 _Reviewers_: @shafreenAnfar @ThisaruGuruge    
@@ -26,17 +26,17 @@ Second, unlike `mutation` and `query` operations, the `subscription` operation r
 The proposed solution addresses all the above while minimizing the code that has to be written to provide a better user experience.
 #### Subscription Resolver
 
-Subscription resolvers use resource functions with the `get` accessor. This is because subscription resolvers don’t mutate the application state. The return value of the subscription resolver is the Ballerina stream. The stream can be any type.
+Subscription resolvers use resource functions with the `subscribe` accessor. The return value of the subscription resolver is the Ballerina stream. The stream can be `any` type.
 
 The returned stream is mapped to one or more connections. Since the connection must be persistent, HTTP connections are upgraded to WebSocket connections. Underline implementation reads the stream in a loop and pushes the data to mapped WebSocket connections until the end of the stream or an error is returned.
 
 The following is an example resolver for graphql subscription.
 
 ```ballerina 
- resource function get message() returns stream<string,error?> { ... }
+ resource function subscribe message() returns stream<string,error?> { ... }
 ```
 
-Both `query` operation and `subscription` use resource functions to represent them. Unlike `query` operations, `subscription` operations only allow returning streams. This allows the GraphQL engine to distinguish one from the other.
+Both `query` operation and `subscription` use resource functions to represent them. Unlike `query` operations, `subscription` operations only allow returning streams. The return types and the accessors of both operations allow the GraphQL engine to distinguish one from the other.
 ### Writing a GraphQL Subscription Service
 
 Writing a GraphQL service with subscriptions must not be complicated from the developer’s perspective. Following is how the GraphQL subscription service can be written.
@@ -55,7 +55,7 @@ An array of [Pipes](#pipe) has to be instantiated first. These pipes can be used
 As mentioned earlier the subscription resolver must return a stream. An instance of the return stream can be created with the help of the Pipe. Therefore a new pipe instance must be instantiated here and added that to the pipes array. Then a stream must be returned using the `consumeStream` method of the pipe. To do this, the Pipe uses Ballerina’s dependent type feature.
 
 ```ballerina 
- resource function get message() returns stream<string,error?> {
+ resource function subscribe message() returns stream<string,error?> {
       Pipe pipe = new(10);
       pipes.push(pipe);
       return pipe.consumeStream();  
@@ -122,9 +122,9 @@ The user has to create a new generator function to filter data from the stream. 
         self.data = data;
     }
     public isolated function next() returns record {| Person value; |}|error? {
-        MsgRecord|error? msgRecord = self.originalStream.next();
-        if msgRecord is MsgRecord {
-            Person person = msgRecord.value;
+        PersonRecord|error? personRecord = self.originalStream.next();
+        if personRecord is PersonRecord {
+            Person person = personRecord.value;
             if(self.data == person.getAge()){
                 return { value: person };
             }
@@ -133,7 +133,7 @@ The user has to create a new generator function to filter data from the stream. 
     }
   }
  
-  type MsgRecord record {|
+  type PersonRecord record {|
     Person value;
   |};
  ```
