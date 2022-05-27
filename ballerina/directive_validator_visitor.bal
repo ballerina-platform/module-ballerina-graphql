@@ -74,7 +74,7 @@ class DirectiveValidatorVisitor {
 
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
         if self.visitedDirectives.hasKey(directiveNode.getName()) {
-            string message = string`The directive "${directiveNode.getName()}" can only be used once at this location.`;
+            string message = string `The directive "${directiveNode.getName()}" can only be used once at this location.`;
             Location location = self.visitedDirectives.get(directiveNode.getName()).getLocation();
             ErrorDetail errorDetail = getErrorDetailRecord(message, [location, directiveNode.getLocation()]);
             self.errors.push(errorDetail);
@@ -87,7 +87,7 @@ class DirectiveValidatorVisitor {
                 return;
             }
         }
-        string message = string`Unknown directive "${directiveNode.getName()}".`;
+        string message = string `Unknown directive "${directiveNode.getName()}".`;
         ErrorDetail errorDetail = getErrorDetailRecord(message, directiveNode.getLocation());
         self.errors.push(errorDetail);
     }
@@ -99,7 +99,7 @@ class DirectiveValidatorVisitor {
         if validLocations.indexOf(directiveNode.getDirectiveLocation()) == () {
             string name = directiveNode.getName();
             __DirectiveLocation directiveLocation = directiveNode.getDirectiveLocation();
-            string message = string`Directive "${name}" may not be used on ${directiveLocation}.`;
+            string message = string `Directive "${name}" may not be used on ${directiveLocation}.`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, directiveNode.getLocation());
             self.errors.push(errorDetail);
         }
