@@ -205,8 +205,8 @@ class FieldValidatorVisitor {
             string expectedTypeName = getOfTypeName(schemaArg.'type);
             string listError = getListElementError(self.argumentPath);
             string value = variableValue is () ? "null" : variableValue.toString();
-            string message = string`${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
-                             string` ${value}`;
+            string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
+                             string ` ${value}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
             self.errors.push(errorDetail);
         }
