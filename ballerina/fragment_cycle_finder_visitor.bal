@@ -17,7 +17,7 @@
 import graphql.parser;
 
 class FragmentCycleFinderVisitor {
-    *parser:Visitor;
+    *ValidatorVisitor;
 
     private ErrorDetail[] errors;
     private map<parser:FragmentNode> fragments;

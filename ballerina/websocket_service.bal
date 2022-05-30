@@ -41,8 +41,7 @@ isolated service class WsService {
             if sourceStream is stream<any, error?> {
                 record {|any value;|}|error? next = sourceStream.iterator().next();
                 while next !is error? {
-                    ExecutorVisitor executor = new(self.engine, self.schema, self.context, {}, next.value);
-                    OutputObject outputObject = executor.getExecutorResult(node);
+                    OutputObject outputObject = self.engine.getResult(node, self.context, {}, next.value);
                     ResponseFormatter responseFormatter = new(self.schema);
                     OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
                     if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
@@ -85,7 +84,7 @@ isolated function validateSubscriptionPayload(string text, Engine engine) return
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
                                           parser:FieldNode node) returns stream<any, error?>|json {
-    ExecutorVisitor executor = new(engine, schema, context, {}, null);
+    ExecutorVisitor executor = new(engine, schema, context, {});
     any|error result = getSubscriptionResult(executor, node);
     if result !is stream<any, error?> {
         return {errors: [{message: "Invalid return value"}]};

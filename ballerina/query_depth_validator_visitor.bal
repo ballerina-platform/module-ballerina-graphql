@@ -16,8 +16,8 @@
 
 import graphql.parser;
 
-class QueryDepthValidator {
-    *parser:Visitor;
+class QueryDepthValidatorVisitor {
+    *ValidatorVisitor;
 
     private int queryDepth;
     private int maxQueryDepth;
@@ -86,7 +86,7 @@ class QueryDepthValidator {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
-    isolated function getErrors() returns ErrorDetail[]? {
+    public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
     }
 }

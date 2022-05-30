@@ -80,7 +80,7 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
 
 isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context,
                                            map<Upload|Upload[]> fileInfo) returns http:Response {
-    OutputObject outputObject = engine.execute(operationNode, context, fileInfo);
+    OutputObject outputObject = engine.getResult(operationNode, context, fileInfo);
     return createResponse(outputObject.toJson());
 }
 

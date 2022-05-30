@@ -17,7 +17,7 @@
 import graphql.parser;
 
 class DirectiveValidatorVisitor {
-    *parser:Visitor;
+    *ValidatorVisitor;
 
     private final __Schema schema;
     private ErrorDetail[] errors;

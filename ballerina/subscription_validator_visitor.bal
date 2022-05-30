@@ -16,8 +16,8 @@
 
 import graphql.parser;
 
-class SubscriptionVisitor {
-    *parser:Visitor;
+class SubscriptionValidatorVisitor {
+    *ValidatorVisitor;
 
     private ErrorDetail[] errors;
 
@@ -87,7 +87,7 @@ class SubscriptionVisitor {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
-    isolated function getErrors() returns ErrorDetail[]? {
+    public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
     }
 }
