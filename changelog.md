@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- [[#2959] Fix Incorrectly Removing Other Services Through Code Modifier](https://github.com/ballerina-platform/ballerina-standard-library/issues/2959)
+
+## [1.3.0] - 2022-05-30
+
 ### Added
 - [[#1936] Integrate GraphiQL Client into GraphQL Package](https://github.com/ballerina-platform/ballerina-standard-library/issues/1936)
 - [[#2532] Introduce GraphQL Subscription Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/2532)
