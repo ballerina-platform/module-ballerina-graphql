@@ -42,9 +42,9 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
+import io.ballerina.stdlib.graphql.compiler.schema.types.DefaultDirective;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Directive;
-import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
 import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
@@ -55,7 +55,6 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,8 +79,7 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  */
 public class TypeFinder {
     private static final String IF_ARG_NAME = "if";
-    private static final String INCLUDE_DIRECTIVE_NAME = "include";
-    private static final String SKIP_DIRECTIVE_NAME = "skip";
+    private static final String REASON_ARG_NAME = "reason";
 
     private final Schema schema;
     private final InterfaceFinder interfaceFinder;
@@ -539,15 +537,19 @@ public class TypeFinder {
     }
 
     private void addDefaultDirectives() {
-        List<DirectiveLocation> locations = Arrays.asList(DirectiveLocation.FIELD,
-                                                          DirectiveLocation.FRAGMENT_SPREAD,
-                                                          DirectiveLocation.INLINE_FRAGMENT);
-        Directive include = new Directive(INCLUDE_DIRECTIVE_NAME, Description.INCLUDE.getDescription(), locations);
+        Directive include = new Directive(DefaultDirective.INCLUDE);
         include.addArg(getIfInputValue(Description.INCLUDE_IF));
         this.schema.addDirective(include);
-        Directive skip = new Directive(SKIP_DIRECTIVE_NAME, Description.SKIP.getDescription(), locations);
+
+        Directive skip = new Directive(DefaultDirective.SKIP);
         skip.addArg(getIfInputValue(Description.SKIP_IF));
         this.schema.addDirective(skip);
+
+        Directive deprecated = new Directive(DefaultDirective.DEPRECATED);
+        InputValue reason = new InputValue(REASON_ARG_NAME, addType(ScalarType.STRING),
+                                           Description.DEPRECATED_REASON.getDescription(), null);
+        deprecated.addArg(reason);
+        this.schema.addDirective(deprecated);
     }
 
     private InputValue getIfInputValue(Description description) {

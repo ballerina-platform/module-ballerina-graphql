@@ -32,8 +32,8 @@ public class Directive implements Serializable {
     private final List<DirectiveLocation> locations;
     private final List<InputValue> args;
 
-    public Directive(String name, String description) {
-        this(name, description, new ArrayList<>());
+    public Directive(DefaultDirective defaultDirective) {
+        this(defaultDirective.getName(), defaultDirective.getDescription(), defaultDirective.getLocations());
     }
 
     public Directive(String name, String description, List<DirectiveLocation> locations) {
@@ -41,10 +41,6 @@ public class Directive implements Serializable {
         this.description = description;
         this.locations = locations;
         this.args = new ArrayList<>();
-    }
-
-    public void addLocation(DirectiveLocation directiveLocation) {
-        this.locations.add(directiveLocation);
     }
 
     public void addArg(InputValue inputValue) {

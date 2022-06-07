@@ -15,6 +15,14 @@
                         "FRAGMENT_SPREAD",
                         "INLINE_FRAGMENT"
                     ]
+                },
+                {
+                    "locations": [
+                        "FIELD_DEFINITION",
+                        "ARGUMENT_DEFINITION",
+                        "INPUT_FIELD_DEFINITION",
+                        "ENUM_VALUE"
+                    ]
                 }
             ]
         }
