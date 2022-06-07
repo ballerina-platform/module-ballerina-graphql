@@ -635,7 +635,7 @@ service /tables on basicListener {
     }
 }
 
-service graphql:Service /special_types on specialTypesTestListener {
+service /special_types on specialTypesTestListener {
     isolated resource function get weekday(int number) returns Weekday {
         match number {
             1 => {
@@ -1245,7 +1245,7 @@ service /nullable_inputs on basicListener {
 
 public string[] namesArray = ["Walter", "Skyler"];
 
-service graphql:Service /subscriptions on basicListener {
+service /subscriptions on basicListener {
     isolated resource function get name() returns string {
         return "Walter White";
     }
@@ -1302,7 +1302,7 @@ service graphql:Service /subscriptions on basicListener {
 }
 
 # GraphQL service with documentation.
-service graphql:Service /documentation on basicListener {
+service /documentation on basicListener {
 
     # Greets a person with provided name.
     #
@@ -1318,7 +1318,7 @@ service graphql:Service /documentation on basicListener {
     isolated resource function get instrument() returns Instrument {
         return {
             name: "Guitar",
-            method: "Strings"
+            instrumentType: STRINGS
         };
     }
 

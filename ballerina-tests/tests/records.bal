@@ -207,8 +207,25 @@ public type Shape record {
 # Represents an instrument
 #
 # + name - Name of the instrument
-# + method - Method the instrument generate the sound
+# + instrumentType - The type of the musical instrument
 public type Instrument readonly & record {
     string name;
-    string method;
+    InstrumentType instrumentType;
 };
+
+# Represents the types of musical instruments.
+public enum InstrumentType {
+    # Instruments with strings
+    STRINGS,
+    # Instruments with wooden pipes
+    WOODWIND,
+    # Instruments with keyboards
+    KEYBOARD,
+    # Brass instruments
+    # # Deprecated
+    # Not used in this band
+    @deprecated
+    BRASS,
+    # Instruments with leather, wooden or metal surfaces
+    PERCUSSION
+}
