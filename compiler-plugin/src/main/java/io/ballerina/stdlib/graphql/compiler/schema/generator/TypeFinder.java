@@ -104,7 +104,7 @@ public class TypeFinder {
     }
 
     private void findRootTypes(ServiceDeclarationSymbol serviceDeclarationSymbol) {
-        Type queryType = addType(TypeName.QUERY.getName(), TypeKind.OBJECT);
+        Type queryType = addType(TypeName.QUERY);
         for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
@@ -112,11 +112,11 @@ public class TypeFinder {
                 if (RESOURCE_FUNCTION_GET.equals(accessor)) {
                     queryType.addField(getField((resourceMethodSymbol)));
                 } else {
-                    Type subscriptionType = addType(TypeName.SUBSCRIPTION.getName(), TypeKind.OBJECT);
+                    Type subscriptionType = addType(TypeName.SUBSCRIPTION);
                     subscriptionType.addField(getField(resourceMethodSymbol));
                 }
             } else if (isRemoteMethod(methodSymbol)) {
-                Type mutationType = addType(TypeName.MUTATION.getName(), TypeKind.OBJECT);
+                Type mutationType = addType(TypeName.MUTATION);
                 mutationType.addField(getField(methodSymbol));
             }
         }
@@ -239,8 +239,8 @@ public class TypeFinder {
         return this.schema.addType(scalarType);
     }
 
-    private Type addType(String name, TypeKind kind) {
-        return addType(name, kind, null);
+    private Type addType(TypeName typeName) {
+        return addType(typeName.getName(), TypeKind.OBJECT, null);
     }
 
     private Type addType(String name, TypeKind kind, String description) {
