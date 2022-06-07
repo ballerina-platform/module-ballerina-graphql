@@ -136,8 +136,11 @@ public class SchemaGenerator {
 
     private Field getField(ResourceMethodSymbol methodSymbol, List<PathSegment> list) {
         if (list.size() == 1) {
+            boolean isDeprecated = methodSymbol.deprecated();
+            String deprecationReason = getDeprecationReason(methodSymbol);
             Type fieldType = getType(methodSymbol);
-            Field field = new Field(list.get(0).signature(), fieldType, getDescription(methodSymbol));
+            Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
+                                    deprecationReason);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -155,11 +158,14 @@ public class SchemaGenerator {
     }
 
     private Field getField(MethodSymbol methodSymbol) {
+        boolean isDeprecated = methodSymbol.deprecated();
+        String deprecationReason = getDeprecationReason(methodSymbol);
         if (methodSymbol.getName().isEmpty()) {
             return null;
         }
         Type fieldType = getType(methodSymbol);
-        Field field = new Field(methodSymbol.getName().get(), fieldType, getDescription(methodSymbol));
+        Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
+                                deprecationReason);
         addArgs(field, methodSymbol);
         return field;
     }

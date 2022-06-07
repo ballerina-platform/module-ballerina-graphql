@@ -1331,3 +1331,63 @@ service /documentation on basicListener {
         return {name: name, edges: edges};
     }
 }
+
+# GraphQL service with deprecated fields and enum values.
+service /deprecation on wrappedListener {
+
+    # Hello world field.
+    # + name - The name of the person
+    # + return - The personalized greeting message
+    # # Deprecated
+    # Use the `greeting` field instead of this field.
+    @deprecated
+    isolated resource function get hello(string name) returns string {
+        return string`Hello ${name}`;
+    }
+
+    # Greets a person with provided name.
+    #
+    # + name - The name of the person
+    # + return - The personalized greeting message
+    isolated resource function get greeting(string name) returns string {
+        return string`Hello ${name}`;
+    }
+
+    # Creates a new instrument.
+    #
+    # + name - Name of the instrument
+    # + instrumentType - Type of the instrument
+    # + return - The newly created instrument
+    # # Deprecated
+    # Use the `addInstrument` field instead of this.
+    @deprecated
+    remote function newInstrument(string name, InstrumentType instrumentType) returns Instrument {
+        return {name: name, instrumentType: instrumentType};
+    }
+
+    # Adds a new instrument to the database.
+    #
+    # + name - Name of the instrument
+    # + instrumentType - Type of the instrument
+    # + return - The newly added instrument
+    remote function addInstrument(string name, InstrumentType instrumentType) returns Instrument {
+        return {name: name, instrumentType: instrumentType};
+    }
+
+    # Subscribes to the new instruments.
+    #
+    # + return - The instrument name list
+    # # Deprecated
+    # Use the `instruments` field instead of this.
+    @deprecated
+    resource function subscribe newInstruments() returns stream<string> {
+        return ["Guitar", "Violin", "Drums"].toStream();
+    }
+
+    # Subscribes to the new instruments.
+    #
+    # + return - The instrument name list
+    resource function subscribe instruments() returns stream<string> {
+        return ["Guitar", "Violin", "Drums"].toStream();
+    }
+}

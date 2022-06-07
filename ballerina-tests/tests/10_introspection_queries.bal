@@ -361,3 +361,14 @@ isolated function testDocumentation() returns error? {
     json expectedPayload = check getJsonContentFromFile("documentation.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["introspection", "deprecation"]
+}
+isolated function testDeprecation() returns error? {
+    string graphqlUrl = "http://localhost:9090/deprecation";
+    string document = check getGraphQLDocumentFromFile("deprecation.graphql");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("deprecation.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

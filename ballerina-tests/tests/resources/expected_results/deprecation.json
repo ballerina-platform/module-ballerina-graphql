@@ -1,0 +1,77 @@
+{
+    "data": {
+        "__schema": {
+            "queryType": {
+                "fields": [
+                    {
+                        "name": "hello",
+                        "isDeprecated": true,
+                        "deprecationReason": "Use the `greeting` field instead of this field."
+                    },
+                    {
+                        "name": "greeting",
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ]
+            },
+            "mutationType": {
+                "fields": [
+                    {
+                        "name": "newInstrument",
+                        "isDeprecated": true,
+                        "deprecationReason": "Use the `addInstrument` field instead of this."
+                    },
+                    {
+                        "name": "addInstrument",
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ]
+            },
+            "subscriptionType": {
+                "fields": [
+                    {
+                        "name": "newInstruments",
+                        "isDeprecated": true,
+                        "deprecationReason": "Use the `instruments` field instead of this."
+                    },
+                    {
+                        "name": "instruments",
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ]
+            }
+        },
+        "__type": {
+            "enumValues": [
+                {
+                    "name": "PERCUSSION",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "BRASS",
+                    "isDeprecated": true,
+                    "deprecationReason": "Not used in this band"
+                },
+                {
+                    "name": "KEYBOARD",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "WOODWIND",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "STRINGS",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                }
+            ]
+        }
+    }
+}

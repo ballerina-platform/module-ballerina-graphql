@@ -39,10 +39,10 @@ public class Field implements Serializable {
     }
 
     public Field(String name, Type type) {
-        this(name, type, null);
+        this(name, null, type);
     }
 
-    public Field(String name, Type type, String description) {
+    public Field(String name, String description, Type type) {
         this(name, description, type, false, null);
     }
 
