@@ -32,62 +32,73 @@ class IntrospectionExecutor {
         return result;
     }
 
-    isolated function getTypeIntrospection(parser:FieldNode fieldNode) {
-
+    isolated function getTypeIntrospection(parser:FieldNode fieldNode) returns Data {
+        Data result = {};
+        parser:ArgumentNode argNode = fieldNode.getArguments()[0];
+        parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
+        string requiredTypeName = argValue.toString();
+        __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
+        if requiredType is () {
+            return result;
+        }
+        foreach parser:SelectionNode selectionNode in fieldNode.getSelections() {
+            self.getValueFromSelectionNode(selectionNode, requiredType, result);
+        }
+        return result;
     }
 
-    isolated function getValueFromSelectionNode(parser:SelectionNode selectionNode, map<anydata> value, Data parent) {
+    isolated function getValueFromSelectionNode(parser:SelectionNode selectionNode, map<anydata> value, Data result) {
         if selectionNode is parser:FieldNode {
-            self.getValueFromFieldNode(selectionNode, value, parent);
+            self.getValueFromFieldNode(selectionNode, value, result);
         } else if selectionNode is parser:FragmentNode {
-            self.getValueFromFragmentNode(selectionNode, value, parent);
+            self.getValueFromFragmentNode(selectionNode, value, result);
         }
     }
 
-    isolated function getValueFromFieldNode(parser:FieldNode fieldNode, map<anydata> parentValue, Data parent) {
+    isolated function getValueFromFieldNode(parser:FieldNode fieldNode, map<anydata> parentValue, Data result) {
         anydata fieldValue = parentValue.get(fieldNode.getName());
-        if fieldValue is anydata[] {
-            self.getValueFromArray(fieldNode, fieldValue, parent);
-        } else if fieldValue is map<anydata> {
-            boolean includeDeprecatedValue = includeDeprecated(fieldNode);
-            boolean isDeprecatedValue = isDeprecated(fieldValue);
-            if isDeprecatedValue && !includeDeprecatedValue {
-                return;
-            }
-            self.getValueFromMap(fieldNode, fieldValue, parent);
-        } else {
-            parent[fieldNode.getAlias()] = fieldValue;
-        }
+        self.getFieldValue(fieldNode, fieldValue, result);
     }
 
-    isolated function getValueFromFragmentNode(parser:FragmentNode fragmentNode, map<anydata> value, Data parent) {
+    isolated function getValueFromFragmentNode(parser:FragmentNode fragmentNode, map<anydata> value, Data result) {
         foreach parser:SelectionNode selectionNode in fragmentNode.getSelections() {
-            self.getValueFromSelectionNode(selectionNode, value, parent);
+            self.getValueFromSelectionNode(selectionNode, value, result);
         }
     }
 
-    isolated function getValueFromMap(parser:FieldNode fieldNode, map<anydata> fieldValue, Data parent) {
+    isolated function getFieldValue(parser:FieldNode fieldNode, anydata fieldValue, Data result) {
+        if fieldValue is anydata[] {
+            self.getValueFromArray(fieldNode, fieldValue, result);
+        } else if fieldValue is map<anydata> {
+            self.getValueFromMap(fieldNode, fieldValue, result);
+        } else {
+            result[fieldNode.getAlias()] = fieldValue;
+        }
+    }
+
+    isolated function getValueFromMap(parser:FieldNode fieldNode, map<anydata> fieldValue, Data result) {
         Data child = {};
+        boolean includeDeprecatedValue = includeDeprecated(fieldNode);
+        boolean isDeprecatedValue = isDeprecated(fieldValue);
+        if isDeprecatedValue && !includeDeprecatedValue {
+            return;
+        }
         foreach parser:SelectionNode selectionNode in fieldNode.getSelections() {
             self.getValueFromSelectionNode(selectionNode, fieldValue, child);
         }
-        parent[fieldNode.getAlias()] = child;
+        result[fieldNode.getAlias()] = child;
     }
 
-    isolated function getValueFromArray(parser:FieldNode fieldNode, anydata[] values, Data parent) {
-        anydata[] children = [];
-        foreach anydata data in values {
-            if data is map<anydata> {
-                Data child = {};
-                foreach parser:SelectionNode selectionNode in fieldNode.getSelections() {
-                    self.getValueFromSelectionNode(selectionNode, data, child);
-                }
-                children.push(child);
-            } else {
-                children.push(data);
+    isolated function getValueFromArray(parser:FieldNode fieldNode, anydata[] values, Data result) {
+        anydata[] resultArray = [];
+        foreach anydata element in values {
+            Data elementResult = {};
+            self.getFieldValue(fieldNode, element, elementResult);
+            if elementResult.hasKey(fieldNode.getAlias()) {
+                resultArray.push(elementResult.get(fieldNode.getAlias()));
             }
         }
-        parent[fieldNode.getAlias()] = children;
+        result[fieldNode.getAlias()] = resultArray;
     }
 }
 

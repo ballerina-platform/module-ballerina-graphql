@@ -365,7 +365,7 @@ isolated function testDocumentation() returns error? {
 @test:Config {
     groups: ["introspection", "deprecation"]
 }
-isolated function testDeprecation() returns error? {
+isolated function testIntrospectionWithDeprecatedFields() returns error? {
     string graphqlUrl = "http://localhost:9090/deprecation";
     string document = check getGraphQLDocumentFromFile("deprecation.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);

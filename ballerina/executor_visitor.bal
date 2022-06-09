@@ -53,11 +53,8 @@ class ExecutorVisitor {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
             self.data[SCHEMA_FIELD] = introspectionExecutor.getSchemaIntrospection(fieldNode);
         } else if fieldNode.getName() == TYPE_FIELD {
-            parser:ArgumentNode argNode = fieldNode.getArguments()[0];
-            parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
-            string requiredTypeName = argValue.toString();
-            __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
-            executeIntrospection(self, fieldNode, requiredType);
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.data[TYPE_FIELD] = introspectionExecutor.getTypeIntrospection(fieldNode);
         } else {
             if operationType == parser:OPERATION_QUERY {
                 executeQuery(self, fieldNode);
