@@ -372,3 +372,14 @@ isolated function testDeprecation() returns error? {
     json expectedPayload = check getJsonContentFromFile("deprecation.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["introspection", "deprecation"]
+}
+isolated function testFilterDeprecatedFields() returns error? {
+    string graphqlUrl = "http://localhost:9090/deprecation";
+    string document = check getGraphQLDocumentFromFile("filter_deprecated_fields.graphql");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("filter_deprecated_fields.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

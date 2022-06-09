@@ -20,9 +20,19 @@
 }
 
 fragment FieldFragment on __Type {
-    fields {
+    fields(includeDeprecated: true) {
         name
         isDeprecated
         deprecationReason
+        type {
+            ofType {
+                name
+                fields {
+                    name
+                    isDeprecated
+                    deprecationReason
+                }
+            }
+        }
     }
 }

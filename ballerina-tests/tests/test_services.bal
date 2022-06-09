@@ -1353,6 +1353,11 @@ service /deprecation on wrappedListener {
         return string`Hello ${name}`;
     }
 
+    # Retrieve information about music school.
+    isolated resource function get school() returns School {
+        return new ("The Juilliard School");
+    }
+
     # Creates a new instrument.
     #
     # + name - Name of the instrument

@@ -4,17 +4,6 @@
             "queryType": {
                 "fields": [
                     {
-                        "name": "hello",
-                        "isDeprecated": true,
-                        "deprecationReason": "Use the `greeting` field instead of this field.",
-                        "type": {
-                            "ofType": {
-                                "name": "String",
-                                "fields": null
-                            }
-                        }
-                    },
-                    {
                         "name": "greeting",
                         "isDeprecated": false,
                         "deprecationReason": null,
@@ -37,11 +26,6 @@
                                         "name": "name",
                                         "isDeprecated": false,
                                         "deprecationReason": null
-                                    },
-                                    {
-                                        "name": "openingDays",
-                                        "isDeprecated": true,
-                                        "deprecationReason": "School is now online."
                                     }
                                 ]
                             }
@@ -51,28 +35,6 @@
             },
             "mutationType": {
                 "fields": [
-                    {
-                        "name": "newInstrument",
-                        "isDeprecated": true,
-                        "deprecationReason": "Use the `addInstrument` field instead of this.",
-                        "type": {
-                            "ofType": {
-                                "name": "Instrument",
-                                "fields": [
-                                    {
-                                        "name": "name",
-                                        "isDeprecated": false,
-                                        "deprecationReason": null
-                                    },
-                                    {
-                                        "name": "instrumentType",
-                                        "isDeprecated": false,
-                                        "deprecationReason": null
-                                    }
-                                ]
-                            }
-                        }
-                    },
                     {
                         "name": "addInstrument",
                         "isDeprecated": false,
@@ -100,17 +62,6 @@
             "subscriptionType": {
                 "fields": [
                     {
-                        "name": "newInstruments",
-                        "isDeprecated": true,
-                        "deprecationReason": "Use the `instruments` field instead of this.",
-                        "type": {
-                            "ofType": {
-                                "name": "String",
-                                "fields": null
-                            }
-                        }
-                    },
-                    {
                         "name": "instruments",
                         "isDeprecated": false,
                         "deprecationReason": null,
@@ -130,11 +81,6 @@
                     "name": "PERCUSSION",
                     "isDeprecated": false,
                     "deprecationReason": null
-                },
-                {
-                    "name": "BRASS",
-                    "isDeprecated": true,
-                    "deprecationReason": "Not used in this band"
                 },
                 {
                     "name": "KEYBOARD",

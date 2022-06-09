@@ -221,6 +221,11 @@ public distinct isolated service class School {
         }
     }
 
+    # Get the opening days of the school.
+    # + return - The set of the weekdays the school is open
+    # # Deprecated
+    # School is now online.
+    @deprecated
     isolated resource function get openingDays() returns Weekday[] {
         return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
     }
