@@ -365,21 +365,47 @@ isolated function testDocumentation() returns error? {
 @test:Config {
     groups: ["introspection", "deprecation"]
 }
-isolated function testIntrospectionWithDeprecatedFields() returns error? {
+isolated function testDeprecatedFieldsIntrospection() returns error? {
     string graphqlUrl = "http://localhost:9090/deprecation";
-    string document = check getGraphQLDocumentFromFile("deprecation.graphql");
+    string document = check getGraphQLDocumentFromFile("deprecated_fields_introspection.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("deprecation.json");
+    json expectedPayload = check getJsonContentFromFile("deprecated_fields_introspection.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
     groups: ["introspection", "deprecation"]
 }
-isolated function testFilterDeprecatedFields() returns error? {
+isolated function testDeprecatedFieldsFiltering() returns error? {
     string graphqlUrl = "http://localhost:9090/deprecation";
-    string document = check getGraphQLDocumentFromFile("filter_deprecated_fields.graphql");
+    string document = check getGraphQLDocumentFromFile("deprecated_fields_filtering.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("filter_deprecated_fields.json");
+    json expectedPayload = check getJsonContentFromFile("deprecated_fields_filtering.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["introspection", "deprecation"]
+}
+isolated function testDeprecatedFieldsFilteringWithVariables() returns error? {
+    string graphqlUrl = "http://localhost:9090/deprecation";
+    string document = check getGraphQLDocumentFromFile("deprecated_fields_filtering_with_variables.graphql");
+    map<json> variables = {includeDeprecated: false};
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document, variables = variables);
+    json expectedPayload = check getJsonContentFromFile("deprecated_fields_filtering_with_variables.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["introspection", "deprecation"]
+}
+isolated function testDeprecatedFieldsIntrospectionWithVariables() returns error? {
+    string graphqlUrl = "http://localhost:9090/deprecation";
+    string document = check getGraphQLDocumentFromFile("deprecated_fields_filtering_with_variables.graphql");
+    map<json> variables = {includeDeprecated: true};
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document, variables = variables);
+    json expectedPayload = check getJsonContentFromFile("deprecated_fields_introspection_with_variables.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+// TODO: Test variables for includeDeprecated, Test without includeDeprecated

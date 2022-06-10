@@ -1354,6 +1354,7 @@ service /deprecation on wrappedListener {
     }
 
     # Retrieve information about music school.
+    # + return - The school object
     isolated resource function get school() returns School {
         return new ("The Juilliard School");
     }

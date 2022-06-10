@@ -1,4 +1,4 @@
-{
+query ($includeDeprecated: Boolean!) {
     __schema {
         queryType {
             ...FieldFragment
@@ -11,7 +11,7 @@
         }
     }
     __type(name: "InstrumentType") {
-        enumValues(includeDeprecated: false) {
+        enumValues(includeDeprecated: $includeDeprecated) {
             name
             isDeprecated
             deprecationReason
@@ -20,14 +20,14 @@
 }
 
 fragment FieldFragment on __Type {
-    fields(includeDeprecated: false) {
+    fields(includeDeprecated: $includeDeprecated) {
         name
         isDeprecated
         deprecationReason
         type {
             ofType {
                 name
-                fields {
+                fields(includeDeprecated: $includeDeprecated) {
                     name
                     isDeprecated
                     deprecationReason
