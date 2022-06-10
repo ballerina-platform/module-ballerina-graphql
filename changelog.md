@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- [[#2898] Support Deprecation Support in GraphQL Services](https://github.com/ballerina-platform/ballerina-standard-library/issues/2898)
+
+## [1.3.1] - 2022-05-31
+
 ### Fixed
 
 - [[#2959] Fix Incorrectly Removing Other Services Through Code Modifier](https://github.com/ballerina-platform/ballerina-standard-library/issues/2959)
