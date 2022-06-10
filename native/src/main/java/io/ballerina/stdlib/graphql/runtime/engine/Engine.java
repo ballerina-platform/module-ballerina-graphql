@@ -34,7 +34,6 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 
 import java.io.ByteArrayInputStream;
@@ -52,7 +51,6 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SER
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SCHEMA_RECORD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
@@ -122,18 +120,6 @@ public class Engine {
         pathSegments.add(StringUtils.fromString(fieldName));
         ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, MUTATION);
         executeRemoteMethod(executionContext, service, node, data, pathSegments);
-    }
-
-    public static void executeIntrospection(Environment environment, BObject visitor, BObject node, BValue result) {
-        Future future = environment.markAsync();
-        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
-        List<Object> pathSegments = new ArrayList<>();
-        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        CallbackHandler callbackHandler = new CallbackHandler(future);
-        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SCHEMA_RECORD);
-        ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
-        callbackHandler.addCallback(resourceCallback);
-        resourceCallback.notifySuccess(result);
     }
 
     static void executeResourceMethod(ExecutionContext executionContext, BObject service, BObject node,
