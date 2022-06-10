@@ -32,7 +32,6 @@ public enum DefaultDirective {
                                                  DirectiveLocation.FRAGMENT_SPREAD,
                                                  DirectiveLocation.INLINE_FRAGMENT)),
     DEPRECATED("deprecated", Description.DEPRECATED, Arrays.asList(DirectiveLocation.FIELD_DEFINITION,
-                                                                   DirectiveLocation.INPUT_FIELD_DEFINITION,
                                                                    DirectiveLocation.ENUM_VALUE));
 
     private final String name;
