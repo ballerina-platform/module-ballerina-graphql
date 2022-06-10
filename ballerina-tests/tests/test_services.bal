@@ -1342,7 +1342,7 @@ service /deprecation on wrappedListener {
     # Use the `greeting` field instead of this field.
     @deprecated
     isolated resource function get hello(string name) returns string {
-        return string`Hello ${name}`;
+        return string `Hello ${name}`;
     }
 
     # Greets a person with provided name.
@@ -1350,7 +1350,7 @@ service /deprecation on wrappedListener {
     # + name - The name of the person
     # + return - The personalized greeting message
     isolated resource function get greeting(string name) returns string {
-        return string`Hello ${name}`;
+        return string `Hello ${name}`;
     }
 
     # Retrieve information about music school.
