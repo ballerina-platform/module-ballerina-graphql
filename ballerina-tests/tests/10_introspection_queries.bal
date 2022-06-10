@@ -407,5 +407,3 @@ isolated function testDeprecatedFieldsIntrospectionWithVariables() returns error
     json expectedPayload = check getJsonContentFromFile("deprecated_fields_introspection_with_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
-
-// TODO: Test variables for includeDeprecated, Test without includeDeprecated
