@@ -104,10 +104,7 @@ class IntrospectionExecutor {
 
 
 isolated function isDeprecated(map<anydata> value) returns boolean {
-    if value.hasKey(IS_DEPRECATED_FIELD) {
-        return <boolean>value.get(IS_DEPRECATED_FIELD);
-    }
-    return false;
+    return value.hasKey(IS_DEPRECATED_FIELD) && <boolean>value.get(IS_DEPRECATED_FIELD);
 }
 
 isolated function includeDeprecated(parser:FieldNode fieldNode) returns boolean {
