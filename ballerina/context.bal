@@ -20,9 +20,11 @@ import ballerina/lang.value;
 # The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
+    private Engine? engine;
 
     public isolated function init() {
         self.attributes = {};
+        self.engine = ();
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -72,6 +74,18 @@ public isolated class Context {
                 }
             }
             return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        }
+    }
+
+    isolated function setEngine(Engine engine) {
+        lock {
+            self.engine = engine;
+        }
+    }
+
+    isolated function getEngine() returns Engine? {
+        lock {
+            return self.engine;
         }
     }
 }

@@ -342,6 +342,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
                 response.setPayload(payload);
                 return response;
             } else {
+                context.setEngine(self.engine);
                 return context;
             }
         }

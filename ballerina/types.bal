@@ -93,3 +93,14 @@ public type GenericResponseWithErrors record {|
    record {| anydata...; |}|map<json?> data?;
    ErrorDetail[] errors?;
 |};
+
+public type RequestInfo readonly & record {|
+   string currentField;
+   map<json> args;
+   string operationName?;
+|};
+
+# Represent a GraphQL interceptor
+public type Interceptor distinct service object {
+    isolated remote function execute(Context ctx, RequestInfo reqInfo) returns any|error;
+};

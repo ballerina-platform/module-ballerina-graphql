@@ -19,17 +19,23 @@ import graphql.parser;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
+    private final readonly & (readonly & Interceptor)[] interceptors;
 
-    isolated function init(string schemaString, int? maxQueryDepth) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, (readonly & Interceptor)[] interceptors) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
+        self.interceptors = interceptors.cloneReadOnly();
     }
 
     isolated function getSchema() returns readonly & __Schema {
         return self.schema;
+    }
+
+    isolated function getInterceptors() returns (readonly & Interceptor)[] {
+        return self.interceptors;
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
