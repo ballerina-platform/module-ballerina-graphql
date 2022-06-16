@@ -18,33 +18,30 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.types;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents the {@code __Directive} in GraphQL schema.
+ * Stores the default directive values supported in Ballerina GraphQL package.
  */
-public class Directive implements Serializable {
-    private static final long serialVersionUID = 1L;
+public enum DefaultDirective {
+    INCLUDE("include", Description.INCLUDE, Arrays.asList(DirectiveLocation.FIELD,
+                                                          DirectiveLocation.FRAGMENT_SPREAD,
+                                                          DirectiveLocation.INLINE_FRAGMENT)),
+    SKIP("skip", Description.SKIP, Arrays.asList(DirectiveLocation.FIELD,
+                                                 DirectiveLocation.FRAGMENT_SPREAD,
+                                                 DirectiveLocation.INLINE_FRAGMENT)),
+    DEPRECATED("deprecated", Description.DEPRECATED, Arrays.asList(DirectiveLocation.FIELD_DEFINITION,
+                                                                   DirectiveLocation.ENUM_VALUE));
+
     private final String name;
-    private final String description;
+    private final Description description;
     private final List<DirectiveLocation> locations;
-    private final List<InputValue> args;
 
-    public Directive(DefaultDirective defaultDirective) {
-        this(defaultDirective.getName(), defaultDirective.getDescription(), defaultDirective.getLocations());
-    }
-
-    public Directive(String name, String description, List<DirectiveLocation> locations) {
+    DefaultDirective(String name, Description description, List<DirectiveLocation> locations) {
         this.name = name;
         this.description = description;
         this.locations = locations;
-        this.args = new ArrayList<>();
-    }
-
-    public void addArg(InputValue inputValue) {
-        this.args.add(inputValue);
     }
 
     public String getName() {
@@ -52,14 +49,10 @@ public class Directive implements Serializable {
     }
 
     public String getDescription() {
-        return this.description;
+        return this.description.getDescription();
     }
 
     public List<DirectiveLocation> getLocations() {
         return this.locations;
-    }
-
-    public List<InputValue> getArgs() {
-        return this.args;
     }
 }

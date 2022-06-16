@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/05/05  
+_Updated_: 2022/06/10  
 _Edition_: Swan Lake  
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)  
 
@@ -13,7 +13,7 @@ This is the specification for the GraphQL standard library of [Ballerina languag
 
 The GraphQL library specification has evolved and may continue to evolve in the future. The released versions of the specification can be found under the relevant GitHub tag.
 
-If you have any feedback or suggestions about the library, start a discussion via a [GitHub issue](https://github.com/ballerina-platform/ballerina-standard-library/issues) or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, the specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal, which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in GitHub.
+If you have any feedback or suggestions about the library, start a discussion via a [GitHub issue](https://github.com/ballerina-platform/ballerina-standard-library/issues) or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, the specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal, which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` on GitHub.
 
 The conforming implementation of the specification is released and included in the distribution. Any deviation from the specification is considered a bug.
 
@@ -60,48 +60,52 @@ The conforming implementation of the specification is released and included in t
     * 4.4 [Enums](#44-enums)
     * 4.5 [Input Objects](#45-input-objects)
     * 4.6 [Interfaces](#46-interfaces)
-5. [File Upload](#5-file-upload)
-    * 5.1 [File Upload Endpoint](#51-file-upload-endpoint)
-        * 5.1.1 [`graphql:Upload` Type](#511-graphqlupload-type)
-            * 5.1.1.1 [`fileName` Field](#5111-filename-field)
-            * 5.1.1.2 [`mimeType` Field](#5112-mimetype-field)
-            * 5.1.1.3 [`encoding` Field](#5113-encoding-field)
-            * 5.1.1.4 [`byteStream` Field](#5114-bytestream-field)
-        * 5.1.2 [Writing a File Upload Resolver](#512-writing-a-file-upload-resolver)
-6. [Errors](#6-errors)
-    * 6.1 [Error Fields](#61-error-fields)
-        * 6.1.1 [Message](#611-message)
-        * 6.1.2 [Locations](#612-locations)
-        * 6.1.3 [Path](#613-path)
-7. [Context](#7-context)
-    * 7.1 [Set Attribute in Context](#71-set-attribute-in-context)
-    * 7.2 [Get Context Attribute](#72-get-context-attribute)
-    * 7.3 [Remove Attribute from Context](#73-remove-attribute-from-context)
-    * 7.4 [Accessing the Context](#74-accessing-the-context)
-8. [Annotations](#8-annotations)
-    * 8.1 [Service Configuration](#81-service-configuration)
-        * 8.1.1 [Max Query Depth](#811-max-query-depth)
-        * 8.1.2 [Auth Configurations](#812-auth-configurations)
-        * 8.1.3 [Context Initializer Function](#813-context-initializer-function)
-        * 8.1.4 [CORS Configurations](#814-cors-configurations)
-        * 8.1.5 [GraphiQL Configurations](#815-graphiql-configurations)
-9. [Security](#9-security)
-    * 9.1 [Authentication and Authorization](#91-authentication-and-authorization)
-        * 9.1.1 [Declarative Approach](#911-declarative-approach)
-            * 9.1.1.1 [Basic Auth - File User Store](#9111-basic-auth---file-user-store)
-            * 9.1.1.2 [Basic Auth - LDAP User Store](#9112-basic-auth---ldap-user-store)
-            * 9.1.1.3 [JWT Auth](#9113-jwt-auth)
-            * 9.1.1.4 [OAuth2](#9114-oauth2)
-        * 9.1.2 [Imperative Approach](#912-imperative-approach)
-            * 9.1.2.1 [Basic Auth - File User Store](#9121-basic-auth---file-user-store)
-            * 9.1.2.2 [Basic Auth - LDAP User Store](#9122-basic-auth---ldap-user-store)
-            * 9.1.2.3 [JWT Auth](#9123-jwt-auth)
-            * 9.1.2.4 [OAuth2](#9124-oauth2)
-    * 9.2 [SSL/TLS and Mutual SSL](#92-ssltls-and-mutual-ssl)
-        * 9.2.1 [SSL/TLS](#921-ssltls)
-        * 9.2.2 [Mutual SSL](#922-mutual-ssl)
-10. [Tools](#10-tools)
-    * 10.1 [GraphiQL Client](#101-graphiql-client)
+5. [Directives](#5-directives)
+   * 5.1 [@skip](#51-skip)
+   * 5.2 [@include](#52-include)
+   * 5.3 [@deprecated](#53-deprecated)
+6. [File Upload](#6-file-upload)
+    * 6.1 [File Upload Endpoint](#61-file-upload-endpoint)
+        * 6.1.1 [`graphql:Upload` Type](#611-graphqlupload-type)
+            * 6.1.1.1 [`fileName` Field](#6111-filename-field)
+            * 6.1.1.2 [`mimeType` Field](#6112-mimetype-field)
+            * 6.1.1.3 [`encoding` Field](#6113-encoding-field)
+            * 6.1.1.4 [`byteStream` Field](#6114-bytestream-field)
+        * 6.1.2 [Writing a File Upload Resolver](#612-writing-a-file-upload-resolver)
+7. [Errors](#7-errors)
+    * 7.1 [Error Fields](#71-error-fields)
+        * 7.1.1 [Message](#711-message)
+        * 7.1.2 [Locations](#712-locations)
+        * 7.1.3 [Path](#713-path)
+8. [Context](#8-context)
+    * 8.1 [Set Attribute in Context](#81-set-attribute-in-context)
+    * 8.2 [Get Context Attribute](#82-get-context-attribute)
+    * 8.3 [Remove Attribute from Context](#83-remove-attribute-from-context)
+    * 8.4 [Accessing the Context](#84-accessing-the-context)
+9. [Annotations](#9-annotations)
+    * 9.1 [Service Configuration](#91-service-configuration)
+        * 9.1.1 [Max Query Depth](#911-max-query-depth)
+        * 9.1.2 [Auth Configurations](#912-auth-configurations)
+        * 9.1.3 [Context Initializer Function](#913-context-initializer-function)
+        * 9.1.4 [CORS Configurations](#914-cors-configurations)
+        * 9.1.5 [GraphiQL Configurations](#915-graphiql-configurations)
+10. [Security](#10-security)
+    * 10.1 [Authentication and Authorization](#101-authentication-and-authorization)
+        * 10.1.1 [Declarative Approach](#1011-declarative-approach)
+            * 10.1.1.1 [Basic Auth - File User Store](#10111-basic-auth---file-user-store)
+            * 10.1.1.2 [Basic Auth - LDAP User Store](#10112-basic-auth---ldap-user-store)
+            * 10.1.1.3 [JWT Auth](#10113-jwt-auth)
+            * 10.1.1.4 [OAuth2](#10114-oauth2)
+        * 10.1.2 [Imperative Approach](#1012-imperative-approach)
+            * 10.1.2.1 [Basic Auth - File User Store](#10121-basic-auth---file-user-store)
+            * 10.1.2.2 [Basic Auth - LDAP User Store](#10122-basic-auth---ldap-user-store)
+            * 10.1.2.3 [JWT Auth](#10123-jwt-auth)
+            * 10.1.2.4 [OAuth2](#10124-oauth2)
+    * 10.2 [SSL/TLS and Mutual SSL](#102-ssltls-and-mutual-ssl)
+        * 10.2.1 [SSL/TLS](#1021-ssltls)
+        * 10.2.2 [Mutual SSL](#1022-mutual-ssl)
+11. [Tools](#11-tools)
+    * 11.1 [GraphiQL Client](#111-graphiql-client)
 
 ## 1. Overview
 
@@ -123,9 +127,9 @@ import ballerina/graphql;
 
 ### 2.1 Listener
 
-Since the GraphQL spec does not mandate an underlying client-server protocol, a GraphQL implementation can use any protocol underneath. The Ballerina GraphQL package, as most of the other implementations, uses HTTP as the protocol. The Ballerina GraphQL listener is using an HTTP listener to listen to incoming requests through HTTP.
+Since the GraphQL spec does not mandate an underlying client-server protocol, a GraphQL implementation can use any protocol underneath. The Ballerina GraphQL package, like most of the other implementations, uses HTTP as the protocol. The Ballerina GraphQL listener is using an HTTP listener to listen to incoming requests through HTTP.
 
-A Ballerina GraphQL listener can be declared as described below, honoring the Ballerina generic [listener declaration](https://ballerina.io/spec/lang/2021R1/#section_8.2.1).
+A Ballerina GraphQL listener can be declared as described below, honoring the Ballerina generic [listener declaration](https://ballerina.io/spec/lang/2021R1/#section_9.2.1).
 
 #### 2.1.1 Initializing the Listener Using Port Number
 If a GraphQL listener requires to be listening to a port number, that port number must be provided as the first parameter of the listener constructor.
@@ -182,7 +186,7 @@ service hello\-graphql on new graphql:Listener(4000) {
 
 #### 2.2.3 Service Declaration
 
-The [service declaration](https://ballerina.io/spec/lang/2021R1/#section_8.2.2) is syntactic sugar for creating a service. This is the mostly-used approach for creating a service.
+The [service declaration](https://ballerina.io/spec/lang/2021R1/#section_9.2.2) is syntactic sugar for creating a service. This is the mostly-used approach for creating a service.
 
 ###### Example: Service Declaration
 
@@ -291,7 +295,7 @@ As per the [GraphQL specification](https://spec.graphql.org/June2018/#sec-Mutati
 
 #### 3.1.3 The `Subscription` Type
 
-The `Subscription` type in a GraphQL schema us used to continuously fetch data from a GraphQL service. In Ballerina, the service itself is the schema, and each `resource` method with the `subscribe` accessor inside a GraphQL service is mapped to a field in the root `Subscription` type.
+The `Subscription` type in a GraphQL schema is used to continuously fetch data from a GraphQL service. In Ballerina, the service itself is the schema, and each `resource` method with the `subscribe` accessor inside a GraphQL service is mapped to a field in the root `Subscription` type.
 
 ###### Example: Adding a Field to the `Subscription` Type
 
@@ -311,11 +315,11 @@ Wrapping types are used to wrap the named types in GraphQL. A wrapping type has 
 
 #### 3.2.1 `NON_NULL` Type
 
-`NON_NULL` type is a wrapper type to denote that the resulting value will never be `null`. Ballerina types do not implicitly allow `nil`. Therefore, each type is inherently is a `NON_NULL` type until specified explicitly otherwise. If a type is meant to be a nullable value, it should be unionized with `nil`.
+`NON_NULL` type is a wrapper type to denote that the resulting value will never be `null`. Ballerina types do not implicitly allow `nil`. Therefore, each type is inherently a `NON_NULL` type until specified explicitly otherwise. If a type is meant to be a nullable value, it should be unionized with `nil`.
 
 > **Note:** `nil` (represented by `()`) is the Ballerina's version of `null`.
 
-In the following example, the type of the `name` field is `String!`. Which means a `NON_NULL`, `String` type.
+In the following example, the type of the `name` field is `String!`, which means a `NON_NULL`, `String` type.
 
 ###### Example: NON_NULL Type
 ```ballerina
@@ -326,7 +330,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-To make it a nullable type, it should be unionized with `?`. The following example shows the field `name` of type `String`.
+To make it a nullable type, it should be unionized with `?`. The following example shows the field `name` of the type `String`.
 
 ###### Example: Nullable Type
 ```ballerina
@@ -341,7 +345,7 @@ service on new graphql:Listener(4000) {
 
 #### 3.2.2 `LIST` Type
 
-The list type represents a list of values of another type. Therefore, `LIST` is considered as a wrapping type. In Ballerina, a `LIST` type is defined using an array. The following represents a field `names` of the type of `LIST` of `String!` type.
+The list type represents a list of values of another type. Therefore, `LIST` is considered a wrapping type. In Ballerina, a `LIST` type is defined using an array. The following represents a field called `names` of the type of `LIST` of `String!` type.
 
 ###### Example: LIST Type
 ```ballerina
@@ -436,24 +440,24 @@ The name of the `remote` method is the name of the corresponding GraphQL field i
 
 ### 3.5 Documentation
 
-A GraphQL schema can have documentation for the types, fields, schema, etc. 
+A GraphQL schema can have documentation for the types, fields, enums, schema, etc.
 
-In Ballerina, the Ballerina doc comments can be used to add documentation for the generated schema.
+In Ballerina, the Ballerina doc comments can be used to add documentation for the generated schema. Each comment belong to a field, argument, or an enum will be applied to the particular GraphQL schema member.
 
 ###### Example: Documentation
 
 ```ballerina
 # Service to query people database.
 service on new graphql:Listener(9090) {
-    
+
     # Returns a person with the given ID.
-    # 
+    #
     # + id - The ID of the person
     # + return - The person with the given ID
     resource function get person(int id) returns Person {
         // ...
     }
-    
+
     # Represents a person.
     #
     # + id - The ID of the person
@@ -661,7 +665,7 @@ type Book record {
 
 In GraphQL, an interface can be used to define a set of common fields for objects. Then the `Object` types can implement the interface with the common fields and optionally, additional fields.
 
-In Ballerina, a `distinct` `service` classes can be used to define GraphQL interfaces. Then other `distinct` `service` classes can be used to implement the interface. All the service classes that are implementing the interface must contain the same resource methods, and they can define additional resource methods.
+In Ballerina, `distinct` `service` classes can be used to define GraphQL interfaces. Then other `distinct` `service` classes can be used to implement the interface. All the service classes that are implementing the interface must contain the same resource methods, and they can define additional resource methods.
 
 ###### Example: Interfaces
 ```ballerina
@@ -720,35 +724,140 @@ public isolated distinct service class Teacher {
 
 In the above example, the `Human` class is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Human` interface.
 
-## 5. File Upload
+## 5. Directives
+
+Ballerina GraphQL services support three default directives.
+
+### 5.1 @skip
+
+The `@skip` directive is used to skip a field execution depending on a given condition. It can be used on a field, fragment spread, or on an inline fragment. The directive expects exactly one argument `if`, which is of type `Boolean!`.
+
+The field is skipped if the value of the `if` argument is `true`.
+
+###### Example: @skip
+
+In the following query, the `name` field will not be queried if the variable `skipName` is `true`.
+
+```graphql
+query getProfile ($skipName: Boolean!) {
+    profile(id: 1) {
+        name @skip(if: $skipName)
+        age
+    }
+}
+```
+
+### 5.2 @include
+
+The `@include` directive is used to include a field execution depending on a given condition. It can be used on a field, fragment spread, or on an inline fragment. The directive expects exactly one argument `if`, which is of type `Boolean!`.
+
+The field is included if the value of the `if` argument is `true`.
+
+###### Example: @include
+
+In the following query, the `name` field will be queried only if the variable `includeName` is `true`.
+
+```graphql
+query getProfile ($includeName: Boolean!) {
+    profile(id: 1) {
+        name @include(if: $includeName)
+        age
+    }
+}
+```
+
+> **Note:** Neither the `@skip` nor the `@include` has precedence over the other. In the case that both the `@skip` and `@include` directives are provided on the same field or fragment, it will be queried only if the `@skip` condition is `false` and the `@include` condition is `true`. Stated conversely, the field or fragment will not be queried if either the `@skip` condition is `true` or the `@include` condition is `false`.
+
+### 5.3 Deprecated
+
+The `@deprecated` directive is used to indicate a deprecated field on a type or a deprecated enum value. Deprecation can use a deprecation reason as a string, which is formatted using Markdown syntax.
+
+The `@deprecated` directive has one argument, `reason`, which is of type `String`.
+
+The Ballerina GraphQL package uses the Ballerina's in-built `@deprecated` annotation to deprecate a field (resource/remote functions) or an enum value. The deprecation reason can be provided as a part of the doc comment of the particular schema member.
+
+###### Example: @deprecated
+
+The following code shows how to mark a field and an enum value as deprecated with the deprecation reason.
+
+```ballerina
+import ballerina/graphql;
+
+service on new graphql:Listener(4000) {
+
+    # Greets back with a customized greeting with the provided name.
+    # + name - The name of the person to greet
+    # + return - The customized greeting message
+    # # Deprecated
+    # The `hello` field is deprecated. Use the `greeting` field instead of this.
+    @deprecated
+    resource function get hello(string name) returns string {
+        return "Hello, " + name;
+    }
+
+    # Greets back with a customized greeting with the provided name.
+    # + name - The name of the person to greet
+    # + return - The customized greeting message
+    resource function get greeting(string name = "Stranger") returns string {
+        return "Hello, " + name;
+    }
+
+    # Returns the current admission status of the pub.
+    # + return - The current admission status of the pub
+    resource function get status() returns Status {
+        return OPEN;
+    }
+}
+
+# Represents the different admission statuses of the pub.
+public enum Status {
+    # Open for everyone
+    OPEN,
+    # Pub is closed
+    CLOSED,
+    # Only the members are allowed
+    MEMBERS_ONLY,
+    # Only the VIPs are allowed
+    VIP,
+    # A private party is being held, only invitees are allowed
+    # # Deprecated
+    # Private parties are no longer supported
+    @deprecated
+    PRIVATE_PARTY
+}
+```
+
+In the above service, the generated schema will indicate that the `hello` field of the `Query` type and the `PRIVATE_PARTY` value of the `Status` enum type are deprecated, with the reasons provided in the doc comments. (The reason will be the line after the `# # Deprecated` line.)
+
+## 6. File Upload
 
 A Ballerina GraphQL service can be used to upload files. This section describes how the file uploading in Ballerina GraphQL works.
 
-### 5.1 File Upload Endpoint
+### 6.1 File Upload Endpoint
 
 A Ballerina GraphQL service can have a field inside the `Mutation` type to handle file uploads. To upload a file, the `graphql:Upload` type can be used as an input.
 
-#### 5.1.1 `graphql:Upload` Type
+#### 6.1.1 `graphql:Upload` Type
 
 The `graphql:Upload` type is a record type that consists of the following fields.
 
-##### 5.1.1.1 `fileName` Field
+##### 6.1.1.1 `fileName` Field
 
 This field contains the name of the file that is being uploaded. The type of the field is `string`.
 
-##### 5.1.1.2 `mimeType` Field
+##### 6.1.1.2 `mimeType` Field
 
 This field contains the mime type of the file being uploaded. The type of the field is `string`.
 
-##### 5.1.1.3 `encoding` Field
+##### 6.1.1.3 `encoding` Field
 
 This field contains the encoding used to serialize the file. The type of the field is `string`.
 
-##### 5.1.1.4 `byteStream` Field
+##### 6.1.1.4 `byteStream` Field
 
 This field contains the serialized byte stream for the uploaded file. The type of the field is `stream<byte[], io:Error?>`.
 
-##### 5.1.2 Writing a File Upload Resolver
+##### 6.1.2 Writing a File Upload Resolver
 
 Uploading a file is considered a mutation operation. Therefore, `remote` methods are used to implement file upload.
 
@@ -785,21 +894,21 @@ service on new graphql:Listener(4000) {
 ```
 
 
-### 5.2 Sending a File Upload Request
+### 6.2 Sending a File Upload Request
 
 To upload a file, the GraphQL endpoint requires a multipart request. The multipart request follows the [GraphQL Multipart Form Request Specification](https://github.com/jaydenseric/graphql-multipart-request-spec).
 
 Following are the required, ordered fields that must be present in a multipart request to upload a file to a Ballerina GraphQL API.
 
-#### 5.2.1 `Operations` Field
+#### 6.2.1 `Operations` Field
 
 This field contains the `JSON-encoded` body of standard GraphQL POST requests where all the variable values storing files must be `null`.
 
-#### 5.2.2 `Map` Field
+#### 6.2.2 `Map` Field
 
 This field contains the `JSON-encoded` map of the path(s) of where the file(s) occurred in the operations.
 
-#### 5.2.3 File Fields
+#### 6.2.3 File Fields
 
 Each file extracted from the `operations` object with a unique name must be added as a field.
 
@@ -822,7 +931,7 @@ curl localhost:9090/graphql \
     -F 1=@file2.png
 ```
 
-## 6. Errors
+## 7. Errors
 
 A Ballerina `resource` or `remote` method representing an object field can return an error. When an error is returned, it will be added to the `errors` field in the GraphQL response according to the [GraphQL spec](https://spec.graphql.org/June2018/#sec-Errors).
 
@@ -872,30 +981,30 @@ The result of the above document is the following.
 }
 ```
 
-### 6.1 Error Fields
+### 7.1 Error Fields
 
 As per the GraphQL specification, an error will contain the following fields.
 
-#### 6.1.1 Message
+#### 7.1.1 Message
 
 The `message` field contains the error message from the Ballerina error, which can be accessed using the `.message()` method in Ballerina.
 
-#### 6.1.2 Locations
+#### 7.1.2 Locations
 
 The `locations` field contains the locations of the GraphQL document associated with the error. There can be cases where more than one location can cause the error, therefore, this field is an array of locations. There are also cases where a location can not be associated with an error, therefore, this field is optional.
 
-#### 6.1.3 Path
+#### 7.1.3 Path
 
 The `path` field is an array of `Int` and `String`, that points to a particular path of the document tree associated with the error. This field will have a value only when a particular error has occurred at the execution phase. Therefore, this field is optional.
 
 
-## 7. Context
+## 8. Context
 
 The `graphql:Context` object is used to pass meta-information among the graphql resolver functions. It will be created per each request.
 
 Attributes can be stored in the `graphql:Context` object using key-value pairs.
 
-### 7.1 Set Attribute in Context
+### 8.1 Set Attribute in Context
 
 To set an attribute in the `graphql:Context` object, the `set()` method can be used. It requires two parameters.
 
@@ -912,7 +1021,7 @@ context.set("key", "value");
 
 > **Note:** If the provided key already exists in the context, the value will be replaced.
 
-### 7.2 Get Context Attribute
+### 8.2 Get Context Attribute
 
 To get an attribute from the `graphql:Context` object, the `get()` method can be used. It requires one parameter.
 
@@ -926,7 +1035,7 @@ If the key does not exist in the context, the `get` method will return a `graphq
 value:Cloneable|isolated object {}|graphql:Error attribute = context.get("key");
 ```
 
-### 7.3 Remove Attribute from Context
+### 8.3 Remove Attribute from Context
 
 To remove an attribute from the `graphql:Context` object, the `remove` method can be used. It requires one parameter.
 
@@ -942,7 +1051,7 @@ graphql:Error? result = context.remove("key");
 
 > **Note:** Even though the functionalities are provided to update/remove attributes in the context, it is discouraged to do such operations. The reason is that destructive modifications may cause issues in parallel executions of the Query operations.
 
-### 7.4 Accessing the Context
+### 8.4 Accessing the Context
 
 The `graphql:Context` can be accessed inside any resolver function. When needed, the `graphql:Context` must be the _first parameter_ of the method.
 
@@ -996,15 +1105,15 @@ service class Person {
 }
 ```
 
-## 8. Annotations
+## 9. Annotations
 
-### 8.1 Service Configuration
+### 9.1 Service Configuration
 
 The configurations stated in the `graphql:ServiceConfig`, are used to change the behavior of a particular GraphQL service. These configurations are applied to the service.
 
 This annotation consists of four fields.
 
-#### 8.1.1 Max Query Depth
+#### 9.1.1 Max Query Depth
 
 The `maxQueryDepth` field is used to provide a limit on the depth of an incoming request. When this is set, every incoming request is validated by checking the depth of the query. This includes the depths of the spread fragments. If a particular GraphQL document exceeds the maximum query depth, the request is invalidated and the server will respond with an error.
 
@@ -1056,12 +1165,12 @@ This will result in the following response.
 }
 ```
 
-#### 8.1.2 Auth Configurations
+#### 9.1.2 Auth Configurations
 
 The `auth` field is used to provide configurations related to authentication and authorization for the GraphQL API. The [Security](#8-security) section will explain this configuration in detail.
 
 
-#### 8.1.3 Context Initializer Function
+#### 9.1.3 Context Initializer Function
 
 The `contextInit` field is used to provide a method to initialize the [`graphql:Context` object](#7-context). It is called per each request to create a `graphql:Context` object.
 
@@ -1110,7 +1219,7 @@ service on new graphql:Listener(4000) {
 
 > **Note:** The init function has `http:RequestContext` and `http:Request` objects as inputs. These objects are passed into the function when a request is received. The HTTP headers and the request context can be used to perform additional validations to a request before proceeding to the GraphQL validations. This can be useful to validate the HTTP request before performing the GraphQL operations. The [Imperative Approach in Security](#912-imperative-approach) section will discuss this in detail.
 
-#### 8.1.4 CORS Configurations
+#### 9.1.4 CORS Configurations
 
 The `cors` field is used to configure CORS configurations for the GraphQL service.
 
@@ -1131,7 +1240,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-#### 8.1.5 GraphiQL Configurations
+#### 9.1.5 GraphiQL Configurations
 
 The `graphiql` field is used to provide the GraphiQL client configuration to enable the GraphiQL client for a given GraphQL service.
 
@@ -1150,22 +1259,22 @@ service on new graphql:Listener(4000) {
 ```
 > **Note:** The field enable accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
 
-## 9. Security
+## 10. Security
 
-### 9.1 Authentication and Authorization
+### 10.1 Authentication and Authorization
 
 There are two ways to enable authentication and authorization in Ballerina GraphQL.
 
 1. Declarative approach
 2. Imperative approach
 
-#### 9.1.1 Declarative Approach
+#### 10.1.1 Declarative Approach
 
 This is also known as the configuration-driven approach, which is used for simple use cases, where users have to provide a set of configurations and do not need to be worried more about how authentication and authorization works. The user does not have full control over the configuration-driven approach.
 
 The service configurations are used to define the authentication and authorization configurations. Users can configure the configurations needed for different authentication schemes and configurations needed for authorizations of each authentication scheme. The configurations can be provided at the service level. The auth handler creation and request authentication/authorization is handled internally without user intervention. The requests that succeeded both authentication and/or authorization phases according to the configurations will be passed to the business logic layer.
 
-##### 9.1.1.1 Basic Auth - File User Store
+##### 10.1.1.1 Basic Auth - File User Store
 
 A GraphQL service can be secured using [Basic Auth with File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) and optionally by enforcing authorization.
 
@@ -1204,7 +1313,7 @@ password="bob@123"
 scopes=["developer", "admin"]
 ```
 
-##### 9.1.1.2 Basic Auth - LDAP User Store
+##### 10.1.1.2 Basic Auth - LDAP User Store
 
 A GraphQL service can be secured using [Basic Auth with LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
 
@@ -1248,7 +1357,7 @@ service /graphql on securedEP {
 }
 ```
 
-##### 9.1.1.3 JWT Auth
+##### 10.1.1.3 JWT Auth
 
 A GraphQL service can be secured using [JWT Auth](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
 
@@ -1279,7 +1388,7 @@ service /graphql on securedEP {
 }
 ```
 
-##### 9.1.1.4 OAuth2
+##### 10.1.1.4 OAuth2
 
 A GraphQL service can be secured using [OAuth2](https://github.com/ballerina-platform/module-ballerina-oauth2/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
 
@@ -1313,13 +1422,13 @@ service /graphql on securedEP {
 }
 ```
 
-#### 9.1.2 Imperative Approach
+#### 10.1.2 Imperative Approach
 
 This is also known as the code-driven approach, which is used for advanced use cases, where users need to be worried more about how authentication and authorization work and need to have further customizations. The user has full control of the code-driven approach. The handler creation and authentication/authorization calls are made by the user at the business logic layer.
 
 The [`graphql:Context`](#7-context) object and the [`contextInit`](#813-context-initializer-function) method can be used to achieve this.
 
-##### 9.1.2.1 Basic Auth - File User Store
+##### 10.1.2.1 Basic Auth - File User Store
 
 A file user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -1373,7 +1482,7 @@ password="bob@123"
 scopes=["developer", "admin"]
 ```
 
-##### 9.1.2.2 Basic Auth - LDAP User Store
+##### 10.1.2.2 Basic Auth - LDAP User Store
 
 An LDAP user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -1432,7 +1541,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-##### 9.1.2.3 JWT Auth
+##### 10.1.2.3 JWT Auth
 
 A JWT configuration can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -1479,7 +1588,7 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-##### 9.1.2.4 OAuth2
+##### 10.1.2.4 OAuth2
 
 An OAuth2 introspection endpoint can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -1519,11 +1628,11 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-### 9.2 SSL/TLS and Mutual SSL
+### 10.2 SSL/TLS and Mutual SSL
 
 The GraphQL listener can connect or interact with a secured client. The `graphql:ListenerSecureSocket` configuration of the listener exposes the secure connection-related configurations.
 
-#### 9.2.1 SSL/TLS
+#### 10.2.1 SSL/TLS
 
 The GraphQL listener can connect or interact with an HTTPS client using SSL/TLS. The `graphql:ListenerSecureSocket` can be used to configure the listener to expose an HTTPS connection.
 
@@ -1568,7 +1677,7 @@ service on securedGraphqlListener {
 }
 ```
 
-#### 9.2.2 Mutual SSL
+#### 10.2.2 Mutual SSL
 
 The GraphQL listener supports mutual SSL, which is a certificate-based authentication process in which two parties (the client and the server) authenticate each other by verifying the digital certificates.
 
@@ -1633,9 +1742,9 @@ service on securedGraphqlListener {
 }
 ```
 
-## 10. Tools
+## 11. Tools
 
-### 10.1 GraphiQL client
+### 11.1 GraphiQL client
 
 The Ballerina GraphQL package provides an integrated GraphiQL client tool which is provided by the GraphQL Foundation. The client is implemented using CDN assets and it provides a Graphical User Interface to execute the GraphQL queries. To enable the GraphiQL client, configuration should be provided as mentioned in the [GraphiQL configuration](#815-graphiql-configurations) section.
 

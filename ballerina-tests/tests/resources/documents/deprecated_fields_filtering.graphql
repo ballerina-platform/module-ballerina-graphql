@@ -1,0 +1,38 @@
+{
+    __schema {
+        queryType {
+            ...FieldFragment
+        }
+        mutationType {
+            ...FieldFragment
+        }
+        subscriptionType {
+            ...FieldFragment
+        }
+    }
+    __type(name: "InstrumentType") {
+        enumValues(includeDeprecated: false) {
+            name
+            isDeprecated
+            deprecationReason
+        }
+    }
+}
+
+fragment FieldFragment on __Type {
+    fields(includeDeprecated: false) {
+        name
+        isDeprecated
+        deprecationReason
+        type {
+            ofType {
+                name
+                fields(includeDeprecated: false) {
+                    name
+                    isDeprecated
+                    deprecationReason
+                }
+            }
+        }
+    }
+}

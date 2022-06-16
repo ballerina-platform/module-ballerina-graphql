@@ -67,8 +67,12 @@ public enum Description {
     DEFAULT_VALUE("A GraphQL-formatted string representing the default value for this input value."),
     SKIP("Directs the executor to skip this field or fragment when the `if` argument is true."),
     INCLUDE("Directs the executor to include this field or fragment only when the `if` argument is true."),
+    DEPRECATED("Marks an element of a GraphQL schema as no longer supported."),
     SKIP_IF("Skipped when true."),
-    INCLUDE_IF("Included when true.");
+    INCLUDE_IF("Included when true."),
+    DEPRECATED_REASON(
+            "Explains why this element was deprecated, usually also including a suggestion for how to access " +
+                    "supported similar data. Formatted using the Markdown syntax.");
 
     private final String description;
 

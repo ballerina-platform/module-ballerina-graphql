@@ -173,7 +173,7 @@ isolated function testNullableUnionOfDistinctServicesArrayQueryOnSelectedTypes()
 }
 
 @test:Config {
-    groups: ["service", "union"]
+    groups: ["service", "union", "introspection"]
 }
 isolated function testUnionTypeNames() returns error? {
     string document = check getGraphQLDocumentFromFile("union_type_names.graphql");
