@@ -51,10 +51,10 @@ class ExecutorVisitor {
         parser:RootOperationType operationType = <parser:RootOperationType>data;
         if fieldNode.getName() == SCHEMA_FIELD {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
-            self.data[SCHEMA_FIELD] = introspectionExecutor.getSchemaIntrospection(fieldNode);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
         } else if fieldNode.getName() == TYPE_FIELD {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
-            self.data[TYPE_FIELD] = introspectionExecutor.getTypeIntrospection(fieldNode);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
         } else {
             if operationType == parser:OPERATION_QUERY {
                 executeQuery(self, fieldNode);

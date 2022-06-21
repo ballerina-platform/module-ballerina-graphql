@@ -407,3 +407,15 @@ isolated function testDeprecatedFieldsIntrospectionWithVariables() returns error
     json expectedPayload = check getJsonContentFromFile("deprecated_fields_introspection_with_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["introspection", "type"]
+}
+isolated function testTypeIntrospectionWithAlias() returns error? {
+    string graphqlUrl = "http://localhost:9091/validation";
+    string document = check getGraphQLDocumentFromFile("type_introspection_with_alias.graphql");
+    map<json> variables = {includeDeprecated: true};
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document, variables = variables);
+    json expectedPayload = check getJsonContentFromFile("type_introspection_with_alias.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
