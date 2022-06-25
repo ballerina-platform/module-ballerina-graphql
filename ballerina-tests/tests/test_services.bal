@@ -1245,7 +1245,7 @@ service /nullable_inputs on basicListener {
 
 public string[] namesArray = ["Walter", "Skyler"];
 
-service /subscriptions on basicListener {
+service graphql:Service /subscriptions on subscriptionListener {
     isolated resource function get name() returns string {
         return "Walter White";
     }

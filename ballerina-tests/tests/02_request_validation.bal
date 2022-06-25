@@ -149,7 +149,7 @@ isolated function testInvalidRequestBody() returns error? {
 }
 isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     string document = "";
-    string url = "ws://localhost:9091/subscriptions";
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
     json expectedPayload = {"errors": [{"message": "Query not found"}]};
@@ -160,7 +160,7 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
-    string url = "ws://localhost:9091/subscriptions";
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     json payload = {query: ()};
     check wsClient->writeTextMessage(payload.toJsonString());
@@ -173,7 +173,7 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
     string document = string `subscription getNames { name }`;
-    string url = "ws://localhost:9091/subscriptions";
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient, []);
     json expectedPayload = {"errors": [{"message": "Invalid format in request parameter: variables"}]};
@@ -184,7 +184,7 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketPayload() returns error? {
-    string url = "ws://localhost:9091/subscriptions";
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     string payload = "";
     check wsClient->writeTextMessage(payload);
