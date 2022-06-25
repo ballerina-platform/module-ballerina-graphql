@@ -246,3 +246,20 @@ final readonly & Company company = {
     workers: workers.cloneReadOnly(),
     contacts: contacts.cloneReadOnly()
 };
+
+// WebSocket Message types
+const WS_INIT = "connection_init";
+const WS_ACK = "connection_ack";
+const WS_PING = "ping";
+const WS_PONG = "pong";
+const WS_START = "start";
+const WS_SUBSCRIBE = "subscribe";
+const WS_NEXT = "next";
+const WS_ERROR = "error";
+const WS_DATA = "data";
+const WS_STOP = "stop";
+const WS_COMPLETE = "complete";
+
+// WebSocket Sub Protocols
+const GRAPHQL_WS = "graphql-ws";
+const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";

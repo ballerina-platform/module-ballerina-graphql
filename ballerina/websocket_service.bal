@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/lang.array;
 import ballerina/lang.value;
 import ballerina/websocket;
 import graphql.parser;
@@ -24,70 +25,107 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
+    private readonly & string[] activeConnections;
+    private final readonly & map<string> customHeaders;
+    private boolean initiatedConnection;
 
-    isolated function init(Engine engine, __Schema & readonly schema) {
+    isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders) {
         self.engine = engine;
         self.schema = schema;
         self.context = new;
+        self.customHeaders = customHeaders;
+        self.activeConnections = [];
+        self.initiatedConnection = false;
     }
 
-    isolated remote function onTextMessage(websocket:Caller caller, string data) returns websocket:Error? {
-        parser:OperationNode|ErrorDetail node = validateSubscriptionPayload(data, self.engine);
-        if node is parser:OperationNode {
-            RootFieldVisitor rootFieldVisitor = new(node);
-            parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-            stream<any, error?>|json sourceStream = getSubscriptionResponse(self.engine, self.schema,
-                                                                            self.context, fieldNode);
-            if sourceStream is stream<any, error?> {
-                record {|any value;|}|error? next = sourceStream.iterator().next();
-                while next !is error? {
-                    OutputObject outputObject = self.engine.getResult(node, self.context, {}, next.value);
-                    ResponseFormatter responseFormatter = new(self.schema);
-                    OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
-                    if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
-                        check caller->writeTextMessage(coercedOutputObject.toString());
-                    }
-                    next = sourceStream.iterator().next();
-                }
-            } else {
-                check caller->writeTextMessage(sourceStream.toJsonString());
+    isolated remote function onIdleTimeout(websocket:Caller caller) returns websocket:Error? {
+        lock {
+            if !self.initiatedConnection {
+                closeConnection(caller, 4408, "Connection initialisation timeout");
             }
-        } else {
-            check caller->writeTextMessage((<ErrorDetail>node).message);
         }
     }
-}
 
-isolated function validateSubscriptionPayload(string text, Engine engine) returns parser:OperationNode|ErrorDetail {
-    json|error payload = value:fromJsonString(text);
-    if payload is error {
-        json errorMessage = {errors: [{message: "Invalid subscription payload"}]};
-        return {message: errorMessage.toJsonString()};
-    }
-    json|error document = payload.query;
-    if document !is string || document == "" {
-        json errorMessage = {errors: [{message: "Query not found"}]};
-        return {message: errorMessage.toJsonString()};
-    }
-    json|error variables = payload.variables is error ? () : payload.variables;
-    if variables !is map<json> && variables != () {
-        json errorMessage = {errors: [{message: "Invalid format in request parameter: variables"}]};
-        return {message: errorMessage.toJsonString()};
-    }
-    parser:OperationNode|OutputObject validationResult = engine.validate(document, getOperationName(payload),
-                                                                         variables);
-    if validationResult is parser:OperationNode {
-        return validationResult;
-    }
-    return {message: validationResult.toJsonString()};
-}
+    isolated remote function onTextMessage(websocket:Caller caller, string text) returns websocket:Error? {
+        json|error wsText = value:fromJsonString(text);
+        if wsText is error {
+            json payload = {errors: [{message: "Invalid format in WebSocket payload"}]};
+            check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
+            closeConnection(caller);
+            return;
+        }
 
-isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          parser:FieldNode node) returns stream<any, error?>|json {
-    ExecutorVisitor executor = new(engine, schema, context, {});
-    any|error result = getSubscriptionResult(executor, node);
-    if result !is stream<any, error?> {
-        return {errors: [{message: "Invalid return value"}]};
+        WSPayload|json|error wsPayload = self.customHeaders != {}
+                                        ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
+        if wsPayload is error {
+            json payload = {errors: [{message: "Invalid format in WebSocket payload"}]};
+            check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
+            closeConnection(caller);
+            return;
+        }
+        string wsType = wsPayload is WSPayload ? <string>wsPayload.'type : DEFAULT_VALUE;
+        string connectionId = wsPayload is WSPayload && wsPayload?.id !is () ? <string>wsPayload?.id : DEFAULT_VALUE;
+
+        if wsType.equalsIgnoreCaseAscii(WS_INIT) {
+            lock {
+                if self.initiatedConnection {
+                    closeConnection(caller, 4429, "Too many initialisation requests");
+                    return;
+                }
+                self.initiatedConnection = true;
+            }
+            json wsResponse = {"type": WS_ACK};
+            check caller->writeTextMessage(wsResponse.toJsonString());
+        } else if wsType == WS_SUBSCRIBE || wsType == WS_START || !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+            lock {
+                if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+                    if !self.initiatedConnection {
+                        closeConnection(caller, 4401, "Unauthorized");
+                        return;
+                    }
+                    if self.activeConnections.indexOf(connectionId) !is () {
+                        closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
+                        return;
+                    }
+                    string[] connections = [connectionId];
+                    foreach string i in self.activeConnections {
+                        connections.push(i);
+                    }
+                    self.activeConnections = connections.cloneReadOnly();
+                }
+            }
+            parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
+            if node is parser:OperationNode {
+                check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller,
+                                       connectionId, node);
+            } else {
+                check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
+                closeConnection(caller);
+                return;
+            }
+        } else if (wsType.equalsIgnoreCaseAscii(WS_STOP) || wsType.equalsIgnoreCaseAscii(WS_COMPLETE)) {
+            lock {
+                string[] connections = [];
+                foreach string i in self.activeConnections {
+                    connections.push(i);
+                }
+                int? index = array:indexOf(connections, connectionId);
+                if index is int {
+                    _ = connections.remove(index);
+                }
+                self.activeConnections = connections.cloneReadOnly();
+                self.initiatedConnection = false;
+            }
+            check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
+            closeConnection(caller);
+        } else if wsType.equalsIgnoreCaseAscii(WS_PING) {
+            json wsMessage = {"type": WS_PONG};
+            check caller->writeTextMessage(wsMessage.toString());
+        } else if wsType.equalsIgnoreCaseAscii(WS_PONG) {
+            json wsMessage = {"type": WS_PING};
+            check caller->writeTextMessage(wsMessage.toString());
+        } else {
+            // do nothing
+        }
     }
-    return <stream<any, error?>>result;
 }
