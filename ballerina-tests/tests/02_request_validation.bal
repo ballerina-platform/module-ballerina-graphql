@@ -162,8 +162,8 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
-    json payload = {query: ()};
-    check wsClient->writeTextMessage(payload.toJsonString());
+    json payload = {id: "1", payload: {query: ()}};
+    check wsClient->writeTextMessage((payload.toJsonString()));
     json expectedPayload = {"errors": [{"message": "Query not found"}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
@@ -183,11 +183,23 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
 @test:Config {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
-isolated function testInvalidWebSocketPayload() returns error? {
+isolated function testEmptyWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     string payload = "";
     check wsClient->writeTextMessage(payload);
-    json expectedPayload = {"errors": [{"message": "Invalid subscription payload"}]};
+    json expectedPayload = {"errors": [{"message": "Invalid format in WebSocket payload"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions", "sub_protocol"]
+}
+isolated function testInvalidWebSocketPayload() returns error? {
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:Client wsClient = check new (url, {subProtocols: ["graphql-ws"]});
+    json payload = {payload: {query: ()}};
+    check wsClient->writeTextMessage((payload.toJsonString()));
+    json expectedPayload = {"type": "data", payload: {errors: [{message: "Invalid format in WebSocket payload"}]}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
