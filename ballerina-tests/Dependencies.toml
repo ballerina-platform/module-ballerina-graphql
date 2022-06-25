@@ -9,7 +9,7 @@ dependencies-toml-version = "2"
 [[package]]
 org = "ballerina"
 name = "auth"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -70,6 +70,7 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "oauth2"},
+	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "websocket"}
 ]
@@ -96,7 +97,8 @@ dependencies = [
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
-	{org = "ballerina", packageName = "graphql_tests", moduleName = "graphql_tests"}
+	{org = "ballerina", packageName = "graphql_tests", moduleName = "graphql_tests"},
+	{org = "ballerina", packageName = "graphql_tests", moduleName = "graphql_tests.graphql"}
 ]
 
 [[package]]
@@ -149,7 +151,7 @@ version = "0.0.0"
 [[package]]
 org = "ballerina"
 name = "jwt"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
@@ -257,7 +259,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "oauth2"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
