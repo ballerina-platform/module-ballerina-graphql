@@ -67,7 +67,7 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
         expectedPayload = {data: {stringMessages: i.toString()}};
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
-    string httpUrl = "http://localhost:9091/subscriptions";
+    string httpUrl = "http://localhost:9099/subscriptions";
     json actualPayload = check getJsonPayloadFromService(httpUrl, document, operationName = "getName");
     expectedPayload = {data: {name: "Walter White"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -106,7 +106,7 @@ isolated function testSubscriptionWithRecords() returns error? {
 }
 isolated function testQueryWithSameSubscriptionFieldName() returns error? {
     string document = string `query { name }`;
-    string url = "http://localhost:9091/subscriptions";
+    string url = "http://localhost:9099/subscriptions";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {data: {name: "Walter White"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
