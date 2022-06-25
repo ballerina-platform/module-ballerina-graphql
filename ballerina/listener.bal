@@ -54,7 +54,12 @@ public class Listener {
         if graphiql.enable {
             check validateGraphiqlPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
+            Engine engine = check new (getSchemaString(serviceConfig), getMaxQueryDepth(serviceConfig));
+            __Schema & readonly schema = engine.getSchema();
+            __Type? subscriptionType = schema.subscriptionType;
+            HttpService graphiqlService = subscriptionType is __Type
+                                        ? getGraphiqlService(serviceConfig, gqlServiceBasePath, true)
+                                        : getGraphiqlService(serviceConfig, gqlServiceBasePath);
             attachGraphiqlServiceToGraphqlService(s, graphiqlService);
             error? result = self.httpListener.attach(graphiqlService, graphiql.path);
             if result is error {
