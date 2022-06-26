@@ -378,7 +378,7 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
             string graphqlURL = os:getEnv("OS").toUpperAscii().substring(0, 7) == WINDOWS
                             ? string `http://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
                             : string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
-            string subscriptionUrl = os:getEnv("OS").substring(0, 7) == WINDOWS
+            string subscriptionUrl = os:getEnv("OS").toUpperAscii().substring(0, 7) == WINDOWS
                             ? string `ws://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
                             : string `ws://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
             string|error htmlAsString = includedSubscription
