@@ -355,13 +355,9 @@ isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema sche
     return isolated service object {
         isolated resource function get .(http:Request req) returns websocket:Service|websocket:UpgradeError {
             map<string> customHeaders = {};
-            string|http:HeaderNotFoundError protocol = req.getHeader(WS_SUB_PROTOCOL);
-            if protocol is string {
-                if protocol.equalsIgnoreCaseAscii(GRAPHQL_WS) {
-                    customHeaders = {"Sec-WebSocket-Protocol": "graphql-ws"};
-                } else if protocol.equalsIgnoreCaseAscii(GRAPHQL_TRANSPORT_WS) {
-                    customHeaders = {"Sec-WebSocket-Protocol": "graphql-transport-ws"};
-                }
+            string|http:HeaderNotFoundError subProtocol = req.getHeader(WS_SUB_PROTOCOL);
+            if subProtocol is string {
+                customHeaders = {"Sec-WebSocket-Protocol": subProtocol};
             }
             return new WsService(gqlEngine, schema, customHeaders.cloneReadOnly());
         }

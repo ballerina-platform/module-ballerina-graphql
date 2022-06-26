@@ -595,21 +595,18 @@ isolated function testOnPong() returns error? {
 }
 
 @test:Config {
-    groups: ["sub_protocol", "service", "subscriptions"]
+    groups: ["sub_protocols", "subscriptions"]
 }
-isolated function testGraphQLTransportWsProtocol() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
+isolated function testInvalidSubProtocolInSubscriptions() returns error? {
     string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {
-        subProtocols: ["graphql-transport-ws"]
-    };
-    websocket:Client wsClient = check new (url, config);
-    string clientId = wsClient.getConnectionId();
-    check initiateConnectionInitMessage(wsClient, clientId);
-    check validateConnectionInitMessage(wsClient);
-
-    check writeWebSocketTextMessage(document, wsClient, id = clientId, subProtocol = "graphql-transport-ws");
-    json payload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-    json expectedPayload = {"type": WS_NEXT, id: clientId, payload: payload};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    string subProtocol = "graphql-invalid-ws";
+    websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
+    websocket:Client wsClient = check new(url, config);
+    check initiateConnectionInitMessage(wsClient);
+    string|error message = wsClient->readTextMessage();
+    string errorMsg = "Subprotocol not acceptable: Status code: 4406";
+    test:assertTrue(message is error);
+    if message is error {
+        test:assertEquals((<error>message).message(), errorMsg);
+    }
 }

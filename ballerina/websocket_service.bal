@@ -47,6 +47,11 @@ isolated service class WsService {
     }
 
     isolated remote function onTextMessage(websocket:Caller caller, string text) returns websocket:Error? {
+        error? validatedSubProtocol = validateSubProtocol(caller, self.customHeaders);
+        if validatedSubProtocol is error {
+            closeConnection(caller, 4406, "Subprotocol not acceptable");
+            return;
+        }
         json|error wsText = value:fromJsonString(text);
         if wsText is error {
             json payload = {errors: [{message: "Invalid format in WebSocket payload"}]};
@@ -101,7 +106,6 @@ isolated service class WsService {
             } else {
                 check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
                 closeConnection(caller);
-                return;
             }
         } else if (wsType.equalsIgnoreCaseAscii(WS_STOP) || wsType.equalsIgnoreCaseAscii(WS_COMPLETE)) {
             lock {

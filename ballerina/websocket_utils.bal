@@ -100,3 +100,13 @@ isolated function closeConnection(websocket:Caller caller, int statusCode = 1000
         // do nothing
     }
 }
+
+isolated function validateSubProtocol(websocket:Caller caller, readonly & map<string> customHeaders) returns error? {
+    if customHeaders.hasKey(WS_SUB_PROTOCOL) {
+        string subProtocol = customHeaders.get(WS_SUB_PROTOCOL);
+        if subProtocol != GRAPHQL_WS && subProtocol != GRAPHQL_TRANSPORT_WS {
+            return error("Subprotocol not acceptable");
+        }
+    }
+    return;
+}
