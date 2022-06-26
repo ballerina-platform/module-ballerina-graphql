@@ -193,7 +193,7 @@ isolated function testEmptyWebSocketPayload() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions", "sub_protocol"]
+    groups: ["request_validation", "websocket", "subscriptions", "sub_protocols"]
 }
 isolated function testInvalidWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
