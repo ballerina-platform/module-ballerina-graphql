@@ -248,10 +248,10 @@ isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() ret
 isolated function testSubscriptionFunctionWithErrors() returns error? {
     string document = string `subscription getNames { values }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
+    websocket:Client websocketClient = check new(url);
+    check writeWebSocketTextMessage(document, websocketClient);
     json expectedPayload = {errors: [{message: "Error/s occurred in the subscription resolver"}]};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    check validateWebSocketResponse(websocketClient, expectedPayload);
 }
 
 @test:Config {
