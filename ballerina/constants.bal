@@ -76,4 +76,4 @@ const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 const DEFAULT_VALUE = "default";
 
 // Windows OS
-const WINDOWS = "WINDOWS";
+const WINDOWS = "WINDOWS_NT";
