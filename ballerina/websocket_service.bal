@@ -107,7 +107,7 @@ isolated service class WsService {
                 check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
                 closeConnection(caller);
             }
-        } else if (wsType.equalsIgnoreCaseAscii(WS_STOP) || wsType.equalsIgnoreCaseAscii(WS_COMPLETE)) {
+        } else if wsType.equalsIgnoreCaseAscii(WS_STOP) || wsType.equalsIgnoreCaseAscii(WS_COMPLETE) {
             lock {
                 string[] connections = [];
                 foreach string i in self.activeConnections {

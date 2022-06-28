@@ -485,7 +485,7 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
 
     string textResponse = check wsClient->readTextMessage();
     json jsonPayload = check value:fromJsonString(textResponse);
-    WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+    WsPayload wsPayload = check jsonPayload.cloneWithType(WsPayload);
     string actualType = wsPayload.'type;
     test:assertEquals(actualType, expectedPayload);
 
@@ -557,7 +557,7 @@ isolated function testOnPing() returns error? {
         string expectedPayload = WS_PONG;
         string textResponse = check wsClient->readTextMessage();
         json jsonPayload = check value:fromJsonString(textResponse);
-        WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+        WsPayload wsPayload = check jsonPayload.cloneWithType(WsPayload);
         string actualType = wsPayload.'type;
         test:assertEquals(actualType, expectedPayload);
     }
@@ -577,7 +577,7 @@ isolated function testOnPong() returns error? {
         string expectedPayload = WS_PING;
         string textResponse = check wsClient->readTextMessage();
         json jsonPayload = check value:fromJsonString(textResponse);
-        WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+        WsPayload wsPayload = check jsonPayload.cloneWithType(WsPayload);
         string actualType = wsPayload.'type;
         test:assertEquals(actualType, expectedPayload);
     }
