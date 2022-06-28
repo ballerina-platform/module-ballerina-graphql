@@ -417,31 +417,17 @@ isolated function testInvalidSubscriptionUsingSubProtocol() returns error? {
         websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
         websocket:Client wsClient = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_ERROR;
-
+        json responsePayload = check getJsonContentFromFile("subscription_invalid_field.json");
+        if messageType == WS_ERROR && subProtocol == "graphql-transport-ws" {
+            responsePayload = check responsePayload.errors;
+        }
         check initiateConnectionInitMessage(wsClient, "1");
         check validateConnectionInitMessage(wsClient);
 
         json payload = {query: document};
         json wsPayload = {"type": WS_START, id: "1", payload: payload};
         check wsClient->writeTextMessage(wsPayload.toJsonString());
-        json expectedPayload = {
-            'type: messageType,
-            id: "1",
-            payload:
-            {
-                errors: [
-                    {
-                        message: "Cannot query field \"invalidField\" on type \"Subscription\".",
-                        locations: [
-                            {
-                                line: 1,
-                                column: 16
-                            }
-                        ]
-                    }
-                ]
-            }
-        };
+        json expectedPayload = {'type: messageType, id: "1", payload: responsePayload};
         check validateWebSocketResponse(wsClient, expectedPayload);
     }
 }
@@ -463,6 +449,9 @@ isolated function testSubscriptionFunctionWithErrorsUsingSubProtocol() returns e
 
         check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
         json payload = {errors: [{message: "Error/s occurred in the subscription resolver"}]};
+        if messageType == WS_ERROR && subProtocol == "graphql-transport-ws" {
+            payload = check payload.errors;
+        }
         json expectedPayload = {"type": messageType, id: "1", payload: payload};
         check validateWebSocketResponse(wsClient, expectedPayload);
     }

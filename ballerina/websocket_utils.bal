@@ -80,7 +80,14 @@ isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & r
         check caller->writeTextMessage(payload.toJsonString());
     } else {
         string 'type = getMessageType(wsType, customHeaders);
-        json jsonResponse = id != () ? {"type": 'type, id: id, payload: payload} : {"type": 'type, payload: payload};
+        json responsePayload = payload;
+        if customHeaders.get(WS_SUB_PROTOCOL) == GRAPHQL_TRANSPORT_WS && 'type == WS_ERROR {
+            json|error errors = payload.errors;
+            responsePayload = errors is json ? errors : responsePayload;
+        }
+        json jsonResponse = id != () 
+                            ? {"type": 'type, id: id, payload: responsePayload} 
+                            : {"type": 'type, payload: responsePayload};
         check caller->writeTextMessage(jsonResponse.toJsonString());
     }
 }
