@@ -71,7 +71,7 @@ isolated service class WsService {
         string wsType = wsPayload is WSPayload ? <string>wsPayload.'type : DEFAULT_VALUE;
         string connectionId = wsPayload is WSPayload && wsPayload?.id !is () ? <string>wsPayload?.id : DEFAULT_VALUE;
 
-        if wsType.equalsIgnoreCaseAscii(WS_INIT) {
+        if wsType == WS_INIT {
             lock {
                 if self.initiatedConnection {
                     closeConnection(caller, 4429, "Too many initialisation requests");
@@ -107,7 +107,7 @@ isolated service class WsService {
                 check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
                 closeConnection(caller);
             }
-        } else if wsType.equalsIgnoreCaseAscii(WS_STOP) || wsType.equalsIgnoreCaseAscii(WS_COMPLETE) {
+        } else if wsType == WS_STOP || wsType == WS_COMPLETE {
             lock {
                 string[] connections = [];
                 foreach string i in self.activeConnections {
@@ -122,10 +122,10 @@ isolated service class WsService {
             }
             check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
             closeConnection(caller);
-        } else if wsType.equalsIgnoreCaseAscii(WS_PING) {
+        } else if wsType == WS_PING {
             json wsMessage = {"type": WS_PONG};
             check caller->writeTextMessage(wsMessage.toString());
-        } else if wsType.equalsIgnoreCaseAscii(WS_PONG) {
+        } else if wsType == WS_PONG {
             json wsMessage = {"type": WS_PING};
             check caller->writeTextMessage(wsMessage.toString());
         } else {

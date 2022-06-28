@@ -517,7 +517,7 @@ isolated function testUnauthorizedAccessUsingSubProtocol() returns error? {
 }
 
 @test:Config {
-    groups: ["sub_protocols", "service", "subscriptions"]
+    groups: ["sub_protocols", "subscriptions"]
 }
 function testAlreadyExistingSubscriberUsingSubProtocol() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
