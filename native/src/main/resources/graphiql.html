@@ -35,7 +35,7 @@ SOFTWARE. -->
         <script crossorigin src="https://unpkg.com/graphiql/graphiql.min.js"></script>
 
         <script>
-                const fetcher = GraphiQL.createFetcher({ url: "${url}" });
+                const fetcher = GraphiQL.createFetcher(${url});
 
                 ReactDOM.render(
                     React.createElement(GraphiQL, { fetcher: fetcher }),

@@ -46,9 +46,7 @@ public final class ListenerUtils {
 
     private static final String SAMPLE_URL = "http://localhost:9000/";
     public static final String GRAPHIQL_RESOURCE = "graphiql.html";
-    public static final String GRAPHIQL_SUBSCRIPTION_RESOURCE = "graphiql-subscriptions.html";
     private static final String REGEX_URL = "${url}";
-    private static final String REGEX_SUBSCRIPTION_URL = "${subscriptionUrl}";
     private static final String FORWARD_SLASH = "/";
 
     private ListenerUtils() {}
@@ -131,16 +129,18 @@ public final class ListenerUtils {
     }
 
     public static Object getHtmlContentFromResources(BString url, Object subscriptionUrl) {
-        InputStream htmlAsStream = subscriptionUrl == null 
-                    ? ClassLoader.getSystemResourceAsStream(GRAPHIQL_RESOURCE) 
-                    : ClassLoader.getSystemResourceAsStream(GRAPHIQL_SUBSCRIPTION_RESOURCE);
+        InputStream htmlAsStream = ClassLoader.getSystemResourceAsStream(GRAPHIQL_RESOURCE);
         try {
             byte[] bytes = htmlAsStream.readAllBytes();
             String htmlAsString = new String(bytes, StandardCharsets.UTF_8);
-            htmlAsString = htmlAsString.replace(REGEX_URL, url.getValue());
+            String graphiqlUrl;
             if (subscriptionUrl != null) {
-                htmlAsString = htmlAsString.replace(REGEX_SUBSCRIPTION_URL, ((BString) subscriptionUrl).getValue());
+                graphiqlUrl = "{ url: \""
+                        + url.getValue() + "\" , subscriptionUrl: \"" + ((BString) subscriptionUrl).getValue() + "\" }";
+            } else {
+                graphiqlUrl = "{ url: \"" + url.getValue() + "\" }";
             }
+            htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl);
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
             return createError("Error occurred while loading the GraphiQL client", ERROR_TYPE);
