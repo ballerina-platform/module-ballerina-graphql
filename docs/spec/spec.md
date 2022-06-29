@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/06/10  
+_Updated_: 2022/06/29  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -23,7 +23,6 @@ The conforming implementation of the specification is released and included in t
     * 2.1 [Listener](#21-listener)
         * 2.1.1 [Initializing the Listener Using Port Number](#211-initializing-the-listener-using-port-number)
         * 2.1.2 [Initializing the Listener using an HTTP Listener](#212-initializing-the-listener-using-an-http-listener)
-        * 2.1.3 [WebSocket Listener for Subscriptions](#213-websocket-listener-for-subscriptions)
     * 2.2 [Service](#22-service)
         * 2.2.1 [Service Type](#221-service-type)
         * 2.2.2 [Service Base Path](#222-service-base-path)
@@ -89,7 +88,6 @@ The conforming implementation of the specification is released and included in t
         * 9.1.3 [Context Initializer Function](#913-context-initializer-function)
         * 9.1.4 [CORS Configurations](#914-cors-configurations)
         * 9.1.5 [GraphiQL Configurations](#915-graphiql-configurations)
-            * 9.1.5.1 [GraphiQL for Subscriptions](#9151-graphiql-for-subscriptions)
 10. [Security](#10-security)
     * 10.1 [Authentication and Authorization](#101-authentication-and-authorization)
         * 10.1.1 [Declarative Approach](#1011-declarative-approach)
@@ -129,6 +127,8 @@ import ballerina/graphql;
 ### 2.1 Listener
 
 Since the GraphQL spec does not mandate an underlying client-server protocol, a GraphQL implementation can use any protocol underneath. The Ballerina GraphQL package, like most of the other implementations, uses HTTP as the protocol. The Ballerina GraphQL listener is using an HTTP listener to listen to incoming requests through HTTP.
+If the schema contains the `Subscription` type, The GraphQL listener will establish a new WebSocket listener to listen to incoming subscription requests.
+In Ballerina, WebSocket is used as the communication protocol for GraphQL subscriptions as it is capable of dispatching data continuously while maintaining a persistent connection. Additionally, Ballerina GraphQL supports `graphql-transport-ws` and `graphql-ws` websocket sub-protocols in subscriptions. If a WebSocket connection is established with one of these underlying sub-protocols, all the subscription responses will be wrapped in a standard message structure defined in their [specification](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md). If a subscription request occurs without a sub-protocol, responses will be dispatched according to the usual behavior.
 
 A Ballerina GraphQL listener can be declared as described below, honoring the Ballerina generic [listener declaration](https://ballerina.io/spec/lang/2021R1/#section_9.2.1).
 
@@ -148,8 +148,6 @@ If a GraphQL listener requires to listen to the same port as an existing [`http:
 listener http:Listener httpListener = new (4000);
 listener graphql:Listener graphqlListener = new (httpListener);
 ```
-#### 2.1.3 WebSocket Listener for Subscriptions
-Subscriptions are used to continuously fetch data from a GraphQL service. There must be a persistent connection between the server and clients to constantly push data. In Ballerina, `WebSocket` will be used as the communication protocol to implement this requirement as it is capable of maintaining a persistent connection and dispatching data continuously. The GraphQL service will establish a separate WebSocket connection with each client who requests a subscription and sends the required data through the connection.
 
 > **Note:**  The client does not need to explicitly create a `websocket:Listener` for subscriptions. If there is a subscription resolver in a service, the `graphql:Listener` will initiate a `websocket:Listener` over the same port used in the `http:Listener`.
 
@@ -301,14 +299,12 @@ As per the [GraphQL specification](https://spec.graphql.org/June2018/#sec-Mutati
 #### 3.1.3 The `Subscription` Type
 
 `Subscription` is a root operation type in GraphQL schema but unlike queries, it is an optional type. In Ballerina, the service itself is the schema and all the subscription resolvers in the GraphQL service are mapped to fields in the root `Subscription` type.
-If the schema includes a subscription type, an additional endpoint will be established for WebSocket connections. Clients can use this endpoint for their subscription requests.
-If there is no subscription resolver in the service, the schema will not include a `Subscription` type and no WebSocket endpoint will be established.
 
 ###### Example: Adding a Field to the `Subscription` Type
 
 ```ballerina
 service on new graphql:Listener(4000) {
-    resource function subscribe greeting() returns stream<stream> {
+    resource function subscribe greetings() returns stream<stream> {
         return ["Hello", "Hi", "Hello World!"].toStream();
     }
 }
@@ -378,14 +374,6 @@ resource function get greeting() returns string {
     // ...
 }
 ```
-
-```ballerina
-resource function subscribe greeting() returns string {
-    // ...
-}
-```
-
-Each `resource` method in a GraphQL service with the `subscribe` accessor will be recognized as a subscription resolver and mapped to a field in the root `Subscription` type. 
 
 ###### Counter Example: Resource Accessor
 
@@ -1273,12 +1261,6 @@ service on new graphql:Listener(4000) {
 }
 ```
 > **Note:** The field enable accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
-
-#####  9.1.5.1 GraphiQL for Subscriptions
-GraphiQL uses WebSockets as the communication protocol for Subscription requests. And there is an underlying sub protocol called `graphql-transport-ws` which follows a standard message structure for subscriptions defined in the [specification](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md). Since GraphiQL follows the same sub protocol, all the subscription requests/responses will be wrapped in this format.
-
-> **Note:** There is another supported sub protocol named `graphql-ws`. GraphQL playground follows that sub protocol for subscriptions.  
-> If a subscription request occurs without a sub-protocol, responses will be dispatched according to the usual behavior. 
 
 ## 10. Security
 
