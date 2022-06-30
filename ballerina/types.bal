@@ -93,14 +93,3 @@ public type GenericResponseWithErrors record {|
    record {| anydata...; |}|map<json?> data?;
    ErrorDetail[] errors?;
 |};
-
-# Represents the standard WebSocket message structure for subscriptions
-#
-# + 'type - Type of the WebSocket message  
-# + id - Operation id for uniquely identifying server responses and connecting them with the client's requests  
-# + payload - The requested data to go with the specific message type
-public type WSPayload record {|
-    string 'type;
-    string id?;
-    json payload?;
-|};

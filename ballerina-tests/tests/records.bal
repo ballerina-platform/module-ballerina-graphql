@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/graphql;
-
 type Information Address|Person;
 
 type Account record {
@@ -232,7 +230,8 @@ public enum InstrumentType {
     PERCUSSION
 }
 
-# Represents the standard WebSocket message structure for subscriptions
-type WsPayload record {|
-    *graphql:WSPayload;
+type WSPayload record {|
+    string 'type;
+    string id?;
+    json payload?;
 |};

@@ -138,3 +138,9 @@ enum __DirectiveLocation {
     INPUT_OBJECT,
     INPUT_FIELD_DEFINITION
 }
+
+type WSPayload record {|
+    string 'type;
+    string id?;
+    json payload?;
+|};

@@ -133,7 +133,7 @@ isolated function validateConnectionInitMessage(websocket:Client wsClient) retur
     string expectedPayload = WS_ACK;
     string textResponse = check wsClient->readTextMessage();
     json jsonPayload = check value:fromJsonString(textResponse);
-    WsPayload wsPayload = check jsonPayload.cloneWithType(WsPayload);
+    WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
     string actualType = wsPayload.'type;
     test:assertEquals(actualType, expectedPayload);
 }
