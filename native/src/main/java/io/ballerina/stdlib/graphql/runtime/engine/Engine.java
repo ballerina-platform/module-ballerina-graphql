@@ -47,12 +47,12 @@ import java.util.List;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -79,15 +79,11 @@ public class Engine {
         }
     }
 
-    public static void attachServiceToEngine(BObject service, BObject engine) {
-        engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
-    }
-
     public static void executeQuery(Environment environment, BObject visitor, BObject node) {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = (BMap<BString, Object>) visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
-        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        BObject service = getService(engine);
         List<String> paths = new ArrayList<>();
         paths.add(node.getStringValue(NAME_FIELD).getValue());
         List<Object> pathSegments = new ArrayList<>();
@@ -113,7 +109,7 @@ public class Engine {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
-        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        BObject service = getService(engine);
         String fieldName = node.getStringValue(NAME_FIELD).getValue();
         CallbackHandler callbackHandler = new CallbackHandler(future);
         List<Object> pathSegments = new ArrayList<>();
@@ -193,7 +189,7 @@ public class Engine {
         ExecutionContext executionContext = new ExecutionContext(env, visitor, callbackHandler, SUBSCRIPTION);
         BString fieldName = node.getStringValue(NAME_FIELD);
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
-        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        BObject service = getService(engine);
         ServiceType serviceType = (ServiceType) service.getType();
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {

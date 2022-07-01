@@ -234,4 +234,12 @@ public class EngineUtils {
         }
         return null;
     }
+
+    public static void addService(BObject engine, BObject service) {
+        engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
+    }
+
+    public static BObject getService(BObject engine) {
+        return (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+    }
 }

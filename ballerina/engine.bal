@@ -14,18 +14,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
+
 import graphql.parser;
 
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
 
-    isolated function init(string schemaString, int? maxQueryDepth) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, Service s) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
+        self.addService(s);
     }
 
     isolated function getSchema() returns readonly & __Schema {
@@ -132,4 +135,12 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
+
+    isolated function addService(Service s) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getService() returns Service = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
 }

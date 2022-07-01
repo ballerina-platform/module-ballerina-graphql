@@ -52,10 +52,6 @@ isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode 
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
 isolated function getSubscriptionResult(ExecutorVisitor visitor,
                                         parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
