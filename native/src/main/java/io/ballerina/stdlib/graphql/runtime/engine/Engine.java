@@ -44,8 +44,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -148,7 +150,10 @@ public class Engine {
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
                                            MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
                                            StrandMetadata strandMetadata) {
-        ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, method);
+        ArgumentHandler argumentHandler = new ArgumentHandler(method,
+                                                              executionContext.getVisitor().getMapValue(FILE_INFO),
+                                                              executionContext.getVisitor()
+                                                                      .getObjectValue(CONTEXT_FIELD));
         Object[] args = argumentHandler.getArguments(node);
         ResourceCallback callback = new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
@@ -194,8 +199,11 @@ public class Engine {
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
-                fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
-                ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, resourceMethod);
+                    fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, executionContext.getVisitor()
+                        .getMapValue(FILE_INFO),
+                                                                      executionContext.getVisitor()
+                                                                              .getObjectValue(CONTEXT_FIELD));
                 Object[] args = argumentHandler.getArguments(node);
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
