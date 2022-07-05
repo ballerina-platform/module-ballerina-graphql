@@ -143,4 +143,17 @@ isolated class Engine {
     isolated function getService() returns Service = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
+
+    isolated function resolve(Context context, RequestInfo requestInfo) returns anydata|error {
+        Field 'field = requestInfo.'field;
+        service object {} serviceObject = 'field.getServiceObject();
+        parser:FieldNode fieldNode = 'field.getInternalNode();
+        map<Upload|Upload[]> fileInfo = requestInfo.fileInfo;
+        var result = executeResource(serviceObject, fieldNode, fileInfo, context);
+        if result is anydata|error {
+            return result;
+        } else {
+            return result.toString();
+        }
+    }
 }

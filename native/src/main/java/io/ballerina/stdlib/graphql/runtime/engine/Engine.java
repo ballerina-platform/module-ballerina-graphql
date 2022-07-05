@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -58,6 +59,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.FIELD_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -201,9 +203,7 @@ public class Engine {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, executionContext.getVisitor()
-                        .getMapValue(FILE_INFO),
-                                                                      executionContext.getVisitor()
-                                                                              .getObjectValue(CONTEXT_FIELD));
+                        .getMapValue(FILE_INFO), executionContext.getVisitor().getObjectValue(CONTEXT_FIELD));
                 Object[] args = argumentHandler.getArguments(node);
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
@@ -214,6 +214,43 @@ public class Engine {
                             .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
                                                            null, subscriptionCallback, null, typeUnion, args);
                 }
+            }
+        }
+        return null;
+    }
+
+    public static Object executeResource(Environment environment, BObject service, BObject fieldNode,
+                                         BMap<BString, Object> fileInfo, BObject context) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) service.getType();
+        List<String> path = new ArrayList<>();
+        path.add(fieldNode.getStringValue(NAME_FIELD).getValue());
+        ResourceMethodType resourceMethod = getResourceMethod(serviceType, path, GET_ACCESSOR);
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+        if (resourceMethod != null) {
+            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, fileInfo, context);
+            Object[] arguments = argumentHandler.getArguments(fieldNode);
+            if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+                environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                                                                       FIELD_EXECUTION_STRAND, executionCallback, null,
+                                                                       returnType, arguments);
+            } else {
+                environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                                                                       FIELD_EXECUTION_STRAND, executionCallback, null,
+                                                                       returnType, arguments);
+            }
+        } else {
+            // TODO: Hierarchical paths
+            future.complete(null);
+        }
+        return null;
+    }
+
+    private static ResourceMethodType getResourceMethod(ServiceType serviceType, List<String> path, String accessor) {
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            if (accessor.equals(resourceMethod.getAccessor()) && isPathsMatching(resourceMethod, path)) {
+                return resourceMethod;
             }
         }
         return null;

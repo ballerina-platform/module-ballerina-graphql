@@ -39,6 +39,8 @@ public class Utils {
     static final String EXECUTE_SERVICE_FUNCTION = "executeService";
     static final String EXECUTE_MUTATION_FUNCTION = "executeMutation";
 
+    static final String EXECUTE_RESOURCE_FUNCTION = "executeResource";
+
     // Internal type names
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
@@ -53,6 +55,11 @@ public class Utils {
                                                                                    getModule().getName(),
                                                                                    getModule().getMajorVersion(),
                                                                                    EXECUTE_MUTATION_FUNCTION);
+
+    public static final StrandMetadata FIELD_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
+                                                                                   getModule().getName(),
+                                                                                   getModule().getMajorVersion(),
+                                                                                   EXECUTE_RESOURCE_FUNCTION);
 
     public static BError createError(String message, String errorTypeName) {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);

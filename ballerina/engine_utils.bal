@@ -56,3 +56,9 @@ isolated function getSubscriptionResult(ExecutorVisitor visitor,
                                         parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
+
+isolated function executeResource(service object {} serviceObject, parser:FieldNode fieldNode,
+                                          map<Upload|Upload[]> fileInfo, Context context) returns any|error =
+@java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
