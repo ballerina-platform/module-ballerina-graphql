@@ -385,7 +385,7 @@ isolated function handleHttpClientErrorResponse(http:ClientError clientError) re
 }
 
 isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
-    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType(GraphQLErrorArray);
+    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType();
     if errors is error {
         return error RequestError("GraphQL Client Error", errors);
     }
