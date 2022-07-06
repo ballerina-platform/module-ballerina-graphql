@@ -17,7 +17,6 @@
 import ballerina/file;
 import ballerina/http;
 import ballerina/io;
-import ballerina/lang.value;
 import ballerina/test;
 import ballerina/websocket;
 
@@ -110,8 +109,7 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
 
 isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload)
     returns websocket:Error?|error {
-    string textResponse = check wsClient->readTextMessage();
-    json actualPayload = check value:fromJsonString(textResponse);
+    json actualPayload = check wsClient->readMessage();
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -121,18 +119,17 @@ isolated function writeWebSocketTextMessage(string? document, websocket:Client w
     json payload = {query: document, variables: variables, operationName: operationName};
     if subProtocol !is () && id !is () {
         json wsPayload = subProtocol == GRAPHQL_WS
-                    ? {"type": WS_START, id: id, payload: payload}
-                    : {"type": WS_SUBSCRIBE, id: id, payload: payload};
-        check wsClient->writeTextMessage(wsPayload.toJsonString());
+                        ? {"type": WS_START, id: id, payload: payload}
+                        : {"type": WS_SUBSCRIBE, id: id, payload: payload};
+        check wsClient->writeMessage(wsPayload);
     } else {
-        check wsClient->writeTextMessage(payload.toJsonString());
+        check wsClient->writeMessage(payload);
     }
 }
 
 isolated function validateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error?|error {
     string expectedPayload = WS_ACK;
-    string textResponse = check wsClient->readTextMessage();
-    json jsonPayload = check value:fromJsonString(textResponse);
+    json jsonPayload = check wsClient->readMessage();
     WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
     string actualType = wsPayload.'type;
     test:assertEquals(actualType, expectedPayload);
@@ -140,5 +137,5 @@ isolated function validateConnectionInitMessage(websocket:Client wsClient) retur
 
 isolated function initiateConnectionInitMessage(websocket:Client wsClient, string? id = ()) returns websocket:Error? {
     json payload = id != () ? {"type": WS_INIT, id: id} : {"type": WS_INIT};
-    check wsClient->writeTextMessage((payload.toJsonString()));
+    check wsClient->writeMessage(payload);
 }

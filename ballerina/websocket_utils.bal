@@ -77,11 +77,11 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
 isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & readonly customHeaders, string wsType,
                                         json payload, string? id = ()) returns websocket:Error? {
     if !customHeaders.hasKey(WS_SUB_PROTOCOL) {
-        check caller->writeTextMessage(payload.toJsonString());
+        check caller->writeMessage(payload);
     } else {
         string 'type = getMessageType(wsType, customHeaders);
         json jsonResponse = id != () ? {"type": 'type, id: id, payload: payload} : {"type": 'type, payload: payload};
-        check caller->writeTextMessage(jsonResponse.toJsonString());
+        check caller->writeMessage(jsonResponse);
     }
 }
 

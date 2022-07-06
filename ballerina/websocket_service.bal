@@ -79,8 +79,7 @@ isolated service class WsService {
                 }
                 self.initiatedConnection = true;
             }
-            json wsResponse = {"type": WS_ACK};
-            check caller->writeTextMessage(wsResponse.toJsonString());
+            check caller->writeMessage({"type": WS_ACK});
         } else if wsType == WS_SUBSCRIBE || wsType == WS_START || !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
             lock {
                 if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
@@ -123,11 +122,9 @@ isolated service class WsService {
             check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
             closeConnection(caller);
         } else if wsType == WS_PING {
-            json wsMessage = {"type": WS_PONG};
-            check caller->writeTextMessage(wsMessage.toString());
+            check caller->writeMessage({"type": WS_PONG});
         } else if wsType == WS_PONG {
-            json wsMessage = {"type": WS_PING};
-            check caller->writeTextMessage(wsMessage.toString());
+            check caller->writeMessage({"type": WS_PING});
         } else {
             // do nothing
         }

@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.value;
 import ballerina/test;
 import ballerina/websocket;
 
@@ -26,7 +25,7 @@ isolated function testSubscription() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     json payload = {query: document};
-    check wsClient->writeTextMessage(payload.toJsonString());
+    check wsClient->writeMessage(payload);
     json expectedPayload = {data: {name: "Walter"}};
     check validateWebSocketResponse(wsClient, expectedPayload);
     expectedPayload = {data: {name: "Skyler"}};
@@ -332,10 +331,8 @@ isolated function testSubscriptionWithMultipleClientsUsingSubProtocol() returns 
             check validateWebSocketResponse(wsClient2, expectedPayload);
         }
 
-        json completedResponse = {id: "1", "type": WS_STOP};
-        check wsClient1->writeTextMessage(completedResponse.toJsonString());
-        completedResponse = {id: "2", "type": WS_STOP};
-        check wsClient2->writeTextMessage(completedResponse.toJsonString());
+        check wsClient1->writeMessage({id: "1", "type": WS_STOP});
+        check wsClient2->writeMessage({id: "2", "type": WS_STOP});
         json expectedPayload = {"type": WS_COMPLETE, id: "1", payload: null};
         check validateWebSocketResponse(wsClient1, expectedPayload);
         expectedPayload = {"type": WS_COMPLETE, id: "2", payload: null};
@@ -422,8 +419,7 @@ isolated function testInvalidSubscriptionUsingSubProtocol() returns error? {
         check validateConnectionInitMessage(wsClient);
 
         json payload = {query: document};
-        json wsPayload = {"type": WS_START, id: "1", payload: payload};
-        check wsClient->writeTextMessage(wsPayload.toJsonString());
+        check wsClient->writeMessage({"type": WS_START, id: "1", payload: payload});
         json expectedPayload = {'type: messageType, id: "1", payload: responsePayload};
         check validateWebSocketResponse(wsClient, expectedPayload);
     }
@@ -474,20 +470,18 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     websocket:Client wsClient = check new(url, config);
     string expectedPayload = WS_ACK;
 
-    json payload = {"type": WS_INIT, id: "1"};
-    check wsClient->writeTextMessage((payload.toJsonString()));
+    check wsClient->writeMessage({"type": WS_INIT, id: "1"});
 
-    string textResponse = check wsClient->readTextMessage();
-    json jsonPayload = check value:fromJsonString(textResponse);
-    WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+    json response = check wsClient->readMessage();
+    WSPayload wsPayload = check response.cloneWithType(WSPayload);
     string actualType = wsPayload.'type;
     test:assertEquals(actualType, expectedPayload);
 
-    check wsClient->writeTextMessage((payload.toJsonString()));
-    string|error message = wsClient->readTextMessage();
-    test:assertTrue(message is error);
+    check wsClient->writeMessage({"type": WS_INIT, id: "1"});
+    json|websocket:Error message = wsClient->readMessage();
+    test:assertTrue(message is websocket:Error);
     string errorMsg = "Too many initialisation requests: Status code: 4429";
-    if message is error {
+    if message is websocket:Error {
         test:assertEquals((<error>message).message(), errorMsg);
     }
 }
@@ -500,13 +494,12 @@ isolated function testUnauthorizedAccessUsingSubProtocol() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: ["graphql-ws"]};
     websocket:Client wsClient = check new(url, config);
-    json wsPayload = {"type": WS_START, id: "1", payload: {query: document}};
-    check wsClient->writeTextMessage(wsPayload.toJsonString());
-    string|error textResponse = wsClient->readTextMessage();
+    check wsClient->writeMessage({"type": WS_START, id: "1", payload: {query: document}});
+    json|websocket:Error response = wsClient->readMessage();
     string errorMsg = "Unauthorized: Status code: 4401";
-    test:assertTrue(textResponse is error);
-    if textResponse is error {
-        test:assertEquals((<error>textResponse).message(), errorMsg);
+    test:assertTrue(response is websocket:Error);
+    if response is websocket:Error {
+        test:assertEquals((<error>response).message(), errorMsg);
     }
 }
 
@@ -526,13 +519,13 @@ function testAlreadyExistingSubscriberUsingSubProtocol() returns error? {
 
     check writeWebSocketTextMessage(document, wsClient, id = clientId, subProtocol = subProtocol);
     check writeWebSocketTextMessage(document, wsClient, id = clientId, subProtocol = subProtocol);
-    string|error message = wsClient->readTextMessage();
-    while message !is error {
-        message = wsClient->readTextMessage();
+    json|websocket:Error message = wsClient->readMessage();
+    while message !is websocket:Error {
+        message = wsClient->readMessage();
     }
     string errorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
-    test:assertTrue(message is error);
-    if message is error {
+    test:assertTrue(message is websocket:Error);
+    if message is websocket:Error {
         test:assertEquals((<error>message).message(), errorMsg);
     }
 }
@@ -546,12 +539,10 @@ isolated function testOnPing() returns error? {
     foreach string subProtocol in subProtocols {
         websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
         websocket:Client wsClient = check new(url, config);
-        json payload = {"type": WS_PING};
-        check wsClient->writeTextMessage((payload.toJsonString()));
+        check wsClient->writeMessage({"type": WS_PING});
         string expectedPayload = WS_PONG;
-        string textResponse = check wsClient->readTextMessage();
-        json jsonPayload = check value:fromJsonString(textResponse);
-        WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+        json response = check wsClient->readMessage();
+        WSPayload wsPayload = check response.cloneWithType(WSPayload);
         string actualType = wsPayload.'type;
         test:assertEquals(actualType, expectedPayload);
     }
@@ -566,12 +557,10 @@ isolated function testOnPong() returns error? {
     foreach string subProtocol in subProtocols {
         websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
         websocket:Client wsClient = check new(url, config);
-        json payload = {"type": WS_PONG};
-        check wsClient->writeTextMessage((payload.toJsonString()));
+        check wsClient->writeMessage({"type": WS_PONG});
         string expectedPayload = WS_PING;
-        string textResponse = check wsClient->readTextMessage();
-        json jsonPayload = check value:fromJsonString(textResponse);
-        WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+        json response = check wsClient->readMessage();
+        WSPayload wsPayload = check response.cloneWithType(WSPayload);
         string actualType = wsPayload.'type;
         test:assertEquals(actualType, expectedPayload);
     }
@@ -586,10 +575,10 @@ isolated function testInvalidSubProtocolInSubscriptions() returns error? {
     websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
     websocket:Client wsClient = check new(url, config);
     check initiateConnectionInitMessage(wsClient);
-    string|error message = wsClient->readTextMessage();
+    json|websocket:Error message = wsClient->readMessage();
     string errorMsg = "Subprotocol not acceptable: Status code: 4406";
-    test:assertTrue(message is error);
-    if message is error {
+    test:assertTrue(message is websocket:Error);
+    if message is websocket:Error {
         test:assertEquals((<error>message).message(), errorMsg);
     }
 }
