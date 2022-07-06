@@ -77,6 +77,14 @@ public isolated class Context {
         }
     }
 
+    public isolated function resolve() returns any|error {
+        if self.getEngine() is Engine {
+            Engine engine = <Engine>self.getEngine();
+            return engine.resolve(self);
+        }
+        return error("Error in Interceptor Execution!");
+    }
+
     isolated function setEngine(Engine engine) {
         lock {
             self.engine = engine;

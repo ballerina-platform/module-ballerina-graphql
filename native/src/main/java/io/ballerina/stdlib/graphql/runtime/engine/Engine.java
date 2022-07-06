@@ -47,6 +47,7 @@ import java.util.List;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -81,6 +82,10 @@ public class Engine {
 
     public static void attachServiceToEngine(BObject service, BObject engine) {
         engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
+    }
+
+    public static void attachFieldToEngine(BObject fieldNode, BObject engine) {
+        engine.addNativeData(GRAPHQL_FIELD, fieldNode);
     }
 
     public static void executeQuery(Environment environment, BObject visitor, BObject node) {
@@ -214,4 +219,19 @@ public class Engine {
         }
         return null;
     }
+
+    public static Object executeResource(BObject fieldNode) {
+        return null;
+    }
+
+    // public static Type getReturnType(BObject service, BString methodName) {
+    //     ServiceType serviceType = (ServiceType) service.getType();
+    //     for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+    //         if (GET_ACCESSOR.equals(resourceMethod.getAccessor()) &&
+    //                 resourceMethod.getName().equalsIgnoreCase(methodName.getValue())) {
+    //              return resourceMethod.getReturnType().getEmptyValue();
+    //         }
+    //     }
+    //     return null;
+    // }
 }

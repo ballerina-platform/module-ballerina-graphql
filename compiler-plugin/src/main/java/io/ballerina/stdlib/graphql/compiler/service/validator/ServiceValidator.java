@@ -106,6 +106,7 @@ public class ServiceValidator {
 
     private void validateService() {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
+        serviceDeclarationNode.metadata();
         for (Node node : serviceDeclarationNode.members()) {
             validateServiceMember(node);
         }

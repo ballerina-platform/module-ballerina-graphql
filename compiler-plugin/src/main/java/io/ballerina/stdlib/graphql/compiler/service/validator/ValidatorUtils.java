@@ -36,6 +36,8 @@ public final class ValidatorUtils {
     public static final String DOUBLE_UNDERSCORES = "__";
     public static final String RESOURCE_FUNCTION_GET = "get";
     public static final String RESOURCE_FUNCTION_SUBSCRIBE = "subscribe";
+    public static final String GRAPHQL_INTERCEPTOR = "graphql:Interceptor";
+    public static final String INTERCEPTOR_FUNCTION_EXECUTE = "execute";
 
     public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
                                      Location location) {

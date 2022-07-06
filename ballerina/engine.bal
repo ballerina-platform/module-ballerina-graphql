@@ -20,6 +20,8 @@ isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
     private final readonly & (readonly & Interceptor)[] interceptors;
+    private int nextInterceptor;
+    private typedesc resolverReturnType;
 
     isolated function init(string schemaString, int? maxQueryDepth, (readonly & Interceptor)[] interceptors) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
@@ -28,6 +30,8 @@ isolated class Engine {
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors.cloneReadOnly();
+        self.nextInterceptor = 0;
+        self.resolverReturnType = typeof ();
     }
 
     isolated function getSchema() returns readonly & __Schema {
@@ -36,6 +40,18 @@ isolated class Engine {
 
     isolated function getInterceptors() returns (readonly & Interceptor)[] {
         return self.interceptors;
+    }
+
+    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
+        lock {
+            if self.interceptors.length() > self.nextInterceptor {
+                readonly & Interceptor next = self.interceptors[self.nextInterceptor];
+                self.nextInterceptor += 1;
+                return next;
+            }
+            self.nextInterceptor = 0; //reset the interceptor counter
+            return;
+        }
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -136,6 +152,23 @@ isolated class Engine {
                 locations: []
             };
             return getOutputObjectFromErrorDetail(errorDetail);
+        }
+    }
+
+    isolated function resolve(Context ctx) returns any|error {
+        (Interceptor & readonly)? interceptor = self.getNextInterceptor();
+        //may required root operation type to identify subscriptions
+
+        Field fieldNode = getFieldFromEngine(self);
+        if interceptor is () {
+            any|error resolverValue = executeResource(fieldNode);
+            lock {
+                self.resolverReturnType = typeof resolverValue;
+            }
+            return;
+        } else {
+            // return executeInterceptor(s, interceptor, ctx, reqInfo);
+            return;
         }
     }
 }

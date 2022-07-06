@@ -1397,3 +1397,120 @@ service /deprecation on wrappedListener {
         return ["Guitar", "Violin", "Drums"].toStream();
     }
 }
+
+// **************** Interceptor-Related Services ****************
+
+@graphql:ServiceConfig {
+    interceptors: [new RecordInterceptor()]
+}
+service /intercept_records on basicListener {
+    isolated resource function get profile() returns Person {
+        return {
+            name: "Albus Percival Wulfric Brian Dumbledore",
+            age: 80,
+            address: {number: "101", street: "Mould-on-the-Wold", city: "London"}
+        };
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: []
+}
+service /intercept_hierachical on basicListener {
+    resource function get Name() returns HierarchicalName {
+        return new;
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new Destruct()]
+}
+service /intercept_service_obj_arrays on basicListener {
+    resource function get students() returns StudentService[] {
+        return [new StudentService(45, "Ron Weasly"), new StudentService(46, "Hermione Granger")];
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new ServiceObjectInterceptor()]
+}
+service /intercept_service_obj on basicListener {
+    resource function get teacher() returns TeacherService {
+        return new TeacherService(2, "Severus Snape", "Defence Against the Dark Arts");
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new ArrayInterceptor()]
+}
+service /intercept_arrays on basicListener {
+    resource function get houses() returns string[] {
+        return ["Gryffindor(Fire)", "Hufflepuff(Earth)", "Ravenclaw(Air)"];
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new StringInterceptor1(), new StringInterceptor2(), new StringInterceptor3()]
+}
+service /intercept_string on basicListener {
+    resource function get enemy() returns string {
+        return "voldemort";
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new ErrorInterceptor()]
+}
+service /intercept_errors on basicListener {
+    isolated resource function get greet() returns string|error {
+        return error("This is an invalid field!");
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new Counter(), new Counter(), new Counter()]
+}
+service /interceptors1 on basicListener {
+    isolated resource function get age() returns int {
+        return 23;
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new InterceptMutation()]
+}
+isolated service /mutation_interceptor on basicListener {
+    private Person p;
+
+    isolated function init() {
+        self.p = p2.clone();
+    }
+
+    isolated resource function get person() returns Person {
+        lock {
+            return self.p;
+        }
+    }
+
+    isolated remote function setName(string name) returns Person {
+        lock {
+            Person p = {name: name, age: self.p.age, address: self.p.address};
+            self.p = p;
+            return self.p;
+        }
+    }
+}
+
+// @graphql:ServiceConfig {
+//     interceptors: []
+// }
+// service /subscription_interceptor on basicListener {
+//     isolated resource function get name() returns string {
+//         return "Walter White";
+//     }
+
+//     isolated resource function subscribe stringMessages() returns stream<string?, error?> {
+//         string?[] stringArray = [(), "1", "2", "3", "4", "5"];
+//         return stringArray.toStream();
+//     }
+// }

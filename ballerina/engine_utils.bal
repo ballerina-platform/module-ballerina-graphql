@@ -56,7 +56,27 @@ isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
+isolated function attachFieldToEngine(Field fieldNode, Engine engine) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
+isolated function getFieldFromEngine(Engine engine) returns Field = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+} external;
+
 isolated function getSubscriptionResult(ExecutorVisitor visitor,
                                         parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
+
+isolated function executeResource(Field fieldNode) returns any|error = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
+// isolated function executeInterceptor(Service s, (readonly & Interceptor) interceptor, Context ctx, RequestInfo reqInfo) returns any|error = @java:Method {
+//     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+// } external;
+
+// isolated function getReturnType(Service s, string methodName) returns typedesc = @java:Method {
+//     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+// } external;

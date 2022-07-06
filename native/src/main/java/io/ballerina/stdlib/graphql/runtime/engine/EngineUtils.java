@@ -127,6 +127,7 @@ public class EngineUtils {
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
+    public static final String GRAPHQL_FIELD = "graphql.field";
 
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
@@ -233,5 +234,10 @@ public class EngineUtils {
             }
         }
         return null;
+    }
+
+    public static BObject getFieldFromEngine(BObject engine) {
+        BObject fieldNode = (BObject) engine.getNativeData(GRAPHQL_FIELD);
+        return fieldNode;
     }
 }
