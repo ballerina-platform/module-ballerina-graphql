@@ -128,6 +128,8 @@ public class EngineUtils {
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
 
+    public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
+
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
@@ -241,5 +243,13 @@ public class EngineUtils {
 
     public static BObject getService(BObject engine) {
         return (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+    }
+
+    public static void setFileInfo(BObject context, BMap<BString, Object> fileInfo) {
+        context.addNativeData(FILE_INFO_FIELD, fileInfo);
+    }
+
+    public static BMap<BString, Object> getFileInfo(BObject context) {
+        return (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
     }
 }

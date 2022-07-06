@@ -24,16 +24,13 @@ class ExecutorVisitor {
     private Data data;
     private ErrorDetail[] errors;
     private Context context;
-    private map<Upload|Upload[]> fileInfo;
     private any result;
 
-    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo,
-        any result = ()) {
+    isolated function init(Engine engine, __Schema schema, Context context, any result = ()) {
 
         self.engine = engine;
         self.schema = schema;
         self.context = context;
-        self.fileInfo = fileInfo;
         self.data = {};
         self.result = result;
         self.errors = [];
@@ -57,7 +54,10 @@ class ExecutorVisitor {
             self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
         } else {
             if operationType == parser:OPERATION_QUERY {
-                executeQuery(self, fieldNode);
+                Field 'field = new (fieldNode, self.engine.getService());
+                var result = self.engine.resolve(self.context, 'field);
+                self.errors = self.context.getErrors();
+                self.data[fieldNode.getAlias()] = result;
             } else if operationType == parser:OPERATION_MUTATION {
                 executeMutation(self, fieldNode);
             } else if operationType == parser:OPERATION_SUBSCRIPTION {

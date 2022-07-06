@@ -57,8 +57,7 @@ isolated function getSubscriptionResult(ExecutorVisitor visitor,
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeResource(service object {} serviceObject, parser:FieldNode fieldNode,
-                                          map<Upload|Upload[]> fileInfo, Context context) returns any|error =
-@java:Method {
+isolated function executeResource(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
+returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;

@@ -48,7 +48,6 @@ import java.util.List;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -152,10 +151,8 @@ public class Engine {
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
                                            MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
                                            StrandMetadata strandMetadata) {
-        ArgumentHandler argumentHandler = new ArgumentHandler(method,
-                                                              executionContext.getVisitor().getMapValue(FILE_INFO),
-                                                              executionContext.getVisitor()
-                                                                      .getObjectValue(CONTEXT_FIELD));
+        ArgumentHandler argumentHandler = new ArgumentHandler(method, executionContext.getVisitor()
+                .getObjectValue(CONTEXT_FIELD));
         Object[] args = argumentHandler.getArguments(node);
         ResourceCallback callback = new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
@@ -203,7 +200,7 @@ public class Engine {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, executionContext.getVisitor()
-                        .getMapValue(FILE_INFO), executionContext.getVisitor().getObjectValue(CONTEXT_FIELD));
+                        .getObjectValue(CONTEXT_FIELD));
                 Object[] args = argumentHandler.getArguments(node);
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
@@ -219,8 +216,7 @@ public class Engine {
         return null;
     }
 
-    public static Object executeResource(Environment environment, BObject service, BObject fieldNode,
-                                         BMap<BString, Object> fileInfo, BObject context) {
+    public static Object executeResource(Environment environment, BObject service, BObject fieldNode, BObject context) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
@@ -229,7 +225,7 @@ public class Engine {
         ResourceMethodType resourceMethod = getResourceMethod(serviceType, path, GET_ACCESSOR);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         if (resourceMethod != null) {
-            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, fileInfo, context);
+            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context);
             Object[] arguments = argumentHandler.getArguments(fieldNode);
             if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
                 environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,

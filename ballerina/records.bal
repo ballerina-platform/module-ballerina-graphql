@@ -138,11 +138,3 @@ enum __DirectiveLocation {
     INPUT_OBJECT,
     INPUT_FIELD_DEFINITION
 }
-
-# Represents the information about a GraphQL request.
-# + field - The `Field` object contatining the information about the currently executing document field
-# + fileInfo - The information about the files uploaded with the GraphQL document
-public type RequestInfo record {|
-    Field 'field;
-    map<Upload|Upload[]> fileInfo;
-|};

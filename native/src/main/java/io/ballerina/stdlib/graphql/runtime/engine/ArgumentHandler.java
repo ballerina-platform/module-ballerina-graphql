@@ -38,6 +38,7 @@ import io.ballerina.runtime.api.values.BString;
 import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
@@ -58,9 +59,9 @@ public class ArgumentHandler {
     private final BMap<BString, Object> fileInfo;
     private final BObject context;
 
-    public ArgumentHandler(MethodType method, BMap<BString, Object> fileInfo, BObject context) {
+    public ArgumentHandler(MethodType method, BObject context) {
         this.method = method;
-        this.fileInfo = fileInfo;
+        this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
         this.argumentsMap = ValueCreator.createMapValue();
     }

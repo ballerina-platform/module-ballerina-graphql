@@ -51,9 +51,8 @@ isolated class Engine {
         }
     }
 
-    isolated function getResult(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo,
-        any result = ()) returns OutputObject {
-
+    isolated function getResult(parser:OperationNode operationNode, Context context, any result = ())
+    returns OutputObject {
         DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
         DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
 
@@ -66,7 +65,7 @@ isolated class Engine {
             operationNode.accept(visitor);
         }
 
-        ExecutorVisitor executor = new (self, self.schema, context, fileInfo, result);
+        ExecutorVisitor executor = new (self, self.schema, context, result);
         operationNode.accept(executor);
         OutputObject outputObject = executor.getOutput();
         ResponseFormatter responseFormatter = new (self.schema);
@@ -144,16 +143,11 @@ isolated class Engine {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
 
-    isolated function resolve(Context context, RequestInfo requestInfo) returns anydata|error {
-        Field 'field = requestInfo.'field;
+    isolated function resolve(Context context, Field 'field) returns anydata {
         service object {} serviceObject = 'field.getServiceObject();
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        map<Upload|Upload[]> fileInfo = requestInfo.fileInfo;
-        var result = executeResource(serviceObject, fieldNode, fileInfo, context);
-        if result is anydata|error {
-            return result;
-        } else {
-            return result.toString();
-        }
+        any|error fieldValue = executeResource(serviceObject, fieldNode, context);
+        ResponseGenerator responseGenerator = new(self, context);
+        return responseGenerator.getResult(fieldValue, fieldNode);
     }
 }
