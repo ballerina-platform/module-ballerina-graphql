@@ -163,11 +163,6 @@ class FieldValidatorVisitor {
                             self.removePath();
                         }
                     }
-                } else if listItemInputValue.'type.kind == NON_NULL {
-                    string expectedTypeName = getTypeNameFromType(schemaArg.'type);
-                    string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: []`;
-                    ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
-                    self.errors.push(errorDetail);
                 }
             } else if schemaArg.'type.kind == NON_NULL {
                 string expectedTypeName = getTypeNameFromType(schemaArg.'type);
@@ -336,11 +331,6 @@ class FieldValidatorVisitor {
                     }
                     self.removePath();
                 }
-            } else if listItemInputValue.'type.kind == NON_NULL {
-                string expectedTypeName = getTypeNameFromType(inputValue.'type);
-                string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: []`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, location);
-                self.errors.push(errorDetail);
             }
         } else {
             string expectedTypeName = getOfTypeName(inputValue.'type);
