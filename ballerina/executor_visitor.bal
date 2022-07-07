@@ -52,6 +52,14 @@ class ExecutorVisitor {
         } else if fieldNode.getName() == TYPE_FIELD {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
             self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
+        } else if fieldNode.getName() == TYPE_NAME_FIELD {
+            if operationType == parser:OPERATION_QUERY {
+                self.data[fieldNode.getAlias()] = QUERY_TYPE_NAME;
+            } else if operationType == parser:OPERATION_MUTATION {
+                self.data[fieldNode.getAlias()] = MUTATION_TYPE_NAME;
+            } else {
+                self.data[fieldNode.getAlias()] = SUBSCRIPTION_TYPE_NAME;
+            }
         } else {
             if operationType == parser:OPERATION_QUERY {
                 Field 'field = new (fieldNode, self.engine.getService());
