@@ -20,11 +20,13 @@ class ResponseGenerator {
     private final Engine engine;
     private final Context context;
     private ErrorDetail[] errors;
+    private (string|int)[] path;
 
     isolated function init(Engine engine, Context context) {
         self.engine = engine;
         self.context = context;
         self.errors = [];
+        self.path = [];
     }
 
     isolated function getResult(any|error parentValue, parser:FieldNode parentNode) returns anydata {
@@ -40,8 +42,22 @@ class ResponseGenerator {
         if parentValue is any[] {
             return self.getResultFromArray(parentValue, parentNode);
         }
+        if parentValue is table<map<anydata>> {
+            return self.getResultFromTable(parentValue, parentNode);
+        }
         if parentValue is service object {} {
             return self.getResultFromService(parentValue, parentNode);
+        }
+    }
+
+    isolated function getResultFromObject(any parentValue, parser:FieldNode fieldNode) returns anydata {
+        if fieldNode.getName() == TYPE_NAME_FIELD {
+            return getTypeNameFromValue(parentValue);
+        } else if parentValue is map<anydata> {
+            return self.getResult(parentValue.get(fieldNode.getName()), fieldNode);
+        } else if parentValue is service object {} {
+            Field 'field = new (fieldNode, parentValue);
+            return self.getResult(self.engine.resolve(self.context, 'field), fieldNode);
         }
     }
 
@@ -49,17 +65,21 @@ class ResponseGenerator {
         ErrorDetail errorDetail = {
             message: err.message(),
             locations: [fieldNode.getLocation()],
-            path: [] // TODO: Path
+            path: self.path.clone()
         };
         self.context.addError(errorDetail);
         return errorDetail;
     }
 
     isolated function getResultFromMap(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
+        if isMap(parentValue) {
+            string mapKey = self.getKeyArgument(parentNode);
+            return self.getResult(parentValue.get(mapKey), parentNode);
+        }
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
-                anydata selectionValue = self.getResult(parentValue.get(selection.getName()), selection);
+                anydata selectionValue = self.getResultFromObject(parentValue, selection);
                 result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
 
             } else if selection is parser:FragmentNode {
@@ -82,13 +102,25 @@ class ResponseGenerator {
         return result;
     }
 
+    isolated function getResultFromTable(table<map<anydata>> parentValue, parser:FieldNode parentNode) returns anydata {
+        anydata[] result = [];
+        foreach anydata element in parentValue {
+            anydata elementValue = self.getResult(element, parentNode);
+            if elementValue is ErrorDetail {
+                result.push(());
+            } else {
+                result.push(elementValue);
+            }
+        }
+        return result;
+    }
+
     isolated function getResultFromService(service object {} serviceObject, parser:FieldNode parentNode)
     returns anydata {
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
-                Field 'field = new (selection, serviceObject);
-                anydata selectionValue = self.engine.resolve(self.context, 'field);
+                anydata selectionValue = self.getResultFromObject(serviceObject, selection);
                 result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
             } else if selection is parser:FragmentNode {
                 self.getResultForFragmentFromService(serviceObject, selection, result);
@@ -99,6 +131,10 @@ class ResponseGenerator {
 
     isolated function getResultForFragmentFromMap(map<anydata> parentValue,
                                                   parser:FragmentNode parentNode, Data result) {
+        string typeName = getTypeNameFromValue(parentValue);
+        if parentNode.getOnType() != typeName {
+            return;
+        }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
                 anydata selectionValue = self.getResult(parentValue.get(selection.getName()), selection);
@@ -111,6 +147,10 @@ class ResponseGenerator {
 
     isolated function getResultForFragmentFromService(service object {} parentValue,
                                                       parser:FragmentNode parentNode, Data result) {
+        string typeName = getTypeNameFromValue(parentValue);
+        if parentNode.getOnType() != typeName {
+            return;
+        }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
                 Field 'field = new (selection, parentValue);
@@ -119,6 +159,15 @@ class ResponseGenerator {
             } else if selection is parser:FragmentNode {
                 self.getResultForFragmentFromService(parentValue, selection, result);
             }
+        }
+    }
+
+    isolated function getKeyArgument(parser:FieldNode fieldNode) returns string {
+        parser:ArgumentNode argumentNode = fieldNode.getArguments()[0];
+        if argumentNode.isVariableDefinition() {
+            return <string>argumentNode.getVariableValue();
+        } else {
+            return <string>argumentNode.getValue();
         }
     }
 }

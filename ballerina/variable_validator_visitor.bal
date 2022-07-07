@@ -226,7 +226,7 @@ class VariableValidatorVisitor {
         } else if value !is () && (argument.getKind() == parser:T_INPUT_OBJECT ||
             argument.getKind() == parser:T_LIST || argument.getKind() == parser:T_IDENTIFIER) {
             argument.setVariableValue(value);
-        } else if value is Scalar && getTypeNameFromValue(<Scalar>value) == getTypeName(argument) {
+        } else if value is Scalar && getTypeNameFromScalarValue(<Scalar>value) == getTypeName(argument) {
             argument.setVariableValue(value);
         } else if getTypeName(argument) == FLOAT && value is decimal|int {
             argument.setVariableValue(value);

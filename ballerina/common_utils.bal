@@ -191,7 +191,7 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
     return schemaType.name.toString();
 }
 
-isolated function getTypeNameFromValue(Scalar value) returns string {
+isolated function getTypeNameFromScalarValue(Scalar value) returns string {
     if value is float {
         return FLOAT;
     } else if value is decimal {
