@@ -31,6 +31,7 @@ import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -217,14 +218,11 @@ public class Engine {
         return null;
     }
 
-    public static Object executeQueryResource(Environment environment, BObject engine, BObject service,
-                                              BObject fieldNode, BObject context) {
+    public static Object executeQueryResource(Environment environment, BObject service,
+                                              ResourceMethodType resourceMethod, BObject fieldNode, BObject context) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
-        List<String> path = new ArrayList<>();
-        path.add(fieldNode.getStringValue(NAME_FIELD).getValue());
-        ResourceMethodType resourceMethod = getResourceMethod(serviceType, path, GET_ACCESSOR);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         if (resourceMethod != null) {
             ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context);
@@ -238,9 +236,6 @@ public class Engine {
                                                                        RESOURCE_EXECUTION_STRAND, executionCallback,
                                                                        null, returnType, arguments);
             }
-        } else {
-            // TODO: Hierarchical paths
-            future.complete(null);
         }
         return null;
     }
@@ -269,6 +264,12 @@ public class Engine {
         return null;
     }
 
+    public static Object getResourceMethod(BObject service, BObject fieldNode, BArray path) {
+        ServiceType serviceType = (ServiceType) service.getType();
+        List<String> pathList = getPathList(path);
+        return getResourceMethod(serviceType, pathList, GET_ACCESSOR);
+    }
+
     private static ResourceMethodType getResourceMethod(ServiceType serviceType, List<String> path, String accessor) {
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (accessor.equals(resourceMethod.getAccessor()) && isPathsMatching(resourceMethod, path)) {
@@ -276,5 +277,14 @@ public class Engine {
             }
         }
         return null;
+    }
+
+    private static List<String> getPathList(BArray pathArray) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < pathArray.size(); i++) {
+            BString pathSegment = (BString) pathArray.get(i);
+            result.add(pathSegment.getValue());
+        }
+        return result;
     }
 }
