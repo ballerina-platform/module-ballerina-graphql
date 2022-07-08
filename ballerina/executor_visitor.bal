@@ -65,7 +65,7 @@ class ExecutorVisitor {
                 Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
                 var result = self.engine.resolve(self.context, 'field);
                 self.errors = self.context.getErrors();
-                self.data[fieldNode.getAlias()] = result;
+                self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
             } else if operationType == parser:OPERATION_MUTATION {
                 (string|int)[] path = [fieldNode.getName()];
                 Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
