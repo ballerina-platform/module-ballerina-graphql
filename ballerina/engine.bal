@@ -146,7 +146,15 @@ isolated class Engine {
     isolated function resolve(Context context, Field 'field) returns anydata {
         service object {} serviceObject = 'field.getServiceObject();
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        any|error fieldValue = executeQueryResource(serviceObject, fieldNode, context);
+        parser:RootOperationType operationType = 'field.getOperationType();
+        any|error fieldValue;
+        if operationType == parser:OPERATION_QUERY {
+            fieldValue = executeQueryResource(serviceObject, fieldNode, context);
+        } else if operationType == parser:OPERATION_MUTATION {
+            fieldValue = executeMutationMethod(serviceObject, fieldNode, context);
+        } else {
+            fieldValue = ();
+        }
         ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }

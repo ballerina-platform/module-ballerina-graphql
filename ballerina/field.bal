@@ -18,14 +18,17 @@ import graphql.parser;
 
 # Represents the information about a particular field of a GraphQL document.
 public class Field {
+    private final parser:RootOperationType operationType;
     private final parser:FieldNode internalNode;
     private final service object {} serviceObject;
     private (string|int)[] path;
 
-    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = []) {
+    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = [],
+                           parser:RootOperationType operationType = parser:OPERATION_QUERY) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.path = path;
+        self.operationType = operationType;
     }
 
     # Returns the name of the field.
@@ -50,5 +53,9 @@ public class Field {
 
     isolated function getPath() returns (string|int)[] {
         return self.path;
+    }
+
+    isolated function getOperationType() returns parser:RootOperationType {
+        return self.operationType;
     }
 }

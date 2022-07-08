@@ -41,6 +41,8 @@ public class Utils {
 
     static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
 
+    static final String EXECUTE_REMOTE_FUNCTION = "executeMutationMethod";
+
     // Internal type names
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
@@ -56,10 +58,14 @@ public class Utils {
                                                                                    getModule().getMajorVersion(),
                                                                                    EXECUTE_MUTATION_FUNCTION);
 
-    public static final StrandMetadata FIELD_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                   getModule().getName(),
-                                                                                   getModule().getMajorVersion(),
-                                                                                   EXECUTE_RESOURCE_FUNCTION);
+    public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
+                                                                                      getModule().getName(),
+                                                                                      getModule().getMajorVersion(),
+                                                                                      EXECUTE_RESOURCE_FUNCTION);
+    public static final StrandMetadata REMOTE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
+                                                                                    getModule().getName(),
+                                                                                    getModule().getMajorVersion(),
+                                                                                    EXECUTE_RESOURCE_FUNCTION);
 
     public static BError createError(String message, String errorTypeName) {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);

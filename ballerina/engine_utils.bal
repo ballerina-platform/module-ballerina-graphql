@@ -40,14 +40,6 @@ isolated function createSchema(string schemaString) returns readonly & __Schema|
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeQuery(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
 isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode fieldNode, any result) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
@@ -58,6 +50,11 @@ isolated function getSubscriptionResult(ExecutorVisitor visitor,
 } external;
 
 isolated function executeQueryResource(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
+returns any|error = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
+isolated function executeMutationMethod(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
 returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;

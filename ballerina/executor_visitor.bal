@@ -27,7 +27,6 @@ class ExecutorVisitor {
     private any result;
 
     isolated function init(Engine engine, __Schema schema, Context context, any result = ()) {
-
         self.engine = engine;
         self.schema = schema;
         self.context = context;
@@ -63,12 +62,16 @@ class ExecutorVisitor {
         } else {
             if operationType == parser:OPERATION_QUERY {
                 (string|int)[] path = [fieldNode.getName()];
-                Field 'field = new (fieldNode, self.engine.getService(), path);
+                Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
                 var result = self.engine.resolve(self.context, 'field);
                 self.errors = self.context.getErrors();
                 self.data[fieldNode.getAlias()] = result;
             } else if operationType == parser:OPERATION_MUTATION {
-                executeMutation(self, fieldNode);
+                (string|int)[] path = [fieldNode.getName()];
+                Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
+                var result = self.engine.resolve(self.context, 'field);
+                self.errors = self.context.getErrors();
+                self.data[fieldNode.getAlias()] = result;
             } else if operationType == parser:OPERATION_SUBSCRIPTION {
                 executeSubscription(self, fieldNode, self.result);
             }

@@ -58,8 +58,9 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.FIELD_EXECUTION_STRAND;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
@@ -230,16 +231,40 @@ public class Engine {
             Object[] arguments = argumentHandler.getArguments(fieldNode);
             if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
                 environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                                                       FIELD_EXECUTION_STRAND, executionCallback, null,
-                                                                       returnType, arguments);
+                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
+                                                                       null, returnType, arguments);
             } else {
                 environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                                                       FIELD_EXECUTION_STRAND, executionCallback, null,
-                                                                       returnType, arguments);
+                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
+                                                                       null, returnType, arguments);
             }
         } else {
             // TODO: Hierarchical paths
             future.complete(null);
+        }
+        return null;
+    }
+
+    public static Object executeMutationMethod(Environment environment, BObject service, BObject fieldNode,
+                                               BObject context) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) service.getType();
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+        for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+            if (remoteMethod.getName().equals(fieldNode.getStringValue(NAME_FIELD).getValue())) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(remoteMethod, context);
+                Object[] arguments = argumentHandler.getArguments(fieldNode);
+                if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+                    environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
+                                                                           REMOTE_EXECUTION_STRAND, executionCallback,
+                                                                           null, returnType, arguments);
+                } else {
+                    environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
+                                                                           REMOTE_EXECUTION_STRAND, executionCallback,
+                                                                           null, returnType, arguments);
+                }
+            }
         }
         return null;
     }
