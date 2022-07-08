@@ -39,7 +39,7 @@ public class Utils {
     static final String EXECUTE_SERVICE_FUNCTION = "executeService";
     static final String EXECUTE_MUTATION_FUNCTION = "executeMutation";
 
-    static final String EXECUTE_RESOURCE_FUNCTION = "executeResource";
+    static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
 
     // Internal type names
     public static final String ERROR_TYPE = "Error";

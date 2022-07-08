@@ -146,7 +146,7 @@ isolated class Engine {
     isolated function resolve(Context context, Field 'field) returns anydata {
         service object {} serviceObject = 'field.getServiceObject();
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        any|error fieldValue = executeResource(serviceObject, fieldNode, context);
+        any|error fieldValue = executeQueryResource(serviceObject, fieldNode, context);
         ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
