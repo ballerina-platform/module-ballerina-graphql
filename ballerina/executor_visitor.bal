@@ -62,7 +62,8 @@ class ExecutorVisitor {
             }
         } else {
             if operationType == parser:OPERATION_QUERY {
-                Field 'field = new (fieldNode, self.engine.getService());
+                (string|int)[] path = [fieldNode.getName()];
+                Field 'field = new (fieldNode, self.engine.getService(), path);
                 var result = self.engine.resolve(self.context, 'field);
                 self.errors = self.context.getErrors();
                 self.data[fieldNode.getAlias()] = result;

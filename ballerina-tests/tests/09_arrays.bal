@@ -186,7 +186,7 @@ isolated function testOptionalArrayInvalidQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["array", "service"]
+    groups: ["array", "service", "test"]
 }
 isolated function testServiceObjectArrayWithFragmentReturningError() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";

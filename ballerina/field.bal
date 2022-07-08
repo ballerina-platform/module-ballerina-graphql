@@ -20,10 +20,12 @@ import graphql.parser;
 public class Field {
     private final parser:FieldNode internalNode;
     private final service object {} serviceObject;
+    private (string|int)[] path;
 
-    isolated function init(parser:FieldNode internalNode, service object {} serviceObject) {
+    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
+        self.path = path;
     }
 
     # Returns the name of the field.
@@ -44,5 +46,9 @@ public class Field {
 
     isolated function getServiceObject() returns service object {} {
         return self.serviceObject;
+    }
+
+    isolated function getPath() returns (string|int)[] {
+        return self.path;
     }
 }

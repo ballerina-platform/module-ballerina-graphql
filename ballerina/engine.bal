@@ -147,7 +147,7 @@ isolated class Engine {
         service object {} serviceObject = 'field.getServiceObject();
         parser:FieldNode fieldNode = 'field.getInternalNode();
         any|error fieldValue = executeResource(serviceObject, fieldNode, context);
-        ResponseGenerator responseGenerator = new(self, context);
+        ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
 }
