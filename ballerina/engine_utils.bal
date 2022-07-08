@@ -49,16 +49,6 @@ isolated function getSubscriptionResult(ExecutorVisitor visitor,
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeQueryResource(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
-returns any|error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function executeMutationMethod(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
-returns any|error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
 isolated function isMap(map<anydata> value) returns boolean = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;

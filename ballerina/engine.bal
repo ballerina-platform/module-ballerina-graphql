@@ -149,13 +149,23 @@ isolated class Engine {
         parser:RootOperationType operationType = 'field.getOperationType();
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {
-            fieldValue = executeQueryResource(serviceObject, fieldNode, context);
+            fieldValue = self.executeQueryResource(serviceObject, fieldNode, context);
         } else if operationType == parser:OPERATION_MUTATION {
-            fieldValue = executeMutationMethod(serviceObject, fieldNode, context);
+            fieldValue = self.executeMutationMethod(serviceObject, fieldNode, context);
         } else {
             fieldValue = ();
         }
         ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
+
+    isolated function executeQueryResource(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
+    returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeMutationMethod(service object {} serviceObject, parser:FieldNode fieldNode,
+                                            Context context) returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
 }

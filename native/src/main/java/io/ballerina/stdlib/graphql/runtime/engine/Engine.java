@@ -217,8 +217,8 @@ public class Engine {
         return null;
     }
 
-    public static Object executeQueryResource(Environment environment, BObject service, BObject fieldNode,
-                                              BObject context) {
+    public static Object executeQueryResource(Environment environment, BObject engine, BObject service,
+                                              BObject fieldNode, BObject context) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
