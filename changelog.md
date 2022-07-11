@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - [[#2959] Fix Incorrectly Removing Other Services Through Code Modifier](https://github.com/ballerina-platform/ballerina-standard-library/issues/2959)
+- [[#3076] Fix Empty Input Arrays not Considering as Valid Inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/3076)
 
 ## [1.3.0] - 2022-05-30
 
