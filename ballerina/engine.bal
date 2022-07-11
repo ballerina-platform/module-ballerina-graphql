@@ -149,7 +149,7 @@ isolated class Engine {
         parser:RootOperationType operationType = 'field.getOperationType();
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {
-            handle? resourceMethod = self.getResourceMethod(serviceObject, fieldNode, [fieldNode.getName()]);
+            handle? resourceMethod = self.getResourceMethod(serviceObject, [fieldNode.getName()]);
             if resourceMethod == () {
                 fieldValue = (); // Hierarchical paths
             } else {
@@ -158,13 +158,14 @@ isolated class Engine {
         } else if operationType == parser:OPERATION_MUTATION {
             fieldValue = self.executeMutationMethod(serviceObject, fieldNode, context);
         } else {
+            // TODO: Subscriptions
             fieldValue = ();
         }
         ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
 
-    isolated function getResourceMethod(service object {} serviceObject, parser:FieldNode fieldNode, string[] path)
+    isolated function getResourceMethod(service object {} serviceObject, string[] path)
     returns handle? = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;

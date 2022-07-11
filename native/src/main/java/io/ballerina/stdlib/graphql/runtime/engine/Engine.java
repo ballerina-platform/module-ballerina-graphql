@@ -264,7 +264,7 @@ public class Engine {
         return null;
     }
 
-    public static Object getResourceMethod(BObject service, BObject fieldNode, BArray path) {
+    public static Object getResourceMethod(BObject service, BArray path) {
         ServiceType serviceType = (ServiceType) service.getType();
         List<String> pathList = getPathList(path);
         return getResourceMethod(serviceType, pathList, GET_ACCESSOR);

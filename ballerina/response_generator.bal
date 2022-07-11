@@ -57,7 +57,11 @@ class ResponseGenerator {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         } else if parentValue is map<anydata> {
-            return self.getResult(parentValue.get(fieldNode.getName()), fieldNode);
+            if parentValue.hasKey(fieldNode.getName()) {
+                return self.getResult(parentValue.get(fieldNode.getName()), fieldNode);
+            } else {
+                return;
+            }
         } else if parentValue is service object {} {
             (string|int)[] path = self.path.clone();
             path.push(fieldNode.getName());
