@@ -62,7 +62,7 @@ class ResponseGenerator {
             (string|int)[] path = self.path.clone();
             path.push(fieldNode.getName());
             Field 'field = new (fieldNode, parentValue, path);
-            return self.getResult(self.engine.resolve(self.context, 'field), fieldNode);
+            return self.engine.resolve(self.context, 'field);
         }
     }
 
