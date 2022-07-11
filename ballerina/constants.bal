@@ -42,6 +42,8 @@ const NAME_ARGUMENT = "name";
 const DATA_FIELD = "data";
 const ERRORS_FIELD = "errors";
 const SUBSCRIPTION_FIELD = "subscriptionType";
+const IS_DEPRECATED_FIELD = "isDeprecated";
+const INCLUDE_DEPRECATED_ARGUMENT = "includeDeprecated";
 
 // Scalar type names used in GraphQL
 const INT = "Int";

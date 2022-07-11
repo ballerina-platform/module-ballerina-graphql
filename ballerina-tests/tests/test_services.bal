@@ -635,7 +635,7 @@ service /tables on basicListener {
     }
 }
 
-service graphql:Service /special_types on specialTypesTestListener {
+service /special_types on specialTypesTestListener {
     isolated resource function get weekday(int number) returns Weekday {
         match number {
             1 => {
@@ -1245,7 +1245,7 @@ service /nullable_inputs on basicListener {
 
 public string[] namesArray = ["Walter", "Skyler"];
 
-service graphql:Service /subscriptions on basicListener {
+service /subscriptions on basicListener {
     isolated resource function get name() returns string {
         return "Walter White";
     }
@@ -1302,7 +1302,7 @@ service graphql:Service /subscriptions on basicListener {
 }
 
 # GraphQL service with documentation.
-service graphql:Service /documentation on basicListener {
+service /documentation on basicListener {
 
     # Greets a person with provided name.
     #
@@ -1318,7 +1318,7 @@ service graphql:Service /documentation on basicListener {
     isolated resource function get instrument() returns Instrument {
         return {
             name: "Guitar",
-            method: "Strings"
+            instrumentType: STRINGS
         };
     }
 
@@ -1329,5 +1329,71 @@ service graphql:Service /documentation on basicListener {
     # + return - The newly created shape
     remote function addShape(string name, int edges) returns Shape {
         return {name: name, edges: edges};
+    }
+}
+
+# GraphQL service with deprecated fields and enum values.
+service /deprecation on wrappedListener {
+
+    # Hello world field.
+    # + name - The name of the person
+    # + return - The personalized greeting message
+    # # Deprecated
+    # Use the `greeting` field instead of this field.
+    @deprecated
+    isolated resource function get hello(string name) returns string {
+        return string `Hello ${name}`;
+    }
+
+    # Greets a person with provided name.
+    #
+    # + name - The name of the person
+    # + return - The personalized greeting message
+    isolated resource function get greeting(string name) returns string {
+        return string `Hello ${name}`;
+    }
+
+    # Retrieve information about music school.
+    # + return - The school object
+    isolated resource function get school() returns School {
+        return new ("The Juilliard School");
+    }
+
+    # Creates a new instrument.
+    #
+    # + name - Name of the instrument
+    # + instrumentType - Type of the instrument
+    # + return - The newly created instrument
+    # # Deprecated
+    # Use the `addInstrument` field instead of this.
+    @deprecated
+    remote function newInstrument(string name, InstrumentType instrumentType) returns Instrument {
+        return {name: name, instrumentType: instrumentType};
+    }
+
+    # Adds a new instrument to the database.
+    #
+    # + name - Name of the instrument
+    # + instrumentType - Type of the instrument
+    # + return - The newly added instrument
+    remote function addInstrument(string name, InstrumentType instrumentType) returns Instrument {
+        return {name: name, instrumentType: instrumentType};
+    }
+
+    # Subscribes to the new instruments.
+    #
+    # + return - The instrument name list
+    # # Deprecated
+    # Use the `instruments` field instead of this.
+    @deprecated
+    resource function subscribe newInstruments() returns stream<string> {
+        return ["Guitar", "Violin", "Drums"].toStream();
+    }
+
+    # Subscribes to the new instruments.
+    #
+    # + return - The instrument name list
+    resource function subscribe instruments() returns stream<string> {
+        return ["Guitar", "Violin", "Drums"].toStream();
     }
 }

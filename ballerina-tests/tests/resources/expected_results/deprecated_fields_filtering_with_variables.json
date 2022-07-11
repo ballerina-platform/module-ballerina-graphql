@@ -1,0 +1,103 @@
+{
+    "data": {
+        "__schema": {
+            "queryType": {
+                "fields": [
+                    {
+                        "name": "greeting",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "String",
+                                "fields": null
+                            }
+                        }
+                    },
+                    {
+                        "name": "school",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "School",
+                                "fields": [
+                                    {
+                                        "name": "name",
+                                        "isDeprecated": false,
+                                        "deprecationReason": null
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "mutationType": {
+                "fields": [
+                    {
+                        "name": "addInstrument",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "Instrument",
+                                "fields": [
+                                    {
+                                        "name": "name",
+                                        "isDeprecated": false,
+                                        "deprecationReason": null
+                                    },
+                                    {
+                                        "name": "instrumentType",
+                                        "isDeprecated": false,
+                                        "deprecationReason": null
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "subscriptionType": {
+                "fields": [
+                    {
+                        "name": "instruments",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "String",
+                                "fields": null
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "__type": {
+            "enumValues": [
+                {
+                    "name": "PERCUSSION",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "KEYBOARD",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "WOODWIND",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "STRINGS",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                }
+            ]
+        }
+    }
+}

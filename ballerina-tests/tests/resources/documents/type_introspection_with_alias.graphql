@@ -1,0 +1,6 @@
+{
+    FieldType: __type(name: "__Field") {
+        name
+        kind
+    }
+}

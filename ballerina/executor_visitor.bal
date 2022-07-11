@@ -50,13 +50,11 @@ class ExecutorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         parser:RootOperationType operationType = <parser:RootOperationType>data;
         if fieldNode.getName() == SCHEMA_FIELD {
-            executeIntrospection(self, fieldNode, self.schema);
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
         } else if fieldNode.getName() == TYPE_FIELD {
-            parser:ArgumentNode argNode = fieldNode.getArguments()[0];
-            parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
-            string requiredTypeName = argValue.toString();
-            __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
-            executeIntrospection(self, fieldNode, requiredType);
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
         } else {
             if operationType == parser:OPERATION_QUERY {
                 executeQuery(self, fieldNode);
