@@ -18,13 +18,18 @@ import graphql.parser;
 
 # Represents the information about a particular field of a GraphQL document.
 public class Field {
+    private final parser:RootOperationType operationType;
     private final parser:FieldNode internalNode;
     private final service object {} serviceObject;
+    private (string|int)[] path;
     private final __Type schemaField;
 
-    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, __Type schemaField) {
+    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = [],
+                           parser:RootOperationType operationType = parser:OPERATION_QUERY, __Type schemaField) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
+        self.path = path;
+        self.operationType = operationType;
         self.schemaField = schemaField;
     }
 
@@ -46,6 +51,14 @@ public class Field {
 
     isolated function getServiceObject() returns service object {} {
         return self.serviceObject;
+    }
+
+    isolated function getPath() returns (string|int)[] {
+        return self.path;
+    }
+
+    isolated function getOperationType() returns parser:RootOperationType {
+        return self.operationType;
     }
 
     isolated function getGetSchemaField() returns __Type {

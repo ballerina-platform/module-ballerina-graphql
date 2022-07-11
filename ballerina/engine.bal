@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
+
 import graphql.parser;
 
 isolated class Engine {
@@ -22,7 +24,7 @@ isolated class Engine {
     private final readonly & (readonly & Interceptor)[] interceptors;
     private int nextInterceptor;
 
-    isolated function init(string schemaString, int? maxQueryDepth, (readonly & Interceptor)[] interceptors) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, Service s, (readonly & Interceptor)[] interceptors) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
@@ -30,6 +32,7 @@ isolated class Engine {
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors.cloneReadOnly();
         self.nextInterceptor = 0;
+        self.addService(s);
     }
 
     isolated function getSchema() returns readonly & __Schema {
@@ -68,9 +71,8 @@ isolated class Engine {
         }
     }
 
-    isolated function getResult(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo,
-        any result = ()) returns OutputObject {
-
+    isolated function getResult(parser:OperationNode operationNode, Context context, any result = ())
+    returns OutputObject {
         DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
         DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
 
@@ -83,7 +85,7 @@ isolated class Engine {
             operationNode.accept(visitor);
         }
 
-        ExecutorVisitor executor = new (self, self.schema, context, fileInfo, result);
+        ExecutorVisitor executor = new (self, self.schema, context, result);
         operationNode.accept(executor);
         OutputObject outputObject = executor.getOutput();
         ResponseFormatter responseFormatter = new (self.schema);
@@ -152,6 +154,64 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
+
+    isolated function addService(Service s) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getService() returns Service = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function resolve(Context context, Field 'field) returns anydata|error {
+        service object {} serviceObject = 'field.getServiceObject();
+        parser:FieldNode fieldNode = 'field.getInternalNode();
+        parser:RootOperationType operationType = 'field.getOperationType();
+        (Interceptor & readonly)? interceptor = self.getNextInterceptor();
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type schemaField = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+        any|error fieldValue;
+        if operationType == parser:OPERATION_QUERY {
+            handle? resourceMethod = self.getResourceMethod(serviceObject, fieldNode, [fieldNode.getName()]);
+            if resourceMethod == () {
+                fieldValue = (); // Hierarchical paths
+            } else {
+                if interceptor is readonly & Interceptor {
+                    any|error result = executeInterceptor(interceptor, 'field, context);
+                    fieldValue = validateInterceptorReturnValue('field, result, getInterceptorName(interceptor));
+                } else {
+                    fieldValue = self.executeQueryResource(serviceObject, resourceMethod, fieldNode, context); 
+                }
+            }
+        } else if operationType == parser:OPERATION_MUTATION {
+            if interceptor is readonly & Interceptor {
+                any|error result = executeInterceptor(interceptor, 'field, context);
+                fieldValue = validateInterceptorReturnValue('field, result, getInterceptorName(interceptor));
+            } else {
+                fieldValue = self.executeMutationMethod(serviceObject, fieldNode, context);
+            }
+        } else {
+            fieldValue = ();
+        }
+        ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
+        return responseGenerator.getResult(fieldValue, fieldNode);
+    }
+
+    isolated function getResourceMethod(service object {} serviceObject, parser:FieldNode fieldNode, string[] path)
+    returns handle? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeQueryResource(service object {} serviceObject, handle resourceMethod,
+                                           parser:FieldNode fieldNode, Context context)
+    returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeMutationMethod(service object {} serviceObject, parser:FieldNode fieldNode,
+                                            Context context) returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
 
     isolated function resolve(Context context, Field 'field) returns anydata|error {
         (Interceptor & readonly)? interceptor = self.getNextInterceptor();

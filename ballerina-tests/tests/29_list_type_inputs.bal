@@ -490,23 +490,11 @@ isolated function testListTypeWithinInputObjects() returns error? {
 @test:Config {
     groups: ["list", "input_objects", "input"]
 }
-isolated function testInvalidEmptyListTypeWithinInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_empty_list_type_within_input_objects.graphql");
+isolated function testEmptyListTypeWithinInputObjects() returns error? {
+    string document = check getGraphQLDocumentFromFile("empty_list_type_within_input_objects.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "[String!] cannot represent non [String!] value: []",
-                locations: [
-                    {
-                        line: 2,
-                        column: 95
-                    }
-                ]
-            }
-        ]
-    };
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("empty_list_type_within_input_objects.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -601,7 +589,7 @@ isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
 @test:Config {
     groups: ["list", "variables", "input_objects", "input"]
 }
-isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() returns error? {
+isolated function testEmptyListTypeWithinInputObjectsWithVariables() returns error? {
     string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
     string url = "http://localhost:9091/list_inputs";
     json variables = {
@@ -615,20 +603,8 @@ isolated function testInvalidEmptyListTypeWithinInputObjectsWithVariables() retu
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "[String!] cannot represent non [String!] value: []",
-                locations: [
-                    {
-                        line: 1,
-                        column: 52
-                    }
-                ]
-            }
-        ]
-    };
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("empty_list_type_within_input_objects.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -981,5 +957,30 @@ isolated function testListTypeWithInvalidVariableDefaultValue9() returns error? 
             }
         ]
     };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "variables", "input"]
+}
+isolated function testNonNullListTypeVariableWithEmptyListValue() returns error? {
+    string document  = check getGraphQLDocumentFromFile("non_null_list_type_variable_with_empty_list_value.graphql");
+    json variables = {
+        tvSeries: []
+    };
+    string url = "http://localhost:9091/list_inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile("non_null_list_type_variable_with_empty_list_value.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["list", "variables", "input"]
+}
+isolated function testNonNullListTypeWithEmptyListValue() returns error? {
+    string document = string `{ getSuggestions(tvSeries: []) { movieName, director }}`;
+    string url = "http://localhost:9091/list_inputs";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("non_null_list_type_variable_with_empty_list_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

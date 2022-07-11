@@ -31,6 +31,7 @@ import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
@@ -56,11 +58,14 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getService;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERCEPTOR_EXECUTION_STRAND;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
@@ -95,7 +100,7 @@ public class Engine {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = (BMap<BString, Object>) visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
-        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        BObject service = getService(engine);
         List<String> paths = new ArrayList<>();
         paths.add(node.getStringValue(NAME_FIELD).getValue());
         List<Object> pathSegments = new ArrayList<>();
@@ -121,7 +126,7 @@ public class Engine {
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
         Future future = environment.markAsync();
-        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        BObject service = getService(engine);
         String fieldName = node.getStringValue(NAME_FIELD).getValue();
         CallbackHandler callbackHandler = new CallbackHandler(future);
         List<Object> pathSegments = new ArrayList<>();
@@ -160,7 +165,8 @@ public class Engine {
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,
                                            MethodType method, BMap<BString, Object> data, List<Object> pathSegments,
                                            StrandMetadata strandMetadata) {
-        ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, method);
+        ArgumentHandler argumentHandler = new ArgumentHandler(method, executionContext.getVisitor()
+                .getObjectValue(CONTEXT_FIELD));
         Object[] args = argumentHandler.getArguments(node);
         ResourceCallback callback = new ResourceCallback(executionContext, node, data, pathSegments);
         executionContext.getCallbackHandler().addCallback(callback);
@@ -201,13 +207,14 @@ public class Engine {
         ExecutionContext executionContext = new ExecutionContext(env, visitor, callbackHandler, SUBSCRIPTION);
         BString fieldName = node.getStringValue(NAME_FIELD);
         BObject engine = visitor.getObjectValue(ENGINE_FIELD);
-        BObject service = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        BObject service = getService(engine);
         ServiceType serviceType = (ServiceType) service.getType();
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
-                fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
-                ArgumentHandler argumentHandler = new ArgumentHandler(executionContext, resourceMethod);
+                    fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, executionContext.getVisitor()
+                        .getObjectValue(CONTEXT_FIELD));
                 Object[] args = argumentHandler.getArguments(node);
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
@@ -221,6 +228,76 @@ public class Engine {
             }
         }
         return null;
+    }
+
+    public static Object executeQueryResource(Environment environment, BObject service,
+                                              ResourceMethodType resourceMethod, BObject fieldNode, BObject context) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) service.getType();
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+        if (resourceMethod != null) {
+            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context);
+            Object[] arguments = argumentHandler.getArguments(fieldNode);
+            if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+                environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
+                                                                       null, returnType, arguments);
+            } else {
+                environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
+                                                                       null, returnType, arguments);
+            }
+        }
+        return null;
+    }
+
+    public static Object executeMutationMethod(Environment environment, BObject service, BObject fieldNode,
+                                               BObject context) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) service.getType();
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+        for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+            if (remoteMethod.getName().equals(fieldNode.getStringValue(NAME_FIELD).getValue())) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(remoteMethod, context);
+                Object[] arguments = argumentHandler.getArguments(fieldNode);
+                if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+                    environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
+                                                                           REMOTE_EXECUTION_STRAND, executionCallback,
+                                                                           null, returnType, arguments);
+                } else {
+                    environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
+                                                                           REMOTE_EXECUTION_STRAND, executionCallback,
+                                                                           null, returnType, arguments);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Object getResourceMethod(BObject service, BObject fieldNode, BArray path) {
+        ServiceType serviceType = (ServiceType) service.getType();
+        List<String> pathList = getPathList(path);
+        return getResourceMethod(serviceType, pathList, GET_ACCESSOR);
+    }
+
+    private static ResourceMethodType getResourceMethod(ServiceType serviceType, List<String> path, String accessor) {
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            if (accessor.equals(resourceMethod.getAccessor()) && isPathsMatching(resourceMethod, path)) {
+                return resourceMethod;
+            }
+        }
+        return null;
+    }
+
+    private static List<String> getPathList(BArray pathArray) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < pathArray.size(); i++) {
+            BString pathSegment = (BString) pathArray.get(i);
+            result.add(pathSegment.getValue());
+        }
+        return result;
     }
 
     public static Object executeResource(Environment environment, BObject service, BObject fieldNode, BObject context) {

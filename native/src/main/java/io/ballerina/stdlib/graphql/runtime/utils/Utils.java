@@ -39,6 +39,10 @@ public class Utils {
     static final String EXECUTE_SERVICE_FUNCTION = "executeService";
     static final String EXECUTE_MUTATION_FUNCTION = "executeMutation";
 
+    static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
+
+    static final String EXECUTE_REMOTE_FUNCTION = "executeMutationMethod";
+
     static final String EXECUTE_INTERCEPTOR_FUNCTION = "executeInterceptor";
 
     // Internal type names
@@ -55,6 +59,15 @@ public class Utils {
                                                                                    getModule().getName(),
                                                                                    getModule().getMajorVersion(),
                                                                                    EXECUTE_MUTATION_FUNCTION);
+
+    public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
+                                                                                      getModule().getName(),
+                                                                                      getModule().getMajorVersion(),
+                                                                                      EXECUTE_RESOURCE_FUNCTION);
+    public static final StrandMetadata REMOTE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
+                                                                                    getModule().getName(),
+                                                                                    getModule().getMajorVersion(),
+                                                                                    EXECUTE_RESOURCE_FUNCTION);
 
     public static final StrandMetadata INTERCEPTOR_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
                                                                                          getModule().getName(),

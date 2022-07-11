@@ -163,11 +163,6 @@ class FieldValidatorVisitor {
                             self.removePath();
                         }
                     }
-                } else if listItemInputValue.'type.kind == NON_NULL {
-                    string expectedTypeName = getTypeNameFromType(schemaArg.'type);
-                    string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: []`;
-                    ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
-                    self.errors.push(errorDetail);
                 }
             } else if schemaArg.'type.kind == NON_NULL {
                 string expectedTypeName = getTypeNameFromType(schemaArg.'type);
@@ -264,10 +259,10 @@ class FieldValidatorVisitor {
                             self.validateEnumArgument(fieldValue, location, ENUM, subInputValue);
                         } else {
                             string expectedTypeName = getOfTypeName(subInputValue.'type);
-                            string actualTypeName = getTypeNameFromValue(fieldValue);
+                            string actualTypeName = getTypeNameFromScalarValue(fieldValue);
                             variableValues[subInputValue.name] = self.coerceValue(fieldValue, expectedTypeName,
                                                                                   actualTypeName, location);
-                            self.validateArgumentValue(fieldValue, location, getTypeNameFromValue(fieldValue),
+                            self.validateArgumentValue(fieldValue, location, getTypeNameFromScalarValue(fieldValue),
                                                        subInputValue);
                         }
                     } else if fieldValue is map<anydata> {
@@ -316,11 +311,11 @@ class FieldValidatorVisitor {
                             self.validateEnumArgument(listItemValue, location, ENUM, listItemInputValue);
                         } else {
                             string expectedTypeName = getOfTypeName(listItemInputValue.'type);
-                            string actualTypeName = getTypeNameFromValue(listItemValue);
+                            string actualTypeName = getTypeNameFromScalarValue(listItemValue);
                             variableValues[i] = self.coerceValue(listItemValue, expectedTypeName, actualTypeName,
                                                                  location);
-                            self.validateArgumentValue(listItemValue, location, getTypeNameFromValue(listItemValue),
-                                                       listItemInputValue);
+                            self.validateArgumentValue(listItemValue, location,
+                                                       getTypeNameFromScalarValue(listItemValue), listItemInputValue);
                         }
                     } else if listItemValue is map<json> {
                         self.updatePath(listItemInputValue.name);
@@ -336,11 +331,6 @@ class FieldValidatorVisitor {
                     }
                     self.removePath();
                 }
-            } else if listItemInputValue.'type.kind == NON_NULL {
-                string expectedTypeName = getTypeNameFromType(inputValue.'type);
-                string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: []`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, location);
-                self.errors.push(errorDetail);
             }
         } else {
             string expectedTypeName = getOfTypeName(inputValue.'type);
@@ -355,14 +345,16 @@ class FieldValidatorVisitor {
         string expectedTypeName = getOfTypeName(schemaArg.'type);
         if argNode.isVariableDefinition() && argNode.getVariableValue() is Scalar {
             Scalar value = <Scalar>argNode.getVariableValue();
-            value = self.coerceValue(value, expectedTypeName, getTypeNameFromValue(value), argNode.getValueLocation());
+            value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
+                                     argNode.getValueLocation());
             argNode.setVariableValue(value);
             if value is decimal|float {
                 argNode.setKind(parser:T_FLOAT);
             }
         } else if argNode.getValue() is Scalar {
             Scalar value = <Scalar>argNode.getValue();
-            value = self.coerceValue(value, expectedTypeName, getTypeNameFromValue(value), argNode.getValueLocation());
+            value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
+                                     argNode.getValueLocation());
             argNode.setValue(value);
             if value is decimal|float {
                 argNode.setKind(parser:T_FLOAT);
