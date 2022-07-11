@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -49,6 +50,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIEL
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
@@ -57,6 +59,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTIO
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERCEPTOR_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -220,18 +223,51 @@ public class Engine {
         return null;
     }
 
-    public static Object executeResource(BObject fieldNode) {
+    public static Object executeResource(Environment environment, BObject service, BObject fieldNode, BObject context) {
         return null;
     }
 
-    // public static Type getReturnType(BObject service, BString methodName) {
-    //     ServiceType serviceType = (ServiceType) service.getType();
-    //     for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-    //         if (GET_ACCESSOR.equals(resourceMethod.getAccessor()) &&
-    //                 resourceMethod.getName().equalsIgnoreCase(methodName.getValue())) {
-    //              return resourceMethod.getReturnType().getEmptyValue();
-    //         }
-    //     }
-    //     return null;
-    // }
+    public static Object executeInterceptor(Environment environment, BObject interceptor, BObject field,
+                                            BObject context) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) interceptor.getType();
+        RemoteMethodType remoteMethod = getRemoteMethod(serviceType, INTERCEPTOR_EXECUTE);
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_ERROR);
+        if (remoteMethod != null) {
+            Object[] arguments = getInterceptorArguments(context, field);
+            if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+                environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
+                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null, returnType, arguments);
+            } else {
+                environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
+                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null,
+                        returnType, arguments);
+            }
+        }
+        return null;
+    }
+
+    private static RemoteMethodType getRemoteMethod(ServiceType serviceType, String methodName) {
+        for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
+            if (remoteMethod.getName().equals(methodName)) {
+                return remoteMethod;
+            }
+        }
+        return null;
+    }
+
+    private static Object[] getInterceptorArguments(BObject context, BObject field) {
+        Object[] args = new Object[4];
+        args[0] = context;
+        args[1] = true;
+        args[2] = field;
+        args[3] = true;
+        return args;
+    }
+
+    public static BString getInterceptorName(BObject interceptor) {
+        ServiceType serviceType = (ServiceType) interceptor.getType();
+        return StringUtils.fromString(serviceType.getName());
+    }
 }

@@ -19,7 +19,6 @@ import ballerina/test;
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
 isolated function testInterceptors() returns error? {
     string document = string `{ enemy }`;
     string url = "http://localhost:9091/intercept_string";
@@ -31,7 +30,6 @@ isolated function testInterceptors() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
 isolated function testInterceptorsWithServiceObjects() returns error? {
     string document = string `{ teacher{ id, name, subject }}`;
     string url = "http://localhost:9091/intercept_service_obj";
@@ -43,7 +41,6 @@ isolated function testInterceptorsWithServiceObjects() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
 isolated function testInterceptorsWithArrays() returns error? {
     string document = string `{ houses }`;
     string url = "http://localhost:9091/intercept_arrays";
@@ -55,7 +52,6 @@ isolated function testInterceptorsWithArrays() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
 isolated function testInterceptorsWithRecords() returns error? {
     string document = string `{ profile{ name, address{ number, street }}}`;
     string url = "http://localhost:9091/intercept_records";
@@ -67,19 +63,6 @@ isolated function testInterceptorsWithRecords() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
-isolated function testInterceptorsReturningError() returns error? {
-    string document = string `{ greet }`;
-    string url = "http://localhost:9091/intercept_errors";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-//Done
 isolated function testExecuteSameInterceptorMultipleTimes() returns error? {
     string document = string `{ age }`;
     string url = "http://localhost:9091/interceptors";
@@ -91,7 +74,6 @@ isolated function testExecuteSameInterceptorMultipleTimes() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
 isolated function testInterceptorWithDestructiveModification() returns error? {
     string document = string `{ students{ name, id }}`;
     string url = "http://localhost:9091/intercept_service_obj_arrays";
@@ -103,7 +85,6 @@ isolated function testInterceptorWithDestructiveModification() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Done
 isolated function testInterceptorWithMutation() returns error? {
     string document = string `mutation{ setName(name: "Ballerina"){ name }`;
     string url = "http://localhost:9091/mutation_interceptor";
@@ -115,18 +96,75 @@ isolated function testInterceptorWithMutation() returns error? {
 @test:Config {
     groups: ["interceptors"]
 }
-//Cannot do until nuvindu's PR merged
-isolated function testInterceptorWithSubscription() returns error? {
-    string document = check getGraphQLDocumentFromFile("interceptor_with_subscription.graphql");
-    string url = "http://localhost:9091/subscription_interceptor";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptor_with_subscription..json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
 isolated function testInterceptorsReturnInvalidValues() returns error? {
     string document = string `{ greet }`;
     string url = "http://localhost:9091/intercept_errors";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithInvalidDestructiveModification1() returns error? {
+    string document = string `{ age }`;
+    string url = "http://localhost:9091/invalid_interceptor1";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithInvalidDestructiveModification2() returns error? {
+    string document = string `{ friends }`;
+    string url = "http://localhost:9091/invalid_interceptor2";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithInvalidDestructiveModification3() returns error? {
+    string document = string `{ person { name, address{ city }}}`;
+    string url = "http://localhost:9091/invalid_interceptor3";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningError1() returns error? {
+    string document = string `{ greet }`;
+    string url = "http://localhost:9091/intercept_errors1";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningError2() returns error? {
+    string document = string `{ friends }`;
+    string url = "http://localhost:9091/intercept_errors2";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningError3() returns error? {
+    string document = string `{ person{ name, age } }`;
+    string url = "http://localhost:9091/intercept_errors2";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);

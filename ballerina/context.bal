@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/jballerina.java;
 import ballerina/lang.value;
 
 # The GraphQL context object used to pass the meta information between resolvers.
@@ -77,10 +78,11 @@ public isolated class Context {
         }
     }
 
-    public isolated function resolve() returns any|error {
+    public isolated function resolve() returns anydata|error {
         if self.getEngine() is Engine {
             Engine engine = <Engine>self.getEngine();
-            return engine.resolve(self);
+            Field 'field = <Field>self.getField(self);
+            return engine.resolve(self, 'field);
         }
         return error("Error in Interceptor Execution!");
     }
@@ -96,6 +98,14 @@ public isolated class Context {
             return self.engine;
         }
     }
+
+    isolated function setField(Context context, Field 'field) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getField(Context context) returns Field = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
 }
 
 isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {

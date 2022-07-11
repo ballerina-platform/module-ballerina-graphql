@@ -19,8 +19,8 @@ import ballerina/graphql;
 readonly service class ServiceInterceptor {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         return result;
     }
 

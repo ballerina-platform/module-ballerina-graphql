@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.parser;
-
 import ballerina/http;
 import ballerina/io;
 import ballerina/websocket;
@@ -74,30 +72,9 @@ isolated service class UpgradeService {
     *websocket:UpgradeService;
 }
 
-# Wrapper type for Field Node
-type FieldNodeObject distinct object {
-    parser:FieldNode fieldNode;
-};
-
-#Represent Node type of GraphQL document field
-public type FieldNode FieldNodeObject;
-
-# Represent a input parameter type for GraphQL interceptors
-#
-# + fieldNode - Node of the current execution field
-# + rootType - Root operation type of the current field
-# + fieldName - Name of the current execution field
-# + args - Argument of the actual resolver function
-public type RequestInfo record {|
-    FieldNode fieldNode;
-    readonly string rootType;
-    readonly string fieldName;
-    readonly map<json> args;
-|};
-
 # Represent a GraphQL interceptor
 public type Interceptor distinct service object {
-    isolated remote function execute(Context ctx, RequestInfo reqInfo) returns any|error;
+    isolated remote function execute(Context ctx, Field 'field) returns anydata|error;
 };
 
 // GraphQL client related data binding types representation

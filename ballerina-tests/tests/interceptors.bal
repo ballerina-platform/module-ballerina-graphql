@@ -19,8 +19,8 @@ import ballerina/graphql;
 readonly service class StringInterceptor1 {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is string {
             return string `Tom ${result}`;
         }
@@ -31,8 +31,8 @@ readonly service class StringInterceptor1 {
 readonly service class StringInterceptor2 {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is string {
             return string `Marvolo ${result}`;
         }
@@ -43,8 +43,8 @@ readonly service class StringInterceptor2 {
 readonly service class StringInterceptor3 {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is string {
             return string `Riddle - ${result}`;
         }
@@ -52,20 +52,11 @@ readonly service class StringInterceptor3 {
     }
 }
 
-readonly service class ErrorInterceptor {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        error interceptorError = error("This field is not accessible!");
-        return interceptorError;
-    }
-}
-
 readonly service class ArrayInterceptor {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is string[] {
             result.push("Slytherin(Water)");
         }
@@ -76,10 +67,10 @@ readonly service class ArrayInterceptor {
 readonly service class ServiceObjectInterceptor {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
-        if result is TeacherService {
-            return new TeacherService(3, "Minerva McGonagall", "Transfiguration");
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is record{} {
+            return {id: 3, name: "Minerva McGonagall", subject: "Transfiguration"};
         }
         return result;
     }
@@ -88,9 +79,9 @@ readonly service class ServiceObjectInterceptor {
 readonly service class RecordInterceptor {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
-        if result is Person {
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is record{} {
             return {
                 name: "Rubeus Hagrid",
                 age: 70,
@@ -104,8 +95,8 @@ readonly service class RecordInterceptor {
 readonly service class Counter {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is int {
             return result + 1;
         }
@@ -116,10 +107,10 @@ readonly service class Counter {
 readonly service class Destruct {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
-        if result is StudentService[] {
-            return [new TeacherService(3, "Minerva McGonagall", "Transfiguration")];
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is any[] {
+            return [{id: 3, name: "Minerva McGonagall", subject: "Transfiguration"}];
         }
         return result;
     }
@@ -128,15 +119,104 @@ readonly service class Destruct {
 readonly service class InterceptMutation {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
-        if result is Person {
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is record{} {
             return {
                 name: "Albus Percival Wulfric Brian Dumbledore",
-                age: result.age,
-                address:result.address
+                age: result.get("age"),
+                address: result.get("address")
             };
         }
         return result;
+    }
+}
+
+readonly service class InvalidInterceptor1 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is string {
+            return {
+                name: "Albus Percival Wulfric Brian Dumbledore",
+                age: 80,
+                address: {number: "103", street: "Mould-on-the-Wold", city: "London"}
+            };
+        }
+        return result;
+    }
+}
+
+readonly service class InvalidInterceptor2 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is string {
+            return ["Ballerina", "GraphQL"];
+        }
+        return result;
+    }
+}
+
+readonly service class InvalidInterceptor3 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is any[] {
+            return "Harry Potter";
+        }
+        return result;
+    }
+}
+
+readonly service class InvalidInterceptor4 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is any[] {
+            return {
+                name: "Albus Percival Wulfric Brian Dumbledore",
+                age: 80,
+                address: {number: "103", street: "Mould-on-the-Wold", city: "London"}
+            };
+        }
+        return result;
+    }
+}
+
+readonly service class InvalidInterceptor5 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is map<anydata> {
+            return "Harry Potter";
+        }
+        return result;
+    }
+}
+
+readonly service class InvalidInterceptor6 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
+        if result is map<anydata> {
+            return ["Ballerina", "GraphQL"];
+        }
+        return result;
+    }
+}
+
+readonly service class ErrorInterceptor1 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        error interceptorError = error("This field is not accessible!");
+        return interceptorError;
     }
 }

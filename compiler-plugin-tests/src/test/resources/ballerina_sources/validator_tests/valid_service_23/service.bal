@@ -19,8 +19,8 @@ import ballerina/graphql;
 readonly service class ServiceInterceptor1 {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is string {
             return "Hello, Ballerina";
         }
@@ -31,8 +31,8 @@ readonly service class ServiceInterceptor1 {
 readonly service class ServiceInterceptor2 {
     *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:RequestInfo reqInfo) returns any|error {
-        any|error result = ctx.resolve();
+    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+        anydata|error result = ctx.resolve();
         if result is string {
             return "Hello, GraphQL";
         }

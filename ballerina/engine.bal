@@ -21,7 +21,6 @@ isolated class Engine {
     private final int? maxQueryDepth;
     private final readonly & (readonly & Interceptor)[] interceptors;
     private int nextInterceptor;
-    private typedesc resolverReturnType;
 
     isolated function init(string schemaString, int? maxQueryDepth, (readonly & Interceptor)[] interceptors) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
@@ -31,7 +30,6 @@ isolated class Engine {
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors.cloneReadOnly();
         self.nextInterceptor = 0;
-        self.resolverReturnType = typeof ();
     }
 
     isolated function getSchema() returns readonly & __Schema {
@@ -155,20 +153,17 @@ isolated class Engine {
         }
     }
 
-    isolated function resolve(Context ctx) returns any|error {
+    isolated function resolve(Context context, Field 'field) returns anydata|error {
         (Interceptor & readonly)? interceptor = self.getNextInterceptor();
-        //may required root operation type to identify subscriptions
-
-        Field fieldNode = getFieldFromEngine(self);
+        service object {} serviceObject = 'field.getServiceObject();
+        parser:FieldNode fieldNode = 'field.getInternalNode();
         if interceptor is () {
-            any|error resolverValue = executeResource(fieldNode);
-            lock {
-                self.resolverReturnType = typeof resolverValue;
-            }
-            return;
+            any|error fieldValue = executeResource(serviceObject, fieldNode, context);
+            return error("interceptor");
         } else {
-            // return executeInterceptor(s, interceptor, ctx, reqInfo);
-            return;
+            any|error  result = executeInterceptor(interceptor, 'field, context);
+            anydata|error interceptorValue = validateInterceptorReturnValue('field, result, getInterceptorName(interceptor));
+            return error("interceptor");
         }
     }
 }

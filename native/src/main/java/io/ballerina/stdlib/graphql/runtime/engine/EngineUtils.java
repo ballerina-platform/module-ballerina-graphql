@@ -95,6 +95,7 @@ public class EngineUtils {
     //Accessor names
     public static final String GET_ACCESSOR = "get";
     public static final String SUBSCRIBE_ACCESSOR = "subscribe";
+    public static final String INTERCEPTOR_EXECUTE = "execute";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
@@ -128,6 +129,7 @@ public class EngineUtils {
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
     public static final String GRAPHQL_FIELD = "graphql.field";
+    public static final String FIELD_OBJECT = "field.object";
 
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
@@ -239,5 +241,13 @@ public class EngineUtils {
     public static BObject getFieldFromEngine(BObject engine) {
         BObject fieldNode = (BObject) engine.getNativeData(GRAPHQL_FIELD);
         return fieldNode;
+    }
+
+    public static void setField(BObject context, BObject field) {
+        context.addNativeData(FIELD_OBJECT, field);
+    }
+
+    public static BObject getField(BObject context) {
+        return (BObject) context.getNativeData(FIELD_OBJECT);
     }
 }

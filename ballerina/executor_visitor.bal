@@ -56,6 +56,8 @@ class ExecutorVisitor {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
             self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
         } else {
+            string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+            __Type schemaField = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
             if operationType == parser:OPERATION_QUERY {
                 executeQuery(self, fieldNode);
             } else if operationType == parser:OPERATION_MUTATION {

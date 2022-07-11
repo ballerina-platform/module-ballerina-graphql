@@ -1,25 +1,41 @@
+// Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 import graphql.parser;
 
-# Stores the information about a particular field in a GraphQL document.
+# Represents the information about a particular field of a GraphQL document.
 public class Field {
     private final parser:FieldNode internalNode;
     private final service object {} serviceObject;
-    private final RequestInfo requestInfo;
+    private final __Type schemaField;
 
-    isolated function init(parser:FieldNode fieldNode, service object {} serviceObject, RequestInfo reqInfo) {
-        self.internalNode = fieldNode;
+    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, __Type schemaField) {
+        self.internalNode = internalNode;
         self.serviceObject = serviceObject;
-        self.requestInfo = reqInfo;
+        self.schemaField = schemaField;
     }
 
-    # Returns the name of the field
+    # Returns the name of the field.
     # + return - The name of the field
     public isolated function getName() returns string {
         return self.internalNode.getName();
     }
 
-    # Returns the alias of the field
-    # + return - If the field has an alias, returns the alias, otherwise returns the name
+    # Returns the effective alias of the field.
+    # + return - The alias of the field. If an alias is not present, the field name will be returned.
     public isolated function getAlias() returns string {
         return self.internalNode.getAlias();
     }
@@ -32,7 +48,7 @@ public class Field {
         return self.serviceObject;
     }
 
-    isolated function getRequestInfo() returns RequestInfo {
-        return self.requestInfo;
+    isolated function getGetSchemaField() returns __Type {
+        return self.schemaField;
     }
 }
