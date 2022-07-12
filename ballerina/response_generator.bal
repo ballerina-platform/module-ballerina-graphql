@@ -85,8 +85,12 @@ class ResponseGenerator {
 
     isolated function getResultFromMap(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
         if isMap(parentValue) {
-            string mapKey = self.getKeyArgument(parentNode);
-            return self.getResult(parentValue.get(mapKey), parentNode);
+            string? mapKey = self.getKeyArgument(parentNode);
+            if mapKey is string {
+                return self.getResult(parentValue.get(mapKey), parentNode);
+            } else {
+                return parentValue;
+            }
         }
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
@@ -177,7 +181,11 @@ class ResponseGenerator {
         }
     }
 
-    isolated function getKeyArgument(parser:FieldNode fieldNode) returns string {
+    // TODO: This returns () for the hierarchiacal paths. Find a better way to handle this.
+    isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
+        if fieldNode.getArguments().length() == 0 {
+            return;
+        }
         parser:ArgumentNode argumentNode = fieldNode.getArguments()[0];
         if argumentNode.isVariableDefinition() {
             return <string>argumentNode.getVariableValue();

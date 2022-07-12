@@ -152,7 +152,7 @@ isolated class Engine {
         } else if operationType == parser:OPERATION_MUTATION {
             fieldValue = self.executeMutationMethod(context, 'field.getServiceObject(), fieldNode);
         } else {
-            // TODO: Subscriptions
+            // TODO: Handle Subscriptions
             fieldValue = ();
         }
         ResponseGenerator responseGenerator = new (self, context, 'field.getPath().clone());
@@ -175,7 +175,7 @@ isolated class Engine {
         if 'field.getInternalNode().getSelections().length() == 0 {
             return;
         }
-        Data result = {};
+        map<anydata> result = {};
         foreach parser:SelectionNode selection in 'field.getInternalNode().getSelections() {
             if selection is parser:FieldNode {
                 self.getHierarchicalResult(context, 'field, selection, result);
@@ -187,7 +187,7 @@ isolated class Engine {
     }
 
     isolated function resolveHierarchicalResourceFromFragment(Context context, Field 'field,
-                                                              parser:FragmentNode fragmentNode, Data result) {
+                                                              parser:FragmentNode fragmentNode, map<anydata> result) {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FieldNode {
                 self.getHierarchicalResult(context, 'field, selection, result);
@@ -197,7 +197,7 @@ isolated class Engine {
         }
     }
 
-    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, Data result) {
+    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
         (string|int)[] path = 'field.getPath().clone();
         path.push(fieldNode.getName());

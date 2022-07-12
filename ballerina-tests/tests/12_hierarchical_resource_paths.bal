@@ -186,8 +186,7 @@ isolated function testHierarchicalResourcePathsReturningServicesWithHierarchical
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "fragments"],
-    enable: false
+    groups: ["hierarchical_paths", "fragments"]
 }
 isolated function testHierarchicalResourcePathsWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("hierarchical_resource_paths_with_fragments.graphql");
@@ -198,7 +197,8 @@ isolated function testHierarchicalResourcePathsWithFragments() returns error? {
         data: {
             profile: {
                 name: {
-                    first: "Sherlock"
+                    first: "Sherlock",
+                    last: "Holmes"
                 }
             }
         }

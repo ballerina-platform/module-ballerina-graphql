@@ -12,4 +12,5 @@ fragment ProfileFragment on profile {
 
 fragment NameFragment on name {
     first
+    last
 }
