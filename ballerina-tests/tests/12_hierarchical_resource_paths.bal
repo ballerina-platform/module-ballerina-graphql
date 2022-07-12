@@ -186,7 +186,8 @@ isolated function testHierarchicalResourcePathsReturningServicesWithHierarchical
 }
 
 @test:Config {
-    groups: ["hierarchical_paths", "fragments"]
+    groups: ["hierarchical_paths", "fragments"],
+    enable: false
 }
 isolated function testHierarchicalResourcePathsWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("hierarchical_resource_paths_with_fragments.graphql");
