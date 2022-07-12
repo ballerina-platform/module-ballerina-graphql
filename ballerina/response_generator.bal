@@ -21,12 +21,14 @@ class ResponseGenerator {
     private final Context context;
     private ErrorDetail[] errors;
     private (string|int)[] path;
+    private final __Type fieldType;
 
-    isolated function init(Engine engine, Context context, (string|int)[] path = []) {
+    isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = []) {
         self.engine = engine;
         self.context = context;
         self.errors = [];
         self.path = path;
+        self.fieldType = fieldType;
     }
 
     isolated function getResult(any|error parentValue, parser:FieldNode parentNode) returns anydata {
@@ -61,7 +63,9 @@ class ResponseGenerator {
         } else if parentValue is service object {} {
             (string|int)[] path = self.path.clone();
             path.push(fieldNode.getName());
-            Field 'field = new (fieldNode, parentValue, path);
+            __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
+            Field 'field = new (fieldNode, parentValue, fieldType, path);
+            self.context.setField('field);
             return self.engine.resolve(self.context, 'field);
         }
     }

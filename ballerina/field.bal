@@ -20,17 +20,17 @@ import graphql.parser;
 public class Field {
     private final parser:RootOperationType operationType;
     private final parser:FieldNode internalNode;
+    private final __Type fieldType;
     private final service object {} serviceObject;
     private (string|int)[] path;
-    private final __Type schemaField;
 
-    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = [],
-                           parser:RootOperationType operationType = parser:OPERATION_QUERY, __Type schemaField) {
+    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, __Type fieldType,
+                           (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
+        self.fieldType = fieldType;
         self.path = path;
         self.operationType = operationType;
-        self.schemaField = schemaField;
     }
 
     # Returns the name of the field.
@@ -61,7 +61,7 @@ public class Field {
         return self.operationType;
     }
 
-    isolated function getGetSchemaField() returns __Type {
-        return self.schemaField;
+    isolated function getFieldType() returns __Type {
+        return self.fieldType;
     }
 }

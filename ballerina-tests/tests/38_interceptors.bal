@@ -23,7 +23,11 @@ isolated function testInterceptors() returns error? {
     string document = string `{ enemy }`;
     string url = "http://localhost:9091/intercept_string";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors.json");
+    json expectedPayload = {
+        data:{
+            enemy: "Tom Marvolo Riddle - voldemort"
+        }
+    };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -65,9 +69,13 @@ isolated function testInterceptorsWithRecords() returns error? {
 }
 isolated function testExecuteSameInterceptorMultipleTimes() returns error? {
     string document = string `{ age }`;
-    string url = "http://localhost:9091/interceptors";
+    string url = "http://localhost:9091/interceptors1";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("execute_same_interceptor_multiple_times.json");
+    json expectedPayload = {
+        data:{
+            age: 26
+        }
+    };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -75,10 +83,19 @@ isolated function testExecuteSameInterceptorMultipleTimes() returns error? {
     groups: ["interceptors"]
 }
 isolated function testInterceptorWithDestructiveModification() returns error? {
-    string document = string `{ students{ name, id }}`;
+    string document = string `{ students{ id, name }}`;
     string url = "http://localhost:9091/intercept_service_obj_arrays";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptor_with_destructive_modification.json");
+    json expectedPayload = {
+        data: {
+            students: [
+                {
+                    id: 3,
+                    name: "Minerva McGonagall"
+                }
+            ]
+        }
+    };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -86,21 +103,16 @@ isolated function testInterceptorWithDestructiveModification() returns error? {
     groups: ["interceptors"]
 }
 isolated function testInterceptorWithMutation() returns error? {
-    string document = string `mutation{ setName(name: "Ballerina"){ name }`;
+    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
     string url = "http://localhost:9091/mutation_interceptor";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptor_with_mutation.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturnInvalidValues() returns error? {
-    string document = string `{ greet }`;
-    string url = "http://localhost:9091/intercept_errors";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = {
+        data: {
+            setName: {
+                name: "Albus Percival Wulfric Brian Dumbledore"
+            }
+        }
+    };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -111,7 +123,7 @@ isolated function testInterceptorsWithInvalidDestructiveModification1() returns 
     string document = string `{ age }`;
     string url = "http://localhost:9091/invalid_interceptor1";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification1.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -122,7 +134,7 @@ isolated function testInterceptorsWithInvalidDestructiveModification2() returns 
     string document = string `{ friends }`;
     string url = "http://localhost:9091/invalid_interceptor2";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -133,7 +145,7 @@ isolated function testInterceptorsWithInvalidDestructiveModification3() returns 
     string document = string `{ person { name, address{ city }}}`;
     string url = "http://localhost:9091/invalid_interceptor3";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification3.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -144,7 +156,7 @@ isolated function testInterceptorsReturningError1() returns error? {
     string document = string `{ greet }`;
     string url = "http://localhost:9091/intercept_errors1";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error1.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -155,7 +167,7 @@ isolated function testInterceptorsReturningError2() returns error? {
     string document = string `{ friends }`;
     string url = "http://localhost:9091/intercept_errors2";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -164,8 +176,8 @@ isolated function testInterceptorsReturningError2() returns error? {
 }
 isolated function testInterceptorsReturningError3() returns error? {
     string document = string `{ person{ name, age } }`;
-    string url = "http://localhost:9091/intercept_errors2";
+    string url = "http://localhost:9091/intercept_errors3";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error.json");
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error3.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

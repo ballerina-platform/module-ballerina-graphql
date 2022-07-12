@@ -121,7 +121,7 @@ public isolated class Context {
         }
     }
 
-    isolated function setField(Context context, Field 'field) = @java:Method {
+    isolated function setField(Field 'field) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
 

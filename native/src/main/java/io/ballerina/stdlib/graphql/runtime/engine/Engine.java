@@ -276,6 +276,27 @@ public class Engine {
         return null;
     }
 
+    public static Object executeInterceptor(Environment environment, BObject interceptor, BObject field,
+                                            BObject context) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) interceptor.getType();
+        RemoteMethodType remoteMethod = getRemoteMethod(serviceType, INTERCEPTOR_EXECUTE);
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_ERROR);
+        if (remoteMethod != null) {
+            Object[] arguments = getInterceptorArguments(context, field);
+            if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+                environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
+                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null, returnType, arguments);
+            } else {
+                environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
+                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null,
+                        returnType, arguments);
+            }
+        }
+        return null;
+    }
+
     public static Object getResourceMethod(BObject service, BObject fieldNode, BArray path) {
         ServiceType serviceType = (ServiceType) service.getType();
         List<String> pathList = getPathList(path);
@@ -301,27 +322,6 @@ public class Engine {
     }
 
     public static Object executeResource(Environment environment, BObject service, BObject fieldNode, BObject context) {
-        return null;
-    }
-
-    public static Object executeInterceptor(Environment environment, BObject interceptor, BObject field,
-                                            BObject context) {
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) interceptor.getType();
-        RemoteMethodType remoteMethod = getRemoteMethod(serviceType, INTERCEPTOR_EXECUTE);
-        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_ERROR);
-        if (remoteMethod != null) {
-            Object[] arguments = getInterceptorArguments(context, field);
-            if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
-                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null, returnType, arguments);
-            } else {
-                environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
-                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null,
-                        returnType, arguments);
-            }
-        }
         return null;
     }
 

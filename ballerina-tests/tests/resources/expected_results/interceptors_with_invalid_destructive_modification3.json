@@ -1,0 +1,29 @@
+{
+    "errors": [
+        {
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor6\"",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 3
+                }
+            ],
+            "path": [
+                "person"
+            ]
+        },
+        {
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor5\"",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 3
+                }
+            ],
+            "path": [
+                "person"
+            ]
+        }
+    ],
+    "data": null
+}

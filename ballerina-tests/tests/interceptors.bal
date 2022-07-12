@@ -123,9 +123,7 @@ readonly service class InterceptMutation {
         anydata|error result = ctx.resolve();
         if result is record{} {
             return {
-                name: "Albus Percival Wulfric Brian Dumbledore",
-                age: result.get("age"),
-                address: result.get("address")
+                name: "Albus Percival Wulfric Brian Dumbledore"
             };
         }
         return result;
@@ -137,7 +135,7 @@ readonly service class InvalidInterceptor1 {
 
     isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
         anydata|error result = ctx.resolve();
-        if result is string {
+        if result is graphql:ErrorDetail {
             return {
                 name: "Albus Percival Wulfric Brian Dumbledore",
                 age: 80,
@@ -153,7 +151,7 @@ readonly service class InvalidInterceptor2 {
 
     isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
         anydata|error result = ctx.resolve();
-        if result is string {
+        if result is int {
             return ["Ballerina", "GraphQL"];
         }
         return result;
@@ -165,7 +163,7 @@ readonly service class InvalidInterceptor3 {
 
     isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
         anydata|error result = ctx.resolve();
-        if result is any[] {
+        if result is record{} {
             return "Harry Potter";
         }
         return result;
@@ -193,7 +191,7 @@ readonly service class InvalidInterceptor5 {
 
     isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
         anydata|error result = ctx.resolve();
-        if result is map<anydata> {
+        if result is record{} {
             return "Harry Potter";
         }
         return result;

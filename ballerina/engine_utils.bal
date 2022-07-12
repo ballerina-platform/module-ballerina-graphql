@@ -36,22 +36,30 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
+isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName) returns anydata|error {
+    if value is error|ErrorDetail {
+        return value;
+    } else if value is anydata && isValidReturnType('type, value) {
+        return value;
+    }
+    return error(string `Invalid return type in Interceptor "${interceptorName}"`);
+}
+
 isolated function isValidReturnType(__Type 'type, anydata value) returns boolean {
     if 'type.kind is NON_NULL {
-        return isValidReturnType(getOfType('type), value);
-    }
-    if 'type.kind is LIST && value is anydata[] {
+        return isValidReturnType(unwrapNonNullype('type), value);
+    } else if 'type.kind is ENUM && value is string {
         return true;
-    }
-    if 'type.kind is OBJECT && value is map<anydata> {
+    } else if 'type.kind is LIST && value is anydata[] {
         return true;
-    }
-    if 'type.kind is SCALAR|ENUM && value is Scalar {
-        if getOfTypeName('type) == getTypeNameFromValue(value) {
+    } else if 'type.kind is OBJECT && value is map<anydata> {
+        return true;
+    } else if 'type.kind is SCALAR && value is Scalar {
+        if getOfTypeName('type) == getTypeNameFromScalarValue(value) {
             return true;
         }
-    }
-    if 'type.kind is UNION|INTERFACE {
+        return false;
+    } else if 'type.kind is UNION|INTERFACE {
         __Type[] possibleTypes = <__Type[]>'type.possibleTypes;
         boolean isValidType = false;
         foreach __Type possibleType in possibleTypes {
@@ -63,16 +71,6 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
         return isValidType;
     }
     return false;
-}
-
-isolated function validateInterceptorReturnValue(Field 'field, any|error value, string interceptorName) returns error? {
-    if value is error {
-        return value;
-    }
-    if value is anydata && isValidReturnType('field.getGetSchemaField(), value) {
-        return;
-    }
-    return error(string `Invalid return type in Intecetor ${interceptorName}`);
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {

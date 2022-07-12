@@ -50,7 +50,7 @@ isolated class Engine {
                 self.nextInterceptor += 1;
                 return next;
             }
-            self.nextInterceptor = 0; //reset the interceptor counter
+            self.nextInterceptor = 0;
             return;
         }
     }
@@ -155,6 +155,49 @@ isolated class Engine {
         }
     }
 
+    isolated function resolve(Context context, Field 'field) returns anydata {
+        service object {} serviceObject = 'field.getServiceObject();
+        parser:FieldNode fieldNode = 'field.getInternalNode();
+        parser:RootOperationType operationType = 'field.getOperationType();
+        (Interceptor & readonly)? interceptor = self.getNextInterceptor();
+        __Type fieldType = 'field.getFieldType();
+        any|error fieldValue;
+        if operationType == parser:OPERATION_QUERY {
+            handle? resourceMethod = self.getResourceMethod(serviceObject, fieldNode, [fieldNode.getName()]);
+            if resourceMethod == () {
+                fieldValue = (); // Hierarchical paths
+            } else {
+                if interceptor is () {
+                    fieldValue = self.executeQueryResource(serviceObject, resourceMethod, fieldNode, context); 
+                } else {
+                    any|error result = executeInterceptor(interceptor, 'field, context);
+                    anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result, getInterceptorName(interceptor));
+                    if interceptValue is error {
+                        fieldValue = interceptValue;
+                    } else {
+                        return interceptValue;
+                    }
+                }
+            }
+        } else if operationType == parser:OPERATION_MUTATION {
+            if interceptor is () {
+                fieldValue = self.executeMutationMethod(serviceObject, fieldNode, context);
+            } else {
+                any|error result = executeInterceptor(interceptor, 'field, context);
+                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result, getInterceptorName(interceptor));
+                if interceptValue is error {
+                    fieldValue = interceptValue;
+                } else {
+                    return interceptValue;
+                }
+            }
+        } else {
+            fieldValue = ();
+        }
+        ResponseGenerator responseGenerator = new(self, context, fieldType, 'field.getPath().clone());
+        return responseGenerator.getResult(fieldValue, fieldNode);
+    }
+
     isolated function addService(Service s) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
@@ -162,40 +205,6 @@ isolated class Engine {
     isolated function getService() returns Service = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
-
-    isolated function resolve(Context context, Field 'field) returns anydata|error {
-        service object {} serviceObject = 'field.getServiceObject();
-        parser:FieldNode fieldNode = 'field.getInternalNode();
-        parser:RootOperationType operationType = 'field.getOperationType();
-        (Interceptor & readonly)? interceptor = self.getNextInterceptor();
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type schemaField = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        any|error fieldValue;
-        if operationType == parser:OPERATION_QUERY {
-            handle? resourceMethod = self.getResourceMethod(serviceObject, fieldNode, [fieldNode.getName()]);
-            if resourceMethod == () {
-                fieldValue = (); // Hierarchical paths
-            } else {
-                if interceptor is readonly & Interceptor {
-                    any|error result = executeInterceptor(interceptor, 'field, context);
-                    fieldValue = validateInterceptorReturnValue('field, result, getInterceptorName(interceptor));
-                } else {
-                    fieldValue = self.executeQueryResource(serviceObject, resourceMethod, fieldNode, context); 
-                }
-            }
-        } else if operationType == parser:OPERATION_MUTATION {
-            if interceptor is readonly & Interceptor {
-                any|error result = executeInterceptor(interceptor, 'field, context);
-                fieldValue = validateInterceptorReturnValue('field, result, getInterceptorName(interceptor));
-            } else {
-                fieldValue = self.executeMutationMethod(serviceObject, fieldNode, context);
-            }
-        } else {
-            fieldValue = ();
-        }
-        ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
-        return responseGenerator.getResult(fieldValue, fieldNode);
-    }
 
     isolated function getResourceMethod(service object {} serviceObject, parser:FieldNode fieldNode, string[] path)
     returns handle? = @java:Method {
@@ -212,18 +221,4 @@ isolated class Engine {
                                             Context context) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
-
-    isolated function resolve(Context context, Field 'field) returns anydata|error {
-        (Interceptor & readonly)? interceptor = self.getNextInterceptor();
-        service object {} serviceObject = 'field.getServiceObject();
-        parser:FieldNode fieldNode = 'field.getInternalNode();
-        if interceptor is () {
-            any|error fieldValue = executeResource(serviceObject, fieldNode, context);
-            return error("interceptor");
-        } else {
-            any|error  result = executeInterceptor(interceptor, 'field, context);
-            anydata|error interceptorValue = validateInterceptorReturnValue('field, result, getInterceptorName(interceptor));
-            return error("interceptor");
-        }
-    }
 }

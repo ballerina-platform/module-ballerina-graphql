@@ -62,13 +62,21 @@ class ExecutorVisitor {
         } else {
             if operationType == parser:OPERATION_QUERY {
                 (string|int)[] path = [fieldNode.getName()];
-                Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
+                string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+                __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+                __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+                Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
+                self.context.setField('field);
                 var result = self.engine.resolve(self.context, 'field);
                 self.errors = self.context.getErrors();
                 self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
             } else if operationType == parser:OPERATION_MUTATION {
                 (string|int)[] path = [fieldNode.getName()];
-                Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
+                string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+                __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+                __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+                Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
+                self.context.setField('field);
                 var result = self.engine.resolve(self.context, 'field);
                 self.errors = self.context.getErrors();
                 self.data[fieldNode.getAlias()] = result;
