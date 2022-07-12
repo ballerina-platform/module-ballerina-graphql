@@ -1,0 +1,15 @@
+{
+    profile {
+        ...ProfileFragment
+    }
+}
+
+fragment ProfileFragment on profile {
+    name {
+        ...NameFragment
+    }
+}
+
+fragment NameFragment on name {
+    first
+}

@@ -144,25 +144,67 @@ isolated class Engine {
     } external;
 
     isolated function resolve(Context context, Field 'field) returns anydata {
-        service object {} serviceObject = 'field.getServiceObject();
         parser:FieldNode fieldNode = 'field.getInternalNode();
         parser:RootOperationType operationType = 'field.getOperationType();
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {
-            handle? resourceMethod = self.getResourceMethod(serviceObject, [fieldNode.getName()]);
-            if resourceMethod == () {
-                fieldValue = (); // Hierarchical paths
-            } else {
-                fieldValue = self.executeQueryResource(serviceObject, resourceMethod, fieldNode, context);
-            }
+            fieldValue = self.resolveResourceMethod(context, 'field);
         } else if operationType == parser:OPERATION_MUTATION {
-            fieldValue = self.executeMutationMethod(serviceObject, fieldNode, context);
+            fieldValue = self.executeMutationMethod(context, 'field.getServiceObject(), fieldNode);
         } else {
             // TODO: Subscriptions
             fieldValue = ();
         }
-        ResponseGenerator responseGenerator = new(self, context, 'field.getPath().clone());
+        ResponseGenerator responseGenerator = new (self, context, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
+    }
+
+    isolated function resolveResourceMethod(Context context, Field 'field) returns any|error {
+        any|error fieldValue;
+        service object {} serviceObject = 'field.getServiceObject();
+        handle? resourceMethod = self.getResourceMethod(serviceObject, 'field.getResourcePath());
+        if resourceMethod == () {
+            fieldValue = self.resolveHierarchicalResource(context, 'field);
+        } else {
+            fieldValue = self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
+        }
+        return fieldValue;
+    }
+
+    isolated function resolveHierarchicalResource(Context context, Field 'field) returns anydata {
+        if 'field.getInternalNode().getSelections().length() == 0 {
+            return;
+        }
+        Data result = {};
+        foreach parser:SelectionNode selection in 'field.getInternalNode().getSelections() {
+            if selection is parser:FieldNode {
+                self.getHierarchicalResult(context, 'field, selection, result);
+            } else if selection is parser:FragmentNode {
+                self.resolveHierarchicalResourceFromFragment(context, 'field, selection, result);
+            }
+        }
+        return result;
+    }
+
+    isolated function resolveHierarchicalResourceFromFragment(Context context, Field 'field,
+                                                              parser:FragmentNode fragmentNode, Data result) {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+            if selection is parser:FieldNode {
+                self.getHierarchicalResult(context, 'field, selection, result);
+            } else if selection is parser:FragmentNode {
+                self.resolveHierarchicalResourceFromFragment(context, 'field, selection, result);
+            }
+        }
+    }
+
+    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, Data result) {
+        string[] resourcePath = 'field.getResourcePath();
+        (string|int)[] path = 'field.getPath().clone();
+        path.push(fieldNode.getName());
+        Field selectionField = new (fieldNode, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
+        anydata fieldValue = self.resolve(context, selectionField);
+        result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+        _ = resourcePath.pop();
     }
 
     isolated function getResourceMethod(service object {} serviceObject, string[] path)
@@ -170,14 +212,14 @@ isolated class Engine {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
-    isolated function executeQueryResource(service object {} serviceObject, handle resourceMethod,
-                                           parser:FieldNode fieldNode, Context context)
+    isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
+                                            parser:FieldNode fieldNode)
     returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
-    isolated function executeMutationMethod(service object {} serviceObject, parser:FieldNode fieldNode,
-                                            Context context) returns any|error = @java:Method {
+    isolated function executeMutationMethod(Context context, service object {} serviceObject,
+                                            parser:FieldNode fieldNode) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 }

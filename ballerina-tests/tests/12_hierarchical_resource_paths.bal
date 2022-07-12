@@ -184,3 +184,23 @@ isolated function testHierarchicalResourcePathsReturningServicesWithHierarchical
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["hierarchical_paths", "fragments"]
+}
+isolated function testHierarchicalResourcePathsWithFragments() returns error? {
+    string document = check getGraphQLDocumentFromFile("hierarchical_resource_paths_with_fragments.graphql");
+    string url = "http://localhost:9094/profiles";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: {
+                    first: "Sherlock"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

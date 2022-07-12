@@ -218,8 +218,8 @@ public class Engine {
         return null;
     }
 
-    public static Object executeQueryResource(Environment environment, BObject service,
-                                              ResourceMethodType resourceMethod, BObject fieldNode, BObject context) {
+    public static Object executeQueryResource(Environment environment, BObject context, BObject service,
+                                              ResourceMethodType resourceMethod, BObject fieldNode) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
@@ -240,8 +240,8 @@ public class Engine {
         return null;
     }
 
-    public static Object executeMutationMethod(Environment environment, BObject service, BObject fieldNode,
-                                               BObject context) {
+    public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
+                                               BObject fieldNode) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();

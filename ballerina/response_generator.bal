@@ -59,6 +59,9 @@ class ResponseGenerator {
         } else if parentValue is map<anydata> {
             if parentValue.hasKey(fieldNode.getName()) {
                 return self.getResult(parentValue.get(fieldNode.getName()), fieldNode);
+            } else if parentValue.hasKey(fieldNode.getAlias()) {
+                // TODO: This is to handle results from hierarchical paths. Should find a better way to handle this.
+                return self.getResult(parentValue.get(fieldNode.getAlias()), fieldNode);
             } else {
                 return;
             }

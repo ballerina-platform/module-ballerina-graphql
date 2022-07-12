@@ -22,13 +22,17 @@ public class Field {
     private final parser:FieldNode internalNode;
     private final service object {} serviceObject;
     private (string|int)[] path;
+    private string[] resourcePath;
 
     isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = [],
-                           parser:RootOperationType operationType = parser:OPERATION_QUERY) {
+                           parser:RootOperationType operationType = parser:OPERATION_QUERY,
+                           string[] resourcePath = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.path = path;
         self.operationType = operationType;
+        self.resourcePath = resourcePath;
+        self.resourcePath.push(internalNode.getName());
     }
 
     # Returns the name of the field.
@@ -57,5 +61,9 @@ public class Field {
 
     isolated function getOperationType() returns parser:RootOperationType {
         return self.operationType;
+    }
+
+    isolated function getResourcePath() returns string[] {
+        return self.resourcePath;
     }
 }
