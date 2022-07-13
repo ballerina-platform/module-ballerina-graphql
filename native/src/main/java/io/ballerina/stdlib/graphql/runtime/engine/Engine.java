@@ -50,8 +50,6 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GRAPHQL_SERVICE_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -86,14 +84,6 @@ public class Engine {
         } catch (NullPointerException e) {
             return createError("Failed to generate schema", ERROR_TYPE);
         }
-    }
-
-    public static void attachServiceToEngine(BObject service, BObject engine) {
-        engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
-    }
-
-    public static void attachFieldToEngine(BObject fieldNode, BObject engine) {
-        engine.addNativeData(GRAPHQL_FIELD, fieldNode);
     }
 
     public static void executeQuery(Environment environment, BObject visitor, BObject node) {
@@ -230,8 +220,8 @@ public class Engine {
         return null;
     }
 
-    public static Object executeQueryResource(Environment environment, BObject service,
-                                              ResourceMethodType resourceMethod, BObject fieldNode, BObject context) {
+    public static Object executeQueryResource(Environment environment, BObject context, BObject service,
+                                              ResourceMethodType resourceMethod, BObject fieldNode) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
@@ -252,8 +242,8 @@ public class Engine {
         return null;
     }
 
-    public static Object executeMutationMethod(Environment environment, BObject service, BObject fieldNode,
-                                               BObject context) {
+    public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
+                                               BObject fieldNode) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
@@ -282,7 +272,7 @@ public class Engine {
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) interceptor.getType();
         RemoteMethodType remoteMethod = getRemoteMethod(serviceType, INTERCEPTOR_EXECUTE);
-        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_ERROR);
+        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         if (remoteMethod != null) {
             Object[] arguments = getInterceptorArguments(context, field);
             if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
@@ -297,7 +287,7 @@ public class Engine {
         return null;
     }
 
-    public static Object getResourceMethod(BObject service, BObject fieldNode, BArray path) {
+    public static Object getResourceMethod(BObject service, BArray path) {
         ServiceType serviceType = (ServiceType) service.getType();
         List<String> pathList = getPathList(path);
         return getResourceMethod(serviceType, pathList, GET_ACCESSOR);
@@ -319,10 +309,6 @@ public class Engine {
             result.add(pathSegment.getValue());
         }
         return result;
-    }
-
-    public static Object executeResource(Environment environment, BObject service, BObject fieldNode, BObject context) {
-        return null;
     }
 
     private static RemoteMethodType getRemoteMethod(ServiceType serviceType, String methodName) {

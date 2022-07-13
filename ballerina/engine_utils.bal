@@ -81,14 +81,6 @@ isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode 
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function attachFieldToEngine(Field fieldNode, Engine engine) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function getFieldFromEngine(Engine engine) returns Field = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
-} external;
-
 isolated function getSubscriptionResult(ExecutorVisitor visitor,
                                         parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
@@ -100,11 +92,6 @@ isolated function isMap(map<anydata> value) returns boolean = @java:Method {
 
 isolated function getTypeNameFromValue(any value) returns string = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
-} external;
-
-isolated function executeResource(service object {} serviceObject, parser:FieldNode fieldNode, Context context)
-returns any|error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
 isolated function executeInterceptor(readonly & Interceptor interceptor, Field fieldNode, Context context)

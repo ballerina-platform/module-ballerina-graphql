@@ -59,7 +59,14 @@ class ResponseGenerator {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         } else if parentValue is map<anydata> {
-            return self.getResult(parentValue.get(fieldNode.getName()), fieldNode);
+            if parentValue.hasKey(fieldNode.getName()) {
+                return self.getResult(parentValue.get(fieldNode.getName()), fieldNode);
+            } else if parentValue.hasKey(fieldNode.getAlias()) {
+                // TODO: This is to handle results from hierarchical paths. Should find a better way to handle this.
+                return self.getResult(parentValue.get(fieldNode.getAlias()), fieldNode);
+            } else {
+                return;
+            }
         } else if parentValue is service object {} {
             (string|int)[] path = self.path.clone();
             path.push(fieldNode.getName());
@@ -82,8 +89,12 @@ class ResponseGenerator {
 
     isolated function getResultFromMap(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
         if isMap(parentValue) {
-            string mapKey = self.getKeyArgument(parentNode);
-            return self.getResult(parentValue.get(mapKey), parentNode);
+            string? mapKey = self.getKeyArgument(parentNode);
+            if mapKey is string {
+                return self.getResult(parentValue.get(mapKey), parentNode);
+            } else {
+                return parentValue;
+            }
         }
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
@@ -174,7 +185,11 @@ class ResponseGenerator {
         }
     }
 
-    isolated function getKeyArgument(parser:FieldNode fieldNode) returns string {
+    // TODO: This returns () for the hierarchiacal paths. Find a better way to handle this.
+    isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
+        if fieldNode.getArguments().length() == 0 {
+            return;
+        }
         parser:ArgumentNode argumentNode = fieldNode.getArguments()[0];
         if argumentNode.isVariableDefinition() {
             return <string>argumentNode.getVariableValue();

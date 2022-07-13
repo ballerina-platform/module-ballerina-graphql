@@ -131,7 +131,6 @@ public class EngineUtils {
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
-    public static final String GRAPHQL_FIELD = "graphql.field";
     public static final String FIELD_OBJECT = "field.object";
 
     public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
@@ -281,11 +280,6 @@ public class EngineUtils {
             }
         }
         return recordType.getName();
-    }
-
-    public static BObject getFieldFromEngine(BObject engine) {
-        BObject fieldNode = (BObject) engine.getNativeData(GRAPHQL_FIELD);
-        return fieldNode;
     }
 
     public static void setField(BObject context, BObject field) {

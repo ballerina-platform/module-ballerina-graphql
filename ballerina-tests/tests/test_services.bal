@@ -1401,6 +1401,24 @@ service /deprecation on wrappedListener {
 // **************** Interceptor-Related Services ****************
 
 @graphql:ServiceConfig {
+    interceptors: [new StringInterceptor1(), new StringInterceptor2(), new StringInterceptor3()]
+}
+service /intercept_string on basicListener {
+    resource function get enemy() returns string {
+        return "voldemort";
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new Counter(), new Counter(), new Counter()]
+}
+service /intercept_int on basicListener {
+    isolated resource function get age() returns int {
+        return 23;
+    }
+}
+
+@graphql:ServiceConfig {
     interceptors: [new RecordInterceptor()]
 }
 service /intercept_records on basicListener {
@@ -1414,11 +1432,15 @@ service /intercept_records on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: []
+    interceptors: [new HierarchycalPath()]
 }
 service /intercept_hierachical on basicListener {
-    resource function get Name() returns HierarchicalName {
-        return new;
+    isolated resource function get name/first() returns string {
+        return "Sherlock";
+    }
+
+    isolated resource function get name/last() returns string {
+        return "Holmes";
     }
 }
 
@@ -1432,11 +1454,20 @@ service /intercept_service_obj_arrays on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ServiceObjectInterceptor()]
+    interceptors: [new ServiceObjectInterceptor1()]
 }
 service /intercept_service_obj on basicListener {
     resource function get teacher() returns TeacherService {
         return new TeacherService(2, "Severus Snape", "Defence Against the Dark Arts");
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new ServiceObjectInterceptor2()]
+}
+service /intercept_service_obj_array on basicListener {
+    resource function get students() returns StudentService[] {
+        return [new StudentService(45, "Ron Weasly"), new StudentService(46, "Hermione Granger")];
     }
 }
 
@@ -1450,20 +1481,24 @@ service /intercept_arrays on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new StringInterceptor1(), new StringInterceptor2(), new StringInterceptor3()]
+    interceptors: [new EnumInterceptor()]
 }
-service /intercept_string on basicListener {
-    resource function get enemy() returns string {
-        return "voldemort";
+service /intercept_enum on basicListener {
+    isolated resource function get holidays() returns Weekday[] {
+        return [SATURDAY, SUNDAY];
     }
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new Counter(), new Counter(), new Counter()]
+    interceptors: [new UnionInterceptor()]
 }
-service /interceptors1 on basicListener {
-    isolated resource function get age() returns int {
-        return 23;
+service /intercept_unions on serviceTypeListener {
+    isolated resource function get profile(int id) returns StudentService|TeacherService {
+        if id < 100 {
+            return new StudentService(1, "Jesse Pinkman");
+        } else {
+            return new TeacherService(737, "Walter White", "Chemistry");
+        }
     }
 }
 
@@ -1520,6 +1555,15 @@ service /invalid_interceptor3 on basicListener {
             age: 80,
             address: {number: "101", street: "Mould-on-the-Wold", city: "London"}
         };
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new InvalidInterceptor7()]
+}
+service /invalid_interceptor4 on basicListener {
+    resource function get student() returns StudentService {
+        return new StudentService(45, "Ron Weasly");
     }
 }
 

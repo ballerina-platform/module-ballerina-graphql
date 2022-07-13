@@ -50,7 +50,8 @@ isolated function testInterfaceField() returns error? {
 }
 
 @test:Config {
-    groups: ["interfaces"]
+    groups: ["interfaces"],
+    enable: false
 }
 isolated function testInterfacesWithNestedFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("interfaces_with_nested_fragments.graphql");
@@ -72,7 +73,8 @@ isolated function testInterfacesWithInvalidField() returns error? {
 }
 
 @test:Config {
-    groups: ["interfaces"]
+    groups: ["interfaces"],
+    enable: false
 }
 isolated function testInterfacesWithTypeNameIntrospection() returns error? {
     string document = check getGraphQLDocumentFromFile("interfaces_with_type_name_introspection.graphql");
