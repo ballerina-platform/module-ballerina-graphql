@@ -51,10 +51,13 @@ public class Listener {
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
         Graphiql graphiql = getGraphiqlConfig(serviceConfig);
+        string schemaString = getSchemaString(serviceConfig);
+        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
+        Engine engine;
         if graphiql.enable {
             check validateGraphiqlPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            Engine engine = check new (getSchemaString(serviceConfig), getMaxQueryDepth(serviceConfig));
+            engine = check new (schemaString, maxQueryDepth);
             __Schema & readonly schema = engine.getSchema();
             __Type? subscriptionType = schema.subscriptionType;
             HttpService graphiqlService = subscriptionType is __Type
@@ -65,11 +68,10 @@ public class Listener {
             if result is error {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
             }
+        } else {
+            engine = check new (schemaString, maxQueryDepth);
         }
 
-        string schemaString = getSchemaString(serviceConfig);
-        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        Engine engine = check new (schemaString, maxQueryDepth);
         attachServiceToEngine(s, engine);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);

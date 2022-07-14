@@ -74,6 +74,3 @@ const GRAPHQL_WS = "graphql-ws";
 const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 const DEFAULT_VALUE = "default";
-
-// Windows OS
-const WINDOWS = "WINDOWS_NT";

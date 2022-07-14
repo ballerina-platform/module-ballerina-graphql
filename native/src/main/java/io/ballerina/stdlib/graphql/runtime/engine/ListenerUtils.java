@@ -133,14 +133,13 @@ public final class ListenerUtils {
         try {
             byte[] bytes = htmlAsStream.readAllBytes();
             String htmlAsString = new String(bytes, StandardCharsets.UTF_8);
-            String graphiqlUrl;
+            StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\" }");
             if (subscriptionUrl != null) {
-                graphiqlUrl = "{ url: \""
-                        + url.getValue() + "\" , subscriptionUrl: \"" + ((BString) subscriptionUrl).getValue() + "\" }";
-            } else {
-                graphiqlUrl = "{ url: \"" + url.getValue() + "\" }";
+                graphiqlUrl.deleteCharAt(graphiqlUrl.length() - 1);
+                graphiqlUrl.append(" , subscriptionUrl: \"")
+                           .append(((BString) subscriptionUrl).getValue()).append("\" }");
             }
-            htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl);
+            htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl.toString());
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
             return createError("Error occurred while loading the GraphiQL client", ERROR_TYPE);

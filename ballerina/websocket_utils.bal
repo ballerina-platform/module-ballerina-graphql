@@ -50,11 +50,20 @@ isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine
         return {errors: [{message: "Invalid format in WebSocket payload"}]};
     }
     json|error document = payload.query;
-    if document !is string || document == "" {
+    if document is error {
         return {errors: [{message: "Query not found"}]};
     }
-    json|error variables = payload.variables is error ? () : payload.variables;
-    if variables !is map<json> && variables != () {
+    if document !is string {
+        return {errors: [{message: "Invalid format in request parameter: query"}]};
+    }
+    if document == "" {
+        return {errors: [{message: "Empty query is found"}]};
+    }
+    json|error variables = payload.variables;
+    if variables is error {
+        variables = variables.message() == "{ballerina/lang.map}KeyNotFound" ? () : variables;
+    }
+    if variables is error || variables !is map<json>? {
         return {errors: [{message: "Invalid format in request parameter: variables"}]};
     }
     parser:OperationNode|OutputObject validation = engine.validate(document, getOperationName(payload), variables);
@@ -80,7 +89,7 @@ isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & r
         check caller->writeMessage(payload);
     } else {
         string 'type = getMessageType(wsType, customHeaders);
-        json jsonResponse = id != () ? {"type": 'type, id: id, payload: payload} : {"type": 'type, payload: payload};
+        json jsonResponse = id != () ? {'type: 'type, id: id, payload: payload} : {'type: 'type, payload: payload};
         check caller->writeMessage(jsonResponse);
     }
 }

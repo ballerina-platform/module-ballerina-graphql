@@ -18,7 +18,6 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/mime;
-import ballerina/os;
 import ballerina/websocket;
 
 import graphql.parser;
@@ -375,10 +374,10 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
         isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
-            string graphqlURL = os:getEnv("OS").toUpperAscii() == WINDOWS
+            string graphqlURL = caller.localAddress.host.includes(":")
                             ? string `http://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
                             : string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
-            string subscriptionUrl = os:getEnv("OS").toUpperAscii() == WINDOWS
+            string subscriptionUrl = caller.localAddress.host.includes(":")
                             ? string `ws://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
                             : string `ws://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
             string|error htmlAsString = includedSubscription
@@ -419,7 +418,8 @@ isolated function validateGraphiqlPath(string path) returns Error? = @java:Metho
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function getHtmlContentFromResources(string graphqlUrl, string? subscriptionUrl = ()) returns string|Error = @java:Method {
+isolated function getHtmlContentFromResources(string graphqlUrl, string? subscriptionUrl = ())
+    returns string|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 

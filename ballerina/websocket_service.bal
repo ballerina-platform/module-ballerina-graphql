@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.array;
 import ballerina/lang.value;
 import ballerina/websocket;
 import graphql.parser;
@@ -110,11 +109,9 @@ isolated service class WsService {
             lock {
                 string[] connections = [];
                 foreach string i in self.activeConnections {
-                    connections.push(i);
-                }
-                int? index = array:indexOf(connections, connectionId);
-                if index is int {
-                    _ = connections.remove(index);
+                    if i != connectionId {
+                        connections.push(i);
+                    }
                 }
                 self.activeConnections = connections.cloneReadOnly();
                 self.initiatedConnection = false;
