@@ -30,7 +30,7 @@ public type GraphqlServiceConfig record {|
     CorsConfig cors?;
     Graphiql graphiql = {};
     readonly string schemaString = "";
-    (readonly & Interceptor)[] interceptors = [];
+    readonly readonly & Interceptor[] interceptors = [];
 |};
 
 # The annotation to configure a GraphQL service.

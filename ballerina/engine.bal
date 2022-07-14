@@ -22,16 +22,14 @@ isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
     private final readonly & (readonly & Interceptor)[] interceptors;
-    private int nextInterceptor;
 
-    isolated function init(string schemaString, int? maxQueryDepth, Service s, (readonly & Interceptor)[] interceptors) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, Service s, readonly & (readonly & Interceptor)[] interceptors) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
-        self.interceptors = interceptors.cloneReadOnly();
-        self.nextInterceptor = 0;
+        self.interceptors = interceptors;
         self.addService(s);
     }
 
@@ -41,18 +39,6 @@ isolated class Engine {
 
     isolated function getInterceptors() returns (readonly & Interceptor)[] {
         return self.interceptors;
-    }
-
-    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
-        lock {
-            if self.interceptors.length() > self.nextInterceptor {
-                readonly & Interceptor next = self.interceptors[self.nextInterceptor];
-                self.nextInterceptor += 1;
-                return next;
-            }
-            self.nextInterceptor = 0;
-            return;
-        }
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -158,7 +144,7 @@ isolated class Engine {
     isolated function resolve(Context context, Field 'field) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
         parser:RootOperationType operationType = 'field.getOperationType();
-        (Interceptor & readonly)? interceptor = self.getNextInterceptor();
+        (Interceptor & readonly)? interceptor = context.getNextInterceptor();
         __Type fieldType = 'field.getFieldType();
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {

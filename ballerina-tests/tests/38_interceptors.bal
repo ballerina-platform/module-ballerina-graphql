@@ -269,3 +269,18 @@ isolated function testInterceptorsReturningError3() returns error? {
     json expectedPayload = check getJsonContentFromFile("interceptors_returning_error3.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorExecutionOrder() returns error? {
+    string document = string `{ quote }`;
+    string url = "http://localhost:9091/intercept_order";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            quote: "Ballerina is an open-source programming language."
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

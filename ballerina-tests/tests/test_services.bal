@@ -1597,3 +1597,19 @@ service /intercept_errors3 on basicListener {
         };
     }
 }
+
+@graphql:ServiceConfig {
+    interceptors: [new Execution1(), new Execution2()],
+    contextInit:
+    isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context context = new;
+        context.set("subject", "Ballerina");
+        context.set("beVerb", "is");
+        return context;
+    }
+}
+service /intercept_order on basicListener {
+    isolated resource function get quote() returns string {
+        return "an open-source";
+    }
+}

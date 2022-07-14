@@ -23,11 +23,13 @@ public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
     private final ErrorDetail[] errors;
     private Engine? engine;
+    private int nextInterceptor;
 
     public isolated function init() {
         self.attributes = {};
         self.engine = ();
         self.errors = [];
+        self.nextInterceptor = 0;
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -100,13 +102,12 @@ public isolated class Context {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
 
-    public isolated function resolve() returns anydata|error {
+    public isolated function resolve(Field 'field) returns anydata {
         if self.getEngine() is Engine {
             Engine engine = <Engine>self.getEngine();
-            Field 'field = <Field>self.getField(self);
             return engine.resolve(self, 'field);
         }
-        return error("Error in Interceptor Execution!");
+        return;
     }
 
     isolated function setEngine(Engine engine) {
@@ -121,13 +122,20 @@ public isolated class Context {
         }
     }
 
-    isolated function setField(Field 'field) = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
-    } external;
-
-    isolated function getField(Context context) returns Field = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
-    } external;
+    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
+        lock {
+            if self.getEngine() is Engine {
+                Engine engine = <Engine>self.getEngine();
+                if engine.getInterceptors().length() > self.nextInterceptor {
+                    readonly & Interceptor next =engine.getInterceptors()[self.nextInterceptor];
+                    self.nextInterceptor += 1;
+                    return next;
+                }
+            }
+            self.nextInterceptor = 0;
+            return;
+        }
+    }
 }
 
 isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {

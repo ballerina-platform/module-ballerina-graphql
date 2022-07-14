@@ -84,7 +84,7 @@ readonly service class ServiceInterceptor {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
-        anydata|error result = ctx.resolve();
+        anydata|error result = ctx.resolve('field);
         return result;
     }
 }

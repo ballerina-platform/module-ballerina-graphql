@@ -88,7 +88,6 @@ class ExecutorVisitor {
         __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
-        self.context.setField('field);
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();
         self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
@@ -100,10 +99,9 @@ class ExecutorVisitor {
         __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
-        self.context.setField('field);
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();
-        self.data[fieldNode.getAlias()] = result;
+        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
     }
 
     isolated function getOutput() returns OutputObject {
