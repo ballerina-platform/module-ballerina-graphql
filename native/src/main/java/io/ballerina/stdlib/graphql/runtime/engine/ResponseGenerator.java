@@ -62,6 +62,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.createDataR
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getMemberTypes;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getTypeFromTypeArray;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getTypeNameFromRecordValue;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
@@ -274,17 +275,6 @@ public class ResponseGenerator {
     static void appendErrorToVisitor(BError bError, BObject visitor, BObject node, List<Object> pathSegments) {
         BArray errors = visitor.getArrayValue(ERRORS_FIELD);
         errors.append(getErrorDetailRecord(bError, node, pathSegments));
-    }
-
-    private static String getTypeNameFromRecordValue(RecordType recordType) {
-        if (recordType.getName().contains("&") && recordType.getIntersectionType().isPresent()) {
-            for (Type constituentType : recordType.getIntersectionType().get().getConstituentTypes()) {
-                if (constituentType.getTag() != TypeTags.READONLY_TAG) {
-                    return constituentType.getName();
-                }
-            }
-        }
-        return recordType.getName();
     }
 
     @SuppressWarnings("unchecked")

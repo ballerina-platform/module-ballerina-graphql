@@ -64,8 +64,7 @@ public class Listener {
 
         string schemaString = getSchemaString(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        Engine engine = check new (schemaString, maxQueryDepth);
-        attachServiceToEngine(s, engine);
+        Engine engine = check new (schemaString, maxQueryDepth, s);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 

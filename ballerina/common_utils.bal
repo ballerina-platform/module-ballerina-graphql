@@ -191,7 +191,7 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
     return schemaType.name.toString();
 }
 
-isolated function getTypeNameFromValue(Scalar value) returns string {
+isolated function getTypeNameFromScalarValue(Scalar value) returns string {
     if value is float {
         return FLOAT;
     } else if value is decimal {
@@ -385,7 +385,7 @@ isolated function handleHttpClientErrorResponse(http:ClientError clientError) re
 }
 
 isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
-    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType(GraphQLErrorArray);
+    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType();
     if errors is error {
         return error RequestError("GraphQL Client Error", errors);
     }

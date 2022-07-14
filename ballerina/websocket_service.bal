@@ -41,7 +41,7 @@ isolated service class WsService {
             if sourceStream is stream<any, error?> {
                 record {|any value;|}|error? next = sourceStream.iterator().next();
                 while next !is error? {
-                    OutputObject outputObject = self.engine.getResult(node, self.context, {}, next.value);
+                    OutputObject outputObject = self.engine.getResult(node, self.context, next.value);
                     ResponseFormatter responseFormatter = new(self.schema);
                     OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObject, node);
                     if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
