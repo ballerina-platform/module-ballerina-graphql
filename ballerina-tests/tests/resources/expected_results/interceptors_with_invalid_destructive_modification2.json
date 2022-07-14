@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Invalid return type in Interceptor \"InvalidInterceptor4\"",
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor4\". Expected type [String!]!",
             "locations": [
                 {
                     "line": 1,
@@ -13,7 +13,7 @@
             ]
         },
         {
-            "message": "Invalid return type in Interceptor \"InvalidInterceptor3\"",
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor3\". Expected type [String!]!",
             "locations": [
                 {
                     "line": 1,

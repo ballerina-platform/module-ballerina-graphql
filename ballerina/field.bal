@@ -20,8 +20,8 @@ import graphql.parser;
 public class Field {
     private final parser:RootOperationType operationType;
     private final parser:FieldNode internalNode;
-    private final __Type fieldType;
     private final service object {} serviceObject;
+    private final __Type fieldType;
     private (string|int)[] path;
     private string[] resourcePath;
 

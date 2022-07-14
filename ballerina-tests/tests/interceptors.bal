@@ -33,7 +33,7 @@ readonly service class StringInterceptor2 {
 
     isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
         var result = ctx.resolve();
-        if result is string {
+        if result is string && 'field.getAlias().equalsIgnoreCaseAscii("enemy") {
             return string `Marvolo ${result}`;
         }
         return result;

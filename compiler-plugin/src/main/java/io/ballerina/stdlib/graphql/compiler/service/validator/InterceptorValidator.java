@@ -14,7 +14,7 @@ import io.ballerina.tools.diagnostics.Location;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.GRAPHQL_INTERCEPTOR;
-import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.INTERCEPTOR_FUNCTION_EXECUTE;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.INTERCEPTOR_EXECUTE;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
 /**
@@ -25,6 +25,7 @@ public class InterceptorValidator {
     private final ClassDefinitionNode classDefinitionNode;
     private final SyntaxNodeAnalysisContext context;
     private boolean errorOccurred;
+
     public InterceptorValidator(SyntaxNodeAnalysisContext context, ClassDefinitionNode classDefinitionNode) {
         this.context = context;
         this.classDefinitionNode = classDefinitionNode;
@@ -74,7 +75,7 @@ public class InterceptorValidator {
         if (methodSymbol.getName().isEmpty()) {
             return;
         }
-        if (!methodSymbol.getName().get().equals(INTERCEPTOR_FUNCTION_EXECUTE)) {
+        if (!methodSymbol.getName().get().equals(INTERCEPTOR_EXECUTE)) {
             addDiagnostic(CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, location);
         }
     }

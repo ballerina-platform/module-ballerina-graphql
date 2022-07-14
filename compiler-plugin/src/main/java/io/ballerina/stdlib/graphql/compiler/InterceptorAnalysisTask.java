@@ -35,7 +35,7 @@ public class InterceptorAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisC
     }
 
     private InterceptorValidator validateService(SyntaxNodeAnalysisContext context,
-                                             ClassDefinitionNode classDefinitionNode) {
+                                                 ClassDefinitionNode classDefinitionNode) {
 
         InterceptorValidator interceptorValidator = new InterceptorValidator(context, classDefinitionNode);
         interceptorValidator.validate();

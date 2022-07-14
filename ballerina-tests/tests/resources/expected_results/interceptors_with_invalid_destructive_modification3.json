@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "Invalid return type in Interceptor \"InvalidInterceptor6\"",
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor6\". Expected type Person!",
             "locations": [
                 {
                     "line": 1,
@@ -13,7 +13,7 @@
             ]
         },
         {
-            "message": "Invalid return type in Interceptor \"InvalidInterceptor5\"",
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor5\". Expected type Person!",
             "locations": [
                 {
                     "line": 1,

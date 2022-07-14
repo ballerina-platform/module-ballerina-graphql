@@ -61,25 +61,9 @@ class ExecutorVisitor {
             }
         } else {
             if operationType == parser:OPERATION_QUERY {
-                (string|int)[] path = [fieldNode.getName()];
-                string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-                __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-                __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-                Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
-                self.context.setField('field);
-                var result = self.engine.resolve(self.context, 'field);
-                self.errors = self.context.getErrors();
-                self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
+                self.executeQuery(fieldNode, operationType);
             } else if operationType == parser:OPERATION_MUTATION {
-                (string|int)[] path = [fieldNode.getName()];
-                string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-                __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-                __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-                Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
-                self.context.setField('field);
-                var result = self.engine.resolve(self.context, 'field);
-                self.errors = self.context.getErrors();
-                self.data[fieldNode.getAlias()] = result;
+                self.executeMutation(fieldNode, operationType);
             } else if operationType == parser:OPERATION_SUBSCRIPTION {
                 executeSubscription(self, fieldNode, self.result);
             }
@@ -97,6 +81,30 @@ class ExecutorVisitor {
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function executeQuery(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
+        (string|int)[] path = [fieldNode.getName()];
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
+        self.context.setField('field);
+        var result = self.engine.resolve(self.context, 'field);
+        self.errors = self.context.getErrors();
+        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
+    }
+
+    isolated function executeMutation(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
+        (string|int)[] path = [fieldNode.getName()];
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
+        self.context.setField('field);
+        var result = self.engine.resolve(self.context, 'field);
+        self.errors = self.context.getErrors();
+        self.data[fieldNode.getAlias()] = result;
+    }
 
     isolated function getOutput() returns OutputObject {
         return getOutputObject(self.data, self.errors);

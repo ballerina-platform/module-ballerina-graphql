@@ -165,8 +165,9 @@ isolated class Engine {
             if interceptor is () {
                 fieldValue = self.resolveResourceMethod(context, 'field);
             } else {
-                any|error result = executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result, getInterceptorName(interceptor));
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
+                                                                              self.getInterceptorName(interceptor));
                 if interceptValue is error {
                     fieldValue = interceptValue;
                 } else {
@@ -177,8 +178,9 @@ isolated class Engine {
             if interceptor is () {
                 fieldValue = self.executeMutationMethod(context, 'field.getServiceObject(), fieldNode);
             } else {
-                any|error result = executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result, getInterceptorName(interceptor));
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
+                                                                              self.getInterceptorName(interceptor));
                 if interceptValue is error {
                     fieldValue = interceptValue;
                 } else {
@@ -189,7 +191,7 @@ isolated class Engine {
             // TODO: Handle Subscriptions
             fieldValue = ();
         }
-        ResponseGenerator responseGenerator = new(self, context, fieldType, 'field.getPath().clone());
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
 
@@ -263,6 +265,15 @@ isolated class Engine {
 
     isolated function executeMutationMethod(Context context, service object {} serviceObject,
                                             parser:FieldNode fieldNode) returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeInterceptor(readonly & Interceptor interceptor, Field fieldNode, Context context)
+    returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function getInterceptorName(readonly & Interceptor interceptor) returns string = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 }

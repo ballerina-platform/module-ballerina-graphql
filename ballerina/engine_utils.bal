@@ -36,13 +36,16 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName) returns anydata|error {
+isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName)
+    returns anydata|error {
     if value is error|ErrorDetail {
         return value;
     } else if value is anydata && isValidReturnType('type, value) {
         return value;
     }
-    return error(string `Invalid return type in Interceptor "${interceptorName}"`);
+    string interceptorError = string `Invalid return type in Interceptor "${interceptorName}". ` +
+                              string `Expected type ${getTypeNameFromType('type)}`;
+    return error(interceptorError);
 }
 
 isolated function isValidReturnType(__Type 'type, anydata value) returns boolean {
@@ -92,13 +95,4 @@ isolated function isMap(map<anydata> value) returns boolean = @java:Method {
 
 isolated function getTypeNameFromValue(any value) returns string = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
-} external;
-
-isolated function executeInterceptor(readonly & Interceptor interceptor, Field fieldNode, Context context)
-returns any|error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function getInterceptorName(readonly & Interceptor interceptor) returns string = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
