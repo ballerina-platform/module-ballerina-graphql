@@ -50,9 +50,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIE
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getService;
@@ -60,7 +58,6 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatc
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.getDataFromService;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_EXECUTION_STRAND;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_STRAND_METADATA;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -84,20 +81,6 @@ public class Engine {
         }
     }
 
-    public static void executeQuery(Environment environment, BObject visitor, BObject node) {
-        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
-        BMap<BString, Object> data = (BMap<BString, Object>) visitor.getMapValue(DATA_FIELD);
-        Future future = environment.markAsync();
-        BObject service = getService(engine);
-        List<String> paths = new ArrayList<>();
-        paths.add(node.getStringValue(NAME_FIELD).getValue());
-        List<Object> pathSegments = new ArrayList<>();
-        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        CallbackHandler callbackHandler = new CallbackHandler(future);
-        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, QUERY);
-        executeResourceMethod(executionContext, service, node, data, paths, pathSegments);
-    }
-
     public static void executeSubscription(Environment environment, BObject visitor, BObject node, Object result) {
         Future future = environment.markAsync();
         BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
@@ -108,19 +91,6 @@ public class Engine {
         ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
         callbackHandler.addCallback(resourceCallback);
         resourceCallback.notifySuccess(result);
-    }
-
-    public static void executeMutation(Environment environment, BObject visitor, BObject node) {
-        BObject engine = visitor.getObjectValue(ENGINE_FIELD);
-        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
-        Future future = environment.markAsync();
-        BObject service = getService(engine);
-        String fieldName = node.getStringValue(NAME_FIELD).getValue();
-        CallbackHandler callbackHandler = new CallbackHandler(future);
-        List<Object> pathSegments = new ArrayList<>();
-        pathSegments.add(StringUtils.fromString(fieldName));
-        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, MUTATION);
-        executeRemoteMethod(executionContext, service, node, data, pathSegments);
     }
 
     static void executeResourceMethod(ExecutionContext executionContext, BObject service, BObject node,
@@ -135,19 +105,6 @@ public class Engine {
         }
         // The resource not found. This should be either a resource with hierarchical paths or an introspection query
         getDataFromService(executionContext, service, node, data, paths, pathSegments);
-    }
-
-    static void executeRemoteMethod(ExecutionContext executionContext, BObject service, BObject node,
-                                    BMap<BString, Object> data, List<Object> pathSegments) {
-        ServiceType serviceType = (ServiceType) service.getType();
-        BString fieldName = node.getStringValue(NAME_FIELD);
-        for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
-            if (remoteMethod.getName().equals(fieldName.getValue())) {
-                getExecutionResult(executionContext, service, node, remoteMethod, data, pathSegments,
-                                   REMOTE_STRAND_METADATA);
-                return;
-            }
-        }
     }
 
     private static void getExecutionResult(ExecutionContext executionContext, BObject service, BObject node,

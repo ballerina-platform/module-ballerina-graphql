@@ -97,7 +97,6 @@ class ResponseGenerator {
             if selection is parser:FieldNode {
                 anydata selectionValue = self.getResultFromObject(parentValue, selection);
                 result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
-
             } else if selection is parser:FragmentNode {
                 self.getResultForFragmentFromMap(parentValue, selection, result);
             }
