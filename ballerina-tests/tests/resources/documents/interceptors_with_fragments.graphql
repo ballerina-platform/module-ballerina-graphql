@@ -1,0 +1,11 @@
+query {
+    teacher {
+        ...data
+    }
+}
+
+fragment data on TeacherService {
+    id
+    name
+    subject
+}
