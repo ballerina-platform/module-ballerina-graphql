@@ -55,7 +55,6 @@ public final class Utils {
     public static final String CONTEXT_IDENTIFIER = "Context";
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
-    public static final String READONLY_SERVICE = "readonly service";
 
     public static boolean isGraphqlModuleSymbol(Symbol symbol) {
         if (symbol.getModule().isEmpty()) {

@@ -127,7 +127,7 @@ public isolated class Context {
             if self.getEngine() is Engine {
                 Engine engine = <Engine>self.getEngine();
                 if engine.getInterceptors().length() > self.nextInterceptor {
-                    readonly & Interceptor next =engine.getInterceptors()[self.nextInterceptor];
+                    readonly & Interceptor next = engine.getInterceptors()[self.nextInterceptor];
                     self.nextInterceptor += 1;
                     return next;
                 }

@@ -3,11 +3,11 @@ package io.ballerina.stdlib.graphql.compiler.service.validator;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ClassDefinitionNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.compiler.syntax.tree.TypeReferenceNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
@@ -36,8 +36,7 @@ public class InterceptorValidator {
         NodeList<Node> members = this.classDefinitionNode.members();
         for (Node member : members) {
             if (member.kind() == SyntaxKind.TYPE_REFERENCE) {
-                String typeReference = ((TypeReferenceNode) member).typeName().toString();
-                if (typeReference.equals(GRAPHQL_INTERCEPTOR)) {
+                if (isInterceptor(member)) {
                     validateInterceptorService(members);
                     break;
                 }
@@ -78,6 +77,18 @@ public class InterceptorValidator {
         if (!methodSymbol.getName().get().equals(INTERCEPTOR_EXECUTE)) {
             addDiagnostic(CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, location);
         }
+    }
+
+    public boolean isInterceptor(Node member) {
+        if (this.context.semanticModel().symbol(member).isEmpty()) {
+            return false;
+        }
+        Symbol symbol = this.context.semanticModel().symbol(member).get();
+        TypeReferenceTypeSymbol typeReferenceTypeSymbol = (TypeReferenceTypeSymbol) symbol;
+        if (typeReferenceTypeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        return GRAPHQL_INTERCEPTOR.equals(typeReferenceTypeSymbol.getName().get());
     }
 
     private void addDiagnostic(CompilationError compilationError, Location location) {

@@ -33,7 +33,7 @@ public class InterceptorAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisC
                         continue;
                     }
                     ClassDefinitionNode classDefinitionNode = (ClassDefinitionNode) context.node();
-                    InterceptorValidator interceptorValidator = validateService(context, classDefinitionNode);
+                    InterceptorValidator interceptorValidator = validateInterceptor(context, classDefinitionNode);
                     if (interceptorValidator.isErrorOccurred()) {
                         return;
                     }
@@ -42,9 +42,8 @@ public class InterceptorAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisC
         }
     }
 
-    private InterceptorValidator validateService(SyntaxNodeAnalysisContext context,
-                                                 ClassDefinitionNode classDefinitionNode) {
-
+    private InterceptorValidator validateInterceptor(SyntaxNodeAnalysisContext context,
+                                                     ClassDefinitionNode classDefinitionNode) {
         InterceptorValidator interceptorValidator = new InterceptorValidator(context, classDefinitionNode);
         interceptorValidator.validate();
         return interceptorValidator;

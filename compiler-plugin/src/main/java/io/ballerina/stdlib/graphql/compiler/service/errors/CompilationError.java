@@ -57,7 +57,6 @@ public enum CompilationError {
     RESOURCE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_131, ErrorCode.GRAPHQL_131, DiagnosticSeverity.ERROR),
     INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_132, ErrorCode.GRAPHQL_132, DiagnosticSeverity.ERROR);
 
-
     private final String error;
     private final String errorCode;
     private final DiagnosticSeverity diagnosticSeverity;
