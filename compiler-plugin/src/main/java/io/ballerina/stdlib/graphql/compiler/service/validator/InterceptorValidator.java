@@ -12,6 +12,7 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
 import io.ballerina.tools.diagnostics.Location;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.GRAPHQL_INTERCEPTOR;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.INTERCEPTOR_EXECUTE;
@@ -86,6 +87,9 @@ public class InterceptorValidator {
         Symbol symbol = this.context.semanticModel().symbol(member).get();
         TypeReferenceTypeSymbol typeReferenceTypeSymbol = (TypeReferenceTypeSymbol) symbol;
         if (typeReferenceTypeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        if (!isGraphqlModuleSymbol(typeReferenceTypeSymbol)) {
             return false;
         }
         return GRAPHQL_INTERCEPTOR.equals(typeReferenceTypeSymbol.getName().get());
