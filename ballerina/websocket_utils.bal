@@ -60,9 +60,7 @@ isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine
         return {errors: [{message: "Empty query is found"}]};
     }
     json|error variables = payload.variables;
-    if variables is error {
-        variables = variables.message() == "{ballerina/lang.map}KeyNotFound" ? () : variables;
-    }
+    variables = variables is error && variables.message() == "{ballerina/lang.map}KeyNotFound" ? () : variables;
     if variables is error || variables !is map<json>? {
         return {errors: [{message: "Invalid format in request parameter: variables"}]};
     }
