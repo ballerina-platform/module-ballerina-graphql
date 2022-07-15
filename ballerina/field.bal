@@ -21,14 +21,16 @@ public class Field {
     private final parser:RootOperationType operationType;
     private final parser:FieldNode internalNode;
     private final service object {} serviceObject;
+    private final __Type fieldType;
     private (string|int)[] path;
     private string[] resourcePath;
 
-    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, (string|int)[] path = [],
-                           parser:RootOperationType operationType = parser:OPERATION_QUERY,
+    isolated function init(parser:FieldNode internalNode, service object {} serviceObject, __Type fieldType,
+                           (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
                            string[] resourcePath = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
+        self.fieldType = fieldType;
         self.path = path;
         self.operationType = operationType;
         self.resourcePath = resourcePath;
@@ -65,5 +67,9 @@ public class Field {
 
     isolated function getResourcePath() returns string[] {
         return self.resourcePath;
+    }
+
+    isolated function getFieldType() returns __Type {
+        return self.fieldType;
     }
 }

@@ -202,6 +202,13 @@ public class ServiceValidationTest {
     }
 
     @Test
+    public void testInterceptors() {
+        String packagePath = "valid_service_23";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         String packagePath = "invalid_service_1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -237,7 +244,7 @@ public class ServiceValidationTest {
     public void testInvalidResourceReturnTypes() {
         String packagePath = "invalid_service_4";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 11);
+        Assert.assertEquals(diagnosticResult.errorCount(), 12);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -272,6 +279,9 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 74, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 93, 5);
     }
 
     @Test
@@ -825,6 +835,20 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 61, 32);
+    }
+
+    @Test
+    public void testInvalidInterceptor() {
+        String packagePath = "invalid_service_37";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.RESOURCE_METHOD_INSIDE_INTERCEPTOR, 27, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, 34, 5);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

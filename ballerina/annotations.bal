@@ -22,6 +22,7 @@
 # + cors - The cross origin resource sharing configurations for the service
 # + graphiql - GraphiQL client configurations
 # + schemaString - The generated schema. This is auto-generated at the compile-time
+# + interceptors - GraphQL service level interceptors
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
@@ -29,6 +30,7 @@ public type GraphqlServiceConfig record {|
     CorsConfig cors?;
     Graphiql graphiql = {};
     readonly string schemaString = "";
+    readonly readonly & Interceptor[] interceptors = [];
 |};
 
 # The annotation to configure a GraphQL service.

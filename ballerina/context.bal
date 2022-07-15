@@ -22,10 +22,14 @@ import ballerina/lang.value;
 public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
     private final ErrorDetail[] errors;
+    private Engine? engine;
+    private int nextInterceptor;
 
     public isolated function init() {
         self.attributes = {};
+        self.engine = ();
         self.errors = [];
+        self.nextInterceptor = 0;
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -97,6 +101,41 @@ public isolated class Context {
     isolated function getFileInfo() returns map<Upload|Upload[]> = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
+
+    public isolated function resolve(Field 'field) returns anydata {
+        if self.getEngine() is Engine {
+            Engine engine = <Engine>self.getEngine();
+            return engine.resolve(self, 'field);
+        }
+        return;
+    }
+
+    isolated function setEngine(Engine engine) {
+        lock {
+            self.engine = engine;
+        }
+    }
+
+    isolated function getEngine() returns Engine? {
+        lock {
+            return self.engine;
+        }
+    }
+
+    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
+        lock {
+            if self.getEngine() is Engine {
+                Engine engine = <Engine>self.getEngine();
+                if engine.getInterceptors().length() > self.nextInterceptor {
+                    readonly & Interceptor next = engine.getInterceptors()[self.nextInterceptor];
+                    self.nextInterceptor += 1;
+                    return next;
+                }
+            }
+            self.nextInterceptor = 0;
+            return;
+        }
+    }
 }
 
 isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {

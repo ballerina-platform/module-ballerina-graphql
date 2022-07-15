@@ -51,5 +51,7 @@ public enum ErrorCode {
     GRAPHQL_127,
     GRAPHQL_128,
     GRAPHQL_129,
-    GRAPHQL_130
+    GRAPHQL_130,
+    GRAPHQL_131,
+    GRAPHQL_132
 }

@@ -433,3 +433,35 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
     }
     return error RequestError("GraphQL Client Error, Invalid binding type.");
 }
+
+isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {
+    __TypeKind typeKind = parentType.kind;
+    if typeKind == NON_NULL {
+        return getFieldTypeFromParentType(unwrapNonNullype(parentType), typeArray, fieldNode);
+    } else if typeKind == OBJECT {
+        __Field requiredFieldValue = <__Field>getRequierdFieldFromType(parentType, typeArray, fieldNode);
+        return requiredFieldValue.'type;
+    } else if typeKind == LIST {
+        return getFieldTypeFromParentType(<__Type>parentType.ofType, typeArray, fieldNode);
+    } else if typeKind == UNION {
+        foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
+            __Field? fieldValue = getRequierdFieldFromType(possibleType, typeArray, fieldNode);
+            if fieldValue is __Field {
+                return fieldValue.'type;
+            }
+        }
+    } else if typeKind == INTERFACE {
+        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, typeArray, fieldNode);
+        if requiredFieldValue is () {
+            foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
+                __Field? fieldValue = getRequierdFieldFromType(possibleType, typeArray, fieldNode);
+                if fieldValue is __Field {
+                    return fieldValue.'type;
+                }
+            }
+        } else {
+            return requiredFieldValue.'type;
+        }
+    }
+    return parentType;
+}

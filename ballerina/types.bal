@@ -70,6 +70,11 @@ isolated service class UpgradeService {
     *websocket:UpgradeService;
 }
 
+# Represent a GraphQL interceptor
+public type Interceptor distinct service object {
+    isolated remote function execute(Context ctx, Field 'field) returns anydata|error;
+};
+
 // GraphQL client related data binding types representation
 
 # Represents the target type binding record with data and extensions of a GraphQL response for `executeWithType` method.
