@@ -14,18 +14,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
+
 import graphql.parser;
 
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
 
-    isolated function init(string schemaString, int? maxQueryDepth) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, Service s) returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
+        self.addService(s);
     }
 
     isolated function getSchema() returns readonly & __Schema {
@@ -48,9 +51,8 @@ isolated class Engine {
         }
     }
 
-    isolated function getResult(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo,
-        any result = ()) returns OutputObject {
-
+    isolated function getResult(parser:OperationNode operationNode, Context context, any result = ())
+    returns OutputObject {
         DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
         DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
 
@@ -63,7 +65,7 @@ isolated class Engine {
             operationNode.accept(visitor);
         }
 
-        ExecutorVisitor executor = new (self, self.schema, context, fileInfo, result);
+        ExecutorVisitor executor = new (self, self.schema, context, result);
         operationNode.accept(executor);
         OutputObject outputObject = executor.getOutput();
         ResponseFormatter responseFormatter = new (self.schema);
@@ -132,4 +134,92 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
+
+    isolated function addService(Service s) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getService() returns Service = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function resolve(Context context, Field 'field) returns anydata {
+        parser:FieldNode fieldNode = 'field.getInternalNode();
+        parser:RootOperationType operationType = 'field.getOperationType();
+        any|error fieldValue;
+        if operationType == parser:OPERATION_QUERY {
+            fieldValue = self.resolveResourceMethod(context, 'field);
+        } else if operationType == parser:OPERATION_MUTATION {
+            fieldValue = self.executeMutationMethod(context, 'field.getServiceObject(), fieldNode);
+        } else {
+            // TODO: Handle Subscriptions
+            fieldValue = ();
+        }
+        ResponseGenerator responseGenerator = new (self, context, 'field.getPath().clone());
+        return responseGenerator.getResult(fieldValue, fieldNode);
+    }
+
+    isolated function resolveResourceMethod(Context context, Field 'field) returns any|error {
+        any|error fieldValue;
+        service object {} serviceObject = 'field.getServiceObject();
+        handle? resourceMethod = self.getResourceMethod(serviceObject, 'field.getResourcePath());
+        if resourceMethod == () {
+            fieldValue = self.resolveHierarchicalResource(context, 'field);
+        } else {
+            fieldValue = self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
+        }
+        return fieldValue;
+    }
+
+    isolated function resolveHierarchicalResource(Context context, Field 'field) returns anydata {
+        if 'field.getInternalNode().getSelections().length() == 0 {
+            return;
+        }
+        map<anydata> result = {};
+        foreach parser:SelectionNode selection in 'field.getInternalNode().getSelections() {
+            if selection is parser:FieldNode {
+                self.getHierarchicalResult(context, 'field, selection, result);
+            } else if selection is parser:FragmentNode {
+                self.resolveHierarchicalResourceFromFragment(context, 'field, selection, result);
+            }
+        }
+        return result;
+    }
+
+    isolated function resolveHierarchicalResourceFromFragment(Context context, Field 'field,
+                                                              parser:FragmentNode fragmentNode, map<anydata> result) {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+            if selection is parser:FieldNode {
+                self.getHierarchicalResult(context, 'field, selection, result);
+            } else if selection is parser:FragmentNode {
+                self.resolveHierarchicalResourceFromFragment(context, 'field, selection, result);
+            }
+        }
+    }
+
+    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, map<anydata> result) {
+        string[] resourcePath = 'field.getResourcePath();
+        (string|int)[] path = 'field.getPath().clone();
+        path.push(fieldNode.getName());
+        Field selectionField = new (fieldNode, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
+        anydata fieldValue = self.resolve(context, selectionField);
+        result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+        _ = resourcePath.pop();
+    }
+
+    isolated function getResourceMethod(service object {} serviceObject, string[] path)
+    returns handle? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
+                                            parser:FieldNode fieldNode)
+    returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeMutationMethod(Context context, service object {} serviceObject,
+                                            parser:FieldNode fieldNode) returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
 }

@@ -25,8 +25,6 @@ public type Scalar boolean|int|float|string|decimal;
 public type Service distinct service object {
 };
 
-type AnydataMap map<anydata>;
-
 # Function type for initializing the `graphql:Context` object.
 # This function will be called with the `http:Request` and the `http:RequestContext` objects from the original request
 # received to the GraphQL endpoint.

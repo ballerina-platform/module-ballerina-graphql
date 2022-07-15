@@ -24,16 +24,12 @@ class ExecutorVisitor {
     private Data data;
     private ErrorDetail[] errors;
     private Context context;
-    private map<Upload|Upload[]> fileInfo;
     private any result;
 
-    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo,
-        any result = ()) {
-
+    isolated function init(Engine engine, __Schema schema, Context context, any result = ()) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
-        self.fileInfo = fileInfo;
         self.data = {};
         self.result = result;
         self.errors = [];
@@ -51,15 +47,31 @@ class ExecutorVisitor {
         parser:RootOperationType operationType = <parser:RootOperationType>data;
         if fieldNode.getName() == SCHEMA_FIELD {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
-            self.data[SCHEMA_FIELD] = introspectionExecutor.getSchemaIntrospection(fieldNode);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
         } else if fieldNode.getName() == TYPE_FIELD {
             IntrospectionExecutor introspectionExecutor = new(self.schema);
-            self.data[TYPE_FIELD] = introspectionExecutor.getTypeIntrospection(fieldNode);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
+        } else if fieldNode.getName() == TYPE_NAME_FIELD {
+            if operationType == parser:OPERATION_QUERY {
+                self.data[fieldNode.getAlias()] = QUERY_TYPE_NAME;
+            } else if operationType == parser:OPERATION_MUTATION {
+                self.data[fieldNode.getAlias()] = MUTATION_TYPE_NAME;
+            } else {
+                self.data[fieldNode.getAlias()] = SUBSCRIPTION_TYPE_NAME;
+            }
         } else {
             if operationType == parser:OPERATION_QUERY {
-                executeQuery(self, fieldNode);
+                (string|int)[] path = [fieldNode.getName()];
+                Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
+                var result = self.engine.resolve(self.context, 'field);
+                self.errors = self.context.getErrors();
+                self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
             } else if operationType == parser:OPERATION_MUTATION {
-                executeMutation(self, fieldNode);
+                (string|int)[] path = [fieldNode.getName()];
+                Field 'field = new (fieldNode, self.engine.getService(), path, operationType);
+                var result = self.engine.resolve(self.context, 'field);
+                self.errors = self.context.getErrors();
+                self.data[fieldNode.getAlias()] = result;
             } else if operationType == parser:OPERATION_SUBSCRIPTION {
                 executeSubscription(self, fieldNode, self.result);
             }

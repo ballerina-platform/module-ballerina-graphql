@@ -39,6 +39,7 @@ const MUTATION_TYPE_NAME = "Mutation";
 const SUBSCRIPTION_TYPE_NAME = "Subscription";
 
 const NAME_ARGUMENT = "name";
+const KEY_ARGUMENT = "key";
 const DATA_FIELD = "data";
 const ERRORS_FIELD = "errors";
 const SUBSCRIPTION_FIELD = "subscriptionType";

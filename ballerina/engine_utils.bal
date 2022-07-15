@@ -40,23 +40,19 @@ isolated function createSchema(string schemaString) returns readonly & __Schema|
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeQuery(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
 isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode fieldNode, any result) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
 isolated function getSubscriptionResult(ExecutorVisitor visitor,
                                         parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
+isolated function isMap(map<anydata> value) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+} external;
+
+isolated function getTypeNameFromValue(any value) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;

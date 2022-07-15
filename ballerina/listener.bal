@@ -57,7 +57,7 @@ public class Listener {
         if graphiql.enable {
             check validateGraphiqlPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            engine = check new (schemaString, maxQueryDepth);
+            engine = check new (schemaString, maxQueryDepth, s);
             __Schema & readonly schema = engine.getSchema();
             __Type? subscriptionType = schema.subscriptionType;
             HttpService graphiqlService = subscriptionType is __Type
@@ -69,10 +69,9 @@ public class Listener {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
             }
         } else {
-            engine = check new (schemaString, maxQueryDepth);
+            engine = check new (schemaString, maxQueryDepth, s);
         }
 
-        attachServiceToEngine(s, engine);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 

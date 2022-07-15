@@ -72,15 +72,16 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
                                        Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
-        return getResponseFromExecution(engine, validationResult, context, fileInfo);
+        context.setFileInfo(fileInfo);
+        return getResponseFromExecution(engine, validationResult, context);
     } else {
         return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
 }
 
-isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context,
-                                           map<Upload|Upload[]> fileInfo) returns http:Response {
-    OutputObject outputObject = engine.getResult(operationNode, context, fileInfo);
+isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
+returns http:Response {
+    OutputObject outputObject = engine.getResult(operationNode, context);
     return createResponse(outputObject.toJson());
 }
 

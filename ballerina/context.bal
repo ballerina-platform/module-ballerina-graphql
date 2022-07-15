@@ -15,14 +15,17 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/jballerina.java;
 import ballerina/lang.value;
 
 # The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
+    private final ErrorDetail[] errors;
 
     public isolated function init() {
         self.attributes = {};
+        self.errors = [];
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -74,6 +77,26 @@ public isolated class Context {
             return error Error(string`Attribute with the key "${'key}" not found in the context`);
         }
     }
+
+    isolated function addError(ErrorDetail err) {
+        lock {
+            self.errors.push(err.clone());
+        }
+    }
+
+    isolated function getErrors() returns ErrorDetail[] {
+        lock {
+            return self.errors.clone();
+        }
+    }
+
+    isolated function setFileInfo(map<Upload|Upload[]> fileInfo) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getFileInfo() returns map<Upload|Upload[]> = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
 }
 
 isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {

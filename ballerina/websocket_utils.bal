@@ -26,7 +26,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
     if sourceStream is stream<any, error?> {
         record {|any value;|}|error? next = sourceStream.next();
         while next !is error? {
-            OutputObject outputObj = engine.getResult(node, context, {}, next.value);
+            OutputObject outputObj = engine.getResult(node, context, next.value);
             ResponseFormatter responseFormatter = new (schema);
             OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObj, node);
             if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
