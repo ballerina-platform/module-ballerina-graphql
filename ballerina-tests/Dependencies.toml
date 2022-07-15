@@ -87,7 +87,6 @@ dependencies = [
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
@@ -206,9 +205,6 @@ name = "lang.runtime"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "lang.runtime", moduleName = "lang.runtime"}
 ]
 
 [[package]]
