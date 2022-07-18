@@ -44,6 +44,7 @@ public class GraphqlCodeModifier extends CodeModifier {
     public void init(CodeModifierContext modifierContext) {
         modifierContext.addSyntaxNodeAnalysisTask(new ServiceAnalysisTask(this.modifierContextMap),
                                                   SyntaxKind.SERVICE_DECLARATION);
+        modifierContext.addSyntaxNodeAnalysisTask(new InterceptorAnalysisTask(), SyntaxKind.CLASS_DEFINITION);
         modifierContext.addSyntaxNodeAnalysisTask(new ListenerValidator(),
                                                   Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION,
                                                                 SyntaxKind.EXPLICIT_NEW_EXPRESSION));

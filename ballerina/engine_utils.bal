@@ -36,6 +36,46 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
+isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName)
+    returns anydata|error {
+    if value is error|ErrorDetail {
+        return value;
+    } else if value is anydata && isValidReturnType('type, value) {
+        return value;
+    }
+    string interceptorError = string `Invalid return type in Interceptor "${interceptorName}". ` +
+                              string `Expected type ${getTypeNameFromType('type)}`;
+    return error(interceptorError);
+}
+
+isolated function isValidReturnType(__Type 'type, anydata value) returns boolean {
+    if 'type.kind is NON_NULL {
+        return isValidReturnType(unwrapNonNullype('type), value);
+    } else if 'type.kind is ENUM && value is string {
+        return true;
+    } else if 'type.kind is LIST && value is anydata[] {
+        return true;
+    } else if 'type.kind is OBJECT && value is map<anydata> {
+        return true;
+    } else if 'type.kind is SCALAR && value is Scalar {
+        if getOfTypeName('type) == getTypeNameFromScalarValue(value) {
+            return true;
+        }
+        return false;
+    } else if 'type.kind is UNION|INTERFACE {
+        __Type[] possibleTypes = <__Type[]>'type.possibleTypes;
+        boolean isValidType = false;
+        foreach __Type possibleType in possibleTypes {
+            isValidType = isValidReturnType(possibleType, value);
+            if isValidType {
+                break;
+            }
+        }
+        return isValidType;
+    }
+    return false;
+}
+
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;

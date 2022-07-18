@@ -98,6 +98,7 @@ public class EngineUtils {
     //Accessor names
     public static final String GET_ACCESSOR = "get";
     public static final String SUBSCRIBE_ACCESSOR = "subscribe";
+    public static final String INTERCEPTOR_EXECUTE = "execute";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
@@ -129,6 +130,7 @@ public class EngineUtils {
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
+    public static final String FIELD_OBJECT = "field.object";
 
     public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
 
@@ -277,5 +279,13 @@ public class EngineUtils {
             }
         }
         return recordType.getName();
+    }
+
+    public static void setField(BObject context, BObject field) {
+        context.addNativeData(FIELD_OBJECT, field);
+    }
+
+    public static BObject getField(BObject context) {
+        return (BObject) context.getNativeData(FIELD_OBJECT);
     }
 }
