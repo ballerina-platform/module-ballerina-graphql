@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+
 /**
  * Represents the {@code __Directive} in GraphQL schema.
  */
@@ -37,7 +39,7 @@ public class Directive implements Serializable {
     }
 
     public Directive(String name, String description, List<DirectiveLocation> locations) {
-        this.name = name;
+        this.name = removeEscapeCharacter(name);
         this.description = description;
         this.locations = locations;
         this.args = new ArrayList<>();

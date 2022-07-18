@@ -93,6 +93,16 @@ public class GeneratorUtils {
         return documentable.documentation().get().deprecatedDescription().get();
     }
 
+    public static String removeEscapeCharacter(String value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.startsWith("'")) {
+            return value.substring(1);
+        }
+        return value;
+    }
+
     public static Type getWrapperType(Type type, TypeKind typeKind) {
         return new Type(typeKind, type);
     }

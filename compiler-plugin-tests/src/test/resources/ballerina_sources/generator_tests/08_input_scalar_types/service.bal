@@ -17,8 +17,8 @@
 import ballerina/graphql;
 
 isolated service on new graphql:Listener(9000) {
-    isolated resource function get toString(int value) returns string {
-        return value.toString();
+    isolated resource function get toString(int 'version) returns string {
+        return 'version.toString();
     }
 
     isolated resource function get bonus(decimal salary) returns decimal {
