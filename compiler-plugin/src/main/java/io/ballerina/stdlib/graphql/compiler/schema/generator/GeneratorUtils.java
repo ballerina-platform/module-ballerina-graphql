@@ -37,7 +37,9 @@ public class GeneratorUtils {
     }
 
     private static final String UNICODE_REGEX = "\\\\(\\\\*)u\\{([a-fA-F0-9]+)\\}";
-    public static final Pattern UNICODE_PATTERN = Pattern.compile(UNICODE_REGEX);
+    private static final Pattern UNICODE_PATTERN = Pattern.compile(UNICODE_REGEX);
+
+    private static final String SINGLE_QUOTE_CHARACTER = "'";
 
     public static final String UNION_TYPE_NAME_DELIMITER = "_";
 
@@ -129,7 +131,7 @@ public class GeneratorUtils {
         matcher.appendTail(buffer);
         String value = String.valueOf(buffer);
 
-        if (value.startsWith("'")) {
+        if (value.startsWith(SINGLE_QUOTE_CHARACTER)) {
             return value.substring(1);
         }
         return value;
