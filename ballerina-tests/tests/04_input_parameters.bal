@@ -273,11 +273,26 @@ isolated function testOptionalEnumArgumentWithValue() returns error? {
 }
 isolated function testInputsWithEscapeCharacters() returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = string`{ version(version: "1.0.0") }`;
+    string document = string`{ type(version: "1.0.0") }`;
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
-            'version: "1.0.0"
+            'type: "1.0.0"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "escape_characters"]
+}
+isolated function testInputsWithUnicodeCharacters() returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = string`{ version(name: "SwanLake") }`;
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            'version: "SwanLake"
         }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);

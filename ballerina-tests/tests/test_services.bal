@@ -263,8 +263,12 @@ service /inputs on basicListener {
         return message;
     }
 
-    isolated resource function get 'version(string 'version) returns string {
+    isolated resource function get 'type(string 'version) returns string {
         return 'version;
+    }
+
+    isolated resource function get \u{0076}ersion(string name) returns string {
+        return name;
     }
 }
 
