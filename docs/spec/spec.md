@@ -1298,7 +1298,7 @@ The interceptor service object is the object that provides by the GraphQL packag
 
 ```ballerina
 public type Interceptor distinct service object {
-    isolated remote function execute(Context ctx, Field 'field) returns anydata|error;
+    isolated remote function execute(Context context, Field 'field) returns anydata|error;
 };
 ```
 
@@ -1324,9 +1324,9 @@ Interceptors can be defined as a readonly service class that infers the Intercep
 readonly service class InterceptorName {
    *graphql:Interceptor;
 
-    isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         // Do some work
-        var output = ctx.resolve('field);
+        var output = context.resolve('field);
         // Do some work
     }
 }
@@ -1348,9 +1348,9 @@ import ballerina/log;
 
 readonly service class ServiceInterceptor {
   *graphql:Interceptor;
-  isolated remote function execute(graphql:Context ctx, graphql:Field 'field) returns anydata|error {
+  isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
      log:printInfo(string `Service Interceptor execution!`);
-     var output = ctx.resolve('field);
+     var output = context.resolve('field);
      log:printInfo("Connection closed!");
      return output;
   }
