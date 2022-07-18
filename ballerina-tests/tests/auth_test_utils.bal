@@ -239,17 +239,18 @@ isolated function assertUnauthorized(http:Response|http:ClientError response) {
 }
 
 service /oauth2 on sts {
-    isolated resource function post token() returns json {
-        json response = {
-            "access_token": ACCESS_TOKEN_1,
-            "token_type": "example",
-            "expires_in": 3600,
-            "example_parameter": "example_value"
+    isolated resource function post token() returns AuthResponse {
+        return { body:
+            {
+                "access_token": ACCESS_TOKEN_1,
+                "token_type": "example",
+                "expires_in": 3600,
+                "example_parameter": "example_value"
+            }
         };
-        return response;
     }
 
-    isolated resource function post introspect(http:Request request) returns json {
+    isolated resource function post introspect(http:Request request) returns AuthResponse {
         string|http:ClientError payload = request.getTextPayload();
         if payload is string {
             string[] parts = regex:split(payload, "&");
@@ -257,14 +258,20 @@ service /oauth2 on sts {
                 if part.indexOf("token=") is int {
                     string token = regex:split(part, "=")[1];
                     if token == ACCESS_TOKEN_1 {
-                        return { "active": true, "exp": 3600, "scp": "write update" };
+                        return {body: { "active": true, "exp": 3600, "scp": "write update" }};
                     } else if token == ACCESS_TOKEN_2 {
-                        return { "active": true, "exp": 3600, "scp": "read" };
+                        return {body: { "active": true, "exp": 3600, "scp": "read" }};
                     } else {
-                        return { "active": false };
+                        return {body: { "active": false }};
                     }
                 }
             }
         }
+        return {body: {}};
     }
 }
+
+public type AuthResponse record {|
+    *http:Ok;
+    json body;
+|};
