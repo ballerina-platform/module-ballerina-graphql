@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2898] Support Deprecation Support in GraphQL Services](https://github.com/ballerina-platform/ballerina-standard-library/issues/2898)
 - [[#2001] Support GraphQL Interceptors for Query and Mutation operations](https://github.com/ballerina-platform/ballerina-standard-library/issues/2001)
 
+### Fixed
+- [[#3069] Fix Enums with String Values Return String Value for Enum Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/3069)
+- [[#3067] Fix Single Quote Character Included in Field and Argument Names](https://github.com/ballerina-platform/ballerina-standard-library/issues/3067)
+
 ## [1.3.2] - 2022-07-11
 
 ### Fixed
