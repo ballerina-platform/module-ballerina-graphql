@@ -30,6 +30,7 @@ import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -93,6 +94,8 @@ public class ArgumentHandler {
             return this.getArrayTypeArgument(argumentNode, (ArrayType) parameterType);
         } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
             return this.getUnionTypeArgument(argumentNode, (UnionType) parameterType);
+        } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            return this.getArgumentValue(argumentNode, TypeUtils.getReferredType(parameterType));
         } else {
             return this.getScalarArgumentValue(argumentNode);
         }
