@@ -472,6 +472,30 @@ service on new graphql:Listener(9090) {
 
 This will generate the documentation for all the fields of the `Query` type including the field descriptions of the `Person` type.
 
+**Note:** When a field or an argument name contains unicode characters or any other escape characters, they are unescaped when generating the schema.   
+
+###### Example: Escaping Characters
+```ballerina
+service on new graphql:Listener(4000) {
+    resource function get 'type(string 'version) returns string {
+        return "";
+    }
+    
+    resource function get name(string \u{0076}ersion) returns string {
+        return "";
+    }
+}
+```
+
+The above code will generate the following schema:
+
+```graphql
+type Query {
+    type(version: String!): String!
+    name(version: String!): String!
+}
+```
+
 ## 4. Types
 
 GraphQL type system is represented using a hierarchical structure. Type is the fundamental unit of any GraphQL schema.
