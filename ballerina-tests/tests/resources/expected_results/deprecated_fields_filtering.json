@@ -49,7 +49,7 @@
                                         "deprecationReason": null
                                     },
                                     {
-                                        "name": "instrumentType",
+                                        "name": "type",
                                         "isDeprecated": false,
                                         "deprecationReason": null
                                     }

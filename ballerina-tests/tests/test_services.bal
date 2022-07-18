@@ -262,6 +262,10 @@ service /inputs on basicListener {
     isolated resource function get sendEmail(string message) returns string {
         return message;
     }
+
+    isolated resource function get 'version(string 'version) returns string {
+        return 'version;
+    }
 }
 
 service /decimal_inputs on basicListener {
@@ -1318,7 +1322,7 @@ service /documentation on basicListener {
     isolated resource function get instrument() returns Instrument {
         return {
             name: "Guitar",
-            instrumentType: STRINGS
+            'type: STRINGS
         };
     }
 
@@ -1362,22 +1366,22 @@ service /deprecation on wrappedListener {
     # Creates a new instrument.
     #
     # + name - Name of the instrument
-    # + instrumentType - Type of the instrument
+    # + 'type - Type of the instrument
     # + return - The newly created instrument
     # # Deprecated
     # Use the `addInstrument` field instead of this.
     @deprecated
-    remote function newInstrument(string name, InstrumentType instrumentType) returns Instrument {
-        return {name: name, instrumentType: instrumentType};
+    remote function newInstrument(string name, InstrumentType 'type) returns Instrument {
+        return {name: name, 'type: 'type};
     }
 
     # Adds a new instrument to the database.
     #
     # + name - Name of the instrument
-    # + instrumentType - Type of the instrument
+    # + 'type - Type of the instrument
     # + return - The newly added instrument
-    remote function addInstrument(string name, InstrumentType instrumentType) returns Instrument {
-        return {name: name, instrumentType: instrumentType};
+    remote function addInstrument(string name, InstrumentType 'type) returns Instrument {
+        return {name: name, 'type: 'type};
     }
 
     # Subscribes to the new instruments.

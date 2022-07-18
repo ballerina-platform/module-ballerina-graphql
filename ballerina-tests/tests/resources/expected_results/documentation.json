@@ -40,7 +40,7 @@
                                         "description": "Name of the instrument"
                                     },
                                     {
-                                        "name": "instrumentType",
+                                        "name": "type",
                                         "description": "The type of the musical instrument"
                                     }
                                 ]

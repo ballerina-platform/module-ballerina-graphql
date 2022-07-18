@@ -32,10 +32,12 @@ type Person record {
 # + number - The number of the address
 # + street - The street of the address
 # + city - The city of the address
+# + 'type - The type of the address
 type Address record {
     int number;
     string street;
     string city;
+    string 'type;
 };
 
 isolated service on new graphql:Listener(9000) {
@@ -47,7 +49,8 @@ isolated service on new graphql:Listener(9000) {
             address: {
                 number: 308,
                 street: "Negra Arroyo Lane",
-                city: "Albequerque"
+                city: "Albequerque",
+                'type: "Personal"
             }
         };
     }
