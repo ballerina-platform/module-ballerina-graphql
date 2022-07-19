@@ -4,12 +4,24 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.3]
+
+### Fixed
+
+- [[#3069] Fix Enums with String Values Return String Value for Enum Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/3069)
+- [[#3067] Fix Single Quote Character Included in Field and Argument Names](https://github.com/ballerina-platform/ballerina-standard-library/issues/3067)
+
+## [1.3.2]
+
+### Fixed
+
+- [[#3076] Fix Empty Input Arrays not Considering as Valid Inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/3076)
+
+## [1.3.1]
 
 ### Fixed
 
 - [[#2959] Fix Incorrectly Removing Other Services Through Code Modifier](https://github.com/ballerina-platform/ballerina-standard-library/issues/2959)
-- [[#3076] Fix Empty Input Arrays not Considering as Valid Inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/3076)
 
 ## [1.3.0] - 2022-05-30
 
