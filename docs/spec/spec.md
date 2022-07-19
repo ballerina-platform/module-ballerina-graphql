@@ -1112,9 +1112,9 @@ service class Person {
 }
 ```
 
-### 8.5 Invoking Next Interceptor
+### 8.5 Resolving Field Value
 
-To invoke the next interceptor in the interceptors array, an attribute in the `graphql:Context` object, the `resolve()` method can be used. It requires a `graphql:Field` type parameter. If there is no any interceptors left, the function will call the actual resolver function.
+To resolve the value of a field, the `resolve()` method can be used. This requires the `graphql:Field` object which is related to the particular field that is going to be resolved. If the resolver has interceptors attached, the interceptors will be executed until there are no more interceptors left.
 
 ```ballerina
 public isolated function resolve(graphql:Field ‘field) returns anydata;
@@ -1294,7 +1294,7 @@ The GraphQL interceptors can be used to execute a custom code before and after t
 
 ### 10.1 Interceptor Service Object
 
-The interceptor service object is the object that provides by the GraphQL package. It includes a single remote function named execute that accepts `Context` and `Field` as the parameters. The function's return type is a union of `anydata` and `error`.
+The interceptor service object is defined in the Ballerina GraphQL package. It includes a single remote function named execute that accepts `Context` and `Field` as the parameters. The function's return type is a union of `anydata` and `error`.
 
 ```ballerina
 public type Interceptor distinct service object {
@@ -1332,7 +1332,7 @@ readonly service class InterceptorName {
 }
 ```
 
-The Interceptor service class should have the implementation of the `execute()` remote function that infers from the interceptor service object. Code needed to be included in the interceptor should be kept inside the `execute()` function. Interceptors can not have any other `resource/remote` methods inside the interceptor. Otherwise, it will be considered the invalid declaration of an interceptor function. However, the users are able to define the usual functions inside the interceptors.
+The Interceptor service class should have the implementation of the `execute()` remote function that infers from the interceptor service object. Code needed to be included in the interceptor should be kept inside the `execute()` function. Interceptors can not have any other `resource/remote` methods inside the interceptor. However, the users are able to define the usual functions inside the interceptors.
 
 ### 10.4 Execution
 
@@ -1367,7 +1367,7 @@ service /graphql on new graphql:Listener(9000) {
 }
 ```
 
-###### Output
+**Output:**
 ```shell
 1. Service Interceptor execution!
 3. Resolver: name
