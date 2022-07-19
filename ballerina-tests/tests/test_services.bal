@@ -262,6 +262,14 @@ service /inputs on basicListener {
     isolated resource function get sendEmail(string message) returns string {
         return message;
     }
+
+    isolated resource function get 'type(string 'version) returns string {
+        return 'version;
+    }
+
+    isolated resource function get \u{0076}ersion(string name) returns string {
+        return name;
+    }
 }
 
 service /decimal_inputs on basicListener {

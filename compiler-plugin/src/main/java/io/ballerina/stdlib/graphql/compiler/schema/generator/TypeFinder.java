@@ -73,6 +73,7 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
 /**
@@ -330,18 +331,18 @@ public class TypeFinder {
                          RecordTypeSymbol recordTypeSymbol) {
         Type objectType = addType(name, TypeKind.OBJECT, description);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
-            String fieldDescription = fieldMap.get(recordFieldSymbol.getName().orElse(""));
-            objectType.addField(getField(recordFieldSymbol, fieldDescription));
+            if (recordFieldSymbol.getName().isEmpty()) {
+                continue;
+            }
+            String fieldName = removeEscapeCharacter(recordFieldSymbol.getName().get());
+            String fieldDescription = fieldMap.get(fieldName);
+            objectType.addField(getField(fieldName, recordFieldSymbol, fieldDescription));
         }
         return objectType;
     }
 
-    private Field getField(RecordFieldSymbol recordFieldSymbol, String description) {
-        if (recordFieldSymbol.getName().isEmpty()) {
-            return null;
-        }
-        String name = recordFieldSymbol.getName().get();
-        Field field = new Field(name, description);
+    private Field getField(String fieldName, RecordFieldSymbol recordFieldSymbol, String description) {
+        Field field = new Field(fieldName, description);
         TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
         Type type;
         if (typeSymbol.typeKind() == TypeDescKind.MAP) {
@@ -511,11 +512,11 @@ public class TypeFinder {
     }
 
     private void addEnumValueToType(Type type, ConstantSymbol enumMember) {
-        if (enumMember.resolvedValue().isEmpty()) {
+        if (enumMember.getName().isEmpty()) {
             return;
         }
         String memberDescription = getDescription(enumMember);
-        String name = enumMember.resolvedValue().get().replaceAll("\"", "");
+        String name = enumMember.getName().get().replaceAll("\"", "");
         boolean isDeprecated = enumMember.deprecated();
         String deprecationReason = getDeprecationReason(enumMember);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);
