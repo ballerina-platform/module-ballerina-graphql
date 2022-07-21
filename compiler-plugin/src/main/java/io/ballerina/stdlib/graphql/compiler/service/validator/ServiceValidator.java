@@ -239,34 +239,50 @@ public class ServiceValidator {
     }
 
     private void validateReturnType(TypeSymbol typeSymbol, Location location) {
-        if (isScalarType(typeSymbol)) {
-            return;
-        }
-        if (this.existingInputObjectTypes.contains(typeSymbol)) { //TODO: Do we need this?
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.ANY || typeSymbol.typeKind() == TypeDescKind.ANYDATA) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ANY, location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
-            validateReturnTypeUnion((UnionTypeSymbol) typeSymbol, location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
-            ArrayTypeSymbol arrayTypeSymbol = (ArrayTypeSymbol) typeSymbol;
-            validateReturnType(arrayTypeSymbol.memberTypeDescriptor(), location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            validateReturnTypeReference((TypeReferenceTypeSymbol) typeSymbol, location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
-            validateReturnType((IntersectionTypeSymbol) typeSymbol, location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.TABLE) {
-            validateReturnType(((TableTypeSymbol) typeSymbol).rowTypeParameter(), location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.NIL) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_NIL, location);
-        } else if (typeSymbol.typeKind() == TypeDescKind.ERROR) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ERROR, location);
-        } else {
-            if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+        switch (typeSymbol.typeKind()) {
+            case INT:
+            case INT_SIGNED8:
+            case INT_UNSIGNED8:
+            case INT_SIGNED16:
+            case INT_UNSIGNED16:
+            case INT_SIGNED32:
+            case INT_UNSIGNED32:
+            case STRING:
+            case STRING_CHAR:
+            case BOOLEAN:
+            case DECIMAL:
+            case FLOAT:
+                break;
+            case ANY:
+            case ANYDATA:
+                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ANY, location);
+                break;
+            case UNION:
+                validateReturnTypeUnion((UnionTypeSymbol) typeSymbol, location);
+                break;
+            case ARRAY:
+                validateReturnType(((ArrayTypeSymbol) typeSymbol).memberTypeDescriptor(), location);
+                break;
+            case TYPE_REFERENCE:
+                validateReturnTypeReference((TypeReferenceTypeSymbol) typeSymbol, location);
+                break;
+            case TABLE:
+                validateReturnType(((TableTypeSymbol) typeSymbol).rowTypeParameter(), location);
+                break;
+            case INTERSECTION:
+                validateReturnType((IntersectionTypeSymbol) typeSymbol, location);
+                break;
+            case NIL:
+                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_NIL, location);
+                break;
+            case ERROR:
+                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ERROR, location);
+                break;
+            case RECORD:
                 addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature());
-            } else {
+                break;
+            default:
                 addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
-            }
         }
     }
 
@@ -384,24 +400,38 @@ public class ServiceValidator {
     }
 
     private void validateInputType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
-        if (isScalarType(typeSymbol)) {
-        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
-            validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            validateInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
-            validateInputParameterType((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
-            validateInputParameterType((IntersectionTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
-            validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else {
-            if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+        switch (typeSymbol.typeKind()) {
+            case INT:
+            case INT_SIGNED8:
+            case INT_UNSIGNED8:
+            case INT_SIGNED16:
+            case INT_UNSIGNED16:
+            case INT_SIGNED32:
+            case INT_UNSIGNED32:
+            case STRING:
+            case STRING_CHAR:
+            case BOOLEAN:
+            case DECIMAL:
+            case FLOAT:
+                break;
+            case TYPE_REFERENCE:
+                validateInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location, isResourceMethod);
+                break;
+            case UNION:
+                validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
+                break;
+            case ARRAY:
+                validateInputParameterType((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
+                break;
+            case INTERSECTION:
+                validateInputParameterType((IntersectionTypeSymbol) typeSymbol, location, isResourceMethod);
+                break;
+            case RECORD:
                 addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature());
-            } else {
+                break;
+            default:
                 addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
                               typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
-            }
         }
     }
 
@@ -421,18 +451,10 @@ public class ServiceValidator {
             return;
         }
         if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION && typeDescriptor.typeKind() == TypeDescKind.RECORD) {
-            validateInputParameterType(typeSymbol.getName().orElse(null), typeDescriptor, location, isResourceMethod);
+            validateInputParameterType((RecordTypeSymbol) typeDescriptor, location, isResourceMethod);
             return;
         }
         validateInputParameterType(typeDescriptor, location, isResourceMethod);
-    }
-
-    private void validateInputParameterType(String name, TypeSymbol typeSymbol, Location location,
-                                            boolean isResourceMethod) {
-        if (name == null || name.isEmpty()) {
-            addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature());
-        }
-        validateInputParameterType((RecordTypeSymbol) typeSymbol, location, isResourceMethod);
     }
 
     private void validateInputParameterType(UnionTypeSymbol unionTypeSymbol, Location location,
@@ -547,14 +569,5 @@ public class ServiceValidator {
     private void addDiagnostic(CompilationError compilationError, Location location, Object... args) {
         this.errorOccurred = true;
         updateContext(this.context, compilationError, location, args);
-    }
-
-    private boolean isScalarType(TypeSymbol typeSymbol) {
-        TypeDescKind typeDescKind = typeSymbol.typeKind();
-        if (typeDescKind == TypeDescKind.BYTE) {
-            return false;
-        }
-        return typeDescKind.isIntegerType() || typeDescKind.isStringType() || typeDescKind == TypeDescKind.BOOLEAN ||
-                typeDescKind == TypeDescKind.DECIMAL || typeDescKind == TypeDescKind.FLOAT;
     }
 }

@@ -868,11 +868,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 52, 23);
 
         diagnostic = diagnosticIterator.next();
-        message = "Anonymous record `record {|string name; int age;|}` cannot be used as a GraphQL schema type";
         assertErrorMessage(diagnostic, message, 58, 67);
 
         diagnostic = diagnosticIterator.next();
-        message = "Anonymous record `record {|string name; int age;|}` cannot be used as a GraphQL schema type";
         assertErrorMessage(diagnostic, message, 68, 67);
     }
 
