@@ -22,6 +22,7 @@ import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
+import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
@@ -31,6 +32,7 @@ import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.StreamTypeSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TableTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -59,7 +61,6 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
@@ -238,7 +239,10 @@ public class ServiceValidator {
     }
 
     private void validateReturnType(TypeSymbol typeSymbol, Location location) {
-        if (this.existingInputObjectTypes.contains(typeSymbol)) {
+        if (isScalarType(typeSymbol)) {
+            return;
+        }
+        if (this.existingInputObjectTypes.contains(typeSymbol)) { //TODO: Do we need this?
             addDiagnostic(CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
         } else if (typeSymbol.typeKind() == TypeDescKind.ANY || typeSymbol.typeKind() == TypeDescKind.ANYDATA) {
             addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ANY, location);
@@ -250,18 +254,19 @@ public class ServiceValidator {
         } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             validateReturnTypeReference((TypeReferenceTypeSymbol) typeSymbol, location);
         } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
-            TypeSymbol effectiveType = getEffectiveType((IntersectionTypeSymbol) typeSymbol);
-            if (effectiveType == null) {
-                addDiagnostic(CompilationError.INVALID_INTERSECTION_TYPE, location);
-            } else {
-                validateReturnType(effectiveType, location);
-            }
+            validateReturnType((IntersectionTypeSymbol) typeSymbol, location);
+        } else if (typeSymbol.typeKind() == TypeDescKind.TABLE) {
+            validateReturnType(((TableTypeSymbol) typeSymbol).rowTypeParameter(), location);
         } else if (typeSymbol.typeKind() == TypeDescKind.NIL) {
             addDiagnostic(CompilationError.INVALID_RETURN_TYPE_NIL, location);
         } else if (typeSymbol.typeKind() == TypeDescKind.ERROR) {
             addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ERROR, location);
-        } else if (hasInvalidReturnType(typeSymbol)) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
+        } else {
+            if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+                addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature());
+            } else {
+                addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
+            }
         }
     }
 
@@ -271,6 +276,15 @@ public class ServiceValidator {
         } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
             ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
             validateReturnTypeClass(classSymbol, location);
+        }
+    }
+
+    private void validateReturnType(IntersectionTypeSymbol typeSymbol, Location location) {
+        TypeSymbol effectiveType = getEffectiveType(typeSymbol);
+        if (effectiveType.typeKind() == TypeDescKind.RECORD) {
+            validateRecordFields((RecordTypeSymbol) effectiveType, location);
+        } else {
+            validateReturnType(effectiveType, location);
         }
     }
 
@@ -317,17 +331,22 @@ public class ServiceValidator {
     private void validateReturnTypeDefinition(TypeReferenceTypeSymbol typeReferenceTypeSymbol, Location location) {
         TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
         if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            if (this.existingInputObjectTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
-                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
-            } else {
-                if (this.existingReturnTypes.contains(typeReferenceTypeSymbol.typeDescriptor())) {
-                    return;
-                }
-                this.existingReturnTypes.add(typeReferenceTypeSymbol.typeDescriptor());
-                validateRecordFields((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), location);
-            }
+            validateReturnType((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(),
+                               typeReferenceTypeSymbol.typeDescriptor(), location);
         } else {
             validateReturnType(typeDefinitionSymbol.typeDescriptor(), location);
+        }
+    }
+
+    private void validateReturnType(RecordTypeSymbol recordTypeSymbol, TypeSymbol descriptor, Location location) {
+        if (this.existingInputObjectTypes.contains(descriptor)) {
+            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location);
+        } else {
+            if (this.existingReturnTypes.contains(descriptor)) {
+                return;
+            }
+            this.existingReturnTypes.add(descriptor);
+            validateRecordFields(recordTypeSymbol, location);
         }
     }
 
@@ -365,7 +384,8 @@ public class ServiceValidator {
     }
 
     private void validateInputType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
-        if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+        if (isScalarType(typeSymbol)) {
+        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
             validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             validateInputParameterType((TypeReferenceTypeSymbol) typeSymbol, location, isResourceMethod);
@@ -373,13 +393,15 @@ public class ServiceValidator {
             validateInputParameterType((ArrayTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
             validateInputParameterType((IntersectionTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
-            validateInputParameterType((RecordTypeSymbol) typeSymbol, location, isResourceMethod);
         } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
             validateInputParameterType((UnionTypeSymbol) typeSymbol, location, isResourceMethod);
-        } else if (!isPrimitiveType(typeSymbol)) {
-            addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
-                          typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
+        } else {
+            if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+                addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature());
+            } else {
+                addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
+                              typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
+            }
         }
     }
 
@@ -398,7 +420,19 @@ public class ServiceValidator {
         if (typeDefinition.kind() == SymbolKind.ENUM) {
             return;
         }
+        if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION && typeDescriptor.typeKind() == TypeDescKind.RECORD) {
+            validateInputParameterType(typeSymbol.getName().orElse(null), typeDescriptor, location, isResourceMethod);
+            return;
+        }
         validateInputParameterType(typeDescriptor, location, isResourceMethod);
+    }
+
+    private void validateInputParameterType(String name, TypeSymbol typeSymbol, Location location,
+                                            boolean isResourceMethod) {
+        if (name == null || name.isEmpty()) {
+            addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature());
+        }
+        validateInputParameterType((RecordTypeSymbol) typeSymbol, location, isResourceMethod);
     }
 
     private void validateInputParameterType(UnionTypeSymbol unionTypeSymbol, Location location,
@@ -424,8 +458,8 @@ public class ServiceValidator {
     private void validateInputParameterType(IntersectionTypeSymbol intersectionTypeSymbol, Location location,
                                             boolean isResourceMethod) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
-        if (effectiveType == null) {
-            addDiagnostic(CompilationError.INVALID_INTERSECTION_TYPE, location);
+        if (effectiveType.typeKind() == TypeDescKind.RECORD) {
+            validateInputParameterType((RecordTypeSymbol) effectiveType, location, isResourceMethod);
         } else {
             validateInputParameterType(effectiveType, location, isResourceMethod);
         }
@@ -444,12 +478,6 @@ public class ServiceValidator {
                 validateInputType(recordFieldSymbol.typeDescriptor(), location, isResourceMethod);
             }
         }
-    }
-
-    private boolean hasInvalidReturnType(TypeSymbol typeSymbol) {
-        return typeSymbol.typeKind() == TypeDescKind.MAP || typeSymbol.typeKind() == TypeDescKind.JSON ||
-                typeSymbol.typeKind() == TypeDescKind.BYTE || typeSymbol.typeKind() == TypeDescKind.OBJECT ||
-                typeSymbol.typeKind() == TypeDescKind.STREAM;
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location) {
@@ -499,7 +527,12 @@ public class ServiceValidator {
             if (recordField.getName().isEmpty()) {
                 continue;
             }
-            validateReturnType(recordField.typeDescriptor(), location);
+            if (recordField.typeDescriptor().typeKind() == TypeDescKind.MAP) {
+                MapTypeSymbol mapTypeSymbol = (MapTypeSymbol) recordField.typeDescriptor();
+                validateReturnType(mapTypeSymbol.typeParam(), location);
+            } else {
+                validateReturnType(recordField.typeDescriptor(), location);
+            }
             if (isInvalidFieldName(recordField.getName().get())) {
                 addDiagnostic(CompilationError.INVALID_FIELD_NAME, location);
             }
@@ -514,5 +547,14 @@ public class ServiceValidator {
     private void addDiagnostic(CompilationError compilationError, Location location, Object... args) {
         this.errorOccurred = true;
         updateContext(this.context, compilationError, location, args);
+    }
+
+    private boolean isScalarType(TypeSymbol typeSymbol) {
+        TypeDescKind typeDescKind = typeSymbol.typeKind();
+        if (typeDescKind == TypeDescKind.BYTE) {
+            return false;
+        }
+        return typeDescKind.isIntegerType() || typeDescKind.isStringType() || typeDescKind == TypeDescKind.BOOLEAN ||
+                typeDescKind == TypeDescKind.DECIMAL || typeDescKind == TypeDescKind.FLOAT;
     }
 }

@@ -61,7 +61,8 @@ public enum ErrorMessage {
                     " are allowed"),
     ERROR_130("Failed to generate the schema from the service"),
     ERROR_131("GraphQL interceptors can not have resource functions"),
-    ERROR_132("Invalid remote method in interceptor service. Only \"execute\" remote method is allowed");
+    ERROR_132("Invalid remote method in interceptor service. Only \"execute\" remote method is allowed"),
+    ERROR_133("Anonymous record `{0}` cannot be used as a GraphQL schema type");
 
     private final String message;
 
