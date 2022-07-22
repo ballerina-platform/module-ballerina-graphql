@@ -207,16 +207,16 @@ public type Shape record {
 # Represents an instrument
 #
 # + name - Name of the instrument
-# + instrumentType - The type of the musical instrument
+# + type - The type of the musical instrument
 public type Instrument readonly & record {
     string name;
-    InstrumentType instrumentType;
+    InstrumentType 'type;
 };
 
 # Represents the types of musical instruments.
 public enum InstrumentType {
     # Instruments with strings
-    STRINGS,
+    STRINGS = "Strings Instruments",
     # Instruments with wooden pipes
     WOODWIND,
     # Instruments with keyboards

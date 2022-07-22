@@ -20,6 +20,8 @@ package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 import java.io.Serializable;
 
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+
 /**
  * Represents the {@code __EnumValue} type in GraphQL schema.
  */
@@ -35,7 +37,7 @@ public class EnumValue implements Serializable {
     }
 
     public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
-        this.name = name;
+        this.name = removeEscapeCharacter(name);
         this.description = description;
         this.isDeprecated = isDeprecated;
         this.deprecationReason = deprecationReason;

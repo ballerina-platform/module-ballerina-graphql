@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+
 /**
  * Represents the {@code __Type} type in GraphQL schema.
  */
@@ -72,7 +74,7 @@ public class Type implements Serializable {
     }
 
     private Type(String name, TypeKind kind, String description, Type ofType) {
-        this.name = name;
+        this.name = removeEscapeCharacter(name);
         this.kind = kind;
         this.description = description;
         this.fields = kind == TypeKind.OBJECT || kind == TypeKind.INTERFACE ? new LinkedHashMap<>() : null;

@@ -65,7 +65,7 @@
                                         "deprecationReason": null
                                     },
                                     {
-                                        "name": "instrumentType",
+                                        "name": "type",
                                         "isDeprecated": false,
                                         "deprecationReason": null
                                     }
@@ -87,7 +87,7 @@
                                         "deprecationReason": null
                                     },
                                     {
-                                        "name": "instrumentType",
+                                        "name": "type",
                                         "isDeprecated": false,
                                         "deprecationReason": null
                                     }

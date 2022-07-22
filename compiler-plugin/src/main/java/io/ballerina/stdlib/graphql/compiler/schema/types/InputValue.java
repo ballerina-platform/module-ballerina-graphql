@@ -20,6 +20,8 @@ package io.ballerina.stdlib.graphql.compiler.schema.types;
 
 import java.io.Serializable;
 
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+
 /**
  * Represents the {@code __InputValue} in GraphQL schema.
  */
@@ -31,7 +33,7 @@ public class InputValue implements Serializable {
     private final String defaultValue;
 
     public InputValue(String name, Type type, String description, String defaultValue) {
-        this.name = name;
+        this.name = removeEscapeCharacter(name);
         this.description = description;
         this.type = type;
         this.defaultValue = defaultValue;

@@ -72,6 +72,7 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
 /**
@@ -337,7 +338,10 @@ public class SchemaGenerator {
                          RecordTypeSymbol recordTypeSymbol) {
         Type objectType = addType(name, TypeKind.OBJECT, description);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
-            String fieldDescription = fieldMap.get(recordFieldSymbol.getName().orElse(""));
+            if (recordFieldSymbol.getName().isEmpty()) {
+                continue;
+            }
+            String fieldDescription = fieldMap.get(removeEscapeCharacter(recordFieldSymbol.getName().get()));
             objectType.addField(getField(recordFieldSymbol, fieldDescription));
         }
         return objectType;
@@ -518,11 +522,11 @@ public class SchemaGenerator {
     }
 
     private void addEnumValueToType(Type type, ConstantSymbol enumMember) {
-        if (enumMember.resolvedValue().isEmpty()) {
+        if (enumMember.getName().isEmpty()) {
             return;
         }
         String memberDescription = getDescription(enumMember);
-        String name = enumMember.resolvedValue().get().replaceAll("\"", "");
+        String name = enumMember.getName().get();
         boolean isDeprecated = enumMember.deprecated();
         String deprecationReason = getDeprecationReason(enumMember);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);

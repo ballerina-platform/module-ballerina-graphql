@@ -72,7 +72,7 @@ isolated service class UpgradeService {
 
 # Represent a GraphQL interceptor
 public type Interceptor distinct service object {
-    isolated remote function execute(Context ctx, Field 'field) returns anydata|error;
+    isolated remote function execute(Context context, Field 'field) returns anydata|error;
 };
 
 // GraphQL client related data binding types representation
