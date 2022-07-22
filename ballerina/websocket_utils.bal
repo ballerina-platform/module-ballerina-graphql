@@ -47,11 +47,11 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
 isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine) returns parser:OperationNode|json {
     json|error payload = data is WSPayload ? data?.payload : data;
     if payload is error {
-        return {errors: [{message: "Invalid format in WebSocket payload"}]};
+        return {errors: [{message: "Invalid format in WebSocket payload: " + payload.message()}]};
     }
     json|error document = payload.query;
     if document is error {
-        return {errors: [{message: "Query not found"}]};
+        return {errors: [{message: "Unable to find the query: " + document.message()}]};
     }
     if document !is string {
         return {errors: [{message: "Invalid format in request parameter: query"}]};
@@ -76,7 +76,8 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
     ExecutorVisitor executor = new(engine, schema, context, {});
     any|error result = getSubscriptionResult(executor, node);
     if result !is stream<any, error?> {
-        return {errors: [{message: "Error/s occurred in the subscription resolver"}]};
+        string errorMessage = result is error ? result.message() : "Invalid return type. Expected type: stream";
+        return {errors: [{message: "Error occurred in the subscription resolver. " + errorMessage}]};
     }
     return <stream<any, error?>>result;
 }

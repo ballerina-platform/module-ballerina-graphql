@@ -53,7 +53,7 @@ isolated service class WsService {
         }
         json|error wsText = value:fromJsonString(text);
         if wsText is error {
-            json payload = {errors: [{message: "Invalid format in WebSocket payload"}]};
+            json payload = {errors: [{message: "Invalid format in WebSocket payload: " + wsText.message()}]};
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
             closeConnection(caller);
             return;
@@ -62,7 +62,7 @@ isolated service class WsService {
         WSPayload|json|error wsPayload = self.customHeaders != {}
                                         ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
         if wsPayload is error {
-            json payload = {errors: [{message: "Invalid format in WebSocket payload"}]};
+            json payload = {errors: [{message: "Invalid format in WebSocket payload: " + wsPayload.message()}]};
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
             closeConnection(caller);
             return;
