@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#3069] Fix Enums with String Values Return String Value for Enum Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/3069)
 - [[#3067] Fix Single Quote Character Included in Field and Argument Names](https://github.com/ballerina-platform/ballerina-standard-library/issues/3067)
+- [[#3115] Fix Not Initializing Context per Service in GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3115)
 
 ## [1.3.2] - 2022-07-11
 

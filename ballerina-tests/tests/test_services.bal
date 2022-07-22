@@ -1179,6 +1179,15 @@ service /context on serviceTypeListener {
             return [p1, error("You don't have permission to retrieve data"), p3];
         }
     }
+
+    isolated resource function subscribe messages(graphql:Context context) returns stream<int, error?>|error {
+        var scope = context.get("scope");
+        if scope is string && scope == "admin" {
+            int[] intArray = [1, 2, 3, 4, 5];
+            return intArray.toStream();
+        }
+        return error("You don't have permission to retrieve data");
+    }
 }
 
 service /intersection_types on basicListener {
