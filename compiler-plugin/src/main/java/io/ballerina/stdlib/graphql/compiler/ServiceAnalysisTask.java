@@ -58,20 +58,15 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
         InterfaceFinder interfaceFinder = new InterfaceFinder();
         interfaceFinder.populateInterfaces(context);
-        ServiceValidator serviceValidator = validateService(context, symbol, interfaceFinder);
+
+        ServiceValidator serviceValidator = new ServiceValidator(context, symbol, interfaceFinder);
+        serviceValidator.validate();
         if (serviceValidator.isErrorOccurred()) {
             return;
         }
         DocumentId documentId = context.documentId();
         Schema schema = generateSchema(interfaceFinder, symbol);
         addToModifierContextMap(documentId, node, schema);
-    }
-
-    private ServiceValidator validateService(SyntaxNodeAnalysisContext context, ServiceDeclarationSymbol symbol,
-                                             InterfaceFinder interfaceFinder) {
-        ServiceValidator serviceValidator = new ServiceValidator(context, symbol, interfaceFinder);
-        serviceValidator.validate();
-        return serviceValidator;
     }
 
     private Schema generateSchema(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol symbol) {
