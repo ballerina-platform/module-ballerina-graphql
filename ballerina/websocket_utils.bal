@@ -35,12 +35,15 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
             next = sourceStream.next();
         }
         if next is error {
-            check sendWebSocketResponse(caller, customHeaders, WS_ERROR, next.message(), connectionId);
+            json errorPayload = {errors: {message: next.message()}};
+            check sendWebSocketResponse(caller, customHeaders, WS_ERROR, errorPayload, connectionId);
+            closeConnection(caller);
         } else {
             check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, null, connectionId);
         }
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
+        closeConnection(caller);
     }
 }
 
