@@ -16,7 +16,7 @@
 
 import ballerina/http;
 
-http:Client httpClient = check new ("http://localhost:9000/graphql");
+http:Client httpClient = check new ("http://localhost:9000/graphql", httpVersion = "1.1");
 
 function getJsonPayloadFromService(string document, string? operationName = ()) returns json|error {
     if operationName is string {

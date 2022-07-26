@@ -24,7 +24,7 @@ import ballerina/url;
 isolated function testRuntimeError() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = "{ profile (id: 10) { name } }";
-    http:Client httpClient = check new(graphqlUrl);
+    http:Client httpClient = check new(graphqlUrl, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document });
     test:assertEquals(response.statusCode, 200);
     json actualPayload = check response.getJsonPayload();
@@ -55,7 +55,7 @@ isolated function testRuntimeErrorWithGetRequest() returns error? {
     string graphqlUrl = "http://localhost:9091";
     string document = "{ profile (id: 10) { name } }";
     string encodedDocument = check url:encode(document, "UTF-8");
-    http:Client httpClient = check new(graphqlUrl);
+    http:Client httpClient = check new(graphqlUrl, httpVersion = "1.1");
     string path = "/records?query=" + encodedDocument;
     http:Response response = check httpClient->get(path);
     test:assertEquals(response.statusCode, 200);

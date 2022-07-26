@@ -26,19 +26,19 @@ const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 
 isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
 }
 
 isolated function getTextPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns string|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     return response.getTextPayload();
 }
 
 isolated function getJsonPayloadFromRequest(string url, http:Request request) returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     return httpClient->post("/", request);
 }
 
@@ -54,7 +54,7 @@ isolated function getGraphQLDocumentFromFile(string fileName) returns string|err
 
 isolated function getJsonPayloadFromBadRequest(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     assertResponseForBadRequest(response);
     return response.getJsonPayload();
@@ -62,7 +62,7 @@ returns json|error {
 
 isolated function getTextPayloadFromBadService(string url, string document, json? variables = {}, string? operationName = ())
 returns string|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     assertResponseForBadRequest(response);
     return response.getTextPayload();
@@ -70,14 +70,14 @@ returns string|error {
 
 isolated function assertResponseAndGetPayload(string url, string document, json? variables = {},
 string? operationName = (), int statusCode = http:STATUS_OK) returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     test:assertEquals(response.statusCode, statusCode);
     return response.getJsonPayload();
 }
 
 isolated function getTextPayloadFromBadRequest(string url, http:Request request) returns string|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", request);
     assertResponseForBadRequest(response);
     return response.getTextPayload();

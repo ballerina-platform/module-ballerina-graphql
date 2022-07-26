@@ -85,21 +85,27 @@ const string ACCESS_TOKEN_1 = "2YotnFZFEjr1zCsicMWpAA";
 const string ACCESS_TOKEN_2 = "1zCsicMWpAA2YotnFZFEjr";
 const string ACCESS_TOKEN_3 = "invalid-token";
 
+type AuthResponse record {|
+    *http:Ok;
+    json body?;
+|};
+
 isolated function sendNoTokenRequest(int port, string path) returns http:Response|http:ClientError {
-    http:Client clientEP = check new("https://localhost:" + port.toString(),
+    http:Client clientEP = check new ("https://localhost:" + port.toString(),
         secureSocket = {
             cert: {
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
-        }
+        },
+        httpVersion = "1.1"
     );
-    json payload = { "query": "{ greeting }" };
+    json payload = {"query": "{ greeting }"};
     return clientEP->post(path, payload);
 }
 
 isolated function sendBasicTokenRequest(int port, string path, string username, string password) returns http:Response|http:ClientError {
-    http:Client clientEP = check new("https://localhost:" + port.toString(),
+    http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
             username: username,
             password: password
@@ -109,14 +115,15 @@ isolated function sendBasicTokenRequest(int port, string path, string username, 
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
-        }
+        },
+        httpVersion = "1.1"
     );
-    json payload = { "query": "{ greeting }" };
+    json payload = {"query": "{ greeting }"};
     return clientEP->post(path, payload);
 }
 
 isolated function sendBearerTokenRequest(int port, string path, string token) returns http:Response|http:ClientError {
-    http:Client clientEP = check new("https://localhost:" + port.toString(),
+    http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
             token: token
         },
@@ -125,21 +132,22 @@ isolated function sendBearerTokenRequest(int port, string path, string token) re
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
-        }
+        },
+        httpVersion = "1.1"
     );
-    json payload = { "query": "{ greeting }" };
+    json payload = {"query": "{ greeting }"};
     return clientEP->post(path, payload);
 }
 
 isolated function sendJwtRequest(int port, string path) returns http:Response|http:ClientError {
-    http:Client clientEP = check new("https://localhost:" + port.toString(),
+    http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
             username: "admin",
             issuer: "wso2",
             audience: ["ballerina"],
             jwtId: "100078234ba23",
             keyId: "NTAxZmMxNDMyZDg3MTU1ZGM0MzEzODJhZWI4NDNlZDU1OGFkNjFiMQ",
-            customClaims: { "scp": "write" },
+            customClaims: {"scp": "write"},
             signatureConfig: {
                 config: {
                     keyStore: {
@@ -156,24 +164,25 @@ isolated function sendJwtRequest(int port, string path) returns http:Response|ht
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
-        }
+        },
+        httpVersion = "1.1"
     );
-    json payload = { "query": "{ greeting }" };
+    json payload = {"query": "{ greeting }"};
     return clientEP->post(path, payload);
 }
 
 isolated function sendOAuth2TokenRequest(int port, string path) returns http:Response|http:ClientError {
-    http:Client clientEP = check new("https://localhost:" + port.toString(),
+    http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
             tokenUrl: "https://localhost:9445/oauth2/token",
             clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L5w4gz52uriT8ksZ3nUVjKvrfQMrU4uvZohTftxStwNEW4cfStBEGRxRL68",
             clientSecret: "9205371918321623741",
             clientConfig: {
                 secureSocket: {
-                   cert: {
-                       path: TRUSTSTORE_PATH,
-                       password: "ballerina"
-                   }
+                    cert: {
+                        path: TRUSTSTORE_PATH,
+                        password: "ballerina"
+                    }
                 }
             }
         },
@@ -182,9 +191,10 @@ isolated function sendOAuth2TokenRequest(int port, string path) returns http:Res
                 path: TRUSTSTORE_PATH,
                 password: "ballerina"
             }
-        }
+        },
+        httpVersion = "1.1"
     );
-    json payload = { "query": "{ greeting }" };
+    json payload = {"query": "{ greeting }"};
     return clientEP->post(path, payload);
 }
 
@@ -239,17 +249,18 @@ isolated function assertUnauthorized(http:Response|http:ClientError response) {
 }
 
 service /oauth2 on sts {
-    isolated resource function post token() returns json {
-        json response = {
-            "access_token": ACCESS_TOKEN_1,
-            "token_type": "example",
-            "expires_in": 3600,
-            "example_parameter": "example_value"
+    isolated resource function post token() returns AuthResponse {
+        return {
+            body: {
+                access_token: ACCESS_TOKEN_1,
+                token_type: "example",
+                expires_in: 3600,
+                example_parameter: "example_value"
+            }
         };
-        return response;
     }
 
-    isolated resource function post introspect(http:Request request) returns json {
+    isolated resource function post introspect(http:Request request) returns AuthResponse {
         string|http:ClientError payload = request.getTextPayload();
         if payload is string {
             string[] parts = regex:split(payload, "&");
@@ -257,14 +268,15 @@ service /oauth2 on sts {
                 if part.indexOf("token=") is int {
                     string token = regex:split(part, "=")[1];
                     if token == ACCESS_TOKEN_1 {
-                        return { "active": true, "exp": 3600, "scp": "write update" };
+                        return {body: {active: true, exp: 3600, scp: "write update"}};
                     } else if token == ACCESS_TOKEN_2 {
-                        return { "active": true, "exp": 3600, "scp": "read" };
+                        return {body: {active: true, exp: 3600, scp: "read"}};
                     } else {
-                        return { "active": false };
+                        return {body: {active: false}};
                     }
                 }
             }
         }
+        return {};
     }
 }
