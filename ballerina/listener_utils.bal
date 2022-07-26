@@ -349,11 +349,29 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 
 isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema,
                                       GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+    final ContextInit contextInitFunction = getContextInit(serviceConfig);
     return isolated service object {
-        isolated resource function get .() returns websocket:Service|websocket:UpgradeError {
-            return new WsService(gqlEngine, schema);
+        isolated resource function get .(http:Request request) returns websocket:Service|websocket:UpgradeError {
+            Context context = check initContext(gqlEngine, contextInitFunction, request);
+            return new WsService(gqlEngine, schema, context);
         }
     };
+}
+
+isolated function initContext(Engine engine, ContextInit contextInit, http:Request request)
+    returns Context|websocket:UpgradeError {
+    // TODO: Temporary initiate the request context here, since it is not yet added in the WebSocket upgrade service
+    http:RequestContext requestContext = new;
+    Context|error context = contextInit(requestContext, request);
+    if context is error {
+        if context is AuthnError || context is AuthzError {
+            return error(context.message(), code = http:STATUS_BAD_REQUEST);
+        }
+        return error(context.message(), code = http:STATUS_INTERNAL_SERVER_ERROR);
+    } else {
+        context.setEngine(engine);
+        return context;
+    }
 }
 
 isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
