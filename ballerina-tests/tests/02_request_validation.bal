@@ -59,7 +59,7 @@ isolated function testMultipleOperationsWithInvalidOperationInRequest() returns 
     groups: ["request_validation", "listener"]
 }
 isolated function testInvalidGetRequestWithoutQuery() returns error? {
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->get("/validation");
     assertResponseForBadRequest(response);
     test:assertEquals(response.getTextPayload(), "Query not found");
@@ -76,7 +76,7 @@ isolated function testGetRequest() returns error? {
             name: "James Moriarty"
         }
     };
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     string path = "/validation?query=" + encodedDocument;
     json actualPayload = check httpClient->get(path);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -86,7 +86,7 @@ isolated function testGetRequest() returns error? {
     groups: ["request_validation", "listener"]
 }
 isolated function testGetRequestWithEmptyQuery() returns error? {
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     string path = "/validation?query=";
     http:Response response = check httpClient->get(path);
     assertResponseForBadRequest(response);

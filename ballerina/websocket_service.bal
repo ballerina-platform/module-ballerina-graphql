@@ -28,10 +28,11 @@ isolated service class WsService {
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
-    isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders) {
+    isolated function init(Engine engine, __Schema & readonly schema,  map<string> & readonly customHeaders,
+                           Context context) {
         self.engine = engine;
         self.schema = schema;
-        self.context = new;
+        self.context = context;
         self.customHeaders = customHeaders;
         self.activeConnections = [];
         self.initiatedConnection = false;

@@ -18,10 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
-import io.ballerina.projects.CodeGeneratorResult;
-import io.ballerina.projects.CodeModifierResult;
 import io.ballerina.projects.DiagnosticResult;
-import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
@@ -160,7 +157,7 @@ public class ServiceValidationTest {
     }
 
     @Test
-    public void testRecursiveRecordTypes() {
+    public void testRecordTypes() {
         String packagePath = "valid_service_17";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
@@ -851,14 +848,36 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, 34, 5);
     }
 
+    @Test
+    public void testAnonymousRecordsAsField() {
+        String packagePath = "invalid_service_38";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = "Anonymous record `record {|int number; string street; string city;|}` cannot be used as " +
+                "a GraphQL schema type";
+        assertErrorMessage(diagnostic, message, 26, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 38, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = "Anonymous record `record {|string name; int age;|}` cannot be used as a GraphQL schema type";
+        assertErrorMessage(diagnostic, message, 52, 23);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 58, 67);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 68, 67);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        Package currentPackage = project.currentPackage();
-        CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
-        currentPackage = codeGeneratorResult.updatedPackage().orElse(currentPackage);
-        CodeModifierResult codeModifierResult = currentPackage.runCodeModifierPlugins();
-        return codeModifierResult.reportedDiagnostics();
+        return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

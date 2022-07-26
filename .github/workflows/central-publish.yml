@@ -66,6 +66,7 @@ jobs:
                     packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
+                    sed -i 's/version=\(.*\)-SNAPSHOT/version=\1/g' gradle.properties
                     ./gradlew clean build -PpublishToCentral=true
 
             -   name: Ballerina Central Stage Push
@@ -78,4 +79,5 @@ jobs:
                     packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
                 run: |
+                    sed -i 's/version=\(.*\)-SNAPSHOT/version=\1/g' gradle.properties
                     ./gradlew clean build -PpublishToCentral=true

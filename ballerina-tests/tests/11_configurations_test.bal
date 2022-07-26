@@ -25,7 +25,7 @@ isolated function testTimeoutResponse() returns error? {
     json payload = {
         query: document
     };
-    http:Client httpClient = check new("http://localhost:9093/timeoutService");
+    http:Client httpClient = check new("http://localhost:9093/timeoutService", httpVersion = "1.1");
     http:Request request = new;
     request.setPayload(payload);
     http:Response response = check httpClient->post("/", request);
@@ -103,7 +103,7 @@ isolated function testCorsConfigurationWithWildCard() returns error? {
         ["access-control-request-method"]:["POST"],
         ["access-control-request-headers"]:["X-Content-Type-Options"]
     };
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->options("/corsConfigService1", headers); // send preflight request
     test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
     test:assertTrue(response.hasHeader("access-control-allow-credentials"));
@@ -122,7 +122,7 @@ isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
         ["access-control-request-method"]:["POST"],
         ["access-control-request-headers"]:["X-PINGOTHER"]
     };
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->options("/corsConfigService2", headers); // send preflight request
     test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
     test:assertNotEquals(check response.getHeader("access-control-allow-origin"), "http://www.ws02.com");

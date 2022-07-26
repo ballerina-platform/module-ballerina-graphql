@@ -302,14 +302,12 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
-            } else if context is Context {
+            } else {
                 http:Response? authResult = authenticateService(self.authConfig, request);
                 if authResult is http:Response {
                     return authResult;
                 }
                 return handleGetRequests(self.engine, context, request);
-            } else {
-                panic error("Invalid object received from the context init function.");
             }
         }
 
@@ -318,14 +316,12 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
-            } else if context is Context {
+            } else {
                 http:Response? authResult = authenticateService(self.authConfig, request);
                 if authResult is http:Response {
                     return authResult;
                 }
                 return handlePostRequests(self.engine, context, request);
-            } else {
-                panic error("Invalid object received from the context init function.");
             }
         }
 
@@ -353,17 +349,36 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 
 isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema,
                                       GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+    final ContextInit contextInitFunction = getContextInit(serviceConfig);
     return isolated service object {
-        isolated resource function get .(http:Request req) returns websocket:Service|websocket:UpgradeError {
+        isolated resource function get .(http:Request request) returns websocket:Service|websocket:UpgradeError {
             map<string> customHeaders = {};
-            string|http:HeaderNotFoundError subProtocol = req.getHeader(WS_SUB_PROTOCOL);
+            string|http:HeaderNotFoundError subProtocol = request.getHeader(WS_SUB_PROTOCOL);
             if subProtocol is string {
                 customHeaders = {"Sec-WebSocket-Protocol": subProtocol};
             }
-            return new WsService(gqlEngine, schema, customHeaders.cloneReadOnly());
+            Context context = check initContext(gqlEngine, contextInitFunction, request);
+            return new WsService(gqlEngine, schema, customHeaders.cloneReadOnly(), context);
         }
     };
 }
+
+isolated function initContext(Engine engine, ContextInit contextInit, http:Request request)
+    returns Context|websocket:UpgradeError {
+    // TODO: Temporary initiate the request context here, since it is not yet added in the WebSocket upgrade service
+    http:RequestContext requestContext = new;
+    Context|error context = contextInit(requestContext, request);
+    if context is error {
+        if context is AuthnError || context is AuthzError {
+            return error(context.message(), code = http:STATUS_BAD_REQUEST);
+        }
+        return error(context.message(), code = http:STATUS_INTERNAL_SERVER_ERROR);
+    } else {
+        context.setEngine(engine);
+        return context;
+    }
+}
+
 
 isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath,
                                      boolean includedSubscription = false) returns HttpService {
@@ -376,10 +391,10 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
         isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
-            string graphqlURL = caller.localAddress.host.includes(":")
+            string graphqlURL = caller.localAddress.ip.includes(":")
                             ? string `http://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
                             : string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
-            string subscriptionUrl = caller.localAddress.host.includes(":")
+            string subscriptionUrl = caller.localAddress.ip.includes(":")
                             ? string `ws://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
                             : string `ws://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
             string|error htmlAsString = includedSubscription

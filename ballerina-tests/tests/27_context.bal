@@ -17,6 +17,7 @@
 import ballerina/graphql;
 import ballerina/http;
 import ballerina/test;
+import ballerina/websocket;
 
 @test:Config {
     groups: ["context"]
@@ -293,4 +294,46 @@ isolated function testContextWithAdditionalParametersInNestedObjectWithInvalidSc
         }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithSubscriptions() returns error? {
+    string url = "ws://localhost:9092/context";
+    string document = string `subscription { messages }`;
+    websocket:ClientConfiguration configs = {
+        customHeaders: {
+            "scope": "admin"
+        }
+    };
+    websocket:Client wsClient = check new (url, configs);
+    check writeWebSocketTextMessage(document, wsClient);
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i}};
+        check validateWebSocketResponse(wsClient, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["context"]
+}
+isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
+    string url = "ws://localhost:9092/context";
+    string document = string `subscription { messages }`;
+    websocket:ClientConfiguration configs = {
+        customHeaders: {
+            "scope": "user"
+        }
+    };
+    websocket:Client wsClient = check new (url, configs);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {
+        errors:[
+            {
+                message: "Error occurred in the subscription resolver. You don't have permission to retrieve data"
+            }
+        ]
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }

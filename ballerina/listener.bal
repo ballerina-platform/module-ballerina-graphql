@@ -30,6 +30,7 @@ public class Listener {
     # + return - A `graphql:Error` if the listener initialization is failed or else `()`
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration configuration)
     returns Error? {
+        configuration.httpVersion = "1.1";
         if listenTo is int {
             http:Listener|error httpListener = new (listenTo, configuration);
             if httpListener is error {
