@@ -356,10 +356,7 @@ isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema sche
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     return isolated service object {
         isolated resource function get .(http:Request request) returns websocket:Service|websocket:UpgradeError {
-            Context|websocket:UpgradeError context = initContext(gqlEngine, contextInitFunction, request);
-            if context is websocket:UpgradeError {
-                return context;
-            }
+            Context context = check initContext(gqlEngine, contextInitFunction, request);
             return new WsService(gqlEngine, schema, context);
         }
     };
@@ -371,11 +368,10 @@ isolated function initContext(Engine engine, ContextInit contextInit, http:Reque
     http:RequestContext requestContext = new;
     Context|error context = contextInit(requestContext, request);
     if context is error {
-        json contextError = {errors: [{message: context.message()}]};
         if context is AuthnError || context is AuthzError {
-            return error(contextError.toString(), code = http:STATUS_BAD_REQUEST);
+            return error(context.message(), code = http:STATUS_BAD_REQUEST);
         }
-        return error(contextError.toString(), code = http:STATUS_INTERNAL_SERVER_ERROR);
+        return error(context.message(), code = http:STATUS_INTERNAL_SERVER_ERROR);
     } else {
         context.setEngine(engine);
         return context;
