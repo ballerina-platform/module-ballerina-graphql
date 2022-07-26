@@ -18,7 +18,7 @@ import ballerina/file;
 import ballerina/http;
 import ballerina/io;
 
-http:Client httpClient = checkpanic new("http://localhost:9000/graphql");
+http:Client httpClient = checkpanic new("http://localhost:9000/graphql", httpVersion = "1.1");
 
 function getJsonPayloadFromService(string document, json variables = {}, string? operationName = ()) returns json|error {
     if operationName is string {
