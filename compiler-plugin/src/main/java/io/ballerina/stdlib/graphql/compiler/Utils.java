@@ -120,14 +120,6 @@ public final class Utils {
         return intersectionTypeSymbol;
     }
 
-    public static boolean isPrimitiveType(TypeSymbol returnType) {
-        return returnType.typeKind().isStringType() ||
-                returnType.typeKind() == TypeDescKind.INT ||
-                returnType.typeKind() == TypeDescKind.FLOAT ||
-                returnType.typeKind() == TypeDescKind.BOOLEAN ||
-                returnType.typeKind() == TypeDescKind.DECIMAL;
-    }
-
     public static boolean isDistinctServiceReference(TypeSymbol typeSymbol) {
         if (typeSymbol.typeKind() != TypeDescKind.TYPE_REFERENCE) {
             return false;

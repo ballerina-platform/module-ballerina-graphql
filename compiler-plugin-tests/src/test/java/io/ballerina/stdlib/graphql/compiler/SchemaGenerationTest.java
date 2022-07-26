@@ -18,10 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
-import io.ballerina.projects.CodeGeneratorResult;
-import io.ballerina.projects.CodeModifierResult;
 import io.ballerina.projects.DiagnosticResult;
-import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
@@ -196,18 +193,10 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    private DiagnosticResult getDiagnosticResult(String packagePath) {
-        return loadPackage(packagePath).getCompilation().diagnosticResult();
-    }
-
-    private Package loadPackage(String path) {
+    private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        Package currentPackage = project.currentPackage();
-        CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
-        currentPackage = codeGeneratorResult.updatedPackage().orElse(currentPackage);
-        CodeModifierResult codeModifierResult = currentPackage.runCodeModifierPlugins();
-        return codeModifierResult.updatedPackage().orElse(currentPackage);
+        return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

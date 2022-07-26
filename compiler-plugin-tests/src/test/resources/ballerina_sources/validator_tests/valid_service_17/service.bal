@@ -22,16 +22,46 @@ public type Person record {
     Person[] friends;
 };
 
-service /graphql on new graphql:Listener(4000) {
+public type Book readonly & record {|
+    string name;
+    string author;
+|};
 
+service /graphql on new graphql:Listener(4000) {
     isolated resource function get name(Person & readonly person) returns string {
+        return person.name;
+    }
+
+    isolated resource function get name(readonly & Person[] person) returns string {
         return person.name;
     }
 }
 
 service /graphql on new graphql:Listener(4000) {
-
     isolated resource function get profile() returns Person {
         return {name: "Walter White", age: 52, friends: []};
+    }
+}
+
+service on new graphql:Listener(4000) {
+    isolated resource function get profile() returns Person & readonly {
+        return {name: "Walter White", age: 52, friends: []}.cloneReadOnly();
+    }
+
+    isolated resource function get profiles() returns readonly & Person[] {
+        return [{name: "Walter White", age: 52, friends: []}].cloneReadOnly();
+    }
+}
+
+service on new graphql:Listener(4000) {
+    resource function get book() returns Book {
+        return {
+            name: "The Fabric of the Cosmos",
+            author: "Brian Green"
+        };
+    }
+
+    resource function get books() returns Book[] {
+        return [{name: "Magic of Reality", author: "Richard Dawkins"}];
     }
 }
