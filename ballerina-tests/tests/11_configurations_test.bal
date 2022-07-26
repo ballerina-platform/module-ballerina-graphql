@@ -25,7 +25,7 @@ isolated function testTimeoutResponse() returns error? {
     json payload = {
         query: document
     };
-    http:Client httpClient = check new("http://localhost:9093/timeoutService");
+    http:Client httpClient = check new("http://localhost:9093/timeoutService", httpVersion = "1.1");
     http:Request request = new;
     request.setPayload(payload);
     http:Response response = check httpClient->post("/", request);

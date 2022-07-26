@@ -16,18 +16,18 @@
 
 type Information Address|Person;
 
-type Account record {
+public type Account record {
     int number;
     Contact? contact;
 };
 
-type Pet record {
+public type Pet record {
     string name;
     string ownerName;
     Animal animal;
 };
 
-type Animal readonly & record {
+public type Animal readonly & record {
     string commonName;
     Species species;
 };
@@ -53,7 +53,7 @@ public type Person readonly & record {
     Address address;
 };
 
-type Book readonly & record {
+public type Book readonly & record {
     string name;
     string author;
 };
@@ -64,7 +64,7 @@ type Course readonly & record {
     Book[] books;
 };
 
-type Student readonly & record {
+public type Student readonly & record {
     string name;
     Course[] courses;
 };
@@ -102,7 +102,7 @@ public enum Weekday {
     SATURDAY
 }
 
-type Time record {|
+public type Time record {|
     Weekday weekday;
     string time;
 |};
