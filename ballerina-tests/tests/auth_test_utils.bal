@@ -93,11 +93,11 @@ type AuthResponse record {|
 isolated function sendNoTokenRequest(int port, string path) returns http:Response|http:ClientError {
     http:Client clientEP = check new ("https://localhost:" + port.toString(),
         secureSocket = {
-        cert: {
-            path: TRUSTSTORE_PATH,
-            password: "ballerina"
-        }
-    },
+            cert: {
+                path: TRUSTSTORE_PATH,
+                password: "ballerina"
+            }
+        },
         httpVersion = "1.1"
     );
     json payload = {"query": "{ greeting }"};
@@ -107,15 +107,15 @@ isolated function sendNoTokenRequest(int port, string path) returns http:Respons
 isolated function sendBasicTokenRequest(int port, string path, string username, string password) returns http:Response|http:ClientError {
     http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
-        username: username,
-        password: password
-    },
+            username: username,
+            password: password
+        },
         secureSocket = {
-        cert: {
-            path: TRUSTSTORE_PATH,
-            password: "ballerina"
-        }
-    },
+            cert: {
+                path: TRUSTSTORE_PATH,
+                password: "ballerina"
+            }
+        },
         httpVersion = "1.1"
     );
     json payload = {"query": "{ greeting }"};
@@ -125,14 +125,14 @@ isolated function sendBasicTokenRequest(int port, string path, string username, 
 isolated function sendBearerTokenRequest(int port, string path, string token) returns http:Response|http:ClientError {
     http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
-        token: token
-    },
+            token: token
+        },
         secureSocket = {
-        cert: {
-            path: TRUSTSTORE_PATH,
-            password: "ballerina"
-        }
-    },
+            cert: {
+                path: TRUSTSTORE_PATH,
+                password: "ballerina"
+            }
+        },
         httpVersion = "1.1"
     );
     json payload = {"query": "{ greeting }"};
@@ -142,29 +142,29 @@ isolated function sendBearerTokenRequest(int port, string path, string token) re
 isolated function sendJwtRequest(int port, string path) returns http:Response|http:ClientError {
     http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
-        username: "admin",
-        issuer: "wso2",
-        audience: ["ballerina"],
-        jwtId: "100078234ba23",
-        keyId: "NTAxZmMxNDMyZDg3MTU1ZGM0MzEzODJhZWI4NDNlZDU1OGFkNjFiMQ",
-        customClaims: {"scp": "write"},
-        signatureConfig: {
-            config: {
-                keyStore: {
-                    path: KEYSTORE_PATH,
-                    password: "ballerina"
-                },
-                keyAlias: "ballerina",
-                keyPassword: "ballerina"
+            username: "admin",
+            issuer: "wso2",
+            audience: ["ballerina"],
+            jwtId: "100078234ba23",
+            keyId: "NTAxZmMxNDMyZDg3MTU1ZGM0MzEzODJhZWI4NDNlZDU1OGFkNjFiMQ",
+            customClaims: {"scp": "write"},
+            signatureConfig: {
+                config: {
+                    keyStore: {
+                        path: KEYSTORE_PATH,
+                        password: "ballerina"
+                    },
+                    keyAlias: "ballerina",
+                    keyPassword: "ballerina"
+                }
             }
-        }
-    },
+        },
         secureSocket = {
-        cert: {
-            path: TRUSTSTORE_PATH,
-            password: "ballerina"
-        }
-    },
+            cert: {
+                path: TRUSTSTORE_PATH,
+                password: "ballerina"
+            }
+        },
         httpVersion = "1.1"
     );
     json payload = {"query": "{ greeting }"};
@@ -174,24 +174,24 @@ isolated function sendJwtRequest(int port, string path) returns http:Response|ht
 isolated function sendOAuth2TokenRequest(int port, string path) returns http:Response|http:ClientError {
     http:Client clientEP = check new ("https://localhost:" + port.toString(),
         auth = {
-        tokenUrl: "https://localhost:9445/oauth2/token",
-        clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L5w4gz52uriT8ksZ3nUVjKvrfQMrU4uvZohTftxStwNEW4cfStBEGRxRL68",
-        clientSecret: "9205371918321623741",
-        clientConfig: {
-            secureSocket: {
-                cert: {
-                    path: TRUSTSTORE_PATH,
-                    password: "ballerina"
+            tokenUrl: "https://localhost:9445/oauth2/token",
+            clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L5w4gz52uriT8ksZ3nUVjKvrfQMrU4uvZohTftxStwNEW4cfStBEGRxRL68",
+            clientSecret: "9205371918321623741",
+            clientConfig: {
+                secureSocket: {
+                    cert: {
+                        path: TRUSTSTORE_PATH,
+                        password: "ballerina"
+                    }
                 }
             }
-        }
-    },
+        },
         secureSocket = {
-        cert: {
-            path: TRUSTSTORE_PATH,
-            password: "ballerina"
-        }
-    },
+            cert: {
+                path: TRUSTSTORE_PATH,
+                password: "ballerina"
+            }
+        },
         httpVersion = "1.1"
     );
     json payload = {"query": "{ greeting }"};
