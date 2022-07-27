@@ -133,12 +133,12 @@ public final class ListenerUtils {
         try {
             byte[] bytes = htmlAsStream.readAllBytes();
             String htmlAsString = new String(bytes, StandardCharsets.UTF_8);
-            StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\" }");
+            StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\"");
             if (subscriptionUrl != null) {
-                graphiqlUrl.deleteCharAt(graphiqlUrl.length() - 1);
                 graphiqlUrl.append(" , subscriptionUrl: \"")
-                           .append(((BString) subscriptionUrl).getValue()).append("\" }");
+                           .append(((BString) subscriptionUrl).getValue()).append("\"");
             }
+            graphiqlUrl.append(" }");
             htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl.toString());
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
