@@ -152,7 +152,7 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {errors: [{message: "Empty query is found"}]};
+    json expectedPayload = {errors: [{message: "An empty query is found"}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -164,7 +164,7 @@ isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
     websocket:Client wsClient = check new(url);
     json payload = {query: 2};
     check wsClient->writeMessage(payload);
-    json expectedPayload = {errors: [{message: "Invalid format in request parameter: query"}]};
+    json expectedPayload = {errors: [{message: "Invalid format in request parameter: `query`"}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -189,7 +189,7 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient, variables);
-    json expectedPayload = {errors: [{message: "Invalid format in request parameter: variables"}]};
+    json expectedPayload = {errors: [{message: "Invalid format in request parameter: `variables`"}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 

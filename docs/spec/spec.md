@@ -21,8 +21,10 @@ The conforming implementation of the specification is released and included in t
 1. [Overview](#1-overview)
 2. [Components](#2-components)
     * 2.1 [Listener](#21-listener)
-        * 2.1.1 [Initializing the Listener Using Port Number](#211-initializing-the-listener-using-port-number)
-        * 2.1.2 [Initializing the Listener using an HTTP Listener](#212-initializing-the-listener-using-an-http-listener)
+        * 2.1.1 [HTTP Listener](#211-http-listener)
+        * 2.1.2 [WebSocket Listener](#212-websocket-listener)
+        * 2.1.3 [Initializing the Listener Using Port Number](#213-initializing-the-listener-using-port-number)
+        * 2.1.4 [Initializing the Listener using an HTTP Listener](#214-initializing-the-listener-using-an-http-listener)
     * 2.2 [Service](#22-service)
         * 2.2.1 [Service Type](#221-service-type)
         * 2.2.2 [Service Base Path](#222-service-base-path)
@@ -134,13 +136,16 @@ import ballerina/graphql;
 
 ### 2.1 Listener
 
+#### 2.1.1 HTTP Listener
 Since the GraphQL spec does not mandate an underlying client-server protocol, a GraphQL implementation can use any protocol underneath. The Ballerina GraphQL package, like most of the other implementations, uses HTTP as the protocol. The Ballerina GraphQL listener is using an HTTP listener to listen to incoming requests through HTTP.
+
+#### 2.1.2 WebSocket Listener
 If the schema contains the `Subscription` type, The GraphQL listener will establish a new WebSocket listener to listen to incoming subscription requests.
-In Ballerina, WebSocket is used as the communication protocol for GraphQL subscriptions as it is capable of dispatching data continuously while maintaining a persistent connection. Additionally, Ballerina GraphQL supports `graphql-transport-ws` and `graphql-ws` websocket sub-protocols in subscriptions. If a WebSocket connection is established with one of these underlying sub-protocols, all the subscription responses will be wrapped in a standard message structure defined in their [specification](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md). In a standard response, it includes JSON fields for `type`, `id`, and `payload`. The `type` field specifies the message type of the response. And the `id` field is used to uniquely identify the client. And the `payload` field includes the GraphQL response returned from the GraphQL engine. If a subscription request occurs without a sub-protocol, only the GraphQL response will be dispatched. All the responses will be converted to text before sending them to the clients.
+In Ballerina, WebSocket is used as the communication protocol for GraphQL subscriptions as it is capable of dispatching data continuously while maintaining a persistent connection. Additionally, Ballerina GraphQL supports `graphql-transport-ws` and `graphql-ws` websocket sub-protocols in subscriptions. If a WebSocket connection is established with one of these underlying sub-protocols, all the subscription responses will be wrapped in a standard message structure defined in their [specification](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md). In a standard response, it includes JSON fields for `type`, `id`, and `payload`. The `type` field specifies the message type of the response. And the `id` field is used to uniquely identify the client. And the `payload` field includes the GraphQL response returned from the GraphQL engine. If a subscription request occurs without a sub-protocol, only the GraphQL response will be dispatched. All the responses are in json format and they will be converted to string before sending through WebSocket connections.
 
 A Ballerina GraphQL listener can be declared as described below, honoring the Ballerina generic [listener declaration](https://ballerina.io/spec/lang/2021R1/#section_9.2.1).
 
-#### 2.1.1 Initializing the Listener Using Port Number
+#### 2.1.3 Initializing the Listener Using Port Number
 If a GraphQL listener requires to be listening to a port number, that port number must be provided as the first parameter of the listener constructor.
 
 ###### Example: Initializing the Listener Using Port Number
@@ -148,7 +153,7 @@ If a GraphQL listener requires to be listening to a port number, that port numbe
 listener graphql:Listener graphqlListener = new (4000);
 ```
 
-#### 2.1.2 Initializing the Listener using an HTTP Listener
+#### 2.1.4 Initializing the Listener using an HTTP Listener
 If a GraphQL listener requires to listen to the same port as an existing [`http:Listener`](https://github.com/ballerina-platform/module-ballerina-http/blob/master/docs/spec/spec.md/#21-listener) object, that `http:Listener` object must be provided as the first parameter of the listener constructor.
 
 ###### Example: Initializing the Listener using an HTTP Listener
@@ -306,7 +311,7 @@ As per the [GraphQL specification](https://spec.graphql.org/June2018/#sec-Mutati
 
 #### 3.1.3 The `Subscription` Type
 
-The `Subscription` type in a GraphQL schema is used to continuously fetch data from a GraphQL service. In Ballerina, each `resource` method with the `subscribe` accessor inside a GraphQL service is mapped to a field in the root `Subscription` type. 
+The `Subscription` type in a GraphQL schema is used to continuously fetch data from a GraphQL service. In Ballerina, each `resource` method with the `subscribe` accessor inside a GraphQL service is mapped to a field in the root `Subscription` type.
 
 ###### Example: Adding a Field to the `Subscription` Type
 

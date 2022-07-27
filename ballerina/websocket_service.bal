@@ -24,7 +24,7 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private readonly & string[] activeConnections;
+    private string[] activeConnections;
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
@@ -91,11 +91,7 @@ isolated service class WsService {
                         closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
                         return;
                     }
-                    string[] connections = [connectionId];
-                    foreach string i in self.activeConnections {
-                        connections.push(i);
-                    }
-                    self.activeConnections = connections.cloneReadOnly();
+                    self.activeConnections.push(connectionId);
                 }
             }
             parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
@@ -108,13 +104,7 @@ isolated service class WsService {
             }
         } else if wsType == WS_STOP || wsType == WS_COMPLETE {
             lock {
-                string[] connections = [];
-                foreach string i in self.activeConnections {
-                    if i != connectionId {
-                        connections.push(i);
-                    }
-                }
-                self.activeConnections = connections.cloneReadOnly();
+                _ = self.activeConnections.remove(<int>self.activeConnections.indexOf(connectionId));
                 self.initiatedConnection = false;
             }
             check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);

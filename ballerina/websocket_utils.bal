@@ -57,32 +57,32 @@ isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine
         return {errors: [{message: "Unable to find the query: " + document.message()}]};
     }
     if document !is string {
-        return {errors: [{message: "Invalid format in request parameter: query"}]};
+        return {errors: [{message: "Invalid format in request parameter: `query`"}]};
     }
     if document == "" {
-        return {errors: [{message: "Empty query is found"}]};
+        return {errors: [{message: "An empty query is found"}]};
     }
-    json|error variables = payload.variables;
-    variables = variables is error && variables.message() == "{ballerina/lang.map}KeyNotFound" ? () : variables;
+    json|error variables = payload?.variables;
     if variables is error || variables !is map<json>? {
-        return {errors: [{message: "Invalid format in request parameter: variables"}]};
+        return {errors: [{message: "Invalid format in request parameter: `variables`"}]};
     }
-    parser:OperationNode|OutputObject validation = engine.validate(document, getOperationName(payload), variables);
-    if validation is parser:OperationNode {
-        return validation;
+    parser:OperationNode|OutputObject result = engine.validate(document, getOperationName(payload), variables);
+    if result is parser:OperationNode {
+        return result;
     }
-    return validation.toJson();
+    return result.toJson();
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
                                           parser:FieldNode node) returns stream<any, error?>|json {
     ExecutorVisitor executor = new(engine, schema, context, {});
     any|error result = getSubscriptionResult(executor, node);
-    if result !is stream<any, error?> {
-        string errorMessage = result is error ? result.message() : "Invalid return type. Expected type: stream";
-        return {errors: [{message: errorMessage}]};
+    if result is stream<any, error?> {
+        return result;
     }
-    return <stream<any, error?>>result;
+    string errorMessage = result is error ? result.message() : "Error ocurred in the subscription resolver";
+    return {errors: [{message: errorMessage}]};
+    
 }
 
 isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & readonly customHeaders, string wsType,
