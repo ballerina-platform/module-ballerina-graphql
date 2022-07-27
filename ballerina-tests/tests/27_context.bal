@@ -331,7 +331,7 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     json expectedPayload = {
         errors:[
             {
-                message: "Error occurred in the subscription resolver. You don't have permission to retrieve data"
+                message: "You don't have permission to retrieve data"
             }
         ]
     };

@@ -80,7 +80,7 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
     any|error result = getSubscriptionResult(executor, node);
     if result !is stream<any, error?> {
         string errorMessage = result is error ? result.message() : "Invalid return type. Expected type: stream";
-        return {errors: [{message: "Error occurred in the subscription resolver. " + errorMessage}]};
+        return {errors: [{message: errorMessage}]};
     }
     return <stream<any, error?>>result;
 }
