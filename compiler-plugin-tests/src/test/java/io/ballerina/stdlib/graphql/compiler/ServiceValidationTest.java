@@ -33,7 +33,6 @@ import org.testng.annotations.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import javax.management.Query;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin service validation.
