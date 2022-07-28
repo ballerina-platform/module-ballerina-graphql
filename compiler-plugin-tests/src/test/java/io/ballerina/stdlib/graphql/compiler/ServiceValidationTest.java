@@ -852,26 +852,56 @@ public class ServiceValidationTest {
     public void testAnonymousRecordsAsField() {
         String packagePath = "invalid_service_38";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 5);
+        Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = "Anonymous record `record {|int number; string street; string city;|}` cannot be used as " +
-                "a GraphQL schema type";
+        String message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Query.profile.address`";
         assertErrorMessage(diagnostic, message, 26, 5);
 
         diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Query.address`";
         assertErrorMessage(diagnostic, message, 38, 5);
 
         diagnostic = diagnosticIterator.next();
-        message = "Anonymous record `record {|string name; int age;|}` cannot be used as a GraphQL schema type";
+        message =
+                "Anonymous record `record {|string name; int age;|}` cannot be used as the type of the field `Query" +
+                        ".class.profile`";
         assertErrorMessage(diagnostic, message, 52, 23);
 
         diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|string name; int age;|}` cannot be used as an input object type of the " +
+                        "field `Query.name`";
         assertErrorMessage(diagnostic, message, 58, 67);
 
         diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|string name; int age;|}` cannot be used as an input object type of the " +
+                        "field `Query.school.name`";
         assertErrorMessage(diagnostic, message, 68, 67);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Mutation.updateName.address`";
+        assertErrorMessage(diagnostic, message, 78, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Subscription.profiles.address`";
+        assertErrorMessage(diagnostic, message, 96, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Query.company.profile.address`";
+        assertErrorMessage(diagnostic, message, 112, 5);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {
