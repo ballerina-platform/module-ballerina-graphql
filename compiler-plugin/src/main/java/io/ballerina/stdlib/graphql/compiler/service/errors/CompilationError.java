@@ -56,7 +56,8 @@ public enum CompilationError {
     SCHEMA_GENERATION_FAILED(ErrorMessage.ERROR_130, ErrorCode.GRAPHQL_130, DiagnosticSeverity.ERROR),
     RESOURCE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_131, ErrorCode.GRAPHQL_131, DiagnosticSeverity.ERROR),
     INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_132, ErrorCode.GRAPHQL_132, DiagnosticSeverity.ERROR),
-    INVALID_ANONYMOUS_FIELD_TYPE(ErrorMessage.ERROR_133, ErrorCode.GRAPHQL_133, DiagnosticSeverity.ERROR);
+    INVALID_ANONYMOUS_FIELD_TYPE(ErrorMessage.ERROR_133, ErrorCode.GRAPHQL_133, DiagnosticSeverity.ERROR),
+    INVALID_ANONYMOUS_INPUT_TYPE(ErrorMessage.ERROR_134, ErrorCode.GRAPHQL_134, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

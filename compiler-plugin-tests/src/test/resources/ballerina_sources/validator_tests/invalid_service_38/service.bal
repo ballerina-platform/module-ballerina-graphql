@@ -16,7 +16,7 @@
 
 import ballerina/graphql;
 
-type Person record {|
+public type Person record {|
     string name;
     int age;
     record {| int number; string street; string city; |} address;
@@ -67,5 +67,57 @@ service on new graphql:Listener(4000) {
 service class School {
     resource function get name(record {| string name; int age; |} profile) returns string {
         return profile.name;
+    }
+}
+
+service on new graphql:Listener(4000) {
+    resource function get greeting() returns string {
+        return "Hello";
+    }
+    
+    remote function updateName() returns Person {
+        return {
+            name: "Walter White",
+            age: 52,
+            address: {
+                number: 308,
+                street: "Negra Arroyo Lane",
+                city: "Albequerque"
+            }
+        };
+    }
+}
+
+service on new graphql:Listener(4000) {
+    resource function get greeting() returns string {
+        return "Hello";
+    }
+    
+    resource function subscribe profiles() returns stream<Person> {
+        return [
+            {
+                name: "Walter White",
+                age: 52,
+                address: {
+                    number: 308,
+                    street: "Negra Arroyo Lane",
+                    city: "Albequerque"
+                }
+            }
+        ].toStream();
+    }
+}
+
+service on new graphql:Listener(4000) {
+    resource function get company/profile() returns Person {
+        return {
+            name: "Walter White",
+            age: 52,
+            address: {
+                number: 308,
+                street: "Negra Arroyo Lane",
+                city: "Albequerque"
+            }
+        };
     }
 }
