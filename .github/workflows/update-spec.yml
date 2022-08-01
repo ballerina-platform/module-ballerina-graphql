@@ -9,7 +9,7 @@ on:
     branches:
       - master
     paths:
-      - ${{ env.SPEC_FOLDER_PATH }}
+      - 'docs/spec'
 
 jobs:
   update_specs:
@@ -33,7 +33,7 @@ jobs:
 
       - name: Trigger Workflow
         run: |
-          curl -X POST \
+          curl --request POST \
           'https://api.github.com/repos/ballerina-platform/ballerina-dev-website/dispatches' \
           -H 'Accept: application/vnd.github.v3+json' \
           -H 'Authorization: Bearer ${{ secrets.BALLERINA_BOT_TOKEN }}' \
