@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3068] Fix Anonymous Records Crashing the Service](https://github.com/ballerina-platform/ballerina-standard-library/issues/3068)
 - [[#3115] Fix Not Initializing Context per Request in GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3115)
 
+### Changed
+- [[#3173] Improve the Error Message for Using Anonymous Records as Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/3173)
+
 ## [1.3.2] - 2022-07-11
 
 ### Fixed

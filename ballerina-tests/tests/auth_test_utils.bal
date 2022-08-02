@@ -85,7 +85,7 @@ const string ACCESS_TOKEN_1 = "2YotnFZFEjr1zCsicMWpAA";
 const string ACCESS_TOKEN_2 = "1zCsicMWpAA2YotnFZFEjr";
 const string ACCESS_TOKEN_3 = "invalid-token";
 
-type AuthResponse record {|
+public type AuthResponse record {|
     *http:Ok;
     json body?;
 |};
