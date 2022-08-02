@@ -392,11 +392,11 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
 
         isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
             string graphqlURL = caller.localAddress.ip.includes(":")
-                            ? string `http://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
-                            : string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
+                            ? string `http://[${caller.localAddress.ip}]:${caller.localAddress.port}/${basePath}`
+                            : string `http://${caller.localAddress.ip}:${caller.localAddress.port}/${basePath}`;
             string subscriptionUrl = caller.localAddress.ip.includes(":")
-                            ? string `ws://[${caller.localAddress.host}]:${caller.localAddress.port}/${basePath}`
-                            : string `ws://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
+                            ? string `ws://[${caller.localAddress.ip}]:${caller.localAddress.port}/${basePath}`
+                            : string `ws://${caller.localAddress.ip}:${caller.localAddress.port}/${basePath}`;
             string|error htmlAsString = includedSubscription
                                         ? getHtmlContentFromResources(graphqlURL, subscriptionUrl)
                                         : getHtmlContentFromResources(graphqlURL);
