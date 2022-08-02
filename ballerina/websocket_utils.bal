@@ -88,21 +88,17 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
 isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & readonly customHeaders, string wsType,
                                         json payload, string? id = ()) returns websocket:Error? {
     if customHeaders.hasKey(WS_SUB_PROTOCOL) {
-        string 'type = getMessageType(wsType, customHeaders);
+        string 'type = wsType;
+        if customHeaders.get(WS_SUB_PROTOCOL) == GRAPHQL_WS {
+            if wsType == WS_ERROR || wsType == WS_NEXT {
+                'type = WS_DATA;
+            }
+        }
         json jsonResponse = id != () ? {'type: 'type, id: id, payload: payload} : {'type: 'type, payload: payload};
         check caller->writeMessage(jsonResponse);        
     } else {
         check caller->writeMessage(payload);
     }
-}
-
-isolated function getMessageType(string wsType, map<string> & readonly customHeaders) returns string {
-    if customHeaders.get(WS_SUB_PROTOCOL) == GRAPHQL_WS {
-        if wsType == WS_ERROR || wsType == WS_NEXT {
-            return WS_DATA;
-        }
-    }
-    return wsType;
 }
 
 isolated function closeConnection(websocket:Caller caller, int statusCode = 1000, string reason = "Normal Closure") {
