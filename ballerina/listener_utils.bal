@@ -390,7 +390,7 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
     } isolated service object {
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
-        isolated resource function get .(http:Caller caller, @http:Header {name: "Host"} string host)
+        isolated resource function get .(@http:Header {name: HTTP_HOST_HEADER} string host)
             returns http:Response|http:InternalServerError {
             string graphqlUrl = string `http://${host}/${basePath}`;
             string subscriptionUrl = string `ws://${host}/${basePath}`;

@@ -18,6 +18,7 @@ const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
 const CONTENT_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 const CONTENT_TYPE_TEXT_HTML = "text/html";
+const HTTP_HOST_HEADER = "Host";
 
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
