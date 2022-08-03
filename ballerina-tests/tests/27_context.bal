@@ -331,7 +331,7 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     json expectedPayload = {
         errors:[
             {
-                message: "Invalid return value"
+                message: "You don't have permission to retrieve data"
             }
         ]
     };

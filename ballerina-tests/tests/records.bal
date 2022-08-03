@@ -229,3 +229,9 @@ public enum InstrumentType {
     # Instruments with leather, wooden or metal surfaces
     PERCUSSION
 }
+
+type WSPayload record {|
+    string 'type;
+    string id?;
+    json payload?;
+|};

@@ -352,8 +352,13 @@ isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema sche
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     return isolated service object {
         isolated resource function get .(http:Request request) returns websocket:Service|websocket:UpgradeError {
+            map<string> customHeaders = {};
+            string|http:HeaderNotFoundError subProtocol = request.getHeader(WS_SUB_PROTOCOL);
+            if subProtocol is string {
+                customHeaders = {"Sec-WebSocket-Protocol": subProtocol};
+            }
             Context context = check initContext(gqlEngine, contextInitFunction, request);
-            return new WsService(gqlEngine, schema, context);
+            return new WsService(gqlEngine, schema, customHeaders.cloneReadOnly(), context);
         }
     };
 }
@@ -374,7 +379,9 @@ isolated function initContext(Engine engine, ContextInit contextInit, http:Reque
     }
 }
 
-isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
+
+isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath,
+                                     boolean includedSubscription = false) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
@@ -384,8 +391,15 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
         isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
-            string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
-            string|error htmlAsString = getHtmlContentFromResources(graphqlURL);
+            string graphqlURL = caller.localAddress.ip.includes(":")
+                            ? string `http://[${caller.localAddress.ip}]:${caller.localAddress.port}/${basePath}`
+                            : string `http://${caller.localAddress.ip}:${caller.localAddress.port}/${basePath}`;
+            string subscriptionUrl = caller.localAddress.ip.includes(":")
+                            ? string `ws://[${caller.localAddress.ip}]:${caller.localAddress.port}/${basePath}`
+                            : string `ws://${caller.localAddress.ip}:${caller.localAddress.port}/${basePath}`;
+            string|error htmlAsString = includedSubscription
+                                        ? getHtmlContentFromResources(graphqlURL, subscriptionUrl)
+                                        : getHtmlContentFromResources(graphqlURL);
             if htmlAsString is error {
                 return {
                     body: htmlAsString.message()
@@ -421,7 +435,8 @@ isolated function validateGraphiqlPath(string path) returns Error? = @java:Metho
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function getHtmlContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
+isolated function getHtmlContentFromResources(string graphqlUrl, string? subscriptionUrl = ())
+    returns string|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
