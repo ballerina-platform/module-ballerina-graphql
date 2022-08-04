@@ -39,7 +39,11 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
             check sendWebSocketResponse(caller, customHeaders, WS_ERROR, errorPayload, connectionId);
             closeConnection(caller);
         } else {
-            check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, null, connectionId);
+            if customHeaders.hasKey(WS_SUB_PROTOCOL) {
+                check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, null, connectionId);
+            } else {
+                closeConnection(caller);
+            }
         }
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
