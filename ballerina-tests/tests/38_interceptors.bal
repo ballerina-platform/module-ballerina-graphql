@@ -295,3 +295,44 @@ isolated function testInterceptorsReturningErrorsWithHierarchicalResources() ret
     json expectedPayload = check getJsonContentFromFile("interceptors_returning_errors_with_hierarchical_resources.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningNullValues1() returns error? {
+    string document = string `{ name }`;
+    string url = "http://localhost:9091/interceptors_with_null_values1";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            name: null
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningNullValues2() returns error? {
+    string document = string `{ name }`;
+    string url = "http://localhost:9091/interceptors_with_null_values2";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            name: null
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningInvalidValue() returns error? {
+    string document = string `{ name }`;
+    string url = "http://localhost:9091/interceptors_with_null_values3";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_invalid_value.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

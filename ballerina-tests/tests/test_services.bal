@@ -1655,3 +1655,30 @@ service /intercept_erros_with_hierarchical on basicListener {
         return "London";
     }
 }
+
+@graphql:ServiceConfig {
+    interceptors: [new RecordInterceptor()]
+}
+service /interceptors_with_null_values1 on basicListener {
+    resource function get name() returns string? {
+        return;
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new NullReturn()]
+}
+service /interceptors_with_null_values2 on basicListener {
+    resource function get name() returns string? {
+        return "Ballerina";
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new NullReturn()]
+}
+service /interceptors_with_null_values3 on basicListener {
+    resource function get name() returns string {
+        return "Ballerina";
+    }
+}

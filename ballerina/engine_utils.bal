@@ -50,7 +50,12 @@ isolated function validateInterceptorReturnValue(__Type 'type, any|error value, 
 
 isolated function isValidReturnType(__Type 'type, anydata value) returns boolean {
     if 'type.kind is NON_NULL {
+        if value is () {
+            return false;
+        }
         return isValidReturnType(unwrapNonNullype('type), value);
+    } else if value is () {
+        return true;
     } else if 'type.kind is ENUM && value is string {
         return true;
     } else if 'type.kind is LIST && value is anydata[] {

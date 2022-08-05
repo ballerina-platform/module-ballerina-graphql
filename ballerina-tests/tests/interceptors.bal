@@ -327,3 +327,12 @@ readonly service class AccessGrant {
         return true;
     }
 }
+
+readonly service class NullReturn {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        _ = context.resolve('field);
+        return;
+    }
+}
