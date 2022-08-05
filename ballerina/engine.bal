@@ -225,6 +225,7 @@ isolated class Engine {
         path.push(fieldNode.getName());
         __Type fieldType = getFieldTypeFromParentType('field.getFieldType(), self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, 'field.getServiceObject(), fieldType, path = path, resourcePath = resourcePath);
+        context.resetInterceptorCount();
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
         _ = resourcePath.pop();

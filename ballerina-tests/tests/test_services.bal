@@ -1630,3 +1630,55 @@ service /intercept_order on basicListener {
         return "an open-source";
     }
 }
+
+@graphql:ServiceConfig {
+    interceptors: [new AccessGrant()]
+}
+service /intercept_erros_with_hierarchical on basicListener {
+    resource function get name() returns string {
+        return "Walter";
+    }
+
+    resource function get age() returns int? {
+        return 67;
+    }
+
+    resource function get address/number() returns int? {
+        return 221;
+    }
+
+    resource function get address/street() returns string? {
+        return "Main Street";
+    }
+
+    resource function get address/city() returns string {
+        return "London";
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new RecordInterceptor()]
+}
+service /interceptors_with_null_values1 on basicListener {
+    resource function get name() returns string? {
+        return;
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new NullReturn()]
+}
+service /interceptors_with_null_values2 on basicListener {
+    resource function get name() returns string? {
+        return "Ballerina";
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new NullReturn()]
+}
+service /interceptors_with_null_values3 on basicListener {
+    resource function get name() returns string {
+        return "Ballerina";
+    }
+}

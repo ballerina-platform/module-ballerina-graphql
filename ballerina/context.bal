@@ -132,8 +132,14 @@ public isolated class Context {
                     return next;
                 }
             }
-            self.nextInterceptor = 0;
+            self.resetInterceptorCount();
             return;
+        }
+    }
+
+    isolated function resetInterceptorCount() {
+        lock {
+            self.nextInterceptor = 0;
         }
     }
 }
