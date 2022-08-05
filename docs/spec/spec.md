@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/07/18  
+_Updated_: 2022/08/05  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -479,17 +479,17 @@ service on new graphql:Listener(9090) {
     # + id - The ID of the person
     # + name - The name of the person
     # + age - The age of the person
-    public type Person record {
+    public type Person record {|
         int id;
         string name;
         int age;
-    };
+    |};
 }
 ```
 
 This will generate the documentation for all the fields of the `Query` type including the field descriptions of the `Person` type.
 
-**Note:** When a field or an argument name contains unicode characters or any other escape characters, they are unescaped when generating the schema.   
+**Note:** When a field or an argument name contains Unicode characters or any other escape characters, they are unescaped when generating the schema.   
 
 ###### Example: Escaping Characters
 ```ballerina
@@ -555,14 +555,15 @@ service on new graphql:Listener(4000) {
     }
 }
 
-type Person record {
+type Person record {|
     string name;
     int age;
-};
+|};
 ```
 
 **Note:** Even though anonymous record types are supported in Ballerina, they cannot be used as types in a GraphQL schema. This is because a type in a GraphQL schema must have a name. Therefore, if an anonymous record is used in a GraphQL service, it will result in a compilation error.
 
+**Hint:** Open records are supported in GraphQL services, but they do not make sense in the context of GraphQL since a GraphQL type cannot have dynamic fields. Therefore, it is recommended to use closed records in GraphQL services unless it is absolutely needed.
 #### 4.2.2 Service Type as Object
 
 A Ballerina service type can be used as an `Object` type in GraphQL. Similar to the `Query` type, each resource method inside a service type represents a field of the object.
@@ -697,10 +698,10 @@ service on new graphql:Listener(4000) {
     }
 }
 
-type Book record {
+type Book record {|
     string title;
     string author;
-};
+|};
 ```
 
 ### 4.6 Interfaces
@@ -1107,10 +1108,10 @@ service on new graphql:Listener(4000) {
     }
 }
 
-type Person record {
+type Person record {|
     string name;
     int age;
-};
+|};
 ```
 
 > **Note:** The parameter `graphql:Context` should be used only when it is required to use the context.
