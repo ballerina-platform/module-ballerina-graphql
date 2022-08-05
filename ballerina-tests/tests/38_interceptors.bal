@@ -284,3 +284,14 @@ isolated function testInterceptorExecutionOrder() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsReturningErrorsWithHierarchicalResources() returns error? {
+    string document = string `{ name, age, address{city, street, number}}`;
+    string url = "http://localhost:9091/intercept_erros_with_hierarchical";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interceptors_returning_errors_with_hierarchical_resources.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

@@ -72,6 +72,7 @@ class ResponseGenerator {
             path.push(fieldNode.getName());
             __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
             Field 'field = new (fieldNode, parentValue, fieldType, path);
+            self.context.resetInterceptorCount();
             return self.engine.resolve(self.context, 'field);
         }
     }
