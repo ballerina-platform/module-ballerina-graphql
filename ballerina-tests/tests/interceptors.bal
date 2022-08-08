@@ -308,3 +308,31 @@ readonly service class Execution2 {
         return result;
     }
 }
+
+readonly service class AccessGrant {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        if self.grantAccess('field.getName()) {
+            return context.resolve('field);
+        }
+        return error("Access denied!");
+    }
+
+    isolated function grantAccess(string fieldName) returns boolean {
+        string[] restrictedFields = ["age", "number", "street"];
+        if restrictedFields.indexOf(fieldName) is int {
+            return false;
+        }
+        return true;
+    }
+}
+
+readonly service class NullReturn {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        _ = context.resolve('field);
+        return;
+    }
+}
