@@ -225,7 +225,7 @@ isolated function testMultipleVariableTypesWithSingleQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["variables","maps"]
+    groups: ["variables", "maps"]
 }
 isolated function testVariablesWithNestedMap() returns error? {
     string document = string`query ($workerKey:String, $contractKey:String ){ company { workers(key:$workerKey) { contacts(key:$contractKey) { number } } } }`;
