@@ -1682,3 +1682,22 @@ service /interceptors_with_null_values3 on basicListener {
         return "Ballerina";
     }
 }
+
+service /maps on basicListener {
+    private final Languages languages;
+
+    function init() {
+        self.languages = {
+            name: {
+                backend: "Ballerina",
+                frontend: "JavaScript",
+                data: "Python",
+                native: "C++"
+            }
+        };
+    }
+
+    isolated resource function get languages() returns Languages {
+        return self.languages;
+    }
+}
