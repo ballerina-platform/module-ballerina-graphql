@@ -110,7 +110,7 @@ isolated function testMapWithValidKey() returns error? {
 }
 
 @test:Config {
-    groups: ["maps", "test"]
+    groups: ["maps"]
 }
 isolated function testMapWithInvalidKey() returns error? {
     string document = check getGraphQLDocumentFromFile("map_with_invalid_key.graphql");
