@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["map"]
+    groups: ["maps"]
 }
 isolated function testMap() returns error? {
     string document = string`query { company { workers(key: "id1") { name } } }`;
@@ -36,7 +36,7 @@ isolated function testMap() returns error? {
 }
 
 @test:Config {
-    groups: ["map"]
+    groups: ["maps"]
 }
 isolated function testNestedMap() returns error? {
     string document = string`query { company { workers(key: "id3") { contacts(key: "home") { number } } } }`;
@@ -57,7 +57,7 @@ isolated function testNestedMap() returns error? {
 }
 
 @test:Config {
-    groups: ["map"]
+    groups: ["maps"]
 }
 isolated function testMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers { name } } }`;
@@ -81,12 +81,42 @@ isolated function testMapWithoutKeyInput() returns error? {
 }
 
 @test:Config {
-    groups: ["map"]
+    groups: ["maps"]
 }
 isolated function testNestedMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers(key: "w1") { contacts } } }`;
     string url = "http://localhost:9095/special_types";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = check getJsonContentFromFile("nested_map_without_key_input.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["maps"]
+}
+isolated function testMapWithValidKey() returns error? {
+    string document = check getGraphQLDocumentFromFile("map_with_valid_key.graphql");
+    json variables = {purpose: "backend"};
+    string url = "http://localhost:9091/maps";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
+    json expectedPayload = {
+        data: {
+            languages: {
+                backend: "Ballerina"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["maps", "test"]
+}
+isolated function testMapWithInvalidKey() returns error? {
+    string document = check getGraphQLDocumentFromFile("map_with_invalid_key.graphql");
+    json variables = {purpose: "desktop"};
+    string url = "http://localhost:9091/maps";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
+    json expectedPayload = check getJsonContentFromFile("map_with_invalid_key.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

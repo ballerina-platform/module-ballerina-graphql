@@ -235,3 +235,7 @@ type WSPayload record {|
     string id?;
     json payload?;
 |};
+
+public type Languages record {|
+    map<string> name;
+|};

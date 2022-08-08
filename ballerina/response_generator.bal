@@ -42,7 +42,10 @@ class ResponseGenerator {
             return parentValue;
         }
         if parentValue is map<anydata> {
-            return self.getResultFromMap(parentValue, parentNode);
+            if isMap(parentValue) {
+                return self.getResultFromMap(<map<anydata>>parentValue, parentNode);
+            }
+            return self.getResultFromRecord(parentValue, parentNode);
         }
         if parentValue is (any|error)[] {
             return self.getResultFromArray(parentValue, parentNode);
@@ -87,14 +90,23 @@ class ResponseGenerator {
     }
 
     isolated function getResultFromMap(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
-        if isMap(parentValue) {
-            string? mapKey = self.getKeyArgument(parentNode);
-            if mapKey is string {
+        string? mapKey = self.getKeyArgument(parentNode);
+        if mapKey is string {
+            if parentValue.hasKey(mapKey) {
                 return self.getResult(parentValue.get(mapKey), parentNode);
             } else {
-                return parentValue;
+                self.path.push(parentNode.getName());
+                string message = string `The field "${parentNode.getName()}" is a map, but it does not contain the key "${mapKey}"`;
+                var result = self.getResult(error(message), parentNode);
+                _ = self.path.pop();
+                return result;
             }
+        } else {
+            return parentValue;
         }
+    }
+
+    isolated function getResultFromRecord(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {

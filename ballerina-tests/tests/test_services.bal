@@ -1630,3 +1630,22 @@ service /intercept_order on basicListener {
         return "an open-source";
     }
 }
+
+service /maps on basicListener {
+    private final Languages languages;
+
+    function init() {
+        self.languages = {
+            name: {
+                backend: "Ballerina",
+                frontend: "JavaScript",
+                data: "Python",
+                native: "C++"
+            }
+        };
+    }
+
+    isolated resource function get languages() returns Languages {
+        return self.languages;
+    }
+}
