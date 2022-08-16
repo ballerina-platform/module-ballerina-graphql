@@ -23,6 +23,7 @@
 # + graphiql - GraphiQL client configurations
 # + schemaString - The generated schema. This is auto-generated at the compile-time
 # + interceptors - GraphQL service level interceptors
+# + introspection - The state of the introspection query support
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
@@ -31,6 +32,7 @@ public type GraphqlServiceConfig record {|
     Graphiql graphiql = {};
     readonly string schemaString = "";
     readonly readonly & Interceptor[] interceptors = [];
+    boolean introspection = true;
 |};
 
 # The annotation to configure a GraphQL service.

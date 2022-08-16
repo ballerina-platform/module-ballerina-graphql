@@ -1701,3 +1701,30 @@ service /maps on basicListener {
         return self.languages;
     }
 }
+
+
+@graphql:ServiceConfig {
+    introspection: false
+}
+service /introspection on basicListener {
+
+    private Person p;
+
+    isolated function init() {
+        self.p = p2.clone();
+    }
+
+    isolated resource function get person() returns Person {
+        lock {
+            return self.p;
+        }
+    }
+
+    isolated remote function setName(string name) returns Person {
+        lock {
+            Person p = {name: name, age: self.p.age, address: self.p.address};
+            self.p = p;
+            return self.p;
+        }
+    }
+}
