@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/log;
+
 import graphql.parser;
 
 class ResponseGenerator {
@@ -81,6 +83,7 @@ class ResponseGenerator {
     }
 
     isolated function addError(error err, parser:FieldNode fieldNode) returns ErrorDetail {
+        log:printError(err.message(), stackTrace = err.stackTrace());
         ErrorDetail errorDetail = {
             message: err.message(),
             locations: [fieldNode.getLocation()],

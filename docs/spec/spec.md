@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/08/05  
+_Updated_: 2022/08/17  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -1023,6 +1023,8 @@ The result of the above document is the following.
     "data": null
 }
 ```
+
+> **Note:** When an error occurred in a GraphQL resolver, it will be logged to the stderr in the service.
 
 ### 7.1 Error Fields
 
