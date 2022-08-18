@@ -579,7 +579,7 @@ public class SchemaGenerator {
 
     private String getDefaultValue(ParameterSymbol parameterSymbol) {
         if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
-            return "";
+            return "\"\"";
         }
         return null;
     }
