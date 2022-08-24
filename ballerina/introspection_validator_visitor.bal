@@ -41,12 +41,14 @@ class IntrospectionValidatorVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        if fieldNode.getName() == SCHEMA_FIELD || fieldNode.getName() == TYPE_FIELD {
-            if !self.introspection {
-                string message = string `GraphQL introspection is not allowed by the GraphQL Service, but the query` +
-                                 string ` contained __schema or __type.`;
-                self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
-            }
+        if fieldNode.getName() == SCHEMA_FIELD {
+            string message = string `GraphQL introspection is not allowed by the GraphQL Service, but the query` +
+                             string ` contained __schema.`;
+            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
+        } else if fieldNode.getName() == TYPE_FIELD {
+            string message = string `GraphQL introspection is not allowed by the GraphQL Service, but the query` +
+                             string ` contained __type.`;
+            self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
         }
     }
 

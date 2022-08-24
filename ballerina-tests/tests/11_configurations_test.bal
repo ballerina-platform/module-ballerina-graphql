@@ -142,7 +142,7 @@ isolated function testIntrospectionDisableConfigWithSchemaIntrospection() return
     json expectedPayload = {
         errors: [
             {
-                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema or __type.",
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
                 locations: [
                     {
                         line: 1,
@@ -165,7 +165,7 @@ isolated function testIntrospectionDisableConfigWithTypeIntrospection() returns 
     json expectedPayload = {
         errors: [
             {
-                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema or __type.",
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __type.",
                 locations: [
                     {
                         line: 1,
@@ -188,7 +188,7 @@ isolated function testIntrospectionDisableConfig() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema or __type.",
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
                 locations: [
                     {
                         line: 1,
@@ -197,7 +197,7 @@ isolated function testIntrospectionDisableConfig() returns error? {
                 ]
             },
             {
-                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema or __type.",
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __type.",
                 locations: [
                     {
                         line: 1,
@@ -241,7 +241,7 @@ isolated function testIntrospectionDisableConfigWithMutation() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema or __type.",
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
                 locations: [
                     {
                         line: 1,
@@ -264,7 +264,7 @@ isolated function testIntrospectionDisableConfigWithFragments() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema or __type.",
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
                 locations: [
                     {
                         line: 6,
