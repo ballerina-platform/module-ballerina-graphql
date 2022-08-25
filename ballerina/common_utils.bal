@@ -375,13 +375,20 @@ isolated function getGraphqlPayload(string query, map<anydata>? variables = (), 
 
 isolated function handleHttpClientErrorResponse(http:ClientError clientError) returns RequestError {
     if clientError is http:ApplicationResponseError {
-        anydata|error data = clientError.detail().get("body").ensureType(anydata);
-        if data is error {
-            return error RequestError("GraphQL Client Error", data);
+        anydata body = clientError.detail().get("body");
+        if hasGraphqlErrors(clientError) {
+            ErrorDetail[] errorDetails = checkpanic (<json>body).errors.ensureType();
+            return error RequestError("GraphQL Client Error", body = errorDetails);
         }
-        return error RequestError("GraphQL Client Error", body = data);
+        return error RequestError("GraphQL Client Error", body = body);
     }
     return error RequestError("GraphQL Client Error", clientError);
+}
+
+isolated function hasGraphqlErrors(http:ApplicationResponseError applicationResponseError) returns boolean {
+    anydata body = applicationResponseError.detail().get("body");
+    json|error data = body.ensureType();
+    return applicationResponseError.detail().statusCode == 400 && data is json && data.errors is json;
 }
 
 isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {

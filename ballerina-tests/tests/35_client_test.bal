@@ -182,16 +182,14 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
     json|graphql:ClientError payload = graphqlClient->executeWithType(document, variables);
     test:assertTrue(payload is graphql:RequestError);
     graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot query field \"gree\" on type \"Query\".",
-                locations: [{"line": 1, "column": 37}]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Cannot query field \"gree\" on type \"Query\".",
+            locations: [{"line": 1, "column": 37}]
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -207,16 +205,14 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
     json|graphql:ClientError payload = graphqlClient->execute(document, variables);
     test:assertTrue(payload is graphql:RequestError);
     graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot query field \"gree\" on type \"Query\".",
-                locations: [{"line": 1, "column": 37}]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Cannot query field \"gree\" on type \"Query\".",
+            locations: [{"line": 1, "column": 37}]
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -308,16 +304,14 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
     json|graphql:ClientError payload = graphqlClient->executeWithType(document);
     test:assertTrue(payload is graphql:RequestError);
     graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Must provide operation name if query contains multiple operations.",
-                locations: []
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Must provide operation name if query contains multiple operations.",
+            locations: []
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -331,16 +325,14 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
     json|graphql:ClientError payload = graphqlClient->execute(document);
     test:assertTrue(payload is graphql:RequestError);
     graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Must provide operation name if query contains multiple operations.",
-                locations: []
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Must provide operation name if query contains multiple operations.",
+            locations: []
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -693,7 +685,7 @@ isolated function testClientExecuteForDataBindingError() returns error? {
     graphql:Client graphqlClient = check new (url);
     ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
     test:assertTrue(payload is graphql:PayloadBindingError, "This should be a payload binding error");
-
+    graphql:PayloadBindingError err = <graphql:PayloadBindingError> payload;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
             message:"{ballerina/lang.array}IndexOutOfRange",
@@ -701,8 +693,8 @@ isolated function testClientExecuteForDataBindingError() returns error? {
             path:["profile"]
         }
     ];
-
-    (readonly & graphql:ErrorDetail[])? actualErrorDetails = (<graphql:PayloadBindingError>payload).detail().errors;
+    
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
