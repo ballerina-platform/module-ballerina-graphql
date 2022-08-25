@@ -25,7 +25,8 @@ isolated class Engine {
     private final readonly & boolean enableIntrospection;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
-                           readonly & (readonly & Interceptor)[] interceptors, boolean enableIntrospection) returns Error? {
+                           readonly & (readonly & Interceptor)[] interceptors, boolean enableIntrospection)
+    returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
