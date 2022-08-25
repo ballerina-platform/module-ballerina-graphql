@@ -416,7 +416,7 @@ isolated function performDataBinding(typedesc<GenericResponse|record{}|json> tar
 
 isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType,
                                                json graphqlResponse)
-                                               returns GenericResponseWithErrors|record{}|json|RequestError {
+                                               returns GenericResponseWithErrors|record{}|json|PayloadBindingError {
     do {
         if targetType is typedesc<GenericResponseWithErrors> {
             GenericResponseWithErrors response = check graphqlResponse.cloneWithType(targetType);
@@ -429,9 +429,14 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
             return response;
         }
     } on fail error e {
-        return error RequestError("GraphQL Client Error",  e);
+        map<json>|error responseMap = graphqlResponse.ensureType();
+        if responseMap is error || !responseMap.hasKey("errors") {
+           return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  e);
+        }
+        ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  errors=errorDetails);
     }
-    return error RequestError("GraphQL Client Error, Invalid binding type.");
+    return error PayloadBindingError(string`${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`);
 }
 
 isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {

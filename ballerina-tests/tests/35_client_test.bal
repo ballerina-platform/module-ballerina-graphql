@@ -683,6 +683,42 @@ isolated function testClientExecuteWithRecordTypeArrays() returns error? {
     assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
 }
 
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteForDataBindingError() returns error? {
+    string document = "{ one: profile(id: 100) {name} }";
+    string url = "http://localhost:9091/records";
+
+    graphql:Client graphqlClient = check new (url);
+    ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
+    test:assertTrue(payload is graphql:PayloadBindingError, "This should be a payload binding error");
+
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message:"{ballerina/lang.array}IndexOutOfRange",
+            locations:[{line:1,column:3}],
+            path:["profile"]
+        }
+    ];
+
+    (readonly & graphql:ErrorDetail[])? actualErrorDetails = (<graphql:PayloadBindingError>payload).detail().errors;
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
+}
+
+type ProfileResponseWithErrors record {|
+    *graphql:GenericResponseWithErrors;
+    ProfileResponse data;
+|};
+
+type ProfileResponse record {|
+    ProfileData one;
+|};
+
+type ProfileData record {
+    string name;
+};
+
 type GreetingResponse record {|
     map<json?> extensions?;
     record {|
