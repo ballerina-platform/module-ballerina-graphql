@@ -1330,12 +1330,12 @@ service on new graphql:Listener(4000) {
 
 #### 9.1.7 Introspection Configurations
 
-The `enableIntrospection` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
+The `introspectionEnabled` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
 ###### Example: Disable Introspection Query Support
 
 ```ballerina
 @graphql:ServiceConfig {
-    enableIntrospection: false
+    introspectionEnabled: false
 }
 service on new graphql:Listener(4000) {
     // ...
