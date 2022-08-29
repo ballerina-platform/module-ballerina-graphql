@@ -56,7 +56,7 @@ public class Listener {
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         readonly & (readonly & Interceptor)[] interceptors = getServiceInterceptors(serviceConfig);
         Engine engine;
-        if graphiql.enable {
+        if graphiql.enabled {
             check validateGraphiqlPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
             engine = check new (schemaString, maxQueryDepth, s, interceptors);

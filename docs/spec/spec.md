@@ -1302,7 +1302,7 @@ The `graphiql` field is used to provide the GraphiQL client configuration to ena
 ```ballerina
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "/ballerina/graphiql"
     }
 }
@@ -1310,7 +1310,7 @@ service on new graphql:Listener(4000) {
     // ...
 }
 ```
-> **Note:** The field enable accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+> **Note:** The field enabled accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
 
 #### 9.1.6 Service Level Interceptors
 
@@ -1911,7 +1911,7 @@ If the configurations are provided correctly, the GraphiQL client tool will be s
 ```ballerina
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "/ballerina/graphiql"
     }
 }
