@@ -381,11 +381,11 @@ isolated function handleHttpClientErrorResponse(http:ClientError clientError) re
         anydata body = clientError.detail().get("body");
         if hasGraphqlErrors(clientError) {
             ErrorDetail[] errorDetails = checkpanic (<json>body).errors.ensureType();
-            return error RequestError("GraphQL Client Error", body = errorDetails);
+            return error GraphqlError("GraphQL Client Error", errors = errorDetails);
         }
-        return error RequestError("GraphQL Client Error", body = body);
+        return error HttpError("GraphQL Client Error", body = body);
     }
-    return error RequestError("GraphQL Client Error", clientError);
+    return error HttpError("GraphQL Client Error", clientError, body = ());
 }
 
 isolated function hasGraphqlErrors(http:ApplicationResponseError applicationResponseError) returns boolean {
@@ -441,12 +441,12 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
     } on fail error e {
         map<json>|error responseMap = graphqlResponse.ensureType();
         if responseMap is error || !responseMap.hasKey("errors") {
-           return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  e);
+           return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  e, errors = ());
         }
         ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
-        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  errors=errorDetails);
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  errors = errorDetails);
     }
-    return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`);
+    return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`, errors = ());
 }
 
 isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {

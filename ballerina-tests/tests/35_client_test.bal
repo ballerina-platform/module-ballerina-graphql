@@ -180,9 +180,9 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document, variables);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    test:assertTrue(payload is graphql:GraphqlError);
+    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
             message: "Cannot query field \"gree\" on type \"Query\".",
@@ -203,9 +203,9 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document, variables);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    test:assertTrue(payload is graphql:GraphqlError);
+    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
             message: "Cannot query field \"gree\" on type \"Query\".",
@@ -302,9 +302,9 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    test:assertTrue(payload is graphql:GraphqlError);
+    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
             message: "Must provide operation name if query contains multiple operations.",
@@ -323,9 +323,9 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    anydata|graphql:ErrorDetail[]? actualErrorDetails = err.detail()?.body;
+    test:assertTrue(payload is graphql:GraphqlError);
+    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
             message: "Must provide operation name if query contains multiple operations.",
