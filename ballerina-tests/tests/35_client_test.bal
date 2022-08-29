@@ -688,9 +688,9 @@ isolated function testClientExecuteForDataBindingError() returns error? {
     graphql:PayloadBindingError err = <graphql:PayloadBindingError> payload;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
-            message:"{ballerina/lang.array}IndexOutOfRange",
-            locations:[{line:1,column:3}],
-            path:["profile"]
+            message: "{ballerina/lang.array}IndexOutOfRange",
+            locations: [{line:1,column:3}],
+            path: ["profile"]
         }
     ];
     

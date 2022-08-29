@@ -17,6 +17,9 @@
 import ballerina/http;
 import graphql.parser;
 
+// Error messages
+const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";
+
 isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type rootType) returns string {
     string typeName = getTypeNameFromType(rootType);
     if rootType.kind == UNION {
@@ -443,7 +446,7 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
         ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
         return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  errors=errorDetails);
     }
-    return error PayloadBindingError(string`${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`);
+    return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`);
 }
 
 isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {

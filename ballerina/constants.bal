@@ -76,6 +76,3 @@ const GRAPHQL_WS = "graphql-ws";
 const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 const DEFAULT_VALUE = "default";
-
-// Error messages
-const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";

@@ -35,4 +35,4 @@ public type RequestError distinct (ClientError & error<record {| anydata|ErrorDe
 public type ServerError distinct (ClientError & error<record {| json? data?; ErrorDetail[] errors; map<json>? extensions?; |}>);
 
 # Represents client side data binding error.
-public type PayloadBindingError distinct (ClientError & error<record {| ErrorDetail[] errors?; |}>) ;
+public type PayloadBindingError distinct (ClientError & error<record {| ErrorDetail[] errors?; |}>);
