@@ -751,26 +751,6 @@ public class ServiceValidationTest {
     }
 
     @Test
-    public void testInterfaceImplementationMissingResourceFunction() {
-        String packagePath = "invalid_service_31";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-
-        String message =
-                "All the resource functions in the GraphQL interface class `Person` must be implemented in the child " +
-                        "class `Student`";
-        Diagnostic diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 20, 5);
-
-        message =
-                "All the resource functions in the GraphQL interface class `Person` must be implemented in the child " +
-                        "class `Teacher`";
-        diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 20, 5);
-    }
-
-    @Test
     public void testInvalidResourceFunctionsInInterfaceImplementations() {
         String packagePath = "invalid_service_32";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -791,30 +771,6 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 103, 32);
-    }
-
-    @Test
-    public void testMultipleInterfaceImplementationsWithMissingResources1() {
-        String packagePath = "invalid_service_34";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        String message =
-                "All the resource functions in the GraphQL interface class `Mammal` must be implemented in the child " +
-                        "class `Dog`";
-        assertErrorMessage(diagnostic, message, 20, 5);
-    }
-
-    @Test
-    public void testMultipleInterfaceImplementationsWithMissingResources2() {
-        String packagePath = "invalid_service_35";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        String message =
-                "All the resource functions in the GraphQL interface class `Pet` must be implemented in the child " +
-                        "class `Dog`";
-        assertErrorMessage(diagnostic, message, 24, 5);
     }
 
     @Test
