@@ -180,8 +180,8 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document, variables);
-    test:assertTrue(payload is graphql:GraphqlError);
-    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
     graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
@@ -203,8 +203,8 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document, variables);
-    test:assertTrue(payload is graphql:GraphqlError);
-    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
     graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
@@ -302,8 +302,8 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document);
-    test:assertTrue(payload is graphql:GraphqlError);
-    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
     graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
@@ -323,8 +323,8 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document);
-    test:assertTrue(payload is graphql:GraphqlError);
-    graphql:GraphqlError err = <graphql:GraphqlError>payload;
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
     graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {

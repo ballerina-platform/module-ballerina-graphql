@@ -35,9 +35,10 @@ public type RequestError distinct ClientError;
 public type HttpError distinct (RequestError & error<record {| anydata body; |}>);
 
 # Represents GraphQL errors due to request validation.
-public type GraphqlError distinct (RequestError & error<record {| ErrorDetail[]? errors; |}>);
+public type InvalidDocumentError distinct (RequestError & error<record {| ErrorDetail[]? errors; |}>);
 
 # Represents GraphQL API response during GraphQL API server side errors.
+# # Deprecated
 # This error type will be removed along with the `executeWithType()` API
 @deprecated
 public type ServerError distinct (ClientError & error<record {| json? data?; ErrorDetail[] errors; map<json>? extensions?; |}>);

@@ -381,7 +381,7 @@ isolated function handleHttpClientErrorResponse(http:ClientError clientError) re
         anydata body = clientError.detail().get("body");
         if hasGraphqlErrors(clientError) {
             ErrorDetail[] errorDetails = checkpanic (<json>body).errors.ensureType();
-            return error GraphqlError("GraphQL Client Error", errors = errorDetails);
+            return error InvalidDocumentError("Invalid GraphQL document provided", errors = errorDetails);
         }
         return error HttpError("GraphQL Client Error", body = body);
     }
