@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- [[#3289] Support GraphQL interface with ballerina distinct object type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3289)
 
 ### Added
 - [[#2898] Support Deprecation Support in GraphQL Services](https://github.com/ballerina-platform/ballerina-standard-library/issues/2898)
 - [[#2001] Support GraphQL Interceptors for Query and Mutation operations](https://github.com/ballerina-platform/ballerina-standard-library/issues/2001)
 - [[#3260] Log the Errors Returned from the Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/3260)
+- [[#3289] Support GraphQL interface with ballerina distinct object type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3289)
 
 ### Fixed
 - [[#3069] Fix Enums with String Values Return String Value for Enum Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/3069)
