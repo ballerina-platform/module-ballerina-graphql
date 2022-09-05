@@ -26,10 +26,12 @@ import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.MetadataNode;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeFactory;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.NodeParser;
+import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
@@ -94,23 +96,33 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
 
     private ModulePartNode modifyDocument(SourceModifierContext context, ModulePartNode rootNode,
                                           GraphqlModifierContext modifierContext) {
-        Map<ServiceDeclarationNode, ServiceDeclarationNode> nodeMap = new HashMap<>();
-        Map<ServiceDeclarationNode, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
-        for (Map.Entry<ServiceDeclarationNode, Schema> entry : nodeSchemaMap.entrySet()) {
+        Map<Node, Node> nodeMap = new HashMap<>();
+        Map<Node, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
+        for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
             Schema schema = entry.getValue();
             try {
                 String schemaString = getSchemaAsEncodedString(schema);
-                ServiceDeclarationNode updatedNode = modifyServiceNode(entry.getKey(), schemaString);
-                nodeMap.put(entry.getKey(), updatedNode);
+                Node targetNode = entry.getKey();
+                if (targetNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
+                    ServiceDeclarationNode updatedNode = modifyServiceDeclarationNode(
+                            (ServiceDeclarationNode) targetNode, schemaString);
+                    nodeMap.put(targetNode, updatedNode);
+                } else if (targetNode.kind() == SyntaxKind.MODULE_VAR_DECL) {
+                    ModuleVariableDeclarationNode graphqlServiceVariableDeclaration
+                            = (ModuleVariableDeclarationNode) targetNode;
+                    ModuleVariableDeclarationNode updatedNode = modifyServiceVariableDeclarationNode(schemaString,
+                            graphqlServiceVariableDeclaration);
+                    nodeMap.put(targetNode, updatedNode);
+                }
             } catch (IOException e) {
                 updateContext(context, entry.getKey().location());
             }
         }
         NodeList<ModuleMemberDeclarationNode> members = NodeFactory.createNodeList();
         for (ModuleMemberDeclarationNode member : rootNode.members()) {
-            if (member.kind() == SyntaxKind.SERVICE_DECLARATION) {
-                if (nodeMap.containsKey((ServiceDeclarationNode) member)) {
-                    members = members.add(nodeMap.get(member));
+            if (member.kind() == SyntaxKind.SERVICE_DECLARATION || member.kind() == SyntaxKind.MODULE_VAR_DECL) {
+                if (nodeMap.containsKey(member)) {
+                    members = members.add((ModuleMemberDeclarationNode) nodeMap.get(member));
                     continue;
                 }
             }
@@ -119,7 +131,32 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         return rootNode.modify(rootNode.imports(), members, rootNode.eofToken());
     }
 
-    private ServiceDeclarationNode modifyServiceNode(ServiceDeclarationNode node, String schemaString) {
+    private ModuleVariableDeclarationNode modifyServiceVariableDeclarationNode(String schemaString,
+                                          ModuleVariableDeclarationNode moduleVariableDeclarationNode) {
+        // noinspection OptionalGetWithoutIsPresent
+        ObjectConstructorExpressionNode graphqlServiceObject
+                = (ObjectConstructorExpressionNode) moduleVariableDeclarationNode.initializer().get();
+        ObjectConstructorExpressionNode updatedGraphqlServiceObject = modifyServiceObjectNode(graphqlServiceObject,
+                schemaString);
+        return moduleVariableDeclarationNode.modify().withInitializer(updatedGraphqlServiceObject).apply();
+    }
+
+    private ObjectConstructorExpressionNode modifyServiceObjectNode(ObjectConstructorExpressionNode node,
+                                                                    String schemaString) {
+        NodeList<AnnotationNode> annotations = NodeFactory.createNodeList();
+        if (node.annotations().isEmpty()) {
+            AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString);
+            annotations = annotations.add(annotationNode);
+        } else {
+            for (AnnotationNode annotationNode : node.annotations()) {
+                annotationNode = updateAnnotationNode(annotationNode, schemaString);
+                annotations = annotations.add(annotationNode);
+            }
+        }
+        return node.modify().withAnnotations(annotations).apply();
+    }
+
+    private ServiceDeclarationNode modifyServiceDeclarationNode(ServiceDeclarationNode node, String schemaString) {
         MetadataNode metadataNode = getMetadataNode(node, schemaString);
         return node.modify().withMetadata(metadataNode).apply();
     }
@@ -151,12 +188,11 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             return annotationNode;
         }
         if (annotationNode.annotValue().isPresent()) {
-            SeparatedNodeList<MappingFieldNode> updatedFields =
-                    getUpdatedFields(annotationNode.annotValue().get(), schemaString);
-            MappingConstructorExpressionNode node =
-                    NodeFactory.createMappingConstructorExpressionNode(
-                            NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
-                            NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
+            SeparatedNodeList<MappingFieldNode> updatedFields = getUpdatedFields(annotationNode.annotValue().get(),
+                    schemaString);
+            MappingConstructorExpressionNode node = NodeFactory.createMappingConstructorExpressionNode(
+                    NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
+                    NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
             return annotationNode.modify().withAnnotValue(node).apply();
         }
         return getSchemaStringAnnotation(schemaString);
@@ -225,7 +261,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     private void updateContext(SourceModifierContext context, Location location) {
         CompilationError error = CompilationError.SCHEMA_GENERATION_FAILED;
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(error.getErrorCode(), error.getError(),
-                                                           error.getDiagnosticSeverity());
+                error.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
         context.reportDiagnostic(diagnostic);
     }

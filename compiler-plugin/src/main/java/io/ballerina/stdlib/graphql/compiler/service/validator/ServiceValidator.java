@@ -42,7 +42,9 @@ import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
@@ -81,17 +83,16 @@ public class ServiceValidator {
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
     private final InterfaceFinder interfaceFinder;
     private final SyntaxNodeAnalysisContext context;
-    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
+    private final Node serviceNode;
     private int arrayDimension = 0;
     private boolean errorOccurred;
     private boolean hasQueryType;
 
-    private List<String> currentFieldPath;
+    private final List<String> currentFieldPath;
 
-    public ServiceValidator(SyntaxNodeAnalysisContext context, ServiceDeclarationSymbol serviceDeclarationSymbol,
-                            InterfaceFinder interfaceFinder) {
+    public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder) {
         this.context = context;
-        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
+        this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
         this.errorOccurred = false;
         this.hasQueryType = false;
@@ -99,8 +100,30 @@ public class ServiceValidator {
     }
 
     public void validate() {
-        ServiceDeclarationNode node = (ServiceDeclarationNode) this.context.node();
-        if (this.serviceDeclarationSymbol.listenerTypes().size() > 1) {
+        if (serviceNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
+            validateServiceDeclaration();
+        } else if (serviceNode.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
+            validateServiceObject();
+        }
+    }
+
+    private void validateServiceObject() {
+        ObjectConstructorExpressionNode objectConstructorExpressionNode = (ObjectConstructorExpressionNode) serviceNode;
+        for (Node node : objectConstructorExpressionNode.members()) {
+            validateServiceMember(node);
+        }
+        if (!this.hasQueryType) {
+            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpressionNode.location());
+        }
+    }
+
+    private void validateServiceDeclaration() {
+        ServiceDeclarationNode node = (ServiceDeclarationNode) serviceNode;
+        // No need to check isEmpty(), already validated in ServiceDeclarationAnalysisTask
+        // noinspection OptionalGetWithoutIsPresent
+        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) context.semanticModel()
+                .symbol(node).get();
+        if (serviceDeclarationSymbol.listenerTypes().size() > 1) {
             addDiagnostic(CompilationError.INVALID_MULTIPLE_LISTENERS, node.location());
         }
         validateService();
@@ -299,7 +322,7 @@ public class ServiceValidator {
                 break;
             case RECORD:
                 addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature(),
-                              getCurrentFieldPath());
+                        getCurrentFieldPath());
                 break;
             default:
                 addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
@@ -356,7 +379,7 @@ public class ServiceValidator {
             }
             if (!this.interfaceFinder.isValidInterfaceImplementation(classSymbol, childClass)) {
                 addDiagnostic(CompilationError.INTERFACE_IMPLEMENTATION_MISSING_RESOURCE, location, className,
-                              childClassName);
+                        childClassName);
             } else {
                 this.interfaceFinder.addValidInterface(className);
                 validateReturnTypeClass(childClass, location);
@@ -368,7 +391,7 @@ public class ServiceValidator {
         TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) typeReferenceTypeSymbol.definition();
         if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
             validateReturnType((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(),
-                               typeReferenceTypeSymbol.typeDescriptor(), location);
+                    typeReferenceTypeSymbol.typeDescriptor(), location);
         } else {
             validateReturnType(typeDefinitionSymbol.typeDescriptor(), location);
         }
@@ -399,7 +422,7 @@ public class ServiceValidator {
                     }
                 } else {
                     validateInputParameterType(parameterSymbol.typeDescriptor(), inputLocation,
-                                               isResourceMethod(methodSymbol));
+                            isResourceMethod(methodSymbol));
                 }
                 i++;
             }
@@ -448,11 +471,11 @@ public class ServiceValidator {
                 break;
             case RECORD:
                 addDiagnostic(CompilationError.INVALID_ANONYMOUS_INPUT_TYPE, location, typeSymbol.signature(),
-                              getCurrentFieldPath());
+                        getCurrentFieldPath());
                 break;
             default:
                 addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
-                              typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
+                        typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
         }
     }
 
