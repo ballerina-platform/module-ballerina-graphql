@@ -207,8 +207,9 @@ public class SchemaGenerator {
     }
 
     private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
-        Type type = getInputFieldType(parameterSymbol.typeDescriptor());
         String defaultValue = getDefaultValue(parameterSymbol);
+        boolean hasDefaultValue = defaultValue != null;
+        Type type = getInputFieldType(parameterSymbol.typeDescriptor(), hasDefaultValue);
         return new InputValue(parameterName, type, description, defaultValue);
     }
 
@@ -562,8 +563,12 @@ public class SchemaGenerator {
     }
 
     private Type getInputFieldType(TypeSymbol typeSymbol) {
+        return getInputFieldType(typeSymbol, false);
+    }
+
+    private Type getInputFieldType(TypeSymbol typeSymbol, boolean hasDefaultValue) {
         Type type = getInputType(typeSymbol);
-        if (isNilable(typeSymbol)) {
+        if (hasDefaultValue || isNilable(typeSymbol)) {
             return type;
         }
         return getWrapperType(type, TypeKind.NON_NULL);
