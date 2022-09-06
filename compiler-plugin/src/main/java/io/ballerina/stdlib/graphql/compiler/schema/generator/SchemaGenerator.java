@@ -162,7 +162,7 @@ public class SchemaGenerator {
             String deprecationReason = getDeprecationReason(methodSymbol);
             Type fieldType = getType(methodSymbol);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
-                    deprecationReason);
+                                    deprecationReason);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -187,7 +187,7 @@ public class SchemaGenerator {
         }
         Type fieldType = getType(methodSymbol);
         Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
-                deprecationReason);
+                                deprecationReason);
         addArgs(field, methodSymbol);
         return field;
     }
@@ -345,7 +345,7 @@ public class SchemaGenerator {
                 implementedType = getType(implementationName, (ClassSymbol) implementation);
             } else {
                 implementedType = getTypeFromObjectDefinition(implementationName,
-                        (TypeDefinitionSymbol) implementation);
+                                                              (TypeDefinitionSymbol) implementation);
             }
 
             interfaceType.addPossibleType(implementedType);
@@ -580,7 +580,7 @@ public class SchemaGenerator {
 
         Directive deprecated = new Directive(DefaultDirective.DEPRECATED);
         InputValue reason = new InputValue(REASON_ARG_NAME, addType(ScalarType.STRING),
-                Description.DEPRECATED_REASON.getDescription(), null);
+                                           Description.DEPRECATED_REASON.getDescription(), null);
         deprecated.addArg(reason);
         this.schema.addDirective(deprecated);
     }
