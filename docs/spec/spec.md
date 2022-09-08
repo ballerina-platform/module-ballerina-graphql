@@ -92,6 +92,7 @@ The conforming implementation of the specification is released and included in t
         * 9.1.4 [CORS Configurations](#914-cors-configurations)
         * 9.1.5 [GraphiQL Configurations](#915-graphiql-configurations)
         * 9.1.6 [Service Level Interceptors](#916-service-level-interceptors)
+        * 9.1.7 [Schema File Generation](#917-schema-file-generation)
 10. [Interceptors](#10-interceptors)
     * 10.1 [Interceptor Service Object](#101-interceptor-service-object)
     * 10.2 [GraphQL Field Object](#102-graphql-field-object)
@@ -1326,6 +1327,23 @@ service on new graphql:Listener(4000) {
     // ...
 }
 ```
+
+#### 9.1.7 Schema File Generation
+
+The `schemaFileGenEnabled` field is used to enable or disable the GraphQL SDL schema file generation. If this is enabled, the Ballerina GraphQL package generates the schema file in GraphQL Schema Definition Language(SDL). By default, the `schemaFileGenEnabled` field has been set to `true`.
+
+###### Example: Disable Schema File Generation
+
+```ballerina
+@graphql:ServiceConfig {
+    schemaFileGenEnabled: false
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+
+>**NOTE:** For the Ballerina projects, it will create the schema in the `target` directory and for the single bal files, it will create the schema in bal file's directory.
 
 ## 10. Interceptors
 The GraphQL interceptors can be used to execute a custom code before and after the resolver function gets invoked.

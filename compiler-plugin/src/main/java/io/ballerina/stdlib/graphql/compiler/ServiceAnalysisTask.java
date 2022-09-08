@@ -72,11 +72,11 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         }
         DocumentId documentId = context.documentId();
         Schema schema = generateSchema(interfaceFinder, symbol);
-        Project project = context.currentPackage().project();
         addToModifierContextMap(documentId, node, schema);
 
         boolean generateSDLFileEnabled = getSchemaGenerationAnnotValue(node);
         if (generateSDLFileEnabled) {
+            Project project = context.currentPackage().project();
             SDLFileGenerator sdlFileGenerator = new SDLFileGenerator(schema, symbol, project);
             sdlFileGenerator.generate();
         }
@@ -102,19 +102,19 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         if (node.metadata().isPresent()) {
             MetadataNode metadataNode = node.metadata().get();
             for (AnnotationNode annotationNode : metadataNode.annotations()) {
-                return Boolean.parseBoolean(getAnnotationValue(annotationNode));
+                if (annotationNode.annotValue().isPresent()) {
+                    return Boolean.parseBoolean(getAnnotationValue(annotationNode));
+                }
             }
         }
         return true;
     }
 
     private String getAnnotationValue(AnnotationNode annotationNode) {
-        if (annotationNode.annotValue().isPresent()) {
-            for (MappingFieldNode field : annotationNode.annotValue().get().fields()) {
-                if (field.toString().contains(SCHEMA_GEN_CONFIG_IDENTIFIER)) {
-                    String[] annotStrings = field.toString().split(":");
-                    return annotStrings[annotStrings.length - 1].trim();
-                }
+        for (MappingFieldNode field : annotationNode.annotValue().get().fields()) {
+            if (field.toString().contains(SCHEMA_GEN_CONFIG_IDENTIFIER)) {
+                String[] annotStrings = field.toString().split(":");
+                return annotStrings[annotStrings.length - 1].trim();
             }
         }
         return String.valueOf(true);

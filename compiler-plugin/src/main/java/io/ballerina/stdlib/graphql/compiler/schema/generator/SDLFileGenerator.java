@@ -52,7 +52,7 @@ public class SDLFileGenerator {
     private static final String FIELD_BLOCK_FORMAT = "{%n%s%n}";
     private static final String ARGS_FORMAT = "(%s)";
     private static final String DESC_FORMAT = "%s%n";
-    private static final String DEPRECATE_FORMAT = "%s(reason: %s)";
+    private static final String DEPRECATE_FORMAT = "%s(reason: \"%s\")";
     private static final String COMMENT_FORMAT = "%s# %s";
     private static final String IMPLEMENT_FORMAT = " implements %s";
     private static final String POSSIBLE_TYPE_FORMAT = " = %s";
