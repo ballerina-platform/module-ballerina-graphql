@@ -346,7 +346,7 @@ public class SchemaGenerator {
                 implementedType = getType(implementationName, (ClassSymbol) implementation);
             } else {
                 implementedType = getTypeFromObjectDefinition(implementationName,
-                        (TypeDefinitionSymbol) implementation);
+                                                              (TypeDefinitionSymbol) implementation);
             }
 
             interfaceType.addPossibleType(implementedType);
