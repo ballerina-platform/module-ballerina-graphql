@@ -56,6 +56,7 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,11 +88,13 @@ public class SchemaGenerator {
     private final ServiceDeclarationSymbol serviceDeclarationSymbol;
     private final InterfaceFinder interfaceFinder;
     private final Schema schema;
+    private final List<Type> visitedInterfaces;
 
     public SchemaGenerator(ServiceDeclarationSymbol serviceDeclarationSymbol, InterfaceFinder interfaceFinder) {
         this.serviceDeclarationSymbol = serviceDeclarationSymbol;
         this.interfaceFinder = interfaceFinder;
         this.schema = new Schema(getDescription(serviceDeclarationSymbol));
+        this.visitedInterfaces = new ArrayList<>();
     }
 
     private static boolean isNilable(TypeSymbol typeSymbol) {
@@ -162,7 +165,7 @@ public class SchemaGenerator {
             String deprecationReason = getDeprecationReason(methodSymbol);
             Type fieldType = getType(methodSymbol);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
-                    deprecationReason);
+                                    deprecationReason);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -187,7 +190,7 @@ public class SchemaGenerator {
         }
         Type fieldType = getType(methodSymbol);
         Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
-                deprecationReason);
+                                deprecationReason);
         addArgs(field, methodSymbol);
         return field;
     }
@@ -337,6 +340,7 @@ public class SchemaGenerator {
     private void getTypesFromInterface(String typeName, Type interfaceType) {
         // Implementations can only contain class symbols or object type definitions
         List<Symbol> implementations = this.interfaceFinder.getImplementations(typeName);
+        visitedInterfaces.add(interfaceType);
         for (Symbol implementation : implementations) {
             Type implementedType;
             // When adding an implementation, the name is already checked. Therefore, no need to check isEmpty().
@@ -350,7 +354,24 @@ public class SchemaGenerator {
             }
 
             interfaceType.addPossibleType(implementedType);
-            implementedType.addInterface(interfaceType);
+            addTransitiveImplementationsToInterface(interfaceType, implementedType);
+            addSuperInterfacesToImplementation(implementedType);
+        }
+        visitedInterfaces.remove(interfaceType);
+    }
+
+    private void addTransitiveImplementationsToInterface(Type interfaceType, Type implementedType) {
+        if (implementedType.getPossibleTypes() == null) {
+            return;
+        }
+        for (Type transitiveImplementation : implementedType.getPossibleTypes()) {
+            interfaceType.addPossibleType(transitiveImplementation);
+        }
+    }
+
+    private void addSuperInterfacesToImplementation(Type implementedType) {
+        for (Type superInterface : visitedInterfaces) {
+            implementedType.addInterface(superInterface);
         }
     }
 
@@ -585,7 +606,7 @@ public class SchemaGenerator {
 
         Directive deprecated = new Directive(DefaultDirective.DEPRECATED);
         InputValue reason = new InputValue(REASON_ARG_NAME, addType(ScalarType.STRING),
-                Description.DEPRECATED_REASON.getDescription(), null);
+                                           Description.DEPRECATED_REASON.getDescription(), null);
         deprecated.addArg(reason);
         this.schema.addDirective(deprecated);
     }

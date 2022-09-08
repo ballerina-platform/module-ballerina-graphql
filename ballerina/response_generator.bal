@@ -186,7 +186,7 @@ class ResponseGenerator {
     isolated function getResultForFragmentFromService(service object {} parentValue,
                                                       parser:FragmentNode parentNode, Data result) {
         string typeName = getTypeNameFromValue(parentValue);
-        if parentNode.getOnType() != typeName {
+        if parentNode.getOnType() != typeName && !self.isPossibleTypeOfInterface(parentNode.getOnType(), typeName) {
             return;
         }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
@@ -197,6 +197,19 @@ class ResponseGenerator {
                 self.getResultForFragmentFromService(parentValue, selection, result);
             }
         }
+    }
+
+    private isolated function isPossibleTypeOfInterface(string interfaceName, 
+                                                        string implementedTypeName) returns boolean {
+        __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
+        if interfaceType is () || interfaceType.kind != INTERFACE {
+            return false;
+        }
+        __Type[]? possibleTypes = interfaceType.possibleTypes;
+        if possibleTypes is () {
+            return false;
+        }
+        return getTypeFromTypeArray(possibleTypes, implementedTypeName) is __Type;
     }
 
     // TODO: This returns () for the hierarchiacal paths. Find a better way to handle this.

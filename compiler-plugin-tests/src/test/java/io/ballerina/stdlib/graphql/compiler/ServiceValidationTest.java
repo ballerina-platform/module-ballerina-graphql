@@ -170,23 +170,16 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test (enabled = false)
+    @Test
     public void testInterfacesImplementingInterfaces() {
         String packagePath = "valid_service_19";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test (enabled = false)
+    @Test
     public void testMultipleInterfaceImplementations() {
         String packagePath = "valid_service_20";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-    }
-
-    @Test (enabled = false)
-    public void testMultipleInterfaceImplementationsWithUnusedInterface() {
-        String packagePath = "valid_service_21";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
