@@ -1,0 +1,14 @@
+{
+  animal(id: 11) {
+    # Query the common field using interface
+    ... on Equine {
+      name,
+      sex,
+    }
+    # Only the Mule type contains isAggressive field, 
+    # no other type implementing the Equine interface has this field 
+    ... on Mule {
+      isAggressive
+    }
+  }
+}
