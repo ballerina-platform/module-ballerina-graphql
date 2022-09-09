@@ -68,3 +68,10 @@ isolated function getServiceInterceptors(GraphqlServiceConfig? serviceConfig)
     }
     return [];
 }
+
+isolated function getIntrospectionEnabled(GraphqlServiceConfig? serviceConfig) returns boolean {
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.introspectionEnabled;
+    }
+    return true;
+}
