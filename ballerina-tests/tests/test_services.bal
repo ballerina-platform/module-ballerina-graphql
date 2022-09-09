@@ -31,7 +31,7 @@ service object {
 graphql:Service invalidGraphiqlPathConfigService1 =
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "/ballerina graphql"
     }
 }
@@ -44,7 +44,7 @@ isolated service object {
 graphql:Service invalidGraphiqlPathConfigService2 =
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "/ballerina_+#@#$!"
     }
 }
@@ -57,7 +57,7 @@ service object {
 graphql:Service graphiqlDefaultPathConfigService =
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true
+        enabled: true
     }
 }
 service object {
@@ -69,7 +69,7 @@ service object {
 graphql:Service graphiqlConfigService =
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "ballerina/graphiql"
     }
 }
@@ -81,7 +81,7 @@ service object {
 
 @graphql:ServiceConfig {
     graphiql: {
-        enable: false,
+        enabled: false,
         path: "/ballerina graphql"
     }
 }
@@ -93,7 +93,7 @@ service /invalid_graphiql on basicListener {
 
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true
+        enabled: true
     }
 }
 service /graphiql/test on basicListener {
@@ -104,7 +104,7 @@ service /graphiql/test on basicListener {
 
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "ballerina/graphiql"
     }
 }
@@ -116,7 +116,7 @@ service on basicListener {
 
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true
+        enabled: true
     }
 }
 service on serviceTypeListener {
@@ -127,7 +127,7 @@ service on serviceTypeListener {
 
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "graphiql/interface"
     }
 }
