@@ -1,0 +1,14 @@
+{
+    ...Person
+} 
+
+fragment Person on Query {
+    __schema {
+        mutationType {
+            kind
+            fields {
+                name
+            }
+        }
+    }
+}
