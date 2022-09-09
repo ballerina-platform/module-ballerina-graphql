@@ -758,7 +758,7 @@ public isolated distinct service class Teacher {
 }
 ```
 
-In the above example, the `Person` class is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Person` interface.
+In the above example, the `Person` object is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Person` interface.
 
 ## 5. Directives
 
