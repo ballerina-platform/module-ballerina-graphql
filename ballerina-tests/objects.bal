@@ -14,29 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public isolated distinct service class Character {
-    final string name;
+public type Character distinct service object {
+    isolated resource function get name() returns string;
+};
 
-    public isolated function init(string name) {
-        self.name = name;
-    }
-
-    isolated resource function get name() returns string {
-        return self.name;
-    }
-}
-
-public isolated distinct service class Ship {
-    final string id;
-
-    public isolated function init(string id) {
-        self.id = id;
-    }
-
-    isolated resource function get id() returns string {
-        return self.id;
-    }
-}
+public type Ship distinct service object {
+    isolated resource function get id() returns string;
+};
 
 public isolated distinct service class Human {
     *Character;
