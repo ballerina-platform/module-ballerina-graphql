@@ -92,6 +92,7 @@ The conforming implementation of the specification is released and included in t
         * 9.1.4 [CORS Configurations](#914-cors-configurations)
         * 9.1.5 [GraphiQL Configurations](#915-graphiql-configurations)
         * 9.1.6 [Service Level Interceptors](#916-service-level-interceptors)
+        * 9.1.7 [Introspection Configurations](#917-introspection-configurations)
 10. [Interceptors](#10-interceptors)
     * 10.1 [Interceptor Service Object](#101-interceptor-service-object)
     * 10.2 [GraphQL Field Object](#102-graphql-field-object)
@@ -1302,7 +1303,7 @@ The `graphiql` field is used to provide the GraphiQL client configuration to ena
 ```ballerina
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "/ballerina/graphiql"
     }
 }
@@ -1310,7 +1311,7 @@ service on new graphql:Listener(4000) {
     // ...
 }
 ```
-> **Note:** The field enable accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+> **Note:** The field enabled accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
 
 #### 9.1.6 Service Level Interceptors
 
@@ -1326,6 +1327,21 @@ service on new graphql:Listener(4000) {
     // ...
 }
 ```
+
+#### 9.1.7 Introspection Configurations
+
+The `introspectionEnabled` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
+###### Example: Disable Introspection Query Support
+
+```ballerina
+@graphql:ServiceConfig {
+    introspectionEnabled: false
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+> **Note:** By default, a Ballerina GraphQL service will enable introspection query support. It is recommended to disable introspection in production environments.
 
 ## 10. Interceptors
 The GraphQL interceptors can be used to execute a custom code before and after the resolver function gets invoked.
@@ -1911,7 +1927,7 @@ If the configurations are provided correctly, the GraphiQL client tool will be s
 ```ballerina
 @graphql:ServiceConfig {
     graphiql: {
-        enable: true,
+        enabled: true,
         path: "/ballerina/graphiql"
     }
 }
