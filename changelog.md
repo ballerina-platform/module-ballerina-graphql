@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
 
+### Fixed
+
+- [[#3294] Fix GraphQL dynamic listener is not working for module level service declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
+
 ## [1.4.0] - 2022-09-08
 
 ### Added
