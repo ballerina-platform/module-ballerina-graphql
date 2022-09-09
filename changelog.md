@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
+
+## [1.4.0] - 2022-09-08
+
+### Added
 - [[#2898] Support Deprecation Support in GraphQL Services](https://github.com/ballerina-platform/ballerina-standard-library/issues/2898)
 - [[#2001] Support GraphQL Interceptors for Query and Mutation operations](https://github.com/ballerina-platform/ballerina-standard-library/issues/2001)
 - [[#3260] Log the Errors Returned from the Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/3260)

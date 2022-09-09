@@ -22,15 +22,18 @@ isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
     private final readonly & (readonly & Interceptor)[] interceptors;
+    private final readonly & boolean introspectionEnabled;
 
-    isolated function init(string schemaString, int? maxQueryDepth, Service s, 
-                           readonly & (readonly & Interceptor)[] interceptors) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, Service s,
+                           readonly & (readonly & Interceptor)[] interceptors, boolean introspectionEnabled)
+    returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors;
+        self.introspectionEnabled = introspectionEnabled;
         self.addService(s);
     }
 
@@ -103,6 +106,9 @@ isolated class Engine {
             new DirectiveValidatorVisitor(self.schema),
             new SubscriptionValidatorVisitor()
         ];
+        if !self.introspectionEnabled {
+            validators.push(new IntrospectionValidatorVisitor(self.introspectionEnabled));
+        }
 
         foreach ValidatorVisitor validator in validators {
             document.accept(validator);
