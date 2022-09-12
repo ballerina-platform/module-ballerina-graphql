@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
 
+## [1.4.1] - 2022-09-12
+
+### Fixed
+- [[#2897] Revert `Fix Invalid introspection response for fields with default value`](https://github.com/ballerina-platform/ballerina-standard-library/issues/3307)
+
 ## [1.4.0] - 2022-09-08
 
 ### Added
