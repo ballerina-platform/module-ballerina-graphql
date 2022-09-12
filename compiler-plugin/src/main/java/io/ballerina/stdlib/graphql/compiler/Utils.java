@@ -131,7 +131,11 @@ public final class Utils {
         } else if (serviceObjectTypeOrClass.kind() == SymbolKind.CLASS) {
             return (ObjectTypeSymbol) serviceObjectTypeOrClass;
         }
-        throw new UnsupportedOperationException();
+        String symbolName = "Provided symbol";
+        if (serviceObjectTypeOrClass.getName().isPresent()) {
+            symbolName = serviceObjectTypeOrClass.getName().get();
+        }
+        throw new UnsupportedOperationException(symbolName + "is not ClassSymbol or TypeDefinitionSymbol of an object");
     }
 
     public static boolean isDistinctServiceReference(TypeSymbol typeSymbol) {
