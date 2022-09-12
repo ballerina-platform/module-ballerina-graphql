@@ -170,21 +170,21 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testInterfacesImplementingInterfaces() {
         String packagePath = "valid_service_19";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testMultipleInterfaceImplementations() {
         String packagePath = "valid_service_20";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testMultipleInterfaceImplementationsWithUnusedInterface() {
         String packagePath = "valid_service_21";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -248,7 +248,7 @@ public class ServiceValidationTest {
     public void testInvalidResourceReturnTypes() {
         String packagePath = "invalid_service_4";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 12);
+        Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -285,7 +285,13 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 74, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 93, 5);
+        assertError(diagnostic, CompilationError.INVALID_FUNCTION, 75, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 93, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.NON_DISTINCT_INTERFACE_IMPLEMENTATION, 93, 5);
     }
 
     @Test
@@ -747,7 +753,7 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testNonDistinctInterface() {
         String packagePath = "invalid_service_30";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -765,10 +771,10 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 67, 32);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 54, 32);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 99, 32);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 86, 32);
     }
 
     @Test
@@ -777,7 +783,7 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 103, 32);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 90, 32);
     }
 
     @Test
