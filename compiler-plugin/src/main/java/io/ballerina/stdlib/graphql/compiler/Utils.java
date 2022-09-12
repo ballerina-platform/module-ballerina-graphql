@@ -124,7 +124,10 @@ public final class Utils {
     public static ObjectTypeSymbol getObjectTypeSymbol(Symbol serviceObjectTypeOrClass) {
         if (serviceObjectTypeOrClass.kind() == SymbolKind.TYPE_DEFINITION) {
             TypeDefinitionSymbol serviceObjectTypeSymbol = (TypeDefinitionSymbol) serviceObjectTypeOrClass;
-            return (ObjectTypeSymbol) serviceObjectTypeSymbol.typeDescriptor();
+            TypeSymbol typeSymbol = serviceObjectTypeSymbol.typeDescriptor();
+            if (typeSymbol.typeKind() == TypeDescKind.OBJECT) {
+                return (ObjectTypeSymbol) typeSymbol;
+            }
         } else if (serviceObjectTypeOrClass.kind() == SymbolKind.CLASS) {
             return (ObjectTypeSymbol) serviceObjectTypeOrClass;
         }
