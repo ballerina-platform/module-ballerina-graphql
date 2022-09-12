@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - [[#3173] Improve the Error Message for Using Anonymous Records as Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/3173)
+- [[#3288] Rename the GraphiQL config `enable` to `enabled`](https://github.com/ballerina-platform/ballerina-standard-library/issues/3288)
 
 ## [1.3.2] - 2022-07-11
 

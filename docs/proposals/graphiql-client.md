@@ -29,9 +29,9 @@ Even though GraphiQL is an essential tool, it will be disabled in the production
 
 ```ballerina
 type graphiql record {
-    boolean enable = false;
+    boolean enabled = false;
     string path = "/graphiql";
 };
 ```
-In this GraphiQL configuration record, the field `enable` accepts a boolean that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid string path for the GraphiQL service. The path can be any valid string. If the path is not provided in the configuration, the `/graphiql` is set as the default path. If the GraphiQL client is configured to the same path as the GraphQL path, an error will be thrown.
+In this GraphiQL configuration record, the field `enabled` accepts a boolean that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid string path for the GraphiQL service. The path can be any valid string. If the path is not provided in the configuration, the `/graphiql` is set as the default path. If the GraphiQL client is configured to the same path as the GraphQL path, an error will be thrown.
 If the configurations are provided correctly, the web app will be served at the given path when the service is started. The developer will be able to accessed the web application via a web browser.
