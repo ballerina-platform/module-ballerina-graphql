@@ -169,7 +169,7 @@ isolated class Engine {
             }
         } else if operationType == parser:OPERATION_MUTATION {
             if interceptor is () {
-                fieldValue = self.executeMutationMethod(context, 'field.getServiceObject(), fieldNode);
+                fieldValue = self.resolveRemoteMethod(context, 'field);
             } else {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
                 anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
@@ -189,15 +189,23 @@ isolated class Engine {
     }
 
     isolated function resolveResourceMethod(Context context, Field 'field) returns any|error {
-        any|error fieldValue;
-        service object {} serviceObject = 'field.getServiceObject();
-        handle? resourceMethod = self.getResourceMethod(serviceObject, 'field.getResourcePath());
-        if resourceMethod == () {
-            fieldValue = self.resolveHierarchicalResource(context, 'field);
-        } else {
-            fieldValue = self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
+        service object {}? serviceObject = 'field.getServiceObject();
+        if serviceObject is service object {} {
+            handle? resourceMethod = self.getResourceMethod(serviceObject, 'field.getResourcePath());
+            if resourceMethod == () {
+                return self.resolveHierarchicalResource(context, 'field);
+            }
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
         }
-        return fieldValue;
+        return 'field.getFieldValue();
+    }
+
+    isolated function resolveRemoteMethod(Context context, Field 'field) returns any|error {
+        service object {}? serviceObject = 'field.getServiceObject();
+        if serviceObject is service object {} {
+           return self.executeMutationMethod(context, serviceObject, 'field.getInternalNode());
+        }
+        return 'field.getFieldValue();
     }
 
     isolated function resolveHierarchicalResource(Context context, Field 'field) returns anydata {
@@ -231,7 +239,7 @@ isolated class Engine {
         (string|int)[] path = 'field.getPath().clone();
         path.push(fieldNode.getName());
         __Type fieldType = getFieldTypeFromParentType('field.getFieldType(), self.schema.types, fieldNode);
-        Field selectionField = new (fieldNode, 'field.getServiceObject(), fieldType, path = path, resourcePath = resourcePath);
+        Field selectionField = new (fieldNode, fieldType, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
         context.resetInterceptorCount();
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;

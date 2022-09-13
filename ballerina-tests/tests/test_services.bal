@@ -1520,6 +1520,50 @@ service /intercept_unions on serviceTypeListener {
 }
 
 @graphql:ServiceConfig {
+    interceptors: [new RecordFieldInterceptor1(), new RecordFieldInterceptor2(), new RecordFieldInterceptor3()]
+}
+service /intercept_record_fields on basicListener {
+    isolated resource function get profile() returns Person {
+        return {
+            name: "Rubeus Hagrid",
+            age: 70,
+            address: {number: "103", street: "Mould-on-the-Wold", city: "London"}
+        };
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new MapInterceptor()]
+}
+service /intercept_map on basicListener {
+    private final Languages languages;
+
+    function init() {
+        self.languages = {
+            name: {
+                backend: "Ballerina",
+                frontend: "JavaScript",
+                data: "Python",
+                native: "C++"
+            }
+        };
+    }
+
+    isolated resource function get languages() returns Languages {
+        return self.languages;
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: [new TableInterceptor()]
+}
+service /intercept_table on basicListener {
+    isolated resource function get employees() returns EmployeeTable? {
+        return employees;
+    }
+}
+
+@graphql:ServiceConfig {
     interceptors: [new InterceptMutation()]
 }
 isolated service /mutation_interceptor on basicListener {
