@@ -685,15 +685,15 @@ isolated function testClientExecuteForDataBindingError() returns error? {
     graphql:Client graphqlClient = check new (url);
     ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
     test:assertTrue(payload is graphql:PayloadBindingError, "This should be a payload binding error");
-    graphql:PayloadBindingError err = <graphql:PayloadBindingError> payload;
+    graphql:PayloadBindingError err = <graphql:PayloadBindingError>payload;
     graphql:ErrorDetail[] expectedErrorDetails = [
         {
             message: "{ballerina/lang.array}IndexOutOfRange",
-            locations: [{line:1,column:3}],
+            locations: [{line: 1, column: 3}],
             path: ["profile"]
         }
     ];
-    
+
     graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
     test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }

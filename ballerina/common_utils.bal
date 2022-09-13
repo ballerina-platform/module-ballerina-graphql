@@ -441,10 +441,10 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
     } on fail error e {
         map<json>|error responseMap = graphqlResponse.ensureType();
         if responseMap is error || !responseMap.hasKey("errors") {
-           return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  e, errors = ());
+            return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
         }
         ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
-        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING,  errors = errorDetails);
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, errors = errorDetails);
     }
     return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`, errors = ());
 }
