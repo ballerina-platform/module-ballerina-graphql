@@ -134,11 +134,19 @@ public final class Utils {
     public static ObjectTypeSymbol getObjectTypeSymbol(Symbol serviceObjectTypeOrClass) {
         if (serviceObjectTypeOrClass.kind() == SymbolKind.TYPE_DEFINITION) {
             TypeDefinitionSymbol serviceObjectTypeSymbol = (TypeDefinitionSymbol) serviceObjectTypeOrClass;
-            return (ObjectTypeSymbol) serviceObjectTypeSymbol.typeDescriptor();
+            TypeSymbol typeSymbol = serviceObjectTypeSymbol.typeDescriptor();
+            if (typeSymbol.typeKind() == TypeDescKind.OBJECT) {
+                return (ObjectTypeSymbol) typeSymbol;
+            }
         } else if (serviceObjectTypeOrClass.kind() == SymbolKind.CLASS) {
             return (ObjectTypeSymbol) serviceObjectTypeOrClass;
         }
-        throw new UnsupportedOperationException();
+        String symbolName = "Provided symbol";
+        if (serviceObjectTypeOrClass.getName().isPresent()) {
+            symbolName = serviceObjectTypeOrClass.getName().get();
+        }
+        throw new UnsupportedOperationException(
+                symbolName + " is not ClassSymbol or TypeDefinitionSymbol of an object");
     }
 
     public static boolean isDistinctServiceReference(TypeSymbol typeSymbol) {
