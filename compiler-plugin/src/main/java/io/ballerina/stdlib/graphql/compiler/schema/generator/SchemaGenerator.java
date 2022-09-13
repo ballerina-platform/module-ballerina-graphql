@@ -25,6 +25,7 @@ import io.ballerina.compiler.api.symbols.EnumSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.ParameterKind;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
@@ -93,6 +94,26 @@ public class SchemaGenerator {
         this.schema = new Schema(getDescription(serviceDeclarationSymbol));
     }
 
+    private static boolean isNilable(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
+            return false;
+        }
+        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
+        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
+            if (memberType.typeKind() == TypeDescKind.NIL) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
+        if (methodSymbol.documentation().isEmpty()) {
+            return null;
+        }
+        return methodSymbol.documentation().get().parameterMap().get(parameterName);
+    }
+
     public Schema generate() {
         findRootTypes(this.serviceDeclarationSymbol);
         findIntrospectionTypes();
@@ -141,7 +162,7 @@ public class SchemaGenerator {
             String deprecationReason = getDeprecationReason(methodSymbol);
             Type fieldType = getType(methodSymbol);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
-                    deprecationReason);
+                                    deprecationReason);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -166,7 +187,7 @@ public class SchemaGenerator {
         }
         Type fieldType = getType(methodSymbol);
         Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
-                deprecationReason);
+                                deprecationReason);
         addArgs(field, methodSymbol);
         return field;
     }
@@ -186,9 +207,8 @@ public class SchemaGenerator {
     }
 
     private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
+        Type type = getInputFieldType(parameterSymbol.typeDescriptor());
         String defaultValue = getDefaultValue(parameterSymbol);
-        boolean hasDefaultValue = defaultValue != null;
-        Type type = getInputFieldType(parameterSymbol.typeDescriptor(), hasDefaultValue);
         return new InputValue(parameterName, type, description, defaultValue);
     }
 
@@ -229,19 +249,6 @@ public class SchemaGenerator {
                 return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
         }
         return null;
-    }
-
-    private static boolean isNilable(TypeSymbol typeSymbol) {
-        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
-            return false;
-        }
-        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
-        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
-            if (memberType.typeKind() == TypeDescKind.NIL) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Type addType(ScalarType scalarType) {
@@ -294,19 +301,30 @@ public class SchemaGenerator {
             return getType(name, description, parameterMap, intersectionType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
+            return getTypeFromObjectDefinition(name, typeDefinitionSymbol);
         }
         return null;
     }
 
-    private Type getType(String name, ClassSymbol classSymbol) {
-        Type objectType;
-        String description = getDescription(classSymbol);
-        if (this.interfaceFinder.isValidInterface(name)) {
-            objectType = addType(name, TypeKind.INTERFACE, description);
-            getTypesFromInterface(name, objectType);
-        } else {
-            objectType = addType(name, TypeKind.OBJECT, description);
+    private Type getTypeFromObjectDefinition(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
+        String description = getDescription(typeDefinitionSymbol);
+        Type objectType = addType(name, TypeKind.INTERFACE, description);
+        getTypesFromInterface(name, objectType);
+
+        ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+        for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
+            if (isResourceMethod(methodSymbol)) {
+                objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
+            }
         }
+        return objectType;
+    }
+
+    private Type getType(String name, ClassSymbol classSymbol) {
+        String description = getDescription(classSymbol);
+        Type objectType = addType(name, TypeKind.OBJECT, description);
+
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
@@ -316,11 +334,20 @@ public class SchemaGenerator {
     }
 
     private void getTypesFromInterface(String typeName, Type interfaceType) {
-        List<ClassSymbol> implementations = this.interfaceFinder.getImplementations(typeName);
-        for (ClassSymbol implementation : implementations) {
+        // Implementations can only contain class symbols or object type definitions
+        List<Symbol> implementations = this.interfaceFinder.getImplementations(typeName);
+        for (Symbol implementation : implementations) {
+            Type implementedType;
             // When adding an implementation, the name is already checked. Therefore, no need to check isEmpty().
-            //noinspection OptionalGetWithoutIsPresent
-            Type implementedType = getType(implementation.getName().get(), implementation);
+            // noinspection OptionalGetWithoutIsPresent
+            String implementationName = implementation.getName().get();
+            if (implementation.kind() == SymbolKind.CLASS) {
+                implementedType = getType(implementationName, (ClassSymbol) implementation);
+            } else {
+                implementedType = getTypeFromObjectDefinition(implementationName,
+                                                              (TypeDefinitionSymbol) implementation);
+            }
+
             interfaceType.addPossibleType(implementedType);
             implementedType.addInterface(interfaceType);
         }
@@ -409,14 +436,6 @@ public class SchemaGenerator {
         Type type = getType(typeSymbol);
         return getWrapperType(getWrapperType(type, TypeKind.NON_NULL), TypeKind.LIST);
     }
-
-    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
-        if (methodSymbol.documentation().isEmpty()) {
-            return null;
-        }
-        return methodSymbol.documentation().get().parameterMap().get(parameterName);
-    }
-
 
     private Type getInputType(TypeSymbol typeSymbol) {
         String typeName = getTypeName(typeSymbol);
@@ -543,12 +562,8 @@ public class SchemaGenerator {
     }
 
     private Type getInputFieldType(TypeSymbol typeSymbol) {
-        return getInputFieldType(typeSymbol, false);
-    }
-
-    private Type getInputFieldType(TypeSymbol typeSymbol, boolean hasDefaultValue) {
         Type type = getInputType(typeSymbol);
-        if (hasDefaultValue || isNilable(typeSymbol)) {
+        if (isNilable(typeSymbol)) {
             return type;
         }
         return getWrapperType(type, TypeKind.NON_NULL);
@@ -565,7 +580,7 @@ public class SchemaGenerator {
 
         Directive deprecated = new Directive(DefaultDirective.DEPRECATED);
         InputValue reason = new InputValue(REASON_ARG_NAME, addType(ScalarType.STRING),
-                Description.DEPRECATED_REASON.getDescription(), null);
+                                           Description.DEPRECATED_REASON.getDescription(), null);
         deprecated.addArg(reason);
         this.schema.addDirective(deprecated);
     }

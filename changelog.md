@@ -8,7 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
+- [[#3289] Support GraphQL interface with ballerina distinct object type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3289)
 - [[#3230] Add Service Interceptor Execution for Record Fields, Maps & Tables](https://github.com/ballerina-platform/ballerina-standard-library/issues/3230)
+
+## [1.4.1] - 2022-09-12
+
+### Fixed
+- [[#2897] Revert `Fix Invalid introspection response for fields with default value`](https://github.com/ballerina-platform/ballerina-standard-library/issues/3307)
 
 ## [1.4.0] - 2022-09-08
 
@@ -24,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3115] Fix Not Initializing Context per Request in GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3115)
 - [[#3227] Fix Service Crashing when Map Field Does not Contain the Provided Key](https://github.com/ballerina-platform/ballerina-standard-library/issues/3227)
 - [[#2897] Fix GraphiQL Schema not Generating for Default Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/2897)
+- [[#2897] Fix Invalid introspection response for fields with default value](https://github.com/ballerina-platform/ballerina-standard-library/issues/3307)
 
 ### Changed
 - [[#3173] Improve the Error Message for Using Anonymous Records as Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/3173)

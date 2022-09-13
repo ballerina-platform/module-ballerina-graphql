@@ -924,7 +924,7 @@ isolated function testListTypeWithInvalidVariableDefaultValue8() returns error? 
     json expectedPayload = {
         errors: [
             {
-                message: "Variable \"days\" of type \"[Weekday]\" used in position expecting type \"[Weekday!]\".",
+                message: "Variable \"days\" of type \"[Weekday]\" used in position expecting type \"[Weekday!]!\".",
                 locations: [
                     {
                         line: 1,

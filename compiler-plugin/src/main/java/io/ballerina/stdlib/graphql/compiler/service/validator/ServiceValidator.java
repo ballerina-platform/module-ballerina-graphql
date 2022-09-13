@@ -24,6 +24,7 @@ import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
@@ -76,17 +77,16 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  */
 public class ServiceValidator {
     private static final String FIELD_PATH_SEPARATOR = ".";
-    private final Set<ClassSymbol> visitedClassSymbols = new HashSet<>();
+    private final Set<Symbol> visitedClassesAndObjectTypeDefinitions = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
     private final InterfaceFinder interfaceFinder;
     private final SyntaxNodeAnalysisContext context;
     private final ServiceDeclarationSymbol serviceDeclarationSymbol;
+    private final List<String> currentFieldPath;
     private int arrayDimension = 0;
     private boolean errorOccurred;
     private boolean hasQueryType;
-
-    private List<String> currentFieldPath;
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, ServiceDeclarationSymbol serviceDeclarationSymbol,
                             InterfaceFinder interfaceFinder) {
@@ -329,38 +329,10 @@ public class ServiceValidator {
             return;
         }
         Location classSymbolLocation = getLocation(classSymbol, location);
-        String className = classSymbol.getName().get();
         if (isServiceClass(classSymbol)) {
-            if (this.interfaceFinder.isPossibleInterface(className)) {
-                validateInterfaces(className, classSymbol, location);
-            }
             validateServiceClassDefinition(classSymbol, classSymbolLocation);
         } else {
             addDiagnostic(CompilationError.INVALID_RETURN_TYPE, classSymbolLocation);
-        }
-    }
-
-    private void validateInterfaces(String className, ClassSymbol classSymbol, Location location) {
-        if (!isDistinctServiceClass(classSymbol)) {
-            addDiagnostic(CompilationError.NON_DISTINCT_INTERFACE_CLASS, location, className);
-            return;
-        }
-        for (ClassSymbol childClass : this.interfaceFinder.getImplementations(className)) {
-            if (childClass.getName().isEmpty()) {
-                continue;
-            }
-            String childClassName = childClass.getName().get();
-            if (!isDistinctServiceClass(childClass)) {
-                addDiagnostic(CompilationError.NON_DISTINCT_INTERFACE_IMPLEMENTATION, location, childClassName);
-                return;
-            }
-            if (!this.interfaceFinder.isValidInterfaceImplementation(classSymbol, childClass)) {
-                addDiagnostic(CompilationError.INTERFACE_IMPLEMENTATION_MISSING_RESOURCE, location, className,
-                              childClassName);
-            } else {
-                this.interfaceFinder.addValidInterface(className);
-                validateReturnTypeClass(childClass, location);
-            }
         }
     }
 
@@ -369,8 +341,65 @@ public class ServiceValidator {
         if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
             validateReturnType((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(),
                                typeReferenceTypeSymbol.typeDescriptor(), location);
+        } else if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
+            validateReturnTypeObject(typeDefinitionSymbol, location);
         } else {
             validateReturnType(typeDefinitionSymbol.typeDescriptor(), location);
+        }
+    }
+
+    private void validateReturnTypeObject(TypeDefinitionSymbol typeDefinitionSymbol, Location location) {
+        if (typeDefinitionSymbol.getName().isEmpty()) {
+            addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
+            return;
+        }
+
+        String objectTypeName = typeDefinitionSymbol.getName().get();
+        if (!this.interfaceFinder.isPossibleInterface(objectTypeName)) {
+            addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
+            return;
+        }
+        validateInterfaceObjectTypeDefinition(typeDefinitionSymbol, location);
+        validateInterfaceImplementation(objectTypeName, location);
+    }
+
+    private void validateInterfaceObjectTypeDefinition(TypeDefinitionSymbol typeDefinitionSymbol, Location location) {
+        if (this.visitedClassesAndObjectTypeDefinitions.contains(typeDefinitionSymbol)) {
+            return;
+        }
+        this.visitedClassesAndObjectTypeDefinitions.add(typeDefinitionSymbol);
+        // TODO: Check for distinct keyword and add diagnostic
+        boolean resourceMethodFound = false;
+        ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+        for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
+            Location methodLocation = getLocation(methodSymbol, location);
+            if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
+                resourceMethodFound = true;
+                validateResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
+            } else if (isRemoteMethod(methodSymbol)) {
+                addDiagnostic(CompilationError.INVALID_FUNCTION, methodLocation);
+            }
+        }
+        if (!resourceMethodFound) {
+            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+        }
+    }
+
+    private void validateInterfaceImplementation(String interfaceName, Location location) {
+        for (Symbol implementation : this.interfaceFinder.getImplementations(interfaceName)) {
+            if (implementation.getName().isEmpty()) {
+                continue;
+            }
+            if (implementation.kind() == SymbolKind.CLASS) {
+                if (!isDistinctServiceClass(implementation)) {
+                    String implementationName = implementation.getName().get();
+                    addDiagnostic(CompilationError.NON_DISTINCT_INTERFACE_IMPLEMENTATION, location, implementationName);
+                    continue;
+                }
+                validateReturnTypeClass((ClassSymbol) implementation, location);
+            } else if (implementation.kind() == SymbolKind.TYPE_DEFINITION) {
+                validateReturnTypeObject((TypeDefinitionSymbol) implementation, location);
+            }
         }
     }
 
@@ -524,10 +553,10 @@ public class ServiceValidator {
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location) {
-        if (this.visitedClassSymbols.contains(classSymbol)) {
+        if (this.visitedClassesAndObjectTypeDefinitions.contains(classSymbol)) {
             return;
         }
-        this.visitedClassSymbols.add(classSymbol);
+        this.visitedClassesAndObjectTypeDefinitions.add(classSymbol);
         boolean resourceMethodFound = false;
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             Location methodLocation = getLocation(methodSymbol, location);
