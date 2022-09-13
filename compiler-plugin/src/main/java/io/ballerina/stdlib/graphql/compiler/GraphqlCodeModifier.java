@@ -43,12 +43,13 @@ public class GraphqlCodeModifier extends CodeModifier {
     @Override
     public void init(CodeModifierContext modifierContext) {
         modifierContext.addSyntaxNodeAnalysisTask(new ServiceDeclarationAnalysisTask(this.modifierContextMap),
-                SyntaxKind.SERVICE_DECLARATION);
+                                                  SyntaxKind.SERVICE_DECLARATION);
         modifierContext.addSyntaxNodeAnalysisTask(
                 new ModuleLevelVariableDeclarationAnalysisTask(this.modifierContextMap), SyntaxKind.MODULE_VAR_DECL);
         modifierContext.addSyntaxNodeAnalysisTask(new InterceptorAnalysisTask(), SyntaxKind.CLASS_DEFINITION);
         modifierContext.addSyntaxNodeAnalysisTask(new ListenerValidator(),
-                Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION, SyntaxKind.EXPLICIT_NEW_EXPRESSION));
+                                                  Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION,
+                                                                SyntaxKind.EXPLICIT_NEW_EXPRESSION));
         modifierContext.addSourceModifierTask(new GraphqlSourceModifier(this.modifierContextMap));
     }
 }

@@ -323,7 +323,7 @@ public class ServiceValidator {
                 break;
             case RECORD:
                 addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature(),
-                        getCurrentFieldPath());
+                              getCurrentFieldPath());
                 break;
             default:
                 addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location);
@@ -452,7 +452,7 @@ public class ServiceValidator {
                     }
                 } else {
                     validateInputParameterType(parameterSymbol.typeDescriptor(), inputLocation,
-                            isResourceMethod(methodSymbol));
+                                               isResourceMethod(methodSymbol));
                 }
                 i++;
             }
@@ -501,11 +501,11 @@ public class ServiceValidator {
                 break;
             case RECORD:
                 addDiagnostic(CompilationError.INVALID_ANONYMOUS_INPUT_TYPE, location, typeSymbol.signature(),
-                        getCurrentFieldPath());
+                              getCurrentFieldPath());
                 break;
             default:
                 addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
-                        typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
+                              typeSymbol.getName().orElse(typeSymbol.typeKind().getName()));
         }
     }
 

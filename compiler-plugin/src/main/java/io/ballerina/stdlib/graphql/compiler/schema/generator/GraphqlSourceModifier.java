@@ -188,11 +188,12 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             return annotationNode;
         }
         if (annotationNode.annotValue().isPresent()) {
-            SeparatedNodeList<MappingFieldNode> updatedFields = getUpdatedFields(annotationNode.annotValue().get(),
-                    schemaString);
-            MappingConstructorExpressionNode node = NodeFactory.createMappingConstructorExpressionNode(
-                    NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
-                    NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
+            SeparatedNodeList<MappingFieldNode> updatedFields =
+                    getUpdatedFields(annotationNode.annotValue().get(), schemaString);
+            MappingConstructorExpressionNode node =
+                    NodeFactory.createMappingConstructorExpressionNode(
+                        NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
+                        NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
             return annotationNode.modify().withAnnotValue(node).apply();
         }
         return getSchemaStringAnnotation(schemaString);
@@ -261,7 +262,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     private void updateContext(SourceModifierContext context, Location location) {
         CompilationError error = CompilationError.SCHEMA_GENERATION_FAILED;
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(error.getErrorCode(), error.getError(),
-                error.getDiagnosticSeverity());
+                                                           error.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
         context.reportDiagnostic(diagnostic);
     }
