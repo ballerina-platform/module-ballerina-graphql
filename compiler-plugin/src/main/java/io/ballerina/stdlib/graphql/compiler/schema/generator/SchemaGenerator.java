@@ -94,26 +94,6 @@ public class SchemaGenerator {
         this.schema = new Schema(getDescription(serviceDeclarationSymbol));
     }
 
-    private static boolean isNilable(TypeSymbol typeSymbol) {
-        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
-            return false;
-        }
-        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
-        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
-            if (memberType.typeKind() == TypeDescKind.NIL) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
-        if (methodSymbol.documentation().isEmpty()) {
-            return null;
-        }
-        return methodSymbol.documentation().get().parameterMap().get(parameterName);
-    }
-
     public Schema generate() {
         findRootTypes(this.serviceDeclarationSymbol);
         findIntrospectionTypes();
@@ -252,6 +232,19 @@ public class SchemaGenerator {
         return null;
     }
 
+    private static boolean isNilable(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
+            return false;
+        }
+        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
+        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
+            if (memberType.typeKind() == TypeDescKind.NIL) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Type addType(ScalarType scalarType) {
         return this.schema.addType(scalarType);
     }
@@ -303,17 +296,16 @@ public class SchemaGenerator {
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
-            return getTypeFromObjectDefinition(name, typeDefinitionSymbol);
+            ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+            return getType(name, description, objectTypeSymbol);
         }
         return null;
     }
 
-    private Type getTypeFromObjectDefinition(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
-        String description = getDescription(typeDefinitionSymbol);
+    private Type getType(String name, String description, ObjectTypeSymbol objectTypeSymbol) {
         Type objectType = addType(name, TypeKind.INTERFACE, description);
         getTypesFromInterface(name, objectType);
 
-        ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
@@ -345,8 +337,10 @@ public class SchemaGenerator {
             if (implementation.kind() == SymbolKind.CLASS) {
                 implementedType = getType(implementationName, (ClassSymbol) implementation);
             } else {
-                implementedType = getTypeFromObjectDefinition(implementationName,
-                                                              (TypeDefinitionSymbol) implementation);
+                TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) implementation;
+                String description = getDescription(typeDefinitionSymbol);
+                ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+                implementedType = getType(implementationName, description, objectTypeSymbol);
             }
 
             interfaceType.addPossibleType(implementedType);
@@ -436,6 +430,13 @@ public class SchemaGenerator {
         TypeSymbol typeSymbol = tableTypeSymbol.rowTypeParameter();
         Type type = getType(typeSymbol);
         return getWrapperType(getWrapperType(type, TypeKind.NON_NULL), TypeKind.LIST);
+    }
+
+    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
+        if (methodSymbol.documentation().isEmpty()) {
+            return null;
+        }
+        return methodSymbol.documentation().get().parameterMap().get(parameterName);
     }
 
     private Type getInputType(TypeSymbol typeSymbol) {
