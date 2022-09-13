@@ -34,6 +34,7 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
@@ -273,5 +274,10 @@ public final class Utils {
         }
         IdentifierToken identifier = nameReferenceNode.identifier();
         return SERVICE_NAME.equals(identifier.text());
+    }
+
+    public static boolean isFunctionDefinition(Node node) {
+        return node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION
+                || node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION;
     }
 }

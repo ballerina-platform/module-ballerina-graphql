@@ -43,7 +43,6 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
-import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
@@ -74,6 +73,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isFunctionDefinition;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_DESCRIPTION;
@@ -180,7 +180,7 @@ public class SchemaGenerator {
             ObjectConstructorExpressionNode objectConstructorExpressionNode) {
         // noinspection OptionalGetWithoutIsPresent
         return objectConstructorExpressionNode.members().stream()
-                .filter(member -> member instanceof FunctionDefinitionNode && context.semanticModel().symbol(member)
+                .filter(member -> isFunctionDefinition(member) && context.semanticModel().symbol(member)
                         .isPresent()).map(methodNode -> (MethodSymbol) context.semanticModel().symbol(methodNode).get())
                 .collect(Collectors.toList());
     }

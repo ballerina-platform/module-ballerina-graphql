@@ -21,10 +21,8 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.DocumentId;
-import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
-import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
@@ -38,11 +36,10 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 /**
  * Validates a Ballerina GraphQL Service declaration.
  */
-public class ServiceDeclarationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext> {
-    private final Map<DocumentId, GraphqlModifierContext> modifierContextMap;
+public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
 
     public ServiceDeclarationAnalysisTask(Map<DocumentId, GraphqlModifierContext> nodeMap) {
-        this.modifierContextMap = nodeMap;
+        super(nodeMap);
     }
 
     @Override
@@ -54,36 +51,18 @@ public class ServiceDeclarationAnalysisTask implements AnalysisTask<SyntaxNodeAn
             return;
         }
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
-        // Already checked isEmpty() inside the isGraphqlService() method.
-        @SuppressWarnings("OptionalGetWithoutIsPresent")
-        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
-        InterfaceFinder interfaceFinder = new InterfaceFinder();
-        interfaceFinder.populateInterfaces(context);
-
-        ServiceValidator serviceValidator = new ServiceValidator(context, node, interfaceFinder);
-        serviceValidator.validate();
+        InterfaceFinder interfaceFinder = getInterfaceFinder(context);
+        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceFinder);
         if (serviceValidator.isErrorOccurred()) {
             return;
         }
+
+        // Already checked isEmpty() inside the isGraphqlService() method.
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
+        String description = getDescription(symbol);
+        Schema schema = generateSchema(context, interfaceFinder, node, description);
         DocumentId documentId = context.documentId();
-        Schema schema = generateSchema(context, interfaceFinder, node, getDescription(symbol));
         addToModifierContextMap(documentId, node, schema);
-    }
-
-    private Schema generateSchema(SyntaxNodeAnalysisContext context, InterfaceFinder interfaceFinder,
-                                  ServiceDeclarationNode node, String description) {
-        SchemaGenerator schemaGenerator = new SchemaGenerator(context, node, interfaceFinder, description);
-        return schemaGenerator.generate();
-    }
-
-    private void addToModifierContextMap(DocumentId documentId, ServiceDeclarationNode node, Schema schema) {
-        if (this.modifierContextMap.containsKey(documentId)) {
-            GraphqlModifierContext modifierContext = this.modifierContextMap.get(documentId);
-            modifierContext.add(node, schema);
-        } else {
-            GraphqlModifierContext modifierContext = new GraphqlModifierContext();
-            modifierContext.add(node, schema);
-            this.modifierContextMap.put(documentId, modifierContext);
-        }
     }
 }
