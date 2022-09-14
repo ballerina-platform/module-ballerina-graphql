@@ -254,9 +254,8 @@ public final class Utils {
         return resourceMethodSymbol.getName().orElse(null);
     }
 
-    public static boolean isGraphQLServiceObjectDeclaration(
-            ModuleVariableDeclarationNode moduleVariableDeclarationNode) {
-        TypedBindingPatternNode typedBindingPatternNode = moduleVariableDeclarationNode.typedBindingPattern();
+    public static boolean isGraphQLServiceObjectDeclaration(ModuleVariableDeclarationNode variableNode) {
+        TypedBindingPatternNode typedBindingPatternNode = variableNode.typedBindingPattern();
         TypeDescriptorNode typeDescriptorNode = typedBindingPatternNode.typeDescriptor();
         if (typeDescriptorNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
             return false;

@@ -1728,3 +1728,15 @@ service /introspection on basicListener {
         }
     }
 }
+
+graphql:Service greetingService = service object {
+    resource function get greeting() returns string {
+        return "Hello, World";
+    }
+};
+
+graphql:Service greetingService2 = @graphql:ServiceConfig {maxQueryDepth: 5} service object {
+    resource function get greeting() returns string {
+        return "Hello, World";
+    }
+};

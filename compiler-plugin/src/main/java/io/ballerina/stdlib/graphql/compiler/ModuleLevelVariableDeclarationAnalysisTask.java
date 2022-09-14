@@ -19,8 +19,10 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.symbols.VariableSymbol;
+import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils;
@@ -48,17 +50,21 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
         if (hasCompilationErrors(context)) {
             return;
         }
-
+        if (context.node().kind() != SyntaxKind.MODULE_VAR_DECL) {
+            return;
+        }
         ModuleVariableDeclarationNode moduleVariableDeclarationNode = (ModuleVariableDeclarationNode) context.node();
         if (!isGraphQLServiceObjectDeclaration(moduleVariableDeclarationNode)) {
             return;
         }
-
         if (moduleVariableDeclarationNode.initializer().isEmpty()) {
             return;
         }
-        ObjectConstructorExpressionNode graphqlServiceObjectNode
-                = (ObjectConstructorExpressionNode) moduleVariableDeclarationNode.initializer().get();
+        ExpressionNode expressionNode = moduleVariableDeclarationNode.initializer().get();
+        if (expressionNode.kind() != SyntaxKind.OBJECT_CONSTRUCTOR) {
+            return;
+        }
+        ObjectConstructorExpressionNode graphqlServiceObjectNode = (ObjectConstructorExpressionNode) expressionNode;
         InterfaceFinder interfaceFinder = getInterfaceFinder(context);
         ServiceValidator serviceObjectValidator = getServiceValidator(context, graphqlServiceObjectNode,
                                                                       interfaceFinder);

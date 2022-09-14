@@ -16,7 +16,6 @@
 
 import ballerina/graphql;
 import ballerina/test;
-import ballerina/lang.runtime;
 
 @test:Config {
     groups: ["listener", "configs"]
@@ -28,58 +27,36 @@ function testInvalidMaxQueryDepth() returns error? {
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");
 }
 
-graphql:Service greetingService = service object {
-    resource function get greeting() returns string {
-        return "Hello, World";
-    }
-};
-
 @test:Config {
-    groups: ["listener", "client"]
+    groups: ["listener", "client", "temp"]
 }
 function testAttachingGraphQLServiceToDynamicListener() returns error? {
-    graphql:Listener serverEP = check new (9600);
-    check serverEP.attach(greetingService, "greet");
-    check serverEP.'start();
-    runtime:registerListener(serverEP);
-
-    string url = "http://localhost:9600/greet";
+    check specialTypesTestListener.attach(greetingService, "greet");
+    string url = "http://localhost:9095/greet";
     string document = string `query { greeting }`;
-    graphql:Client graphqlClient = check new (url);
-    GenericGreetingResponseWithErrors actualPayload = check graphqlClient->execute(document);
-    GenericGreetingResponseWithErrors expectedPayload = {
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
         data: {
             greeting: "Hello, World"
         }
     };
-    runtime:deregisterListener(serverEP);
+    check specialTypesTestListener.detach(greetingService);
     test:assertEquals(actualPayload, expectedPayload);
 }
 
-graphql:Service greetingService2 = @graphql:ServiceConfig {maxQueryDepth: 5} service object {
-    resource function get greeting() returns string {
-        return "Hello, World";
-    }
-};
-
 @test:Config {
-    groups: ["listener", "client"]
+    groups: ["listener", "client", "temp"]
 }
 function testAttachingGraphQLServiceWithAnnotationToDynamicListener() returns error? {
-    graphql:Listener serverEP = check new (9601);
-    check serverEP.attach(greetingService2, "greet");
-    check serverEP.'start();
-    runtime:registerListener(serverEP);
-
-    string url = "http://localhost:9601/greet";
+    check specialTypesTestListener.attach(greetingService2, "greet");
+    string url = "http://localhost:9095/greet";
     string document = string `query { greeting }`;
-    graphql:Client graphqlClient = check new (url);
-    GenericGreetingResponseWithErrors actualPayload = check graphqlClient->execute(document);
-    GenericGreetingResponseWithErrors expectedPayload = {
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
         data: {
             greeting: "Hello, World"
         }
     };
-    runtime:deregisterListener(serverEP);
+    check specialTypesTestListener.detach(greetingService2);
     test:assertEquals(actualPayload, expectedPayload);
 }
