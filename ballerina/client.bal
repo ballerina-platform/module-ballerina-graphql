@@ -30,7 +30,7 @@ public isolated client class Client {
         clientConfig.httpVersion = "1.1";
         http:Client|http:ClientError httpClient = new (serviceUrl, clientConfig);
         if httpClient is http:ClientError {
-             return error RequestError("GraphQL Client Error", httpClient);
+             return error HttpError("GraphQL Client Error", httpClient, body = ());
         }
         self.httpClient = httpClient;
     }

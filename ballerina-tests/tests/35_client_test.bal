@@ -180,18 +180,16 @@ isolated function testClientExecuteWithTypeWithInvalidRequest() returns error? {
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document, variables);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot query field \"gree\" on type \"Query\".",
-                locations: [{"line": 1, "column": 37}]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Cannot query field \"gree\" on type \"Query\".",
+            locations: [{"line": 1, "column": 37}]
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -205,18 +203,16 @@ isolated function testClientExecuteWithInvalidRequest() returns error? {
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document, variables);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot query field \"gree\" on type \"Query\".",
-                locations: [{"line": 1, "column": 37}]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Cannot query field \"gree\" on type \"Query\".",
+            locations: [{"line": 1, "column": 37}]
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -306,18 +302,16 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Must provide operation name if query contains multiple operations.",
-                locations: []
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Must provide operation name if query contains multiple operations.",
+            locations: []
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -329,18 +323,16 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document);
-    test:assertTrue(payload is graphql:RequestError);
-    graphql:RequestError err = <graphql:RequestError>payload;
-    json actualPayload = err.detail()?.body.toJson();
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Must provide operation name if query contains multiple operations.",
-                locations: []
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    test:assertTrue(payload is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>payload;
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Must provide operation name if query contains multiple operations.",
+            locations: []
+        }
+    ];
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
 @test:Config {
@@ -682,6 +674,42 @@ isolated function testClientExecuteWithRecordTypeArrays() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
 }
+
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientExecuteForDataBindingError() returns error? {
+    string document = "{ one: profile(id: 100) {name} }";
+    string url = "http://localhost:9091/records";
+
+    graphql:Client graphqlClient = check new (url);
+    ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
+    test:assertTrue(payload is graphql:PayloadBindingError, "This should be a payload binding error");
+    graphql:PayloadBindingError err = <graphql:PayloadBindingError>payload;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "{ballerina/lang.array}IndexOutOfRange",
+            locations: [{line: 1, column: 3}],
+            path: ["profile"]
+        }
+    ];
+
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
+}
+
+type ProfileResponseWithErrors record {|
+    *graphql:GenericResponseWithErrors;
+    ProfileResponse data;
+|};
+
+type ProfileResponse record {|
+    ProfileData one;
+|};
+
+type ProfileData record {
+    string name;
+};
 
 type GreetingResponse record {|
     map<json?> extensions?;
