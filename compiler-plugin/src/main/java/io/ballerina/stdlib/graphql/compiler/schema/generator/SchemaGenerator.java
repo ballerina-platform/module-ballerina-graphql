@@ -25,6 +25,7 @@ import io.ballerina.compiler.api.symbols.EnumSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.ParameterKind;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
@@ -293,19 +294,29 @@ public class SchemaGenerator {
             return getType(name, description, parameterMap, intersectionType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+        } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
+            ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+            return getType(name, description, objectTypeSymbol);
         }
         return null;
     }
 
-    private Type getType(String name, ClassSymbol classSymbol) {
-        Type objectType;
-        String description = getDescription(classSymbol);
-        if (this.interfaceFinder.isValidInterface(name)) {
-            objectType = addType(name, TypeKind.INTERFACE, description);
-            getTypesFromInterface(name, objectType);
-        } else {
-            objectType = addType(name, TypeKind.OBJECT, description);
+    private Type getType(String name, String description, ObjectTypeSymbol objectTypeSymbol) {
+        Type objectType = addType(name, TypeKind.INTERFACE, description);
+        getTypesFromInterface(name, objectType);
+
+        for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
+            if (isResourceMethod(methodSymbol)) {
+                objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
+            }
         }
+        return objectType;
+    }
+
+    private Type getType(String name, ClassSymbol classSymbol) {
+        String description = getDescription(classSymbol);
+        Type objectType = addType(name, TypeKind.OBJECT, description);
+
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
@@ -315,11 +326,22 @@ public class SchemaGenerator {
     }
 
     private void getTypesFromInterface(String typeName, Type interfaceType) {
-        List<ClassSymbol> implementations = this.interfaceFinder.getImplementations(typeName);
-        for (ClassSymbol implementation : implementations) {
+        // Implementations can only contain class symbols or object type definitions
+        List<Symbol> implementations = this.interfaceFinder.getImplementations(typeName);
+        for (Symbol implementation : implementations) {
+            Type implementedType;
             // When adding an implementation, the name is already checked. Therefore, no need to check isEmpty().
-            //noinspection OptionalGetWithoutIsPresent
-            Type implementedType = getType(implementation.getName().get(), implementation);
+            // noinspection OptionalGetWithoutIsPresent
+            String implementationName = implementation.getName().get();
+            if (implementation.kind() == SymbolKind.CLASS) {
+                implementedType = getType(implementationName, (ClassSymbol) implementation);
+            } else {
+                TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) implementation;
+                String description = getDescription(typeDefinitionSymbol);
+                ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+                implementedType = getType(implementationName, description, objectTypeSymbol);
+            }
+
             interfaceType.addPossibleType(implementedType);
             implementedType.addInterface(interfaceType);
         }
@@ -415,7 +437,6 @@ public class SchemaGenerator {
         }
         return methodSymbol.documentation().get().parameterMap().get(parameterName);
     }
-
 
     private Type getInputType(TypeSymbol typeSymbol) {
         String typeName = getTypeName(typeSymbol);

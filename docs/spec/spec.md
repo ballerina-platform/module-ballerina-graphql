@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/08/17  
+_Updated_: 2022/09/14  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -92,7 +92,8 @@ The conforming implementation of the specification is released and included in t
         * 9.1.4 [CORS Configurations](#914-cors-configurations)
         * 9.1.5 [GraphiQL Configurations](#915-graphiql-configurations)
         * 9.1.6 [Service Level Interceptors](#916-service-level-interceptors)
-        * 9.1.7 [Schema File Generation](#917-schema-file-generation)
+        * 9.1.7 [Introspection Configurations](#917-introspection-configurations)
+        * 9.1.8 [Schema File Generation](#918-schema-file-generation)
 10. [Interceptors](#10-interceptors)
     * 10.1 [Interceptor Service Object](#101-interceptor-service-object)
     * 10.2 [GraphQL Field Object](#102-graphql-field-object)
@@ -709,21 +710,13 @@ type Book record {|
 
 In GraphQL, an interface can be used to define a set of common fields for objects. Then the `Object` types can implement the interface with the common fields and optionally, additional fields.
 
-In Ballerina, `distinct` `service` classes can be used to define GraphQL interfaces. Then other `distinct` `service` classes can be used to implement the interface. All the service classes that are implementing the interface must contain the same resource methods, and they can define additional resource methods.
+In Ballerina, `distinct` `service` objects can be used to define GraphQL interfaces. Then other `distinct` `service` classes can be used to implement the interface. All the service classes that are implementing the interface must provide the implementation for all resource methods declared in the interface, and they can define additional resource methods.
 
 ###### Example: Interfaces
 ```ballerina
-public isolated distinct service class Person {
-    final string name;
-
-    isolated function init(string name) {
-        self.name = name;
-    }
-
-    isolated resource function get name() returns string {
-        return self.name;
-    }
-}
+public type Person distinct service object {
+    isolated resource function get name() returns string;
+};
 
 # Represents a Student as a class.
 public isolated distinct service class Student {
@@ -766,7 +759,7 @@ public isolated distinct service class Teacher {
 }
 ```
 
-In the above example, the `Human` class is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Human` interface.
+In the above example, the `Person` object is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Person` interface.
 
 ## 5. Directives
 
@@ -1328,7 +1321,22 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-#### 9.1.7 Schema File Generation
+#### 9.1.7 Introspection Configurations
+
+The `introspectionEnabled` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
+###### Example: Disable Introspection Query Support
+
+```ballerina
+@graphql:ServiceConfig {
+    introspectionEnabled: false
+}
+service on new graphql:Listener(4000) {
+    // ...
+}
+```
+> **Note:** By default, a Ballerina GraphQL service will enable introspection query support. It is recommended to disable introspection in production environments.
+
+#### 9.1.8 Schema File Generation
 
 The `schemaFileGenEnabled` field is used to enable or disable the GraphQL SDL schema file generation. If this is enabled, the Ballerina GraphQL package generates the schema file in GraphQL Schema Definition Language(SDL). By default, the `schemaFileGenEnabled` field has been set to `true`.
 

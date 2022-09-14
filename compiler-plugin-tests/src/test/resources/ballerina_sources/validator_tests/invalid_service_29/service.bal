@@ -25,23 +25,10 @@ service /graphql on new graphql:Listener(4000) {
     }
 }
 
-public isolated distinct service class Person {
-    final string name;
-    final int age;
-
-    isolated function init(string name, int age) {
-        self.name = name;
-        self.age = age;
-    }
-
-    isolated resource function get name() returns string {
-        return self.name;
-    }
-
-    isolated resource function get age() returns int {
-        return self.age;
-    }
-}
+public type Person distinct service object {
+    isolated resource function get name() returns string;
+    isolated resource function get age() returns int;
+};
 
 public isolated distinct service class Student {
     *Person;
