@@ -87,7 +87,7 @@ class ExecutorVisitor {
         string operationTypeName = getOperationTypeNameFromOperationType(operationType);
         __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
+        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();
@@ -99,7 +99,7 @@ class ExecutorVisitor {
         string operationTypeName = getOperationTypeNameFromOperationType(operationType);
         __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, self.engine.getService(), fieldType, path, operationType);
+        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();
