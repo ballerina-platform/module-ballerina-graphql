@@ -15,14 +15,21 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/jballerina.java;
 import ballerina/lang.value;
 
 # The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes;
+    private final ErrorDetail[] errors;
+    private Engine? engine;
+    private int nextInterceptor;
 
     public isolated function init() {
         self.attributes = {};
+        self.engine = ();
+        self.errors = [];
+        self.nextInterceptor = 0;
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -72,6 +79,67 @@ public isolated class Context {
                 }
             }
             return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        }
+    }
+
+    isolated function addError(ErrorDetail err) {
+        lock {
+            self.errors.push(err.clone());
+        }
+    }
+
+    isolated function getErrors() returns ErrorDetail[] {
+        lock {
+            return self.errors.clone();
+        }
+    }
+
+    isolated function setFileInfo(map<Upload|Upload[]> fileInfo) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getFileInfo() returns map<Upload|Upload[]> = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    public isolated function resolve(Field 'field) returns anydata {
+        if self.getEngine() is Engine {
+            Engine engine = <Engine>self.getEngine();
+            return engine.resolve(self, 'field);
+        }
+        return;
+    }
+
+    isolated function setEngine(Engine engine) {
+        lock {
+            self.engine = engine;
+        }
+    }
+
+    isolated function getEngine() returns Engine? {
+        lock {
+            return self.engine;
+        }
+    }
+
+    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
+        lock {
+            if self.getEngine() is Engine {
+                Engine engine = <Engine>self.getEngine();
+                if engine.getInterceptors().length() > self.nextInterceptor {
+                    readonly & Interceptor next = engine.getInterceptors()[self.nextInterceptor];
+                    self.nextInterceptor += 1;
+                    return next;
+                }
+            }
+            self.resetInterceptorCount();
+            return;
+        }
+    }
+
+    isolated function resetInterceptorCount() {
+        lock {
+            self.nextInterceptor = 0;
         }
     }
 }

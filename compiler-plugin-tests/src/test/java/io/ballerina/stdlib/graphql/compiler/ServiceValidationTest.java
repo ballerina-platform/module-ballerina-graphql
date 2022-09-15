@@ -18,10 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
-import io.ballerina.projects.CodeGeneratorResult;
-import io.ballerina.projects.CodeModifierResult;
 import io.ballerina.projects.DiagnosticResult;
-import io.ballerina.projects.Package;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
@@ -160,7 +157,7 @@ public class ServiceValidationTest {
     }
 
     @Test
-    public void testRecursiveRecordTypes() {
+    public void testRecordTypes() {
         String packagePath = "valid_service_17";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
@@ -173,21 +170,21 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testInterfacesImplementingInterfaces() {
         String packagePath = "valid_service_19";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testMultipleInterfaceImplementations() {
         String packagePath = "valid_service_20";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testMultipleInterfaceImplementationsWithUnusedInterface() {
         String packagePath = "valid_service_21";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -197,6 +194,13 @@ public class ServiceValidationTest {
     @Test
     public void testSubscriptionResources() {
         String packagePath = "valid_service_22";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
+    public void testInterceptors() {
+        String packagePath = "valid_service_23";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
@@ -237,7 +241,7 @@ public class ServiceValidationTest {
     public void testInvalidResourceReturnTypes() {
         String packagePath = "invalid_service_4";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 11);
+        Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -272,6 +276,15 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 74, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_FUNCTION, 75, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 93, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorFormat(diagnostic, CompilationError.NON_DISTINCT_INTERFACE_IMPLEMENTATION, 93, 5);
     }
 
     @Test
@@ -733,33 +746,13 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test
+    @Test (enabled = false)
     public void testNonDistinctInterface() {
         String packagePath = "invalid_service_30";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         String message = "Non-distinct service class `Person` is used as a GraphQL interface";
-        assertErrorMessage(diagnostic, message, 20, 5);
-    }
-
-    @Test
-    public void testInterfaceImplementationMissingResourceFunction() {
-        String packagePath = "invalid_service_31";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-
-        String message =
-                "All the resource functions in the GraphQL interface class `Person` must be implemented in the child " +
-                        "class `Student`";
-        Diagnostic diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 20, 5);
-
-        message =
-                "All the resource functions in the GraphQL interface class `Person` must be implemented in the child " +
-                        "class `Teacher`";
-        diagnostic = diagnosticIterator.next();
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
@@ -771,10 +764,10 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 67, 32);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 54, 32);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 99, 32);
+        assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 86, 32);
     }
 
     @Test
@@ -783,31 +776,7 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 103, 32);
-    }
-
-    @Test
-    public void testMultipleInterfaceImplementationsWithMissingResources1() {
-        String packagePath = "invalid_service_34";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        String message =
-                "All the resource functions in the GraphQL interface class `Mammal` must be implemented in the child " +
-                        "class `Dog`";
-        assertErrorMessage(diagnostic, message, 20, 5);
-    }
-
-    @Test
-    public void testMultipleInterfaceImplementationsWithMissingResources2() {
-        String packagePath = "invalid_service_35";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        String message =
-                "All the resource functions in the GraphQL interface class `Pet` must be implemented in the child " +
-                        "class `Dog`";
-        assertErrorMessage(diagnostic, message, 24, 5);
+        assertError(diagnostic, CompilationError.INVALID_RETURN_TYPE, 90, 32);
     }
 
     @Test
@@ -827,14 +796,80 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, 61, 32);
     }
 
+    @Test
+    public void testInvalidInterceptor() {
+        String packagePath = "invalid_service_37";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.RESOURCE_METHOD_INSIDE_INTERCEPTOR, 27, 5);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, 34, 5);
+    }
+
+    @Test
+    public void testAnonymousRecordsAsField() {
+        String packagePath = "invalid_service_38";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 8);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Query.profile.address`";
+        assertErrorMessage(diagnostic, message, 26, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Query.address`";
+        assertErrorMessage(diagnostic, message, 38, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|string name; int age;|}` cannot be used as the type of the field `Query" +
+                        ".class.profile`";
+        assertErrorMessage(diagnostic, message, 52, 23);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|string name; int age;|}` cannot be used as an input object type of the " +
+                        "field `Query.name`";
+        assertErrorMessage(diagnostic, message, 58, 67);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|string name; int age;|}` cannot be used as an input object type of the " +
+                        "field `Query.school.name`";
+        assertErrorMessage(diagnostic, message, 68, 67);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Mutation.updateName.address`";
+        assertErrorMessage(diagnostic, message, 78, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Subscription.profiles.address`";
+        assertErrorMessage(diagnostic, message, 96, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                "Anonymous record `record {|int number; string street; string city;|}` cannot be used as the type of " +
+                        "the field `Query.company.profile.address`";
+        assertErrorMessage(diagnostic, message, 112, 5);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        Package currentPackage = project.currentPackage();
-        CodeGeneratorResult codeGeneratorResult = currentPackage.runCodeGeneratorPlugins();
-        currentPackage = codeGeneratorResult.updatedPackage().orElse(currentPackage);
-        CodeModifierResult codeModifierResult = currentPackage.runCodeModifierPlugins();
-        return codeModifierResult.reportedDiagnostics();
+        return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {

@@ -25,8 +25,6 @@ public type Scalar boolean|int|float|string|decimal;
 public type Service distinct service object {
 };
 
-type AnydataMap map<anydata>;
-
 # Function type for initializing the `graphql:Context` object.
 # This function will be called with the `http:Request` and the `http:RequestContext` objects from the original request
 # received to the GraphQL endpoint.
@@ -55,10 +53,10 @@ public type CorsConfig record {|
 
 # Represent GraphiQL client configurations
 #
-# + enable - Status of the client
+# + enabled - Status of the client
 # + path - Path for the client
 public type Graphiql record {|
-    boolean enable = false;
+    boolean enabled = false;
     string path = "graphiql";
 |};
 
@@ -71,6 +69,11 @@ isolated service class HttpService {
 isolated service class UpgradeService {
     *websocket:UpgradeService;
 }
+
+# Represent a GraphQL interceptor
+public type Interceptor distinct service object {
+    isolated remote function execute(Context context, Field 'field) returns anydata|error;
+};
 
 // GraphQL client related data binding types representation
 
@@ -85,11 +88,8 @@ public type GenericResponse record {|
 
 # Represents the target type binding record with data, extensions and errors of a GraphQL response for `execute` method.
 #
-# + extensions - Meta information on protocol extensions from the GraphQL server
-# + data - The requested data from the GraphQL server
 # + errors - The errors occurred (if present) while processing the GraphQL request.
 public type GenericResponseWithErrors record {|
-   map<json?> extensions?;
-   record {| anydata...; |}|map<json?> data?;
+   *GenericResponse;
    ErrorDetail[] errors?;
 |};

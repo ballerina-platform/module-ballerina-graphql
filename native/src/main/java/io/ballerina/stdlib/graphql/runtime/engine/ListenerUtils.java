@@ -128,12 +128,18 @@ public final class ListenerUtils {
         return StringUtils.fromString(basePath.trim());
     }
 
-    public static Object getHtmlContentFromResources(BString url) {
+    public static Object getHtmlContentFromResources(BString url, Object subscriptionUrl) {
         InputStream htmlAsStream = ClassLoader.getSystemResourceAsStream(GRAPHIQL_RESOURCE);
         try {
             byte[] bytes = htmlAsStream.readAllBytes();
             String htmlAsString = new String(bytes, StandardCharsets.UTF_8);
-            htmlAsString = htmlAsString.replace(REGEX_URL, url.getValue());
+            StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\"");
+            if (subscriptionUrl != null) {
+                graphiqlUrl.append(" , subscriptionUrl: \"")
+                           .append(((BString) subscriptionUrl).getValue()).append("\"");
+            }
+            graphiqlUrl.append(" }");
+            htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl.toString());
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
             return createError("Error occurred while loading the GraphiQL client", ERROR_TYPE);

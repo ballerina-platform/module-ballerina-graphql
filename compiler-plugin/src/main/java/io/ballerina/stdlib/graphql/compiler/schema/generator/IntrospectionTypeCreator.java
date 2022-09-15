@@ -252,6 +252,6 @@ public class IntrospectionTypeCreator {
     }
 
     private static Field getIntrospectionField(IntrospectionField introspectionField, Type type) {
-        return new Field(introspectionField.getName(), type, introspectionField.getDescription());
+        return new Field(introspectionField.getName(), introspectionField.getDescription(), type);
     }
 }

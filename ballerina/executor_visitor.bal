@@ -24,72 +24,89 @@ class ExecutorVisitor {
     private Data data;
     private ErrorDetail[] errors;
     private Context context;
-    private map<Upload|Upload[]> fileInfo;
     private any result;
 
-    isolated function init(Engine engine, __Schema schema, Context context, map<Upload|Upload[]> fileInfo, any result = ()) {
+    isolated function init(Engine engine, __Schema schema, Context context, any result = ()) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
-        self.fileInfo = fileInfo;
         self.data = {};
         self.result = result;
         self.errors = [];
     }
 
-    isolated function getExecutorResult(parser:OperationNode operationNode) returns OutputObject {
-        self.visitOperation(operationNode, operationNode.getKind());
-        return getOutputObject(self.data, self.errors);
-    }
-
-    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        foreach parser:Selection selection in operationNode.getSelections() {
-            self.visitSelection(selection, data);
-        }
-    }
-
-    public isolated function visitSelection(parser:Selection selection, anydata data = ()) {
-        if selection is parser:FragmentNode {
-            self.visitFragment(selection, data);
-        } else if selection is parser:FieldNode {
-            self.visitField(selection, data);
-        } else {
-            panic error("Invalid selection node passed.");
+        foreach parser:SelectionNode selection in operationNode.getSelections() {
+            selection.accept(self, operationNode.getKind());
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         parser:RootOperationType operationType = <parser:RootOperationType>data;
         if fieldNode.getName() == SCHEMA_FIELD {
-            executeIntrospection(self, fieldNode, self.schema);
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
         } else if fieldNode.getName() == TYPE_FIELD {
-            parser:ArgumentNode argNode = fieldNode.getArguments()[0];
-            parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
-            string requiredTypeName = argValue.toString();
-            __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
-            executeIntrospection(self, fieldNode, requiredType);
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
+        } else if fieldNode.getName() == TYPE_NAME_FIELD {
+            if operationType == parser:OPERATION_QUERY {
+                self.data[fieldNode.getAlias()] = QUERY_TYPE_NAME;
+            } else if operationType == parser:OPERATION_MUTATION {
+                self.data[fieldNode.getAlias()] = MUTATION_TYPE_NAME;
+            } else {
+                self.data[fieldNode.getAlias()] = SUBSCRIPTION_TYPE_NAME;
+            }
         } else {
             if operationType == parser:OPERATION_QUERY {
-                executeQuery(self, fieldNode);
+                self.executeQuery(fieldNode, operationType);
             } else if operationType == parser:OPERATION_MUTATION {
-                executeMutation(self, fieldNode);
+                self.executeMutation(fieldNode, operationType);
             } else if operationType == parser:OPERATION_SUBSCRIPTION {
                 executeSubscription(self, fieldNode, self.result);
             }
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        // Do nothing
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        foreach parser:Selection selection in fragmentNode.getSelections() {
-            self.visitSelection(selection, data);
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+            selection.accept(self, data);
         }
+    }
+
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
+    isolated function executeQuery(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
+        (string|int)[] path = [fieldNode.getName()];
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
+        self.context.resetInterceptorCount();
+        var result = self.engine.resolve(self.context, 'field);
+        self.errors = self.context.getErrors();
+        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
+    }
+
+    isolated function executeMutation(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
+        (string|int)[] path = [fieldNode.getName()];
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
+        self.context.resetInterceptorCount();
+        var result = self.engine.resolve(self.context, 'field);
+        self.errors = self.context.getErrors();
+        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
+    }
+
+    isolated function getOutput() returns OutputObject {
+        return getOutputObject(self.data, self.errors);
     }
 }

@@ -3,7 +3,7 @@ Ballerina GraphQL Library
 
   [![Build](https://github.com/ballerina-platform/module-ballerina-graphql/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-graphql/actions/workflows/build-timestamped-master.yml)
   [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-graphql/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-graphql)
-  [![Trivy](https://github.com/ballerina-platform/module-ballerina-crypto/actions/workflows/trivy-scan.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-crypto/actions/workflows/trivy-scan.yml)
+  [![Trivy](https://github.com/ballerina-platform/module-ballerina-graphql/actions/workflows/trivy-scan.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-graphql/actions/workflows/trivy-scan.yml)
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-graphql.svg)](https://github.com/ballerina-platform/module-ballerina-graphql/commits/master)
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/graphql.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fgraphql)
 
@@ -71,13 +71,13 @@ service on new graphql:Listener(4000) {
 The GraphQL service endpoint URL will be `<host>:<port>`
 
 #### Query type
-The `resource` functions inside the service represent the resolvers of the `Query` root type.
+The `resource` functions inside the GraphQL service can represent the resolvers of the `Query` root type.
 
-When a `resource` function is defined inside a GraphQL service, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
+When a `resource` function is defined inside a GraphQL service with the `get` accessor, the generated schema will have a `Query` root type and the `resource` function will be a field of the `Query` object.
 
 >**Note:** A GraphQL service must have at least one resource function defined. Otherwise, it will result in a compilation error.
 
-The accessor of the `resource` function should always be `get`. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
+The accessor of the `resource` function should always be `get` for a field to be considered as a `Query` field. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
 
 ```ballerina
 import ballerina/graphql;
@@ -205,6 +205,46 @@ Result:
 ```
 
 See how the result changes the `Person` record. The first mutation changes only the name and it populates the result of the `updateName` field. Then, it will execute the `updateCity` operation and populate the result. This is because the execution of the mutation operations will be done serially in the same order as they are specified in the document.
+
+#### Subscription Type
+
+The subscription type can be used to continuously fetch the data from a GraphQL service.
+
+The `resource` functions inside the GraphQL service with the `subscribe` accessor can represent the resolvers of the `Subscription` root type.
+
+When a `resource` function is defined inside a GraphQL service with the `subscribe` accessor, the generated schema will have a `Subscription` root type and the `resource` function will be a field of the `Subscription` object.
+
+The accessor of the `resource` function should always be `subscribe` for a field to be considered as a `Subscription` field. The `resource` function name will become the name of the particular field in the GraphQL schema. The return type of the `resource` function will be the type of the corresponding field.
+
+The `resource` functions that belongs to `Subscription` type must return a stream of `any` type. Any other return type will result in a compilation error.
+
+The return type
+```ballerina
+import ballerina/graphql;
+
+service graphql:Service /graphql on new graphql:Listener(4000) {
+    resource function subscribe messages() returns stream<string> {
+        return ["Walter", "Jesse", "Mike"].toStream();
+    }
+}
+```
+
+The above can be queried using the GraphQL document below:
+
+```graphql
+subscription {
+    messages
+}
+```
+
+When a subscription type is defined, a websocket service will be created to call the subscription. The above service
+will create the service as follows:
+
+```
+ws://<host>:4000/graphql
+```
+
+This can be accessed using a websocket client. When the returned stream has a new entry, it will be broadcasted to the subscribers.
 
 #### Additional configurations
 Additional configurations of a Ballerina GraphQL service can be provided using the `graphql:ServiceConfig`.
@@ -947,6 +987,8 @@ type name {
 }
 ```
 
+> **Note:** The field name and the type names are equal.
+
 ## Issues and projects
 
 Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina Standard Library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
@@ -959,7 +1001,7 @@ This repository only contains the source code for the module.
 1. Download and install Java SE Development Kit (JDK) version 11 (from one of the following locations).
 
    * [Oracle](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
-   * [OpenJDK](https://adoptopenjdk.net/)
+   * [OpenJDK](https://adoptium.net/)
 
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
 

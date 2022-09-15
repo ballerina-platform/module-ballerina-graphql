@@ -50,7 +50,8 @@ isolated function testInterfaceField() returns error? {
 }
 
 @test:Config {
-    groups: ["interfaces"]
+    groups: ["interfaces"],
+    enable: false
 }
 isolated function testInterfacesWithNestedFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("interfaces_with_nested_fragments.graphql");
@@ -72,12 +73,24 @@ isolated function testInterfacesWithInvalidField() returns error? {
 }
 
 @test:Config {
-    groups: ["interfaces"]
+    groups: ["interfaces"],
+    enable: false
 }
 isolated function testInterfacesWithTypeNameIntrospection() returns error? {
     string document = check getGraphQLDocumentFromFile("interfaces_with_type_name_introspection.graphql");
     string url = "http://localhost:9098/interfaces";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("interfaces_with_type_name_introspection.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interfaces", "fragments"]
+}
+isolated function testInterfacesWithInterfaceTypeArray() returns error? {
+    string document = check getGraphQLDocumentFromFile("interfaces_with_interface_type_array.graphql");
+    string url = "http://localhost:9098/interfaces";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("interfaces_with_interface_type_array.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

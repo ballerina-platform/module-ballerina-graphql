@@ -1,24 +1,15 @@
 {
     "errors": [
         {
-            "message": "Directive \"skip\" may not be used on QUERY.",
-            "locations": [
-                {
-                    "line": 1,
-                    "column": 60
-                }
-            ]
-        },
-        {
             "message": "The directive \"skip\" can only be used once at this location.",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 60
+                    "line": 3,
+                    "column": 32
                 },
                 {
-                    "line": 1,
-                    "column": 76
+                    "line": 3,
+                    "column": 49
                 }
             ]
         },

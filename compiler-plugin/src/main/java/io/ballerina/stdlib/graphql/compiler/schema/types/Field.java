@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+
 /**
  * Represents the {@code __Field} in GraphQL schema.
  */
@@ -39,15 +41,15 @@ public class Field implements Serializable {
     }
 
     public Field(String name, Type type) {
-        this(name, type, null);
+        this(name, null, type);
     }
 
-    public Field(String name, Type type, String description) {
+    public Field(String name, String description, Type type) {
         this(name, description, type, false, null);
     }
 
     public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason) {
-        this.name = name;
+        this.name = removeEscapeCharacter(name);
         this.description = description;
         this.type = type;
         this.isDeprecated = isDeprecated;

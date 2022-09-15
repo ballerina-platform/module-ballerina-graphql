@@ -36,15 +36,52 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
+isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName)
+    returns anydata|error {
+    if value is error|ErrorDetail {
+        return value;
+    } else if value is anydata && isValidReturnType('type, value) {
+        return value;
+    }
+    string interceptorError = string `Invalid return type in Interceptor "${interceptorName}". ` +
+                              string `Expected type ${getTypeNameFromType('type)}`;
+    return error(interceptorError);
+}
+
+isolated function isValidReturnType(__Type 'type, anydata value) returns boolean {
+    if 'type.kind is NON_NULL {
+        if value is () {
+            return false;
+        }
+        return isValidReturnType(unwrapNonNullype('type), value);
+    } else if value is () {
+        return true;
+    } else if 'type.kind is ENUM && value is string {
+        return true;
+    } else if 'type.kind is LIST && value is anydata[] {
+        return true;
+    } else if 'type.kind is OBJECT && value is map<anydata> {
+        return true;
+    } else if 'type.kind is SCALAR && value is Scalar {
+        if getOfTypeName('type) == getTypeNameFromScalarValue(value) {
+            return true;
+        }
+        return false;
+    } else if 'type.kind is UNION|INTERFACE {
+        __Type[] possibleTypes = <__Type[]>'type.possibleTypes;
+        boolean isValidType = false;
+        foreach __Type possibleType in possibleTypes {
+            isValidType = isValidReturnType(possibleType, value);
+            if isValidType {
+                break;
+            }
+        }
+        return isValidType;
+    }
+    return false;
+}
+
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function executeQuery(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function executeMutation(ExecutorVisitor visitor, parser:FieldNode fieldNode) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
@@ -52,16 +89,15 @@ isolated function executeSubscription(ExecutorVisitor visitor, parser:FieldNode 
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function executeIntrospection(ExecutorVisitor visitor, parser:FieldNode fieldNode, anydata result) =
-@java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
-isolated function attachServiceToEngine(Service s, Engine engine) = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-} external;
-
 isolated function getSubscriptionResult(ExecutorVisitor visitor,
                                         parser:FieldNode node) returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
+
+isolated function isMap(map<anydata> value) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+} external;
+
+isolated function getTypeNameFromValue(any value) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;

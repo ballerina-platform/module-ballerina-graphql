@@ -111,10 +111,10 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             if (member.kind() == SyntaxKind.SERVICE_DECLARATION) {
                 if (nodeMap.containsKey((ServiceDeclarationNode) member)) {
                     members = members.add(nodeMap.get(member));
+                    continue;
                 }
-            } else {
-                members = members.add(member);
             }
+            members = members.add(member);
         }
         return rootNode.modify(rootNode.imports(), members, rootNode.eofToken());
     }

@@ -25,7 +25,7 @@ isolated function testTimeoutResponse() returns error? {
     json payload = {
         query: document
     };
-    http:Client httpClient = check new("http://localhost:9093/timeoutService");
+    http:Client httpClient = check new("http://localhost:9093/timeoutService", httpVersion = "1.1");
     http:Request request = new;
     request.setPayload(payload);
     http:Response response = check httpClient->post("/", request);
@@ -103,7 +103,7 @@ isolated function testCorsConfigurationWithWildCard() returns error? {
         ["access-control-request-method"]:["POST"],
         ["access-control-request-headers"]:["X-Content-Type-Options"]
     };
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->options("/corsConfigService1", headers); // send preflight request
     test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
     test:assertTrue(response.hasHeader("access-control-allow-credentials"));
@@ -122,7 +122,7 @@ isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
         ["access-control-request-method"]:["POST"],
         ["access-control-request-headers"]:["X-PINGOTHER"]
     };
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->options("/corsConfigService2", headers); // send preflight request
     test:assertEquals(check response.getHeader("access-control-allow-origin"), "http://www.wso2.com");
     test:assertNotEquals(check response.getHeader("access-control-allow-origin"), "http://www.ws02.com");
@@ -130,4 +130,149 @@ isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
     test:assertEquals(check response.getHeader("access-control-allow-methods"), "POST");
     test:assertEquals(check response.getHeader("access-control-allow-headers"), "X-PINGOTHER");
     test:assertEquals(check response.getHeader("access-control-max-age"), "-1");
+}
+
+@test:Config {
+    groups: ["configs"]
+}
+isolated function testIntrospectionDisableConfigWithSchemaIntrospection() returns error? {
+    string document = string `{ __schema { queryType { kind fields { name } } } }`;
+    string url = "http://localhost:9091/introspection";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["configs"]
+}
+isolated function testIntrospectionDisableConfigWithTypeIntrospection() returns error? {
+    string document = string `{ person{ name }, __type(name: "Person") { name } }`;
+    string url = "http://localhost:9091/introspection";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __type.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 19
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["configs"]
+}
+isolated function testIntrospectionDisableConfig() returns error? {
+    string document = string `{ __schema { queryType { kind fields { name } } }, __type(name: "Person") { name } }`;
+    string url = "http://localhost:9091/introspection";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            },
+            {
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __type.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 52
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["configs"]
+}
+isolated function testIntrospectionDisableConfigWithTypeNameIntrospection() returns error? {
+    string document = string `{ person{ name, age, __typename }, __typename }`;
+    string url = "http://localhost:9091/introspection";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data:{
+            person:{
+                name: "Walter White",
+                age:50,
+                __typename: "Person"
+            },
+            __typename:"Query"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+
+@test:Config {
+    groups: ["configs"]
+}
+isolated function testIntrospectionDisableConfigWithMutation() returns error? {
+    string document = string `{ __schema { mutationType { kind fields { name } } } }`;
+    string url = "http://localhost:9091/introspection";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["configs"]
+}
+isolated function testIntrospectionDisableConfigWithFragments() returns error? {
+    string document = check getGraphQLDocumentFromFile("introspection_disable_config_with_fragments.graphql");
+    string url = "http://localhost:9091/introspection";
+    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
+                locations: [
+                    {
+                        line: 6,
+                        column: 5
+                    }
+                ]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

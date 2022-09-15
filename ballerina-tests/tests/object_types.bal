@@ -16,11 +16,11 @@
 
 import ballerina/graphql;
 
-type PeopleService StudentService|TeacherService;
+public type PeopleService StudentService|TeacherService;
 
-type SearchResult Lift|Trail;
+public type SearchResult Lift|Trail;
 
-isolated service class Name {
+public isolated service class Name {
     isolated resource function get first() returns string {
         return "Sherlock";
     }
@@ -30,19 +30,19 @@ isolated service class Name {
     }
 }
 
-isolated service class Profile {
+public isolated service class Profile {
     isolated resource function get name() returns Name {
         return new;
     }
 }
 
-isolated service class GeneralGreeting {
+public isolated service class GeneralGreeting {
     isolated resource function get generalGreeting() returns string {
         return "Hello, world";
     }
 }
 
-distinct isolated service class HierarchicalName {
+public distinct isolated service class HierarchicalName {
     isolated resource function get name/first() returns string {
         return "Sherlock";
     }
@@ -52,7 +52,7 @@ distinct isolated service class HierarchicalName {
     }
 }
 
-distinct isolated service class Lift {
+public distinct isolated service class Lift {
     private final readonly & LiftRecord lift;
 
     isolated function init(LiftRecord lift) {
@@ -95,7 +95,7 @@ distinct isolated service class Lift {
     }
 }
 
-distinct isolated service class Trail {
+public distinct isolated service class Trail {
     private final readonly & TrailRecord trail;
 
     isolated function init(TrailRecord trail) {
@@ -142,7 +142,7 @@ distinct isolated service class Trail {
     }
 }
 
-distinct isolated service class StudentService {
+public distinct isolated service class StudentService {
     private final int id;
     private final string name;
 
@@ -221,6 +221,11 @@ public distinct isolated service class School {
         }
     }
 
+    # Get the opening days of the school.
+    # + return - The set of the weekdays the school is open
+    # # Deprecated
+    # School is now online.
+    @deprecated
     isolated resource function get openingDays() returns Weekday[] {
         return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
     }
@@ -239,6 +244,35 @@ public isolated distinct service class AnimalClass {
             return call;
         } else {
             return sound;
+        }
+    }
+}
+
+public isolated service class Vehicle {
+    private final string id;
+    private final string name;
+    private final int? registeredYear;
+
+    isolated function init(string id, string name, int? registeredYear = ()) {
+        self.id = id;
+        self.name = name;
+        self.registeredYear = registeredYear;
+    }
+
+    isolated resource function get id() returns string {
+        return self.id;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get registeredYear() returns int|error {
+        int? registeredYear = self.registeredYear;
+        if registeredYear == () {
+            return error("Registered Year is Not Found");
+        } else {
+            return registeredYear;
         }
     }
 }

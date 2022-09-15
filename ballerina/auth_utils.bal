@@ -141,7 +141,7 @@ isolated function authenticateWithJwtValidatorConfig(JwtValidatorConfigWithScope
     } else if authn is http:Unauthorized {
         return authn;
     } else {
-        panic error("Unsupported record type found.");
+        panic error("Unsupported record type found");
     }
 }
 
@@ -160,10 +160,10 @@ isolated function authenticateWithOAuth2IntrospectionConfig(OAuth2IntrospectionC
     oauth2:IntrospectionResponse|http:Unauthorized|http:Forbidden auth = handler->authorize(header, config?.scopes);
     if auth is oauth2:IntrospectionResponse {
         return;
-    } else if auth is http:Unauthorized || auth is http:Forbidden {
+    } else if auth is http:Unauthorized|http:Forbidden {
         return auth;
     } else {
-        panic error("Unsupported record type found.");
+        panic error("Unsupported record type found");
     }
 }
 

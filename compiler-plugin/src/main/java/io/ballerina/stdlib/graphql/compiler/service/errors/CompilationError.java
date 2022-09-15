@@ -52,8 +52,12 @@ public enum CompilationError {
     NON_DISTINCT_INTERFACE_IMPLEMENTATION(ErrorMessage.ERROR_126, ErrorCode.GRAPHQL_126, DiagnosticSeverity.ERROR),
     INVALID_HIERARCHICAL_RESOURCE_PATH(ErrorMessage.ERROR_127, ErrorCode.GRAPHQL_127, DiagnosticSeverity.ERROR),
     INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE(ErrorMessage.ERROR_128, ErrorCode.GRAPHQL_128, DiagnosticSeverity.ERROR),
-    INVALID_ROOT_RESOURCE_ACCESSOR(ErrorMessage.ERROR_128, ErrorCode.GRAPHQL_128, DiagnosticSeverity.ERROR),
-    SCHEMA_GENERATION_FAILED(ErrorMessage.ERROR_130, ErrorCode.GRAPHQL_130, DiagnosticSeverity.ERROR);
+    INVALID_ROOT_RESOURCE_ACCESSOR(ErrorMessage.ERROR_129, ErrorCode.GRAPHQL_129, DiagnosticSeverity.ERROR),
+    SCHEMA_GENERATION_FAILED(ErrorMessage.ERROR_130, ErrorCode.GRAPHQL_130, DiagnosticSeverity.ERROR),
+    RESOURCE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_131, ErrorCode.GRAPHQL_131, DiagnosticSeverity.ERROR),
+    INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_132, ErrorCode.GRAPHQL_132, DiagnosticSeverity.ERROR),
+    INVALID_ANONYMOUS_FIELD_TYPE(ErrorMessage.ERROR_133, ErrorCode.GRAPHQL_133, DiagnosticSeverity.ERROR),
+    INVALID_ANONYMOUS_INPUT_TYPE(ErrorMessage.ERROR_134, ErrorCode.GRAPHQL_134, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

@@ -59,7 +59,7 @@ isolated function testMultipleOperationsWithInvalidOperationInRequest() returns 
     groups: ["request_validation", "listener"]
 }
 isolated function testInvalidGetRequestWithoutQuery() returns error? {
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->get("/validation");
     assertResponseForBadRequest(response);
     test:assertEquals(response.getTextPayload(), "Query not found");
@@ -76,7 +76,7 @@ isolated function testGetRequest() returns error? {
             name: "James Moriarty"
         }
     };
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     string path = "/validation?query=" + encodedDocument;
     json actualPayload = check httpClient->get(path);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -86,7 +86,7 @@ isolated function testGetRequest() returns error? {
     groups: ["request_validation", "listener"]
 }
 isolated function testGetRequestWithEmptyQuery() returns error? {
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     string path = "/validation?query=";
     http:Response response = check httpClient->get(path);
     assertResponseForBadRequest(response);
@@ -149,10 +149,22 @@ isolated function testInvalidRequestBody() returns error? {
 }
 isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     string document = "";
-    string url = "ws://localhost:9091/subscriptions";
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {"errors": [{"message": "Query not found"}]};
+    json expectedPayload = {errors: [{message: "An empty query is found"}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions"]
+}
+isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:Client wsClient = check new(url);
+    json payload = {query: 2};
+    check wsClient->writeMessage(payload);
+    json expectedPayload = {errors: [{message: "Invalid format in request parameter: `query`"}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -160,11 +172,11 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
-    string url = "ws://localhost:9091/subscriptions";
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
-    json payload = {query: ()};
-    check wsClient->writeTextMessage(payload.toJsonString());
-    json expectedPayload = {"errors": [{"message": "Query not found"}]};
+    check wsClient->writeMessage({id: "1", payload: {query: ()}});
+    string expectedErrorMessage = "Unable to find the query: {ballerina/lang.map}KeyNotFound";
+    json expectedPayload = {errors: [{message: expectedErrorMessage}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
@@ -172,22 +184,37 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
-    string document = string `subscription getNames { name }`;
-    string url = "ws://localhost:9091/subscriptions";
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
+    json variables = [];
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient, []);
-    json expectedPayload = {"errors": [{"message": "Invalid format in request parameter: variables"}]};
+    check writeWebSocketTextMessage(document, wsClient, variables);
+    json expectedPayload = {errors: [{message: "Invalid format in request parameter: `variables`"}]};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
-isolated function testInvalidWebSocketPayload() returns error? {
-    string url = "ws://localhost:9091/subscriptions";
+isolated function testEmptyWebSocketPayload() returns error? {
+    string url = "ws://localhost:9099/subscriptions";
     websocket:Client wsClient = check new(url);
     string payload = "";
-    check wsClient->writeTextMessage(payload);
-    json expectedPayload = {"errors": [{"message": "Invalid subscription payload"}]};
+    check wsClient->writeMessage(payload);
+    string expectedErrorMessage = "Invalid format in WebSocket payload: {ballerina/lang.value}FromJsonStringError";
+    json expectedPayload = {errors: [{message: expectedErrorMessage}]};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["request_validation", "websocket", "subscriptions", "sub_protocols"]
+}
+isolated function testInvalidWebSocketPayload() returns error? {
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:Client wsClient = check new (url, {subProtocols: ["graphql-ws"]});
+    json payload = {payload: {query: ()}};
+    check wsClient->writeMessage(payload);
+    string expectedErrorMessage = "Invalid format in WebSocket payload: {ballerina/lang.value}ConversionError";
+    json expectedPayload = {'type: "data", payload: {errors: [{message: expectedErrorMessage}]}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }

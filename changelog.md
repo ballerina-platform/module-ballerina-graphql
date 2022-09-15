@@ -7,10 +7,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
+- [[#3289] Support GraphQL interface with ballerina distinct object type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3289)
+- [[#3230] Add Service Interceptor Execution for Record Fields, Maps & Tables](https://github.com/ballerina-platform/ballerina-standard-library/issues/3230)
+
+## [1.4.1] - 2022-09-12
+
+### Fixed
+- [[#2897] Revert `Fix Invalid introspection response for fields with default value`](https://github.com/ballerina-platform/ballerina-standard-library/issues/3307)
+
+## [1.4.0] - 2022-09-08
+
+### Added
+- [[#2898] Support Deprecation Support in GraphQL Services](https://github.com/ballerina-platform/ballerina-standard-library/issues/2898)
+- [[#2001] Support GraphQL Interceptors for Query and Mutation operations](https://github.com/ballerina-platform/ballerina-standard-library/issues/2001)
+- [[#3260] Log the Errors Returned from the Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/3260)
+
+### Fixed
+- [[#3069] Fix Enums with String Values Return String Value for Enum Name](https://github.com/ballerina-platform/ballerina-standard-library/issues/3069)
+- [[#3067] Fix Single Quote Character Included in Field and Argument Names](https://github.com/ballerina-platform/ballerina-standard-library/issues/3067)
+- [[#3068] Fix Anonymous Records Crashing the Service](https://github.com/ballerina-platform/ballerina-standard-library/issues/3068)
+- [[#3115] Fix Not Initializing Context per Request in GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3115)
+- [[#3227] Fix Service Crashing when Map Field Does not Contain the Provided Key](https://github.com/ballerina-platform/ballerina-standard-library/issues/3227)
+- [[#2897] Fix GraphiQL Schema not Generating for Default Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/2897)
+- [[#2897] Fix Invalid introspection response for fields with default value](https://github.com/ballerina-platform/ballerina-standard-library/issues/3307)
+
+### Changed
+- [[#3173] Improve the Error Message for Using Anonymous Records as Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/3173)
+- [[#3288] Rename the GraphiQL config `enable` to `enabled`](https://github.com/ballerina-platform/ballerina-standard-library/issues/3288)
+
+## [1.3.2] - 2022-07-11
+
+### Fixed
+- [[#3076] Fix Empty Input Arrays not Considering as Valid Inputs](https://github.com/ballerina-platform/ballerina-standard-library/issues/3076)
+
+## [1.3.1] - 2022-05-31
+
+### Fixed
+- [[#2959] Fix Incorrectly Removing Other Services Through Code Modifier](https://github.com/ballerina-platform/ballerina-standard-library/issues/2959)
+
+## [1.3.0] - 2022-05-30
+
+### Added
 - [[#1936] Integrate GraphiQL Client into GraphQL Package](https://github.com/ballerina-platform/ballerina-standard-library/issues/1936)
 - [[#2532] Introduce GraphQL Subscription Support](https://github.com/ballerina-platform/ballerina-standard-library/issues/2532)
 - [[#2698] Support GraphQL Documentation](https://github.com/ballerina-platform/ballerina-standard-library/issues/2698)
-- [[#1364] Support GraphQL Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/1364)
 
 ### Changed
 - [[#2838] Remove Spec Deviations in GraphQL File Upload](https://github.com/ballerina-platform/ballerina-standard-library/issues/2838)

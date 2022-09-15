@@ -1,0 +1,51 @@
+{
+    "errors": [
+        {
+            "message": "Access denied!",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "age"
+            ]
+        },
+        {
+            "message": "Access denied!",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 28
+                }
+            ],
+            "path": [
+                "address",
+                "street"
+            ]
+        },
+        {
+            "message": "Access denied!",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 36
+                }
+            ],
+            "path": [
+                "address",
+                "number"
+            ]
+        }
+    ],
+    "data": {
+        "name": "Walter",
+        "age": null,
+        "address": {
+            "city": "London",
+            "street": null,
+            "number": null
+        }
+    }
+}

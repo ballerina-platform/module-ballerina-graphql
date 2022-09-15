@@ -1,0 +1,13 @@
+{
+    ships {
+        id
+        ...on Starship {
+            enemyShips {
+                id
+                ...on Starship {
+                    driver
+                }
+            }
+        }
+    }
+}

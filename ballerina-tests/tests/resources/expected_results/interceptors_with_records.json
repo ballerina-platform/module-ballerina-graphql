@@ -1,0 +1,11 @@
+{
+    "data": {
+        "profile": {
+            "name": "Rubeus Hagrid",
+            "address": {
+                "number": "103",
+                "street": "Mould-on-the-Wold"
+            }
+        }
+    }
+}

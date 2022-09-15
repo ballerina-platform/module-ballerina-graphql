@@ -16,18 +16,18 @@
 
 type Information Address|Person;
 
-type Account record {
+public type Account record {
     int number;
     Contact? contact;
 };
 
-type Pet record {
+public type Pet record {
     string name;
     string ownerName;
     Animal animal;
 };
 
-type Animal readonly & record {
+public type Animal readonly & record {
     string commonName;
     Species species;
 };
@@ -53,7 +53,7 @@ public type Person readonly & record {
     Address address;
 };
 
-type Book readonly & record {
+public type Book readonly & record {
     string name;
     string author;
 };
@@ -64,7 +64,7 @@ type Course readonly & record {
     Book[] books;
 };
 
-type Student readonly & record {
+public type Student readonly & record {
     string name;
     Course[] courses;
 };
@@ -102,7 +102,7 @@ public enum Weekday {
     SATURDAY
 }
 
-type Time record {|
+public type Time record {|
     Weekday weekday;
     string time;
 |};
@@ -207,8 +207,35 @@ public type Shape record {
 # Represents an instrument
 #
 # + name - Name of the instrument
-# + method - Method the instrument generate the sound
+# + type - The type of the musical instrument
 public type Instrument readonly & record {
     string name;
-    string method;
+    InstrumentType 'type;
 };
+
+# Represents the types of musical instruments.
+public enum InstrumentType {
+    # Instruments with strings
+    STRINGS = "Strings Instruments",
+    # Instruments with wooden pipes
+    WOODWIND,
+    # Instruments with keyboards
+    KEYBOARD,
+    # Brass instruments
+    # # Deprecated
+    # Not used in this band
+    @deprecated
+    BRASS,
+    # Instruments with leather, wooden or metal surfaces
+    PERCUSSION
+}
+
+type WSPayload record {|
+    string 'type;
+    string id?;
+    json payload?;
+|};
+
+public type Languages record {|
+    map<string> name;
+|};

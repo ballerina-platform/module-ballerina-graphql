@@ -23,17 +23,9 @@ service on new graphql:Listener(9000) {
 }
 
 # Represents an interface for Person
-public isolated distinct service class Person {
-    final string name;
-
-    isolated function init(string name) {
-        self.name = name;
-    }
-
-    isolated resource function get name() returns string {
-        return self.name;
-    }
-}
+public type Person distinct service object {
+    isolated resource function get name() returns string;
+};
 
 # Represents a Student as a class.
 public isolated distinct service class Student {

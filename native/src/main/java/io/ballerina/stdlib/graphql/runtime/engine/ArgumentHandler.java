@@ -30,6 +30,7 @@ import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -38,8 +39,7 @@ import io.ballerina.runtime.api.values.BString;
 import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
@@ -54,13 +54,16 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
  * This class processes the arguments passed to a GraphQL document to pass into Ballerina functions.
  */
 public class ArgumentHandler {
-    private final ExecutionContext executionContext;
     private final BMap<BString, Object> argumentsMap;
     private final MethodType method;
 
-    public ArgumentHandler(ExecutionContext executionContext, MethodType method) {
-        this.executionContext = executionContext;
+    private final BMap<BString, Object> fileInfo;
+    private final BObject context;
+
+    public ArgumentHandler(MethodType method, BObject context) {
         this.method = method;
+        this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
+        this.context = context;
         this.argumentsMap = ValueCreator.createMapValue();
     }
 
@@ -91,17 +94,18 @@ public class ArgumentHandler {
             return this.getArrayTypeArgument(argumentNode, (ArrayType) parameterType);
         } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
             return this.getUnionTypeArgument(argumentNode, (UnionType) parameterType);
+        } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            return this.getArgumentValue(argumentNode, TypeUtils.getReferredType(parameterType));
         } else {
             return this.getScalarArgumentValue(argumentNode);
         }
     }
 
     private Object getFileUploadParameter(BObject argumentNode, Type parameterType) {
-        BMap<BString, Object> fileInfo = this.executionContext.getVisitor().getMapValue(FILE_INFO);
         if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
-            return fileInfo.getArrayValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD));
+            return this.fileInfo.getArrayValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD));
         } else {
-            return fileInfo.getMapValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD));
+            return this.fileInfo.getMapValue(argumentNode.getStringValue(VARIABLE_NAME_FIELD));
         }
     }
 
@@ -184,7 +188,7 @@ public class ArgumentHandler {
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (i == 0 && isContext(parameters[i].type)) {
-                result[i] = this.executionContext.getVisitor().getObjectValue(CONTEXT_FIELD);
+                result[i] = this.context;
                 result[j + 1] = true;
                 continue;
             }

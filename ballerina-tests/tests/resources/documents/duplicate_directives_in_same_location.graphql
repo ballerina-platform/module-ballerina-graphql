@@ -1,6 +1,6 @@
-query getData($require:Boolean = true, $profileId:Int = 1) @skip(if: true) @skip(if: true){
+query getData($require:Boolean = true, $profileId:Int = 1) {
     ...on Query @include(if: $require) {
-        profile(id:$profileId) @skip(if: false) {
+        profile(id:$profileId) @skip(if: false) @skip(if: true) {
             ...on Person {
                 name @include(if: true) @include(if: false)
                 ...address

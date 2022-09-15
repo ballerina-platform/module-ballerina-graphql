@@ -17,7 +17,6 @@
 import ballerina/file;
 import ballerina/http;
 import ballerina/io;
-import ballerina/lang.value;
 import ballerina/test;
 import ballerina/websocket;
 
@@ -26,19 +25,19 @@ const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 
 isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
 }
 
 isolated function getTextPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
 returns string|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     return response.getTextPayload();
 }
 
 isolated function getJsonPayloadFromRequest(string url, http:Request request) returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     return httpClient->post("/", request);
 }
 
@@ -54,7 +53,7 @@ isolated function getGraphQLDocumentFromFile(string fileName) returns string|err
 
 isolated function getJsonPayloadFromBadRequest(string url, string document, json? variables = {}, string? operationName = ())
 returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     assertResponseForBadRequest(response);
     return response.getJsonPayload();
@@ -62,7 +61,7 @@ returns json|error {
 
 isolated function getTextPayloadFromBadService(string url, string document, json? variables = {}, string? operationName = ())
 returns string|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     assertResponseForBadRequest(response);
     return response.getTextPayload();
@@ -70,14 +69,14 @@ returns string|error {
 
 isolated function assertResponseAndGetPayload(string url, string document, json? variables = {},
 string? operationName = (), int statusCode = http:STATUS_OK) returns json|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
     test:assertEquals(response.statusCode, statusCode);
     return response.getJsonPayload();
 }
 
 isolated function getTextPayloadFromBadRequest(string url, http:Request request) returns string|error {
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response response = check httpClient->post("/", request);
     assertResponseForBadRequest(response);
     return response.getTextPayload();
@@ -108,17 +107,35 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
     return 'string:fromBytes(content);
 }
 
-isolated function writeWebSocketTextMessage(string document, websocket:Client wsClient, json? variables = {},
-                                            string? operationName = ()) returns websocket:Error? {
-    json payload = {query: document, variables: variables, operationName: operationName};
-    return wsClient->writeTextMessage(payload.toJsonString());
-}
-
 isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload)
     returns websocket:Error?|error {
-    string textResponse = check wsClient->readTextMessage();
-    json|error actualPayload = value:fromJsonString(textResponse);
-    if actualPayload !is error {
-        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    json actualPayload = check wsClient->readMessage();
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+isolated function writeWebSocketTextMessage(string? document, websocket:Client wsClient, json? variables = {},
+                                            string? operationName = (), string? id = (), string? subProtocol = ())
+                                            returns websocket:Error? {
+    json payload = {query: document, variables: variables, operationName: operationName};
+    if subProtocol !is () && id !is () {
+        json wsPayload = subProtocol == GRAPHQL_WS
+                        ? {"type": WS_START, id: id, payload: payload}
+                        : {"type": WS_SUBSCRIBE, id: id, payload: payload};
+        check wsClient->writeMessage(wsPayload);
+    } else {
+        check wsClient->writeMessage(payload);
     }
+}
+
+isolated function validateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error?|error {
+    string expectedPayload = WS_ACK;
+    json jsonPayload = check wsClient->readMessage();
+    WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
+    string actualType = wsPayload.'type;
+    test:assertEquals(actualType, expectedPayload);
+}
+
+isolated function initiateConnectionInitMessage(websocket:Client wsClient, string? id = ()) returns websocket:Error? {
+    json payload = id != () ? {"type": WS_INIT, id: id} : {"type": WS_INIT};
+    check wsClient->writeMessage(payload);
 }

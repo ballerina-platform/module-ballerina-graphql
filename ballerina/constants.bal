@@ -18,6 +18,7 @@ const CONTENT_TYPE_JSON = "application/json";
 const CONTENT_TYPE_GQL = "application/graphql";
 const CONTENT_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 const CONTENT_TYPE_TEXT_HTML = "text/html";
+const HTTP_HOST_HEADER = "Host";
 
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
@@ -39,9 +40,12 @@ const MUTATION_TYPE_NAME = "Mutation";
 const SUBSCRIPTION_TYPE_NAME = "Subscription";
 
 const NAME_ARGUMENT = "name";
+const KEY_ARGUMENT = "key";
 const DATA_FIELD = "data";
 const ERRORS_FIELD = "errors";
 const SUBSCRIPTION_FIELD = "subscriptionType";
+const IS_DEPRECATED_FIELD = "isDeprecated";
+const INCLUDE_DEPRECATED_ARGUMENT = "includeDeprecated";
 
 // Scalar type names used in GraphQL
 const INT = "Int";
@@ -53,3 +57,22 @@ const DECIMAL = "Decimal";
 // Default Directive names used in GraphQL
 const SKIP = "skip";
 const INCLUDE = "include";
+
+// WebSocket Message types
+const WS_INIT = "connection_init";
+const WS_ACK = "connection_ack";
+const WS_PING = "ping";
+const WS_PONG = "pong";
+const WS_START = "start";
+const WS_SUBSCRIBE = "subscribe";
+const WS_NEXT = "next";
+const WS_ERROR = "error";
+const WS_DATA = "data";
+const WS_STOP = "stop";
+const WS_COMPLETE = "complete";
+
+// WebSocket Sub Protocols
+const GRAPHQL_WS = "graphql-ws";
+const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
+const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
+const DEFAULT_VALUE = "default";

@@ -59,7 +59,11 @@ public enum ErrorMessage {
     ERROR_129(
             "Invalid GraphQL resource accessor. Only " + RESOURCE_FUNCTION_GET + " and " + RESOURCE_FUNCTION_SUBSCRIBE +
                     " are allowed"),
-    ERROR_130("Failed to generate the schema from the service");
+    ERROR_130("Failed to generate the schema from the service"),
+    ERROR_131("GraphQL interceptors can not have resource functions"),
+    ERROR_132("Invalid remote method in interceptor service. Only \"execute\" remote method is allowed"),
+    ERROR_133("Anonymous record `{0}` cannot be used as the type of the field `{1}`"),
+    ERROR_134("Anonymous record `{0}` cannot be used as an input object type of the field `{1}`");
 
     private final String message;
 

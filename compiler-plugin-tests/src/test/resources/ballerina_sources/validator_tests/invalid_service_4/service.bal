@@ -79,3 +79,18 @@ service graphql:Service on new graphql:Listener(4000) {
         };
     }
 }
+
+readonly service class ServiceInterceptor {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        anydata|error result = context.resolve('field);
+        return result;
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get foo() returns graphql:Interceptor {
+        return new ServiceInterceptor();
+    }
+}

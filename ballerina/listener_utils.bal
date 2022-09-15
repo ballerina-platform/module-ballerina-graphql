@@ -72,15 +72,16 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
                                        Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
-        return getResponseFromExecution(engine, validationResult, context, fileInfo);
+        context.setFileInfo(fileInfo);
+        return getResponseFromExecution(engine, validationResult, context);
     } else {
         return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
 }
 
-isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context,
-                                           map<Upload|Upload[]> fileInfo) returns http:Response {
-    OutputObject outputObject = engine.execute(operationNode, context, fileInfo);
+isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
+returns http:Response {
+    OutputObject outputObject = engine.getResult(operationNode, context);
     return createResponse(outputObject.toJson());
 }
 
@@ -99,12 +100,6 @@ isolated function getOperationName(json payload) returns string? {
         return operationName;
     }
     return;
-}
-
-isolated function addDefaultDirectives(__Schema schema) {
-    foreach __Directive directive in defaultDirectives {
-        schema.directives.push(directive);
-    }
 }
 
 isolated function getResponseFromMultipartPayload(Engine engine, Context context, http:Request request)
@@ -302,7 +297,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
 
-        isolated resource function get .(http:RequestContext requestContext, 
+        isolated resource function get .(http:RequestContext requestContext,
                                          http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
@@ -314,11 +309,11 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
                 }
                 return handleGetRequests(self.engine, context, request);
             } else {
-                panic error("Invalid object received from the context init function.");
+                panic error("Unsupported type found for context");
             }
         }
 
-        isolated resource function post .(http:RequestContext requestContext, 
+        isolated resource function post .(http:RequestContext requestContext,
                                           http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
@@ -330,11 +325,11 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
                 }
                 return handlePostRequests(self.engine, context, request);
             } else {
-                panic error("Invalid object received from the context init function.");
+                panic error("Unsupported type found for context");
             }
         }
 
-        isolated function initContext(http:RequestContext requestContext, 
+        isolated function initContext(http:RequestContext requestContext,
                                       http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
@@ -348,6 +343,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
                 response.setPayload(payload);
                 return response;
             } else {
+                context.setEngine(self.engine);
                 return context;
             }
         }
@@ -355,16 +351,41 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
     return httpService;
 }
 
-isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema, 
+isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema,
                                       GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+    final ContextInit contextInitFunction = getContextInit(serviceConfig);
     return isolated service object {
-        isolated resource function get .() returns websocket:Service|websocket:UpgradeError {
-            return new WsService(gqlEngine, schema);
+        isolated resource function get .(http:Request request) returns websocket:Service|websocket:UpgradeError {
+            map<string> customHeaders = {};
+            string|http:HeaderNotFoundError subProtocol = request.getHeader(WS_SUB_PROTOCOL);
+            if subProtocol is string {
+                customHeaders = {"Sec-WebSocket-Protocol": subProtocol};
+            }
+            Context context = check initContext(gqlEngine, contextInitFunction, request);
+            return new WsService(gqlEngine, schema, customHeaders.cloneReadOnly(), context);
         }
     };
 }
 
-isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath) returns HttpService {
+isolated function initContext(Engine engine, ContextInit contextInit, http:Request request)
+    returns Context|websocket:UpgradeError {
+    // TODO: Temporary initiate the request context here, since it is not yet added in the WebSocket upgrade service
+    http:RequestContext requestContext = new;
+    Context|error context = contextInit(requestContext, request);
+    if context is error {
+        if context is AuthnError || context is AuthzError {
+            return error(context.message(), code = http:STATUS_BAD_REQUEST);
+        }
+        return error(context.message(), code = http:STATUS_INTERNAL_SERVER_ERROR);
+    } else {
+        context.setEngine(engine);
+        return context;
+    }
+}
+
+
+isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath,
+                                     boolean includedSubscription = false) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
@@ -373,9 +394,13 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
     } isolated service object {
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
-        isolated resource function get .(http:Caller caller) returns http:Response|http:InternalServerError {
-            string graphqlURL = string `http://${caller.localAddress.host}:${caller.localAddress.port}/${basePath}`;
-            string|error htmlAsString = getHtmlContentFromResources(graphqlURL);
+        isolated resource function get .(@http:Header {name: HTTP_HOST_HEADER} string host)
+            returns http:Response|http:InternalServerError {
+            string graphqlUrl = string `http://${host}/${basePath}`;
+            string subscriptionUrl = string `ws://${host}/${basePath}`;
+            string|error htmlAsString = includedSubscription
+                                        ? getHtmlContentFromResources(graphqlUrl, subscriptionUrl)
+                                        : getHtmlContentFromResources(graphqlUrl);
             if htmlAsString is error {
                 return {
                     body: htmlAsString.message()
@@ -411,7 +436,8 @@ isolated function validateGraphiqlPath(string path) returns Error? = @java:Metho
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function getHtmlContentFromResources(string graphqlUrl) returns string|Error = @java:Method {
+isolated function getHtmlContentFromResources(string graphqlUrl, string? subscriptionUrl = ())
+    returns string|Error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 

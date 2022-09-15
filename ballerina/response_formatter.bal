@@ -52,13 +52,13 @@ class ResponseFormatter {
         }
     }
 
-    isolated function coerceObject(Data? data, parser:ParentNode parentNode, __Type parentType, string? onType = ())
+    isolated function coerceObject(Data? data, parser:SelectionParentNode parentNode, __Type parentType, string? onType = ())
     returns Data? {
         if data == () {
             return ();
         } else {
             Data result = {};
-            foreach parser:Selection selection in parentNode.getSelections() {
+            foreach parser:SelectionNode selection in parentNode.getSelections() {
                 if selection is parser:FragmentNode {
                     self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
                 } else if selection is parser:FieldNode {
@@ -82,7 +82,7 @@ class ResponseFormatter {
 
     isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType,
                                            string onType) {
-        foreach parser:Selection selection in fragmentNode.getSelections() {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
             } else if selection is parser:FieldNode {
@@ -163,6 +163,15 @@ class ResponseFormatter {
             if parentType.kind is UNION && onType is string {
                 __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
                 __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, onType);
+                return self.getField(exactType, fieldName, onType);
+            } else if parentType.kind is INTERFACE {
+                __Field[] fields = <__Field[]>parentType?.fields;
+                __Field? exactField = getFieldFromFieldArray(fields, fieldName);
+                if exactField is __Field {
+                    return exactField;
+                }
+                __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
+                __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, <string>onType);
                 return self.getField(exactType, fieldName, onType);
             }
             __Field[] fields = <__Field[]>parentType?.fields;

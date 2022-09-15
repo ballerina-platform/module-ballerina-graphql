@@ -30,7 +30,7 @@ function testSingleFileUpload() returns error? {
     json operation = {
         "query":document,
         "variables": variables
-    }; 
+    };
 
     json pathMap =  { "0": ["variables.file"]};
 
@@ -61,7 +61,7 @@ function testSingleFileUpload() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     json actualPayload = check httpClient->post("/fileUpload", request);
     json receivedFileContent = check actualPayload.data.singleFileUpload.content;
     stream<io:Block, io:Error?> fileReadBlocksAsStream = check io:fileReadBlocksAsStream("./tests/resources/files/sample1.json");
@@ -79,7 +79,7 @@ function testMultipleFileUpload() returns error? {
     json operation = {
         "query":document,
         "variables": variables
-    }; 
+    };
 
     json pathMap =  {
         "0": ["variables.fileList.0"],
@@ -129,7 +129,7 @@ function testMultipleFileUpload() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     json actualPayload = check httpClient->post("/fileUpload", request);
 
     json recevedContents = check actualPayload.data.multipleFileUpload;
@@ -191,7 +191,7 @@ isolated function testUndefinedVariableWithMultipartRequest1() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);
@@ -242,7 +242,7 @@ isolated function testUndefinedVariableWithMultipartRequest2() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);
@@ -293,7 +293,7 @@ isolated function testMissingContentInMultipartRequest() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);
@@ -344,7 +344,7 @@ isolated function testInvalidMapFieldInMultipartRequest() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);
@@ -395,7 +395,7 @@ isolated function testInvalidMapTypeInMultipartRequest() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);
@@ -446,7 +446,7 @@ function testNonNullVariableValueWithMutipartRequest() returns error? {
     http:Request request = new;
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
-    http:Client httpClient = check new("http://localhost:9091");
+    http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
     http:Response response = check httpClient->post("/fileUpload", request);
     int statusCode = response.statusCode;
     test:assertEquals(statusCode, 400);

@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "This field is not accessible!",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 3
+                }
+            ],
+            "path": [
+                "greet"
+            ]
+        }
+    ],
+    "data": null
+}

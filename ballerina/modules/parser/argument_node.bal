@@ -15,7 +15,7 @@
 // under the License.
 
 public class ArgumentNode {
-    *Node;
+    *NamedNode;
 
     private string name;
     private Location location;
@@ -35,6 +35,10 @@ public class ArgumentNode {
         self.variableDefinition = isVarDef;
         self.variableName = ();
         self.variableValue = ();
+    }
+
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitArgument(self, data);
     }
 
     public isolated function getName() returns string {

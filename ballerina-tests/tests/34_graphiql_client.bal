@@ -54,7 +54,7 @@ function testGraphiqlWithSamePathAsGraphQLService() returns error? {
 }
 function testGraphiqlPathWhenClientDisabled() returns error? {
     string url = "http://localhost:9091";
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response|error response = httpClient->get("/ballerina graphql");
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;
@@ -67,7 +67,7 @@ function testGraphiqlPathWhenClientDisabled() returns error? {
 }
 function testGraphiqlDefaultPath() returns error? {
     string url = "http://localhost:9091";
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response|error response = httpClient->get("/graphiql");
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;
@@ -79,7 +79,7 @@ function testGraphiqlDefaultPath() returns error? {
 }
 function testGraphiql() returns error? {
     string url = "http://localhost:9091";
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response|error response = httpClient->get("/ballerina/graphiql");
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;
@@ -91,7 +91,7 @@ function testGraphiql() returns error? {
 }
 function testGraphiqlWithDefaultBasePath() returns error? {
     string url = "http://localhost:9092";
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response|error response = httpClient->get("/graphiql");
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;
@@ -103,7 +103,7 @@ function testGraphiqlWithDefaultBasePath() returns error? {
 }
 function testGraphiql1() returns error? {
     string url = "http://localhost:9091/";
-    http:Client httpClient = check new(url);
+    http:Client httpClient = check new(url, httpVersion = "1.1");
     http:Response|error response = httpClient->get("graphiql/interface");
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;

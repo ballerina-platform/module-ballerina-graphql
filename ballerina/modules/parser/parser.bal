@@ -122,7 +122,7 @@ public class Parser {
             }
             Location varDefinitionLocation = token.location.clone();
             token = check self.readNextNonSeparatorToken();
-            string varName = check getIdentifierTokenvalue(token);
+            string name = check getIdentifierTokenvalue(token);
             Location varLocation = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
@@ -130,29 +130,29 @@ public class Parser {
             }
             token = check self.readNextNonSeparatorToken();
             string varType = check self.getTypeIdentifierTokenValue(token);
-            VariableDefinitionNode varDefinition = new (varName, varType, varDefinitionLocation);
+            VariableNode variableNode = new (name, varType, varDefinitionLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EQUAL {
                 token = check self.readNextNonSeparatorToken(); // consume "=" sign here
                 token = check self.peekNextNonSeparatorToken();
                 if token.kind == T_OPEN_BRACE {
-                    ArgumentNode value = check self.getInputObjectTypeArgument(varName, varLocation, false);
-                    varDefinition.setDefaultValue(value);
+                    ArgumentNode value = check self.getInputObjectTypeArgument(name, varLocation, false);
+                    variableNode.setDefaultValue(value);
                 } else if token.kind == T_OPEN_BRACKET {
-                    ArgumentNode value = check self.getListTypeArgument(varName, varLocation, false);
-                    varDefinition.setDefaultValue(value);
+                    ArgumentNode value = check self.getListTypeArgument(name, varLocation, false);
+                    variableNode.setDefaultValue(value);
                 } else {
-                    ArgumentNode value = check self.getScalarTypeArgument(varName, varLocation, false);
-                    varDefinition.setDefaultValue(value);
+                    ArgumentNode value = check self.getScalarTypeArgument(name, varLocation, false);
+                    variableNode.setDefaultValue(value);
                 }
                 token = check self.peekNextNonSeparatorToken();
             }
-            operationNode.addVariableDefinition(varDefinition);
+            operationNode.addVariableDefinition(variableNode);
         }
         token = check self.readNextNonSeparatorToken();
     }
 
-    isolated function addSelections(ParentNode parentNode) returns Error? {
+    isolated function addSelections(SelectionParentNode parentNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Read the open brace here
         while token.kind != T_CLOSE_BRACE {
             token = check self.peekNextNonSeparatorToken();
@@ -168,7 +168,7 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
     }
 
-    isolated function addFragment(ParentNode parentNode) returns Error? {
+    isolated function addFragment(SelectionParentNode parentNode) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
         Location spreadLocation = token.location;
         token = check self.peekNextNonSeparatorToken();
@@ -180,7 +180,7 @@ public class Parser {
         }
     }
 
-    isolated function addSelectionToNode(ParentNode parentNode) returns FieldNode|Error {
+    isolated function addSelectionToNode(SelectionParentNode parentNode) returns FieldNode|Error {
         Token token = check self.readNextNonSeparatorToken();
         string alias = check getIdentifierTokenvalue(token);
         string name = check self.getNameWhenAliasPresent(alias);
@@ -195,7 +195,7 @@ public class Parser {
         return fieldNode;
     }
 
-    isolated function addNamedFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
+    isolated function addNamedFragmentToNode(SelectionParentNode parentNode, Location spreadLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
         string fragmentName = check getIdentifierTokenvalue(token);
         FragmentNode fragmentNode = new (fragmentName, token.location, false, spreadLocation);
@@ -203,7 +203,7 @@ public class Parser {
         parentNode.addSelection(fragmentNode);
     }
 
-    isolated function addInlineFragmentToNode(ParentNode parentNode, Location spreadLocation) returns Error? {
+    isolated function addInlineFragmentToNode(SelectionParentNode parentNode, Location spreadLocation) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); //Consume on keyword
         token = check self.readNextNonSeparatorToken();
         Location location = token.location;
@@ -251,7 +251,8 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
     }
 
-    isolated function addDirectivesToSelection(ParentNode parentNode, DirectiveLocation dirLocation) returns Error? {
+    isolated function addDirectivesToSelection(SelectionParentNode parentNode, DirectiveLocation directiveLocation)
+    returns Error? {
         Token token = check self.peekNextNonSeparatorToken();
         if token.kind != T_AT {
             return;
@@ -261,11 +262,10 @@ public class Parser {
             Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenvalue(token);
-            DirectiveNode directiveNode = new (name, location);
-            directiveNode.addDirectiveLocation(dirLocation);
+            DirectiveNode directiveNode = new (name, location, directiveLocation);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_OPEN_PARENTHESES {
-                check self.addArgumentsToDirective(directiveNode, dirLocation);
+                check self.addArgumentsToDirective(directiveNode, directiveLocation);
             }
             parentNode.addDirective(directiveNode);
             token = check self.peekNextNonSeparatorToken();

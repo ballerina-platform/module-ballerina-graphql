@@ -15,18 +15,22 @@
 // under the License.
 
 public class DirectiveNode {
-    *Node;
+    *NamedNode;
 
     private string name;
     private Location location;
     private ArgumentNode[] argumentNodes;
-    private DirectiveLocation[] directiveLocations;
+    private DirectiveLocation directiveLocation;
 
-    public isolated function init(string name, Location location) {
+    public isolated function init(string name, Location location, DirectiveLocation directiveLocation) {
         self.name = name;
         self.location = location;
         self.argumentNodes = [];
-        self.directiveLocations = [];
+        self.directiveLocation = directiveLocation;
+    }
+
+    public isolated function accept(Visitor visitor, anydata data = ()) {
+        visitor.visitDirective(self, data);
     }
 
     public isolated function getName() returns string {
@@ -45,11 +49,7 @@ public class DirectiveNode {
         self.argumentNodes.push(arg);
     }
 
-    public isolated function getDirectiveLocations() returns DirectiveLocation[] {
-        return self.directiveLocations;
-    }
-
-    public isolated function addDirectiveLocation(DirectiveLocation dirLocation) {
-        self.directiveLocations.push(dirLocation);
+    public isolated function getDirectiveLocation() returns DirectiveLocation {
+        return self.directiveLocation;
     }
 }

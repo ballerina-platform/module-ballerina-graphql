@@ -1,0 +1,38 @@
+query ($includeDeprecated: Boolean!) {
+    __schema {
+        queryType {
+            ...FieldFragment
+        }
+        mutationType {
+            ...FieldFragment
+        }
+        subscriptionType {
+            ...FieldFragment
+        }
+    }
+    __type(name: "InstrumentType") {
+        enumValues(includeDeprecated: $includeDeprecated) {
+            name
+            isDeprecated
+            deprecationReason
+        }
+    }
+}
+
+fragment FieldFragment on __Type {
+    fields(includeDeprecated: $includeDeprecated) {
+        name
+        isDeprecated
+        deprecationReason
+        type {
+            ofType {
+                name
+                fields(includeDeprecated: $includeDeprecated) {
+                    name
+                    isDeprecated
+                    deprecationReason
+                }
+            }
+        }
+    }
+}

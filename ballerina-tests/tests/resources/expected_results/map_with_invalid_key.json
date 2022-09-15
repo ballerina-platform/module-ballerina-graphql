@@ -1,0 +1,25 @@
+{
+    "errors": [
+        {
+            "message": "The field \"name\" is a map, but it does not contain the key \"desktop\"",
+            "locations": [
+                {
+                    "line": 4,
+                    "column": 9
+                }
+            ],
+            "path": ["languages", "name"]
+        },
+        {
+            "message": "The field \"name\" is a map, but it does not contain the key \"deployment\"",
+            "locations": [
+                {
+                    "line": 6,
+                    "column": 9
+                }
+            ],
+            "path": ["languages", "name"]
+        }
+    ],
+    "data": null
+}

@@ -17,6 +17,9 @@
 import ballerina/http;
 import graphql.parser;
 
+// Error messages
+const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";
+
 isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type rootType) returns string {
     string typeName = getTypeNameFromType(rootType);
     if rootType.kind == UNION {
@@ -83,7 +86,8 @@ isolated function getInvalidDefaultValueError(string variableName, string typeNa
     return string`Variable "${variableName}" expected value of type "${typeName}", found ${errorValue}`;
 }
 
-isolated function getInvalidArgumentValueError(string listIndexOfError, string expectedTypeName, parser:ArgumentValue value) returns string {
+isolated function getInvalidArgumentValueError(string listIndexOfError, string expectedTypeName,
+                                               parser:ArgumentValue value) returns string {
     if value is parser:ArgumentNode {
         string errorValue = getErrorValueInString(value);
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
@@ -190,7 +194,7 @@ isolated function getTypeNameFromType(__Type schemaType) returns string {
     return schemaType.name.toString();
 }
 
-isolated function getTypeNameFromValue(Scalar value) returns string {
+isolated function getTypeNameFromScalarValue(Scalar value) returns string {
     if value is float {
         return FLOAT;
     } else if value is decimal {
@@ -374,17 +378,24 @@ isolated function getGraphqlPayload(string query, map<anydata>? variables = (), 
 
 isolated function handleHttpClientErrorResponse(http:ClientError clientError) returns RequestError {
     if clientError is http:ApplicationResponseError {
-        anydata|error data = clientError.detail().get("body").ensureType(anydata);
-        if data is error {
-            return error RequestError("GraphQL Client Error", data);
+        anydata body = clientError.detail().get("body");
+        if hasGraphqlErrors(clientError) {
+            ErrorDetail[] errorDetails = checkpanic (<json>body).errors.ensureType();
+            return error InvalidDocumentError("Invalid GraphQL document provided", errors = errorDetails);
         }
-        return error RequestError("GraphQL Client Error", body = data);
+        return error HttpError("GraphQL Client Error", body = body);
     }
-    return error RequestError("GraphQL Client Error", clientError);
+    return error HttpError("GraphQL Client Error", clientError, body = ());
+}
+
+isolated function hasGraphqlErrors(http:ApplicationResponseError applicationResponseError) returns boolean {
+    anydata body = applicationResponseError.detail().get("body");
+    json|error data = body.ensureType();
+    return applicationResponseError.detail().statusCode == 400 && data is json && data.errors is json;
 }
 
 isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
-    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType(GraphQLErrorArray);
+    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType();
     if errors is error {
         return error RequestError("GraphQL Client Error", errors);
     }
@@ -415,7 +426,7 @@ isolated function performDataBinding(typedesc<GenericResponse|record{}|json> tar
 
 isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType,
                                                json graphqlResponse)
-                                               returns GenericResponseWithErrors|record{}|json|RequestError {
+                                               returns GenericResponseWithErrors|record{}|json|PayloadBindingError {
     do {
         if targetType is typedesc<GenericResponseWithErrors> {
             GenericResponseWithErrors response = check graphqlResponse.cloneWithType(targetType);
@@ -428,7 +439,44 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
             return response;
         }
     } on fail error e {
-        return error RequestError("GraphQL Client Error",  e);
+        map<json>|error responseMap = graphqlResponse.ensureType();
+        if responseMap is error || !responseMap.hasKey("errors") {
+            return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
+        }
+        ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, errors = errorDetails);
     }
-    return error RequestError("GraphQL Client Error, Invalid binding type.");
+    return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`, errors = ());
+}
+
+isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {
+    __TypeKind typeKind = parentType.kind;
+    if typeKind == NON_NULL {
+        return getFieldTypeFromParentType(unwrapNonNullype(parentType), typeArray, fieldNode);
+    } else if typeKind == OBJECT {
+        __Field requiredFieldValue = <__Field>getRequierdFieldFromType(parentType, typeArray, fieldNode);
+        return requiredFieldValue.'type;
+    } else if typeKind == LIST {
+        return getFieldTypeFromParentType(<__Type>parentType.ofType, typeArray, fieldNode);
+    } else if typeKind == UNION {
+        foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
+            __Field? fieldValue = getRequierdFieldFromType(possibleType, typeArray, fieldNode);
+            if fieldValue is __Field {
+                return fieldValue.'type;
+            }
+        }
+    } else if typeKind == INTERFACE {
+        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, typeArray, fieldNode);
+        if requiredFieldValue is () {
+            foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
+                __Field? fieldValue = getRequierdFieldFromType(possibleType, typeArray, fieldNode);
+                if fieldValue is __Field {
+                    return fieldValue.'type;
+                }
+            }
+        } else {
+            return requiredFieldValue.'type;
+        }
+    }
+    return parentType;
 }

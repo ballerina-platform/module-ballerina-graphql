@@ -14,25 +14,40 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
+
 import graphql.parser;
 
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
+    private final readonly & (readonly & Interceptor)[] interceptors;
+    private final readonly & boolean introspectionEnabled;
 
-    isolated function init(string schemaString, int? maxQueryDepth) returns Error? {
+    isolated function init(string schemaString, int? maxQueryDepth, Service s,
+                           readonly & (readonly & Interceptor)[] interceptors, boolean introspectionEnabled)
+    returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
+        self.interceptors = interceptors;
+        self.introspectionEnabled = introspectionEnabled;
+        self.addService(s);
     }
 
     isolated function getSchema() returns readonly & __Schema {
         return self.schema;
     }
 
-    isolated function validate(string documentString, string? operationName, map<json>? variables) returns parser:OperationNode|OutputObject {
+    isolated function getInterceptors() returns (readonly & Interceptor)[] {
+        return self.interceptors;
+    }
+
+    isolated function validate(string documentString, string? operationName, map<json>? variables)
+        returns parser:OperationNode|OutputObject {
+
         parser:DocumentNode|OutputObject result = self.parse(documentString);
         if result is OutputObject {
             return result;
@@ -46,11 +61,24 @@ isolated class Engine {
         }
     }
 
-    isolated function execute(parser:OperationNode operationNode, Context context, map<Upload|Upload[]> fileInfo)
-        returns OutputObject {
-        ExecutorVisitor executor = new(self, self.schema, context, fileInfo);
-        OutputObject outputObject = executor.getExecutorResult(operationNode);
-        ResponseFormatter responseFormatter = new(self.schema);
+    isolated function getResult(parser:OperationNode operationNode, Context context, any result = ())
+    returns OutputObject {
+        DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
+        DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
+
+        parser:Visitor[] updatingVisitors = [
+            defaultDirectiveProcessor,
+            duplicateFieldRemover
+        ];
+
+        foreach parser:Visitor visitor in updatingVisitors {
+            operationNode.accept(visitor);
+        }
+
+        ExecutorVisitor executor = new (self, self.schema, context, result);
+        operationNode.accept(executor);
+        OutputObject outputObject = executor.getOutput();
+        ResponseFormatter responseFormatter = new (self.schema);
         return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
     }
 
@@ -69,46 +97,25 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(document.getErrors());
         }
 
-        FragmentVisitor fragmentVisitor = new(document);
-        ErrorDetail[]? errors = fragmentVisitor.validate();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
+        ValidatorVisitor[] validators = [
+            new FragmentCycleFinderVisitor(document.getFragments()),
+            new FragmentValidatorVisitor(document.getFragments()),
+            new QueryDepthValidatorVisitor(self.maxQueryDepth),
+            new VariableValidatorVisitor(self.schema, variables),
+            new FieldValidatorVisitor(self.schema),
+            new DirectiveValidatorVisitor(self.schema),
+            new SubscriptionValidatorVisitor()
+        ];
+        if !self.introspectionEnabled {
+            validators.push(new IntrospectionValidatorVisitor(self.introspectionEnabled));
         }
 
-        if self.maxQueryDepth is int {
-            int queryDepth = <int> self.maxQueryDepth;
-            QueryDepthValidator queryDepthValidator = new QueryDepthValidator(document, queryDepth);
-            errors = queryDepthValidator.validate();
+        foreach ValidatorVisitor validator in validators {
+            document.accept(validator);
+            ErrorDetail[]? errors = validator.getErrors();
             if errors is ErrorDetail[] {
                 return getOutputObjectFromErrorDetail(errors);
             }
-        }
-
-        VariableValidator variableValidator = new(self.schema, document, variables);
-        errors = variableValidator.validate();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        ValidatorVisitor validator = new(self.schema, document);
-        errors = validator.validate();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        DirectiveVisitor directiveVisitor = new(self.schema, document);
-        errors = directiveVisitor.validate();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
-        }
-
-        DuplicateFieldRemover duplicateFieldRemover = new(document);
-        duplicateFieldRemover.remove();
-
-        SubscriptionVisitor subscriptionVisitor = new(document);
-        errors = subscriptionVisitor.validate();
-        if errors is ErrorDetail[] {
-            return getOutputObjectFromErrorDetail(errors);
         }
         return;
     }
@@ -119,7 +126,7 @@ isolated class Engine {
             if document.getOperations().length() == 1 {
                 return document.getOperations()[0];
             } else {
-                string message = string`Must provide operation name if query contains multiple operations.`;
+                string message = string `Must provide operation name if query contains multiple operations.`;
                 ErrorDetail errorDetail = {
                     message: message,
                     locations: []
@@ -132,7 +139,7 @@ isolated class Engine {
                     return operationNode;
                 }
             }
-            string message = string`Unknown operation named "${operationName}".`;
+            string message = string `Unknown operation named "${operationName}".`;
             ErrorDetail errorDetail = {
                 message: message,
                 locations: []
@@ -140,4 +147,135 @@ isolated class Engine {
             return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
+
+    isolated function resolve(Context context, Field 'field) returns anydata {
+        parser:FieldNode fieldNode = 'field.getInternalNode();
+        parser:RootOperationType operationType = 'field.getOperationType();
+        (Interceptor & readonly)? interceptor = context.getNextInterceptor();
+        __Type fieldType = 'field.getFieldType();
+        any|error fieldValue;
+        if operationType == parser:OPERATION_QUERY {
+            if interceptor is () {
+                fieldValue = self.resolveResourceMethod(context, 'field);
+            } else {
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
+                                                                              self.getInterceptorName(interceptor));
+                if interceptValue is error {
+                    fieldValue = interceptValue;
+                } else {
+                    return interceptValue;
+                }
+            }
+        } else if operationType == parser:OPERATION_MUTATION {
+            if interceptor is () {
+                fieldValue = self.resolveRemoteMethod(context, 'field);
+            } else {
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
+                                                                              self.getInterceptorName(interceptor));
+                if interceptValue is error {
+                    fieldValue = interceptValue;
+                } else {
+                    return interceptValue;
+                }
+            }
+        } else {
+            // TODO: Handle Subscriptions
+            fieldValue = ();
+        }
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
+        return responseGenerator.getResult(fieldValue, fieldNode);
+    }
+
+    isolated function resolveResourceMethod(Context context, Field 'field) returns any|error {
+        service object {}? serviceObject = 'field.getServiceObject();
+        if serviceObject is service object {} {
+            handle? resourceMethod = self.getResourceMethod(serviceObject, 'field.getResourcePath());
+            if resourceMethod == () {
+                return self.resolveHierarchicalResource(context, 'field);
+            }
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
+        }
+        return 'field.getFieldValue();
+    }
+
+    isolated function resolveRemoteMethod(Context context, Field 'field) returns any|error {
+        service object {}? serviceObject = 'field.getServiceObject();
+        if serviceObject is service object {} {
+           return self.executeMutationMethod(context, serviceObject, 'field.getInternalNode());
+        }
+        return 'field.getFieldValue();
+    }
+
+    isolated function resolveHierarchicalResource(Context context, Field 'field) returns anydata {
+        if 'field.getInternalNode().getSelections().length() == 0 {
+            return;
+        }
+        map<anydata> result = {};
+        foreach parser:SelectionNode selection in 'field.getInternalNode().getSelections() {
+            if selection is parser:FieldNode {
+                self.getHierarchicalResult(context, 'field, selection, result);
+            } else if selection is parser:FragmentNode {
+                self.resolveHierarchicalResourceFromFragment(context, 'field, selection, result);
+            }
+        }
+        return result;
+    }
+
+    isolated function resolveHierarchicalResourceFromFragment(Context context, Field 'field,
+                                                              parser:FragmentNode fragmentNode, map<anydata> result) {
+        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+            if selection is parser:FieldNode {
+                self.getHierarchicalResult(context, 'field, selection, result);
+            } else if selection is parser:FragmentNode {
+                self.resolveHierarchicalResourceFromFragment(context, 'field, selection, result);
+            }
+        }
+    }
+
+    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, map<anydata> result) {
+        string[] resourcePath = 'field.getResourcePath();
+        (string|int)[] path = 'field.getPath().clone();
+        path.push(fieldNode.getName());
+        __Type fieldType = getFieldTypeFromParentType('field.getFieldType(), self.schema.types, fieldNode);
+        Field selectionField = new (fieldNode, fieldType, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
+        context.resetInterceptorCount();
+        anydata fieldValue = self.resolve(context, selectionField);
+        result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+        _ = resourcePath.pop();
+    }
+
+    isolated function addService(Service s) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getService() returns Service = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    isolated function getResourceMethod(service object {} serviceObject, string[] path)
+    returns handle? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
+                                            parser:FieldNode fieldNode)
+    returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeMutationMethod(Context context, service object {} serviceObject,
+                                            parser:FieldNode fieldNode) returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executeInterceptor(readonly & Interceptor interceptor, Field fieldNode, Context context)
+    returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function getInterceptorName(readonly & Interceptor interceptor) returns string = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
 }

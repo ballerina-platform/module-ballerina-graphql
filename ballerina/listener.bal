@@ -30,6 +30,7 @@ public class Listener {
     # + return - A `graphql:Error` if the listener initialization is failed or else `()`
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration configuration)
     returns Error? {
+        configuration.httpVersion = "1.1";
         if listenTo is int {
             http:Listener|error httpListener = new (listenTo, configuration);
             if httpListener is error {
@@ -51,21 +52,29 @@ public class Listener {
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
         Graphiql graphiql = getGraphiqlConfig(serviceConfig);
-        if graphiql.enable {
+        string schemaString = getSchemaString(serviceConfig);
+        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
+        readonly & (readonly & Interceptor)[] interceptors = getServiceInterceptors(serviceConfig);
+        boolean introspectionEnabled = getIntrospectionEnabled(serviceConfig);
+        Engine engine;
+        if graphiql.enabled {
             check validateGraphiqlPath(graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            HttpService graphiqlService = getGraphiqlService(serviceConfig, gqlServiceBasePath);
+            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspectionEnabled);
+            __Schema & readonly schema = engine.getSchema();
+            __Type? subscriptionType = schema.subscriptionType;
+            HttpService graphiqlService = subscriptionType is __Type
+                                        ? getGraphiqlService(serviceConfig, gqlServiceBasePath, true)
+                                        : getGraphiqlService(serviceConfig, gqlServiceBasePath);
             attachGraphiqlServiceToGraphqlService(s, graphiqlService);
             error? result = self.httpListener.attach(graphiqlService, graphiql.path);
             if result is error {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
             }
+        } else {
+            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspectionEnabled);
         }
 
-        string schemaString = getSchemaString(serviceConfig);
-        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        Engine engine = check new (schemaString, maxQueryDepth);
-        attachServiceToEngine(s, engine);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
 

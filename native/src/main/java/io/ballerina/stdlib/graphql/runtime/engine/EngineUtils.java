@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -33,6 +34,7 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.values.BValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,7 @@ import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
 import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
+import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
@@ -95,13 +98,13 @@ public class EngineUtils {
     //Accessor names
     public static final String GET_ACCESSOR = "get";
     public static final String SUBSCRIBE_ACCESSOR = "subscribe";
+    public static final String INTERCEPTOR_EXECUTE = "execute";
 
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
     static final BString ENGINE_FIELD = StringUtils.fromString("engine");
     static final BString DATA_FIELD = StringUtils.fromString("data");
     static final BString CONTEXT_FIELD = StringUtils.fromString("context");
-    static final BString FILE_INFO = StringUtils.fromString("fileInfo");
 
     // Internal Types
     static final String ERROR_DETAIL_RECORD = "ErrorDetail";
@@ -127,6 +130,9 @@ public class EngineUtils {
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
+    public static final String FIELD_OBJECT = "field.object";
+
+    public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
 
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
@@ -233,5 +239,53 @@ public class EngineUtils {
             }
         }
         return null;
+    }
+
+    public static void addService(BObject engine, BObject service) {
+        engine.addNativeData(GRAPHQL_SERVICE_OBJECT, service);
+    }
+
+    public static BObject getService(BObject engine) {
+        return (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+    }
+
+    public static void setFileInfo(BObject context, BMap<BString, Object> fileInfo) {
+        context.addNativeData(FILE_INFO_FIELD, fileInfo);
+    }
+
+    public static BMap<BString, Object> getFileInfo(BObject context) {
+        return (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
+    }
+
+    public static boolean isMap(BMap<BString, Object> value) {
+        return value.getType().getTag() == TypeTags.MAP_TAG;
+    }
+
+    public static BString getTypeNameFromValue(BValue bValue) {
+        if (bValue.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
+            return StringUtils.fromString(getTypeNameFromRecordValue((RecordType) bValue.getType()));
+        } else if (bValue.getType().getTag() == SERVICE_TAG) {
+            return StringUtils.fromString(bValue.getType().getName());
+        }
+        return StringUtils.fromString("");
+    }
+
+    static String getTypeNameFromRecordValue(RecordType recordType) {
+        if (recordType.getName().contains("&") && recordType.getIntersectionType().isPresent()) {
+            for (Type constituentType : recordType.getIntersectionType().get().getConstituentTypes()) {
+                if (constituentType.getTag() != TypeTags.READONLY_TAG) {
+                    return constituentType.getName();
+                }
+            }
+        }
+        return recordType.getName();
+    }
+
+    public static void setField(BObject context, BObject field) {
+        context.addNativeData(FIELD_OBJECT, field);
+    }
+
+    public static BObject getField(BObject context) {
+        return (BObject) context.getNativeData(FIELD_OBJECT);
     }
 }

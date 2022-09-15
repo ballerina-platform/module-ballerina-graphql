@@ -40,8 +40,8 @@
                                         "description": "Name of the instrument"
                                     },
                                     {
-                                        "name": "method",
-                                        "description": "Method the instrument generate the sound"
+                                        "name": "type",
+                                        "description": "The type of the musical instrument"
                                     }
                                 ]
                             }

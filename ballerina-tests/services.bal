@@ -24,4 +24,8 @@ service /interfaces on new graphql:Listener(9098) {
     isolated resource function get characters() returns Character[] {
         return [new Human("Luke Skywalker", 1), new Droid("R2D2", 1977)];
     }
+
+    isolated resource function get ships() returns Ship[] {
+        return [new Starship("E1", "Organo"), new Starship("E2", "Solo")];
+    }
 }

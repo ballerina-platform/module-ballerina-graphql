@@ -16,35 +16,6 @@
 
 import ballerina/test;
 
-isolated service class Vehicle {
-    private final string id;
-    private final string name;
-    private final int? registeredYear;
-
-    isolated function init(string id, string name, int? registeredYear = ()) {
-        self.id = id;
-        self.name = name;
-        self.registeredYear = registeredYear;
-    }
-
-    isolated resource function get id() returns string {
-        return self.id;
-    }
-
-    isolated resource function get name() returns string {
-        return self.name;
-    }
-
-    isolated resource function get registeredYear() returns int|error {
-        int? registeredYear = self.registeredYear;
-        if registeredYear == () {
-            return error("Registered Year is Not Found");
-        } else {
-            return registeredYear;
-        }
-    }
-}
-
 @test:Config {
     groups: ["arrays"]
 }

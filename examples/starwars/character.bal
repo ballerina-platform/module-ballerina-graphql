@@ -15,29 +15,21 @@
 // under the License.
 
 # A mechanical character from the Star Wars universe
-distinct service class Character {
+public type Character distinct service object {
 
     # The unique identifier of the character
     # + return - The id
-    resource function get id() returns string {
-        return "";
-    }
+    resource function get id() returns string;
 
     # The name of the character
     # + return - The name
-    resource function get name() returns string {
-        return "";
-    }
+    resource function get name() returns string;
 
     # This character's friends, or an empty list if they have none
     # + return - The friends
-    resource function get friends() returns Character[] {
-        return [];
-    }
+    resource function get friends() returns Character[];
 
     # The episodes this character appears in
     # + return - The episodes
-    resource function get appearsIn() returns Episode[] {
-        return [];
-    }
-}
+    resource function get appearsIn() returns Episode[];
+};

@@ -43,8 +43,6 @@ type IgnoreType T_NEW_LINE|T_WHITE_SPACE|T_COMMENT|T_COMMA;
 
 public type ArgumentType T_INT|T_FLOAT|T_BOOLEAN|T_STRING|T_IDENTIFIER|T_INPUT_OBJECT|T_LIST;
 
-public type Selection FieldNode|FragmentNode;
-
 public type ArgumentValue ArgumentNode|Scalar?;
 
 # Represents the types of operations valid in Ballerina GraphQL.
@@ -62,5 +60,17 @@ public enum DirectiveLocation {
     FIELD,
     FRAGMENT_DEFINITION,
     FRAGMENT_SPREAD,
-    INLINE_FRAGMENT
+    INLINE_FRAGMENT,
+    VARIABLE_DEFINITION,
+    SCHEMA,
+    SCALAR,
+    OBJECT,
+    FIELD_DEFINITION,
+    ARGUMENT_DEFINITION,
+    INTERFACE,
+    UNION,
+    ENUM,
+    ENUM_VALUE,
+    INPUT_OBJECT,
+    INPUT_FIELD_DEFINITION
 }
