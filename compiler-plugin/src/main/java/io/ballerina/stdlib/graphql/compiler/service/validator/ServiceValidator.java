@@ -43,7 +43,9 @@ import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
@@ -82,16 +84,16 @@ public class ServiceValidator {
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
     private final InterfaceFinder interfaceFinder;
     private final SyntaxNodeAnalysisContext context;
-    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
-    private final List<String> currentFieldPath;
+    private final Node serviceNode;
     private int arrayDimension = 0;
     private boolean errorOccurred;
     private boolean hasQueryType;
 
-    public ServiceValidator(SyntaxNodeAnalysisContext context, ServiceDeclarationSymbol serviceDeclarationSymbol,
-                            InterfaceFinder interfaceFinder) {
+    private final List<String> currentFieldPath;
+
+    public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder) {
         this.context = context;
-        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
+        this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
         this.errorOccurred = false;
         this.hasQueryType = false;
@@ -99,8 +101,30 @@ public class ServiceValidator {
     }
 
     public void validate() {
-        ServiceDeclarationNode node = (ServiceDeclarationNode) this.context.node();
-        if (this.serviceDeclarationSymbol.listenerTypes().size() > 1) {
+        if (serviceNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
+            validateServiceDeclaration();
+        } else if (serviceNode.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
+            validateServiceObject();
+        }
+    }
+
+    private void validateServiceObject() {
+        ObjectConstructorExpressionNode objectConstructorExpressionNode = (ObjectConstructorExpressionNode) serviceNode;
+        for (Node node : objectConstructorExpressionNode.members()) {
+            validateServiceMember(node);
+        }
+        if (!this.hasQueryType) {
+            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpressionNode.location());
+        }
+    }
+
+    private void validateServiceDeclaration() {
+        ServiceDeclarationNode node = (ServiceDeclarationNode) serviceNode;
+        // No need to check isEmpty(), already validated in ServiceDeclarationAnalysisTask
+        // noinspection OptionalGetWithoutIsPresent
+        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) context.semanticModel()
+                .symbol(node).get();
+        if (serviceDeclarationSymbol.listenerTypes().size() > 1) {
             addDiagnostic(CompilationError.INVALID_MULTIPLE_LISTENERS, node.location());
         }
         validateService();
@@ -369,6 +393,7 @@ public class ServiceValidator {
         }
         this.visitedClassesAndObjectTypeDefinitions.add(typeDefinitionSymbol);
         // TODO: Check for distinct keyword and add diagnostic
+        // https://github.com/ballerina-platform/ballerina-standard-library/issues/3337
         boolean resourceMethodFound = false;
         ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {

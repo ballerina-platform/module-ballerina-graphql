@@ -336,3 +336,94 @@ isolated function testInterceptorsReturningInvalidValue() returns error? {
     json expectedPayload = check getJsonContentFromFile("interceptors_returning_invalid_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithRecordFields() returns error? {
+    string document = string `{ profile{ name, age, address{ number, street, city }}}`;
+    string url = "http://localhost:9091/intercept_record_fields";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Albus Percival Wulfric Brian Dumbledore",
+                age: 80,
+                address: {
+                    number: "100",
+                    street: "Margo Street",
+                    city: "London"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithRecordFieldsAndFragments() returns error? {
+    string document = string `{ profile{ name, age, ...P1 }} fragment P1 on Person{ address{ number, street, city }}`;
+    string url = "http://localhost:9091/intercept_record_fields";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Albus Percival Wulfric Brian Dumbledore",
+                age: 80,
+                address: {
+                    number: "100",
+                    street: "Margo Street",
+                    city: "London"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithMap() returns error? {
+    string document = check getGraphQLDocumentFromFile("interceptors_with_map.graphql");
+    string url = "http://localhost:9091/intercept_map";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data:{
+            languages:{
+                backend: "Java",
+                frontend: "Flutter",
+                data: "Ballerina",
+                native: "C#"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors"]
+}
+isolated function testInterceptorsWithTables() returns error? {
+    string document = "{ employees { name } }";
+    string url = "http://localhost:9091/intercept_table";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            employees: [
+                {
+                    name: "Eng. John Doe"
+                },
+                {
+                    name: "Eng. Jane Doe"
+                },
+                {
+                    name: "Eng. Johnny Roe"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

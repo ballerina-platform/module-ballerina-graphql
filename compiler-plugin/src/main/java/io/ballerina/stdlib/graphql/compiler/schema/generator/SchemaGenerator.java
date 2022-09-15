@@ -43,6 +43,11 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
+import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.types.DefaultDirective;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Directive;
@@ -57,15 +62,18 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isFunctionDefinition;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_DESCRIPTION;
@@ -85,40 +93,23 @@ public class SchemaGenerator {
     private static final String IF_ARG_NAME = "if";
     private static final String REASON_ARG_NAME = "reason";
 
-    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
+    private final Node serviceNode;
     private final InterfaceFinder interfaceFinder;
     private final Schema schema;
+    private final SyntaxNodeAnalysisContext context;
     private final List<Type> visitedInterfaces;
 
-    public SchemaGenerator(ServiceDeclarationSymbol serviceDeclarationSymbol, InterfaceFinder interfaceFinder) {
-        this.serviceDeclarationSymbol = serviceDeclarationSymbol;
+    public SchemaGenerator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder,
+                           String description) {
+        this.context = context;
+        this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
-        this.schema = new Schema(getDescription(serviceDeclarationSymbol));
+        this.schema = new Schema(description);
         this.visitedInterfaces = new ArrayList<>();
     }
 
-    private static boolean isNilable(TypeSymbol typeSymbol) {
-        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
-            return false;
-        }
-        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
-        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
-            if (memberType.typeKind() == TypeDescKind.NIL) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
-        if (methodSymbol.documentation().isEmpty()) {
-            return null;
-        }
-        return methodSymbol.documentation().get().parameterMap().get(parameterName);
-    }
-
     public Schema generate() {
-        findRootTypes(this.serviceDeclarationSymbol);
+        findRootTypes(this.serviceNode);
         findIntrospectionTypes();
         return this.schema;
     }
@@ -129,9 +120,9 @@ public class SchemaGenerator {
         addDefaultDirectives();
     }
 
-    private void findRootTypes(ServiceDeclarationSymbol serviceDeclarationSymbol) {
+    private void findRootTypes(Node serviceNode) {
         Type queryType = addType(TypeName.QUERY);
-        for (MethodSymbol methodSymbol : serviceDeclarationSymbol.methods().values()) {
+        for (MethodSymbol methodSymbol : getMethods(serviceNode)) {
             if (isResourceMethod(methodSymbol)) {
                 ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
                 String accessor = getAccessor(resourceMethodSymbol);
@@ -153,6 +144,35 @@ public class SchemaGenerator {
         if (this.schema.containsType(TypeName.SUBSCRIPTION.getName())) {
             this.schema.setSubscriptionType(this.schema.getType(TypeName.SUBSCRIPTION.getName()));
         }
+    }
+
+    private Collection<? extends MethodSymbol> getMethods(Node node) {
+        if (node.kind() == SyntaxKind.SERVICE_DECLARATION) {
+            return getMethods((ServiceDeclarationNode) node);
+        }
+
+        if (node.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
+            return getMethods((ObjectConstructorExpressionNode) node);
+        }
+
+        return new ArrayList<>();
+    }
+
+    private Collection<? extends MethodSymbol> getMethods(
+            ObjectConstructorExpressionNode objectConstructorExpressionNode) {
+        // noinspection OptionalGetWithoutIsPresent
+        return objectConstructorExpressionNode.members().stream()
+                .filter(member -> isFunctionDefinition(member) && context.semanticModel().symbol(member)
+                        .isPresent()).map(methodNode -> (MethodSymbol) context.semanticModel().symbol(methodNode).get())
+                .collect(Collectors.toList());
+    }
+
+    private Collection<? extends MethodSymbol> getMethods(ServiceDeclarationNode serviceDeclarationNode) {
+        // ServiceDeclarationSymbol already validated. Therefore, no need to check isEmpty().
+        // noinspection OptionalGetWithoutIsPresent
+        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) context.semanticModel()
+                .symbol(serviceDeclarationNode).get();
+        return serviceDeclarationSymbol.methods().values();
     }
 
     private Field getField(ResourceMethodSymbol methodSymbol) {
@@ -210,9 +230,8 @@ public class SchemaGenerator {
     }
 
     private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
+        Type type = getInputFieldType(parameterSymbol.typeDescriptor());
         String defaultValue = getDefaultValue(parameterSymbol);
-        boolean hasDefaultValue = defaultValue != null;
-        Type type = getInputFieldType(parameterSymbol.typeDescriptor(), hasDefaultValue);
         return new InputValue(parameterName, type, description, defaultValue);
     }
 
@@ -253,6 +272,19 @@ public class SchemaGenerator {
                 return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
         }
         return null;
+    }
+
+    private static boolean isNilable(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
+            return false;
+        }
+        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
+        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
+            if (memberType.typeKind() == TypeDescKind.NIL) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Type addType(ScalarType scalarType) {
@@ -306,17 +338,16 @@ public class SchemaGenerator {
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
-            return getTypeFromObjectDefinition(name, typeDefinitionSymbol);
+            ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+            return getType(name, description, objectTypeSymbol);
         }
         return null;
     }
 
-    private Type getTypeFromObjectDefinition(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
-        String description = getDescription(typeDefinitionSymbol);
+    private Type getType(String name, String description, ObjectTypeSymbol objectTypeSymbol) {
         Type objectType = addType(name, TypeKind.INTERFACE, description);
         getTypesFromInterface(name, objectType);
 
-        ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
                 objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
@@ -349,8 +380,10 @@ public class SchemaGenerator {
             if (implementation.kind() == SymbolKind.CLASS) {
                 implementedType = getType(implementationName, (ClassSymbol) implementation);
             } else {
-                implementedType = getTypeFromObjectDefinition(implementationName,
-                                                              (TypeDefinitionSymbol) implementation);
+                TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) implementation;
+                String description = getDescription(typeDefinitionSymbol);
+                ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+                implementedType = getType(implementationName, description, objectTypeSymbol);
             }
 
             interfaceType.addPossibleType(implementedType);
@@ -457,6 +490,13 @@ public class SchemaGenerator {
         TypeSymbol typeSymbol = tableTypeSymbol.rowTypeParameter();
         Type type = getType(typeSymbol);
         return getWrapperType(getWrapperType(type, TypeKind.NON_NULL), TypeKind.LIST);
+    }
+
+    private static String getParameterDescription(String parameterName, MethodSymbol methodSymbol) {
+        if (methodSymbol.documentation().isEmpty()) {
+            return null;
+        }
+        return methodSymbol.documentation().get().parameterMap().get(parameterName);
     }
 
     private Type getInputType(TypeSymbol typeSymbol) {
@@ -584,12 +624,8 @@ public class SchemaGenerator {
     }
 
     private Type getInputFieldType(TypeSymbol typeSymbol) {
-        return getInputFieldType(typeSymbol, false);
-    }
-
-    private Type getInputFieldType(TypeSymbol typeSymbol, boolean hasDefaultValue) {
         Type type = getInputType(typeSymbol);
-        if (hasDefaultValue || isNilable(typeSymbol)) {
+        if (isNilable(typeSymbol)) {
             return type;
         }
         return getWrapperType(type, TypeKind.NON_NULL);

@@ -199,6 +199,13 @@ public class ServiceValidationTest {
     }
 
     @Test
+    public void testDynamicallyAttachingGraphQLService() {
+        String packagePath = "valid_service_24";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test
     public void testMultipleListenersOnSameService() {
         String packagePath = "invalid_service_1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);

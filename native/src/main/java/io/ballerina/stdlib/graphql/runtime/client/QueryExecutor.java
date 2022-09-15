@@ -21,8 +21,6 @@ package io.ballerina.stdlib.graphql.runtime.client;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
-import io.ballerina.runtime.api.async.Callback;
-import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
@@ -33,8 +31,8 @@ import io.ballerina.runtime.api.values.BTypedesc;
 public class QueryExecutor {
 
     /**
-    * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
-    */
+     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
+     */
     public static Object execute(Environment env, BObject client, BString document, Object variables,
                                  Object operationName, Object headers, BTypedesc targetType) {
         return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
@@ -42,8 +40,8 @@ public class QueryExecutor {
     }
 
     /**
-    * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
-    */
+     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
+     */
     public static Object executeWithType(Environment env, BObject client, BString document, Object variables,
                                          Object operationName, Object headers, BTypedesc targetType) {
         return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
@@ -71,31 +69,13 @@ public class QueryExecutor {
         Future balFuture = env.markAsync();
 
         if (client.getType().isIsolated() && client.getType().isIsolated(methodName)) {
-            env.getRuntime().invokeMethodAsyncConcurrently(client, methodName,
-                    null, null, new Callback() {
-                @Override
-                public void notifySuccess(Object result) {
-                    balFuture.complete(result);
-                }
-
-                @Override
-                public void notifyFailure(BError bError) {
-                    balFuture.complete(bError);
-                }
-            }, null, PredefinedTypes.TYPE_NULL, paramFeed);
+            env.getRuntime()
+                    .invokeMethodAsyncConcurrently(client, methodName, null, null, new QueryExecutorCallback(balFuture),
+                            null, PredefinedTypes.TYPE_NULL, paramFeed);
         } else {
-            env.getRuntime().invokeMethodAsyncSequentially(client, methodName,
-                    null, null, new Callback() {
-                @Override
-                public void notifySuccess(Object result) {
-                    balFuture.complete(result);
-                }
-
-                @Override
-                public void notifyFailure(BError bError) {
-                    balFuture.complete(bError);
-                }
-            }, null, PredefinedTypes.TYPE_NULL, paramFeed);
+            env.getRuntime()
+                    .invokeMethodAsyncSequentially(client, methodName, null, null, new QueryExecutorCallback(balFuture),
+                            null, PredefinedTypes.TYPE_NULL, paramFeed);
         }
         return null;
     }

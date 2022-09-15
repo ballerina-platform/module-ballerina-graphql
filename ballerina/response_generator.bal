@@ -76,7 +76,7 @@ class ResponseGenerator {
             (string|int)[] path = self.path.clone();
             path.push(fieldNode.getName());
             __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
-            Field 'field = new (fieldNode, parentValue, fieldType, path);
+            Field 'field = new (fieldNode, fieldType, parentValue, path);
             self.context.resetInterceptorCount();
             return self.engine.resolve(self.context, 'field);
         }
@@ -114,13 +114,24 @@ class ResponseGenerator {
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
-                anydata selectionValue = self.getResultFromObject(parentValue, selection);
-                result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
+                anydata fieldValue = self.getRecordResult(parentValue, selection);
+                result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
             } else if selection is parser:FragmentNode {
                 self.getResultForFragmentFromMap(parentValue, selection, result);
             }
         }
         return result;
+    }
+
+    isolated function getRecordResult(map<anydata> parentValue, parser:FieldNode fieldNode) returns anydata {
+        if fieldNode.getName() == TYPE_NAME_FIELD {
+            return getTypeNameFromValue(parentValue);
+        }
+        anydata fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
+        __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
+        Field 'field = new (fieldNode, fieldType, path = self.path, fieldValue = fieldValue);
+        self.context.resetInterceptorCount();
+        return self.engine.resolve(self.context, 'field);
     }
 
     isolated function getResultFromArray((any|error)[] parentValue, parser:FieldNode parentNode) returns anydata {
@@ -175,8 +186,8 @@ class ResponseGenerator {
         }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
-                anydata selectionValue = self.getResultFromObject(parentValue, selection);
-                result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
+                anydata fieldValue = self.getRecordResult(parentValue, selection);
+                result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
             } else if selection is parser:FragmentNode {
                 self.getResultForFragmentFromMap(parentValue, selection, result);
             }
