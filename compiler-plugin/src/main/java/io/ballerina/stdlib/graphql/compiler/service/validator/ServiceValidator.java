@@ -393,6 +393,7 @@ public class ServiceValidator {
         }
         this.visitedClassesAndObjectTypeDefinitions.add(typeDefinitionSymbol);
         // TODO: Check for distinct keyword and add diagnostic
+        // https://github.com/ballerina-platform/ballerina-standard-library/issues/3337
         boolean resourceMethodFound = false;
         ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
