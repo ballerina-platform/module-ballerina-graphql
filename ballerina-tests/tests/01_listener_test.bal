@@ -28,7 +28,7 @@ function testInvalidMaxQueryDepth() returns error? {
 }
 
 @test:Config {
-    groups: ["listener", "client", "temp"]
+    groups: ["listener", "client"]
 }
 function testAttachingGraphQLServiceToDynamicListener() returns error? {
     check specialTypesTestListener.attach(greetingService, "greet");
@@ -45,7 +45,7 @@ function testAttachingGraphQLServiceToDynamicListener() returns error? {
 }
 
 @test:Config {
-    groups: ["listener", "client", "temp"]
+    groups: ["listener", "client"]
 }
 function testAttachingGraphQLServiceWithAnnotationToDynamicListener() returns error? {
     check specialTypesTestListener.attach(greetingService2, "greet");
