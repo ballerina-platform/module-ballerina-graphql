@@ -32,7 +32,15 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
+import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.Token;
+import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
+import io.ballerina.compiler.syntax.tree.TypedBindingPatternNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
@@ -48,6 +56,8 @@ public final class Utils {
     // compiler plugin constants
     public static final String PACKAGE_NAME = "graphql";
     public static final String PACKAGE_ORG = "ballerina";
+    public static final String SERVICE_NAME = "Service";
+
     // resource function constants
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String CONTEXT_IDENTIFIER = "Context";
@@ -250,5 +260,31 @@ public final class Utils {
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
         return resourceMethodSymbol.getName().orElse(null);
+    }
+
+    public static boolean isGraphQLServiceObjectDeclaration(ModuleVariableDeclarationNode variableNode) {
+        TypedBindingPatternNode typedBindingPatternNode = variableNode.typedBindingPattern();
+        TypeDescriptorNode typeDescriptorNode = typedBindingPatternNode.typeDescriptor();
+        if (typeDescriptorNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
+            return false;
+        }
+        return isGraphqlServiceQualifiedNameReference((QualifiedNameReferenceNode) typeDescriptorNode);
+    }
+
+    private static boolean isGraphqlServiceQualifiedNameReference(QualifiedNameReferenceNode nameReferenceNode) {
+        Token modulePrefixToken = nameReferenceNode.modulePrefix();
+        if (modulePrefixToken.kind() != SyntaxKind.IDENTIFIER_TOKEN) {
+            return false;
+        }
+        if (!PACKAGE_NAME.equals(modulePrefixToken.text())) {
+            return false;
+        }
+        IdentifierToken identifier = nameReferenceNode.identifier();
+        return SERVICE_NAME.equals(identifier.text());
+    }
+
+    public static boolean isFunctionDefinition(Node node) {
+        return node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION
+                || node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION;
     }
 }
