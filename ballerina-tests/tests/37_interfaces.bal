@@ -99,10 +99,10 @@ isolated function testInterfacesWithInterfaceTypeArray() returns error? {
     groups: ["interfaces", "fragments"]
 }
 isolated function testInterfaceImplementingInterfaceByQueryingOnInterface() returns error? {
-    string document = check getGraphQLDocumentFromFile("interfaces_implementng_interface_querying_on_interface.graphql");
+    string document = check getGraphQLDocumentFromFile("interfaces_implementing_interface_querying_on_interface.graphql");
     string url = "http://localhost:9089/interfaces_implementing_interface";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interfaces_implementng_interface_querying_on_interface.json");
+    json expectedPayload = check getJsonContentFromFile("interfaces_implementing_interface_querying_on_interface.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -110,10 +110,10 @@ isolated function testInterfaceImplementingInterfaceByQueryingOnInterface() retu
     groups: ["interfaces", "fragments"]
 }
 isolated function testInterfaceImplementingInterfaceByQueryingOnTransitiveType() returns error? {
-    string document = check getGraphQLDocumentFromFile("interfaces_implementng_interface_querying_on_transitive_type.graphql");
+    string document = check getGraphQLDocumentFromFile("interfaces_implementing_interface_querying_on_transitive_type.graphql");
     string url = "http://localhost:9089/interfaces_implementing_interface";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interfaces_implementng_interface_querying_on_transitive_type.json");
+    json expectedPayload = check getJsonContentFromFile("interfaces_implementing_interface_querying_on_transitive_type.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -121,10 +121,10 @@ isolated function testInterfaceImplementingInterfaceByQueryingOnTransitiveType()
     groups: ["interfaces", "fragments"]
 }
 isolated function testInterfaceImplementingInterfaceByQueryingOnBothTransitiveTypeAndInterface() returns error? {
-    string document = check getGraphQLDocumentFromFile("interfaces_implementng_interface_querying_on_transitive_type_and_interface.graphql");
+    string document = check getGraphQLDocumentFromFile("interfaces_implementing_interface_querying_on_transitive_type_and_interface.graphql");
     string url = "http://localhost:9089/interfaces_implementing_interface";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interfaces_implementng_interface_querying_on_transitive_type_and_interface.json");
+    json expectedPayload = check getJsonContentFromFile("interfaces_implementing_interface_querying_on_transitive_type_and_interface.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -132,10 +132,10 @@ isolated function testInterfaceImplementingInterfaceByQueryingOnBothTransitiveTy
     groups: ["interfaces", "fragments"]
 }
 isolated function testInterfaceImplementingInterfaceByQueryingFragmentOnInterface() returns error? {
-    string document = check getGraphQLDocumentFromFile("interfaces_implementng_interface_querying_fragement_on_transitive_interface.graphql");
+    string document = check getGraphQLDocumentFromFile("interfaces_implementing_interface_querying_fragment_on_transitive_interface.graphql");
     string url = "http://localhost:9089/interfaces_implementing_interface";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interfaces_implementng_interface_querying_fragement_on_transitive_interface.json");
+    json expectedPayload = check getJsonContentFromFile("interfaces_implementing_interface_querying_fragment_on_transitive_interface.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -143,9 +143,9 @@ isolated function testInterfaceImplementingInterfaceByQueryingFragmentOnInterfac
     groups: ["interfaces", "fragments"]
 }
 isolated function testInterfaceImplementingInterfaceIntrospection() returns error? {
-    string document = check getGraphQLDocumentFromFile("interfaces_implementng_interface_introsepction.graphql");
+    string document = check getGraphQLDocumentFromFile("interfaces_implementing_interface_introsepction.graphql");
     string url = "http://localhost:9089/interfaces_implementing_interface";
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interfaces_implementng_interface_introsepction.json");
+    json expectedPayload = check getJsonContentFromFile("interfaces_implementing_interface_introsepction.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
