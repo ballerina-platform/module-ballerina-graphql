@@ -1,31 +1,31 @@
 query {
   # interfaces
-  Animalia: __type(name:"Animalia") {
-      ... details
+  Animalia: __type(name: "Animalia") {
+    ...details
   }
-  Equine: __type(name:"Equine") {
-      ... details
+  Equine: __type(name: "Equine") {
+    ...details
   }
   # objects
-  Horse: __type(name:"Horse") {
-      ... details
+  Horse: __type(name: "Horse") {
+    ...details
   }
-  Donkey: __type(name:"Donkey") {
-      ... details
+  Donkey: __type(name: "Donkey") {
+    ...details
   }
-  Mule: __type(name:"Mule") {
-      ... details
+  Mule: __type(name: "Mule") {
+    ...details
   }
-  Dog: __type(name:"Dog") {
-      ... details
+  Dog: __type(name: "Dog") {
+    ...details
   }
 }
 
 fragment details on __Type {
-  name,
-  kind,
+  name
+  kind
   fields {
-    name,
+    name
     type {
       ofType {
         name

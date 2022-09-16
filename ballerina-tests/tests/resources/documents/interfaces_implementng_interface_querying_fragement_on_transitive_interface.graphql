@@ -1,33 +1,33 @@
 query {
   thisIsAMule: animal(id: 11) {
     ... on Equine {
-      name,
-      sex,
-      ... getFather
+      name
+      sex
+      ...getFather
     }
     ... on Mule {
       isAggressive
     }
   }
-  
-  thisIsAHorse: animal(id:2) {
+
+  thisIsAHorse: animal(id: 2) {
     ... on Equine {
-      name,
-      sex,
-      ... getFather
+      name
+      sex
+      ...getFather
     }
   }
 }
 
 fragment getFather on Equine {
   father {
-        __typename
-        ... on Equine {
-          name
-      	}
-        # Query the id if father is a type Donkey
-        ... on Donkey {
-          id
-        }
-      }
+    __typename
+    ... on Equine {
+      name
+    }
+    # Query the id if father is a type Donkey
+    ... on Donkey {
+      id
+    }
+  }
 }

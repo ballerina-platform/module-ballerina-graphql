@@ -2,8 +2,8 @@
   animal(id: 2) {
     # query on interface rather than concreate type
     ... on Equine {
-      name,
-      sex,
+      name
+      sex
     }
   }
 }
