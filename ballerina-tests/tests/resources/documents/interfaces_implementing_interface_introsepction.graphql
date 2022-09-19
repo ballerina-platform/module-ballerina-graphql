@@ -1,23 +1,31 @@
 query {
-  # interfaces
+  # interface
   Animalia: __type(name: "Animalia") {
     ...details
+    ...implementingInterfaces
   }
+
   Equine: __type(name: "Equine") {
     ...details
+    ...implementingInterfaces
   }
+
   # objects
   Horse: __type(name: "Horse") {
     ...details
+    ...implementingInterfaces
   }
   Donkey: __type(name: "Donkey") {
     ...details
+    ...implementingInterfaces
   }
   Mule: __type(name: "Mule") {
     ...details
+    ...implementingInterfaces
   }
   Dog: __type(name: "Dog") {
     ...details
+    ...implementingInterfaces
   }
 }
 
@@ -31,5 +39,12 @@ fragment details on __Type {
         name
       }
     }
+  }
+}
+
+fragment implementingInterfaces on __Type {
+  interfaces {
+    name
+    ...details
   }
 }
