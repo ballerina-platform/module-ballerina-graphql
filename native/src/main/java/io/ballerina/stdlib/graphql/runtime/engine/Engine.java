@@ -47,7 +47,6 @@ import java.util.Base64;
 import java.util.List;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.CONTEXT_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.DATA_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ENGINE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
@@ -81,18 +80,6 @@ public class Engine {
         } catch (NullPointerException e) {
             return createError("Failed to generate schema", ERROR_TYPE);
         }
-    }
-
-    public static void executeSubscription(Environment environment, BObject visitor, BObject node, Object result) {
-        Future future = environment.markAsync();
-        BMap<BString, Object> data = visitor.getMapValue(DATA_FIELD);
-        List<Object> pathSegments = new ArrayList<>();
-        pathSegments.add(StringUtils.fromString(node.getStringValue(NAME_FIELD).getValue()));
-        CallbackHandler callbackHandler = new CallbackHandler(future);
-        ExecutionContext executionContext = new ExecutionContext(environment, visitor, callbackHandler, SUBSCRIPTION);
-        ResourceCallback resourceCallback = new ResourceCallback(executionContext, node, data, pathSegments);
-        callbackHandler.addCallback(resourceCallback);
-        resourceCallback.notifySuccess(result);
     }
 
     static void executeResourceMethod(ExecutionContext executionContext, BObject service, BObject node,

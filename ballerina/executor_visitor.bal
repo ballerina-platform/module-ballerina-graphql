@@ -65,7 +65,7 @@ class ExecutorVisitor {
             } else if operationType == parser:OPERATION_MUTATION {
                 self.executeMutation(fieldNode, operationType);
             } else if operationType == parser:OPERATION_SUBSCRIPTION {
-                executeSubscription(self, fieldNode, self.result);
+                self.executeSubscription(fieldNode, operationType, self.result);
             }
         }
     }
@@ -100,6 +100,19 @@ class ExecutorVisitor {
         __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
+        self.context.resetInterceptorCount();
+        var result = self.engine.resolve(self.context, 'field);
+        self.errors = self.context.getErrors();
+        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
+    }
+
+    isolated function executeSubscription(parser:FieldNode fieldNode, parser:RootOperationType operationType,
+                                          any fieldValue) {
+        (string|int)[] path = [fieldNode.getName()];
+        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        Field 'field = new (fieldNode, fieldType, path = path, operationType = operationType, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();

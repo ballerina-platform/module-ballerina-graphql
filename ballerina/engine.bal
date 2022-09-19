@@ -181,8 +181,18 @@ isolated class Engine {
                 }
             }
         } else {
-            // TODO: Handle Subscriptions
-            fieldValue = ();
+            if interceptor is () {
+                fieldValue = 'field.getFieldValue();
+            } else {
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
+                                                                              self.getInterceptorName(interceptor));
+                if interceptValue is error {
+                    fieldValue = interceptValue;
+                } else {
+                    return interceptValue;
+                }
+            }
         }
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
