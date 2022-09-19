@@ -57,19 +57,19 @@ public enum ErrorMessage {
                       + "multidimensional graphql:Upload arrays"),
     ERROR_121("Graphql input type must not be a subtype of `error?`"),
     ERROR_122("Invalid union type for GraphQL input type"),
-    ERROR_126("Non-distinct service class `{0}` is used as a GraphQL interface implementation"),
-    ERROR_127("Invalid hierarchical resource path `{0}` found in subscribe resource"),
-    ERROR_128("Invalid return type `{0}` found in subscribe resource `{1}`. GraphQL subscribe resource must return "
+    ERROR_123("Non-distinct service class `{0}` is used as a GraphQL interface implementation"),
+    ERROR_124("Invalid hierarchical resource path `{0}` found in subscribe resource"),
+    ERROR_125("Invalid return type `{0}` found in subscribe resource `{1}`. GraphQL subscribe resource must return "
                       + "`stream` type"),
-    ERROR_129("Invalid GraphQL resource accessor `{0}` found in resource `{1}`. Only " + RESOURCE_FUNCTION_GET +
+    ERROR_126("Invalid GraphQL resource accessor `{0}` found in resource `{1}`. Only " + RESOURCE_FUNCTION_GET +
                       " and " + RESOURCE_FUNCTION_SUBSCRIBE + " are allowed"),
-    ERROR_130("Failed to generate the schema from the service. {0}"),
-    ERROR_131("Invalid resource method `{0}` found in GraphQL interceptor. GraphQL interceptors can not have resource "
+    ERROR_127("Failed to generate the schema from the service. {0}"),
+    ERROR_128("Invalid resource method `{0}` found in GraphQL interceptor. GraphQL interceptors can not have resource "
                       + "functions"),
-    ERROR_132("Invalid remote method `{0}` found in interceptor service. Only \"execute\" remote method is allowed"),
-    ERROR_133("Anonymous record `{0}` cannot be used as the type of the field `{1}`"),
-    ERROR_134("Anonymous record `{0}` cannot be used as an input object type of the field `{1}`"),
-    ERROR_135("Invalid return type `{0}` provided for the GraphQL field `{1}`. `{0}` is not a service class");
+    ERROR_129("Invalid remote method `{0}` found in interceptor service. Only \"execute\" remote method is allowed"),
+    ERROR_130("Anonymous record `{0}` cannot be used as the type of the field `{1}`"),
+    ERROR_131("Anonymous record `{0}` cannot be used as an input object type of the field `{1}`"),
+    ERROR_132("Invalid return type `{0}` provided for the GraphQL field `{1}`. `{0}` is not a service class");
 
     private final String message;
 
