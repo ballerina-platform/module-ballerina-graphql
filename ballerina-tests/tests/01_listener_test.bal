@@ -26,3 +26,37 @@ function testInvalidMaxQueryDepth() returns error? {
     graphql:Error err = <graphql:Error>result;
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");
 }
+
+@test:Config {
+    groups: ["listener", "client"]
+}
+function testAttachingGraphQLServiceToDynamicListener() returns error? {
+    check specialTypesTestListener.attach(greetingService, "greet");
+    string url = "http://localhost:9095/greet";
+    string document = string `query { greeting }`;
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            greeting: "Hello, World"
+        }
+    };
+    check specialTypesTestListener.detach(greetingService);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener", "client"]
+}
+function testAttachingGraphQLServiceWithAnnotationToDynamicListener() returns error? {
+    check specialTypesTestListener.attach(greetingService2, "greet");
+    string url = "http://localhost:9095/greet";
+    string document = string `query { greeting }`;
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            greeting: "Hello, World"
+        }
+    };
+    check specialTypesTestListener.detach(greetingService2);
+    test:assertEquals(actualPayload, expectedPayload);
+}
