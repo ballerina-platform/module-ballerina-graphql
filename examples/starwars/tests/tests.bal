@@ -220,3 +220,45 @@ function testCreateReview() returns error? {
     };
     test:assertEquals(actualPayload, expectedPayload);
 }
+
+@test:Config{}
+function testFriends() returns error? {
+    string document = check getGraphQLDocumentFromFile("friends.graphql");
+    json actualPayload = check getJsonPayloadFromService(document);
+    json expectedPayload = {
+        data: {
+            characters: [
+                {
+                    friends: [
+                        {
+                            name: "Han Solo"
+                        },
+                        {
+                            name: "Leia Organa"
+                        },
+                        {},
+                        {}
+                    ]
+                },
+                {
+                    friends: [
+                        {
+                            name: "Luke Skywalker"
+                        },
+                        {
+                            name: "Han Solo"
+                        },
+                        {
+                            name: "Leia Organa"
+                        },
+                        {
+                            name: "R2-D2",
+                            primaryFunction: "Astromech"
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+    test:assertEquals(actualPayload, expectedPayload);
+}

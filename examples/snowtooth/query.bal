@@ -17,7 +17,7 @@
 import ballerina/graphql;
 import snowtooth.datasource as ds;
 
-type SearchResult Lift|Trail;
+public type SearchResult Lift|Trail;
 
 service /graphql on new graphql:Listener(9000) {
 
