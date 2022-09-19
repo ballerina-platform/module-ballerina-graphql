@@ -1,6 +1,7 @@
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -67,7 +68,9 @@ public class InterceptorValidator {
                 validateRemoteMethod(methodSymbol, location);
             }
         } else if (symbol.kind() == SymbolKind.RESOURCE_METHOD) {
-            addDiagnostic(CompilationError.RESOURCE_METHOD_INSIDE_INTERCEPTOR, location);
+            ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) symbol;
+            String resourceMethodSignature = resourceMethodSymbol.signature();
+            addDiagnostic(CompilationError.RESOURCE_METHOD_INSIDE_INTERCEPTOR, location, resourceMethodSignature);
         }
     }
 
@@ -76,7 +79,8 @@ public class InterceptorValidator {
             return;
         }
         if (!methodSymbol.getName().get().equals(INTERCEPTOR_EXECUTE)) {
-            addDiagnostic(CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, location);
+            addDiagnostic(CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, location,
+                          methodSymbol.signature());
         }
     }
 
@@ -95,8 +99,8 @@ public class InterceptorValidator {
         return GRAPHQL_INTERCEPTOR.equals(typeReferenceTypeSymbol.getName().get());
     }
 
-    private void addDiagnostic(CompilationError compilationError, Location location) {
+    private void addDiagnostic(CompilationError compilationError, Location location, Object ...args) {
         this.errorOccurred = true;
-        updateContext(this.context, compilationError, location);
+        updateContext(this.context, compilationError, location, args);
     }
 }

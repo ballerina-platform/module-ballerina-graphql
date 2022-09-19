@@ -46,9 +46,6 @@ public enum CompilationError {
     MULTI_DIMENSIONAL_UPLOAD_ARRAY(ErrorMessage.ERROR_120, ErrorCode.GRAPHQL_120, DiagnosticSeverity.ERROR),
     INVALID_INPUT_TYPE(ErrorMessage.ERROR_121, ErrorCode.GRAPHQL_121, DiagnosticSeverity.ERROR),
     INVALID_INPUT_TYPE_UNION(ErrorMessage.ERROR_122, ErrorCode.GRAPHQL_122, DiagnosticSeverity.ERROR),
-    INVALID_INTERSECTION_TYPE(ErrorMessage.ERROR_123, ErrorCode.GRAPHQL_123, DiagnosticSeverity.ERROR),
-    INTERFACE_IMPLEMENTATION_MISSING_RESOURCE(ErrorMessage.ERROR_124, ErrorCode.GRAPHQL_124, DiagnosticSeverity.ERROR),
-    NON_DISTINCT_INTERFACE_CLASS(ErrorMessage.ERROR_125, ErrorCode.GRAPHQL_125, DiagnosticSeverity.ERROR),
     NON_DISTINCT_INTERFACE_IMPLEMENTATION(ErrorMessage.ERROR_126, ErrorCode.GRAPHQL_126, DiagnosticSeverity.ERROR),
     INVALID_HIERARCHICAL_RESOURCE_PATH(ErrorMessage.ERROR_127, ErrorCode.GRAPHQL_127, DiagnosticSeverity.ERROR),
     INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE(ErrorMessage.ERROR_128, ErrorCode.GRAPHQL_128, DiagnosticSeverity.ERROR),
@@ -57,7 +54,8 @@ public enum CompilationError {
     RESOURCE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_131, ErrorCode.GRAPHQL_131, DiagnosticSeverity.ERROR),
     INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR(ErrorMessage.ERROR_132, ErrorCode.GRAPHQL_132, DiagnosticSeverity.ERROR),
     INVALID_ANONYMOUS_FIELD_TYPE(ErrorMessage.ERROR_133, ErrorCode.GRAPHQL_133, DiagnosticSeverity.ERROR),
-    INVALID_ANONYMOUS_INPUT_TYPE(ErrorMessage.ERROR_134, ErrorCode.GRAPHQL_134, DiagnosticSeverity.ERROR);
+    INVALID_ANONYMOUS_INPUT_TYPE(ErrorMessage.ERROR_134, ErrorCode.GRAPHQL_134, DiagnosticSeverity.ERROR),
+    INVALID_RETURN_TYPE_CLASS(ErrorMessage.ERROR_135, ErrorCode.GRAPHQL_135, DiagnosticSeverity.ERROR);
 
     private final String error;
     private final String errorCode;

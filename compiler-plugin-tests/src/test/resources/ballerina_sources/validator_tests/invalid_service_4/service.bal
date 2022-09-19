@@ -94,3 +94,27 @@ service graphql:Service on new graphql:Listener(4000) {
         return new ServiceInterceptor();
     }
 }
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function subscribe foo() returns int {
+        return 25;
+    }
+
+    resource function subscribe bar() returns int|string {
+        return 25;
+    }
+
+    resource function get bazz() returns int {
+        return 25;
+    }
+}
+
+class Foo {
+
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get foo() returns Foo {
+        return new;
+    }
+}
