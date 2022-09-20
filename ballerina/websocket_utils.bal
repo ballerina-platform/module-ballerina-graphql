@@ -26,12 +26,11 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
     if sourceStream is stream<any, error?> {
         record {|any value;|}|error? next = sourceStream.next();
         while next !is error? {
-            OutputObject outputObj = engine.getResult(node, context, next.value);
-            ResponseFormatter responseFormatter = new (schema);
-            OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObj, node);
-            if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
-                check sendWebSocketResponse(caller, customHeaders, WS_NEXT, coercedOutputObject.toJson(), connectionId);
+            OutputObject outputObject = engine.getResult(node, context, next.value);
+            if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
+                check sendWebSocketResponse(caller, customHeaders, WS_NEXT, outputObject.toJson(), connectionId);
             }
+            context.resetErrors(); //Remove previous event's errors before next the one
             next = sourceStream.next();
         }
         if next is error {
