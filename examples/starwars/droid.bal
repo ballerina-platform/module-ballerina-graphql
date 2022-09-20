@@ -18,6 +18,7 @@ import starwars.datasource as ds;
 
 # An autonomous mechanical character in the Star Wars universe
 distinct service class Droid {
+    *Character;
 
     private final readonly & ds:DroidRecord droid;
 
@@ -40,19 +41,16 @@ distinct service class Droid {
     # This droid's friends, or an empty list if they have none
     # + return - The friends
     resource function get friends() returns Character[] {
-        ds:DroidRecord[] droids = [self.droid];
         Character[] friends = [];
         ds:FriendsEdgeRecord[] edges = from var edge in ds:friendsEdgeTable
-                        join var droid in droids on edge.characterId equals droid.id
+                        join var droid in [self.droid] on edge.characterId equals droid.id
                         select edge;
-        Human[] humanFriends = from var human in ds:humanTable
+        friends.push(...from var human in ds:humanTable
                         join var edge in edges on human.id equals edge.friendId
-                        select new Human(human);
-        Droid[] droidFriends = from var droid in ds:droidTable
+                        select new Human(human));
+        friends.push(...from var droid in ds:droidTable
                         join var edge in edges on droid.id equals edge.friendId
-                        select new Droid(droid);
-        friends.push(...humanFriends);
-        friends.push(...droidFriends);
+                        select new Droid(droid));
         return friends;
     }
 
