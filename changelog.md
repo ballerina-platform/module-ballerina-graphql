@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
 - [[#3289] Support GraphQL interface with ballerina distinct object type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3289)
 - [[#3230] Add Service Interceptor Execution for Record Fields, Maps & Tables](https://github.com/ballerina-platform/ballerina-standard-library/issues/3230)
+- [[#2913] Support Interfaces Implementing Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/2913)
 
 ### Fixed
 - [[#3294] Fix GraphQL dynamic listener is not working for module level service declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
