@@ -85,8 +85,8 @@ isolated function createSchema(string schemaString) returns readonly & __Schema|
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function getSubscriptionResult(ExecutorVisitor visitor,
-                                        parser:FieldNode node) returns any|error = @java:Method {
+isolated function executeSubscriptionResource(Context context, service object {} serviceObject, parser:FieldNode node)
+    returns any|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 

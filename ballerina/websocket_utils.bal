@@ -78,8 +78,7 @@ isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
                                           parser:FieldNode node) returns stream<any, error?>|json {
-    ExecutorVisitor executor = new(engine, schema, context, {});
-    any|error result = getSubscriptionResult(executor, node);
+    any|error result = executeSubscriptionResource(context, engine.getService(), node);
     if result is stream<any, error?> {
         return result;
     }
