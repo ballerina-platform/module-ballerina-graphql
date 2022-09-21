@@ -28,4 +28,13 @@ service / on new graphql:Listener(4000) {
     resource function get .() returns int {
         return 767;
     }
+
+    resource function get [int ...ids] () returns int {
+        return 1;
+    }
+
+    resource function subscribe profile/names() returns stream<string> {
+        string[] messages = ["Walter", "Jesse", "Mike", "Gus", "Skyler"];
+        return messages.toStream();
+    }
 }
