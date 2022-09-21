@@ -578,6 +578,8 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
         json expectedPayload = {data: {messages: i * 5 - 5}};
         check validateWebSocketResponse(wsClient3, expectedPayload);
     }
+    check wait A;
+    check wait B;
 }
 
 @test:Config {
@@ -630,4 +632,6 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns er
         };
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
+    check wait A;
+    check wait B;
 }

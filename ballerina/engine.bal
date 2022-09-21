@@ -280,6 +280,11 @@ isolated class Engine {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
+    isolated function executeSubscriptionResource(Context context, service object {} serviceObject,
+                                                  parser:FieldNode node) returns any|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
     isolated function executeInterceptor(readonly & Interceptor interceptor, Field fieldNode, Context context)
     returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
