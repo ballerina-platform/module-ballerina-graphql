@@ -549,3 +549,85 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
         check validateWebSocketResponse(wsClient2, expectedPayload);
     }
 }
+
+@test:Config {
+    groups: ["interceptors", "subscriptions"]
+}
+isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
+    final string document = string `subscription { messages }`;
+    string url = "ws://localhost:9099/subscription_interceptor1";
+    final websocket:Client wsClient1 = check new(url);
+    final websocket:Client wsClient2 = check new(url);
+    final websocket:Client wsClient3 = check new(url);
+    worker A returns error? {
+        check writeWebSocketTextMessage(document, wsClient1);
+        foreach int i in 1 ..< 4 {
+            json expectedPayload = {data: {messages: i * 5 - 5}};
+            check validateWebSocketResponse(wsClient1, expectedPayload);
+        }
+    }
+    worker B returns error? {
+        check writeWebSocketTextMessage(document, wsClient2);
+        foreach int i in 1 ..< 4 {
+            json expectedPayload = {data: {messages: i * 5 - 5}};
+            check validateWebSocketResponse(wsClient2, expectedPayload);
+        }
+    }
+    check writeWebSocketTextMessage(document, wsClient3);
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i * 5 - 5}};
+        check validateWebSocketResponse(wsClient3, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["interceptors", "union", "subscriptions"]
+}
+isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
+    final string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    string url = "ws://localhost:9099/subscription_interceptor4";
+    final websocket:Client wsClient1 = check new(url);
+    final websocket:Client wsClient2 = check new(url);
+    worker A returns error? {
+        check writeWebSocketTextMessage(document, wsClient1);
+        json expectedPayload = {
+            data: {
+                multipleValues: {
+                    id: 100,
+                    name: "Jesse Pinkman"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        expectedPayload = {
+            data: {
+                multipleValues: {
+                    name: "Walter White",
+                    subject: "Physics"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+    }
+    worker B returns error? {
+        check writeWebSocketTextMessage(document, wsClient2);
+        json expectedPayload = {
+            data: {
+                multipleValues: {
+                    id: 100,
+                    name: "Jesse Pinkman"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+        expectedPayload = {
+            data: {
+                multipleValues: {
+                    name: "Walter White",
+                    subject: "Physics"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+    }
+}
