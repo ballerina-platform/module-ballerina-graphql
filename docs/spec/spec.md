@@ -1323,6 +1323,7 @@ service on new graphql:Listener(4000) {
 #### 9.1.7 Introspection Configurations
 
 The `introspectionEnabled` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
+
 ###### Example: Disable Introspection Query Support
 
 ```ballerina
@@ -1384,7 +1385,7 @@ The Interceptor service class should have the implementation of the `execute()` 
 
 When it comes to interceptor execution, it follows the `onion principle`. Basically, each interceptor function adds a layer before and after the actual resolver invocation. Therefore, the order of the interceptor array in the configuration will be important. In an Interceptor `execute()` function, all the code lines placed before the `context.resolve()` will be executed before the resolver function execution, and the code lines placed after the `context.resolve()` will be executed after the resolver function execution. The [`context.resolve()`](#85-invoking-next-interceptor) function invoke the next interceptor.
 
-> NOTE: The inserting order of the interceptor function into the array, will be the execution order of Interceptors.
+> **Note:** The inserting order of the interceptor function into the array, will be the execution order of Interceptors.
 
 ###### Example: GraphQL Interceptor
 
@@ -1422,6 +1423,8 @@ service /graphql on new graphql:Listener(9000) {
 
 #### 10.4.1 Service Level Interceptors
 The service level interceptors are applied to all the resolver functions in the GraphQL service. The GraphQL module accept an array of service level interceptors, and it should be inserted as mentioned in the [Service Level Interceptor](#916-service-level-interceptors) section.
+
+> **Note:** The service level interceptors are applied to each event in response stream of subscription resolvers.
 
 ## 11. Security
 
