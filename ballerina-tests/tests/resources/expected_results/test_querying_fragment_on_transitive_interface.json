@@ -1,0 +1,22 @@
+{
+    "data": {
+        "thisIsAMule": {
+            "name": "LARA",
+            "sex": "female",
+            "father": {
+                "__typename": "Donkey",
+                "name": "RUDY",
+                "id": 5
+            },
+            "isAggressive": false
+        },
+        "thisIsAHorse": {
+            "name": "WALTER",
+            "sex": "male",
+            "father": {
+                "__typename": "Horse",
+                "name": "WALTER"
+            }
+        }
+    }
+}

@@ -30,7 +30,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
             if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
                 check sendWebSocketResponse(caller, customHeaders, WS_NEXT, outputObject.toJson(), connectionId);
             }
-            context.resetErrors(); //Remove previous event's errors before next the one
+            context.resetErrors(); //Remove previous event's errors before the next one
             next = sourceStream.next();
         }
         if next is error {

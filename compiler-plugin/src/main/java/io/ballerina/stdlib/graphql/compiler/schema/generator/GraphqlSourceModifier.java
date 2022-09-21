@@ -115,7 +115,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                     nodeMap.put(targetNode, updatedNode);
                 }
             } catch (IOException e) {
-                updateContext(context, entry.getKey().location());
+                updateContext(context, entry.getKey().location(), e.getMessage());
             }
         }
         NodeList<ModuleMemberDeclarationNode> members = NodeFactory.createNodeList();
@@ -259,11 +259,11 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         return SERVICE_CONFIG_IDENTIFIER.equals(referenceNode.identifier().text());
     }
 
-    private void updateContext(SourceModifierContext context, Location location) {
+    private void updateContext(SourceModifierContext context, Location location, String errorMessage) {
         CompilationError error = CompilationError.SCHEMA_GENERATION_FAILED;
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(error.getErrorCode(), error.getError(),
                                                            error.getDiagnosticSeverity());
-        Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
+        Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, errorMessage);
         context.reportDiagnostic(diagnostic);
     }
 }

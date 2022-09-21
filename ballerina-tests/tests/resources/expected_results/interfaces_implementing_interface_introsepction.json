@@ -1,0 +1,667 @@
+{
+  "data": {
+    "Animalia": {
+      "name": "Animalia",
+      "kind": "INTERFACE",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "ofType": {
+              "name": "Int"
+            }
+          }
+        },
+        {
+          "name": "sex",
+          "type": {
+            "ofType": {
+              "name": "Sex"
+            }
+          }
+        },
+        {
+          "name": "name",
+          "type": {
+            "ofType": {
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "mother",
+          "type": {
+            "ofType": {
+              "name": "Animalia"
+            }
+          }
+        },
+        {
+          "name": "father",
+          "type": {
+            "ofType": {
+              "name": "Animalia"
+            }
+          }
+        }
+      ],
+      "interfaces": []
+    },
+    "Equine": {
+      "name": "Equine",
+      "kind": "INTERFACE",
+      "fields": [
+        {
+          "name": "mother",
+          "type": {
+            "ofType": {
+              "name": "Equine"
+            }
+          }
+        },
+        {
+          "name": "father",
+          "type": {
+            "ofType": {
+              "name": "Equine"
+            }
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "ofType": {
+              "name": "Int"
+            }
+          }
+        },
+        {
+          "name": "sex",
+          "type": {
+            "ofType": {
+              "name": "Sex"
+            }
+          }
+        },
+        {
+          "name": "name",
+          "type": {
+            "ofType": {
+              "name": "String"
+            }
+          }
+        }
+      ],
+      "interfaces": [
+        {
+          "name": "Animalia",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            },
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "Horse": {
+      "name": "Horse",
+      "kind": "OBJECT",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "ofType": {
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "ofType": {
+              "name": "Int"
+            }
+          }
+        },
+        {
+          "name": "sex",
+          "type": {
+            "ofType": {
+              "name": "Sex"
+            }
+          }
+        },
+        {
+          "name": "mother",
+          "type": {
+            "ofType": {
+              "name": "Horse"
+            }
+          }
+        },
+        {
+          "name": "father",
+          "type": {
+            "ofType": {
+              "name": "Horse"
+            }
+          }
+        }
+      ],
+      "interfaces": [
+        {
+          "name": "Animalia",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            },
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equine",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Equine"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Equine"
+                }
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "Donkey": {
+      "name": "Donkey",
+      "kind": "OBJECT",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "ofType": {
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "ofType": {
+              "name": "Int"
+            }
+          }
+        },
+        {
+          "name": "sex",
+          "type": {
+            "ofType": {
+              "name": "Sex"
+            }
+          }
+        },
+        {
+          "name": "mother",
+          "type": {
+            "ofType": {
+              "name": "Donkey"
+            }
+          }
+        },
+        {
+          "name": "father",
+          "type": {
+            "ofType": {
+              "name": "Donkey"
+            }
+          }
+        }
+      ],
+      "interfaces": [
+        {
+          "name": "Animalia",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            },
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equine",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Equine"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Equine"
+                }
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "Mule": {
+      "name": "Mule",
+      "kind": "OBJECT",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "ofType": {
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "ofType": {
+              "name": "Int"
+            }
+          }
+        },
+        {
+          "name": "sex",
+          "type": {
+            "ofType": {
+              "name": "Sex"
+            }
+          }
+        },
+        {
+          "name": "mother",
+          "type": {
+            "ofType": {
+              "name": "Horse"
+            }
+          }
+        },
+        {
+          "name": "father",
+          "type": {
+            "ofType": {
+              "name": "Donkey"
+            }
+          }
+        },
+        {
+          "name": "isAggressive",
+          "type": {
+            "ofType": {
+              "name": "Boolean"
+            }
+          }
+        }
+      ],
+      "interfaces": [
+        {
+          "name": "Animalia",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            },
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equine",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Equine"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Equine"
+                }
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "Dog": {
+      "name": "Dog",
+      "kind": "OBJECT",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "ofType": {
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "ofType": {
+              "name": "Int"
+            }
+          }
+        },
+        {
+          "name": "sex",
+          "type": {
+            "ofType": {
+              "name": "Sex"
+            }
+          }
+        },
+        {
+          "name": "mother",
+          "type": {
+            "ofType": {
+              "name": "Dog"
+            }
+          }
+        },
+        {
+          "name": "father",
+          "type": {
+            "ofType": {
+              "name": "Dog"
+            }
+          }
+        }
+      ],
+      "interfaces": [
+        {
+          "name": "Animalia",
+          "kind": "INTERFACE",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "ofType": {
+                  "name": "Int"
+                }
+              }
+            },
+            {
+              "name": "sex",
+              "type": {
+                "ofType": {
+                  "name": "Sex"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "ofType": {
+                  "name": "String"
+                }
+              }
+            },
+            {
+              "name": "mother",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            },
+            {
+              "name": "father",
+              "type": {
+                "ofType": {
+                  "name": "Animalia"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

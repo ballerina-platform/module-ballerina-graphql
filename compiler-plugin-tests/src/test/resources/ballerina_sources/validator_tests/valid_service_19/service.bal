@@ -22,36 +22,14 @@ service /graphql on new graphql:Listener(4000) {
     }
 }
 
-public isolated distinct service class Animal {
-    final string 'class;
+public type Animal distinct service object {
+    isolated resource function get 'class() returns string;
+};
 
-    isolated function init(string 'class) {
-        self.'class = 'class;
-    }
-
-    isolated resource function get 'class() returns string {
-        return self.'class;
-    }
-}
-
-public isolated distinct service class Mammal {
+public type Mammal distinct service object {
     *Animal;
-    final int numberOfLegs;
-    final string 'class;
-
-    isolated function init(int numberOfLegs) {
-        self.numberOfLegs = numberOfLegs;
-        self.'class = "Mammalia";
-    }
-
-    isolated resource function get 'class() returns string {
-        return self.'class;
-    }
-
-    isolated resource function get legs() returns int {
-        return self.numberOfLegs;
-    }
-}
+    isolated resource function get legs() returns int;
+};
 
 public isolated distinct service class Dog {
     *Mammal;
