@@ -406,7 +406,7 @@ public class ServiceValidationTest {
     public void testInvalidInputUnions() {
         String packagePath = "33_invalid_input_unions";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -423,6 +423,10 @@ public class ServiceValidationTest {
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationError.INVALID_INPUT_PARAMETER_TYPE, "byte[]?", "Query.greet");
         assertErrorMessage(diagnostic, message, 38, 41);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationError.INVALID_INPUT_PARAMETER_TYPE, "error", "Query.greet");
+        assertErrorMessage(diagnostic, message, 44, 46);
     }
 
     @Test(groups = "invalid")
