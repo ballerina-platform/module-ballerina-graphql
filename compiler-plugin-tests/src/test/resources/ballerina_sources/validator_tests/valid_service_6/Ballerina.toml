@@ -1,4 +1,4 @@
 [package]
 org = "graphql_test"
-name = "valid_service_6"
+name = "test_package"
 version = "0.1.0"
