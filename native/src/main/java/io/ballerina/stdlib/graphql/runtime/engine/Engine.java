@@ -95,7 +95,7 @@ public class Engine {
     public static Object executeSubscriptionResource(Environment env, BObject context, BObject service,
                                                      BObject fieldNode) {
         Future subscriptionFutureResult = env.markAsync();
-        SubscriptionCallback subscriptionCallback = new SubscriptionCallback(subscriptionFutureResult);
+        ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
         BString fieldName = fieldNode.getStringValue(NAME_FIELD);
         ServiceType serviceType = (ServiceType) service.getType();
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
@@ -107,11 +107,11 @@ public class Engine {
                 if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
                             .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                                           null, subscriptionCallback, null, typeUnion, args);
+                                                           null, executionCallback, null, typeUnion, args);
                 } else {
                     env.getRuntime()
                             .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                                           null, subscriptionCallback, null, typeUnion, args);
+                                                           null, executionCallback, null, typeUnion, args);
                 }
             }
         }

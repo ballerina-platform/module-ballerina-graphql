@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#3294] Fix GraphQL dynamic listener is not working for module level service declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
 - [[#3375] Fix Multiple Subscription Endpoints with the Same GraphQL Listener is not Working](https://github.com/ballerina-platform/ballerina-standard-library/issues/3375)
+- [[#3355] Fix Not Identifying Error Type as an Invalid Input Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3355)
 
 ### Changed
 - [[#3062] Improve Compilation Error Messages to be more specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)
