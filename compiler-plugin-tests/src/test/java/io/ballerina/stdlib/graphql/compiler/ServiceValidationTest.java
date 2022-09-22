@@ -45,188 +45,188 @@ public class ServiceValidationTest {
     private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime")
             .toAbsolutePath();
 
-    @Test
-    public void testValidResourceReturnTypes() {
-        String packagePath = "valid_service_1";
+    @Test(groups = "valid")
+    public void testValidReturnTypes() {
+        String packagePath = "01_valid_return_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test(groups = "valid")
+    public void testValidInputTypes() {
+        String packagePath = "02_valid_input_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
-    public void testValidResourceInputTypes() {
-        String packagePath = "valid_service_2";
+    public void testValidServiceConfigurations() {
+        String packagePath = "03_valid_service_configurations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testValidServiceConfigurationAnnotation() {
-        String packagePath = "valid_service_3";
+    @Test(groups = "valid")
+    public void testEnumAsReturnType() {
+        String packagePath = "04_enum_as_return_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testResourceReturningEnum() {
-        String packagePath = "valid_service_4";
+    @Test(groups = "valid")
+    public void testEnumAsInputType() {
+        String packagePath = "05_enum_as_input_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testEnumAsResourceInputParameter() {
-        String packagePath = "valid_service_5";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-    }
-
-    @Test
+    @Test(groups = "valid")
     public void testValidListenerConfigurations() {
-        String packagePath = "valid_service_6";
+        String packagePath = "06_valid_listener_configurations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testOptionalInputParametersInResources() {
-        String packagePath = "valid_service_7";
+    @Test(groups = "valid")
+    public void testOptionalInputParameters() {
+        String packagePath = "07_optional_input_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testReturningDistinctServiceObjects() {
-        String packagePath = "valid_service_8";
+    @Test(groups = "valid")
+    public void testDistinctServiceObjectsAsReturnType() {
+        String packagePath = "08_distinct_service_objects_as_return_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testReturningServiceTypesRecursively() {
-        String packagePath = "valid_service_9";
+    @Test(groups = "valid")
+    public void testRecursiveServiceTypes() {
+        String packagePath = "09_recursive_service_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testFieldsInServiceObject() {
-        String packagePath = "valid_service_10";
+    @Test(groups = "valid")
+    public void testServiceObjectFields() {
+        String packagePath = "10_service_object_fields";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testInputObjectTypeInputParameter() {
-        String packagePath = "valid_service_11";
+    @Test(groups = "valid")
+    public void testInputObjectType() {
+        String packagePath = "11_input_object_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testGraphQLContextAsFirstParameter() {
-        String packagePath = "valid_service_12";
+    @Test(groups = "valid")
+    public void testContextAsFirstParameter() {
+        String packagePath = "12_context_as_first_parameter";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testGraphQLContextInsideReturningServices() {
-        String packagePath = "valid_service_13";
+    @Test(groups = "valid")
+    public void testContextInsideReturningServices() {
+        String packagePath = "13_context_inside_returning_services";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testGraphQLListTypeInputParametersInResources() {
-        String packagePath = "valid_service_14";
+    @Test(groups = "valid")
+    public void testListTypeInputParameters() {
+        String packagePath = "14_list_type_input_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testGraphQLFileUpload() {
-        String packagePath = "valid_service_15";
+    @Test(groups = "valid")
+    public void testFileUpload() {
+        String packagePath = "15_file_upload";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testIntersectionTypes() {
-        String packagePath = "valid_service_16";
+        String packagePath = "16_intersection_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testRecordTypes() {
-        String packagePath = "valid_service_17";
+        String packagePath = "17_record_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testInterfaces() {
-        String packagePath = "valid_service_18";
+        String packagePath = "18_interfaces";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testInterfacesImplementingInterfaces() {
-        String packagePath = "valid_service_19";
+        String packagePath = "19_interfaces_implementing_interfaces";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testMultipleInterfaceImplementations() {
-        String packagePath = "valid_service_20";
+        String packagePath = "20_multiple_interface_implementations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testSubscriptionResources() {
-        String packagePath = "valid_service_22";
+    @Test(groups = "valid")
+    public void testSubscriptions() {
+        String packagePath = "21_subscriptions";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testInterceptors() {
-        String packagePath = "valid_service_23";
+        String packagePath = "22_interceptors";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
-    public void testDynamicallyAttachingGraphQLService() {
-        String packagePath = "valid_service_24";
+    @Test(groups = "valid")
+    public void testDynamicallyAttachingService() {
+        String packagePath = "23_dynamically_attaching_service";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testMultipleListenersOnSameService() {
-        String packagePath = "invalid_service_1";
+        String packagePath = "24_multiple_listeners_on_same_service";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.INVALID_MULTIPLE_LISTENERS, 19, 1);
     }
 
-    @Test
-    public void testMissingResourceFunctionInService() {
-        String packagePath = "invalid_service_2";
+    @Test(groups = "invalid")
+    public void testServiceMissingResourceFunction() {
+        String packagePath = "25_service_missing_resource_function";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidResourceAccessor() {
-        String packagePath = "invalid_service_3";
+        String packagePath = "26_invalid_resource_accessor";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -239,9 +239,9 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
     }
 
-    @Test
-    public void testInvalidResourceReturnTypes() {
-        String packagePath = "invalid_service_4";
+    @Test(groups = "invalid")
+    public void testInvalidReturnTypes() {
+        String packagePath = "27_invalid_return_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 17);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -314,9 +314,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 112, 7);
     }
 
-    @Test
-    public void testInvalidResourceInputParameterTypes() {
-        String packagePath = "invalid_service_5";
+    @Test(groups = "invalid")
+    public void testInvalidInputTypes() {
+        String packagePath = "28_invalid_input_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 7);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -349,9 +349,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 61, 41);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testReturningOnlyErrorOrNil() {
-        String packagePath = "invalid_service_6";
+        String packagePath = "29_returning_only_error_or_nill";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -359,9 +359,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testReturningOnlyNil() {
-        String packagePath = "invalid_service_7";
+        String packagePath = "30_returning_only_nil";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -369,9 +369,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testReturningOnlyError() {
-        String packagePath = "invalid_service_8";
+        String packagePath = "31_returning_only_error";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -379,9 +379,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testListenerInitParameters() {
-        String packagePath = "invalid_service_9";
+        String packagePath = "32_listener_init_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -402,9 +402,9 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 34, 64);
     }
 
-    @Test
-    public void testInvalidInputParameterUnions() {
-        String packagePath = "invalid_service_10";
+    @Test(groups = "invalid")
+    public void testInvalidInputUnions() {
+        String packagePath = "33_invalid_input_unions";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -425,9 +425,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 38, 41);
     }
 
-    @Test
-    public void testInvalidResourceReturnTypeUnions() {
-        String packagePath = "invalid_service_11";
+    @Test(groups = "invalid")
+    public void testInvalidReturnTypeUnions() {
+        String packagePath = "34_invalid_return_type_unions";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -449,9 +449,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 32, 5);
     }
 
-    @Test
-    public void testInvalidAccessorsInServicesReturningFromResources() {
-        String packagePath = "invalid_service_12";
+    @Test(groups = "invalid")
+    public void testInvalidAccessorsInServicesTypes() {
+        String packagePath = "35_invalid_accessor_in_service_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -473,9 +473,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 50, 23);
     }
 
-    @Test
-    public void testInvalidReturnTypesInServicesReturningFromResources() {
-        String packagePath = "invalid_service_13";
+    @Test(groups = "invalid")
+    public void testInvalidReturnTypesInServicesTypes() {
+        String packagePath = "36_invalid_return_types_in_service_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -496,9 +496,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 52, 23);
     }
 
-    @Test
-    public void testInvalidInputParametersInServicesReturningFromResources() {
-        String packagePath = "invalid_service_14";
+    @Test(groups = "invalid")
+    public void testInvalidInputsInServiceTypes() {
+        String packagePath = "37_invalid_inputs_in_service_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -522,9 +522,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 50, 46);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidListenerInitParameters() {
-        String packagePath = "invalid_service_15";
+        String packagePath = "38_invalid_listener_init_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 4);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -542,9 +542,9 @@ public class ServiceValidationTest {
         assertError(diagnostic, CompilationError.INVALID_LISTENER_INIT, 27, 81);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidResourcePath() {
-        String packagePath = "invalid_service_16";
+        String packagePath = "39_invalid_resource_paths";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -583,9 +583,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 77, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidReturnTypeAny() {
-        String packagePath = "invalid_service_17";
+        String packagePath = "40_invalid_return_type_any";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -599,18 +599,18 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 24, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testServiceWithOnlyRemoteMethods() {
-        String packagePath = "invalid_service_18";
+        String packagePath = "41_service_with_only_remote_methods";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 19, 1);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testRemoteMethodWithInvalidReturnType() {
-        String packagePath = "invalid_service_19";
+        String packagePath = "42_remote_method_with_invalid_return_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -618,9 +618,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 23, 5);
     }
 
-    @Test
-    public void testRemoteMethodInsideReturningServiceObject() {
-        String packagePath = "invalid_service_20";
+    @Test(groups = "invalid")
+    public void testRemoteMethodInsideReturningServiceType() {
+        String packagePath = "43_remote_methods_inside_returning_service_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -628,18 +628,18 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 36, 21);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testMissingResourceMethodFromReturningServiceClass() {
-        String packagePath = "invalid_service_21";
+        String packagePath = "44_missing_resource_method_from_returning_service_class";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         assertError(diagnostic, CompilationError.MISSING_RESOURCE_FUNCTIONS, 25, 15);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidInputObjects() {
-        String packagePath = "invalid_service_22";
+        String packagePath = "45_invalid_input_objects";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 11);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -686,9 +686,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 153, 5);
     }
 
-    @Test
-    public void testGraphQLContextAsAnotherParameter() {
-        String packagePath = "invalid_service_23";
+    @Test(groups = "invalid")
+    public void testContextAsAnotherParameter() {
+        String packagePath = "46_context_as_another_parameter";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -701,9 +701,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 24, 61);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidContextObject() {
-        String packagePath = "invalid_service_24";
+        String packagePath = "47_invalid_context_object";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -716,9 +716,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 25, 40);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidRecordFieldType() {
-        String packagePath = "invalid_service_25";
+        String packagePath = "48_invalid_record_field_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -726,9 +726,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 25, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidListTypeInputs() {
-        String packagePath = "invalid_service_26";
+        String packagePath = "49_invalid_list_type_inputs";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -755,9 +755,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 88, 52);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidResourcePaths() {
-        String packagePath = "invalid_service_27";
+        String packagePath = "50_invalid_resource_paths";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -783,9 +783,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 36, 5);
     }
 
-    @Test
-    public void testGraphQLFileUploadInInvalidLocations() {
-        String packagePath = "invalid_service_28";
+    @Test(groups = "invalid")
+    public void testFileUploadInInvalidLocations() {
+        String packagePath = "51_file_upload_in_invalid_locations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 14);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -848,9 +848,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 154, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testNonDistinctInterfaceImplementation() {
-        String packagePath = "invalid_service_29";
+        String packagePath = "52_non_distinct_interface_implementation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -858,11 +858,11 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test (enabled = false)
+    @Test(groups = "invalid", enabled = false)
     public void testNonDistinctInterface() {
         // TODO: check for non distinct object
         // https://github.com/ballerina-platform/ballerina-standard-library/issues/3337
-        String packagePath = "invalid_service_30";
+        String packagePath = "53_non_distinct_interface";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -870,9 +870,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 5);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidResourceFunctionsInInterfaceImplementations() {
-        String packagePath = "invalid_service_32";
+        String packagePath = "54_invalid_resource_functions_in_interface_implementations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -886,9 +886,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 86, 32);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidReturnTypesInInterfaceImplementations() {
-        String packagePath = "invalid_service_33";
+        String packagePath = "55_invalid_return_types_in_interface_implementations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
@@ -896,9 +896,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 90, 32);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidSubscribeService() {
-        String packagePath = "invalid_service_36";
+        String packagePath = "56_invalid_subscribe_service";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 3);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -915,9 +915,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 61, 32);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidInterceptor() {
-        String packagePath = "invalid_service_37";
+        String packagePath = "57_invalid_interceptor";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
@@ -933,9 +933,9 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 34, 5);
     }
 
-    @Test
-    public void testAnonymousRecordsAsField() {
-        String packagePath = "invalid_service_38";
+    @Test(groups = "invalid")
+    public void testAnonymousRecordsAsFieldType() {
+        String packagePath = "58_anonymous_records_as_field_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
