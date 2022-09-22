@@ -690,7 +690,7 @@ In GraphQL, a field can have zero or more input arguments. These arguments can b
 
 #### 4.5.1 Input Union Types
 
-An input type can be a Ballerina union type, if and only if the union consists of one of the supported types and the other member type is `nil`. A union with nil means the input type is `NON_NULL`. Any other union type will be resulting in a compilation error.
+An input type can be a Ballerina union type, if and only if the union consists of one of the supported types and the other member type is `nil`. A union with nil means the input type is `String`. Any other union type will be resulting in a compilation error.
 
 ###### Example: Input Union Types
 
