@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.2] - 2022-09-26
+
 ### Fixed
 - [[#3375] Fix Multiple Subscription Endpoints with the Same GraphQL Listener is not Working](https://github.com/ballerina-platform/ballerina-standard-library/issues/3375)
 - [[#3355] Fix Not Identifying Error Type as an Invalid Input Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3355)
