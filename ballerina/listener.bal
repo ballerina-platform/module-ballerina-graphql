@@ -84,7 +84,7 @@ public class Listener {
 
         __Schema & readonly schema = engine.getSchema();
         __Type? subscriptionType = schema.subscriptionType;
-        if subscriptionType is __Type {
+        if subscriptionType is __Type && self.wsListener is () {
             websocket:Listener|error wsListener = new(self.httpListener);
             if wsListener is error {
                 return error Error("Websocket listener initialization failed", wsListener);

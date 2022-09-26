@@ -62,3 +62,9 @@ service graphql:Service on new graphql:Listener(4000) {
         return "Hello";
     }
 }
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get greet(string|error name) returns string {
+        return "Hello";
+    }
+}
