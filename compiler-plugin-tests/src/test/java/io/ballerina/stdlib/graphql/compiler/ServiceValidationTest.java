@@ -285,7 +285,7 @@ public class ServiceValidationTest {
     public void testInvalidResourceInputParameterTypes() {
         String packagePath = "invalid_service_5";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 7);
+        Assert.assertEquals(diagnosticResult.errorCount(), 8);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -314,6 +314,10 @@ public class ServiceValidationTest {
         diagnostic = diagnosticIterator.next();
         message = "Invalid GraphQL input parameter type `anydata`";
         assertErrorMessage(diagnostic, message, 61, 41);
+
+        diagnostic = diagnosticIterator.next();
+        message = "Invalid GraphQL input parameter type `error`";
+        assertErrorMessage(diagnostic, message, 67, 46);
     }
 
     @Test

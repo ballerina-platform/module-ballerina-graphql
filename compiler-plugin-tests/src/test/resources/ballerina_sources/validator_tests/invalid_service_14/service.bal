@@ -53,7 +53,7 @@ distinct service class Status {
 }
 
 distinct service class FirstName {
-    resource function get name() returns string {
+    resource function get name(string) returns string {
         return "James";
     }
 }
