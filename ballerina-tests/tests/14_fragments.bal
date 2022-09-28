@@ -330,18 +330,6 @@ isolated function testFragmentsSpreadItself() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_spread_itself.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot spread fragment \"TypeFragment\" within itself.",
-                locations: [
-                    {
-                        line: 11,
-                        column: 9
-                    }
-                ]
-            }
-        ]
-    };
+    json expectedPayload = check getJsonContentFromFile("fragments_spread_itself.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
