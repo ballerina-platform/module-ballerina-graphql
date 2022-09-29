@@ -35,6 +35,7 @@ dependencies {
 clean {
     examples.forEach { example ->
         delete "${projectDir}/${example}/target"
+        delete "${projectDir}/${example}/Dependencies.toml"
     }
 }
 
