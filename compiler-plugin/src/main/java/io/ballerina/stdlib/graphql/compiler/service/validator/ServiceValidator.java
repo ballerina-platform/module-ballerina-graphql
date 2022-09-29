@@ -598,7 +598,10 @@ public class ServiceValidator {
         boolean foundDataType = false;
         int dataTypeCount = 0;
         for (TypeSymbol memberType : unionTypeSymbol.userSpecifiedMemberTypes()) {
-            if (memberType.typeKind() != TypeDescKind.ERROR && memberType.typeKind() != TypeDescKind.NIL) {
+            if (memberType.typeKind() == TypeDescKind.ERROR) {
+                addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location, TypeDescKind.ERROR.getName(),
+                              this.getCurrentFieldPath());
+            } else if (memberType.typeKind() != TypeDescKind.NIL) {
                 foundDataType = true;
                 dataTypeCount++;
                 if (memberType.typeKind() != TypeDescKind.SINGLETON) {

@@ -97,6 +97,7 @@ public class SchemaGenerator {
     private final InterfaceFinder interfaceFinder;
     private final Schema schema;
     private final SyntaxNodeAnalysisContext context;
+    private final List<Type> visitedInterfaces;
 
     public SchemaGenerator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder,
                            String description) {
@@ -104,6 +105,7 @@ public class SchemaGenerator {
         this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
         this.schema = new Schema(description);
+        this.visitedInterfaces = new ArrayList<>();
     }
 
     public Schema generate() {
@@ -369,6 +371,7 @@ public class SchemaGenerator {
     private void getTypesFromInterface(String typeName, Type interfaceType) {
         // Implementations can only contain class symbols or object type definitions
         List<Symbol> implementations = this.interfaceFinder.getImplementations(typeName);
+        visitedInterfaces.add(interfaceType);
         for (Symbol implementation : implementations) {
             Type implementedType;
             // When adding an implementation, the name is already checked. Therefore, no need to check isEmpty().
@@ -384,7 +387,24 @@ public class SchemaGenerator {
             }
 
             interfaceType.addPossibleType(implementedType);
-            implementedType.addInterface(interfaceType);
+            addTransitiveImplementationsToInterface(interfaceType, implementedType);
+            addSuperInterfacesToImplementation(implementedType);
+        }
+        visitedInterfaces.remove(interfaceType);
+    }
+
+    private void addTransitiveImplementationsToInterface(Type interfaceType, Type implementedType) {
+        if (implementedType.getPossibleTypes() == null) {
+            return;
+        }
+        for (Type transitiveImplementation : implementedType.getPossibleTypes()) {
+            interfaceType.addPossibleType(transitiveImplementation);
+        }
+    }
+
+    private void addSuperInterfacesToImplementation(Type implementedType) {
+        for (Type superInterface : visitedInterfaces) {
+            implementedType.addInterface(superInterface);
         }
     }
 

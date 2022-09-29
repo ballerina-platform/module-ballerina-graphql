@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/08/17  
+_Updated_: 2022/09/22  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -59,7 +59,9 @@ The conforming implementation of the specification is released and included in t
         * 4.2.2 [Service Type as Object](#422-service-type-as-object)
     * 4.3 [Unions](#43-unions)
     * 4.4 [Enums](#44-enums)
-    * 4.5 [Input Objects](#45-input-objects)
+    * 4.5 [Input Types](#45-input-types)
+        * 4.5.1 [Input Union Types](#451-input-union-types)
+        * 4.5.2 [Input Objects](#452-input-objects)
     * 4.6 [Interfaces](#46-interfaces)
 5. [Directives](#5-directives)
    * 5.1 [@skip](#51-skip)
@@ -682,9 +684,40 @@ enum Direction {
 }
 ```
 
-### 4.5 Input Objects
+### 4.5 Input Types
 
-In GraphQL, a field can have zero or more input arguments. These arguments can be either `Scalar` type, `Enum` type, or `Object` type. Although `Scalar` and `enum` types can be used as input and output types without a limitation, an object type can not be used as an input type and an output type. Therefore, separate kinds of objects are used to define input objects.
+In GraphQL, a field can have zero or more input arguments. These arguments can be either `Scalar` type, `Enum` type, or `Object` type.
+
+#### 4.5.1 Input Union Types
+
+An input type can be a Ballerina union type, if and only if the union consists of one of the supported types and the other member type is `nil`. A union with nil means the input type is a nullable type. Any other union type will be resulting in a compilation error.
+
+###### Example: Input Union Types
+
+```ballerina
+service on new graphql:Listener(4000) {
+    resource function get greet(string? name) returns string {
+        if name is string {
+            return string `Hello, ${name}`;
+        }
+        return "Hello, world!";
+    }
+}
+```
+
+###### Counter Example: Invalid Input Union Types
+
+```ballerina
+service on new graphql:Listener(4000) {
+    resource function get greeting(string|error name) returns string { // Results in a compilation error
+        return "Hello, World!"
+    }
+}
+```
+
+#### 4.5.2 Input Objects
+
+Although `Scalar` and `enum` types can be used as input and output types without a limitation, an object type can not be used as an input type and an output type. Therefore, separate kinds of objects are used to define input objects.
 
 In Ballerina, a `record` type can be used as an input object. When a `record` type is used as the type of the input argument of a `resource` or `remote` method in a GraphQL service (or in a `resource` function in a `service` type returned from the GraphQL service), it is mapped to an `INPUT_OBJECT` type in GraphQL.
 
@@ -1323,6 +1356,7 @@ service on new graphql:Listener(4000) {
 #### 9.1.7 Introspection Configurations
 
 The `introspectionEnabled` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
+
 ###### Example: Disable Introspection Query Support
 
 ```ballerina
@@ -1384,7 +1418,7 @@ The Interceptor service class should have the implementation of the `execute()` 
 
 When it comes to interceptor execution, it follows the `onion principle`. Basically, each interceptor function adds a layer before and after the actual resolver invocation. Therefore, the order of the interceptor array in the configuration will be important. In an Interceptor `execute()` function, all the code lines placed before the `context.resolve()` will be executed before the resolver function execution, and the code lines placed after the `context.resolve()` will be executed after the resolver function execution. The [`context.resolve()`](#85-invoking-next-interceptor) function invoke the next interceptor.
 
-> NOTE: The inserting order of the interceptor function into the array, will be the execution order of Interceptors.
+> **Note:** The inserting order of the interceptor function into the array, will be the execution order of Interceptors.
 
 ###### Example: GraphQL Interceptor
 
@@ -1422,6 +1456,8 @@ service /graphql on new graphql:Listener(9000) {
 
 #### 10.4.1 Service Level Interceptors
 The service level interceptors are applied to all the resolver functions in the GraphQL service. The GraphQL module accept an array of service level interceptors, and it should be inserted as mentioned in the [Service Level Interceptor](#916-service-level-interceptors) section.
+
+> **Note:** The service level interceptors are applied to each event in response stream of subscription resolvers.
 
 ## 11. Security
 

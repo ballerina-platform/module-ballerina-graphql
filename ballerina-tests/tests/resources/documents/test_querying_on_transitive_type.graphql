@@ -1,0 +1,7 @@
+{
+  animal(id: 11) {
+    ... on Mule {
+      isAggressive
+    }
+  }
+}
