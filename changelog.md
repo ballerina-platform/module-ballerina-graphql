@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - [[#3062] Improve Compilation Error Messages to be more specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)
+- [[#3431] Introduce GraphQL Client Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3431)
 
 ## [1.4.1] - 2022-09-12
 
