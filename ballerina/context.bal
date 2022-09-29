@@ -142,6 +142,12 @@ public isolated class Context {
             self.nextInterceptor = 0;
         }
     }
+
+    isolated function resetErrors() {
+        lock {
+            self.errors.removeAll();
+        }
+    }
 }
 
 isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {

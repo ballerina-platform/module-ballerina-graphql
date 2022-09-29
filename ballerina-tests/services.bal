@@ -29,3 +29,9 @@ service /interfaces on new graphql:Listener(9098) {
         return [new Starship("E1", "Organo"), new Starship("E2", "Solo")];
     }
 }
+
+service /interfaces_implementing_interface on new graphql:Listener(9089) {
+    resource function get animal(int id) returns Animalia? {
+        return id <= animals.length() && id > 0 ? animals[id - 1] : ();
+    }
+}

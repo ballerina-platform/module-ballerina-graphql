@@ -1,6 +1,5 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
 import io.ballerina.stdlib.graphql.compiler.schema.types.DefaultDirective;
@@ -33,7 +32,7 @@ import static io.ballerina.projects.util.ProjectConstants.USER_DIR;
 public class SDLFileGenerator {
 
     private final Schema schema;
-    private final ServiceDeclarationSymbol serviceDeclarationSymbol;
+    private final int serviceHashCode;
     private final Project project;
     private final PrintStream stdError = System.err;
 
@@ -75,9 +74,9 @@ public class SDLFileGenerator {
     private static final String AND_SIGN = " & ";
     private static final String PIPE_SIGN = "|";
 
-    public SDLFileGenerator(Schema schema, ServiceDeclarationSymbol symbol, Project project) {
+    public SDLFileGenerator(Schema schema, int serviceHashCode, Project project) {
         this.schema = schema;
-        this.serviceDeclarationSymbol = symbol;
+        this.serviceHashCode = serviceHashCode;
         this.project = project;
     }
 
@@ -369,7 +368,7 @@ public class SDLFileGenerator {
     }
 
     private String getSchemaFileName() {
-        return String.format(SDL_SCHEMA_NAME_FORMAT, this.serviceDeclarationSymbol.hashCode());
+        return String.format(SDL_SCHEMA_NAME_FORMAT, this.serviceHashCode);
     }
 
     private static void createFileIfNotExists(Path filePath) throws IOException {

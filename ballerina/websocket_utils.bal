@@ -26,12 +26,11 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
     if sourceStream is stream<any, error?> {
         record {|any value;|}|error? next = sourceStream.next();
         while next !is error? {
-            OutputObject outputObj = engine.getResult(node, context, next.value);
-            ResponseFormatter responseFormatter = new (schema);
-            OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObj, node);
-            if coercedOutputObject.hasKey(DATA_FIELD) || coercedOutputObject.hasKey(ERRORS_FIELD) {
-                check sendWebSocketResponse(caller, customHeaders, WS_NEXT, coercedOutputObject.toJson(), connectionId);
+            OutputObject outputObject = engine.getResult(node, context, next.value);
+            if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
+                check sendWebSocketResponse(caller, customHeaders, WS_NEXT, outputObject.toJson(), connectionId);
             }
+            context.resetErrors(); //Remove previous event's errors before the next one
             next = sourceStream.next();
         }
         if next is error {
@@ -79,8 +78,7 @@ isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
                                           parser:FieldNode node) returns stream<any, error?>|json {
-    ExecutorVisitor executor = new(engine, schema, context, {});
-    any|error result = getSubscriptionResult(executor, node);
+    any|error result = engine.executeSubscriptionResource(context, engine.getService(), node);
     if result is stream<any, error?> {
         return result;
     }

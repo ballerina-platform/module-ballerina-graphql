@@ -336,3 +336,180 @@ readonly service class NullReturn {
         return;
     }
 }
+
+readonly service class RecordFieldInterceptor1 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        match 'field.getName() {
+            "name" => {
+                if result is string {
+                    return result + " Dumbledore";
+                }
+                return result;
+            }
+            "age" => {
+                if result is int {
+                    return result + 10;
+                }
+                return result;
+            }
+            "number" => {
+                return "100";
+            }
+            "street" => {
+                return "Margo Street";
+            }
+            _ => {
+                return result;
+            }
+        }
+    }
+}
+
+readonly service class RecordFieldInterceptor2 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if 'field.getName() == "name" {
+            if result is string {
+                return result + " Wulfric Brian";
+            }
+        }
+        return result;
+    }
+}
+
+readonly service class RecordFieldInterceptor3 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if 'field.getName() == "name" {
+            if result is string {
+                return "Albus Percival";
+            }
+        }
+        return result;
+    }
+}
+
+readonly service class MapInterceptor {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        match result {
+            "Ballerina" => {
+                return "Java";
+            }
+            "JavaScript" => {
+                return "Flutter";
+            }
+            "Python" => {
+                return "Ballerina";
+            }
+            "C++" => {
+                return "C#";
+            }
+            _ => {
+                return result;
+            }
+        }
+    }
+}
+
+readonly service class TableInterceptor {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if 'field.getName() == "name" {
+            if result is string {
+                return string `Eng. ${result}`;
+            }
+        }
+        return result;
+    }
+}
+
+readonly service class Multiplication {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if result is int {
+            return result * 5;
+        }
+        return result;
+    }
+}
+
+readonly service class Subtraction {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if result is int {
+            return result - 5;
+        }
+        return result;
+    }
+}
+
+readonly service class InterceptAuthor {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if 'field.getName() == "author" {
+            return "Athur Conan Doyle";
+        }
+        return result;
+    }
+}
+
+readonly service class InterceptStudentName {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if 'field.getName() == "name" {
+            return "Harry Potter";
+        }
+        return result;
+    }
+}
+
+readonly service class InterceptUnionType {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if 'field.getName() == "subject" {
+            return "Physics";
+        }
+        if 'field.getName() == "id" {
+            return 100;
+        }
+        return result;
+    }
+}
+
+readonly service class ReturnBeforeResolver {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        return 1;
+    }
+}
+
+readonly service class DestructiveModification {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        return "Ballerina";
+    }
+}

@@ -1,0 +1,24 @@
+query {
+    characters(idList: ["1000", "2000"]) {
+        ...on Human {
+            friends {
+                ...on Human {
+                    name
+                    homePlanet
+                    mass
+                }
+            }
+        }
+        ...on Droid {
+            friends {
+                ...on Human {
+                    name
+                }
+                ...on Droid {
+                    name
+                    primaryFunction
+                }
+            }
+        }
+    }
+}

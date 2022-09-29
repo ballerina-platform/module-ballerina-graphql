@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/websocket;
 
 @test:Config {
     groups: ["interceptors"]
@@ -32,7 +33,7 @@ isolated function testInterceptors() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "service"]
 }
 isolated function testInterceptorsWithServiceObjects() returns error? {
     string document = string `{ teacher{ id, name, subject }}`;
@@ -43,7 +44,7 @@ isolated function testInterceptorsWithServiceObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "array"]
 }
 isolated function testInterceptorsWithArrays() returns error? {
     string document = string `{ houses }`;
@@ -54,7 +55,7 @@ isolated function testInterceptorsWithArrays() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "records"]
 }
 isolated function testInterceptorsWithRecords() returns error? {
     string document = string `{ profile{ name, address{ number, street }}}`;
@@ -65,7 +66,7 @@ isolated function testInterceptorsWithRecords() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "enums"]
 }
 isolated function testInterceptorsWithEnums() returns error? {
     string document = string `{ holidays }`;
@@ -80,7 +81,7 @@ isolated function testInterceptorsWithEnums() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "union"]
 }
 isolated function testInterceptorsWithUnion() returns error? {
     string document = string `{ profile(id: 4){ ...on StudentService{ id, name }}}`;
@@ -166,7 +167,7 @@ isolated function testInterceptorsWithHierarchicalPaths() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "fragments"]
 }
 isolated function testInterceptorsWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("interceptors_with_fragments.graphql");
@@ -177,7 +178,7 @@ isolated function testInterceptorsWithFragments() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "mutation"]
 }
 isolated function testInterceptorWithMutation() returns error? {
     string document = string `mutation { setName(name: "Heisenberg") { name } }`;
@@ -286,7 +287,7 @@ isolated function testInterceptorExecutionOrder() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors", "hierarchical_paths"]
 }
 isolated function testInterceptorsReturningErrorsWithHierarchicalResources() returns error? {
     string document = string `{ name, age, address{city, street, number}}`;
@@ -335,4 +336,302 @@ isolated function testInterceptorsReturningInvalidValue() returns error? {
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("interceptors_returning_invalid_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "records"]
+}
+isolated function testInterceptorsWithRecordFields() returns error? {
+    string document = string `{ profile{ name, age, address{ number, street, city }}}`;
+    string url = "http://localhost:9091/intercept_record_fields";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Albus Percival Wulfric Brian Dumbledore",
+                age: 80,
+                address: {
+                    number: "100",
+                    street: "Margo Street",
+                    city: "London"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "records", "fragments"]
+}
+isolated function testInterceptorsWithRecordFieldsAndFragments() returns error? {
+    string document = string `{ profile{ name, age, ...P1 }} fragment P1 on Person{ address{ number, street, city }}`;
+    string url = "http://localhost:9091/intercept_record_fields";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            profile: {
+                name: "Albus Percival Wulfric Brian Dumbledore",
+                age: 80,
+                address: {
+                    number: "100",
+                    street: "Margo Street",
+                    city: "London"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "map"]
+}
+isolated function testInterceptorsWithMap() returns error? {
+    string document = check getGraphQLDocumentFromFile("interceptors_with_map.graphql");
+    string url = "http://localhost:9091/intercept_map";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data:{
+            languages:{
+                backend: "Java",
+                frontend: "Flutter",
+                data: "Ballerina",
+                native: "C#"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "table"]
+}
+isolated function testInterceptorsWithTables() returns error? {
+    string document = "{ employees { name } }";
+    string url = "http://localhost:9091/intercept_table";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            employees: [
+                {
+                    name: "Eng. John Doe"
+                },
+                {
+                    name: "Eng. Jane Doe"
+                },
+                {
+                    name: "Eng. Johnny Roe"
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "subscriptions"]
+}
+isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9099/subscription_interceptor1";
+    websocket:Client wsClient1 = check new(url);
+    websocket:Client wsClient2 = check new(url);
+    check writeWebSocketTextMessage(document, wsClient1);
+    check writeWebSocketTextMessage(document, wsClient2);
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i * 5 - 5}};
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["interceptors", "subscriptions", "records"]
+}
+isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
+    string url = "ws://localhost:9099/subscription_interceptor2";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {data: {books: {name: "Crime and Punishment", author: "Athur Conan Doyle"}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = {data: {books: {name: "A Game of Thrones", author: "Athur Conan Doyle"}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "fragments", "subscriptions"]
+}
+isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
+    string url = "ws://localhost:9099/subscription_interceptor3";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {data: {students: {id: 1, name: "Harry Potter"}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = {data: {students: {id: 2, name: "Harry Potter"}}};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "union", "subscriptions"]
+}
+isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
+    string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    string url = "ws://localhost:9099/subscription_interceptor4";
+    websocket:Client wsClient = check new(url);
+    check writeWebSocketTextMessage(document, wsClient);
+    json expectedPayload = {
+        data: {
+            multipleValues: {
+                id: 100,
+                name: "Jesse Pinkman"
+            }
+        }
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = {
+        data: {
+            multipleValues: {
+                name: "Walter White",
+                subject: "Physics"
+            }
+        }
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["interceptors", "subscriptions"]
+}
+isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9099/subscription_interceptor5";
+    websocket:Client wsClient1 = check new(url);
+    websocket:Client wsClient2 = check new(url);
+    check writeWebSocketTextMessage(document, wsClient1);
+    check writeWebSocketTextMessage(document, wsClient2);
+    json expectedPayload = {data: {messages: 1}};
+    foreach int i in 1 ..< 4 {
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["interceptors", "subscriptions"]
+}
+isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9099/subscription_interceptor6";
+    websocket:Client wsClient1 = check new(url);
+    websocket:Client wsClient2 = check new(url);
+    check writeWebSocketTextMessage(document, wsClient1);
+    check writeWebSocketTextMessage(document, wsClient2);
+    json expectedPayload = {
+        errors:[
+            {
+                message: "Invalid return type in Interceptor \"DestructiveModification\". Expected type Int!",
+                locations: [
+                    {
+                        line:1,
+                        column:16
+                    }
+                ],
+                path: ["messages"]
+            }
+        ],
+        data:null
+    };
+    foreach int i in 1 ..< 4 {
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["interceptors", "subscriptions"]
+}
+isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
+    final string document = string `subscription { messages }`;
+    string url = "ws://localhost:9099/subscription_interceptor1";
+    final websocket:Client wsClient1 = check new(url);
+    final websocket:Client wsClient2 = check new(url);
+    final websocket:Client wsClient3 = check new(url);
+    worker A returns error? {
+        check writeWebSocketTextMessage(document, wsClient1);
+        foreach int i in 1 ..< 4 {
+            json expectedPayload = {data: {messages: i * 5 - 5}};
+            check validateWebSocketResponse(wsClient1, expectedPayload);
+        }
+    }
+    worker B returns error? {
+        check writeWebSocketTextMessage(document, wsClient2);
+        foreach int i in 1 ..< 4 {
+            json expectedPayload = {data: {messages: i * 5 - 5}};
+            check validateWebSocketResponse(wsClient2, expectedPayload);
+        }
+    }
+    check writeWebSocketTextMessage(document, wsClient3);
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i * 5 - 5}};
+        check validateWebSocketResponse(wsClient3, expectedPayload);
+    }
+    check wait A;
+    check wait B;
+}
+
+@test:Config {
+    groups: ["interceptors", "union", "subscriptions"]
+}
+isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
+    final string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    string url = "ws://localhost:9099/subscription_interceptor4";
+    final websocket:Client wsClient1 = check new(url);
+    final websocket:Client wsClient2 = check new(url);
+    worker A returns error? {
+        check writeWebSocketTextMessage(document, wsClient1);
+        json expectedPayload = {
+            data: {
+                multipleValues: {
+                    id: 100,
+                    name: "Jesse Pinkman"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        expectedPayload = {
+            data: {
+                multipleValues: {
+                    name: "Walter White",
+                    subject: "Physics"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+    }
+    worker B returns error? {
+        check writeWebSocketTextMessage(document, wsClient2);
+        json expectedPayload = {
+            data: {
+                multipleValues: {
+                    id: 100,
+                    name: "Jesse Pinkman"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+        expectedPayload = {
+            data: {
+                multipleValues: {
+                    name: "Walter White",
+                    subject: "Physics"
+                }
+            }
+        };
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+    }
+    check wait A;
+    check wait B;
 }

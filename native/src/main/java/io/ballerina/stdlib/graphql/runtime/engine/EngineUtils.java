@@ -103,7 +103,6 @@ public class EngineUtils {
     // Visitor object fields
     static final BString ERRORS_FIELD = StringUtils.fromString("errors");
     static final BString ENGINE_FIELD = StringUtils.fromString("engine");
-    static final BString DATA_FIELD = StringUtils.fromString("data");
     static final BString CONTEXT_FIELD = StringUtils.fromString("context");
 
     // Internal Types

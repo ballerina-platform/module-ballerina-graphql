@@ -18,27 +18,28 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
-import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Stores the mapping between a Ballerina service and the generated GraphQL schema.
+ * Stores the mapping between a Ballerina service node and the generated GraphQL schema.
+ * Ballerina service node includes both SERVICE_DECLARATION and MODULE_VAR_DECL of graphql:Service.
  */
 public class GraphqlModifierContext {
-    private final Map<ServiceDeclarationNode, Schema> nodeSchemaMap;
+    private final Map<Node, Schema> nodeSchemaMap;
 
     public GraphqlModifierContext() {
         this.nodeSchemaMap = new HashMap<>();
     }
 
-    public void add(ServiceDeclarationNode node, Schema schema) {
+    public void add(Node node, Schema schema) {
         this.nodeSchemaMap.put(node, schema);
     }
 
-    public Map<ServiceDeclarationNode, Schema> getNodeSchemaMap() {
+    public Map<Node, Schema> getNodeSchemaMap() {
         return this.nodeSchemaMap;
     }
 }

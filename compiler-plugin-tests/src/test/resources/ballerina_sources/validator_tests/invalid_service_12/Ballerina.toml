@@ -1,4 +1,0 @@
-[package]
-org = "graphql_test"
-name = "invalid_service_12"
-version = "0.1.0"
