@@ -94,37 +94,15 @@ public type GenericResponseWithErrors record {|
    ErrorDetail[] errors?;
 |};
 
-# Provides a set of configurations for controlling the behaviour of the GraphQL client when communicating with 
-# the GraphQL server that operates over HTTP.
-# 
-# + http1Settings - Configurations related to HTTP/1.1 protocol
-# + timeout - The maximum time to wait (in seconds) for a response before closing the connection
-# + forwarded - The choice of setting `forwarded`/`x-forwarded` header
-# + followRedirects - Configurations associated with Redirection
-# + poolConfig - Configurations associated with request pooling
-# + cache - HTTP caching related configurations
-# + compression - Specifies the way of handling compression (`accept-encoding`) header
-# + auth - Configurations related to client authentication
-# + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
-# + retryConfig - Configurations associated with retrying
-# + cookieConfig - Configurations associated with cookies
-# + responseLimits - Configurations associated with inbound response size limits
-# + proxy - Proxy server related options
-# + validation - Enables the inbound payload validation functionalty which provided by the constraint package. Enabled by default
-public type ClientConfiguration record {|
-    http:ClientHttp1Settings http1Settings = {};
-    decimal timeout = 60;
-    string forwarded = "disable";
-    http:FollowRedirects? followRedirects = ();
-    http:PoolConfiguration? poolConfig = ();
-    http:CacheConfig cache = {};
-    http:Compression compression = http:COMPRESSION_AUTO;
-    http:ClientAuthConfig? auth = ();
-    http:CircuitBreakerConfig? circuitBreaker = ();
-    http:RetryConfig? retryConfig = ();
-    http:CookieConfig? cookieConfig = ();
-    http:ResponseLimitConfigs responseLimits = {};
-    http:ClientSecureSocket? secureSocket = ();
-    http:ProxyConfig? proxy = ();
-    boolean validation = true;
-|};
+# When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the
+# outbound request/response accept-encoding/content-encoding option.
+public const COMPRESSION_AUTO = "AUTO";
+
+# Always set accept-encoding/content-encoding in outbound request/response.
+public const COMPRESSION_ALWAYS = "ALWAYS";
+
+# Never set accept-encoding/content-encoding header in outbound request/response.
+public const COMPRESSION_NEVER = "NEVER";
+
+# Options to compress using gzip or deflate.
+public type Compression COMPRESSION_AUTO|COMPRESSION_ALWAYS|COMPRESSION_NEVER;

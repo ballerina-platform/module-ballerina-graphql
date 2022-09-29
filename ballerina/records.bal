@@ -38,6 +38,92 @@ public type RequestLimitConfigs record {|
     *http:RequestLimitConfigs;
 |};
 
+# Provides settings related to HTTP/1.x protocol.
+public type ClientHttp1Settings record {|
+    *http:ClientHttp1Settings;
+|};
+
+# Provides configurations for controlling the endpoint's behaviour in response to HTTP redirect related responses.
+public type FollowRedirects record {|
+    *http:FollowRedirects;
+|};
+
+# Configurations for managing GraphQL client connection pool.
+public type PoolConfiguration record {|
+    *http:PoolConfiguration;
+|};
+
+# Provides a set of configurations for controlling the caching behaviour of the endpoint.
+public type CacheConfig record {|
+    *http:CacheConfig;
+|};
+
+# Provides a set of configurations for controlling the behaviour of the Circuit Breaker.
+public type CircuitBreakerConfig record {|
+    *http:CircuitBreakerConfig;
+|};
+
+# Provides configurations for controlling the retrying behavior in failure scenarios.
+public type RetryConfig record {|
+    *http:RetryConfig;
+|};
+
+# Client configuration for cookies.
+public type CookieConfig record {|
+    *http:CookieConfig;
+|};
+
+# Provides inbound response status line, total header and entity body size threshold configurations.
+public type ResponseLimitConfigs record {|
+    *http:ResponseLimitConfigs;
+|};
+
+# Provides configurations for facilitating secure communication with a remote GraphQL endpoint.
+public type ClientSecureSocket record {|
+    *http:ClientSecureSocket;
+|};
+
+# Proxy server configurations to be used with the GraphQL client endpoint.
+public type ProxyConfig record {|
+    *http:ProxyConfig;
+|};
+
+# Provides a set of configurations for controlling the behaviour of the GraphQL client when communicating with 
+# the GraphQL server that operates over HTTP.
+#
+# + http1Settings - Configurations related to HTTP/1.1 protocol
+# + timeout - The maximum time to wait (in seconds) for a response before closing the connection
+# + forwarded - The choice of setting `forwarded`/`x-forwarded` header
+# + followRedirects - Configurations associated with Redirection
+# + poolConfig - Configurations associated with request pooling
+# + cache - HTTP caching related configurations
+# + compression - Specifies the way of handling compression (`accept-encoding`) header
+# + auth - Configurations related to client authentication
+# + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
+# + retryConfig - Configurations associated with retrying
+# + cookieConfig - Configurations associated with cookies
+# + responseLimits - Configurations associated with inbound response size limits
+# + secureSocket - SSL/TLS-related options
+# + proxy - Proxy server related options
+# + validation - Enables the inbound payload validation functionalty which provided by the constraint package. Enabled by default
+public type ClientConfiguration record {|
+    ClientHttp1Settings http1Settings = {};
+    decimal timeout = 60;
+    string forwarded = "disable";
+    FollowRedirects? followRedirects = ();
+    PoolConfiguration? poolConfig = ();
+    CacheConfig cache = {};
+    Compression compression = COMPRESSION_AUTO;
+    ClientAuthConfig? auth = ();
+    CircuitBreakerConfig? circuitBreaker = ();
+    RetryConfig? retryConfig = ();
+    CookieConfig? cookieConfig = ();
+    ResponseLimitConfigs responseLimits = {};
+    ClientSecureSocket? secureSocket = ();
+    ProxyConfig? proxy = ();
+    boolean validation = true;
+|};
+
 type Data record {
     // Intentionally kept empty
 };
