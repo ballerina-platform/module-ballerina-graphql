@@ -19,9 +19,6 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
-import io.ballerina.compiler.syntax.tree.AnnotationNode;
-import io.ballerina.compiler.syntax.tree.MappingFieldNode;
-import io.ballerina.compiler.syntax.tree.MetadataNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Project;
@@ -36,7 +33,6 @@ import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.SCHEMA_GEN_CONFIG_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlService;
 
@@ -74,12 +70,9 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
         Schema schema = generateSchema(interfaceFinder, symbol);
         addToModifierContextMap(documentId, node, schema);
 
-        boolean generateSDLFileEnabled = getSchemaGenerationAnnotValue(node);
-        if (generateSDLFileEnabled) {
-            Project project = context.currentPackage().project();
-            SDLFileGenerator sdlFileGenerator = new SDLFileGenerator(schema, symbol, project);
-            sdlFileGenerator.generate();
-        }
+        Project project = context.currentPackage().project();
+        SDLFileGenerator sdlFileGenerator = new SDLFileGenerator(schema, symbol, project);
+        sdlFileGenerator.generate();
     }
 
     private Schema generateSchema(InterfaceFinder interfaceFinder, ServiceDeclarationSymbol symbol) {
@@ -96,27 +89,5 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
             modifierContext.add(node, schema);
             this.modifierContextMap.put(documentId, modifierContext);
         }
-    }
-
-    private boolean getSchemaGenerationAnnotValue(ServiceDeclarationNode node) {
-        if (node.metadata().isPresent()) {
-            MetadataNode metadataNode = node.metadata().get();
-            for (AnnotationNode annotationNode : metadataNode.annotations()) {
-                if (annotationNode.annotValue().isPresent()) {
-                    return Boolean.parseBoolean(getAnnotationValue(annotationNode));
-                }
-            }
-        }
-        return true;
-    }
-
-    private String getAnnotationValue(AnnotationNode annotationNode) {
-        for (MappingFieldNode field : annotationNode.annotValue().get().fields()) {
-            if (field.toString().contains(SCHEMA_GEN_CONFIG_IDENTIFIER)) {
-                String[] annotStrings = field.toString().split(":");
-                return annotStrings[annotStrings.length - 1].trim();
-            }
-        }
-        return String.valueOf(true);
     }
 }
