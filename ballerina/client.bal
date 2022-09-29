@@ -26,9 +26,10 @@ public isolated client class Client {
     # + serviceUrl - URL of the target service
     # + clientConfig - The configurations to be used when initializing the `connector`
     # + return - An error at the failure of client initialization
-    public isolated function init(string serviceUrl, http:ClientConfiguration clientConfig = {})  returns ClientError? {
-        clientConfig.httpVersion = "1.1";
-        http:Client|http:ClientError httpClient = new (serviceUrl, clientConfig);
+    public isolated function init(string serviceUrl, ClientConfiguration clientConfig = {})  returns ClientError? {
+        http:ClientConfiguration httpClientConfig = {...clientConfig};
+        httpClientConfig.httpVersion = http:HTTP_1_1;
+        http:Client|http:ClientError httpClient = new (serviceUrl, httpClientConfig);
         if httpClient is http:ClientError {
              return error HttpError("GraphQL Client Error", httpClient, body = ());
         }
