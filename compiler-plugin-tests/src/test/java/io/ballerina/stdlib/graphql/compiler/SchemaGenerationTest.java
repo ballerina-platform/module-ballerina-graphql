@@ -26,8 +26,12 @@ import io.ballerina.projects.environment.EnvironmentBuilder;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin schema generation.
@@ -193,6 +197,38 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testGeneratedGraphQLSDLSchema() {
+        String packagePath = "23_SDL_file_generation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("23_SDL_file_generation/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406592719.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
+    @Test
+    public void testGeneratedSDLSchemaWithMultipleServices() {
+        String packagePath = "24_SDL_file_generation_with_multiple_services";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("24_SDL_file_generation_with_multiple_services/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406665104.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406655308.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema2.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406648271.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -202,5 +238,17 @@ public class SchemaGenerationTest {
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
+    }
+
+    private String getStringContentFromGivenFile(Path filePath, String fileName) {
+        try {
+            Stream<String> schemaLines = Files.lines(filePath.resolve(fileName));
+            String schemaContent = schemaLines.collect(Collectors.joining(System.lineSeparator()));
+            schemaLines.close();
+            schemaContent = (schemaContent.trim()).replaceAll("\\s+", "");
+            return schemaContent;
+        } catch (IOException e) {
+            return e.getMessage();
+        }
     }
 }

@@ -1,0 +1,12 @@
+schema {
+  query: Query
+}
+
+type Query {
+  profile: Person!
+}
+
+type Person {
+  name: String!
+  age: Int!
+}

@@ -95,8 +95,4 @@ test {
     }
 }
 
-clean {
-    delete("${projectDir}/src/test/resources/generator_tests/*/target")
-}
-
 test.dependsOn ":graphql-ballerina:build"
