@@ -20,6 +20,15 @@
                     "column": 5
                 }
             ]
+        },
+        {
+            "message": "Fragment \"TypeFragment2\" cannot be spread here as objects of type \"__Field\" can never be of type \"__Type\".",
+            "locations": [
+                {
+                    "line": 16,
+                    "column": 5
+                }
+            ]
         }
     ]
 }

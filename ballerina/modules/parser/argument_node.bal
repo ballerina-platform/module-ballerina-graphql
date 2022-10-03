@@ -25,6 +25,7 @@ public class ArgumentNode {
     private string? variableName;
     private anydata variableValue;
     private boolean variableDefinition;
+    private boolean containsInvalidValue;
 
     public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
         self.name = name;
@@ -35,6 +36,7 @@ public class ArgumentNode {
         self.variableDefinition = isVarDef;
         self.variableName = ();
         self.variableValue = ();
+        self.containsInvalidValue = false;
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -95,5 +97,13 @@ public class ArgumentNode {
 
     public isolated function getVariableValue() returns anydata {
         return self.variableValue;
+    }
+
+    public isolated function setInvalidVariableValue() {
+        self.containsInvalidValue = true;
+    }
+
+    public isolated function hasInvalidVariableValue() returns boolean {
+        return self.containsInvalidValue;
     }
 }

@@ -59,6 +59,7 @@ class FragmentCycleFinderVisitor {
         if self.visitedSpreads.hasKey(fragmentNode.getName()) {
             ErrorDetail errorDetail = getCycleRecursiveFragmentError(fragmentNode, self.visitedSpreads);
             self.errors.push(errorDetail);
+            fragmentNode.setHasCycle();
         } else {
             self.visitedFragments[fragmentNode.getName()] = fragmentNode;
             self.visitedSpreads[fragmentNode.getName()] = fragmentNode;

@@ -108,10 +108,12 @@ class VariableValidatorVisitor {
                     self.visitedVariableDefinitions.push(variableName);
                     string message = string `Unknown type "${argumentTypeName}".`;
                     self.errors.push(getErrorDetailRecord(message, variableNode.getLocation()));
+                    argumentNode.setInvalidVariableValue();
                 }
             } else {
                 string message = string `Variable "$${variableName}" is not defined.`;
                 self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+                argumentNode.setInvalidVariableValue();
             }
             self.removePath();
         } else {
@@ -151,6 +153,7 @@ class VariableValidatorVisitor {
             if hasInvalidValue {
                 string message = getInvalidDefaultValueError(variableName, variable.getTypeName(), defaultValue);
                 self.errors.push(getErrorDetailRecord(message, defaultValue.getValueLocation()));
+                argumentNode.setInvalidVariableValue();
             } else {
                 self.setDefaultValueToArgumentNode(argumentNode, getArgumentTypeIdentifierFromType(variableType),
                                                    defaultValue.getValue(), defaultValue.getValueLocation());
@@ -161,6 +164,7 @@ class VariableValidatorVisitor {
                 string message = string `Variable "$${variableName}" of required type ${variable.getTypeName()} was `+
                                  string `not provided.`;
                 self.errors.push(getErrorDetailRecord(message, location));
+                argumentNode.setInvalidVariableValue();
             } else {
                 argumentNode.setValueLocation(location);
                 argumentNode.setVariableDefinition(false);
@@ -199,6 +203,8 @@ class VariableValidatorVisitor {
                         string listError = string `${getListElementError(self.argumentPath)}`;
                         string message = getInvalidDefaultValueError(listError, getTypeNameFromType(memberType), member);
                         self.errors.push(getErrorDetailRecord(message, member.getValueLocation()));
+                        member.setInvalidVariableValue();
+
                     }
                 }
                 self.removePath();
@@ -237,6 +243,7 @@ class VariableValidatorVisitor {
             string message = string `Variable ${<string> argument.getVariableName()} expected value of type ` +
                              string `"${variableTypeName}", found ${invalidValue}`;
             self.errors.push(getErrorDetailRecord(message, argument.getLocation()));
+            argument.setInvalidVariableValue();
         }
     }
 
@@ -250,6 +257,7 @@ class VariableValidatorVisitor {
                                  string `"${variable.getTypeName()}" used in position expecting type `+
                                  string `"${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, argNode.getLocation()));
+                argNode.setInvalidVariableValue();
             }
         }
     }

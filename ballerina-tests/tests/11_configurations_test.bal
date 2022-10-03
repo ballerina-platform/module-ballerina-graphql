@@ -53,6 +53,15 @@ isolated function testQueryExceedingMaxDepth() returns error? {
                         column: 1
                     }
                 ]
+            },
+            {
+                message: "Cannot query field \"book\" on type \"Query\".",
+                locations: [
+                    {
+                        line: 1,
+                        column: 3
+                    }
+                ]
             }
         ]
     };

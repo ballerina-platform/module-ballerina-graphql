@@ -24,6 +24,7 @@ public class OperationNode {
     private map<VariableNode> variables;
     private ErrorDetail[] errors;
     private DirectiveNode[] directives;
+    private boolean cofiguredInSchema;
 
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
@@ -33,6 +34,7 @@ public class OperationNode {
         self.variables = {};
         self.errors = [];
         self.directives = [];
+        self.cofiguredInSchema = true;
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -83,5 +85,13 @@ public class OperationNode {
 
     public isolated function getDirectives() returns DirectiveNode[] {
         return self.directives;
+    }
+
+    public isolated function setNotConfiguredOperationInSchema() {
+        self.cofiguredInSchema = false;
+    }
+
+    public isolated function isConfiguredOperationInSchema() returns boolean {
+        return self.cofiguredInSchema;
     }
 }
