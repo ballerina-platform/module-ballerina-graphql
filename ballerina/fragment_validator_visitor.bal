@@ -59,6 +59,9 @@ class FragmentValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        if fragmentNode.hasCycle() {
+            return;
+        }
         self.appendNamedFragmentFields(fragmentNode);
         self.usedFragments[fragmentNode.getName()] = fragmentNode;
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
@@ -76,6 +79,7 @@ class FragmentValidatorVisitor {
             string message = string`Unknown fragment "${fragmentNode.getName()}".`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
             self.errors.push(errorDetail);
+            fragmentNode.setUnknown();
         }
     }
 

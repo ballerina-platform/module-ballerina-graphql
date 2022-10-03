@@ -24,6 +24,8 @@ public class FragmentNode {
     private boolean inlineFragment;
     private SelectionNode[] selections;
     private DirectiveNode[] directives;
+    private boolean unknownFragment;
+    private boolean containsCycle;
 
     public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
                                   string onType = "") {
@@ -34,6 +36,8 @@ public class FragmentNode {
         self.inlineFragment = inlineFragment;
         self.selections = [];
         self.directives = [];
+        self.unknownFragment = false;
+        self.containsCycle = false;
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -82,5 +86,21 @@ public class FragmentNode {
 
     public isolated function getDirectives() returns DirectiveNode[] {
         return self.directives;
+    }
+
+    public isolated function setUnknown() {
+        self.unknownFragment = true;
+    }
+
+    public isolated function isUnknown() returns boolean {
+        return self.unknownFragment;
+    }
+
+    public isolated function setHasCycle() {
+        self.containsCycle = true;
+    }
+
+    public isolated function hasCycle() returns boolean {
+        return self.containsCycle;
     }
 }

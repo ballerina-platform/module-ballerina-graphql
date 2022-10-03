@@ -93,6 +93,10 @@ class FieldValidatorVisitor {
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+        if argumentNode.hasInvalidVariableValue() {
+            // This argument node is already validated to have an invalid value. No further validation is needed.
+            return;
+        }
         __InputValue schemaArg = <__InputValue>(<map<anydata>>data).get("input");
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
         if argumentNode.isVariableDefinition() {
@@ -430,6 +434,9 @@ class FieldValidatorVisitor {
     }
 
     isolated function validateFragment(parser:FragmentNode fragmentNode, string schemaTypeName) returns __Type? {
+        if fragmentNode.isUnknown() || fragmentNode.hasCycle() {
+            return;
+        }
         string fragmentOnTypeName = fragmentNode.getOnType();
         __Type? fragmentOnType = getTypeFromTypeArray(self.schema.types, fragmentOnTypeName);
         if fragmentOnType is () {
@@ -540,12 +547,16 @@ class FieldValidatorVisitor {
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,
                                                  ErrorDetail[] errors) returns __Field? {
+    if !operationNode.isConfiguredOperationInSchema() {
+        return;
+    }
     parser:RootOperationType operationType = operationNode.getKind();
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type? 'type = getTypeFromTypeArray(typeArray, operationTypeName);
     if 'type == () {
         string message = string `Schema is not configured for ${operationType.toString()}s.`;
         errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
+        operationNode.setNotConfiguredOperationInSchema();
     } else {
         return createField(operationTypeName, 'type);
     }

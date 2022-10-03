@@ -14,12 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3233] Add Service Level Interceptor Support for GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3233)
 
 ### Fixed
-- [[#3294] Fix GraphQL dynamic listener is not working for module level service declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
-- [[#3375] Fix Multiple Subscription Endpoints with the Same GraphQL Listener is not Working](https://github.com/ballerina-platform/ballerina-standard-library/issues/3375)
+- [[#3294] Fix GraphQL Dynamic Listener Is Not Working for Module Level Service Declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
+- [[#3375] Fix Multiple Subscription Endpoints with the Same GraphQL Listener is Not Working](https://github.com/ballerina-platform/ballerina-standard-library/issues/3375)
 - [[#3355] Fix Not Identifying Error Type as an Invalid Input Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3355)
 
 ### Changed
-- [[#3062] Improve Compilation Error Messages to be more specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)
+- [[#3062] Improve Compilation Error Messages To Be More Specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)
+- [[#2848] All the Errors Are Reported for a Given Document in a Single Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/2848)
 - [[#3431] Introduce GraphQL Client Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3431)
 
 ## [1.4.1] - 2022-09-12

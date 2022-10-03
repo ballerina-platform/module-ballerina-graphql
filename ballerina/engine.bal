@@ -93,10 +93,7 @@ isolated class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
-        if document.getErrors().length() > 0 {
-            return getOutputObjectFromErrorDetail(document.getErrors());
-        }
-
+        ErrorDetail[] validationErrors = [];
         ValidatorVisitor[] validators = [
             new FragmentCycleFinderVisitor(document.getFragments()),
             new FragmentValidatorVisitor(document.getFragments()),
@@ -114,10 +111,10 @@ isolated class Engine {
             document.accept(validator);
             ErrorDetail[]? errors = validator.getErrors();
             if errors is ErrorDetail[] {
-                return getOutputObjectFromErrorDetail(errors);
+                validationErrors.push(...errors);
             }
         }
-        return;
+        return validationErrors.length() == 0 ? () : getOutputObjectFromErrorDetail(validationErrors);
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)
