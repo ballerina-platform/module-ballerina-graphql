@@ -710,7 +710,12 @@ isolated function testClientConfiguration() returns error? {
         timeout = 1,
         http1Settings = {keepAlive: "NEVER"},
         secureSocket = {cert: {path: TRUSTSTORE_PATH, password: "ballerina"}},
-        auth = {username: "alice", password: "xxx"});
+        auth = {username: "alice", password: "xxx"},
+        poolConfig = {maxActiveConnections: 1},
+        circuitBreaker = {statusCodes: [500, 404]},
+        retryConfig = {count: 3},
+        cookieConfig = {enabled: true}
+        );
 
     json payload = check graphqlClient->execute(document);
     json expectedPayload = {data: {greeting: "Hello World!"}};
