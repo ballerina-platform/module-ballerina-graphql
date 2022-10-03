@@ -1,0 +1,17 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "\\Qgraphiql.html\\E"
+      }
+    ]
+  },
+  "bundles": [
+    {
+      "name": "MessagesBundle",
+      "locales": [
+        ""
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "types": [
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Directive"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation[]"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Field"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.InputValue"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Schema"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Type"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind"
+    },
+    {
+      "name": "java.lang.Enum"
+    },
+    {
+      "name": "java.util.ArrayList"
+    },
+    {
+      "name": "java.util.Arrays$ArrayList"
+    },
+    {
+      "name": "java.util.HashMap"
+    },
+    {
+      "name": "java.util.LinkedHashMap"
+    }
+  ],
+  "lambdaCapturingTypes": []
+}
