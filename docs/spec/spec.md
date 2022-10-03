@@ -33,6 +33,12 @@ The conforming implementation of the specification is released and included in t
         * 2.2.5 [Service Constructor Expression](#225-service-constructor-expression)
     * 2.3 [Parser](#23-parser)
     * 2.4 [Engine](#24-engine)
+    * 2.5 [Client](#25-client)
+        * 2.5.1 [Client Configuration](#251-client-configuration)
+        * 2.5.2 [Initializing the Client](#252-initializing-the-client)
+        * 2.5.3 [Executing Operations](#253-executing-operations)
+        * 2.5.4 [Client Data Binding](#254-client-data-binding)
+        * 2.5.5 [Client Error Handling](#255-client-error-handling)
 3. [Schema Generation](#3-schema-generation)
     * 3.1 [Root Types](#31-root-types)
         * 3.1.1 [The `Query` Type](#311-the-query-type)
@@ -266,6 +272,189 @@ The Ballerina GraphQL parser is responsible for parsing the incoming GraphQL doc
 The GraphQL engine acts as the main processing unit in the Ballerina GraphQL package. It connects all the other components in the Ballerina GraphQL package together.
 
 When a request is received to the GraphQL Listener, it dispatches the request to the GraphQL engine, where it extracts the document from the request, then passes it to the parser. Then the parser will parse the document and return an error (if there is any) or the syntax tree to the engine. Then the engine will validate the document against the generated schema, and then if the document is valid, the engine will execute the document.
+
+### 2.5 Client
+
+The GraphQL client can be used to connect to a GraphQL service and retrieve data. This client currently supports the `Query` and `Mutation` operations. The Ballerina GraphQL client uses HTTP as the underlying protocol to communicate with the GraphQL service.
+
+#### 2.5.1 Client Configuration
+
+The `graphql:Client` uses `http:Client` as its underlying implementation; this `http:Client` can be configured by providing the `graphql:ClientConfiguaration` as an optional parameter via `graphql:Client` init method.
+
+```ballerina
+# Provides a set of configurations for controlling the behavior of the GraphQL client when communicating with 
+# the GraphQL server that operates over HTTP.
+#
+# + http1Settings - Configurations related to HTTP/1.1 protocol
+# + timeout - The maximum time to wait (in seconds) for a response before closing the connection
+# + forwarded - The choice of setting `forwarded`/`x-forwarded` header
+# + followRedirects - Configurations associated with Redirection
+# + poolConfig - Configurations associated with request pooling
+# + cache - HTTP caching related configurations
+# + compression - Specifies the way of handling compression (`accept-encoding`) header
+# + auth - Configurations related to client authentication
+# + circuitBreaker - Configurations associated with the behavior of the Circuit Breaker
+# + retryConfig - Configurations associated with retrying
+# + cookieConfig - Configurations associated with cookies
+# + responseLimits - Configurations associated with inbound response size limits
+# + secureSocket - SSL/TLS-related options
+# + proxy - Proxy server related options
+# + validation - Enables the inbound payload validation functionality which is provided by the constraint package. Enabled by default
+public type ClientConfiguration record {|
+    ClientHttp1Settings http1Settings = {};
+    decimal timeout = 60;
+    string forwarded = "disable";
+    FollowRedirects? followRedirects = ();
+    PoolConfiguration? poolConfig = ();
+    CacheConfig cache = {};
+    Compression compression = COMPRESSION_AUTO;
+    ClientAuthConfig? auth = ();
+    CircuitBreakerConfig? circuitBreaker = ();
+    RetryConfig? retryConfig = ();
+    CookieConfig? cookieConfig = ();
+    ResponseLimitConfigs responseLimits = {};
+    ClientSecureSocket? secureSocket = ();
+    ProxyConfig? proxy = ();
+    boolean validation = true;
+|};
+```
+
+#### 2.5.2 Initializing the Client
+
+The `graphql:Client` init method requires a valid URL and optional configuration to initialize the client. 
+
+```ballerina
+graphql:Client graphqlClient = check new (“http://localhost:9091/graphql”, {timeout: 10});
+```
+#### 2.5.3 Executing Operations
+
+The graphql client provides `execute` API to execute graphql query and mutation operations. The `execute` method of `graphql:Client` takes a GraphQL document as the required argument and sends a request to the specified backend URL seeking for a response. Further, the execute method could take the following optional arguments.
+
+- `variables` - A map containing the GraphQL variables. All the variables that may be required by the graphql document can be set via this variables argument.
+
+- `operationName` - The GraphQL operation name. If the document has more than one operation, then each operation must have a name. Single GraphQL request can only execute one operation; the operation name must be set if the document has more than one operation.
+
+- `headers` - A map containing headers that may be required by the graphql server to execute each operation.
+
+The method definition of the execute API is given below.
+
+```ballerina
+remote isolated function execute(string document, map<anydata>? variables = (), string? operationName = (),
+                                map<string|string[]>? headers = (),
+                                typedesc<GenericResponseWithErrors|record {}|json> targetType = <>)
+                                returns targetType|ClientError ;
+```
+
+#### 2.5.4 Client Data Binding
+
+On retrieval of a successful response from the `execute` method, the client tries to perform data binding for the user-defined data type. The data type defined by the user should be a subtype of  `graphql:GenericResponseWithErrors|record{}|json`. Otherwise, the data binding fails with an error.
+
+The `GenericResponseWithErrors` is a predefined type in the graphql module that represents the shape of a graphql response.
+
+```ballerina
+# Represents the target type binding record with data, extensions and errors of a GraphQL 
+# response for `execute` method.
+#
+# + extensions -  Meta information on protocol extensions from the GraphQL server
+# + data -  The requested data from the GraphQL server
+# + errors - The errors occurred (if present) while processing the GraphQL request.
+
+public type GenericResponseWithErrors record {|
+   map<json?> extensions?;
+   record {| anydata...; |}|map<json?> data?;
+   ErrorDetail[] errors?;
+|};
+
+# Represents the details of an error that occurred during parsing, validating, or executing a GraphQL document.
+#
+# + message - The details of the error
+# + locations - The locations in the GraphQL document related to the error
+# + path - The GraphQL resource path of the error
+# + extensions - Additional information to errors
+public type ErrorDetail record {|
+    string message;
+    Location[] locations?;
+    (int|string)[] path?;
+    map<anydata> extensions?;
+|};
+```
+
+##### Example: Client Data Binding
+
+```ballerina
+import ballerina/graphql;
+
+// user defined types
+type ProfileResponseWithErrors record {|
+    *graphql:GenericResponseWithErrors;
+    ProfileResponse data;
+|};
+
+type ProfileResponse record {|
+    ProfileData one;
+|};
+
+type ProfileData record {
+    string name;
+};
+
+public function main() returns error? {
+    graphql:Client graphqlClient = check new ("http: //localhost:9091/graphql");
+    string document = "{ one: profile(id: 100) {name} }";
+    // data binding to user defined type
+    ProfileResponseWithErrors response = check graphqlClient->execute(document);
+    string name = response.data.one.name;
+}
+```
+
+#### 2.5.5 Client Error Handling
+
+Following are the error types specific to the `graphql:Client`, which can be returned during the client initialization or invocation of the execute method. 
+
+```ballerina
+# Represents GraphQL client related generic errors.
+public type ClientError distinct error;
+
+# Represents GraphQL client-side or network level errors.
+public type RequestError distinct ClientError;
+
+# Represents network-level errors.
+public type HttpError distinct (RequestError & error<record {| anydata body; |}>);
+
+# Represents GraphQL errors due to request validation.
+public type InvalidDocumentError distinct (RequestError & error<record {| ErrorDetail[]? errors; |}>);
+
+# Represents client-side data binding error.
+public type PayloadBindingError distinct (ClientError & error<record {| ErrorDetail[]? errors; |}>);
+```
+
+##### Example: Client Error Handling
+The following example demonstrates `graphql:Client` error handling and shows how to obtain GraphQL-specific errors returned by the graphql server.
+
+```ballerina
+public function main() returns error? {
+    string document = "{ one: profile(id: 100) {name} }";
+    string url = "http://localhost:9091/records";
+
+    graphql:Client graphqlClient = check new (url);
+    ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
+
+    // Accessing graphql errors from error detail
+    if payload is graphql:PayloadBindingError {
+        // server sends null for the data field; therefore the data binding fails
+        graphql:ErrorDetail[]? errorDetails = payload.detail().errors;
+        // process errorDetails
+    } else if payload is graphql:InvalidDocumentError {
+        // server validates a malformed request and only send graphql errors without any data
+        graphql:ErrorDetail[]? errorDetails = payload.detail().errors;
+        // process errorDetails
+    } else if payload is graphql:HttpError {
+        // any other network level errors
+        anydata body = payload.detail().body;
+        // process body
+    }
+}
+```
 
 ## 3. Schema Generation
 
