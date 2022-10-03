@@ -16,6 +16,7 @@
 
 import ballerina/graphql;
 
+# Episodes of Starwars Series
 public enum Episode {
     NEWHOPE,
     EMPIRE,
@@ -121,7 +122,6 @@ service /graphql on new graphql:Listener(9000) {
     }
 
     # Add new reviews and return the review values
-    #
     # + episode - Episode name
     # + reviewInput - Review of the episode
     # + return - The reviews

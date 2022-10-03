@@ -198,24 +198,24 @@ public class SchemaGenerationTest {
     }
 
     @Test
-    public void testGeneratedGraphQLSDLSchema() {
-        String packagePath = "23_SDL_file_generation";
+    public void testGeneratedGraphQLSdlSchema() {
+        String packagePath = "23_sdl_file_generation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
 
-        Path targetDir = RESOURCE_DIRECTORY.resolve("23_SDL_file_generation/target");
-        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406592719.graphql");
+        Path targetDir = RESOURCE_DIRECTORY.resolve("23_sdl_file_generation/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406591758.graphql");
         String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
+        Assert.assertEquals(generatedSchema.trim(), actualSchema.trim());
     }
 
     @Test
-    public void testGeneratedSDLSchemaWithMultipleServices() {
-        String packagePath = "24_SDL_file_generation_with_multiple_services";
+    public void testGeneratedSdlSchemaWithMultipleServices1() {
+        String packagePath = "24_sdl_file_generation_with_multiple_services1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
 
-        Path targetDir = RESOURCE_DIRECTORY.resolve("24_SDL_file_generation_with_multiple_services/target");
+        Path targetDir = RESOURCE_DIRECTORY.resolve("24_sdl_file_generation_with_multiple_services1/target");
         String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406665104.graphql");
         String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
         Assert.assertEquals(generatedSchema, actualSchema);
@@ -226,6 +226,38 @@ public class SchemaGenerationTest {
 
         generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406648271.graphql");
         actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
+    @Test
+    public void testGeneratedSdlSchemaWithMultipleServices2() {
+        String packagePath = "25_sdl_file_generation_with_multiple_services2";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("25_sdl_file_generation_with_multiple_services2/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406646287.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406653324.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema2.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406663120.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
+    @Test
+    public void testSdlFileGenerationWithCustomScalars() {
+        String packagePath = "26_sdl_file_generation_with_custom_scalar_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("26_sdl_file_generation_with_custom_scalar_types/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_-1406669909.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
         Assert.assertEquals(generatedSchema, actualSchema);
     }
 
@@ -243,9 +275,8 @@ public class SchemaGenerationTest {
     private String getStringContentFromGivenFile(Path filePath, String fileName) {
         try {
             Stream<String> schemaLines = Files.lines(filePath.resolve(fileName));
-            String schemaContent = schemaLines.collect(Collectors.joining(System.lineSeparator()));
+            String schemaContent = schemaLines.collect(Collectors.joining(System.getProperty("line.separator")));
             schemaLines.close();
-            schemaContent = (schemaContent.trim()).replaceAll("\\s+", "");
             return schemaContent;
         } catch (IOException e) {
             return e.getMessage();

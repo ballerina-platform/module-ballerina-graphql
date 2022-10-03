@@ -16,12 +16,14 @@
 
 import ballerina/graphql;
 
+listener graphql:Listener gqlListener = check new graphql:Listener(4000);
+
 public type Person record {|
     string name;
     int age;
 |};
 
-service on new graphql:Listener(4000) {
+service /graphql1 on gqlListener {
     resource function get profile() returns Person {
         return {
             name: "Walter White",
@@ -30,13 +32,13 @@ service on new graphql:Listener(4000) {
     }
 }
 
-service on new graphql:Listener(4000) {
+service /graphql2 on gqlListener {
     resource function get school() returns School {
         return new;
     }
 }
 
-service on new graphql:Listener(4000) {
+service /graphql3 on gqlListener {
     resource function get name() returns string {
         return "Ballerina";
     }
