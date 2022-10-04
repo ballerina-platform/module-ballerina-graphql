@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/09/22  
+_Updated_: 2022/10/04  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -39,6 +39,11 @@ The conforming implementation of the specification is released and included in t
         * 2.5.3 [Executing Operations](#253-executing-operations)
         * 2.5.4 [Client Data Binding](#254-client-data-binding)
         * 2.5.5 [Client Error Handling](#255-client-error-handling)
+            * 2.5.5.1 [`ClientError`](#2551-clienterror)
+            * 2.5.5.2 [`PayloadBindingError`](#2552-payloadbindingerror)
+            * 2.5.5.3 [`RequestError`](#2553-requesterror)
+            * 2.5.5.4 [`HttpError`](#2554-httperror)
+            * 2.5.5.5 [`InvalidDocumentError`](#2555-invaliddocumenterror)
 3. [Schema Generation](#3-schema-generation)
     * 3.1 [Root Types](#31-root-types)
         * 3.1.1 [The `Query` Type](#311-the-query-type)
@@ -324,7 +329,7 @@ public type ClientConfiguration record {|
 The `graphql:Client` init method requires a valid URL and optional configuration to initialize the client. 
 
 ```ballerina
-graphql:Client graphqlClient = check new (“http://localhost:9091/graphql”, {timeout: 10});
+graphql:Client graphqlClient = check new (“http://localhost:4000/graphql”, {timeout: 10});
 ```
 #### 2.5.3 Executing Operations
 
@@ -332,7 +337,8 @@ The graphql client provides `execute` API to execute graphql query and mutation 
 
 - `variables` - A map containing the GraphQL variables. All the variables that may be required by the graphql document can be set via this variables argument.
 
-- `operationName` - The GraphQL operation name. If the document has more than one operation, then each operation must have a name. Single GraphQL request can only execute one operation; the operation name must be set if the document has more than one operation.
+`operationName` - The GraphQL operation name. If the document has more than one operation, then each operation must have a name. Single GraphQL request can only execute one operation; the operation name must be set if the document has more than one operation. Otherwise, the GraphQL server responds back with an error.
+
 
 - `headers` - A map containing headers that may be required by the graphql server to execute each operation.
 
@@ -399,7 +405,7 @@ type ProfileData record {
 };
 
 public function main() returns error? {
-    graphql:Client graphqlClient = check new ("http: //localhost:9091/graphql");
+    graphql:Client graphqlClient = check new ("http: //localhost:4000/graphql");
     string document = "{ one: profile(id: 100) {name} }";
     // data binding to user defined type
     ProfileResponseWithErrors response = check graphqlClient->execute(document);
@@ -411,22 +417,20 @@ public function main() returns error? {
 
 Following are the error types specific to the `graphql:Client`, which can be returned during the client initialization or invocation of the execute method. 
 
-```ballerina
-# Represents GraphQL client related generic errors.
-public type ClientError distinct error;
+##### 2.5.5.1 `ClientError`
+This error type represents GraphQL client-related generic errors.
 
-# Represents GraphQL client-side or network level errors.
-public type RequestError distinct ClientError;
+##### 2.5.5.2 `PayloadBindingError`
+This is a sub-type of `ClientError` which represents a client-side data binding error.
 
-# Represents network-level errors.
-public type HttpError distinct (RequestError & error<record {| anydata body; |}>);
+##### 2.5.5.3 `RequestError`
+This is a sub-type of `ClientError` which represents GraphQL client-side or network-level errors.
 
-# Represents GraphQL errors due to request validation.
-public type InvalidDocumentError distinct (RequestError & error<record {| ErrorDetail[]? errors; |}>);
+##### 2.5.5.4 `HttpError`
+This is a sub-type of `RequestError` which represents network-level errors.
 
-# Represents client-side data binding error.
-public type PayloadBindingError distinct (ClientError & error<record {| ErrorDetail[]? errors; |}>);
-```
+##### 2.5.5.5 `InvalidDocumentError`
+This is a sub-type of `RequestError`. This represents GraphQL errors due to GraphQL server-side request validation.
 
 ##### Example: Client Error Handling
 The following example demonstrates `graphql:Client` error handling and shows how to obtain GraphQL-specific errors returned by the graphql server.
@@ -434,7 +438,7 @@ The following example demonstrates `graphql:Client` error handling and shows how
 ```ballerina
 public function main() returns error? {
     string document = "{ one: profile(id: 100) {name} }";
-    string url = "http://localhost:9091/records";
+    string url = "http://localhost:4000/records";
 
     graphql:Client graphqlClient = check new (url);
     ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
