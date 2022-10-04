@@ -93,3 +93,16 @@ public type GenericResponseWithErrors record {|
    *GenericResponse;
    ErrorDetail[] errors?;
 |};
+
+# When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the
+# outbound request/response accept-encoding/content-encoding option.
+public const COMPRESSION_AUTO = "AUTO";
+
+# Always set accept-encoding/content-encoding in outbound request/response.
+public const COMPRESSION_ALWAYS = "ALWAYS";
+
+# Never set accept-encoding/content-encoding header in outbound request/response.
+public const COMPRESSION_NEVER = "NEVER";
+
+# Options to compress using gzip or deflate.
+public type Compression COMPRESSION_AUTO|COMPRESSION_ALWAYS|COMPRESSION_NEVER;

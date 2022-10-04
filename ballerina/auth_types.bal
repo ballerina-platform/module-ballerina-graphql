@@ -96,3 +96,45 @@ public type ListenerAuthConfig FileUserStoreConfigWithScopes|
 // Defines the listener authentication handlers.
 type ListenerAuthHandler http:ListenerFileUserStoreBasicAuthHandler|http:ListenerLdapUserStoreBasicAuthHandler|
                          http:ListenerJwtAuthHandler|http:ListenerOAuth2Handler;
+
+# Represents credentials for Basic Auth authentication.
+public type CredentialsConfig record {|
+    *http:CredentialsConfig;
+|};
+
+# Represents token for Bearer token authentication.
+public type BearerTokenConfig record {|
+    *http:BearerTokenConfig;
+|};
+
+# Represents JWT issuer configurations for JWT authentication.
+public type JwtIssuerConfig record {|
+    *http:JwtIssuerConfig;
+|};
+
+# Represents OAuth2 client credentials grant configurations for OAuth2 authentication.
+public type OAuth2ClientCredentialsGrantConfig record {|
+    *http:OAuth2ClientCredentialsGrantConfig;
+|};
+
+# Represents OAuth2 password grant configurations for OAuth2 authentication.
+public type OAuth2PasswordGrantConfig record {|
+    *http:OAuth2PasswordGrantConfig;
+|};
+
+# Represents OAuth2 refresh token grant configurations for OAuth2 authentication.
+public type OAuth2RefreshTokenGrantConfig record {|
+    *http:OAuth2RefreshTokenGrantConfig;
+|};
+
+# Represents OAuth2 JWT bearer grant configurations for OAuth2 authentication.
+public type OAuth2JwtBearerGrantConfig record {|
+    *http:OAuth2JwtBearerGrantConfig;
+|};
+
+# Defines the authentication configurations for the GraphQL client.
+public type ClientAuthConfig CredentialsConfig|BearerTokenConfig|JwtIssuerConfig|OAuth2GrantConfig;
+
+# Represents OAuth2 grant configurations for OAuth2 authentication.
+public type OAuth2GrantConfig OAuth2ClientCredentialsGrantConfig|OAuth2PasswordGrantConfig|
+                              OAuth2RefreshTokenGrantConfig|OAuth2JwtBearerGrantConfig;

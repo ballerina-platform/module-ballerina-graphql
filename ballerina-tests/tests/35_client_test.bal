@@ -698,6 +698,30 @@ isolated function testClientExecuteForDataBindingError() returns error? {
     test:assertEquals(actualErrorDetails, expectedErrorDetails);
 }
 
+@test:Config {
+    groups: ["client"]
+}
+isolated function testClientConfiguration() returns error? {
+    string document = "{ greeting }";
+    string url = "https://localhost:9096/basicAuth ";
+
+    graphql:Client graphqlClient = check new (url,
+        cache = {enabled: true, isShared: true},
+        timeout = 1,
+        http1Settings = {keepAlive: "NEVER"},
+        secureSocket = {cert: {path: TRUSTSTORE_PATH, password: "ballerina"}},
+        auth = {username: "alice", password: "xxx"},
+        poolConfig = {maxActiveConnections: 1},
+        circuitBreaker = {statusCodes: [500, 404]},
+        retryConfig = {count: 3},
+        cookieConfig = {enabled: true}
+        );
+
+    json payload = check graphqlClient->execute(document);
+    json expectedPayload = {data: {greeting: "Hello World!"}};
+    test:assertEquals(payload, expectedPayload);
+}
+
 type ProfileResponseWithErrors record {|
     *graphql:GenericResponseWithErrors;
     ProfileResponse data;
