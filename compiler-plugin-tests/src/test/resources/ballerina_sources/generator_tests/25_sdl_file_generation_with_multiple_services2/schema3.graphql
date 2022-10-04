@@ -3,10 +3,6 @@ schema {
 }
 
 type Query {
-  profile: Person!
-}
-
-type Person {
   name: String!
   age: Int!
 }

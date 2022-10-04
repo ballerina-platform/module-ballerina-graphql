@@ -42,6 +42,7 @@ import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.compiler.syntax.tree.Token;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.ModifierTask;
 import io.ballerina.projects.plugins.SourceModifierContext;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
@@ -100,6 +101,8 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         Map<Node, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
         for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
             Schema schema = entry.getValue();
+            int schemaIndex = modifierContext.getSchemaHashCodes().indexOf(schema.hashCode()) + 1;
+            generateSdlSchemaFile(schema, schemaIndex, context.currentPackage().project());
             try {
                 String schemaString = getSchemaAsEncodedString(schema);
                 Node targetNode = entry.getKey();
@@ -265,5 +268,10 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                                                            error.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, errorMessage);
         context.reportDiagnostic(diagnostic);
+    }
+
+    private void generateSdlSchemaFile(Schema schema, int schemaId, Project project) {
+        SDLFileGenerator sdlFileGenerator = new SDLFileGenerator(schema, schemaId, project);
+        sdlFileGenerator.generate();
     }
 }

@@ -50,7 +50,7 @@ import static io.ballerina.projects.util.ProjectConstants.USER_DIR;
 public class SDLFileGenerator {
 
     private final Schema schema;
-    private final int serviceHashCode;
+    private final int schemaId;
     private final Project project;
     private final PrintStream stdError = System.err;
 
@@ -92,9 +92,9 @@ public class SDLFileGenerator {
     private static final String AND_SIGN = " & ";
     private static final String PIPE_SIGN = "|";
 
-    public SDLFileGenerator(Schema schema, int serviceHashCode, Project project) {
+    public SDLFileGenerator(Schema schema, int schemaId, Project project) {
         this.schema = schema;
-        this.serviceHashCode = serviceHashCode;
+        this.schemaId = schemaId;
         this.project = project;
     }
 
@@ -345,10 +345,7 @@ public class SDLFileGenerator {
 
     private Boolean isBuiltInScalarType(Type type) {
         for (ScalarType value : ScalarType.values()) {
-            if (value.getName().equals(type.getName())) {
-                if (value.equals(ScalarType.UPLOAD) || value.equals(ScalarType.DECIMAL)) {
-                    return false;
-                }
+            if (value.getName().equals(type.getName()) && value.isInbuiltType()) {
                 return true;
             }
         }
@@ -387,7 +384,7 @@ public class SDLFileGenerator {
     }
 
     private String getSchemaFileName() {
-        return String.format(SDL_SCHEMA_NAME_FORMAT, this.serviceHashCode);
+        return String.format(SDL_SCHEMA_NAME_FORMAT, this.schemaId);
     }
 
     private static void createFileIfNotExists(Path filePath) throws IOException {

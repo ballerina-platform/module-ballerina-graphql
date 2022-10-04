@@ -21,10 +21,8 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.DocumentId;
-import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
-import io.ballerina.stdlib.graphql.compiler.schema.generator.SDLFileGenerator;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
@@ -66,9 +64,5 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
         Schema schema = generateSchema(context, interfaceFinder, node, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, node, schema);
-
-        Project project = context.currentPackage().project();
-        SDLFileGenerator sdlFileGenerator = new SDLFileGenerator(schema, symbol.hashCode(), project);
-        sdlFileGenerator.generate();
     }
 }

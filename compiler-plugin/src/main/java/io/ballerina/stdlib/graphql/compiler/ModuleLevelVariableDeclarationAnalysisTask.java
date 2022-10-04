@@ -24,11 +24,9 @@ import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.DocumentId;
-import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
-import io.ballerina.stdlib.graphql.compiler.schema.generator.SDLFileGenerator;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
@@ -78,13 +76,6 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
         Schema schema = generateSchema(context, interfaceFinder, graphqlServiceObjectNode, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, moduleVariableDeclarationNode, schema);
-
-        Project project = context.currentPackage().project();
-        VariableSymbol serviceVariableSymbol =
-                (VariableSymbol) context.semanticModel().symbol(moduleVariableDeclarationNode).get();
-        SDLFileGenerator sdlFileGenerator =
-                new SDLFileGenerator(schema, serviceVariableSymbol.hashCode(), project);
-        sdlFileGenerator.generate();
     }
 
     String getDescription(SyntaxNodeAnalysisContext context,
