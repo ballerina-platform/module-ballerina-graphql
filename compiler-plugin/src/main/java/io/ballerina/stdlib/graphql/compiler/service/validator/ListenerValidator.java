@@ -28,7 +28,7 @@ import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.service.diagnostics.CompilationDiagnostic;
+import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;

@@ -53,8 +53,7 @@ public class SdlFileGenerator {
 
     //String formats for SDL schema
     private static final String SDL_SCHEMA_NAME_FORMAT = "schema_%d.graphql";
-    private static final String SCHEMA_FORMAT = "%s%s%s%s";
-    private static final String ROOT_TYPE_FORMAT = "schema {%n%s%n}%n%n";
+    private static final String SCHEMA_FORMAT = "%s%s%s";
     private static final String DIRECTIVE_TYPE_FORMAT = "%sdirective @%s%s%s on %s";
     private static final String INTERFACE_TYPE_FORMAT = "%sinterface %s%s %s";
     private static final String UNION_TYPE_FORMAT = "%sunion %s%s";
@@ -76,9 +75,6 @@ public class SdlFileGenerator {
     private static final String ENUM_VALUE_FORMAT = "  %s%s";
     private static final String NON_NULL_FORMAT = "%s!";
     private static final String LIST_FORMAT = "[%s]";
-    private static final String QUERY_FORMAT = "  query: %s";
-    private static final String MUTATION_FORMAT = "  mutation: %s";
-    private static final String SUBSCRIPTION_FORMAT = "  subscription: %s";
     private static final String DEPRECATE = " @deprecated";
 
     //Schema delimiters
@@ -104,31 +100,9 @@ public class SdlFileGenerator {
     }
 
     private String getSDLSchemaString() {
-        String rootType = createRootType();
         String directives = getDirectives();
         String types = getTypes();
-        return getFormattedString(SCHEMA_FORMAT, createDescription(this.schema.getDescription()), rootType, directives,
-                                  types);
-    }
-
-    private String createRootType() {
-        if (this.schema.getDescription() == null && !isSchemaOfCommonNames()) {
-            List<String> rootOperations = new ArrayList<>();
-            Type query = this.schema.getQueryType();
-            rootOperations.add(getFormattedString(QUERY_FORMAT, query.getName()));
-
-            Type mutation = this.schema.getMutationType();
-            if (mutation != null) {
-                rootOperations.add(getFormattedString(MUTATION_FORMAT, mutation.getName()));
-            }
-
-            Type subscription = this.schema.getSubscriptionType();
-            if (subscription != null) {
-                rootOperations.add(getFormattedString(SUBSCRIPTION_FORMAT, subscription.getName()));
-            }
-            return getFormattedString(ROOT_TYPE_FORMAT, String.join(LINE_SEPARATOR, rootOperations));
-        }
-        return EMPTY_STRING;
+        return getFormattedString(SCHEMA_FORMAT, createDescription(this.schema.getDescription()), directives, types);
     }
 
     private String getDirectives() {
@@ -373,22 +347,6 @@ public class SdlFileGenerator {
             }
         }
         return false;
-    }
-
-    private Boolean isSchemaOfCommonNames() {
-        Type query = this.schema.getQueryType();
-        if (query != null && !query.getName().equals(QUERY)) {
-            return false;
-        }
-        Type mutation = this.schema.getMutationType();
-        if (mutation != null && !mutation.getName().equals(MUTATION)) {
-            return false;
-        }
-        Type subscription = this.schema.getSubscriptionType();
-        if (subscription != null && !subscription.getName().equals(SUBSCRIPTION)) {
-            return false;
-        }
-        return true;
     }
 
     private String getFormattedString(String format, String... args) {

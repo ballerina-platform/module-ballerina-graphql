@@ -20,7 +20,7 @@ package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.service.diagnostics.CompilationDiagnostic;
+import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
@@ -47,10 +47,10 @@ public final class ValidatorUtils {
         context.reportDiagnostic(diagnostic);
     }
 
-    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationDiagnostic errorCode,
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationDiagnostic diagnosticCode,
                                      Location location, Object... args) {
-        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                errorCode.getDiagnosticCode(), errorCode.getDiagnostic(), errorCode.getDiagnosticSeverity());
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(diagnosticCode.getDiagnosticCode(),
+                diagnosticCode.getDiagnostic(), diagnosticCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, args);
         context.reportDiagnostic(diagnostic);
     }

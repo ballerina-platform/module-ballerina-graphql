@@ -47,9 +47,9 @@ import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
-import io.ballerina.stdlib.graphql.compiler.service.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;

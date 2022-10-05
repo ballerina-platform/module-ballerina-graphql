@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.service.diagnostics;
+package io.ballerina.stdlib.graphql.compiler.diagnostics;
 
 /**
  * Compilation error codes used in Ballerina GraphQL package compiler plugin.
