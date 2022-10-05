@@ -16,12 +16,12 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.service.errors;
+package io.ballerina.stdlib.graphql.compiler.service.diagnostics;
 
 /**
  * Compilation error codes used in Ballerina GraphQL package compiler plugin.
  */
-public enum ErrorCode {
+public enum DiagnosticCode {
     GRAPHQL_101,
     GRAPHQL_102,
     GRAPHQL_103,
@@ -53,5 +53,6 @@ public enum ErrorCode {
     GRAPHQL_129,
     GRAPHQL_130,
     GRAPHQL_131,
-    GRAPHQL_132
+    GRAPHQL_132,
+    GRAPHQL_133
 }

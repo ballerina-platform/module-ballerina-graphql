@@ -49,7 +49,7 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
-import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.service.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -115,7 +115,7 @@ public class ServiceValidator {
             validateServiceMember(node);
         }
         if (!this.hasQueryType) {
-            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpressionNode.location());
+            addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpressionNode.location());
         }
     }
 
@@ -126,7 +126,7 @@ public class ServiceValidator {
         ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) context.semanticModel()
                 .symbol(node).get();
         if (serviceDeclarationSymbol.listenerTypes().size() > 1) {
-            addDiagnostic(CompilationError.INVALID_MULTIPLE_LISTENERS, node.location());
+            addDiagnostic(CompilationDiagnostic.INVALID_MULTIPLE_LISTENERS, node.location());
         }
         validateService();
     }
@@ -141,7 +141,7 @@ public class ServiceValidator {
             validateServiceMember(node);
         }
         if (!this.hasQueryType) {
-            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
+            addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
     }
 
@@ -178,7 +178,7 @@ public class ServiceValidator {
         } else {
             Location accessorLocation = getLocation(methodSymbol, location);
             String resourceMethodName = getFieldPath(methodSymbol);
-            addDiagnostic(CompilationError.INVALID_ROOT_RESOURCE_ACCESSOR, accessorLocation, accessor,
+            addDiagnostic(CompilationDiagnostic.INVALID_ROOT_RESOURCE_ACCESSOR, accessorLocation, accessor,
                           resourceMethodName);
         }
     }
@@ -187,7 +187,7 @@ public class ServiceValidator {
         String accessor = getAccessor(methodSymbol);
         if (!RESOURCE_FUNCTION_GET.equals(accessor)) {
             Location accessorLocation = getLocation(methodSymbol, location);
-            addDiagnostic(CompilationError.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation, accessor,
+            addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation, accessor,
                           getFieldPath(methodSymbol));
         }
         validateGetResource(methodSymbol, location);
@@ -207,14 +207,15 @@ public class ServiceValidator {
         if (resourcePath.kind() == ResourcePath.Kind.PATH_SEGMENT_LIST) {
             PathSegmentList pathSegmentList = (PathSegmentList) resourcePath;
             if (pathSegmentList.list().size() > 1) {
-                addDiagnostic(CompilationError.INVALID_HIERARCHICAL_RESOURCE_PATH, location, resourcePathSignature);
+                addDiagnostic(CompilationDiagnostic.INVALID_HIERARCHICAL_RESOURCE_PATH, location,
+                              resourcePathSignature);
             } else {
                 validateResourcePathSegment(location, pathSegmentList.list().get(0));
             }
         } else if (resourcePath.kind() == ResourcePath.Kind.PATH_REST_PARAM) {
-            addDiagnostic(CompilationError.INVALID_PATH_PARAMETERS, location, resourcePathSignature);
+            addDiagnostic(CompilationDiagnostic.INVALID_PATH_PARAMETERS, location, resourcePathSignature);
         } else {
-            addDiagnostic(CompilationError.INVALID_RESOURCE_PATH, location, resourcePathSignature);
+            addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_PATH, location, resourcePathSignature);
         }
         validateSubscriptionMethod(methodSymbol, location);
         validateInputParameters(methodSymbol, location);
@@ -230,7 +231,7 @@ public class ServiceValidator {
         if (returnTypeSymbol.typeKind() == TypeDescKind.UNION) {
             List<TypeSymbol> effectiveTypes = getEffectiveTypes((UnionTypeSymbol) returnTypeSymbol);
             if (effectiveTypes.size() != 1) {
-                addDiagnostic(CompilationError.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location, returnTypeName,
+                addDiagnostic(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location, returnTypeName,
                               resourceMethodName);
                 return;
             } else {
@@ -239,7 +240,7 @@ public class ServiceValidator {
         }
 
         if (returnTypeSymbol.typeKind() != TypeDescKind.STREAM) {
-            addDiagnostic(CompilationError.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location, returnTypeName,
+            addDiagnostic(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location, returnTypeName,
                           resourceMethodName);
         } else {
             String path = getFieldPath(methodSymbol);
@@ -257,7 +258,7 @@ public class ServiceValidator {
         String fieldName = methodSymbol.getName().get();
         this.currentFieldPath.add(fieldName);
         if (isInvalidFieldName(fieldName)) {
-            addDiagnostic(CompilationError.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
+            addDiagnostic(CompilationDiagnostic.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
         }
         validateMethod(methodSymbol, location);
         this.currentFieldPath.remove(fieldName);
@@ -280,9 +281,9 @@ public class ServiceValidator {
                 validateResourcePathSegment(location, pathSegment);
             }
         } else if (resourcePath.kind() == ResourcePath.Kind.PATH_REST_PARAM) {
-            addDiagnostic(CompilationError.INVALID_PATH_PARAMETERS, location, resourcePathSignature);
+            addDiagnostic(CompilationDiagnostic.INVALID_PATH_PARAMETERS, location, resourcePathSignature);
         } else {
-            addDiagnostic(CompilationError.INVALID_RESOURCE_PATH, location, resourcePathSignature);
+            addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_PATH, location, resourcePathSignature);
         }
     }
 
@@ -290,11 +291,11 @@ public class ServiceValidator {
         if (pathSegment.pathSegmentKind() == PathSegment.Kind.NAMED_SEGMENT) {
             String fieldName = pathSegment.signature();
             if (isInvalidFieldName(fieldName)) {
-                addDiagnostic(CompilationError.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
+                addDiagnostic(CompilationDiagnostic.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
             }
         } else {
             String pathWithParameters = pathSegment.signature();
-            addDiagnostic(CompilationError.INVALID_PATH_PARAMETERS, location, pathWithParameters);
+            addDiagnostic(CompilationDiagnostic.INVALID_PATH_PARAMETERS, location, pathWithParameters);
         }
     }
 
@@ -315,7 +316,7 @@ public class ServiceValidator {
                 break;
             case ANY:
             case ANYDATA:
-                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ANY, location, getCurrentFieldPath());
+                addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_ANY, location, getCurrentFieldPath());
                 break;
             case UNION:
                 validateReturnTypeUnion((UnionTypeSymbol) typeSymbol, location);
@@ -333,21 +334,21 @@ public class ServiceValidator {
                 validateReturnType((IntersectionTypeSymbol) typeSymbol, location);
                 break;
             case NIL:
-                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_NIL, location, getCurrentFieldPath());
+                addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_NIL, location, getCurrentFieldPath());
                 break;
             case ERROR:
-                addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ERROR, location, getCurrentFieldPath());
+                addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_ERROR, location, getCurrentFieldPath());
                 break;
             case RECORD:
-                addDiagnostic(CompilationError.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature(),
+                addDiagnostic(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature(),
                               getCurrentFieldPath());
                 break;
             case OBJECT:
-                addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location, typeSymbol.signature(),
+                addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, typeSymbol.signature(),
                               getCurrentFieldPath());
                 break;
             default:
-                addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location,
+                addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location,
                               typeSymbol.getName().orElse(typeSymbol.typeKind().getName()), getCurrentFieldPath());
         }
     }
@@ -378,8 +379,8 @@ public class ServiceValidator {
         if (isServiceClass(classSymbol)) {
             validateServiceClassDefinition(classSymbol, classSymbolLocation);
         } else {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_CLASS, classSymbolLocation, classSymbol.getName().get(),
-                          getCurrentFieldPath());
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_CLASS, classSymbolLocation,
+                          classSymbol.getName().get(), getCurrentFieldPath());
         }
     }
 
@@ -399,14 +400,14 @@ public class ServiceValidator {
     private void validateReturnTypeObject(TypeDefinitionSymbol typeDefinitionSymbol, Location location) {
         if (typeDefinitionSymbol.getName().isEmpty()) {
             ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location, objectTypeSymbol.signature(),
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, objectTypeSymbol.signature(),
                           getCurrentFieldPath());
             return;
         }
 
         String objectTypeName = typeDefinitionSymbol.getName().get();
         if (!this.interfaceFinder.isPossibleInterface(objectTypeName)) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE, location, objectTypeName, getCurrentFieldPath());
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, objectTypeName, getCurrentFieldPath());
             return;
         }
         validateInterfaceObjectTypeDefinition(typeDefinitionSymbol, location);
@@ -431,11 +432,11 @@ public class ServiceValidator {
                 // noinspection OptionalGetWithoutIsPresent
                 String interfaceName = typeDefinitionSymbol.getName().get();
                 String remoteMethodName = methodSymbol.getName().orElse(methodSymbol.signature());
-                addDiagnostic(CompilationError.INVALID_FUNCTION, methodLocation, interfaceName, remoteMethodName);
+                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, methodLocation, interfaceName, remoteMethodName);
             }
         }
         if (!resourceMethodFound) {
-            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+            addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, location);
         }
     }
 
@@ -447,7 +448,8 @@ public class ServiceValidator {
             if (implementation.kind() == SymbolKind.CLASS) {
                 if (!isDistinctServiceClass(implementation)) {
                     String implementationName = implementation.getName().get();
-                    addDiagnostic(CompilationError.NON_DISTINCT_INTERFACE_IMPLEMENTATION, location, implementationName);
+                    addDiagnostic(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, location,
+                                  implementationName);
                     continue;
                 }
                 validateReturnTypeClass((ClassSymbol) implementation, location);
@@ -460,7 +462,7 @@ public class ServiceValidator {
     private void validateReturnType(RecordTypeSymbol recordTypeSymbol, TypeSymbol descriptor, Location location,
                                     String recordTypeName) {
         if (this.existingInputObjectTypes.contains(descriptor)) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_INPUT_OBJECT, location, getCurrentFieldPath(),
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_INPUT_OBJECT, location, getCurrentFieldPath(),
                           recordTypeName);
         } else {
             if (this.existingReturnTypes.contains(descriptor)) {
@@ -487,7 +489,7 @@ public class ServiceValidator {
                         } else {
                             methodName = methodSymbol.getName().orElse(methodSymbol.signature());
                         }
-                        addDiagnostic(CompilationError.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, inputLocation,
+                        addDiagnostic(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, inputLocation,
                                       methodName);
                     }
                 } else {
@@ -503,10 +505,10 @@ public class ServiceValidator {
         if (isFileUploadParameter(typeSymbol)) {
             String methodName = currentFieldPath.get(currentFieldPath.size() - 1);
             if (this.arrayDimension > 1) {
-                addDiagnostic(CompilationError.MULTI_DIMENSIONAL_UPLOAD_ARRAY, location, methodName);
+                addDiagnostic(CompilationDiagnostic.MULTI_DIMENSIONAL_UPLOAD_ARRAY, location, methodName);
             }
             if (isResourceMethod) {
-                addDiagnostic(CompilationError.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, location, methodName);
+                addDiagnostic(CompilationDiagnostic.INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION, location, methodName);
             }
         } else {
             validateInputType(typeSymbol, location, isResourceMethod);
@@ -542,11 +544,11 @@ public class ServiceValidator {
                 validateInputParameterType((IntersectionTypeSymbol) typeSymbol, location, isResourceMethod);
                 break;
             case RECORD:
-                addDiagnostic(CompilationError.INVALID_ANONYMOUS_INPUT_TYPE, location, typeSymbol.signature(),
+                addDiagnostic(CompilationDiagnostic.INVALID_ANONYMOUS_INPUT_TYPE, location, typeSymbol.signature(),
                               getCurrentFieldPath());
                 break;
             default:
-                addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location,
+                addDiagnostic(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, location,
                               rootInputParameterTypeSymbol.getName().orElse(rootInputParameterTypeSymbol.signature()),
                               getCurrentFieldPath());
         }
@@ -599,8 +601,8 @@ public class ServiceValidator {
         int dataTypeCount = 0;
         for (TypeSymbol memberType : unionTypeSymbol.userSpecifiedMemberTypes()) {
             if (memberType.typeKind() == TypeDescKind.ERROR) {
-                addDiagnostic(CompilationError.INVALID_INPUT_PARAMETER_TYPE, location, TypeDescKind.ERROR.getName(),
-                              this.getCurrentFieldPath());
+                addDiagnostic(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, location,
+                              TypeDescKind.ERROR.getName(), this.getCurrentFieldPath());
             } else if (memberType.typeKind() != TypeDescKind.NIL) {
                 foundDataType = true;
                 dataTypeCount++;
@@ -610,9 +612,9 @@ public class ServiceValidator {
             }
         }
         if (!foundDataType) {
-            addDiagnostic(CompilationError.INVALID_INPUT_TYPE, location);
+            addDiagnostic(CompilationDiagnostic.INVALID_INPUT_TYPE, location);
         } else if (dataTypeCount > 1) {
-            addDiagnostic(CompilationError.INVALID_INPUT_TYPE_UNION, location);
+            addDiagnostic(CompilationDiagnostic.INVALID_INPUT_TYPE_UNION, location);
         }
     }
 
@@ -630,7 +632,7 @@ public class ServiceValidator {
     private void validateInputParameterType(RecordTypeSymbol recordTypeSymbol, Location location, String recordTypeName,
                                             boolean isResourceMethod) {
         if (this.existingReturnTypes.contains(recordTypeSymbol)) {
-            addDiagnostic(CompilationError.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location, getCurrentFieldPath(),
+            addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location, getCurrentFieldPath(),
                           recordTypeName);
         } else {
             if (this.existingInputObjectTypes.contains(recordTypeSymbol)) {
@@ -656,19 +658,19 @@ public class ServiceValidator {
                 validateResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
             } else if (isRemoteMethod(methodSymbol)) {
                 // noinspection OptionalGetWithoutIsPresent
-                addDiagnostic(CompilationError.INVALID_FUNCTION, methodLocation, classSymbol.getName().get(),
+                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, methodLocation, classSymbol.getName().get(),
                               methodSymbol.getName().get());
             }
         }
         if (!resourceMethodFound) {
-            addDiagnostic(CompilationError.MISSING_RESOURCE_FUNCTIONS, location);
+            addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, location);
         }
     }
 
     private void validateReturnTypeUnion(UnionTypeSymbol unionTypeSymbol, Location location) {
         List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
         if (effectiveTypes.isEmpty()) {
-            addDiagnostic(CompilationError.INVALID_RETURN_TYPE_ERROR_OR_NIL, location, getCurrentFieldPath());
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_ERROR_OR_NIL, location, getCurrentFieldPath());
         } else if (effectiveTypes.size() == 1) {
             validateReturnType(effectiveTypes.get(0), location);
         } else {
@@ -681,7 +683,7 @@ public class ServiceValidator {
     private void validateUnionTypeMember(TypeSymbol memberType, Location location) {
         if (!isDistinctServiceReference(memberType)) {
             String memberTypeName = memberType.getName().orElse(memberType.signature());
-            addDiagnostic(CompilationError.INVALID_UNION_MEMBER_TYPE, location, memberTypeName);
+            addDiagnostic(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, location, memberTypeName);
         } else {
             validateReturnType(memberType, location);
         }
@@ -702,20 +704,20 @@ public class ServiceValidator {
                 validateReturnType(recordField.typeDescriptor(), location);
             }
             if (isInvalidFieldName(fieldName)) {
-                addDiagnostic(CompilationError.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
+                addDiagnostic(CompilationDiagnostic.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
             }
             this.currentFieldPath.remove(fieldName);
         }
     }
 
-    private void addDiagnostic(CompilationError compilationError, Location location) {
+    private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location) {
         this.errorOccurred = true;
-        updateContext(this.context, compilationError, location);
+        updateContext(this.context, compilationDiagnostic, location);
     }
 
-    private void addDiagnostic(CompilationError compilationError, Location location, Object... args) {
+    private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location, Object... args) {
         this.errorOccurred = true;
-        updateContext(this.context, compilationError, location, args);
+        updateContext(this.context, compilationDiagnostic, location, args);
     }
 
     private String getFieldPath(ResourceMethodSymbol methodSymbol) {

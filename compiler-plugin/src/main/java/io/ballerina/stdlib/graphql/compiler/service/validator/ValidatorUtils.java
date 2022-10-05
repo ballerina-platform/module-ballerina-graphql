@@ -20,7 +20,7 @@ package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.service.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
@@ -39,18 +39,18 @@ public final class ValidatorUtils {
     public static final String GRAPHQL_INTERCEPTOR = "Interceptor";
     public static final String INTERCEPTOR_EXECUTE = "execute";
 
-    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationDiagnostic errorCode,
                                      Location location) {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
+                errorCode.getDiagnosticCode(), errorCode.getDiagnostic(), errorCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
         context.reportDiagnostic(diagnostic);
     }
 
-    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationError errorCode,
+    public static void updateContext(SyntaxNodeAnalysisContext context, CompilationDiagnostic errorCode,
                                      Location location, Object... args) {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                errorCode.getErrorCode(), errorCode.getError(), errorCode.getDiagnosticSeverity());
+                errorCode.getDiagnosticCode(), errorCode.getDiagnostic(), errorCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, args);
         context.reportDiagnostic(diagnostic);
     }

@@ -33,7 +33,6 @@ import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
 import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,21 +46,19 @@ import static io.ballerina.projects.util.ProjectConstants.USER_DIR;
 /**
  * Generate the SDL schema file for a given Ballerina GraphQL Service.
  */
-public class SDLFileGenerator {
-
+public class SdlFileGenerator {
     private final Schema schema;
     private final int schemaId;
     private final Project project;
-    private final PrintStream stdError = System.err;
 
     //String formats for SDL schema
     private static final String SDL_SCHEMA_NAME_FORMAT = "schema_%d.graphql";
-    private static final String SCHEMA_FORMAT = "%s%s%s%n%n%s";
-    private static final String ROOT_TYPE_FORMAT = "schema {%n%s%n}";
-    private static final String DIRECTIVE_TYPE_FORMAT = "%sdirective @%s%s on %s";
+    private static final String SCHEMA_FORMAT = "%s%s%s%s";
+    private static final String ROOT_TYPE_FORMAT = "schema {%n%s%n}%n%n";
+    private static final String DIRECTIVE_TYPE_FORMAT = "%sdirective @%s%s%s on %s";
     private static final String INTERFACE_TYPE_FORMAT = "%sinterface %s%s %s";
     private static final String UNION_TYPE_FORMAT = "%sunion %s%s";
-    private static final String SCALAR_TYPE_FORMAT = "%sscalar %s";
+    private static final String SCALAR_TYPE_FORMAT = "%sscalar %s%s";
     private static final String OBJECT_TYPE_FORMAT = "%stype %s%s %s";
     private static final String ENUM_TYPE_FORMAT = "%senum %s %s";
     private static final String INPUT_TYPE_FORMAT = "input %s %s";
@@ -91,14 +88,17 @@ public class SDLFileGenerator {
     private static final String COMMA_SIGN = ", ";
     private static final String AND_SIGN = " & ";
     private static final String PIPE_SIGN = "|";
+    private static final String QUERY = "Query";
+    private static final String MUTATION = "Mutation";
+    private static final String SUBSCRIPTION = "Subscription";
 
-    public SDLFileGenerator(Schema schema, int schemaId, Project project) {
+    public SdlFileGenerator(Schema schema, int schemaId, Project project) {
         this.schema = schema;
         this.schemaId = schemaId;
         this.project = project;
     }
 
-    public void generate() {
+    public void generate() throws IOException {
         String schema = getSDLSchemaString();
         writeFile(schema);
     }
@@ -112,20 +112,23 @@ public class SDLFileGenerator {
     }
 
     private String createRootType() {
-        List<String> rootOperations = new ArrayList<>();
-        Type query = this.schema.getQueryType();
-        rootOperations.add(getFormattedString(QUERY_FORMAT, query.getName()));
+        if (this.schema.getDescription() == null && !isSchemaOfCommonNames()) {
+            List<String> rootOperations = new ArrayList<>();
+            Type query = this.schema.getQueryType();
+            rootOperations.add(getFormattedString(QUERY_FORMAT, query.getName()));
 
-        Type mutation = this.schema.getMutationType();
-        if (mutation != null) {
-            rootOperations.add(getFormattedString(MUTATION_FORMAT, mutation.getName()));
-        }
+            Type mutation = this.schema.getMutationType();
+            if (mutation != null) {
+                rootOperations.add(getFormattedString(MUTATION_FORMAT, mutation.getName()));
+            }
 
-        Type subscription = this.schema.getSubscriptionType();
-        if (subscription != null) {
-            rootOperations.add(getFormattedString(SUBSCRIPTION_FORMAT, subscription.getName()));
+            Type subscription = this.schema.getSubscriptionType();
+            if (subscription != null) {
+                rootOperations.add(getFormattedString(SUBSCRIPTION_FORMAT, subscription.getName()));
+            }
+            return getFormattedString(ROOT_TYPE_FORMAT, String.join(LINE_SEPARATOR, rootOperations));
         }
-        return getFormattedString(ROOT_TYPE_FORMAT, String.join(LINE_SEPARATOR, rootOperations));
+        return EMPTY_STRING;
     }
 
     private String getDirectives() {
@@ -139,7 +142,7 @@ public class SDLFileGenerator {
         if (directives.isEmpty()) {
             return formatedDirectives;
         }
-        return LINE_SEPARATOR + LINE_SEPARATOR + formatedDirectives;
+        return formatedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
     private String getTypes() {
@@ -154,7 +157,7 @@ public class SDLFileGenerator {
 
     private String createDirective(Directive directive) {
         return getFormattedString(DIRECTIVE_TYPE_FORMAT, createDescription(directive.getDescription()),
-                                  directive.getName(), createArgs(directive.getArgs()),
+                                  directive.getName(), createArgs(directive.getArgs()), createIsRepeatable(directive),
                                   createDirectiveLocation(directive.getLocations()));
     }
 
@@ -181,7 +184,8 @@ public class SDLFileGenerator {
     }
 
     private String createScalarType(Type type) {
-        return getFormattedString(SCALAR_TYPE_FORMAT, createDescription(type.getDescription()), type.getName());
+        return getFormattedString(SCALAR_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
+                                  createSpecifiedByUrl(type));
     }
 
     private String createObjectType(Type type) {
@@ -334,6 +338,16 @@ public class SDLFileGenerator {
         return EMPTY_STRING;
     }
 
+    private String createSpecifiedByUrl(Type type) {
+        // Return an empty string since this is not supported yet
+        return EMPTY_STRING;
+    }
+
+    private String createIsRepeatable(Directive directive) {
+        // Return an empty string since this is not supported yet
+        return EMPTY_STRING;
+    }
+
     private Boolean isIntrospectionType(Type type) {
         for (IntrospectionType value : IntrospectionType.values()) {
             if (value.getName().equals(type.getName())) {
@@ -361,18 +375,30 @@ public class SDLFileGenerator {
         return false;
     }
 
+    private Boolean isSchemaOfCommonNames() {
+        Type query = this.schema.getQueryType();
+        if (query != null && !query.getName().equals(QUERY)) {
+            return false;
+        }
+        Type mutation = this.schema.getMutationType();
+        if (mutation != null && !mutation.getName().equals(MUTATION)) {
+            return false;
+        }
+        Type subscription = this.schema.getSubscriptionType();
+        if (subscription != null && !subscription.getName().equals(SUBSCRIPTION)) {
+            return false;
+        }
+        return true;
+    }
+
     private String getFormattedString(String format, String... args) {
         return String.format(format, (Object[]) args);
     }
 
-    private void writeFile(String content) {
+    private void writeFile(String content) throws IOException {
         Path filePath = Paths.get(getTargetPath(), getSchemaFileName()).toAbsolutePath();
-        try {
-            createFileIfNotExists(filePath);
-            Files.write(filePath, Collections.singleton(content));
-        } catch (IOException e) {
-            this.stdError.println("WARNING graphql schema file generation failed: " + e.getMessage());
-        }
+        createFileIfNotExists(filePath);
+        Files.write(filePath, Collections.singleton(content));
     }
 
     private String getTargetPath() {

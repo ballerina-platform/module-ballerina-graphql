@@ -1,8 +1,3 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-
 type Query {
   # Fetch the hero of the Star Wars
   hero(episode: Episode): Character!

@@ -28,7 +28,7 @@ import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.service.diagnostics.CompilationDiagnostic;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
@@ -103,7 +103,7 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
             FunctionArgumentNode secondArg = arguments.get(1);
             SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
             if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                updateContext(context, CompilationError.INVALID_LISTENER_INIT, secondArg.location());
+                updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, secondArg.location());
             }
         }
     }
