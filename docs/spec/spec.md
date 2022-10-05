@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/10/04  
+_Updated_: 2022/10/05  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -226,16 +226,14 @@ service graphql:Service /graphql on new graphql:Listener(4000) {
 }
 ```
 
-#### 2.2.4 Service Class Declaration
+#### 2.2.4 Service Object Declaration
 
-A service value can be instantiated using the service class. This approach provides full control of the service life cycle to the user. The listener life cycle methods can be used to handle this.
+A service can be instantiated using the service object. This approach provides full control of the service life cycle to the user. The listener life cycle methods can be used to handle this.
 
-###### Example: Service Class Declaration
+###### Example: Service Object Declaration
 
 ```ballerina
-service class GraphqlService {
-    *graphql:Service;
-
+graphql:Service graphqlService = service object {
     resource function get greeting() returns string {
         return "Hello, world!";
     }
@@ -243,13 +241,13 @@ service class GraphqlService {
 
 public function main() returns error? {
     graphql:Listener graphqlListener = check new (4000);
-    graphql:Service graphqlService = new;
-
-    error? attachResult = graphqlListener.attach(graphqlService, ["graphql"]);
-    error? startResult = graphqlListener.'start();
+    check graphqlListener.attach(graphqlService, "graphql");
+    check graphqlListener.'start();
     runtime:registerListener(graphqlListener);
 }
 ```
+
+**Note:** The service object declaration is only supported when the service object is defined in global scope. If the service object is defined anywhere else, the schema generation will fail. This is due to a known current limitation in the Ballerina language.
 
 #### 2.2.5 Service Constructor Expression
 
