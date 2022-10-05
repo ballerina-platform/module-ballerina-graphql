@@ -247,7 +247,7 @@ public function main() returns error? {
 }
 ```
 
-**Note:** The service object declaration is only supported when the service object is defined in global scope. If the service object is defined anywhere else, the schema generation will fail. This is due to a known current limitation in the Ballerina language.
+> **Note:** The service object declaration is only supported when the service object is defined in global scope. If the service object is defined anywhere else, the schema generation will fail. This is due to a known current limitation in the Ballerina language.
 
 #### 2.2.5 Service Constructor Expression
 
