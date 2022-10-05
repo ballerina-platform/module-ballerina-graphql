@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.async.Callback;
-import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -27,8 +26,7 @@ import io.ballerina.runtime.api.values.BString;
 
 import java.util.List;
 
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ERRORS_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getErrorDetailRecord;
+import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.appendErrorToVisitor;
 import static io.ballerina.stdlib.graphql.runtime.engine.ResponseGenerator.populateResponse;
 
 /**
@@ -56,13 +54,8 @@ public class ResourceCallback implements Callback {
 
     @Override
     public void notifyFailure(BError bError) {
-        appendErrorToVisitor(bError);
+        appendErrorToVisitor(bError, executionContext, this.node, this.pathSegments);
         markComplete();
-    }
-
-    private void appendErrorToVisitor(BError bError) {
-        BArray errors = this.executionContext.getVisitor().getArrayValue(ERRORS_FIELD);
-        errors.append(getErrorDetailRecord(bError, this.node, this.pathSegments));
     }
 
     private void markComplete() {

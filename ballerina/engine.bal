@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/log;
+
 import graphql.parser;
 
 isolated class Engine {
@@ -131,5 +133,9 @@ isolated class Engine {
             };
             return getOutputObjectFromErrorDetail(errorDetail);
         }
+    }
+
+    isolated function logError(error err) {
+        log:printError(err.message(), stackTrace = err.stackTrace());
     }
 }

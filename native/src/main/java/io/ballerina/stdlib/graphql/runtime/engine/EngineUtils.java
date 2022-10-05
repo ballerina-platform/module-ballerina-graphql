@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
@@ -128,6 +129,9 @@ public class EngineUtils {
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
 
+    // Ballerina functions
+    public static final String LOG_ERROR_METHOD_NAME = "logError";
+
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
@@ -233,5 +237,13 @@ public class EngineUtils {
             }
         }
         return null;
+    }
+
+    public static void logError(ExecutionContext executionContext, BError bError) {
+        BObject engine = executionContext.getVisitor().getObjectValue(ENGINE_FIELD);
+        Environment environment = executionContext.getEnvironment();
+        Object[] args = {bError, true};
+        environment.getRuntime().invokeMethodAsyncSequentially(engine, LOG_ERROR_METHOD_NAME, null, null, null, null,
+                                                               PredefinedTypes.TYPE_NULL, args).getResult();
     }
 }
