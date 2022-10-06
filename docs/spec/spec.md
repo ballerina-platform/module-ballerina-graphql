@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/05/05  
+_Updated_: 2022/10/05  
 _Edition_: Swan Lake  
 _Issue_: [#2504](https://github.com/ballerina-platform/ballerina-standard-library/issues/2504)  
 
@@ -896,6 +896,8 @@ The result of the above document is the following.
     "data": null
 }
 ```
+
+> **Note:** When an error occurred in a GraphQL resolver, it will be logged to the stderr in the service.
 
 ### 6.1 Error Fields
 

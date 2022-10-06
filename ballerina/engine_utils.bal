@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/jballerina.java;
+
 import graphql.parser;
 
 isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] errorDetail) returns OutputObject {

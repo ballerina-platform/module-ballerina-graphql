@@ -64,6 +64,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getMemberTy
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.getTypeFromTypeArray;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isScalarType;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.logError;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.updatePathSegments;
 
 /**
@@ -80,7 +81,7 @@ public class ResponseGenerator {
         } else if (result instanceof BError) {
             data.put(node.getStringValue(ALIAS_FIELD), null);
             BError bError = (BError) result;
-            appendErrorToVisitor(bError, executionContext.getVisitor(), node, pathSegments);
+            appendErrorToVisitor(bError, executionContext, node, pathSegments);
         } else if (result instanceof BValue) {
             int tag = ((BValue) result).getType().getTag();
             if (tag < TypeTags.JSON_TAG) {
@@ -180,7 +181,7 @@ public class ResponseGenerator {
                 if (result.get(i) instanceof BError) {
                     resultArray.append(null);
                     BError bError = (BError) result.get(i);
-                    appendErrorToVisitor(bError, executionContext.getVisitor(), node, updatedPathSegments);
+                    appendErrorToVisitor(bError, executionContext, node, updatedPathSegments);
                 } else {
                     resultArray.append(result.get(i));
                 }
@@ -271,9 +272,11 @@ public class ResponseGenerator {
         return TypeCreator.createArrayType(arrayType);
     }
 
-    static void appendErrorToVisitor(BError bError, BObject visitor, BObject node, List<Object> pathSegments) {
-        BArray errors = visitor.getArrayValue(ERRORS_FIELD);
+    static void appendErrorToVisitor(BError bError, ExecutionContext executionContext, BObject node,
+                                     List<Object> pathSegments) {
+        BArray errors = executionContext.getVisitor().getArrayValue(ERRORS_FIELD);
         errors.append(getErrorDetailRecord(bError, node, pathSegments));
+        logError(executionContext, bError);
     }
 
     private static String getTypeNameFromRecordValue(RecordType recordType) {
