@@ -22,19 +22,21 @@ package io.ballerina.stdlib.graphql.compiler.schema.types;
  * Stores the default scalar types in a GraphQL schema.
  */
 public enum ScalarType {
-    STRING(TypeName.STRING, Description.STRING),
-    INT(TypeName.INT, Description.INT),
-    FLOAT(TypeName.FLOAT, Description.FLOAT),
-    BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN),
-    DECIMAL(TypeName.DECIMAL, Description.DECIMAL),
-    UPLOAD(TypeName.UPLOAD, Description.UPLOAD);
+    STRING(TypeName.STRING, Description.STRING, true),
+    INT(TypeName.INT, Description.INT, true),
+    FLOAT(TypeName.FLOAT, Description.FLOAT, true),
+    BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN, true),
+    DECIMAL(TypeName.DECIMAL, Description.DECIMAL, false),
+    UPLOAD(TypeName.UPLOAD, Description.UPLOAD, false);
 
     private final TypeName typeName;
     private final Description description;
+    private final boolean isInbuiltType;
 
-    ScalarType(TypeName typeName, Description description) {
+    ScalarType(TypeName typeName, Description description, Boolean isInbuiltType) {
         this.typeName = typeName;
         this.description = description;
+        this.isInbuiltType = isInbuiltType;
     }
 
     public String getName() {
@@ -43,5 +45,9 @@ public enum ScalarType {
 
     public String getDescription() {
         return this.description.getDescription();
+    }
+
+    public Boolean isInbuiltType() {
+        return this.isInbuiltType;
     }
 }

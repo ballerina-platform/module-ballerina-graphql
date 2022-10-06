@@ -10,7 +10,7 @@ import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.service.errors.CompilationError;
+import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Location;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModuleSymbol;
@@ -70,7 +70,7 @@ public class InterceptorValidator {
         } else if (symbol.kind() == SymbolKind.RESOURCE_METHOD) {
             ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) symbol;
             String resourceMethodSignature = resourceMethodSymbol.signature();
-            addDiagnostic(CompilationError.RESOURCE_METHOD_INSIDE_INTERCEPTOR, location, resourceMethodSignature);
+            addDiagnostic(CompilationDiagnostic.RESOURCE_METHOD_INSIDE_INTERCEPTOR, location, resourceMethodSignature);
         }
     }
 
@@ -79,7 +79,7 @@ public class InterceptorValidator {
             return;
         }
         if (!methodSymbol.getName().get().equals(INTERCEPTOR_EXECUTE)) {
-            addDiagnostic(CompilationError.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, location,
+            addDiagnostic(CompilationDiagnostic.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR, location,
                           methodSymbol.signature());
         }
     }
@@ -99,8 +99,8 @@ public class InterceptorValidator {
         return GRAPHQL_INTERCEPTOR.equals(typeReferenceTypeSymbol.getName().get());
     }
 
-    private void addDiagnostic(CompilationError compilationError, Location location, Object ...args) {
+    private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location, Object ...args) {
         this.errorOccurred = true;
-        updateContext(this.context, compilationError, location, args);
+        updateContext(this.context, compilationDiagnostic, location, args);
     }
 }

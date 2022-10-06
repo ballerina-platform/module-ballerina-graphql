@@ -26,8 +26,12 @@ import io.ballerina.projects.environment.EnvironmentBuilder;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin schema generation.
@@ -193,6 +197,70 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testGeneratedGraphQLSdlSchema() {
+        String packagePath = "23_sdl_file_generation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("23_sdl_file_generation/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
+        Assert.assertEquals(generatedSchema.trim(), actualSchema.trim());
+    }
+
+    @Test
+    public void testGeneratedSdlSchemaWithMultipleServices1() {
+        String packagePath = "24_sdl_file_generation_with_multiple_services1";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("24_sdl_file_generation_with_multiple_services1/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_2.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema2.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_3.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
+    @Test
+    public void testGeneratedSdlSchemaWithMultipleServices2() {
+        String packagePath = "25_sdl_file_generation_with_multiple_services2";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("25_sdl_file_generation_with_multiple_services2/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_2.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema2.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+
+        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_3.graphql");
+        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
+    @Test
+    public void testSdlFileGenerationWithCustomScalars() {
+        String packagePath = "26_sdl_file_generation_with_custom_scalar_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+
+        Path targetDir = RESOURCE_DIRECTORY.resolve("26_sdl_file_generation_with_custom_scalar_types/target");
+        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
+        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
+        Assert.assertEquals(generatedSchema, actualSchema);
+    }
+
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -202,5 +270,16 @@ public class SchemaGenerationTest {
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
+    }
+
+    private String getStringContentFromGivenFile(Path filePath, String fileName) {
+        try {
+            Stream<String> schemaLines = Files.lines(filePath.resolve(fileName));
+            String schemaContent = schemaLines.collect(Collectors.joining(System.getProperty("line.separator")));
+            schemaLines.close();
+            return schemaContent;
+        } catch (IOException e) {
+            return e.getMessage();
+        }
     }
 }

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.service.errors;
+package io.ballerina.stdlib.graphql.compiler.diagnostics;
 
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.DOUBLE_UNDERSCORES;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
@@ -25,7 +25,7 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
 /**
  * Compilation error messages used in Ballerina GraphQL package compiler plugin.
  */
-public enum ErrorMessage {
+public enum DiagnosticMessage {
     ERROR_101("Service class `{0}` contains remote method `{1}`. Remote methods are not allowed inside the service "
                       + "classes returned from GraphQL resources"),
     ERROR_102("Invalid GraphQL field Type `{0}` provided for the GraphQL field `{1}`"),
@@ -69,11 +69,12 @@ public enum ErrorMessage {
     ERROR_129("Invalid remote method `{0}` found in interceptor service. Only \"execute\" remote method is allowed"),
     ERROR_130("Anonymous record `{0}` cannot be used as the type of the field `{1}`"),
     ERROR_131("Anonymous record `{0}` cannot be used as an input object type of the field `{1}`"),
-    ERROR_132("Invalid return type `{0}` provided for the GraphQL field `{1}`. `{0}` is not a service class");
+    ERROR_132("Invalid return type `{0}` provided for the GraphQL field `{1}`. `{0}` is not a service class"),
+    WARNING_133("WARNING graphql schema file generation failed:{0}");
 
     private final String message;
 
-    ErrorMessage(String message) {
+    DiagnosticMessage(String message) {
         this.message = message;
     }
 

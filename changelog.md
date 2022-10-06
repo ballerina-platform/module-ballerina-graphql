@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3230] Add Service Interceptor Execution for Record Fields, Maps & Tables](https://github.com/ballerina-platform/ballerina-standard-library/issues/3230)
 - [[#2913] Support Interfaces Implementing Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/2913)
 - [[#3233] Add Service Level Interceptor Support for GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3233)
+- [[#3205] Add SDL Schema File Generation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3205)
 
 ### Fixed
 - [[#3294] Fix GraphQL Dynamic Listener Is Not Working for Module Level Service Declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
