@@ -112,11 +112,11 @@ public class SdlFileGenerator {
                 directives.add(createDirective(directive));
             }
         }
-        String formatedDirectives = String.join(LINE_SEPARATOR + LINE_SEPARATOR, directives);
+        String formattedDirectives = String.join(LINE_SEPARATOR + LINE_SEPARATOR, directives);
         if (directives.isEmpty()) {
-            return formatedDirectives;
+            return formattedDirectives;
         }
-        return formatedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
+        return formattedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
     private String getTypes() {

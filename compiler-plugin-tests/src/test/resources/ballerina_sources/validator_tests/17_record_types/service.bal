@@ -32,8 +32,8 @@ service /graphql on new graphql:Listener(4000) {
         return person.name;
     }
 
-    isolated resource function get name(readonly & Person[] person) returns string {
-        return person.name;
+    isolated resource function get names(readonly & Person[] person) returns string[] {
+        return person.'map(p => p.name);
     }
 }
 

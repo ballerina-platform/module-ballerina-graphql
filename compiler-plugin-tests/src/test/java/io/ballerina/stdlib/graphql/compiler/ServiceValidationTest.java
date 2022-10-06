@@ -1001,6 +1001,10 @@ public class ServiceValidationTest {
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
+        DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
+        if (diagnosticResult.hasErrors()) {
+            return diagnosticResult;
+        }
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 

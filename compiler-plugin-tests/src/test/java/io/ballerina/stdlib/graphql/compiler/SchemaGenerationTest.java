@@ -264,6 +264,10 @@ public class SchemaGenerationTest {
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
+        DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
+        if (diagnosticResult.hasErrors()) {
+            return diagnosticResult;
+        }
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
