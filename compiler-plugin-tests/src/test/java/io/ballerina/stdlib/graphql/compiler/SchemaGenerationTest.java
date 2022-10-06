@@ -23,13 +23,20 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
+import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
+import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
+import io.ballerina.tools.diagnostics.Location;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -261,6 +268,28 @@ public class SchemaGenerationTest {
         Assert.assertEquals(generatedSchema, actualSchema);
     }
 
+    @Test
+    public void testSdlFileGenerationErrors() {
+        String packagePath = "27_sdl_file_generation_warnings";
+        String targetDir = RESOURCE_DIRECTORY.resolve("27_sdl_file_generation_warnings/target").toString();
+        Path filePath = Paths.get(targetDir, "schema_1.graphql").toAbsolutePath();
+        try {
+            createFile(filePath);
+            File file = new File(filePath.toString());
+            file.setWritable(false);
+            DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+            file.setWritable(true);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0);
+            Assert.assertEquals(diagnosticResult.warningCount(), 1);
+            Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+            Diagnostic diagnostic = diagnosticIterator.next();
+            String message = getWarningMessage(CompilationDiagnostic.SDL_FILE_GENERATION_FAILED, filePath.toString());
+            assertWarningMessage(diagnostic, message, 19, 1);
+        } catch (IOException e) {
+            Assert.assertTrue(false);
+        }
+    }
+
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -276,6 +305,22 @@ public class SchemaGenerationTest {
         return ProjectEnvironmentBuilder.getBuilder(environment);
     }
 
+    private String getWarningMessage(CompilationDiagnostic compilationDiagnostic, Object... args) {
+        return MessageFormat.format(compilationDiagnostic.getDiagnostic(), args);
+    }
+
+    private void assertWarningMessage(Diagnostic diagnostic, String message, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.WARNING);
+        Assert.assertEquals(diagnostic.message(), message);
+        assertLocation(diagnostic.location(), line, column);
+    }
+
+    private void assertLocation(Location location, int line, int column) {
+        // Compiler counts lines and columns from zero
+        Assert.assertEquals((location.lineRange().startLine().line() + 1), line);
+        Assert.assertEquals((location.lineRange().startLine().offset() + 1), column);
+    }
+
     private String getStringContentFromGivenFile(Path filePath, String fileName) {
         try {
             Stream<String> schemaLines = Files.lines(filePath.resolve(fileName));
@@ -284,6 +329,16 @@ public class SchemaGenerationTest {
             return schemaContent;
         } catch (IOException e) {
             return e.getMessage();
+        }
+    }
+
+    private void createFile(Path filePath) throws IOException {
+        Path parentDir = filePath.getParent();
+        if (parentDir != null && !parentDir.toFile().exists()) {
+            Files.createDirectories(parentDir);
+        }
+        if (!filePath.toFile().exists()) {
+            Files.createFile(filePath);
         }
     }
 }

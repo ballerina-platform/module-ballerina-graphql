@@ -374,18 +374,10 @@ public class SdlFileGenerator {
     private static void createFileIfNotExists(Path filePath) throws IOException {
         Path parentDir = filePath.getParent();
         if (parentDir != null && !parentDir.toFile().exists()) {
-            try {
-                Files.createDirectories(parentDir);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Files.createDirectories(parentDir);
         }
         if (!filePath.toFile().exists()) {
-            try {
-                Files.createFile(filePath);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Files.createFile(filePath);
         }
     }
 }
