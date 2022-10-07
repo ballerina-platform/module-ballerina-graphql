@@ -42,7 +42,6 @@ import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.compiler.syntax.tree.Token;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
-import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.ModifierTask;
 import io.ballerina.projects.plugins.SourceModifierContext;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
@@ -102,8 +101,8 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
             Schema schema = entry.getValue();
             int schemaIndex = modifierContext.getSchemaHashCodes().indexOf(schema.hashCode()) + 1;
+            generateSdlSchemaFile(context, entry.getKey().location(), schema, schemaIndex);
             try {
-                generateSdlSchemaFile(schema, schemaIndex, context.currentPackage().project());
                 String schemaString = getSchemaAsEncodedString(schema);
                 Node targetNode = entry.getKey();
                 if (targetNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
@@ -118,7 +117,8 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                     nodeMap.put(targetNode, updatedNode);
                 }
             } catch (IOException e) {
-                updateContext(context, entry.getKey().location(), e.getMessage());
+                updateContext(context, entry.getKey().location(), CompilationDiagnostic.SCHEMA_GENERATION_FAILED,
+                              e.getMessage());
             }
         }
         NodeList<ModuleMemberDeclarationNode> members = NodeFactory.createNodeList();
@@ -262,16 +262,20 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         return SERVICE_CONFIG_IDENTIFIER.equals(referenceNode.identifier().text());
     }
 
-    private void updateContext(SourceModifierContext context, Location location, String errorMessage) {
-        CompilationDiagnostic error = CompilationDiagnostic.SCHEMA_GENERATION_FAILED;
-        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(error.getDiagnosticCode(), error.getDiagnostic(),
-                                                           error.getDiagnosticSeverity());
+    private void updateContext(SourceModifierContext context, Location location,
+                               CompilationDiagnostic compilerDiagnostic, String errorMessage) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(compilerDiagnostic.getDiagnosticCode(),
+                        compilerDiagnostic.getDiagnostic(), compilerDiagnostic.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, errorMessage);
         context.reportDiagnostic(diagnostic);
     }
 
-    private void generateSdlSchemaFile(Schema schema, int schemaId, Project project) throws IOException {
-        SdlFileGenerator sdlFileGenerator = new SdlFileGenerator(schema, schemaId, project);
-        sdlFileGenerator.generate();
+    private void generateSdlSchemaFile(SourceModifierContext context, Location location, Schema schema, int schemaId) {
+        SdlFileGenerator sdlFileGenerator = new SdlFileGenerator(schema, schemaId, context.currentPackage().project());
+        try {
+            sdlFileGenerator.generate();
+        } catch (IOException e) {
+            updateContext(context, location, CompilationDiagnostic.SDL_FILE_GENERATION_FAILED, e.getMessage());
+        }
     }
 }

@@ -20,7 +20,7 @@ readonly service class ServiceInterceptor1 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        anydata|error result = context.resolve('field');
+        anydata|error result = context.resolve('field);
         if result is string {
             return "Hello, Ballerina";
         }
@@ -32,7 +32,7 @@ readonly service class ServiceInterceptor2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        anydata|error result = context.resolve('field');
+        anydata|error result = context.resolve('field);
         if result is string {
             return "Hello, GraphQL";
         }

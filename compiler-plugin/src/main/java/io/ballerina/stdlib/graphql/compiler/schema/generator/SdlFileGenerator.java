@@ -112,11 +112,11 @@ public class SdlFileGenerator {
                 directives.add(createDirective(directive));
             }
         }
-        String formatedDirectives = String.join(LINE_SEPARATOR + LINE_SEPARATOR, directives);
+        String formattedDirectives = String.join(LINE_SEPARATOR + LINE_SEPARATOR, directives);
         if (directives.isEmpty()) {
-            return formatedDirectives;
+            return formattedDirectives;
         }
-        return formatedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
+        return formattedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
     private String getTypes() {
@@ -374,18 +374,10 @@ public class SdlFileGenerator {
     private static void createFileIfNotExists(Path filePath) throws IOException {
         Path parentDir = filePath.getParent();
         if (parentDir != null && !parentDir.toFile().exists()) {
-            try {
-                Files.createDirectories(parentDir);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Files.createDirectories(parentDir);
         }
         if (!filePath.toFile().exists()) {
-            try {
-                Files.createFile(filePath);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Files.createFile(filePath);
         }
     }
 }
