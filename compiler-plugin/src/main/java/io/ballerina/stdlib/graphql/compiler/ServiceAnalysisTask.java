@@ -62,11 +62,9 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
     public void addToModifierContextMap(DocumentId documentId, Node node, Schema schema) {
         if (this.modifierContextMap.containsKey(documentId)) {
             GraphqlModifierContext modifierContext = this.modifierContextMap.get(documentId);
-            modifierContext.addSchemaHashCode(schema.hashCode());
             modifierContext.add(node, schema);
         } else {
             GraphqlModifierContext modifierContext = new GraphqlModifierContext();
-            modifierContext.addSchemaHashCode(schema.hashCode());
             modifierContext.add(node, schema);
             this.modifierContextMap.put(documentId, modifierContext);
         }

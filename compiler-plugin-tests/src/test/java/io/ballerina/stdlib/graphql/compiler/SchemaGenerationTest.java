@@ -204,7 +204,7 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testGeneratedGraphQLSdlSchema() {
         String packagePath = "23_sdl_file_generation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -216,7 +216,7 @@ public class SchemaGenerationTest {
         Assert.assertEquals(generatedSchema.trim(), actualSchema.trim());
     }
 
-    @Test
+    @Test(enabled = false)
     public void testGeneratedSdlSchemaWithMultipleServices1() {
         String packagePath = "24_sdl_file_generation_with_multiple_services1";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -236,7 +236,7 @@ public class SchemaGenerationTest {
         Assert.assertEquals(generatedSchema, actualSchema);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testGeneratedSdlSchemaWithMultipleServices2() {
         String packagePath = "25_sdl_file_generation_with_multiple_services2";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -256,7 +256,7 @@ public class SchemaGenerationTest {
         Assert.assertEquals(generatedSchema, actualSchema);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testSdlFileGenerationWithCustomScalars() {
         String packagePath = "26_sdl_file_generation_with_custom_scalar_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -268,7 +268,7 @@ public class SchemaGenerationTest {
         Assert.assertEquals(generatedSchema, actualSchema);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testSdlFileGenerationErrors() {
         String packagePath = "27_sdl_file_generation_warnings";
         String targetDir = RESOURCE_DIRECTORY.resolve("27_sdl_file_generation_warnings/target").toString();
