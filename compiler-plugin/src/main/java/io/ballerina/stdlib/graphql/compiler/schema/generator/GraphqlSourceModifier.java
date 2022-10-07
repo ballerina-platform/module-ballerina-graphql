@@ -100,8 +100,6 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         Map<Node, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
         for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
             Schema schema = entry.getValue();
-            int schemaIndex = modifierContext.getSchemaHashCodes().indexOf(schema.hashCode()) + 1;
-            generateSdlSchemaFile(context, entry.getKey().location(), schema, schemaIndex);
             try {
                 String schemaString = getSchemaAsEncodedString(schema);
                 Node targetNode = entry.getKey();
@@ -268,14 +266,5 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                         compilerDiagnostic.getDiagnostic(), compilerDiagnostic.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location, errorMessage);
         context.reportDiagnostic(diagnostic);
-    }
-
-    private void generateSdlSchemaFile(SourceModifierContext context, Location location, Schema schema, int schemaId) {
-        SdlFileGenerator sdlFileGenerator = new SdlFileGenerator(schema, schemaId, context.currentPackage().project());
-        try {
-            sdlFileGenerator.generate();
-        } catch (IOException e) {
-            updateContext(context, location, CompilationDiagnostic.SDL_FILE_GENERATION_FAILED, e.getMessage());
-        }
     }
 }

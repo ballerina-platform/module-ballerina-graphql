@@ -21,7 +21,6 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,11 +30,9 @@ import java.util.Map;
  */
 public class GraphqlModifierContext {
     private final Map<Node, Schema> nodeSchemaMap;
-    private final ArrayList<Integer> schemaHashCode;
 
     public GraphqlModifierContext() {
         this.nodeSchemaMap = new HashMap<>();
-        this.schemaHashCode = new ArrayList<>();
     }
 
     public void add(Node node, Schema schema) {
@@ -44,13 +41,5 @@ public class GraphqlModifierContext {
 
     public Map<Node, Schema> getNodeSchemaMap() {
         return this.nodeSchemaMap;
-    }
-
-    public void addSchemaHashCode(int hashCode) {
-        this.schemaHashCode.add(hashCode);
-    }
-
-    public ArrayList<Integer> getSchemaHashCodes() {
-        return this.schemaHashCode;
     }
 }
