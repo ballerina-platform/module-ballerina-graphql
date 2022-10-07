@@ -286,7 +286,7 @@ public class SchemaGenerationTest {
             String message = getWarningMessage(CompilationDiagnostic.SDL_FILE_GENERATION_FAILED, filePath.toString());
             assertWarningMessage(diagnostic, message, 19, 1);
         } catch (IOException e) {
-            Assert.assertTrue(false);
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -294,9 +294,7 @@ public class SchemaGenerationTest {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
         DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
-        if (diagnosticResult.hasErrors()) {
-            return diagnosticResult;
-        }
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
