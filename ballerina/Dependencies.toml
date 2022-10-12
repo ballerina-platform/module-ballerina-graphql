@@ -68,7 +68,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.4.2"
+version = "1.4.3"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
@@ -231,7 +231,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
