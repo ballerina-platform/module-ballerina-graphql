@@ -16,13 +16,13 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types;
+package io.ballerina.stdlib.graphql.commons.types;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
 
 /**
  * Represents the {@code __Field} in GraphQL schema.

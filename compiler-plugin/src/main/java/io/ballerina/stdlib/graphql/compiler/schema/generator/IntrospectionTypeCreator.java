@@ -18,18 +18,18 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
-import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
-import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
-import io.ballerina.stdlib.graphql.compiler.schema.types.FieldName;
-import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.IntrospectionField;
-import io.ballerina.stdlib.graphql.compiler.schema.types.IntrospectionType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
-import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
-import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
+import io.ballerina.stdlib.graphql.commons.types.DirectiveLocation;
+import io.ballerina.stdlib.graphql.commons.types.EnumValue;
+import io.ballerina.stdlib.graphql.commons.types.Field;
+import io.ballerina.stdlib.graphql.commons.types.FieldName;
+import io.ballerina.stdlib.graphql.commons.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.types.IntrospectionField;
+import io.ballerina.stdlib.graphql.commons.types.IntrospectionType;
+import io.ballerina.stdlib.graphql.commons.types.ScalarType;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.types.Type;
+import io.ballerina.stdlib.graphql.commons.types.TypeKind;
+import io.ballerina.stdlib.graphql.commons.types.TypeName;
 
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
 

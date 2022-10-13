@@ -19,7 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.syntax.tree.Node;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
 
 import java.util.HashMap;
 import java.util.Map;

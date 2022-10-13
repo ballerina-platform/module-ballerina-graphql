@@ -48,17 +48,17 @@ import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.graphql.compiler.schema.types.DefaultDirective;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Description;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Directive;
-import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
-import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
-import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
-import io.ballerina.stdlib.graphql.compiler.schema.types.TypeName;
+import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
+import io.ballerina.stdlib.graphql.commons.types.Description;
+import io.ballerina.stdlib.graphql.commons.types.Directive;
+import io.ballerina.stdlib.graphql.commons.types.EnumValue;
+import io.ballerina.stdlib.graphql.commons.types.Field;
+import io.ballerina.stdlib.graphql.commons.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.types.ScalarType;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.types.Type;
+import io.ballerina.stdlib.graphql.commons.types.TypeKind;
+import io.ballerina.stdlib.graphql.commons.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 
 import java.util.ArrayList;
@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
@@ -82,7 +83,6 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
-import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
 /**
