@@ -102,8 +102,9 @@ subprojects {
 }
 
 task build {
-    dependsOn(':graphql-native:build')
+    dependsOn(':graphql-commons:build')
     dependsOn(':graphql-compiler-plugin:build')
+    dependsOn(':graphql-native:build')
     dependsOn(':graphql-ballerina:build')
     dependsOn(':graphql-compiler-plugin-tests:test')
     dependsOn(':graphql-ballerina-tests:test')

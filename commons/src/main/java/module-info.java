@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,9 +16,7 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.graphql.compiler {
-    requires io.ballerina.lang;
-    requires io.ballerina.tools.api;
-    requires io.ballerina.parser;
-    requires io.ballerina.stdlib.graphql.commons;
+module io.ballerina.stdlib.graphql.commons {
+    exports io.ballerina.stdlib.graphql.commons;
+    exports io.ballerina.stdlib.graphql.commons.types;
 }

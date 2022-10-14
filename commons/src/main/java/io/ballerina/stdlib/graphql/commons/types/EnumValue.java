@@ -16,27 +16,31 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.types;
+package io.ballerina.stdlib.graphql.commons.types;
 
 import java.io.Serializable;
 
-import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
 
 /**
- * Represents the {@code __InputValue} in GraphQL schema.
+ * Represents the {@code __EnumValue} type in GraphQL schema.
  */
-public class InputValue implements Serializable {
+public class EnumValue implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
-    private final Type type;
-    private final String defaultValue;
+    private final boolean isDeprecated;
+    private final String deprecationReason;
 
-    public InputValue(String name, Type type, String description, String defaultValue) {
+    public EnumValue(String name, String description) {
+        this(name, description, false, null);
+    }
+
+    public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
         this.name = removeEscapeCharacter(name);
         this.description = description;
-        this.type = type;
-        this.defaultValue = defaultValue;
+        this.isDeprecated = isDeprecated;
+        this.deprecationReason = deprecationReason;
     }
 
     public String getName() {
@@ -47,11 +51,11 @@ public class InputValue implements Serializable {
         return this.description;
     }
 
-    public Type getType() {
-        return this.type;
+    public boolean isDeprecated() {
+        return this.isDeprecated;
     }
 
-    public String getDefaultValue() {
-        return this.defaultValue;
+    public String getDeprecationReason() {
+        return this.deprecationReason;
     }
 }

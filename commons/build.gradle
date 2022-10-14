@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -22,17 +22,11 @@ plugins {
     id 'com.github.spotbugs'
 }
 
-description = 'Ballerina - GraphQL Compiler Plugin'
+description = 'Ballerina - GraphQL Native'
 
 dependencies {
     checkstyle project(':checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstylePluginVersion}"
-
-    implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'ballerina-tools-api', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'ballerina-parser', version: "${ballerinaLangVersion}"
-
-    implementation project(':graphql-commons')
 }
 
 def excludePattern = '**/module-info.java'
@@ -60,6 +54,10 @@ spotbugsMain {
     if(excludeFile.exists()) {
         excludeFilter = excludeFile
     }
+}
+
+spotbugsTest {
+    enabled = false
 }
 
 compileJava {

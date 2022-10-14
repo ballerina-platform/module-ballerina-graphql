@@ -20,17 +20,17 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
-import io.ballerina.stdlib.graphql.compiler.schema.types.DefaultDirective;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Directive;
-import io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation;
-import io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Field;
-import io.ballerina.stdlib.graphql.compiler.schema.types.InputValue;
-import io.ballerina.stdlib.graphql.compiler.schema.types.IntrospectionType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.ScalarType;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Type;
-import io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
+import io.ballerina.stdlib.graphql.commons.types.Directive;
+import io.ballerina.stdlib.graphql.commons.types.DirectiveLocation;
+import io.ballerina.stdlib.graphql.commons.types.EnumValue;
+import io.ballerina.stdlib.graphql.commons.types.Field;
+import io.ballerina.stdlib.graphql.commons.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.types.IntrospectionType;
+import io.ballerina.stdlib.graphql.commons.types.ScalarType;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.types.Type;
+import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -84,9 +84,6 @@ public class SdlFileGenerator {
     private static final String COMMA_SIGN = ", ";
     private static final String AND_SIGN = " & ";
     private static final String PIPE_SIGN = "|";
-    private static final String QUERY = "Query";
-    private static final String MUTATION = "Mutation";
-    private static final String SUBSCRIPTION = "Subscription";
 
     public SdlFileGenerator(Schema schema, int schemaId, Project project) {
         this.schema = schema;

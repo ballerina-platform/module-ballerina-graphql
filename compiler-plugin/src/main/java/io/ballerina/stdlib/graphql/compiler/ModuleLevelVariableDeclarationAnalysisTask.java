@@ -25,9 +25,9 @@ import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
-import io.ballerina.stdlib.graphql.compiler.schema.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
