@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3062] Improve Compilation Error Messages To Be More Specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)
 - [[#2848] All the Errors Are Reported for a Given Document in a Single Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/2848)
 - [[#3431] Introduce GraphQL Client Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3431)
+- [[#3463] Updated API Docs to Reflect Slack to Discord Migration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
 
 ## [1.4.1] - 2022-09-12
 
