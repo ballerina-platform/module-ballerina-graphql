@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class OperationNode {
+public isolated class OperationNode {
     *SelectionParentNode;
 
     private string name;
@@ -29,7 +29,7 @@ public class OperationNode {
     public isolated function init(string name, RootOperationType kind, Location location) {
         self.name = name;
         self.kind = kind;
-        self.location = location;
+        self.location = location.clone();
         self.selections = [];
         self.variables = {};
         self.errors = [];
@@ -42,56 +42,99 @@ public class OperationNode {
     }
 
     public isolated function getName() returns string {
-        return self.name;
+        lock {
+            return self.name;
+        }
     }
 
     public isolated function getKind() returns RootOperationType {
-        return self.kind;
+        lock {
+            return self.kind;
+
+        }
     }
 
     public isolated function getLocation() returns Location {
-        return self.location;
+        lock {
+            return self.location.cloneReadOnly();
+        }
     }
 
     public isolated function addSelection(SelectionNode selection) {
-        self.selections.push(selection);
+        lock {
+            self.selections.push(selection);
+        }
+    }
+
+    public isolated function removeSelection(int index) {
+        lock {
+            _ = self.selections.remove(index);
+        }
     }
 
     public isolated function getSelections() returns SelectionNode[] {
-        return self.selections;
+        SelectionNode[] selectionNodes = [];
+        lock {
+            foreach int i in 0 ..< self.selections.length() {
+                selectionNodes[i] = self.selections[i];
+            }
+        }
+        return selectionNodes;
     }
 
     public isolated function addVariableDefinition(VariableNode variable) {
-        if self.variables.hasKey(variable.getName()) {
-            string message = string `There can be only one variable named "$${variable.getName()}"`;
-            Location location = variable.getLocation();
-            self.errors.push({message: message, locations: [location]});
-        } else {
-            self.variables[variable.getName()] = variable;
+        lock {
+            if self.variables.hasKey(variable.getName()) {
+                string message = string `There can be only one variable named "$${variable.getName()}"`;
+                Location location = variable.getLocation();
+                self.errors.push({message: message, locations: [location]});
+            } else {
+                self.variables[variable.getName()] = variable;
+            }
         }
     }
 
     public isolated function getVaribleDefinitions() returns map<VariableNode> {
-        return self.variables;
+        map<VariableNode> variableNodeMap = {};
+        lock {
+            foreach [string, VariableNode] [name, node] in self.variables.entries() {
+                variableNodeMap[name] = node;
+            }
+        }
+        return variableNodeMap;
     }
 
     public isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
+        lock {
+            return self.errors.cloneReadOnly();
+        }
     }
 
     public isolated function addDirective(DirectiveNode directive) {
-        self.directives.push(directive);
+        lock {
+            self.directives.push(directive);
+        }
     }
 
     public isolated function getDirectives() returns DirectiveNode[] {
-        return self.directives;
+        DirectiveNode[] directiveNodes = [];
+        lock {
+            foreach int i in 0 ..< self.directives.length() {
+                directiveNodes[i] = self.directives[i];
+            }
+        }
+        return directiveNodes;
     }
 
     public isolated function setNotConfiguredOperationInSchema() {
-        self.cofiguredInSchema = false;
+        lock {
+            self.cofiguredInSchema = false;
+        }
     }
 
     public isolated function isConfiguredOperationInSchema() returns boolean {
-        return self.cofiguredInSchema;
+        lock {
+            return self.cofiguredInSchema;
+        }
     }
 }

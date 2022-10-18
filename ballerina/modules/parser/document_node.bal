@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class DocumentNode {
+public isolated class DocumentNode {
     *Node;
 
     private map<OperationNode> operations;
@@ -34,46 +34,51 @@ public class DocumentNode {
     }
 
     public isolated function addOperation(OperationNode operation) {
-        if self.operations.hasKey(ANONYMOUS_OPERATION) {
-            if !self.isFirstAnonymousOperationErrorPushed {
-                OperationNode originalOperation = <OperationNode>self.operations[ANONYMOUS_OPERATION];
-                self.errors.push(getAnonymousOperationInMultipleOperationsError(originalOperation));
-                self.isFirstAnonymousOperationErrorPushed = true;
-            }
-            if operation.getName() == ANONYMOUS_OPERATION {
+        lock {
+            if self.operations.hasKey(ANONYMOUS_OPERATION) {
+                if !self.isFirstAnonymousOperationErrorPushed {
+                    OperationNode originalOperation = <OperationNode>self.operations[ANONYMOUS_OPERATION];
+                    self.errors.push(getAnonymousOperationInMultipleOperationsError(originalOperation));
+                    self.isFirstAnonymousOperationErrorPushed = true;
+                }
+                if operation.getName() == ANONYMOUS_OPERATION {
+                    self.errors.push(getAnonymousOperationInMultipleOperationsError(operation));
+                }
+                return;
+            } else if operation.getName() == ANONYMOUS_OPERATION && self.operations.length() > 0 {
                 self.errors.push(getAnonymousOperationInMultipleOperationsError(operation));
+                self.isFirstAnonymousOperationErrorPushed = true;
+                return;
+            } else if self.operations.hasKey(operation.getName()) {
+                OperationNode originalOperation = <OperationNode>self.operations[operation.getName()];
+                string message = string `There can be only one operation named "${operation.getName()}".`;
+                Location l1 = originalOperation.getLocation();
+                Location l2 = operation.getLocation();
+                self.errors.push({message: message, locations: [l1, l2]});
+                return;
             }
-            return;
-        } else if operation.getName() == ANONYMOUS_OPERATION && self.operations.length() > 0 {
-            self.errors.push(getAnonymousOperationInMultipleOperationsError(operation));
-            self.isFirstAnonymousOperationErrorPushed = true;
-            return;
-        } else if self.operations.hasKey(operation.getName()) {
-            OperationNode originalOperation = <OperationNode>self.operations[operation.getName()];
-            string message = string `There can be only one operation named "${operation.getName()}".`;
-            Location l1 = originalOperation.getLocation();
-            Location l2 = operation.getLocation();
-            self.errors.push({message: message, locations: [l1, l2]});
-            return;
+            self.operations[operation.getName()] = operation;
         }
-        self.operations[operation.getName()] = operation;
     }
 
     public isolated function addFragment(FragmentNode fragment) {
-        if self.fragments.hasKey(fragment.getName()) {
-            FragmentNode originalFragment = <FragmentNode>self.fragments[fragment.getName()];
-            if fragment.isInlineFragment() {
-                self.appendDuplicateInlineFragment(fragment, originalFragment);
+        lock {
+            if self.fragments.hasKey(fragment.getName()) {
+                FragmentNode originalFragment = <FragmentNode>self.fragments[fragment.getName()];
+                if fragment.isInlineFragment() {
+                    self.appendDuplicateInlineFragment(fragment, originalFragment);
+                } else {
+                    string message = string `There can be only one fragment named "${fragment.getName()}".`;
+                    Location l1 = originalFragment.getLocation();
+                    Location l2 = fragment.getLocation();
+                    self.errors.push({message: message, locations: [l1, l2]});
+                    self.fragments[fragment.getName()] = fragment;
+                }
             } else {
-                string message = string `There can be only one fragment named "${fragment.getName()}".`;
-                Location l1 = originalFragment.getLocation();
-                Location l2 = fragment.getLocation();
-                self.errors.push({message: message, locations: [l1, l2]});
                 self.fragments[fragment.getName()] = fragment;
             }
-        } else {
-            self.fragments[fragment.getName()] = fragment;
         }
+
     }
 
     private isolated function appendDuplicateInlineFragment(FragmentNode duplicate, FragmentNode original) {
@@ -83,18 +88,35 @@ public class DocumentNode {
     }
 
     public isolated function getOperations() returns OperationNode[] {
-        return self.operations.toArray();
+        OperationNode[] operationNodes = [];
+        lock {
+            OperationNode[] operations = self.operations.toArray();
+            foreach int i in 0 ..< operations.length() {
+                operationNodes[i] = operations[i];
+            }
+        }
+        return operationNodes;
     }
 
     public isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
+        lock {
+            return self.errors.cloneReadOnly();
+        }
     }
 
     public isolated function getFragments() returns map<FragmentNode> {
-        return self.fragments;
+        map<FragmentNode> fragmentNodeMap = {};
+        lock {
+            foreach [string, FragmentNode] [name, node] in self.fragments.entries() {
+                fragmentNodeMap[name] = node;
+            }
+        }
+        return fragmentNodeMap;
     }
 
     public isolated function getFragment(string name) returns FragmentNode? {
-        return self.fragments[name];
+        lock {
+            return self.fragments[name];
+        }
     }
 }

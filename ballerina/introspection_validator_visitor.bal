@@ -18,12 +18,10 @@ import graphql.parser;
 
 class IntrospectionValidatorVisitor {
     *ValidatorVisitor;
-
-    private final boolean introspection;
+    
     private ErrorDetail[] errors;
 
-    isolated function init(boolean introspection) {
-        self.introspection = introspection;
+    isolated function init() {
         self.errors = [];
     }
 

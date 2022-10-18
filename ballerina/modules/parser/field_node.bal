@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class FieldNode {
+public isolated class FieldNode {
     *SelectionNode;
 
     private final string name;
@@ -27,7 +27,7 @@ public class FieldNode {
     public isolated function init(string name, Location location, string alias) {
         self.name = name;
         self.alias = alias;
-        self.location = location;
+        self.location = location.clone();
         self.arguments = [];
         self.selections = [];
         self.directives = [];
@@ -38,38 +38,74 @@ public class FieldNode {
     }
 
     public isolated function getName() returns string {
-        return self.name;
+        lock {
+            return self.name;
+        }
     }
 
     public isolated function getAlias() returns string {
-        return self.alias;
+        lock {
+            return self.alias;
+        }
     }
 
     public isolated function getLocation() returns Location {
-        return self.location;
+        lock {
+            return self.location.cloneReadOnly();
+        }
     }
 
     public isolated function addArgument(ArgumentNode argument) {
-        self.arguments.push(argument);
+        lock {
+            self.arguments.push(argument);
+        }
     }
 
     public isolated function getArguments() returns ArgumentNode[] {
-        return self.arguments;
+        ArgumentNode[] argumentNodes = [];
+        lock {
+            foreach int i in 0 ..< self.arguments.length() {
+                argumentNodes[i] = self.arguments[i];
+            }
+        }
+        return argumentNodes;
     }
 
     public isolated function addSelection(SelectionNode selection) {
-        self.selections.push(selection);
+        lock {
+            self.selections.push(selection);
+        }
+    }
+
+    public isolated function removeSelection(int index) {
+        lock {
+            _ = self.selections.remove(index);
+        }
     }
 
     public isolated function getSelections() returns SelectionNode[] {
-        return self.selections;
+        SelectionNode[] selectionNodes = [];
+        lock {
+            foreach int i in 0 ..< self.selections.length() {
+                selectionNodes[i] = self.selections[i];
+            }
+        }
+        return selectionNodes;
     }
 
     public isolated function addDirective(DirectiveNode directive) {
-        self.directives.push(directive);
+        lock {
+            self.directives.push(directive);
+        }
     }
 
     public isolated function getDirectives() returns DirectiveNode[] {
-        return self.directives;
+        DirectiveNode[] directiveNodes = [];
+        lock {
+            foreach int i in 0 ..< self.directives.length() {
+                directiveNodes[i] = self.directives[i];
+            }
+        }
+        return directiveNodes;
     }
 }

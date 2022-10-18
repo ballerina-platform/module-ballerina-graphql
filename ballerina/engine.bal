@@ -94,18 +94,11 @@ isolated class Engine {
 
     isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
         ErrorDetail[] validationErrors = [];
+
         ValidatorVisitor[] validators = [
             new FragmentCycleFinderVisitor(document.getFragments()),
-            new FragmentValidatorVisitor(document.getFragments()),
-            new QueryDepthValidatorVisitor(self.maxQueryDepth),
-            new VariableValidatorVisitor(self.schema, variables),
-            new FieldValidatorVisitor(self.schema),
-            new DirectiveValidatorVisitor(self.schema),
-            new SubscriptionValidatorVisitor()
+            new FragmentValidatorVisitor(document.getFragments())
         ];
-        if !self.introspectionEnabled {
-            validators.push(new IntrospectionValidatorVisitor(self.introspectionEnabled));
-        }
 
         foreach ValidatorVisitor validator in validators {
             document.accept(validator);
@@ -114,7 +107,76 @@ isolated class Engine {
                 validationErrors.push(...errors);
             }
         }
+        
+        validationErrors.push(...self.parallellyValidateDocument(document, variables));
         return validationErrors.length() == 0 ? () : getOutputObjectFromErrorDetail(validationErrors);
+    }
+
+    isolated function parallellyValidateDocument(parser:DocumentNode document, map<json>? variables)
+    returns ErrorDetail[] {
+        ErrorDetail[] validationErrors = [];
+
+        final readonly & int? maxQueryDepth = self.maxQueryDepth.cloneReadOnly();
+        final readonly & __Schema schema = self.schema;
+        final readonly & map<json>? vars = variables.cloneReadOnly();
+        final readonly & boolean introspectionEnabled = self.introspectionEnabled;
+
+        worker A returns ErrorDetail[] {
+            var validator = new QueryDepthValidatorVisitor(maxQueryDepth);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker B returns ErrorDetail[] {
+            var validator = new SubscriptionValidatorVisitor();
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker C returns ErrorDetail[] {
+            var validator = new DirectiveValidatorVisitor(schema);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker D returns ErrorDetail[] {
+            ErrorDetail[] errors = [];
+            ValidatorVisitor[] vs = [
+                // This should never panic, `readonly & map<json>?` is subtype of `map<json>?`
+                new VariableValidatorVisitor(schema, checkpanic vars.cloneWithType()),
+                new FieldValidatorVisitor(schema)
+            ];
+            foreach ValidatorVisitor validator in vs {
+                document.accept(validator);
+                ErrorDetail[]? visitorErrors = validator.getErrors();
+                if visitorErrors is ErrorDetail[] {
+                    errors.push(...visitorErrors);
+                }
+            }
+            return errors;
+        }
+
+        worker E returns ErrorDetail[] {
+            if introspectionEnabled {
+                return [];
+            }
+            var validator = new IntrospectionValidatorVisitor();
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        ErrorDetail[] errors = wait A;
+        validationErrors.push(...errors);
+        errors = wait B;
+        validationErrors.push(...errors);
+        errors = wait C;
+        validationErrors.push(...errors);
+        errors = wait D;
+        validationErrors.push(...errors);
+        errors = wait E;
+        validationErrors.push(...errors);
+
+        return validationErrors;
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)

@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class FragmentNode {
+public isolated class FragmentNode {
     *SelectionNode;
 
     private string name;
@@ -28,10 +28,10 @@ public class FragmentNode {
     private boolean containsCycle;
 
     public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
-                                  string onType = "") {
+                                string onType = "") {
         self.name = name;
-        self.location = location;
-        self.spreadLocation = spreadLocation;
+        self.location = location.clone();
+        self.spreadLocation = spreadLocation.clone();
         self.onType = onType;
         self.inlineFragment = inlineFragment;
         self.selections = [];
@@ -45,62 +45,106 @@ public class FragmentNode {
     }
 
     public isolated function getName() returns string {
-        return self.name;
+        lock {
+            return self.name;
+        }
     }
 
     public isolated function getLocation() returns Location {
-        return self.location;
+        lock {
+            return self.location.cloneReadOnly();
+        }
     }
 
     public isolated function getOnType() returns string {
-        return self.onType;
+        lock {
+            return self.onType;
+        }
     }
 
     public isolated function addSelection(SelectionNode selection) {
-        self.selections.push(selection);
+        lock {
+            self.selections.push(selection);
+        }
+    }
+
+    public isolated function removeSelection(int index) {
+        lock {
+            _ = self.selections.remove(index);
+        }
     }
 
     public isolated function getSelections() returns SelectionNode[] {
-        return self.selections;
+        SelectionNode[] selectionNodes = [];
+        lock {
+            foreach int i in 0 ..< self.selections.length() {
+                selectionNodes[i] = self.selections[i];
+            }
+        }
+        return selectionNodes;
     }
 
     public isolated function isInlineFragment() returns boolean {
-        return self.inlineFragment;
+        lock {
+            return self.inlineFragment;
+        }
     }
 
     public isolated function getSpreadLocation() returns Location? {
-        return self.spreadLocation;
+        lock {
+            return self.spreadLocation.cloneReadOnly();
+        }
     }
 
     public isolated function setLocation(Location location) {
-        self.location = location;
+        lock {
+            self.location = location.clone();
+        }
     }
 
     public isolated function setOnType(string onType) {
-        self.onType = onType;
+        lock {
+            self.onType = onType;
+        }
     }
 
     public isolated function addDirective(DirectiveNode directive) {
-        self.directives.push(directive);
+        lock {
+            self.directives.push(directive);
+        }
     }
 
     public isolated function getDirectives() returns DirectiveNode[] {
-        return self.directives;
+        DirectiveNode[] directiveNodes = [];
+        lock {
+            foreach int i in 0 ..< self.directives.length() {
+                directiveNodes[i] = self.directives[i];
+            }
+        }
+        return directiveNodes;
     }
 
     public isolated function setUnknown() {
-        self.unknownFragment = true;
+        lock {
+            self.unknownFragment = true;
+        }
     }
 
     public isolated function isUnknown() returns boolean {
-        return self.unknownFragment;
+        lock {
+            return self.unknownFragment;
+        }
     }
 
     public isolated function setHasCycle() {
-        self.containsCycle = true;
+        lock {
+            self.containsCycle = true;
+        }
     }
 
     public isolated function hasCycle() returns boolean {
-        return self.containsCycle;
+        lock {
+            return self.containsCycle;
+        }
     }
 }

@@ -30,18 +30,19 @@ class DefaultDirectiveProcessorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        self.updateSelections(operationNode.getSelections());
+        self.updateSelections(operationNode.getSelections(), operationNode);
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        self.updateSelections(fieldNode.getSelections());
+        self.updateSelections(fieldNode.getSelections(), fieldNode);
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.updateSelections(fragmentNode.getSelections());
+        self.updateSelections(fragmentNode.getSelections(), fragmentNode);
     }
 
-    private isolated function updateSelections(parser:SelectionParentNode[] selections) {
+    private isolated function updateSelections(parser:SelectionParentNode[] selections,
+    parser:SelectionParentNode? parentNode = ()) {
         int i = 0;
         while i < selections.length() {
             boolean isIncluded = self.includeField(selections[i].getDirectives());
@@ -50,6 +51,7 @@ class DefaultDirectiveProcessorVisitor {
                 i += 1;
             } else {
                 _ = selections.remove(i);
+                removeSelection(parentNode, i);
             }
         }
     }
@@ -74,12 +76,20 @@ class DefaultDirectiveProcessorVisitor {
         if argumentNode.isVariableDefinition() {
             return <boolean>argumentNode.getVariableValue();
         } else {
-            parser:ArgumentValue value = <parser:ArgumentValue> argumentNode.getValue();
+            parser:ArgumentValue value = <parser:ArgumentValue>argumentNode.getValue();
             return <boolean>value;
         }
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
+}
+
+isolated function removeSelection(parser:SelectionParentNode? parentNode, int index) {
+    if parentNode is parser:SelectionParentNode {
+        parentNode.removeSelection(index);
+    }
 }

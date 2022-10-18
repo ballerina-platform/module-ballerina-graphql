@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class VariableNode {
+public isolated class VariableNode {
     *NamedNode;
 
     private string name;
@@ -25,7 +25,7 @@ public class VariableNode {
     public isolated function init(string name, string typeName, Location location) {
         self.name = name;
         self.typeName = typeName;
-        self.location = location;
+        self.location = location.clone();
         self.defaultValue = ();
     }
 
@@ -34,22 +34,32 @@ public class VariableNode {
     }
 
     public isolated function getName() returns string {
-        return self.name;
+        lock {
+            return self.name;
+        }
     }
 
     public isolated function getLocation() returns Location {
-        return self.location;
+        lock {
+            return self.location.cloneReadOnly();
+        }
     }
 
     public isolated function getTypeName() returns string {
-        return self.typeName;
+        lock {
+            return self.typeName;
+        }
     }
 
     public isolated function getDefaultValue() returns ArgumentNode? {
-        return self.defaultValue;
+        lock {
+            return self.defaultValue;
+        }
     }
 
     public isolated function setDefaultValue(ArgumentNode defaultValue) {
-        self.defaultValue = defaultValue;
+        lock {
+            self.defaultValue = defaultValue;
+        }
     }
 }

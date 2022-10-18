@@ -26,21 +26,21 @@ class DuplicateFieldRemoverVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        self.removeDuplicateSelections(operationNode.getSelections());
+        self.removeDuplicateSelections(operationNode.getSelections(), operationNode);
         foreach parser:SelectionNode selection in operationNode.getSelections() {
             selection.accept(self);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        self.removeDuplicateSelections(fieldNode.getSelections());
+        self.removeDuplicateSelections(fieldNode.getSelections(), fieldNode);
         foreach parser:SelectionNode selection in fieldNode.getSelections() {
             selection.accept(self);
         }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.removeDuplicateSelections(fragmentNode.getSelections());
+        self.removeDuplicateSelections(fragmentNode.getSelections(), fragmentNode);
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             selection.accept(self);
         }
@@ -48,7 +48,8 @@ class DuplicateFieldRemoverVisitor {
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
-    private isolated function removeDuplicateSelections(parser:SelectionNode[] selections) {
+    private isolated function removeDuplicateSelections(parser:SelectionNode[] selections,
+    parser:SelectionParentNode? parentNode = ()) {
         map<parser:FieldNode> visitedFields = {};
         map<parser:FragmentNode> visitedFragments = {};
         int i = 0;
@@ -58,6 +59,7 @@ class DuplicateFieldRemoverVisitor {
                 if visitedFragments.hasKey(selection.getOnType()) {
                     self.appendDuplicates(selection, visitedFragments.get(selection.getOnType()));
                     _ = selections.remove(i);
+                    removeSelection(parentNode, i);
                     i -= 1;
                 } else {
                     visitedFragments[selection.getOnType()] = selection;
@@ -66,6 +68,7 @@ class DuplicateFieldRemoverVisitor {
                 if visitedFields.hasKey(selection.getAlias()) {
                     self.appendDuplicates(selection, visitedFields.get(selection.getAlias()));
                     _ = selections.remove(i);
+                    removeSelection(parentNode, i);
                     i -= 1;
                 } else {
                     visitedFields[selection.getAlias()] = selection;

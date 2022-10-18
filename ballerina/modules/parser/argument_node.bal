@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class ArgumentNode {
+public isolated class ArgumentNode {
     *NamedNode;
 
     private string name;
@@ -29,9 +29,9 @@ public class ArgumentNode {
 
     public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
         self.name = name;
-        self.location = location;
+        self.location = location.clone();
         self.value = ();
-        self.valueLocation = location;
+        self.valueLocation = location.clone();
         self.kind = kind;
         self.variableDefinition = isVarDef;
         self.variableName = ();
@@ -44,66 +44,120 @@ public class ArgumentNode {
     }
 
     public isolated function getName() returns string {
-        return self.name;
+        lock {
+            return self.name;
+        }
     }
 
     public isolated function getLocation() returns Location {
-        return self.location;
+        lock {
+            return self.location.cloneReadOnly();
+        }
     }
 
     public isolated function getKind() returns ArgumentType {
-        return self.kind;
+        lock {
+            return self.kind;
+        }
     }
 
     public isolated function setKind(ArgumentType kind) {
-        self.kind = kind;
+        lock {
+            self.kind = kind;
+        }
     }
 
     public isolated function addVariableName(string name) {
-        self.variableName = name;
+        lock {
+            self.variableName = name;
+        }
     }
 
     public isolated function getVariableName() returns string? {
-        return self.variableName;
+        lock {
+            return self.variableName;
+        }
     }
 
     public isolated function setValue(ArgumentValue|ArgumentValue[] value) {
-        self.value = value;
+        if value is ArgumentValue {
+            lock {
+                self.value = value;
+            }
+            return;
+        }
+
+        lock {
+            ArgumentValue[] clone = [];
+            foreach int i in 0 ..< value.length() {
+                clone[i] = <ArgumentValue>value[i];
+            }
+            self.value = clone;
+        }
     }
 
     public isolated function setValueLocation(Location location) {
-        self.valueLocation = location;
+        lock {
+            self.valueLocation = location.clone();
+        }
     }
 
     public isolated function getValue() returns ArgumentValue|ArgumentValue[] {
-        return self.value;
+        lock {
+            if self.value is ArgumentValue {
+                return <ArgumentValue>self.value;
+            }
+        }
+
+        ArgumentValue[] argumentValues = [];
+        lock {
+            ArgumentValue[] value = <ArgumentValue[]>self.value;
+            foreach int i in 0 ..< value.length() {
+                argumentValues[i] = <ArgumentValue>value[i];
+            }
+        }
+        return argumentValues;
     }
 
     public isolated function getValueLocation() returns Location {
-        return self.valueLocation;
+        lock {
+            return self.valueLocation.cloneReadOnly();
+        }
     }
 
     public isolated function setVariableDefinition(boolean value) {
-        self.variableDefinition = value;
+        lock {
+            self.variableDefinition = value;
+        }
     }
 
     public isolated function isVariableDefinition() returns boolean {
-        return self.variableDefinition;
+        lock {
+            return self.variableDefinition;
+        }
     }
 
     public isolated function setVariableValue(anydata inputValue) {
-        self.variableValue = inputValue;
+        lock {
+            self.variableValue = inputValue.clone();
+        }
     }
 
     public isolated function getVariableValue() returns anydata {
-        return self.variableValue;
+        lock {
+            return self.variableValue.clone();
+        }
     }
 
     public isolated function setInvalidVariableValue() {
-        self.containsInvalidValue = true;
+        lock {
+            self.containsInvalidValue = true;
+        }
     }
 
     public isolated function hasInvalidVariableValue() returns boolean {
-        return self.containsInvalidValue;
+        lock {
+            return self.containsInvalidValue;
+        }
     }
 }

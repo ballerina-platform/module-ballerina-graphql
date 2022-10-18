@@ -17,6 +17,7 @@
 public type SelectionParentNode object {
     *NamedNode;
     public isolated function addSelection(SelectionNode selection);
+    public isolated function removeSelection(int index);
     public isolated function getSelections() returns SelectionNode[];
     public isolated function addDirective(DirectiveNode directive);
     public isolated function getDirectives() returns DirectiveNode[];
