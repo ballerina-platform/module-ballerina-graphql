@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#3545] Fix Subscription Operations Allowed Before Server Has Acknowledged the Connection](https://github.com/ballerina-platform/ballerina-standard-library/issues/3545)
+
 ## [1.4.2] - 2022-09-26
 
 ### Fixed
