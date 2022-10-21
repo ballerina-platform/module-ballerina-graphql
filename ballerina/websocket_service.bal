@@ -77,9 +77,9 @@ isolated service class WsService {
                     closeConnection(caller, 4429, "Too many initialisation requests");
                     return;
                 }
+                check caller->writeMessage({"type": WS_ACK});
                 self.initiatedConnection = true;
             }
-            check caller->writeMessage({"type": WS_ACK});
         } else if wsType == WS_SUBSCRIBE || wsType == WS_START || !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
             lock {
                 if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
