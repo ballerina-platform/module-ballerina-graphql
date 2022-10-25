@@ -1843,7 +1843,7 @@ service /maps on basicListener {
 
 
 @graphql:ServiceConfig {
-    introspectionEnabled: false
+    introspection: false
 }
 service /introspection on basicListener {
 
