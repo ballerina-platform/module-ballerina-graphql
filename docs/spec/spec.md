@@ -1548,19 +1548,19 @@ service on new graphql:Listener(4000) {
 
 #### 9.1.7 Introspection Configurations
 
-The `introspectionEnabled` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled.
+The `introspection` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled. By default, introspection is enabled for Ballerina GraphQL services.
 
 ###### Example: Disable Introspection Query Support
 
 ```ballerina
 @graphql:ServiceConfig {
-    introspectionEnabled: false
+    introspection: false
 }
 service on new graphql:Listener(4000) {
     // ...
 }
 ```
-> **Note:** By default, a Ballerina GraphQL service will enable introspection query support. It is recommended to disable introspection in production environments.
+> **Note:** It is recommended to disable introspection in production environments until it is required.
 
 ## 10. Interceptors
 The GraphQL interceptors can be used to execute a custom code before and after the resolver function gets invoked.
