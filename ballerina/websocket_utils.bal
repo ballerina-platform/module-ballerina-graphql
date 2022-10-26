@@ -25,7 +25,13 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
     stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
     if sourceStream is stream<any, error?> {
         record {|any value;|}|error? next = sourceStream.next();
-        while next !is error? {
+        while next !is () {
+            if next is error {
+                json errorPayload = {errors: {message: next.message()}};
+                check sendWebSocketResponse(caller, customHeaders, WS_ERROR, errorPayload, connectionId);
+                next = sourceStream.next();
+                continue;
+            }
             OutputObject outputObj = engine.getResult(node, context, next.value);
             ResponseFormatter responseFormatter = new (schema);
             OutputObject coercedOutputObject = responseFormatter.getCoercedOutputObject(outputObj, node);
@@ -34,17 +40,12 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
             }
             next = sourceStream.next();
         }
-        if next is error {
-            json errorPayload = {errors: {message: next.message()}};
-            check sendWebSocketResponse(caller, customHeaders, WS_ERROR, errorPayload, connectionId);
-            closeConnection(caller);
+        if customHeaders.hasKey(WS_SUB_PROTOCOL) {
+            check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, null, connectionId);
         } else {
-            if customHeaders.hasKey(WS_SUB_PROTOCOL) {
-                check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, null, connectionId);
-            } else {
-                closeConnection(caller);
-            }
+            closeConnection(caller);
         }
+        
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
         closeConnection(caller);
@@ -86,7 +87,7 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
     }
     string errorMessage = result is error ? result.message() : "Error ocurred in the subscription resolver";
     return {errors: [{message: errorMessage}]};
-    
+
 }
 
 isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & readonly customHeaders, string wsType,
@@ -99,7 +100,7 @@ isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & r
             }
         }
         json jsonResponse = id != () ? {'type: 'type, id: id, payload: payload} : {'type: 'type, payload: payload};
-        check caller->writeMessage(jsonResponse);        
+        check caller->writeMessage(jsonResponse);
     } else {
         check caller->writeMessage(payload);
     }

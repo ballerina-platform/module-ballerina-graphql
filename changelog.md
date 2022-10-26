@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#3565] Fix Service Incorrectly Closing Connection when a Stream Returns an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/3565)
+
 ## [1.4.3] - 2022-10-21
 
 ### Fixed
