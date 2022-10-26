@@ -1701,3 +1701,14 @@ service /maps on basicListener {
         return self.languages;
     }
 }
+
+service /covid19 on basicListener {
+    resource function get all() returns table<CovidEntry> {
+        table<CovidEntry> covidEntryTable = table [
+                {isoCode: "AFG"},
+                {isoCode: "SL"},
+                {isoCode: "US"}
+            ];
+        return covidEntryTable;
+    }
+}
