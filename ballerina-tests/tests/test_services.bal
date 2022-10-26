@@ -1879,3 +1879,14 @@ graphql:Service greetingService2 = @graphql:ServiceConfig {maxQueryDepth: 5} ser
         return "Hello, World";
     }
 };
+
+service /covid19 on basicListener {
+    resource function get all() returns table<CovidEntry> {
+        table<CovidEntry> covidEntryTable = table [
+                {isoCode: "AFG"},
+                {isoCode: "SL"},
+                {isoCode: "US"}
+            ];
+        return covidEntryTable;
+    }
+}
