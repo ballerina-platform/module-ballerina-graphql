@@ -226,6 +226,8 @@ public class SchemaGenerator {
                 return getType(null, null, null, (IntersectionTypeSymbol) typeSymbol);
             case STREAM:
                 return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
+            case TABLE:
+                return getType((TableTypeSymbol) typeSymbol);
         }
         return null;
     }

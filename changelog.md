@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#3556] Fix Returning Table from a Resolver Resulting in Runtime Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/3556)
+
 ## [1.4.3] - 2022-10-21
 
 ### Fixed
