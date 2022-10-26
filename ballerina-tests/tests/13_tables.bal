@@ -69,7 +69,7 @@ isolated function testQueryingTableWithoutSelections() returns error? {
 @test:Config {
     groups: ["tables"]
 }
-isolated function testResolvereReturningTables() returns error? {
+isolated function testResolverReturningTables() returns error? {
     string document = "{ all { isoCode } }";
     string url = "http://localhost:9091/covid19";
     json actualPayload = check getJsonPayloadFromService(url, document);
