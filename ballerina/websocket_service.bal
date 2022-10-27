@@ -105,10 +105,7 @@ isolated service class WsService {
                 }
             }
             WS_PING => {
-            check caller->writeMessage({"type": WS_PONG});
-            }
-            WS_PONG => {
-                check caller->writeMessage({"type": WS_PING});
+                check caller->writeMessage({"type": WS_PONG});
             }
         }
     }
