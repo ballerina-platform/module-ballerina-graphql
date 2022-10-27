@@ -27,7 +27,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         record {|any value;|}|error? next = sourceStream.next();
         while next !is () {
             if next is error {
-                json errorPayload = {errors: {message: next.message()}};
+                json errorPayload = {errors: [{message: next.message()}]};
                 check sendWebSocketResponse(caller, customHeaders, WS_ERROR, errorPayload, connectionId);
                 next = sourceStream.next();
                 continue;
@@ -45,7 +45,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         } else {
             closeConnection(caller);
         }
-        
+
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
         closeConnection(caller);
