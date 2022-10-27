@@ -47,7 +47,9 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         }
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
-        closeConnection(caller);
+        if !customHeaders.hasKey(WS_SUB_PROTOCOL) {
+            closeConnection(caller);
+        }
     }
 }
 

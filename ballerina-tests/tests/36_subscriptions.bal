@@ -601,3 +601,33 @@ isolated function testErrorsInStreams() returns error? {
     expectedPayload = {data: {evenNumber: 6}};
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
+
+@test:Config {
+    groups: ["sub_protocols", "subscriptions", "a"]
+}
+isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_WS]};
+    websocket:Client wsClient = check new (url, config);
+
+    check initiateConnectionInitMessage(wsClient);
+    check validateConnectionInitMessage(wsClient);
+
+    check writeWebSocketTextMessage(document, wsClient, {}, id = "1", subProtocol = GRAPHQL_WS);
+    foreach int i in 1 ..< 6 {
+        json payload = {data: {messages: i}};
+        json expectedPayload = {"type": WS_DATA, id: "1", payload: payload};
+        check validateWebSocketResponse(wsClient, expectedPayload);
+    }
+    json unsubscribe = {"type": WS_COMPLETE, id: "1", payload: null};
+    check validateWebSocketResponse(wsClient, unsubscribe);
+    check wsClient->writeMessage(unsubscribe);
+
+    check writeWebSocketTextMessage(document, wsClient, {}, id = "2", subProtocol = GRAPHQL_WS);
+    foreach int i in 1 ..< 6 {
+        json payload = {data: {messages: i}};
+        json expectedPayload = {"type": WS_DATA, id: "2", payload: payload};
+        check validateWebSocketResponse(wsClient, expectedPayload);
+    }
+}

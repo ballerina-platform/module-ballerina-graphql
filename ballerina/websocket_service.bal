@@ -24,17 +24,17 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private string[] activeConnections;
+    private map<string> activeConnections;
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
-    isolated function init(Engine engine, __Schema & readonly schema,  map<string> & readonly customHeaders,
-                           Context context) {
+    isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders,
+            Context context) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
         self.customHeaders = customHeaders;
-        self.activeConnections = [];
+        self.activeConnections = {};
         self.initiatedConnection = false;
     }
 
@@ -58,7 +58,7 @@ isolated service class WsService {
         }
 
         WSPayload|json|error wsPayload = self.customHeaders != {}
-                                        ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
+            ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
         if wsPayload is error {
             return self.handleError(caller, wsPayload);
         }
@@ -87,22 +87,22 @@ isolated service class WsService {
                             closeConnection(caller, 4401, "Unauthorized");
                             return;
                         }
-                        if self.activeConnections.indexOf(connectionId) !is () {
+                        if self.activeConnections.hasKey(connectionId) {
                             closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
                             return;
                         }
-                        self.activeConnections.push(connectionId);
+                        self.activeConnections[connectionId] = connectionId;
                     }
                 }
                 return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
             }
             WS_STOP|WS_COMPLETE => {
                 lock {
-                    _ = self.activeConnections.remove(<int>self.activeConnections.indexOf(connectionId));
-                    self.initiatedConnection = false;
+                    if !self.activeConnections.hasKey(connectionId) {
+                        return;
+                    }
+                    _ = self.activeConnections.remove(connectionId);
                 }
-                check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
-                closeConnection(caller);
             }
             WS_PING => {
             check caller->writeMessage({"type": WS_PONG});
@@ -121,7 +121,9 @@ isolated service class WsService {
                                     connectionId, node);
         } else {
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
-            closeConnection(caller);
+            if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+                closeConnection(caller);
+            }
         }
     }
 
