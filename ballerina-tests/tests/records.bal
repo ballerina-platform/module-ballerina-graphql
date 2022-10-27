@@ -239,3 +239,7 @@ type WSPayload record {|
 public type Languages record {|
     map<string> name;
 |};
+
+public type CovidEntry record {|
+    string isoCode;
+|};
