@@ -59,38 +59,38 @@ public distinct isolated service class Lift {
         self.lift = lift.cloneReadOnly();
     }
 
-    isolated resource function get id () returns string {
+    isolated resource function get id() returns string {
         return self.lift.id;
     }
 
-    isolated resource function get name () returns string {
+    isolated resource function get name() returns string {
         return self.lift.name;
     }
 
-    isolated resource function get status () returns string {
+    isolated resource function get status() returns string {
         return self.lift.status;
     }
 
-    isolated resource function get capacity () returns int {
+    isolated resource function get capacity() returns int {
         return self.lift.capacity;
     }
 
-    isolated resource function get night () returns boolean {
+    isolated resource function get night() returns boolean {
         return self.lift.night;
     }
 
-    isolated resource function get elevationgain () returns int {
+    isolated resource function get elevationgain() returns int {
         return self.lift.elevationgain;
     }
 
-    isolated resource function get trailAccess () returns Trail[] {
+    isolated resource function get trailAccess() returns Trail[] {
         LiftRecord[] lifts = [self.lift];
         EdgeRecord[] edges = from var edge in edgeTable
-                       join var lift in lifts on edge.liftId equals lift.id
-                       select edge;
+            join var lift in lifts on edge.liftId equals lift.id
+            select edge;
         TrailRecord[] trails = from var trail in trailTable
-                      join var edge in edges on trail.id equals edge.trailId
-                      select trail;
+            join var edge in edges on trail.id equals edge.trailId
+            select trail;
         return trails.map(trailRecord => new Trail(trailRecord));
     }
 }
@@ -102,42 +102,42 @@ public distinct isolated service class Trail {
         self.trail = trail.cloneReadOnly();
     }
 
-    isolated resource function get id () returns string {
+    isolated resource function get id() returns string {
         return self.trail.id;
     }
 
-    isolated resource function get name () returns string {
+    isolated resource function get name() returns string {
         return self.trail.name;
     }
 
-    isolated resource function get status () returns string {
+    isolated resource function get status() returns string {
         return self.trail.status;
     }
 
-    isolated resource function get difficulty () returns string? {
+    isolated resource function get difficulty() returns string? {
         return self.trail.difficulty;
     }
 
-    isolated resource function get groomed () returns boolean {
+    isolated resource function get groomed() returns boolean {
         return self.trail.groomed;
     }
 
-    isolated resource function get trees () returns boolean {
+    isolated resource function get trees() returns boolean {
         return self.trail.trees;
     }
 
-    isolated resource function get night () returns boolean {
+    isolated resource function get night() returns boolean {
         return self.trail.night;
     }
 
-    isolated resource function get accessByLifts () returns Lift[] {
+    isolated resource function get accessByLifts() returns Lift[] {
         TrailRecord[] trails = [self.trail];
         EdgeRecord[] edges = from var edge in edgeTable
-                       join var trail in trails on edge.trailId equals trail.id
-                       select edge;
+            join var trail in trails on edge.trailId equals trail.id
+            select edge;
         LiftRecord[] lifts = from var lift in liftTable
-                      join var edge in edges on lift.id equals edge.liftId
-                      select lift;
+            join var edge in edges on lift.id equals edge.liftId
+            select lift;
         return lifts.map(liftRecord => new Lift(liftRecord));
     }
 }
@@ -238,7 +238,7 @@ public isolated distinct service class AnimalClass {
             string call = "";
             int i = 0;
             while i < count {
-                call += string`${sound} `;
+                call += string `${sound} `;
                 i += 1;
             }
             return call;
@@ -274,5 +274,17 @@ public isolated service class Vehicle {
         } else {
             return registeredYear;
         }
+    }
+}
+
+class EvenNumberGenerator {
+    private int i = 0;
+
+    public isolated function next() returns record {|int value;|}|error? {
+        self.i += 2;
+        if self.i == 4 {
+            return error("Runtime exception");
+        }
+        return {value: self.i};
     }
 }

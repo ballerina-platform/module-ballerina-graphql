@@ -1316,6 +1316,11 @@ service /subscriptions on subscriptionListener {
         TeacherService t = new TeacherService(0, "Walter White", "Chemistry");
         return [s, t].toStream();
     }
+
+    isolated resource function subscribe evenNumber() returns stream<int, error?> {
+        EvenNumberGenerator evenNumberGenerator = new;
+        return new(evenNumberGenerator);
+    }
 }
 
 # GraphQL service with documentation.
