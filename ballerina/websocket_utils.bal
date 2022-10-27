@@ -45,7 +45,6 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         } else {
             closeConnection(caller);
         }
-
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
         closeConnection(caller);
@@ -87,7 +86,6 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
     }
     string errorMessage = result is error ? result.message() : "Error ocurred in the subscription resolver";
     return {errors: [{message: errorMessage}]};
-
 }
 
 isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & readonly customHeaders, string wsType,
