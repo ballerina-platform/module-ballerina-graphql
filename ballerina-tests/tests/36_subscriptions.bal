@@ -265,7 +265,7 @@ isolated function testSubscriptionWithServiceObjectsUsingSubProtocol() returns e
         websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
         websocket:Client wsClient = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
-        check initiateConnectionInitMessage(wsClient, "1");
+        check initiateConnectionInitMessage(wsClient);
         check validateConnectionInitMessage(wsClient);
 
         check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
@@ -293,7 +293,7 @@ isolated function testSubscriptionWithVariablesUsingSubProtocol() returns error?
         websocket:Client wsClient = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
 
-        check initiateConnectionInitMessage(wsClient, "1");
+        check initiateConnectionInitMessage(wsClient);
         check validateConnectionInitMessage(wsClient);
 
         check writeWebSocketTextMessage(document, wsClient, variables, id = "1", subProtocol = subProtocol);
@@ -317,9 +317,10 @@ isolated function testSubscriptionWithMultipleClientsUsingSubProtocol() returns 
         websocket:Client wsClient2 = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
 
-        check initiateConnectionInitMessage(wsClient1, "1");
-        check initiateConnectionInitMessage(wsClient2, "2");
+        check initiateConnectionInitMessage(wsClient1);
         check validateConnectionInitMessage(wsClient1);
+
+        check initiateConnectionInitMessage(wsClient2);
         check validateConnectionInitMessage(wsClient2);
 
         check writeWebSocketTextMessage(document, wsClient1, id = "1", subProtocol = subProtocol);
@@ -354,9 +355,10 @@ isolated function testSubscriptionsWithMultipleOperationsUsingSubProtocol() retu
         websocket:Client wsClient2 = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
 
-        check initiateConnectionInitMessage(wsClient1, "1");
-        check initiateConnectionInitMessage(wsClient2, "2");
+        check initiateConnectionInitMessage(wsClient1);
         check validateConnectionInitMessage(wsClient1);
+
+        check initiateConnectionInitMessage(wsClient2);
         check validateConnectionInitMessage(wsClient2);
 
         check writeWebSocketTextMessage(document, wsClient1, {}, "getMessages", "1", subProtocol = subProtocol);
@@ -391,7 +393,7 @@ isolated function testSubscriptionWithFragmentsUsingSubProtocol() returns error?
         websocket:Client wsClient = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
 
-        check initiateConnectionInitMessage(wsClient, "1");
+        check initiateConnectionInitMessage(wsClient);
         check validateConnectionInitMessage(wsClient);
 
         check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
@@ -416,7 +418,7 @@ isolated function testInvalidSubscriptionUsingSubProtocol() returns error? {
         websocket:Client wsClient = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_ERROR;
         json responsePayload = check getJsonContentFromFile("subscription_invalid_field.json");
-        check initiateConnectionInitMessage(wsClient, "1");
+        check initiateConnectionInitMessage(wsClient);
         check validateConnectionInitMessage(wsClient);
 
         json payload = {query: document};
@@ -438,7 +440,7 @@ isolated function testSubscriptionFunctionWithErrorsUsingSubProtocol() returns e
         websocket:Client wsClient = check new(url, config);
         string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_ERROR;
 
-        check initiateConnectionInitMessage(wsClient, "1");
+        check initiateConnectionInitMessage(wsClient);
         check validateConnectionInitMessage(wsClient);
 
         check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
@@ -458,7 +460,7 @@ isolated function testConnectionInitMessage() returns error? {
     foreach string subProtocol in subProtocols {
         websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
         websocket:Client wsClient = check new(url, config);
-        check initiateConnectionInitMessage(wsClient, "1");
+        check initiateConnectionInitMessage(wsClient);
         check validateConnectionInitMessage(wsClient);
     }
 }
@@ -516,7 +518,7 @@ function testAlreadyExistingSubscriberUsingSubProtocol() returns error? {
     websocket:Client wsClient = check new(url, config);
     string clientId = wsClient.getConnectionId();
 
-    check initiateConnectionInitMessage(wsClient, clientId);
+    check initiateConnectionInitMessage(wsClient);
     check validateConnectionInitMessage(wsClient);
 
     check writeWebSocketTextMessage(document, wsClient, id = clientId, subProtocol = subProtocol);
@@ -543,24 +545,6 @@ isolated function testOnPing() returns error? {
         websocket:Client wsClient = check new(url, config);
         check wsClient->writeMessage({"type": WS_PING});
         string expectedPayload = WS_PONG;
-        json response = check wsClient->readMessage();
-        WSPayload wsPayload = check response.cloneWithType(WSPayload);
-        string actualType = wsPayload.'type;
-        test:assertEquals(actualType, expectedPayload);
-    }
-}
-
-@test:Config {
-    groups: ["sub_protocols", "subscriptions"]
-}
-isolated function testOnPong() returns error? {
-    string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        check wsClient->writeMessage({"type": WS_PONG});
-        string expectedPayload = WS_PING;
         json response = check wsClient->readMessage();
         WSPayload wsPayload = check response.cloneWithType(WSPayload);
         string actualType = wsPayload.'type;
