@@ -28,7 +28,7 @@ isolated service class WsService {
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
-    isolated function init(Engine engine, __Schema & readonly schema,  map<string> & readonly customHeaders,
+    isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders,
                            Context context) {
         self.engine = engine;
         self.schema = schema;
@@ -71,50 +71,70 @@ isolated service class WsService {
         string wsType = wsPayload is WSPayload ? <string>wsPayload.'type : DEFAULT_VALUE;
         string connectionId = wsPayload is WSPayload && wsPayload?.id !is () ? <string>wsPayload?.id : DEFAULT_VALUE;
 
-        if wsType == WS_INIT {
-            lock {
-                if self.initiatedConnection {
-                    closeConnection(caller, 4429, "Too many initialisation requests");
-                    return;
-                }
-                check caller->writeMessage({"type": WS_ACK});
-                self.initiatedConnection = true;
-            }
-        } else if wsType == WS_SUBSCRIBE || wsType == WS_START || !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            lock {
-                if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-                    if !self.initiatedConnection {
-                        closeConnection(caller, 4401, "Unauthorized");
+        if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+            return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
+        }
+
+        match wsType {
+            WS_INIT => {
+                lock {
+                    if self.initiatedConnection {
+                        closeConnection(caller, 4429, "Too many initialisation requests");
                         return;
                     }
-                    if self.activeConnections.indexOf(connectionId) !is () {
-                        closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
-                        return;
-                    }
-                    self.activeConnections.push(connectionId);
+                    check caller->writeMessage({"type": WS_ACK});
+                    self.initiatedConnection = true;
                 }
             }
-            parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
-            if node is parser:OperationNode {
-                check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller,
-                                       connectionId, node);
-            } else {
-                check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
+            WS_SUBSCRIBE|WS_START => {
+                lock {
+                    if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+                        if !self.initiatedConnection {
+                            closeConnection(caller, 4401, "Unauthorized");
+                            return;
+                        }
+                        if self.activeConnections.indexOf(connectionId) !is () {
+                            closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
+                            return;
+                        }
+                        self.activeConnections.push(connectionId);
+                    }
+                }
+                return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
+            }
+            WS_STOP|WS_COMPLETE => {
+                lock {
+                    _ = self.activeConnections.remove(<int>self.activeConnections.indexOf(connectionId));
+                    self.initiatedConnection = false;
+                }
+                check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
                 closeConnection(caller);
             }
-        } else if wsType == WS_STOP || wsType == WS_COMPLETE {
-            lock {
-                _ = self.activeConnections.remove(<int>self.activeConnections.indexOf(connectionId));
-                self.initiatedConnection = false;
+            WS_PING => {
+                check caller->writeMessage({"type": WS_PONG});
             }
-            check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
-            closeConnection(caller);
-        } else if wsType == WS_PING {
-            check caller->writeMessage({"type": WS_PONG});
-        } else if wsType == WS_PONG {
-            check caller->writeMessage({"type": WS_PING});
+            WS_PONG => {
+                check caller->writeMessage({"type": WS_PING});
+            }
+        }
+    }
+
+    isolated function handleSubscriptionRequest(websocket:Caller caller, string connectionId, WSPayload|json wsPayload)
+    returns websocket:Error? {
+        parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
+        if node is parser:OperationNode {
+            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, connectionId,
+                                   node);
         } else {
             // do nothing
+            check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
+            closeConnection(caller);
         }
+    }
+
+    isolated function handleError(websocket:Caller caller, error err) returns websocket:Error? {
+        json payload = {errors: [{message: "Invalid format in WebSocket payload: " + err.message()}]};
+        check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
+        closeConnection(caller);
     }
 }

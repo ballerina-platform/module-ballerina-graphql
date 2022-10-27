@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "Runtime exception",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 16
+                }
+            ],
+            "path": [
+                "evenNumber"
+            ]
+        }
+    ],
+    "data": null
+}
