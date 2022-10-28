@@ -620,7 +620,6 @@ isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
     groups: ["sub_protocols", "subscriptions"]
 }
 isolated function testSubscriptionWithInvalidPayload() returns error? {
-    string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_WS]};
     websocket:Client wsClient = check new (url, config);

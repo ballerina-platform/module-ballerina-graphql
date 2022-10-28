@@ -57,16 +57,18 @@ isolated service class WsService {
             return self.handleError(caller, wsText);
         }
 
-        WSPayload|json|error payload = self.customHeaders != {}
+        WSPayload|json|error wsPayload = self.customHeaders != {}
             ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
-        if payload is error {
-            return self.handleError(caller, payload);
+        if wsPayload is error {
+            return self.handleError(caller, wsPayload);
         }
         if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            return self.handleSubscriptionRequest(caller, payload);
+            return self.handleSubscriptionRequest(caller, wsPayload);
+        }
+        if wsPayload !is WSPayload {
+            return;
         }
 
-        WSPayload wsPayload = <WSPayload>payload;
         match wsPayload.'type {
             WS_INIT => {
                 lock {
@@ -79,10 +81,10 @@ isolated service class WsService {
                 }
             }
             WS_SUBSCRIBE|WS_START => {
-                if wsPayload.id is () {
+                string? connectionId = wsPayload.id;
+                if connectionId is () {
                     return self.handleIdNotPresentInPayload(caller);
                 }
-                string connectionId = <string>wsPayload.id;
                 lock {
                     if !self.initiatedConnection {
                         closeConnection(caller, 4401, "Unauthorized");
@@ -97,10 +99,10 @@ isolated service class WsService {
                 return self.handleSubscriptionRequest(caller, wsPayload, connectionId);
             }
             WS_STOP|WS_COMPLETE => {
-                if wsPayload.id is () {
+                string? connectionId = wsPayload.id;
+                if connectionId is () {
                     return self.handleIdNotPresentInPayload(caller);
                 }
-                string connectionId = <string>wsPayload.id;
                 lock {
                     if !self.activeConnections.hasKey(connectionId) {
                         return;
