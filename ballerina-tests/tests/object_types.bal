@@ -280,7 +280,7 @@ public isolated service class Vehicle {
 class EvenNumberGenerator {
     private int i = 0;
 
-    public isolated function next() returns record {|int value;|}|error? {
+    public isolated function next() returns record {|int value;|}|error {
         self.i += 2;
         if self.i == 4 {
             return error("Runtime exception");

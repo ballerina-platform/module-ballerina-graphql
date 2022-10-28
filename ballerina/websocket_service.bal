@@ -126,7 +126,6 @@ isolated service class WsService {
             check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, connectionId,
                                    node);
         } else {
-            // do nothing
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
             closeConnection(caller);
         }
