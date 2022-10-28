@@ -584,3 +584,20 @@ isolated function testInvalidSubProtocolInSubscriptions() returns error? {
         test:assertEquals((<error>message).message(), errorMsg);
     }
 }
+
+ @test:Config {
+     groups: ["subscriptions", "runtime_errors"]
+ }
+ isolated function testErrorsInStreams() returns error? {
+     string url = "ws://localhost:9099/subscriptions";
+     websocket:Client wsClient = check new(url);
+     string document = "subscription { evenNumber }";
+     json payload = {query: document};
+     check wsClient->writeMessage(payload);
+     json expectedPayload = {data: {evenNumber: 2}};
+     check validateWebSocketResponse(wsClient, expectedPayload);
+     expectedPayload = check getJsonContentFromFile("errors_in_streams.json");
+     check validateWebSocketResponse(wsClient, expectedPayload);
+     expectedPayload = {data: {evenNumber: 6}};
+     check validateWebSocketResponse(wsClient, expectedPayload);
+ }

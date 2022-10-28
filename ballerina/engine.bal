@@ -61,7 +61,7 @@ isolated class Engine {
         }
     }
 
-    isolated function getResult(parser:OperationNode operationNode, Context context, any result = ())
+    isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
     returns OutputObject {
         DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
         DuplicateFieldRemoverVisitor duplicateFieldRemover = new;

@@ -1316,6 +1316,11 @@ service /subscriptions on subscriptionListener {
         TeacherService t = new TeacherService(0, "Walter White", "Chemistry");
         return [s, t].toStream();
     }
+
+    isolated resource function subscribe evenNumber() returns stream<int, error?> {
+        EvenNumberGenerator evenNumberGenerator = new;
+        return new (evenNumberGenerator);
+    }
 }
 
 # GraphQL service with documentation.
@@ -1326,7 +1331,7 @@ service /documentation on basicListener {
     # + name - The name of the person
     # + return - The personalized greeting message
     isolated resource function get greeting(string name) returns string {
-        return string`Hello ${name}`;
+        return string `Hello ${name}`;
     }
 
     # Returns a predefined instrument.
@@ -1706,7 +1711,7 @@ service /invalid_interceptor2 on basicListener {
 }
 service /invalid_interceptor3 on basicListener {
     isolated resource function get person() returns Person {
-        return  {
+        return {
             name: "Albus Percival Wulfric Brian Dumbledore",
             age: 80,
             address: {number: "101", street: "Mould-on-the-Wold", city: "London"}
@@ -1746,7 +1751,7 @@ service /intercept_errors2 on basicListener {
 }
 service /intercept_errors3 on basicListener {
     isolated resource function get person() returns Person {
-        return  {
+        return {
             name: "Albus Percival Wulfric Brian Dumbledore",
             age: 80,
             address: {number: "101", street: "Mould-on-the-Wold", city: "London"}
@@ -1840,7 +1845,6 @@ service /maps on basicListener {
         return self.languages;
     }
 }
-
 
 @graphql:ServiceConfig {
     introspection: false

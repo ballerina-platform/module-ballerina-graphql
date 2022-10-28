@@ -24,9 +24,9 @@ class ExecutorVisitor {
     private Data data;
     private ErrorDetail[] errors;
     private Context context;
-    private any result;
+    private any|error result;
 
-    isolated function init(Engine engine, __Schema schema, Context context, any result = ()) {
+    isolated function init(Engine engine, __Schema schema, Context context, any|error result = ()) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
@@ -107,7 +107,7 @@ class ExecutorVisitor {
     }
 
     isolated function executeSubscription(parser:FieldNode fieldNode, parser:RootOperationType operationType,
-                                          any fieldValue) {
+                                          any|error fieldValue) {
         (string|int)[] path = [fieldNode.getName()];
         string operationTypeName = getOperationTypeNameFromOperationType(operationType);
         __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
