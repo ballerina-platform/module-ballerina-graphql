@@ -24,12 +24,12 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private map<string> activeConnections;
+    private map<()> activeConnections;
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
     isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders,
-            Context context) {
+                           Context context) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
@@ -57,19 +57,17 @@ isolated service class WsService {
             return self.handleError(caller, wsText);
         }
 
-        WSPayload|json|error wsPayload = self.customHeaders != {}
+        WSPayload|json|error payload = self.customHeaders != {}
             ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
-        if wsPayload is error {
-            return self.handleError(caller, wsPayload);
+        if payload is error {
+            return self.handleError(caller, payload);
         }
-        string wsType = wsPayload is WSPayload ? <string>wsPayload.'type : DEFAULT_VALUE;
-        string connectionId = wsPayload is WSPayload && wsPayload?.id !is () ? <string>wsPayload?.id : DEFAULT_VALUE;
-
         if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
+            return self.handleSubscriptionRequest(caller, DEFAULT_VALUE, payload);
         }
 
-        match wsType {
+        WSPayload wsPayload = <WSPayload>payload;
+        match wsPayload.'type {
             WS_INIT => {
                 lock {
                     if self.initiatedConnection {
@@ -81,22 +79,28 @@ isolated service class WsService {
                 }
             }
             WS_SUBSCRIBE|WS_START => {
+                if wsPayload.id is () {
+                    return self.handleIdNotPresentInPayload(caller);
+                }
+                string connectionId = <string>wsPayload.id;
                 lock {
-                    if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-                        if !self.initiatedConnection {
-                            closeConnection(caller, 4401, "Unauthorized");
-                            return;
-                        }
-                        if self.activeConnections.hasKey(connectionId) {
-                            closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
-                            return;
-                        }
-                        self.activeConnections[connectionId] = connectionId;
+                    if !self.initiatedConnection {
+                        closeConnection(caller, 4401, "Unauthorized");
+                        return;
                     }
+                    if self.activeConnections.hasKey(connectionId) {
+                        closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
+                        return;
+                    }
+                    self.activeConnections[connectionId] = ();
                 }
                 return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
             }
             WS_STOP|WS_COMPLETE => {
+                if wsPayload.id is () {
+                    return self.handleIdNotPresentInPayload(caller);
+                }
+                string connectionId = <string>wsPayload.id;
                 lock {
                     if !self.activeConnections.hasKey(connectionId) {
                         return;
@@ -118,7 +122,7 @@ isolated service class WsService {
                                     connectionId, node);
         } else {
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
-            if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+            if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
                 closeConnection(caller);
             }
         }
@@ -128,5 +132,9 @@ isolated service class WsService {
         json payload = {errors: [{message: "Invalid format in WebSocket payload: " + err.message()}]};
         check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
         closeConnection(caller);
+    }
+
+    isolated function handleIdNotPresentInPayload(websocket:Caller caller) {
+        closeConnection(caller, 1002, string `Request does not contain the id field`);
     }
 }
