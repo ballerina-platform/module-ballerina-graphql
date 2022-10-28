@@ -520,6 +520,7 @@ service on new graphql:Listener(4000) {
 ```
 
 > **Note:**: A resource method with `subscribe` accessor must return a Ballerina `stream` type.
+> **Note:**: The current implementation does not support multiplexing between multiple subscription operations using a client.
 
 ### 3.2 Wrapping Types
 
