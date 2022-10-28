@@ -18,8 +18,8 @@ import ballerina/websocket;
 import graphql.parser;
 
 isolated function executeOperation(Engine engine, Context context, readonly & __Schema schema,
-                                   readonly & map<string> customHeaders, websocket:Caller caller, string connectionId,
-                                   parser:OperationNode node) returns websocket:Error? {
+                                   readonly & map<string> customHeaders, websocket:Caller caller,
+                                   parser:OperationNode node, string? connectionId) returns websocket:Error? {
     RootFieldVisitor rootFieldVisitor = new (node);
     parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
     stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);

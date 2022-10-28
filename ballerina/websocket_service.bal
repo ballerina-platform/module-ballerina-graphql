@@ -63,7 +63,7 @@ isolated service class WsService {
             return self.handleError(caller, payload);
         }
         if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            return self.handleSubscriptionRequest(caller, DEFAULT_VALUE, payload);
+            return self.handleSubscriptionRequest(caller, payload);
         }
 
         WSPayload wsPayload = <WSPayload>payload;
@@ -94,7 +94,7 @@ isolated service class WsService {
                     }
                     self.activeConnections[connectionId] = ();
                 }
-                return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
+                return self.handleSubscriptionRequest(caller, wsPayload, connectionId);
             }
             WS_STOP|WS_COMPLETE => {
                 if wsPayload.id is () {
@@ -114,12 +114,13 @@ isolated service class WsService {
         }
     }
 
-    isolated function handleSubscriptionRequest(websocket:Caller caller, string connectionId, WSPayload|json wsPayload)
+    isolated function handleSubscriptionRequest(websocket:Caller caller, WSPayload|json wsPayload,
+                                                string? connectionId = ())
     returns websocket:Error? {
         parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
         if node is parser:OperationNode {
-            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller,
-                                    connectionId, node);
+            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, node,
+                                   connectionId);
         } else {
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
             if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
