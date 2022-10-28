@@ -587,7 +587,7 @@ isolated function testErrorsInStreams() returns error? {
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions", "a"]
+    groups: ["sub_protocols", "subscriptions"]
 }
 isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
     string document = string `subscription { messages }`;
