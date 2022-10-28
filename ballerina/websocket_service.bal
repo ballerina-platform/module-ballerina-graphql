@@ -24,17 +24,17 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private string[] activeConnections;
+    private map<()> activeConnections;
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
-    isolated function init(Engine engine, __Schema & readonly schema,  map<string> & readonly customHeaders,
+    isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders,
                            Context context) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
         self.customHeaders = customHeaders;
-        self.activeConnections = [];
+        self.activeConnections = {};
         self.initiatedConnection = false;
     }
 
@@ -58,18 +58,18 @@ isolated service class WsService {
         }
 
         WSPayload|json|error wsPayload = self.customHeaders != {}
-                                        ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
+            ? wsText.cloneWithType(WSPayload) : value:fromJsonString(text);
         if wsPayload is error {
             return self.handleError(caller, wsPayload);
         }
-        string wsType = wsPayload is WSPayload ? <string>wsPayload.'type : DEFAULT_VALUE;
-        string connectionId = wsPayload is WSPayload && wsPayload?.id !is () ? <string>wsPayload?.id : DEFAULT_VALUE;
-
         if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
+            return self.handleSubscriptionRequest(caller, wsPayload);
+        }
+        if wsPayload !is WSPayload {
+            return;
         }
 
-        match wsType {
+        match wsPayload.'type {
             WS_INIT => {
                 lock {
                     if self.initiatedConnection {
@@ -81,47 +81,53 @@ isolated service class WsService {
                 }
             }
             WS_SUBSCRIBE|WS_START => {
-                lock {
-                    if self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
-                        if !self.initiatedConnection {
-                            closeConnection(caller, 4401, "Unauthorized");
-                            return;
-                        }
-                        if self.activeConnections.indexOf(connectionId) !is () {
-                            closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
-                            return;
-                        }
-                        self.activeConnections.push(connectionId);
-                    }
+                string? connectionId = wsPayload.id;
+                if connectionId is () {
+                    return self.handleIdNotPresentInPayload(caller);
                 }
-                return self.handleSubscriptionRequest(caller, connectionId, wsPayload);
+                lock {
+                    if !self.initiatedConnection {
+                        closeConnection(caller, 4401, "Unauthorized");
+                        return;
+                    }
+                    if self.activeConnections.hasKey(connectionId) {
+                        closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
+                        return;
+                    }
+                    self.activeConnections[connectionId] = ();
+                }
+                return self.handleSubscriptionRequest(caller, wsPayload, connectionId);
             }
             WS_STOP|WS_COMPLETE => {
-                lock {
-                    _ = self.activeConnections.remove(<int>self.activeConnections.indexOf(connectionId));
-                    self.initiatedConnection = false;
+                string? connectionId = wsPayload.id;
+                if connectionId is () {
+                    return self.handleIdNotPresentInPayload(caller);
                 }
-                check sendWebSocketResponse(caller, self.customHeaders, WS_COMPLETE, null, connectionId);
-                closeConnection(caller);
+                lock {
+                    if !self.activeConnections.hasKey(connectionId) {
+                        return;
+                    }
+                    _ = self.activeConnections.remove(connectionId);
+                }
             }
             WS_PING => {
-            check caller->writeMessage({"type": WS_PONG});
-            }
-            WS_PONG => {
-                check caller->writeMessage({"type": WS_PING});
+                check caller->writeMessage({"type": WS_PONG});
             }
         }
     }
 
-    isolated function handleSubscriptionRequest(websocket:Caller caller, string connectionId, WSPayload|json wsPayload)
+    isolated function handleSubscriptionRequest(websocket:Caller caller, WSPayload|json wsPayload,
+                                                string? connectionId = ())
     returns websocket:Error? {
         parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
         if node is parser:OperationNode {
-            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller,
-                                    connectionId, node);
+            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, node,
+                                   connectionId);
         } else {
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
-            closeConnection(caller);
+            if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {
+                closeConnection(caller);
+            }
         }
     }
 
@@ -129,5 +135,9 @@ isolated service class WsService {
         json payload = {errors: [{message: "Invalid format in WebSocket payload: " + err.message()}]};
         check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, payload);
         closeConnection(caller);
+    }
+
+    isolated function handleIdNotPresentInPayload(websocket:Caller caller) {
+        closeConnection(caller, 1002, string `Request does not contain the id field`);
     }
 }

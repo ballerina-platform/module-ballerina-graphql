@@ -135,7 +135,6 @@ isolated function validateConnectionInitMessage(websocket:Client wsClient) retur
     test:assertEquals(actualType, expectedPayload);
 }
 
-isolated function initiateConnectionInitMessage(websocket:Client wsClient, string? id = ()) returns websocket:Error? {
-    json payload = id != () ? {"type": WS_INIT, id: id} : {"type": WS_INIT};
-    check wsClient->writeMessage(payload);
+isolated function initiateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error? {
+    check wsClient->writeMessage({"type": WS_INIT});
 }
