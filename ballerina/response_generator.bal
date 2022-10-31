@@ -52,7 +52,7 @@ class ResponseGenerator {
         if parentValue is (any|error)[] {
             return self.getResultFromArray(parentValue, parentNode);
         }
-        if parentValue is table<map<anydata>> {
+        if parentValue is table<map<any>> {
             return self.getResultFromTable(parentValue, parentNode);
         }
         if parentValue is service object {} {
@@ -151,9 +151,9 @@ class ResponseGenerator {
         return result;
     }
 
-    isolated function getResultFromTable(table<map<anydata>> parentValue, parser:FieldNode parentNode) returns anydata {
+    isolated function getResultFromTable(table<map<any>> parentValue, parser:FieldNode parentNode) returns anydata {
         anydata[] result = [];
-        foreach anydata element in parentValue {
+        foreach any element in parentValue {
             anydata elementValue = self.getResult(element, parentNode);
             if elementValue is ErrorDetail {
                 result.push(());

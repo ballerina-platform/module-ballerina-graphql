@@ -1908,6 +1908,10 @@ service /reviews on wrappedListener {
         return reviews.toArray().pop();
     }
 
+    resource function get all() returns table<Review> {
+        return reviews;
+    }
+
     resource function get top3() returns Review[] {
         return from var review in reviews
             limit 3

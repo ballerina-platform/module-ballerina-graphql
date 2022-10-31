@@ -133,3 +133,50 @@ isolated function testResolverReturningListOfNestedServiceObjects() returns erro
     };
     assertJsonValuesWithOrder(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["service", "records", "tables"]
+}
+isolated function testResolverReturningTableOfNestedServiceObjects() returns error? {
+    string graphqlUrl = "http://localhost:9090/reviews";
+    string document = "{ all { product { id } score } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            all: [
+                {
+                    product: {
+                        id: "1"
+                    },
+                    score: 20
+                },
+                {
+                    product: {
+                        id: "2"
+                    },
+                    score: 20
+                },
+                {
+                    product: {
+                        id: "3"
+                    },
+                    score: 20
+                },
+                {
+                    product: {
+                        id: "4"
+                    },
+                    score: 20
+                },
+                {
+                    product: {
+                        id: "5"
+                    },
+                    score: 20
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
