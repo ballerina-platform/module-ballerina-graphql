@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.types;
+package io.ballerina.stdlib.graphql.commons.schema.types;
 
 /**
  * Stores the fields of the introspection types of a GraphQL schema.

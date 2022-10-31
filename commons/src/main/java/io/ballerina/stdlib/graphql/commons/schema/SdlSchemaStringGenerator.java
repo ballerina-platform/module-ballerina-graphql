@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org). All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,43 +16,30 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.schema.generator;
+package io.ballerina.stdlib.graphql.commons.schema;
 
-import io.ballerina.projects.Project;
-import io.ballerina.projects.ProjectKind;
-import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
-import io.ballerina.stdlib.graphql.commons.types.Directive;
-import io.ballerina.stdlib.graphql.commons.types.DirectiveLocation;
-import io.ballerina.stdlib.graphql.commons.types.EnumValue;
-import io.ballerina.stdlib.graphql.commons.types.Field;
-import io.ballerina.stdlib.graphql.commons.types.InputValue;
-import io.ballerina.stdlib.graphql.commons.types.IntrospectionType;
-import io.ballerina.stdlib.graphql.commons.types.ScalarType;
-import io.ballerina.stdlib.graphql.commons.types.Schema;
-import io.ballerina.stdlib.graphql.commons.types.Type;
-import io.ballerina.stdlib.graphql.commons.types.TypeKind;
+import io.ballerina.stdlib.graphql.commons.schema.types.DefaultDirective;
+import io.ballerina.stdlib.graphql.commons.schema.types.Directive;
+import io.ballerina.stdlib.graphql.commons.schema.types.DirectiveLocation;
+import io.ballerina.stdlib.graphql.commons.schema.types.EnumValue;
+import io.ballerina.stdlib.graphql.commons.schema.types.Field;
+import io.ballerina.stdlib.graphql.commons.schema.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.schema.types.IntrospectionType;
+import io.ballerina.stdlib.graphql.commons.schema.types.ScalarType;
+import io.ballerina.stdlib.graphql.commons.schema.types.Schema;
+import io.ballerina.stdlib.graphql.commons.schema.types.Type;
+import io.ballerina.stdlib.graphql.commons.schema.types.TypeKind;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static io.ballerina.projects.util.ProjectConstants.USER_DIR;
-
 /**
- * Generate the SDL schema file for a given Ballerina GraphQL Service.
+ * Generate the SDL schema for a given Ballerina GraphQL Service.
  */
-public class SdlFileGenerator {
-    private final Schema schema;
-    private final int schemaId;
-    private final Project project;
+public class SdlSchemaStringGenerator {
 
     //String formats for SDL schema
-    private static final String SDL_SCHEMA_NAME_FORMAT = "schema_%d.graphql";
     private static final String SCHEMA_FORMAT = "%s%s%s";
     private static final String DIRECTIVE_TYPE_FORMAT = "%sdirective @%s%s%s on %s";
     private static final String INTERFACE_TYPE_FORMAT = "%sinterface %s%s %s";
@@ -85,26 +72,20 @@ public class SdlFileGenerator {
     private static final String AND_SIGN = " & ";
     private static final String PIPE_SIGN = "|";
 
-    public SdlFileGenerator(Schema schema, int schemaId, Project project) {
-        this.schema = schema;
-        this.schemaId = schemaId;
-        this.project = project;
+    public static String generate(Schema schema) {
+        String sdlSchemaString = getSDLSchemaString(schema);
+        return sdlSchemaString;
     }
 
-    public void generate() throws IOException {
-        String schema = getSDLSchemaString();
-        writeFile(schema);
+    private static String getSDLSchemaString(Schema schema) {
+        String directives = getDirectives(schema);
+        String types = getTypes(schema);
+        return getFormattedString(SCHEMA_FORMAT, createDescription(schema.getDescription()), directives, types);
     }
 
-    private String getSDLSchemaString() {
-        String directives = getDirectives();
-        String types = getTypes();
-        return getFormattedString(SCHEMA_FORMAT, createDescription(this.schema.getDescription()), directives, types);
-    }
-
-    private String getDirectives() {
+    private static String getDirectives(Schema schema) {
         List<String> directives = new ArrayList<>();
-        for (Directive directive : this.schema.getDirectives()) {
+        for (Directive directive : schema.getDirectives()) {
             if (!isDefaultDirective(directive)) {
                 directives.add(createDirective(directive));
             }
@@ -116,9 +97,9 @@ public class SdlFileGenerator {
         return formattedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
-    private String getTypes() {
+    private static String getTypes(Schema schema) {
         List<String> types = new ArrayList<>();
-        for (Map.Entry<String, Type> entry : this.schema.getTypes().entrySet()) {
+        for (Map.Entry<String, Type> entry : schema.getTypes().entrySet()) {
             if (!isIntrospectionType(entry.getValue()) && !isBuiltInScalarType(entry.getValue())) {
                 types.add(createType(entry.getValue()));
             }
@@ -126,13 +107,13 @@ public class SdlFileGenerator {
         return String.join(LINE_SEPARATOR + LINE_SEPARATOR, types);
     }
 
-    private String createDirective(Directive directive) {
+    private static String createDirective(Directive directive) {
         return getFormattedString(DIRECTIVE_TYPE_FORMAT, createDescription(directive.getDescription()),
-                                  directive.getName(), createArgs(directive.getArgs()), createIsRepeatable(directive),
-                                  createDirectiveLocation(directive.getLocations()));
+                directive.getName(), createArgs(directive.getArgs()), createIsRepeatable(directive),
+                createDirectiveLocation(directive.getLocations()));
     }
 
-    private String createType(Type type) {
+    private static String createType(Type type) {
         if (type.getKind().equals(TypeKind.SCALAR)) {
             return createScalarType(type);
         }
@@ -154,36 +135,36 @@ public class SdlFileGenerator {
         return EMPTY_STRING;
     }
 
-    private String createScalarType(Type type) {
+    private static String createScalarType(Type type) {
         return getFormattedString(SCALAR_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
-                                  createSpecifiedByUrl(type));
+                createSpecifiedByUrl(type));
     }
 
-    private String createObjectType(Type type) {
+    private static String createObjectType(Type type) {
         return getFormattedString(OBJECT_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
-                                  createInterfaceImplements(type), createFields(type));
+                createInterfaceImplements(type), createFields(type));
     }
 
-    private String createInterfaceType(Type type) {
+    private static String createInterfaceType(Type type) {
         return getFormattedString(INTERFACE_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
-                                  createInterfaceImplements(type), createFields(type));
+                createInterfaceImplements(type), createFields(type));
     }
 
-    private String createUnionType(Type type) {
+    private static String createUnionType(Type type) {
         return getFormattedString(UNION_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
-                                  createPossibleTypes(type));
+                createPossibleTypes(type));
     }
 
-    private String createInputObjectType(Type type) {
+    private static String createInputObjectType(Type type) {
         return getFormattedString(INPUT_TYPE_FORMAT, type.getName(), createInputValues(type));
     }
 
-    private String createEnumType(Type type) {
+    private static String createEnumType(Type type) {
         return getFormattedString(ENUM_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
-                                  createEnumValues(type));
+                createEnumValues(type));
     }
 
-    private String createDescription(String description) {
+    private static String createDescription(String description) {
         if (description == null || description.isEmpty()) {
             return EMPTY_STRING;
         } else {
@@ -195,17 +176,17 @@ public class SdlFileGenerator {
         }
     }
 
-    private String createFields(Type type) {
+    private static String createFields(Type type) {
         List<String> fields = new ArrayList<>();
         for (Field field : type.getFields()) {
             fields.add(getFormattedString(FIELD_FORMAT, createFieldDescription(field.getDescription()), field.getName(),
-                                          createArgs(field.getArgs()), createFieldType(field.getType()),
-                                          createDeprecate(field)));
+                    createArgs(field.getArgs()), createFieldType(field.getType()),
+                    createDeprecate(field)));
         }
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, fields));
     }
 
-    private String createEnumValues(Type type) {
+    private static String createEnumValues(Type type) {
         List<String> enumValues = new ArrayList<>();
         for (EnumValue enumValue : type.getEnumValues()) {
             enumValues.add(getFormattedString(ENUM_VALUE_FORMAT, enumValue.getName(), createDeprecate(enumValue)));
@@ -213,7 +194,7 @@ public class SdlFileGenerator {
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, enumValues));
     }
 
-    private String createInputValues(Type type) {
+    private static String createInputValues(Type type) {
         List<String> inputFields = new ArrayList<>();
         for (InputValue inputField : type.getInputFields()) {
             inputFields.add(getFormattedString(INPUT_FIELD_FORMAT, inputField.getName(), createArgType(inputField)));
@@ -221,7 +202,7 @@ public class SdlFileGenerator {
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, inputFields));
     }
 
-    private String createPossibleTypes(Type type) {
+    private static String createPossibleTypes(Type type) {
         List<String> possibleTypes = new ArrayList<>();
         for (Type possibleType : type.getPossibleTypes()) {
             possibleTypes.add(possibleType.getName());
@@ -229,7 +210,7 @@ public class SdlFileGenerator {
         return getFormattedString(POSSIBLE_TYPE_FORMAT, String.join(PIPE_SIGN, possibleTypes));
     }
 
-    private String createArgs(List<InputValue> inputValues) {
+    private static String createArgs(List<InputValue> inputValues) {
         List<String> args = new ArrayList<>();
         if (inputValues.isEmpty()) {
             return EMPTY_STRING;
@@ -240,7 +221,7 @@ public class SdlFileGenerator {
         return getFormattedString(ARGS_FORMAT, String.join(COMMA_SIGN, args));
     }
 
-    private String createFieldType(Type type) {
+    private static String createFieldType(Type type) {
         if (type.getKind().equals(TypeKind.NON_NULL)) {
             return getFormattedString(NON_NULL_FORMAT, createFieldType(type.getOfType()));
         } else if (type.getKind().equals(TypeKind.LIST)) {
@@ -250,7 +231,7 @@ public class SdlFileGenerator {
         }
     }
 
-    private String createArgType(InputValue arg) {
+    private static String createArgType(InputValue arg) {
         if (arg.getDefaultValue() == null) {
             return createFieldType(arg.getType());
         } else {
@@ -258,7 +239,7 @@ public class SdlFileGenerator {
         }
     }
 
-    private String createInterfaceImplements(Type type) {
+    private static String createInterfaceImplements(Type type) {
         List<String> interfaces = new ArrayList<>();
         if (type.getInterfaces().isEmpty()) {
             return EMPTY_STRING;
@@ -269,7 +250,7 @@ public class SdlFileGenerator {
         return getFormattedString(IMPLEMENT_FORMAT, String.join(AND_SIGN, interfaces));
     }
 
-    private String createFieldDescription(String description) {
+    private static String createFieldDescription(String description) {
         if (description == null || description.isEmpty()) {
             return EMPTY_STRING;
         } else {
@@ -281,7 +262,7 @@ public class SdlFileGenerator {
         }
     }
 
-    private String createDirectiveLocation(List<DirectiveLocation> location) {
+    private static String createDirectiveLocation(List<DirectiveLocation> location) {
         List<String> locations = new ArrayList<>();
         for (DirectiveLocation directiveLocation : location) {
             locations.add(directiveLocation.name());
@@ -289,7 +270,7 @@ public class SdlFileGenerator {
         return String.join(PIPE_SIGN, locations);
     }
 
-    private String createDeprecate(EnumValue enumValue) {
+    private static String createDeprecate(EnumValue enumValue) {
         if (enumValue.isDeprecated()) {
             if (enumValue.getDeprecationReason() != null) {
                 return getFormattedString(DEPRECATE_FORMAT, DEPRECATE, enumValue.getDeprecationReason());
@@ -299,7 +280,7 @@ public class SdlFileGenerator {
         return EMPTY_STRING;
     }
 
-    private String createDeprecate(Field field) {
+    private static String createDeprecate(Field field) {
         if (field.isDeprecated()) {
             if (field.getDeprecationReason() != null) {
                 return getFormattedString(DEPRECATE_FORMAT, DEPRECATE, field.getDeprecationReason());
@@ -309,17 +290,17 @@ public class SdlFileGenerator {
         return EMPTY_STRING;
     }
 
-    private String createSpecifiedByUrl(Type type) {
+    private static String createSpecifiedByUrl(Type type) {
         // Return an empty string since this is not supported yet
         return EMPTY_STRING;
     }
 
-    private String createIsRepeatable(Directive directive) {
+    private static String createIsRepeatable(Directive directive) {
         // Return an empty string since this is not supported yet
         return EMPTY_STRING;
     }
 
-    private Boolean isIntrospectionType(Type type) {
+    private static Boolean isIntrospectionType(Type type) {
         for (IntrospectionType value : IntrospectionType.values()) {
             if (value.getName().equals(type.getName())) {
                 return true;
@@ -328,7 +309,7 @@ public class SdlFileGenerator {
         return false;
     }
 
-    private Boolean isBuiltInScalarType(Type type) {
+    private static Boolean isBuiltInScalarType(Type type) {
         for (ScalarType value : ScalarType.values()) {
             if (value.getName().equals(type.getName()) && value.isInbuiltType()) {
                 return true;
@@ -337,7 +318,7 @@ public class SdlFileGenerator {
         return false;
     }
 
-    private Boolean isDefaultDirective(Directive directive) {
+    private static Boolean isDefaultDirective(Directive directive) {
         for (DefaultDirective value : DefaultDirective.values()) {
             if (value.getName().equals(directive.getName())) {
                 return true;
@@ -346,35 +327,7 @@ public class SdlFileGenerator {
         return false;
     }
 
-    private String getFormattedString(String format, String... args) {
+    private static String getFormattedString(String format, String... args) {
         return String.format(format, (Object[]) args);
-    }
-
-    private void writeFile(String content) throws IOException {
-        Path filePath = Paths.get(getTargetPath(), getSchemaFileName()).toAbsolutePath();
-        createFileIfNotExists(filePath);
-        Files.write(filePath, Collections.singleton(content));
-    }
-
-    private String getTargetPath() {
-        if (this.project.kind().equals(ProjectKind.SINGLE_FILE_PROJECT)) {
-            return System.getProperty(USER_DIR);
-        } else {
-            return this.project.targetDir().toString();
-        }
-    }
-
-    private String getSchemaFileName() {
-        return String.format(SDL_SCHEMA_NAME_FORMAT, this.schemaId);
-    }
-
-    private static void createFileIfNotExists(Path filePath) throws IOException {
-        Path parentDir = filePath.getParent();
-        if (parentDir != null && !parentDir.toFile().exists()) {
-            Files.createDirectories(parentDir);
-        }
-        if (!filePath.toFile().exists()) {
-            Files.createFile(filePath);
-        }
     }
 }

@@ -16,28 +16,42 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.types;
+package io.ballerina.stdlib.graphql.commons.schema.types;
+
+import java.io.Serializable;
+
+import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
 
 /**
- * Represents the {@code __TypeKind} enum in GraphQL schema.
+ * Represents the {@code __InputValue} in GraphQL schema.
  */
-public enum TypeKind {
-    SCALAR("Indicates this type is a scalar."),
-    OBJECT("Indicates this type is an object. `fields` and `interfaces` are valid fields."),
-    INTERFACE("Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields."),
-    UNION("Indicates this type is a union. `possibleTypes` is a valid field."),
-    ENUM("Indicates this type is an enum. `enumValues` is a valid field."),
-    INPUT_OBJECT("Indicates this type is an input object. `inputFields` is a valid field."),
-    LIST("Indicates this type is a list. `ofType` is a valid field."),
-    NON_NULL("Indicates this type is a non-null. `ofType` is a valid field.");
-
+public class InputValue implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final String name;
     private final String description;
+    private final Type type;
+    private final String defaultValue;
 
-    TypeKind(String description) {
+    public InputValue(String name, Type type, String description, String defaultValue) {
+        this.name = removeEscapeCharacter(name);
         this.description = description;
+        this.type = type;
+        this.defaultValue = defaultValue;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public String getDescription() {
         return this.description;
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public String getDefaultValue() {
+        return this.defaultValue;
     }
 }

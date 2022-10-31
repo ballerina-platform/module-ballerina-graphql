@@ -16,31 +16,37 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.types;
+package io.ballerina.stdlib.graphql.commons.schema.types;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
 
 /**
- * Represents the {@code __EnumValue} type in GraphQL schema.
+ * Represents the {@code __Directive} in GraphQL schema.
  */
-public class EnumValue implements Serializable {
+public class Directive implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
-    private final boolean isDeprecated;
-    private final String deprecationReason;
+    private final List<DirectiveLocation> locations;
+    private final List<InputValue> args;
 
-    public EnumValue(String name, String description) {
-        this(name, description, false, null);
+    public Directive(DefaultDirective defaultDirective) {
+        this(defaultDirective.getName(), defaultDirective.getDescription(), defaultDirective.getLocations());
     }
 
-    public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
+    public Directive(String name, String description, List<DirectiveLocation> locations) {
         this.name = removeEscapeCharacter(name);
         this.description = description;
-        this.isDeprecated = isDeprecated;
-        this.deprecationReason = deprecationReason;
+        this.locations = locations;
+        this.args = new ArrayList<>();
+    }
+
+    public void addArg(InputValue inputValue) {
+        this.args.add(inputValue);
     }
 
     public String getName() {
@@ -51,11 +57,11 @@ public class EnumValue implements Serializable {
         return this.description;
     }
 
-    public boolean isDeprecated() {
-        return this.isDeprecated;
+    public List<DirectiveLocation> getLocations() {
+        return this.locations;
     }
 
-    public String getDeprecationReason() {
-        return this.deprecationReason;
+    public List<InputValue> getArgs() {
+        return this.args;
     }
 }

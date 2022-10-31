@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.types;
+package io.ballerina.stdlib.graphql.commons.schema.types;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,43 +25,67 @@ import java.util.List;
 import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
 
 /**
- * Represents the {@code __Directive} in GraphQL schema.
+ * Represents the {@code __Field} in GraphQL schema.
  */
-public class Directive implements Serializable {
+public class Field implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
-    private final List<DirectiveLocation> locations;
+    private Type type;
+    private final boolean isDeprecated;
+    private final String deprecationReason;
     private final List<InputValue> args;
 
-    public Directive(DefaultDirective defaultDirective) {
-        this(defaultDirective.getName(), defaultDirective.getDescription(), defaultDirective.getLocations());
+    public Field(String name, String description) {
+        this(name, description, null, false, null);
     }
 
-    public Directive(String name, String description, List<DirectiveLocation> locations) {
+    public Field(String name, Type type) {
+        this(name, null, type);
+    }
+
+    public Field(String name, String description, Type type) {
+        this(name, description, type, false, null);
+    }
+
+    public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason) {
         this.name = removeEscapeCharacter(name);
         this.description = description;
-        this.locations = locations;
+        this.type = type;
+        this.isDeprecated = isDeprecated;
+        this.deprecationReason = deprecationReason;
         this.args = new ArrayList<>();
-    }
-
-    public void addArg(InputValue inputValue) {
-        this.args.add(inputValue);
     }
 
     public String getName() {
         return this.name;
     }
 
+    public void addArg(InputValue inputValue) {
+        this.args.add(inputValue);
+    }
+
     public String getDescription() {
         return this.description;
     }
 
-    public List<DirectiveLocation> getLocations() {
-        return this.locations;
+    public Type getType() {
+        return this.type;
+    }
+
+    public boolean isDeprecated() {
+        return this.isDeprecated;
+    }
+
+    public String getDeprecationReason() {
+        return this.deprecationReason;
     }
 
     public List<InputValue> getArgs() {
         return this.args;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 }

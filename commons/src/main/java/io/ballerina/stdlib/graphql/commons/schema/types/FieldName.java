@@ -16,33 +16,36 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.types;
+package io.ballerina.stdlib.graphql.commons.schema.types;
 
 /**
- * Stores default type names of a GraphQL schema.
+ * Stores the names of the default types in a GraphQL schema.
  */
-public enum TypeName {
-    STRING("String"),
-    INT("Int"),
-    FLOAT("Float"),
-    BOOLEAN("Boolean"),
-    DECIMAL("Decimal"),
-    UPLOAD("Upload"),
-    SCHEMA("__Schema"),
-    TYPE("__Type"),
-    FIELD("__Field"),
-    INPUT_VALUE("__InputValue"),
-    ENUM_VALUE("__EnumValue"),
-    TYPE_KIND("__TypeKind"),
-    DIRECTIVE("__Directive"),
-    DIRECTIVE_LOCATION("__DirectiveLocation"),
-    QUERY("Query"),
-    MUTATION("Mutation"),
-    SUBSCRIPTION("Subscription");
+public enum FieldName {
+    DESCRIPTION("description"),
+    TYPES("types"),
+    QUERY_TYPE("queryType"),
+    MUTATION_TYPE("mutationType"),
+    SUBSCRIPTION_TYPE("subscriptionType"),
+    DIRECTIVES("directives"),
+    KIND("kind"),
+    NAME("name"),
+    FIELDS("fields"),
+    INTERFACES("interfaces"),
+    POSSIBLE_TYPES("possibleTypes"),
+    ENUM_VALUES("enumValues"),
+    INPUT_FIELDS("inputFields"),
+    OF_TYPE("ofType"),
+    ARGS("args"),
+    TYPE("type"),
+    IS_DEPRECATED("isDeprecated"),
+    DEPRECATION_REASON("deprecationReason"),
+    DEFAULT_VALUE("defaultValue"),
+    LOCATIONS("locations");
 
     private final String name;
 
-    TypeName(String name) {
+    FieldName(String name) {
         this.name = name;
     }
 
