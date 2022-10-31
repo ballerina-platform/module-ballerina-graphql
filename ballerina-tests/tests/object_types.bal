@@ -288,3 +288,15 @@ class EvenNumberGenerator {
         return {value: self.i};
     }
 }
+
+public service class Product {
+    private final string id;
+
+    function init(string id) {
+        self.id = id;
+    }
+
+    resource function get id() returns string {
+        return self.id;
+    }
+}

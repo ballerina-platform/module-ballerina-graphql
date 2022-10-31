@@ -43,10 +43,10 @@ class ResponseGenerator {
         if parentValue is Scalar || parentValue is Scalar[] {
             return parentValue;
         }
-        if parentValue is map<anydata> {
-            if isMap(parentValue) {
-                return self.getResultFromMap(<map<anydata>>parentValue, parentNode);
-            }
+        if parentValue is map<anydata> && isMap(parentValue) {
+            return self.getResultFromMap(parentValue, parentNode);
+        }
+        if parentValue is map<any> {
             return self.getResultFromRecord(parentValue, parentNode);
         }
         if parentValue is (any|error)[] {
@@ -110,7 +110,7 @@ class ResponseGenerator {
         }
     }
 
-    isolated function getResultFromRecord(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
+    isolated function getResultFromRecord(map<any> parentValue, parser:FieldNode parentNode) returns anydata {
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
@@ -123,11 +123,11 @@ class ResponseGenerator {
         return result;
     }
 
-    isolated function getRecordResult(map<anydata> parentValue, parser:FieldNode fieldNode) returns anydata {
+    isolated function getRecordResult(map<any> parentValue, parser:FieldNode fieldNode) returns anydata {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         }
-        anydata fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
+        any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
         __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
         Field 'field = new (fieldNode, fieldType, path = self.path, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
@@ -178,7 +178,7 @@ class ResponseGenerator {
         return result;
     }
 
-    isolated function getResultForFragmentFromMap(map<anydata> parentValue,
+    isolated function getResultForFragmentFromMap(map<any> parentValue,
                                                   parser:FragmentNode parentNode, Data result) {
         string typeName = getTypeNameFromValue(parentValue);
         if parentNode.getOnType() != typeName {

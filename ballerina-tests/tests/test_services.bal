@@ -1894,3 +1894,23 @@ service /covid19 on basicListener {
         return covidEntryTable;
     }
 }
+
+table<Review> reviews = table [
+        {product: new ("1"), score: 20, description: "Product 01"},
+        {product: new ("2"), score: 20, description: "Product 02"},
+        {product: new ("3"), score: 20, description: "Product 03"},
+        {product: new ("4"), score: 20, description: "Product 04"},
+        {product: new ("5"), score: 20, description: "Product 05"}
+    ];
+
+service /reviews on wrappedListener {
+    resource function get latest() returns Review {
+        return reviews.toArray().pop();
+    }
+
+    resource function get top3() returns Review[] {
+        return from var review in reviews
+            limit 3
+            select review;
+    }
+}

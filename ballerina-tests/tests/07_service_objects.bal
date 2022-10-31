@@ -77,3 +77,59 @@ isolated function testComplexService() returns error? {
     };
     assertJsonValuesWithOrder(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["service", "records"]
+}
+isolated function testServiceObjectDefinedAsRecordField() returns error? {
+    string graphqlUrl = "http://localhost:9090/reviews";
+    string document = "{ latest { product { id } score } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            latest: {
+                product: {
+                    id: "5"
+                },
+                score: 20
+            }
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "records", "list"]
+}
+isolated function testResolverReturningListOfNestedServiceObjects() returns error? {
+    string graphqlUrl = "http://localhost:9090/reviews";
+    string document = "{ top3 { product { id } score } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            top3: [
+                {
+                    product: {
+                        id: "1"
+                    },
+                    score: 20
+                },
+                {
+                    product: {
+                        id: "2"
+                    },
+                    score: 20
+                },
+                {
+                    product: {
+                        id: "3"
+                    },
+                    score: 20
+                }
+            ]
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
