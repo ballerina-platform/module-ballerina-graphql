@@ -16,61 +16,39 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.schema.types;
+package io.ballerina.stdlib.graphql.commons.types;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
-import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharacter;
 
 /**
- * Represents the {@code __Field} in GraphQL schema.
+ * Represents the {@code __EnumValue} type in GraphQL schema.
  */
-public class Field implements Serializable {
+public class EnumValue implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String name;
     private final String description;
-    private Type type;
     private final boolean isDeprecated;
     private final String deprecationReason;
-    private final List<InputValue> args;
 
-    public Field(String name, String description) {
-        this(name, description, null, false, null);
+    public EnumValue(String name, String description) {
+        this(name, description, false, null);
     }
 
-    public Field(String name, Type type) {
-        this(name, null, type);
-    }
-
-    public Field(String name, String description, Type type) {
-        this(name, description, type, false, null);
-    }
-
-    public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason) {
+    public EnumValue(String name, String description, boolean isDeprecated, String deprecationReason) {
         this.name = removeEscapeCharacter(name);
         this.description = description;
-        this.type = type;
         this.isDeprecated = isDeprecated;
         this.deprecationReason = deprecationReason;
-        this.args = new ArrayList<>();
     }
 
     public String getName() {
         return this.name;
     }
 
-    public void addArg(InputValue inputValue) {
-        this.args.add(inputValue);
-    }
-
     public String getDescription() {
         return this.description;
-    }
-
-    public Type getType() {
-        return this.type;
     }
 
     public boolean isDeprecated() {
@@ -79,13 +57,5 @@ public class Field implements Serializable {
 
     public String getDeprecationReason() {
         return this.deprecationReason;
-    }
-
-    public List<InputValue> getArgs() {
-        return this.args;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 }

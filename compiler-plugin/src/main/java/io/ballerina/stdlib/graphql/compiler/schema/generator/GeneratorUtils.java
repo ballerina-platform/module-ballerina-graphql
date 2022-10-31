@@ -20,9 +20,9 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.symbols.Documentable;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
-import io.ballerina.stdlib.graphql.commons.schema.types.ScalarType;
-import io.ballerina.stdlib.graphql.commons.schema.types.Type;
-import io.ballerina.stdlib.graphql.commons.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.commons.types.ScalarType;
+import io.ballerina.stdlib.graphql.commons.types.Type;
+import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;

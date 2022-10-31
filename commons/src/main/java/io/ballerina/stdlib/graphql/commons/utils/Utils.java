@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons;
+package io.ballerina.stdlib.graphql.commons.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

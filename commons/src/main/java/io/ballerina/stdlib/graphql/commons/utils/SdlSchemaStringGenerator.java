@@ -16,19 +16,19 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.commons.schema;
+package io.ballerina.stdlib.graphql.commons.utils;
 
-import io.ballerina.stdlib.graphql.commons.schema.types.DefaultDirective;
-import io.ballerina.stdlib.graphql.commons.schema.types.Directive;
-import io.ballerina.stdlib.graphql.commons.schema.types.DirectiveLocation;
-import io.ballerina.stdlib.graphql.commons.schema.types.EnumValue;
-import io.ballerina.stdlib.graphql.commons.schema.types.Field;
-import io.ballerina.stdlib.graphql.commons.schema.types.InputValue;
-import io.ballerina.stdlib.graphql.commons.schema.types.IntrospectionType;
-import io.ballerina.stdlib.graphql.commons.schema.types.ScalarType;
-import io.ballerina.stdlib.graphql.commons.schema.types.Schema;
-import io.ballerina.stdlib.graphql.commons.schema.types.Type;
-import io.ballerina.stdlib.graphql.commons.schema.types.TypeKind;
+import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
+import io.ballerina.stdlib.graphql.commons.types.Directive;
+import io.ballerina.stdlib.graphql.commons.types.DirectiveLocation;
+import io.ballerina.stdlib.graphql.commons.types.EnumValue;
+import io.ballerina.stdlib.graphql.commons.types.Field;
+import io.ballerina.stdlib.graphql.commons.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.types.IntrospectionType;
+import io.ballerina.stdlib.graphql.commons.types.ScalarType;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.types.Type;
+import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;
