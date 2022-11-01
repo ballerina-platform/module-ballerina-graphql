@@ -12,7 +12,7 @@ on:
                 default: 'graphql-perf-cluster-test'
                 required: false
     schedule:
-        - cron: '0 8 * * *'
+        - cron: '0 19 * * *'
 
 jobs:
     invokeLoadTests:
