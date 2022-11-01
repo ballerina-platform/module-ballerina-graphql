@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3565] Fix Service Incorrectly Closing Connection when a Stream Returns an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/3565)
 - [[#3548] Fix Socket Connection Gets Closed when the Operation is Complete or If there is an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/3548)
 - [[#3466] Fix Resolver Returning Null when a Record has a Service Object as its Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/3466)
+- [[#3579] Resolver Produces Null when Resolver Returns a Record Containing a Map of Service Objects as its Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/3579)
 
 ### Changed
 - [[#3062] Improve Compilation Error Messages To Be More Specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)
