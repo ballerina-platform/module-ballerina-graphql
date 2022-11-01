@@ -33,8 +33,8 @@ import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphQLServiceObjectDeclaration;
 
 /**
  * Validates a Ballerina GraphQL Service variable declaration.

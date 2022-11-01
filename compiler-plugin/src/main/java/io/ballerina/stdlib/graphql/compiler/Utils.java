@@ -24,7 +24,6 @@ import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
@@ -32,15 +31,8 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
-import io.ballerina.compiler.syntax.tree.IdentifierToken;
-import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
-import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
-import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.compiler.syntax.tree.Token;
-import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
-import io.ballerina.compiler.syntax.tree.TypedBindingPatternNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
@@ -48,15 +40,12 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
+
 /**
  * Util class for the compiler plugin.
  */
 public final class Utils {
-
-    // compiler plugin constants
-    public static final String PACKAGE_NAME = "graphql";
-    public static final String PACKAGE_ORG = "ballerina";
-    public static final String SERVICE_NAME = "Service";
 
     // resource function constants
     public static final String LISTENER_IDENTIFIER = "Listener";
@@ -65,15 +54,6 @@ public final class Utils {
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
 
     private Utils() {
-    }
-
-    public static boolean isGraphqlModuleSymbol(Symbol symbol) {
-        if (symbol.getModule().isEmpty()) {
-            return false;
-        }
-        String moduleName = symbol.getModule().get().id().moduleName();
-        String orgName = symbol.getModule().get().id().orgName();
-        return PACKAGE_NAME.equals(moduleName) && PACKAGE_ORG.equals(orgName);
     }
 
     public static boolean isRemoteMethod(MethodSymbol methodSymbol) {
@@ -194,41 +174,6 @@ public final class Utils {
         return ((ObjectTypeSymbol) typeSymbol).qualifiers().contains(Qualifier.SERVICE);
     }
 
-    public static boolean isGraphqlService(SyntaxNodeAnalysisContext context) {
-        ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
-        if (context.semanticModel().symbol(node).isEmpty()) {
-            return false;
-        }
-        if (context.semanticModel().symbol(node).get().kind() != SymbolKind.SERVICE_DECLARATION) {
-            return false;
-        }
-        ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
-        return hasGraphqlListener(symbol);
-    }
-
-    private static boolean hasGraphqlListener(ServiceDeclarationSymbol symbol) {
-        for (TypeSymbol listener : symbol.listenerTypes()) {
-            if (isGraphqlListener(listener)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isGraphqlListener(TypeSymbol typeSymbol) {
-        if (typeSymbol.typeKind() == TypeDescKind.UNION) {
-            UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
-            for (TypeSymbol member : unionTypeSymbol.memberTypeDescriptors()) {
-                if (isGraphqlModuleSymbol(member)) {
-                    return true;
-                }
-            }
-        } else {
-            return isGraphqlModuleSymbol(typeSymbol);
-        }
-        return false;
-    }
-
     public static boolean hasCompilationErrors(SyntaxNodeAnalysisContext context) {
         for (Diagnostic diagnostic : context.semanticModel().diagnostics()) {
             if (diagnostic.diagnosticInfo().severity() == DiagnosticSeverity.ERROR) {
@@ -260,27 +205,6 @@ public final class Utils {
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
         return resourceMethodSymbol.getName().orElse(null);
-    }
-
-    public static boolean isGraphQLServiceObjectDeclaration(ModuleVariableDeclarationNode variableNode) {
-        TypedBindingPatternNode typedBindingPatternNode = variableNode.typedBindingPattern();
-        TypeDescriptorNode typeDescriptorNode = typedBindingPatternNode.typeDescriptor();
-        if (typeDescriptorNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
-            return false;
-        }
-        return isGraphqlServiceQualifiedNameReference((QualifiedNameReferenceNode) typeDescriptorNode);
-    }
-
-    private static boolean isGraphqlServiceQualifiedNameReference(QualifiedNameReferenceNode nameReferenceNode) {
-        Token modulePrefixToken = nameReferenceNode.modulePrefix();
-        if (modulePrefixToken.kind() != SyntaxKind.IDENTIFIER_TOKEN) {
-            return false;
-        }
-        if (!PACKAGE_NAME.equals(modulePrefixToken.text())) {
-            return false;
-        }
-        IdentifierToken identifier = nameReferenceNode.identifier();
-        return SERVICE_NAME.equals(identifier.text());
     }
 
     public static boolean isFunctionDefinition(Node node) {

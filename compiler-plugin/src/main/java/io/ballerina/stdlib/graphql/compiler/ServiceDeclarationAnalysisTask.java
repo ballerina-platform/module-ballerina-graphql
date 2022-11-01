@@ -29,8 +29,8 @@ import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlService;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlService;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 
 /**
