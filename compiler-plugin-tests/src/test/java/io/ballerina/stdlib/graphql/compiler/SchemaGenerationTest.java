@@ -23,22 +23,11 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
-import io.ballerina.tools.diagnostics.Diagnostic;
-import io.ballerina.tools.diagnostics.DiagnosticSeverity;
-import io.ballerina.tools.diagnostics.Location;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin schema generation.
@@ -204,92 +193,6 @@ public class SchemaGenerationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test(enabled = false)
-    public void testGeneratedGraphQLSdlSchema() {
-        String packagePath = "23_sdl_file_generation";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-
-        Path targetDir = RESOURCE_DIRECTORY.resolve("23_sdl_file_generation/target");
-        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
-        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
-        Assert.assertEquals(generatedSchema.trim(), actualSchema.trim());
-    }
-
-    @Test(enabled = false)
-    public void testGeneratedSdlSchemaWithMultipleServices1() {
-        String packagePath = "24_sdl_file_generation_with_multiple_services1";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-
-        Path targetDir = RESOURCE_DIRECTORY.resolve("24_sdl_file_generation_with_multiple_services1/target");
-        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
-        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-
-        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_2.graphql");
-        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema2.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-
-        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_3.graphql");
-        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-    }
-
-    @Test(enabled = false)
-    public void testGeneratedSdlSchemaWithMultipleServices2() {
-        String packagePath = "25_sdl_file_generation_with_multiple_services2";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-
-        Path targetDir = RESOURCE_DIRECTORY.resolve("25_sdl_file_generation_with_multiple_services2/target");
-        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
-        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema1.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-
-        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_2.graphql");
-        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema2.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-
-        generatedSchema = getStringContentFromGivenFile(targetDir, "schema_3.graphql");
-        actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema3.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-    }
-
-    @Test(enabled = false)
-    public void testSdlFileGenerationWithCustomScalars() {
-        String packagePath = "26_sdl_file_generation_with_custom_scalar_types";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-
-        Path targetDir = RESOURCE_DIRECTORY.resolve("26_sdl_file_generation_with_custom_scalar_types/target");
-        String generatedSchema = getStringContentFromGivenFile(targetDir, "schema_1.graphql");
-        String actualSchema = getStringContentFromGivenFile(RESOURCE_DIRECTORY.resolve(packagePath), "schema.graphql");
-        Assert.assertEquals(generatedSchema, actualSchema);
-    }
-
-    @Test(enabled = false)
-    public void testSdlFileGenerationErrors() {
-        String packagePath = "27_sdl_file_generation_warnings";
-        String targetDir = RESOURCE_DIRECTORY.resolve("27_sdl_file_generation_warnings/target").toString();
-        Path filePath = Paths.get(targetDir, "schema_1.graphql").toAbsolutePath();
-        try {
-            createFile(filePath);
-            File file = new File(filePath.toString());
-            file.setWritable(false);
-            DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-            file.setWritable(true);
-            Assert.assertEquals(diagnosticResult.errorCount(), 0);
-            Assert.assertEquals(diagnosticResult.warningCount(), 1);
-            Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
-            Diagnostic diagnostic = diagnosticIterator.next();
-            String message = getWarningMessage(CompilationDiagnostic.SDL_FILE_GENERATION_FAILED, filePath.toString());
-            assertWarningMessage(diagnostic, message, 19, 1);
-        } catch (IOException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -301,42 +204,5 @@ public class SchemaGenerationTest {
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
-    }
-
-    private String getWarningMessage(CompilationDiagnostic compilationDiagnostic, Object... args) {
-        return MessageFormat.format(compilationDiagnostic.getDiagnostic(), args);
-    }
-
-    private void assertWarningMessage(Diagnostic diagnostic, String message, int line, int column) {
-        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.WARNING);
-        Assert.assertEquals(diagnostic.message(), message);
-        assertLocation(diagnostic.location(), line, column);
-    }
-
-    private void assertLocation(Location location, int line, int column) {
-        // Compiler counts lines and columns from zero
-        Assert.assertEquals((location.lineRange().startLine().line() + 1), line);
-        Assert.assertEquals((location.lineRange().startLine().offset() + 1), column);
-    }
-
-    private String getStringContentFromGivenFile(Path filePath, String fileName) {
-        try {
-            Stream<String> schemaLines = Files.lines(filePath.resolve(fileName));
-            String schemaContent = schemaLines.collect(Collectors.joining(System.getProperty("line.separator")));
-            schemaLines.close();
-            return schemaContent;
-        } catch (IOException e) {
-            return e.getMessage();
-        }
-    }
-
-    private void createFile(Path filePath) throws IOException {
-        Path parentDir = filePath.getParent();
-        if (parentDir != null && !parentDir.toFile().exists()) {
-            Files.createDirectories(parentDir);
-        }
-        if (!filePath.toFile().exists()) {
-            Files.createFile(filePath);
-        }
     }
 }

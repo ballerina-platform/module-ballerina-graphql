@@ -20,7 +20,7 @@ package io.ballerina.stdlib.graphql.commons.types;
 
 import java.io.Serializable;
 
-import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharacter;
 
 /**
  * Represents the {@code __EnumValue} type in GraphQL schema.

@@ -1,7 +1,0 @@
-type Query {
-  school: School!
-}
-
-type School {
-  name(name: String!): String!
-}

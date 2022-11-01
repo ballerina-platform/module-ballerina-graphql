@@ -68,7 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;

@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharacter;
 
 /**
  * Represents the {@code __Type} type in GraphQL schema.

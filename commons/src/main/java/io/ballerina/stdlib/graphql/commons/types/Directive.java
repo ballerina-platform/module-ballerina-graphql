@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.ballerina.stdlib.graphql.commons.Utils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharacter;
 
 /**
  * Represents the {@code __Directive} in GraphQL schema.

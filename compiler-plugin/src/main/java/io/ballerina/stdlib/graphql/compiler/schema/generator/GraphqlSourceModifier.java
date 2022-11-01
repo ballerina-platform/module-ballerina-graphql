@@ -62,7 +62,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.PACKAGE_NAME;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.Utils.SERVICE_CONFIG_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.SCHEMA_STRING_FIELD;
 

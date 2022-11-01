@@ -27,6 +27,9 @@ description = 'Ballerina - GraphQL Native'
 dependencies {
     checkstyle project(':checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstylePluginVersion}"
+
+    implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
+    implementation group: 'org.ballerinalang', name: 'ballerina-parser', version: "${ballerinaLangVersion}"
 }
 
 def excludePattern = '**/module-info.java'
@@ -53,6 +56,28 @@ spotbugsMain {
     def excludeFile = file("${rootDir}/spotbugs-exclude.xml")
     if(excludeFile.exists()) {
         excludeFilter = excludeFile
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId "graphql-commons"
+            version = project.version
+            artifact jar
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-graphql")
+            credentials {
+                username = System.getenv("publishUser")
+                password = System.getenv("publishPAT")
+            }
+        }
     }
 }
 

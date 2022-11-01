@@ -17,6 +17,8 @@
  */
 
 module io.ballerina.stdlib.graphql.commons {
-    exports io.ballerina.stdlib.graphql.commons;
+    requires io.ballerina.lang;
+    requires io.ballerina.parser;
+    exports io.ballerina.stdlib.graphql.commons.utils;
     exports io.ballerina.stdlib.graphql.commons.types;
 }

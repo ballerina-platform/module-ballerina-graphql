@@ -13,7 +13,7 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Location;
 
-import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlModuleSymbol;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.GRAPHQL_INTERCEPTOR;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.INTERCEPTOR_EXECUTE;
