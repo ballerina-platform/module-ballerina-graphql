@@ -300,3 +300,21 @@ public service class Product {
         return self.id;
     }
 }
+
+public service class AccountDetails {
+    final string name;
+    final int createdYear;
+
+    function init(string name, int createdYear) {
+        self.name = name;
+        self.createdYear = createdYear;
+    }
+
+    resource function get name() returns string {
+        return self.name;
+    }
+
+    resource function get createdYear() returns int {
+        return self.createdYear;
+    }
+}

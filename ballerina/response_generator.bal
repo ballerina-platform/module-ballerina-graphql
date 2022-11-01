@@ -43,10 +43,10 @@ class ResponseGenerator {
         if parentValue is Scalar || parentValue is Scalar[] {
             return parentValue;
         }
-        if parentValue is map<anydata> && isMap(parentValue) {
-            return self.getResultFromMap(parentValue, parentNode);
-        }
         if parentValue is map<any> {
+            if isMap(parentValue) {
+                return self.getResultFromMap(parentValue, parentNode);
+            }
             return self.getResultFromRecord(parentValue, parentNode);
         }
         if parentValue is (any|error)[] {
@@ -93,7 +93,7 @@ class ResponseGenerator {
         return errorDetail;
     }
 
-    isolated function getResultFromMap(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
+    isolated function getResultFromMap(map<any> parentValue, parser:FieldNode parentNode) returns anydata {
         string? mapKey = self.getKeyArgument(parentNode);
         if mapKey is string {
             if parentValue.hasKey(mapKey) {
@@ -105,7 +105,7 @@ class ResponseGenerator {
                 _ = self.path.pop();
                 return result;
             }
-        } else {
+        } else if parentValue is map<anydata> {
             return parentValue;
         }
     }

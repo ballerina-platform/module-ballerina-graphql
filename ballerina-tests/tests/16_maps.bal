@@ -120,3 +120,22 @@ isolated function testMapWithInvalidKey() returns error? {
     json expectedPayload = check getJsonContentFromFile("map_with_invalid_key.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["maps"]
+}
+isolated function testResolverReturningMapOfServiceObjects() returns error? {
+    string document = string`query { account { details(key: "acc1") { name } } }`;
+    string url = "http://localhost:9090/reviews";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            account: {
+                details: {
+                    name: "James"
+                }
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

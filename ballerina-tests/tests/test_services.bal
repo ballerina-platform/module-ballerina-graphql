@@ -1917,4 +1917,8 @@ service /reviews on wrappedListener {
             limit 3
             select review;
     }
+
+    resource function get account() returns AccountRecords {
+        return {details: {acc1: new ("James", 2022), acc2: new ("Paul", 2015)}};
+    }
 }

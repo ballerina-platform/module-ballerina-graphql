@@ -244,8 +244,12 @@ public type CovidEntry record {|
     string isoCode;
 |};
 
-public type Review record {
+public type Review record {|
   Product product;
   int score;
   string description;
-};
+|};
+
+public type AccountRecords record {|
+    map<AccountDetails> details;
+|};
