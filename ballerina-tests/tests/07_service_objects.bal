@@ -77,3 +77,46 @@ isolated function testComplexService() returns error? {
     };
     assertJsonValuesWithOrder(result, expectedPayload);
 }
+
+@test:Config {
+    groups: ["service", "records"]
+}
+isolated function testServiceObjectDefinedAsRecordField() returns error? {
+    string graphqlUrl = "http://localhost:9090/reviews";
+    string document = "{ latest { product { id } score } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+
+    json expectedPayload = {
+        data: {
+            latest: {
+                product: {
+                    id: "5"
+                },
+                score: 20
+            }
+        }
+    };
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "records", "list"]
+}
+isolated function testResolverReturningListOfNestedServiceObjects() returns error? {
+    string graphqlUrl = "http://localhost:9090/reviews";
+    string document = "{ top3 { product { id } score } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("resolver_returning_list_of_nested_service_objects.json");
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
+
+@test:Config {
+    groups: ["service", "records", "tables"]
+}
+isolated function testResolverReturningTableOfNestedServiceObjects() returns error? {
+    string graphqlUrl = "http://localhost:9090/reviews";
+    string document = "{ all { product { id } score } }";
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("resolver_returning_table_of_nested_service_objects.json");
+    assertJsonValuesWithOrder(result, expectedPayload);
+}

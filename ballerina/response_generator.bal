@@ -43,16 +43,16 @@ class ResponseGenerator {
         if parentValue is Scalar || parentValue is Scalar[] {
             return parentValue;
         }
-        if parentValue is map<anydata> {
+        if parentValue is map<any> {
             if isMap(parentValue) {
-                return self.getResultFromMap(<map<anydata>>parentValue, parentNode);
+                return self.getResultFromMap(parentValue, parentNode);
             }
             return self.getResultFromRecord(parentValue, parentNode);
         }
         if parentValue is (any|error)[] {
             return self.getResultFromArray(parentValue, parentNode);
         }
-        if parentValue is table<map<anydata>> {
+        if parentValue is table<map<any>> {
             return self.getResultFromTable(parentValue, parentNode);
         }
         if parentValue is service object {} {
@@ -93,7 +93,7 @@ class ResponseGenerator {
         return errorDetail;
     }
 
-    isolated function getResultFromMap(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
+    isolated function getResultFromMap(map<any> parentValue, parser:FieldNode parentNode) returns anydata {
         string? mapKey = self.getKeyArgument(parentNode);
         if mapKey is string {
             if parentValue.hasKey(mapKey) {
@@ -105,12 +105,12 @@ class ResponseGenerator {
                 _ = self.path.pop();
                 return result;
             }
-        } else {
+        } else if parentValue is map<anydata> {
             return parentValue;
         }
     }
 
-    isolated function getResultFromRecord(map<anydata> parentValue, parser:FieldNode parentNode) returns anydata {
+    isolated function getResultFromRecord(map<any> parentValue, parser:FieldNode parentNode) returns anydata {
         Data result = {};
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
@@ -123,11 +123,11 @@ class ResponseGenerator {
         return result;
     }
 
-    isolated function getRecordResult(map<anydata> parentValue, parser:FieldNode fieldNode) returns anydata {
+    isolated function getRecordResult(map<any> parentValue, parser:FieldNode fieldNode) returns anydata {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         }
-        anydata fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
+        any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
         __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
         Field 'field = new (fieldNode, fieldType, path = self.path, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
@@ -151,9 +151,9 @@ class ResponseGenerator {
         return result;
     }
 
-    isolated function getResultFromTable(table<map<anydata>> parentValue, parser:FieldNode parentNode) returns anydata {
+    isolated function getResultFromTable(table<map<any>> parentValue, parser:FieldNode parentNode) returns anydata {
         anydata[] result = [];
-        foreach anydata element in parentValue {
+        foreach any element in parentValue {
             anydata elementValue = self.getResult(element, parentNode);
             if elementValue is ErrorDetail {
                 result.push(());
@@ -178,7 +178,7 @@ class ResponseGenerator {
         return result;
     }
 
-    isolated function getResultForFragmentFromMap(map<anydata> parentValue,
+    isolated function getResultForFragmentFromMap(map<any> parentValue,
                                                   parser:FragmentNode parentNode, Data result) {
         string typeName = getTypeNameFromValue(parentValue);
         if parentNode.getOnType() != typeName {
