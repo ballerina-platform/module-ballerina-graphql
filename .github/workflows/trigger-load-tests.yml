@@ -12,7 +12,7 @@ on:
                 default: 'graphql-perf-cluster-test'
                 required: false
     schedule:
-        - cron: '0 0 * * *'
+        - cron: '0 8 * * *'
 
 jobs:
     invokeLoadTests:
@@ -28,14 +28,14 @@ jobs:
                 if [ "$clusterName" = "" ]; then
                   clusterName="graphql-perf-cluster-test"
                 fi
-                printf "::set-output name=clusterName::%s" $clusterName
+                printf "clusterName=%s" $clusterName >> $GITHUB_OUTPUT
             - name: Get latest ballerina runtime artifact
               id: setRuntimeUrl
               shell: bash
               run: |
-                  printf "::set-output name=runtimeUrl::%s" $(curl -H "Accept: application/vnd.github.v3+json" \
+                  printf "runtimeUrl=%s" $(curl -H "Accept: application/vnd.github.v3+json" \
                     https://api.github.com/repos/ballerina-platform/module-ballerina-graphql/actions/artifacts | \
-                    jq '[.artifacts[] | select(.name=="ballerina-runtime" and .expired==false)]|max|.archive_download_url')
+                    jq '[.artifacts[] | select(.name=="ballerina-runtime" and .expired==false)]|max|.archive_download_url') >> $GITHUB_OUTPUT
             - name: Format test names
               id: formatTestNames
               shell: bash
@@ -49,9 +49,9 @@ jobs:
                     do
                         testsOutput+=\\'"'${testsInput[$i]}\\'"',
                     done
-                    printf "::set-output name=testNames::%s" [${testsOutput:0:-1}]
+                    printf "testNames=%s" [${testsOutput:0:-1}] >> $GITHUB_OUTPUT
                   else
-                    printf "::set-output name=testNames::%s" $tests
+                    printf "testNames=%s" $tests >> $GITHUB_OUTPUT
                   fi
             - name: Invoke standard library load test workflow
               uses: benc-uk/workflow-dispatch@v1

@@ -26,10 +26,10 @@ jobs:
                             echo $(echo "$result" | jq -r '.result') >> load-tests/$test_scenario/results/summary.csv
                             git add load-tests/$test_scenario/results/summary.csv
                             git commit -m "Update $test_scenario test results on $(date)"
-                            printf "::set-output name=hasPassed::true"
+                            printf "hasPassed=true" >> $GITHUB_OUTPUT
                         else
                             echo $test_scenario "test has failed with error rate" $(echo "$result" | jq -r '.errorRate')
-                            printf "::set-output name=hasFailed::true"
+                            printf "hasFailed=true" >> $GITHUB_OUTPUT
                         fi
                     done
                 env:
@@ -44,7 +44,7 @@ jobs:
             -   name: Create pull request for new summary
                 id: createPR
                 if: ${{ steps.processResults.outputs.hasPassed }}
-                run: printf "::set-output name=prUrl::$(gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files")"
+                run: printf "prUrl=%s" $(gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files") >> $GITHUB_OUTPUT
                 env:
                     GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
 
