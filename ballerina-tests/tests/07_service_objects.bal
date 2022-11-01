@@ -106,31 +106,7 @@ isolated function testResolverReturningListOfNestedServiceObjects() returns erro
     string graphqlUrl = "http://localhost:9090/reviews";
     string document = "{ top3 { product { id } score } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-
-    json expectedPayload = {
-        data: {
-            top3: [
-                {
-                    product: {
-                        id: "1"
-                    },
-                    score: 20
-                },
-                {
-                    product: {
-                        id: "2"
-                    },
-                    score: 20
-                },
-                {
-                    product: {
-                        id: "3"
-                    },
-                    score: 20
-                }
-            ]
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile("resolver_returning_list_of_nested_service_objects.json");
     assertJsonValuesWithOrder(result, expectedPayload);
 }
 
@@ -141,42 +117,6 @@ isolated function testResolverReturningTableOfNestedServiceObjects() returns err
     string graphqlUrl = "http://localhost:9090/reviews";
     string document = "{ all { product { id } score } }";
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-
-    json expectedPayload = {
-        data: {
-            all: [
-                {
-                    product: {
-                        id: "1"
-                    },
-                    score: 20
-                },
-                {
-                    product: {
-                        id: "2"
-                    },
-                    score: 20
-                },
-                {
-                    product: {
-                        id: "3"
-                    },
-                    score: 20
-                },
-                {
-                    product: {
-                        id: "4"
-                    },
-                    score: 20
-                },
-                {
-                    product: {
-                        id: "5"
-                    },
-                    score: 20
-                }
-            ]
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile("resolver_returning_table_of_nested_service_objects.json");
     assertJsonValuesWithOrder(result, expectedPayload);
 }
