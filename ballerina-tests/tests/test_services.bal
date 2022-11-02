@@ -1719,12 +1719,12 @@ service /covid19 on basicListener {
 }
 
 table<Review> reviews = table [
-        {product: new ("1"), score: 20, description: "Product 01"},
-        {product: new ("2"), score: 20, description: "Product 02"},
-        {product: new ("3"), score: 20, description: "Product 03"},
-        {product: new ("4"), score: 20, description: "Product 04"},
-        {product: new ("5"), score: 20, description: "Product 05"}
-    ];
+    {product: new ("1"), score: 20, description: "Product 01"},
+    {product: new ("2"), score: 20, description: "Product 02"},
+    {product: new ("3"), score: 20, description: "Product 03"},
+    {product: new ("4"), score: 20, description: "Product 04"},
+    {product: new ("5"), score: 20, description: "Product 05"}
+];
 
 service /reviews on wrappedListener {
     resource function get latest() returns Review {

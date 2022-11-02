@@ -79,7 +79,7 @@ isolated function testComplexService() returns error? {
 }
 
 @test:Config {
-    groups: ["service", "records", "a"]
+    groups: ["service", "records"]
 }
 isolated function testServiceObjectDefinedAsRecordField() returns error? {
     string graphqlUrl = "http://localhost:9090/reviews";
