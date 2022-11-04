@@ -17,7 +17,7 @@
 import ballerina/graphql;
 import ballerina/http;
 
-listener http:Listener httpListener = new (9090);
+listener http:Listener httpListener = new (9090, httpVersion = http:HTTP_1_1);
 listener graphql:Listener wrappedListener = new (httpListener);
 
 listener graphql:Listener basicListener = new (9091);

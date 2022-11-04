@@ -1921,4 +1921,15 @@ service /reviews on wrappedListener {
     resource function get account() returns AccountRecords {
         return {details: {acc1: new ("James", 2022), acc2: new ("Paul", 2015)}};
     }
+
+    resource function subscribe live() returns stream<Review> {
+        return reviews.toArray().toStream();
+    }
+
+    resource function subscribe accountUpdates() returns stream<AccountRecords> {
+        map<AccountDetails> details = {acc1: new AccountDetails("James", 2022), acc2: new AccountDetails("Paul", 2015)};
+        map<AccountDetails> updatedDetails = {...details};
+        updatedDetails["acc1"] = new AccountDetails("James Deen", 2022);
+        return [{details},{details: updatedDetails}].toStream();
+    }
 }
