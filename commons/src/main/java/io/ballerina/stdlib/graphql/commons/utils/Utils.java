@@ -109,7 +109,7 @@ public class Utils {
         return hasGraphqlListener(symbol);
     }
 
-    private static boolean hasGraphqlListener(ServiceDeclarationSymbol symbol) {
+    public static boolean hasGraphqlListener(ServiceDeclarationSymbol symbol) {
         for (TypeSymbol listener : symbol.listenerTypes()) {
             if (isGraphqlListener(listener)) {
                 return true;
@@ -118,7 +118,7 @@ public class Utils {
         return false;
     }
 
-    private static boolean isGraphqlListener(TypeSymbol typeSymbol) {
+    public static boolean isGraphqlListener(TypeSymbol typeSymbol) {
         if (typeSymbol.typeKind() == TypeDescKind.UNION) {
             UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
             for (TypeSymbol member : unionTypeSymbol.memberTypeDescriptors()) {
