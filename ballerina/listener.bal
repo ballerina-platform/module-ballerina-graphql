@@ -87,7 +87,7 @@ public class Listener {
         __Type? subscriptionType = schema.subscriptionType;
         if subscriptionType is __Type && self.wsListener is () {
             string httpVersion = self.httpListener.getConfig().httpVersion;
-            if httpVersion != http:HTTP_1_1 {
+            if httpVersion !is http:HTTP_1_1|http:HTTP_1_0 {
                 string message = string `Websocket listener initialization failed due to the incompatibility of ` +
                                  string `provided HTTP(version ${httpVersion}) listener`;
                 return error Error(message);

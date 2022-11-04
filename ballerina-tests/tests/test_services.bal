@@ -1955,3 +1955,29 @@ graphql:Service subscriptionService = service object {
         return intArray.toStream();
     }
 };
+
+isolated service /service_with_http1 on http1BasedListener {
+    private Person p;
+    isolated function init() {
+        self.p = p2.clone();
+    }
+
+    isolated resource function get person() returns Person {
+        lock {
+            return self.p;
+        }
+    }
+
+    isolated remote function setName(string name) returns Person {
+        lock {
+            Person p = {name: name, age: self.p.age, address: self.p.address};
+            self.p = p;
+            return self.p;
+        }
+    }
+
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        return intArray.toStream();
+    }
+}

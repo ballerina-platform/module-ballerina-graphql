@@ -39,3 +39,6 @@ listener http:Listener sts = new (9445, {secureSocket: {key: {path: KEYSTORE_PAT
 
 listener http:Listener http2Listener = new http:Listener(9190);
 listener graphql:Listener http2BasedListener = new (http2Listener);
+
+listener http:Listener http1Listener = new http:Listener(9191, httpVersion = http:HTTP_1_0);
+listener graphql:Listener http1BasedListener = new (http1Listener);

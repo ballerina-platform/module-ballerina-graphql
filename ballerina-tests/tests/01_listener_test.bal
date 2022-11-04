@@ -16,6 +16,7 @@
 
 import ballerina/graphql;
 import ballerina/test;
+import ballerina/websocket;
 
 @test:Config {
     groups: ["listener", "configs"]
@@ -105,4 +106,55 @@ function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? 
     string expecctedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
                               string `provided HTTP(version 2.0) listener`;
     test:assertEquals(err.message(), expecctedMessage);
+}
+
+@test:Config {
+    groups: ["listener"]
+}
+function testAttachServiceWithQueryToHttp1BasedListener() returns error? {
+    string document = string `query { person{ age } }`;
+    string url = "http://localhost:9191/service_with_http1";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            person: {
+                age: 50
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener"]
+}
+function testAttachServiceWithMutationToHttp1BasedListener() returns error? {
+    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
+    string url = "http://localhost:9191/service_with_http1";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            setName: {
+                name: "Heisenberg"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener"]
+}
+function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9191/service_with_http1";
+    websocket:Client wsClient1 = check new(url);
+    websocket:Client wsClient2 = check new(url);
+    check writeWebSocketTextMessage(document, wsClient1);
+    check writeWebSocketTextMessage(document, wsClient2);
+    foreach int i in 1 ..< 4 {
+        json expectedPayload = {data: {messages: i}};
+        check validateWebSocketResponse(wsClient1, expectedPayload);
+        check validateWebSocketResponse(wsClient2, expectedPayload);
+    }
 }
