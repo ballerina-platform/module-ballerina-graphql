@@ -1922,3 +1922,36 @@ service /reviews on wrappedListener {
         return {details: {acc1: new ("James", 2022), acc2: new ("Paul", 2015)}};
     }
 }
+
+isolated service /service_with_http2 on http2BasedListener {
+    private Person p;
+    isolated function init() {
+        self.p = p2.clone();
+    }
+
+    isolated resource function get person() returns Person {
+        lock {
+            return self.p;
+        }
+    }
+
+    isolated remote function setName(string name) returns Person {
+        lock {
+            Person p = {name: name, age: self.p.age, address: self.p.address};
+            self.p = p;
+            return self.p;
+        }
+    }
+}
+
+graphql:Service subscriptionService = service object {
+
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        return intArray.toStream();
+    }
+};

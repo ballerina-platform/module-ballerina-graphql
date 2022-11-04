@@ -60,3 +60,49 @@ function testAttachingGraphQLServiceWithAnnotationToDynamicListener() returns er
     check specialTypesTestListener.detach(greetingService2);
     test:assertEquals(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["listener"]
+}
+function testAttachServiceWithQueryToHttp2BasedListener() returns error? {
+    string document = string `query { person{ age } }`;
+    string url = "http://localhost:9190/service_with_http2";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            person: {
+                age: 50
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener"]
+}
+function testAttachServiceWithMutationToHttp2BasedListener() returns error? {
+    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
+    string url = "http://localhost:9190/service_with_http2";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            setName: {
+                name: "Heisenberg"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener"]
+}
+function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
+    graphql:Error? result = http2BasedListener.attach(subscriptionService);
+    test:assertTrue(result is graphql:Error);
+    graphql:Error err = <graphql:Error>result;
+    string expecctedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
+                              string `provided HTTP(version 2.0) listener`;
+    test:assertEquals(err.message(), expecctedMessage);
+}
