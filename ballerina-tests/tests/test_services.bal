@@ -1717,3 +1717,42 @@ service /covid19 on basicListener {
         return covidEntryTable;
     }
 }
+
+table<Review> reviews = table [
+    {product: new ("1"), score: 20, description: "Product 01"},
+    {product: new ("2"), score: 20, description: "Product 02"},
+    {product: new ("3"), score: 20, description: "Product 03"},
+    {product: new ("4"), score: 20, description: "Product 04"},
+    {product: new ("5"), score: 20, description: "Product 05"}
+];
+
+service /reviews on wrappedListener {
+    resource function get latest() returns Review {
+        return reviews.toArray().pop();
+    }
+
+    resource function get all() returns table<Review> {
+        return reviews;
+    }
+
+    resource function get top3() returns Review[] {
+        return from var review in reviews
+            limit 3
+            select review;
+    }
+
+    resource function get account() returns AccountRecords {
+        return {details: {acc1: new ("James", 2022), acc2: new ("Paul", 2015)}};
+    }
+
+    resource function subscribe live() returns stream<Review> {
+        return reviews.toArray().toStream();
+    }
+
+    resource function subscribe accountUpdates() returns stream<AccountRecords> {
+        map<AccountDetails> details = {acc1: new AccountDetails("James", 2022), acc2: new AccountDetails("Paul", 2015)};
+        map<AccountDetails> updatedDetails = {...details};
+        updatedDetails["acc1"] = new AccountDetails("James Deen", 2022);
+        return [{details},{details: updatedDetails}].toStream();
+    }
+}

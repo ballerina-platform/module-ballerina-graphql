@@ -1,0 +1,36 @@
+{
+    "data": {
+        "all": [
+            {
+                "product": {
+                    "id": "1"
+                },
+                "score": 20
+            },
+            {
+                "product": {
+                    "id": "2"
+                },
+                "score": 20
+            },
+            {
+                "product": {
+                    "id": "3"
+                },
+                "score": 20
+            },
+            {
+                "product": {
+                    "id": "4"
+                },
+                "score": 20
+            },
+            {
+                "product": {
+                    "id": "5"
+                },
+                "score": 20
+            }
+        ]
+    }
+}

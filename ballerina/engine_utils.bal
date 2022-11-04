@@ -94,7 +94,7 @@ isolated function getSubscriptionResult(ExecutorVisitor visitor,
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
 
-isolated function isMap(map<anydata> value) returns boolean = @java:Method {
+isolated function isMap(map<any> value) returns boolean = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;
 
