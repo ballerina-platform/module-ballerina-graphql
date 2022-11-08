@@ -63,3 +63,22 @@ isolated function testDocumentWithSyntaxError() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["validation"]
+}
+isolated function testInvalidDocumentHavingFragmentWithSameName() returns error? {
+    string graphqlUrl = "http://localhost:9091/input_objects";
+    string document = check getGraphQLDocumentFromFile("invalid_document_having_fragment_with_same_name.graphql");
+    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    string expectedMessage = string`There can be only one fragment named "Details".`;
+    json expectedPayload = {
+        errors: [
+            {
+                message: expectedMessage,
+                locations: [{line: 7, column: 1}, {line: 11, column: 1}]
+            }
+        ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
