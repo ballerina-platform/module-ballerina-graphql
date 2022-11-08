@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#3466] Fix Resolver Returning Null when a Record has a Service Object as its Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/3466)
 - [[#3579] Resolver Produces Null when Resolver Returns a Record Containing a Map of Service Objects as its Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/3579)
+- [[#3062] Fix Allow to Attach a Service with Subscription to a HTTP2 Based Listener](https://github.com/ballerina-platform/ballerina-standard-library/issues/3601)
 
 ## [1.4.4] - 2022-10-31
 

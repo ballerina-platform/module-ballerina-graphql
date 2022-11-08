@@ -16,6 +16,7 @@
 
 import ballerina/http;
 import ballerina/websocket;
+import ballerina/io;
 
 # Represents a Graphql listener endpoint.
 public class Listener {
@@ -30,7 +31,7 @@ public class Listener {
     # + return - A `graphql:Error` if the listener initialization is failed or else `()`
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration configuration)
     returns Error? {
-        configuration.httpVersion = "1.1";
+        configuration.httpVersion = http:HTTP_1_1;
         if listenTo is int {
             http:Listener|error httpListener = new (listenTo, configuration);
             if httpListener is error {
@@ -85,6 +86,13 @@ public class Listener {
         __Schema & readonly schema = engine.getSchema();
         __Type? subscriptionType = schema.subscriptionType;
         if subscriptionType is __Type && self.wsListener is () {
+            string httpVersion = self.httpListener.getConfig().httpVersion;
+            io:println(httpVersion);
+            if httpVersion !is http:HTTP_1_1|http:HTTP_1_0 {
+                string message = string `Websocket listener initialization failed due to the incompatibility of ` +
+                                 string `provided HTTP(version ${httpVersion}) listener`;
+                return error Error(message);
+            }
             websocket:Listener|error wsListener = new(self.httpListener);
             if wsListener is error {
                 return error Error("Websocket listener initialization failed", wsListener);
