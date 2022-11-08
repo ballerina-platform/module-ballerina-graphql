@@ -1,0 +1,14 @@
+{
+  searchProfile(profileDetail: { name: "" }) {
+    ...Details
+  }
+}
+
+fragment Details on Person {
+  name
+}
+
+fragment Details on Person {
+  name
+  age
+}
