@@ -114,9 +114,9 @@ task ballerinaTest {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${nativeFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal test ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams}"
+                commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal test ${nativeFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams}"
             }
         }
     }
