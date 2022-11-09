@@ -93,7 +93,7 @@ isolated class Engine {
     }
 
     isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
-        ErrorDetail[] validationErrors = [];
+        ErrorDetail[] validationErrors = document.getErrors();
         ValidatorVisitor[] validators = [
             new FragmentCycleFinderVisitor(document.getFragments()),
             new FragmentValidatorVisitor(document.getFragments()),

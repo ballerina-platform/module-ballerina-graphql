@@ -176,8 +176,16 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString);
             annotationNodes = annotationNodes.add(annotationNode);
         } else {
+            boolean isAnnotationFound = false;
             for (AnnotationNode annotationNode : metadataNode.annotations()) {
-                annotationNode = updateAnnotationNode(annotationNode, schemaString);
+                if (isGraphqlServiceConfig(annotationNode)) {
+                    isAnnotationFound = true;
+                    annotationNode = updateAnnotationNode(annotationNode, schemaString);
+                }
+                annotationNodes = annotationNodes.add(annotationNode);
+            }
+            if (!isAnnotationFound) {
+                AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString);
                 annotationNodes = annotationNodes.add(annotationNode);
             }
         }
@@ -185,9 +193,6 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     }
 
     private AnnotationNode updateAnnotationNode(AnnotationNode annotationNode, String schemaString) {
-        if (!isGraphqlServiceConfig(annotationNode)) {
-            return annotationNode;
-        }
         if (annotationNode.annotValue().isPresent()) {
             SeparatedNodeList<MappingFieldNode> updatedFields =
                     getUpdatedFields(annotationNode.annotValue().get(), schemaString);
@@ -253,6 +258,9 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     }
 
     private boolean isGraphqlServiceConfig(AnnotationNode annotationNode) {
+        if (annotationNode.annotReference().kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
+            return false;
+        }
         QualifiedNameReferenceNode referenceNode = ((QualifiedNameReferenceNode) annotationNode.annotReference());
         if (!PACKAGE_NAME.equals(referenceNode.modulePrefix().text())) {
             return false;
