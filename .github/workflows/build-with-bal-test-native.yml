@@ -1,0 +1,31 @@
+name: Build with bal test native
+
+on:
+    workflow_dispatch:
+        inputs:
+            lang_tag:
+                description: Branch/Release Tag of the Ballerina Lang
+                required: true
+                default: master
+            lang_version:
+                description: Ballerina Lang Version (If given ballerina lang build will be skipped)
+                required: false
+                default: ''
+            native_image_options:
+                description: Default native-image options
+                required: false
+                default: ''
+    schedule:
+        -   cron: '30 18 * * *'
+
+jobs:
+    call_stdlib_workflow:
+        name: Run StdLib Workflow
+        if: ${{ github.event_name != 'schedule' || (github.event_name == 'schedule' && github.repository_owner == 'ballerina-platform') }}
+        uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-with-bal-test-native-template.yml@main
+        with:
+            lang_tag: ${{ inputs.lang_tag }}
+            lang_version: ${{ inputs.lang_version }}
+            native_image_options: ${{ inputs.native_image_options }}
+            additional_ubuntu_build_flags: '-x :graphql-compiler-plugin-tests:test'
+            additional_windows_build_flags: '-x :graphql-compiler-plugin-tests:test'
