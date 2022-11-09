@@ -42,5 +42,6 @@
     {
       "name": "java.util.LinkedHashMap"
     }
-  ]
+  ],
+  "lambdaCapturingTypes": []
 }
