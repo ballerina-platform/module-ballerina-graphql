@@ -24,6 +24,7 @@ description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def examples = ["snowtooth", "starwars"]
+def nativeFlag = ""
 
 dependencies {
     implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
@@ -40,15 +41,19 @@ clean {
 }
 
 task testExamples {
+    if (project.hasProperty("balNativeTest")) {
+        nativeFlag = "--native"
+    }
     doLast {
         examples.each { example ->
             try {
                 exec {
                     workingDir project.projectDir
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', '/c', "${ballerinaDist}/bin/bal.bat test --offline ${example} && exit %%ERRORLEVEL%%"
+                        commandLine 'cmd', '/c', "${ballerinaDist}/bin/bal.bat test ${nativeFlag} --offline ${example} && exit " +
+                                "%%ERRORLEVEL%%"
                     } else {
-                        commandLine 'sh', '-c', "${ballerinaDist}/bin/bal test --offline ${example}"
+                        commandLine 'sh', '-c', "${ballerinaDist}/bin/bal test ${nativeFlag} --offline ${example}"
                     }
                 }
             } catch (Exception e) {
