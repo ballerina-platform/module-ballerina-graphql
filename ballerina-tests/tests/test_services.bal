@@ -1992,3 +1992,13 @@ isolated service /service_with_http1 on http1BasedListener {
         return intArray.toStream();
     }
 }
+
+@display {
+    label: "diplay",
+    id: "display-1"
+}
+service /annotations on wrappedListener {
+    resource function get greeting() returns string {
+        return "Hello";
+    }
+}
