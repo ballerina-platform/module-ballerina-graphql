@@ -134,7 +134,7 @@ class FieldValidatorVisitor {
                     }
                 }
                 if !isProvidedField {
-                    if subInputValue.'type.kind == NON_NULL && schemaArg?.defaultValue is () {
+                    if subInputValue.'type.kind == NON_NULL && subInputValue.defaultValue is () {
                         string inputFieldName = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string `Field "${inputFieldName}" of required type ` +
                                          string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;

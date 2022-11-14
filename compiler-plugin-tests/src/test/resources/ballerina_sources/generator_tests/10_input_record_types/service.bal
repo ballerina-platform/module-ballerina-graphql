@@ -20,11 +20,11 @@ import ballerina/graphql;
 #
 # + name - Name of the person
 # + age - age of the person
-# + address - Addres of the person
-type Person record {
+# + addresses - Addreses of the person
+public type Person record {
     string name;
     int age;
-    Address address;
+    Address[] addresses = [];
 };
 
 # Represents an address.
@@ -32,7 +32,7 @@ type Person record {
 # + number - The number of the address
 # + street - The street of the address
 # + city - The city of the address
-type Address record {
+public type Address record {
     int number;
     string street;
     string city;
@@ -40,7 +40,7 @@ type Address record {
 
 isolated service on new graphql:Listener(9000) {
 
-    isolated resource function get city(Person person) returns string {
-        return person.address.city;
+    isolated resource function get name(Person person) returns string {
+        return person.name;
     }
 }
