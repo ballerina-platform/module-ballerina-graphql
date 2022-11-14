@@ -109,8 +109,9 @@ public class ArgumentHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private BMap<BString, Object> getInputObjectArgument(BObject argumentNode, RecordType recordType) {
-        BMap<BString, Object> recordValue = ValueCreator.createRecordValue(recordType);
+        BMap<BString, Object> recordValue = recordType.getZeroValue();
         if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
             BMap<BString, Object> variablesMap = argumentNode.getMapValue(VARIABLE_VALUE_FIELD);
             return JsonUtils.convertJSONToRecord(variablesMap, recordType);

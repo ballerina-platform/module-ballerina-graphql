@@ -111,6 +111,23 @@
                     ]
                 },
                 {
+                    "name": "DefaultPerson",
+                    "inputFields": [
+                        {
+                            "name": "name",
+                            "type": {
+                                "kind": "NON_NULL"
+                            }
+                        },
+                        {
+                            "name": "addresses",
+                            "type": {
+                                "kind": "NON_NULL"
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "Weekday",
                     "inputFields": null
                 },
