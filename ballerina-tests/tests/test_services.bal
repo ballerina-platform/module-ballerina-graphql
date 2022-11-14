@@ -352,6 +352,10 @@ service /input_objects on basicListener {
     isolated resource function get convertKgToGram(WeightInKg weight) returns float {
         return <float>weight.weight * 1000.00;
     }
+
+    isolated resource function get name(DefaultPerson person) returns string {
+        return person.name;
+    }
 }
 
 service /list_inputs on basicListener {

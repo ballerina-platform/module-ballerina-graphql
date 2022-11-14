@@ -7,7 +7,7 @@
                         "name": "name",
                         "args": [
                             {
-                                "defaultValue": "",
+                                "defaultValue": "\"\"",
                                 "type": {
                                     "kind": "NON_NULL",
                                     "name": null,
@@ -23,7 +23,7 @@
                         "name": "subject",
                         "args": [
                             {
-                                "defaultValue": "",
+                                "defaultValue": "\"\"",
                                 "type": {
                                     "kind": "SCALAR",
                                     "name": "String",
