@@ -212,3 +212,8 @@ public type Instrument readonly & record {
     string name;
     string method;
 };
+
+public type DefaultPerson record {|
+    string name = "Sam";
+    Address[] addresses = [];
+|};

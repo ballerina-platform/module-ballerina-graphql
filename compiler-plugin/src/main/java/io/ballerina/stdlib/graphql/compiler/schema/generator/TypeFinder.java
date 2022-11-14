@@ -83,6 +83,7 @@ public class TypeFinder {
     private static final String IF_ARG_NAME = "if";
     private static final String INCLUDE_DIRECTIVE_NAME = "include";
     private static final String SKIP_DIRECTIVE_NAME = "skip";
+    private static final String DEFAULT_VALUE = "\"\"";
 
     private final Schema schema;
     private final InterfaceFinder interfaceFinder;
@@ -558,14 +559,14 @@ public class TypeFinder {
 
     private String getDefaultValue(RecordFieldSymbol recordFieldSymbol) {
         if (recordFieldSymbol.hasDefaultValue()) {
-            return "";
+            return DEFAULT_VALUE;
         }
         return null;
     }
 
     private String getDefaultValue(ParameterSymbol parameterSymbol) {
         if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
-            return "";
+            return DEFAULT_VALUE;
         }
         return null;
     }
