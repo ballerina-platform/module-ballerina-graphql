@@ -82,6 +82,7 @@ public class SchemaGenerator {
 
     private static final String IF_ARG_NAME = "if";
     private static final String REASON_ARG_NAME = "reason";
+    private static final String DEFAULT_VALUE = "\"\"";
 
     private final ServiceDeclarationSymbol serviceDeclarationSymbol;
     private final InterfaceFinder interfaceFinder;
@@ -574,14 +575,14 @@ public class SchemaGenerator {
 
     private String getDefaultValue(RecordFieldSymbol recordFieldSymbol) {
         if (recordFieldSymbol.hasDefaultValue()) {
-            return "";
+            return DEFAULT_VALUE;
         }
         return null;
     }
 
     private String getDefaultValue(ParameterSymbol parameterSymbol) {
         if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
-            return "\"\"";
+            return DEFAULT_VALUE;
         }
         return null;
     }

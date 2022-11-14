@@ -363,3 +363,14 @@ isolated function testInputObjectWithMissingNullableVariableValue() returns erro
     json expectedPayload = check getJsonContentFromFile("input_object_with_missing_nullable_variable_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["input_objects", "input", "defaultValues"]
+}
+isolated function testDefaultValuesInInputObjectFields() returns error? {
+    string document = check getGraphQLDocumentFromFile("default_values_in_input_object_fields.graphql");
+    string url = "http://localhost:9091/input_objects";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile("default_values_in_input_object_fields.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
