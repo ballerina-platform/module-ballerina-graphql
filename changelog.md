@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Fixed
 - [[#3646] Fix Returning Incorrect Validation Errors for Input Object Fields with Default Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/3646)
+- [[#3661] Fix Stream not Closing After the Completion of the Subscription Operation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3661)
 
 ## [1.4.5] - 2022-11-09
 

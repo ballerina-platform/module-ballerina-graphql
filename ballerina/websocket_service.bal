@@ -24,7 +24,7 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private map<()> activeConnections;
+    private final map<()> activeConnections;
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
