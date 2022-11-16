@@ -626,7 +626,7 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 
     check initiateConnectionInitMessage(wsClient);
     check validateConnectionInitMessage(wsClient);
-    
+
     json invalidPayload = {"type": WS_START};
     check wsClient->writeMessage(invalidPayload);
     json|error response = wsClient->readMessage();

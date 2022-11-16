@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/log;
 import ballerina/websocket;
 import graphql.parser;
 
@@ -39,6 +40,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         } else {
             closeConnection(caller);
         }
+        closeStream(sourceStream);
     } else {
         check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
         if !customHeaders.hasKey(WS_SUB_PROTOCOL) {
@@ -114,4 +116,12 @@ isolated function validateSubProtocol(websocket:Caller caller, readonly & map<st
         }
     }
     return;
+}
+
+isolated function closeStream(stream<any, error?> sourceStream) {
+    error? result = sourceStream.close();
+    if result is error {
+        error err = error("Failed to close stream", result);
+        log:printError(err.message(), stackTrace = err.stackTrace());
+    }
 }
