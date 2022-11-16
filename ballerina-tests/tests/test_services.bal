@@ -1343,3 +1343,13 @@ service graphql:Service /documentation on basicListener {
         return {name: name, edges: edges};
     }
 }
+
+@display {
+     label: "diplay",
+     id: "display-1"
+ }
+ service /annotations on wrappedListener {
+     resource function get greeting() returns string {
+         return "Hello";
+     }
+ }

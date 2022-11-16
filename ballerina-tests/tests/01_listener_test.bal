@@ -26,3 +26,18 @@ function testInvalidMaxQueryDepth() returns error? {
     graphql:Error err = <graphql:Error>result;
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");
 }
+
+@test:Config {
+    groups: ["listener", "service", "annotations"]
+}
+function testServiceWithOtherAnnotations() returns error? {
+    string document = string `query { greeting }`;
+    string url = "http://localhost:9090/annotations";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            greeting: "Hello"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
