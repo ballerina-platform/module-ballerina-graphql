@@ -48,7 +48,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
     }
 }
 
-task updateTomlVerions {
+task updateTomlFiles {
     doLast {
         def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("@toml.version@", tomlVersion)
         ballerinaTomlFile.text = newBallerinaToml
@@ -105,7 +105,7 @@ task initializeVariables {
 
 task ballerinaTest {
     dependsOn(":${packageName}-${packageOrg}:build")
-    dependsOn(updateTomlVerions)
+    dependsOn(updateTomlFiles)
     dependsOn(initializeVariables)
     finalizedBy(commitTomlFiles)
 
