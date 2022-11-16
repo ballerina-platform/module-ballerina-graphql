@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Fixed
+- [[3628] Fix Compilation Failure when the Simple Annotations are Present](https://github.com/ballerina-platform/ballerina-standard-library/issues/3628)
+
 ## [1.3.5] - 2022-11-15
 
 ### Fixed
