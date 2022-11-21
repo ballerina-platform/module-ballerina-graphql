@@ -48,23 +48,27 @@ isolated class Engine {
     isolated function validate(string documentString, string? operationName, map<json>? variables)
         returns parser:OperationNode|OutputObject {
 
-        parser:DocumentNode|OutputObject result = self.parse(documentString);
+        ParseResult|OutputObject result = self.parse(documentString);
         if result is OutputObject {
             return result;
         }
-        parser:DocumentNode document = <parser:DocumentNode>result;
-        OutputObject? validationResult = self.validateDocument(document, variables);
+        parser:DocumentNode document = result.document;
+        ErrorDetail[] validationErrors = result.validationErrors;
+        OutputObject|parser:DocumentNode validationResult = self.validateDocument(document, variables, validationErrors);
         if validationResult is OutputObject {
             return validationResult;
         } else {
+            document = validationResult;
             return self.getOperation(document, operationName);
         }
     }
 
     isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
     returns OutputObject {
-        DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
-        DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
+        map<()> removedNodes = {};
+        map<parser:SelectionNode> modifiedSelections = {};
+        DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema, removedNodes);
+        DuplicateFieldRemoverVisitor duplicateFieldRemover = new (removedNodes, modifiedSelections);
 
         parser:Visitor[] updatingVisitors = [
             defaultDirectiveProcessor,
@@ -75,36 +79,42 @@ isolated class Engine {
             operationNode.accept(visitor);
         }
 
+        OperationNodeModifierVisitor operationNodeModifier = new (modifiedSelections, removedNodes);
+        operationNode.accept(operationNodeModifier);
+        parser:OperationNode modifiedOperationNode = operationNodeModifier.getOperationNode();
+
         ExecutorVisitor executor = new (self, self.schema, context, result);
-        operationNode.accept(executor);
+        modifiedOperationNode.accept(executor);
         OutputObject outputObject = executor.getOutput();
         ResponseFormatter responseFormatter = new (self.schema);
-        return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
+        return responseFormatter.getCoercedOutputObject(outputObject, modifiedOperationNode);
     }
 
-    isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
+    isolated function parse(string documentString) returns ParseResult|OutputObject {
         parser:Parser parser = new (documentString);
         parser:DocumentNode|parser:Error parseResult = parser.parse();
         if parseResult is parser:DocumentNode {
-            return parseResult;
+            return {document: parseResult, validationErrors: parser.getErrors()};
         }
         ErrorDetail errorDetail = getErrorDetailFromError(<parser:Error>parseResult);
         return getOutputObjectFromErrorDetail(errorDetail);
     }
 
-    isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
-        ErrorDetail[] validationErrors = [];
+    isolated function validateDocument(parser:DocumentNode document, map<json>? variables, ErrorDetail[] parserErrors)
+    returns OutputObject|parser:DocumentNode {
+        ErrorDetail[] validationErrors = [...parserErrors];
+        NodeModifierContext nodeModifierContext = new;
         ValidatorVisitor[] validators = [
-            new FragmentCycleFinderVisitor(document.getFragments()),
-            new FragmentValidatorVisitor(document.getFragments()),
-            new QueryDepthValidatorVisitor(self.maxQueryDepth),
-            new VariableValidatorVisitor(self.schema, variables),
-            new FieldValidatorVisitor(self.schema),
-            new DirectiveValidatorVisitor(self.schema),
-            new SubscriptionValidatorVisitor()
+            new FragmentCycleFinderVisitor(document.getFragments(), nodeModifierContext),
+            new FragmentValidatorVisitor(document.getFragments(), nodeModifierContext),
+            new QueryDepthValidatorVisitor(self.maxQueryDepth, nodeModifierContext),
+            new VariableValidatorVisitor(self.schema, variables, nodeModifierContext),
+            new FieldValidatorVisitor(self.schema, nodeModifierContext),
+            new DirectiveValidatorVisitor(self.schema, nodeModifierContext),
+            new SubscriptionValidatorVisitor(nodeModifierContext)
         ];
         if !self.introspection {
-            validators.push(new IntrospectionValidatorVisitor(self.introspection));
+            validators.push(new IntrospectionValidatorVisitor(self.introspection, nodeModifierContext));
         }
 
         foreach ValidatorVisitor validator in validators {
@@ -114,7 +124,13 @@ isolated class Engine {
                 validationErrors.push(...errors);
             }
         }
-        return validationErrors.length() == 0 ? () : getOutputObjectFromErrorDetail(validationErrors);
+        if validationErrors.length() > 0 {
+            return getOutputObjectFromErrorDetail(validationErrors);
+        } else {
+            DocumentNodeModifierVisitor documentNodeModifierVisitor = new (nodeModifierContext);
+            document.accept(documentNodeModifierVisitor);
+            return documentNodeModifierVisitor.getDocumentNode();
+        }
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)

@@ -21,10 +21,12 @@ class IntrospectionValidatorVisitor {
 
     private final boolean introspection;
     private ErrorDetail[] errors;
+    private NodeModifierContext nodeModifierContext;
 
-    isolated function init(boolean introspection) {
+    isolated function init(boolean introspection, NodeModifierContext nodeModifierContext) {
         self.introspection = introspection;
         self.errors = [];
+        self.nodeModifierContext = nodeModifierContext;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -53,7 +55,8 @@ class IntrospectionValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+        parser:FragmentNode modifiedFragmentNode = self.nodeModifierContext.getModifiedFragmentNode(fragmentNode);
+        foreach parser:SelectionNode selection in modifiedFragmentNode.getSelections() {
             selection.accept(self, data);
         }
     }

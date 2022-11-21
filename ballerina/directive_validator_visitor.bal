@@ -23,12 +23,14 @@ class DirectiveValidatorVisitor {
     private ErrorDetail[] errors;
     private map<parser:DirectiveNode> visitedDirectives;
     private __InputValue[] missingArguments;
+    private NodeModifierContext nodeModifierContext;
 
-    isolated function init(__Schema schema) {
+    isolated function init(__Schema schema, NodeModifierContext nodeModifierContext) {
         self.schema = schema;
         self.errors = [];
         self.visitedDirectives = {};
         self.missingArguments = [];
+        self.nodeModifierContext = nodeModifierContext;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -46,7 +48,8 @@ class DirectiveValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.validateDirectives(fragmentNode);
+        parser:FragmentNode modifiedFragmentNode = self.nodeModifierContext.getModifiedFragmentNode(fragmentNode);
+        self.validateDirectives(modifiedFragmentNode);
     }
 
     public isolated function validateDirectives(parser:SelectionParentNode selectionParentNode) {
@@ -61,12 +64,13 @@ class DirectiveValidatorVisitor {
 
     // TODO: Check invalid argument type for valid argument name
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
         __Directive directive = <__Directive>data;
         string argumentName = argumentNode.getName();
         __InputValue? inputValue = getInputValueFromArray(directive.args, argumentName);
         if inputValue == () {
             string message = string `Unknown argument "${argumentName}" on directive "${directive.name}".`;
-            self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+            self.errors.push(getErrorDetailRecord(message, modifiedArgNode.getLocation()));
         } else {
             _ = self.missingArguments.remove(<int>self.missingArguments.indexOf(inputValue));
         }

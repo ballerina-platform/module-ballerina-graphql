@@ -18,9 +18,19 @@ import graphql.parser;
 
 class DuplicateFieldRemoverVisitor {
     *parser:Visitor;
+    private map<()> removedNodes;
+    private map<parser:SelectionNode> modifiedSelections;
+
+    isolated function init(map<()> removedNodes, map<parser:SelectionNode> modifiedSelections) {
+        self.removedNodes = removedNodes;
+        self.modifiedSelections = modifiedSelections;
+    }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         foreach parser:OperationNode operationNode in documentNode.getOperations() {
+            if self.isRemovedNode(operationNode) {
+                continue;
+            }
             operationNode.accept(self);
         }
     }
@@ -28,47 +38,64 @@ class DuplicateFieldRemoverVisitor {
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         self.removeDuplicateSelections(operationNode.getSelections());
         foreach parser:SelectionNode selection in operationNode.getSelections() {
+            if self.isRemovedNode(selection) {
+                continue;
+            }
             selection.accept(self);
         }
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        self.removeDuplicateSelections(fieldNode.getSelections());
-        foreach parser:SelectionNode selection in fieldNode.getSelections() {
+        parser:SelectionNode modifiedFieldNode = self.getModifiedNode(fieldNode);
+        self.removeDuplicateSelections(modifiedFieldNode.getSelections());
+        foreach parser:SelectionNode selection in modifiedFieldNode.getSelections() {
+            if self.isRemovedNode(selection) {
+                continue;
+            }
             selection.accept(self);
         }
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        self.removeDuplicateSelections(fragmentNode.getSelections());
-        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+        parser:SelectionNode modifiedFragmentNode = self.getModifiedNode(fragmentNode);
+        self.removeDuplicateSelections(modifiedFragmentNode.getSelections());
+        foreach parser:SelectionNode selection in modifiedFragmentNode.getSelections() {
+            if self.isRemovedNode((selection)) {
+                continue;
+            }
             selection.accept(self);
         }
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+
     private isolated function removeDuplicateSelections(parser:SelectionNode[] selections) {
         map<parser:FieldNode> visitedFields = {};
         map<parser:FragmentNode> visitedFragments = {};
         int i = 0;
         while i < selections.length() {
-            parser:SelectionNode selection = selections[i];
-            if selection is parser:FragmentNode {
-                if visitedFragments.hasKey(selection.getOnType()) {
-                    self.appendDuplicates(selection, visitedFragments.get(selection.getOnType()));
-                    _ = selections.remove(i);
-                    i -= 1;
+            if self.isRemovedNode(selections[i]) {
+                i += 1;
+                continue;
+            }
+            parser:SelectionNode modifiedSelectionNode = self.getModifiedNode(selections[i]);
+            if modifiedSelectionNode is parser:FragmentNode {
+                if visitedFragments.hasKey(modifiedSelectionNode.getOnType()) {
+                    self.appendDuplicates(modifiedSelectionNode, visitedFragments.get(modifiedSelectionNode.getOnType()));
+                    self.removeNode(selections[i]);
                 } else {
-                    visitedFragments[selection.getOnType()] = selection;
+                    visitedFragments[modifiedSelectionNode.getOnType()] = modifiedSelectionNode;
                 }
-            } else if selection is parser:FieldNode {
-                if visitedFields.hasKey(selection.getAlias()) {
-                    self.appendDuplicates(selection, visitedFields.get(selection.getAlias()));
-                    _ = selections.remove(i);
-                    i -= 1;
+            } else if modifiedSelectionNode is parser:FieldNode {
+                if visitedFields.hasKey(modifiedSelectionNode.getAlias()) {
+                    self.appendDuplicates(modifiedSelectionNode, visitedFields.get(modifiedSelectionNode.getAlias()));
+                    self.removeNode(selections[i]);
                 } else {
-                    visitedFields[selection.getAlias()] = selection;
+                    visitedFields[modifiedSelectionNode.getAlias()] = modifiedSelectionNode;
                 }
             } else {
                 panic error("Invalid selection node passed.");
@@ -78,12 +105,32 @@ class DuplicateFieldRemoverVisitor {
     }
 
     private isolated function appendDuplicates(parser:SelectionParentNode duplicate, parser:SelectionParentNode original) {
-        foreach parser:SelectionNode selection in duplicate.getSelections() {
-            original.addSelection(selection);
+        if duplicate is parser:FieldNode && original is parser:FieldNode {
+            string hashCode = parser:getHashCode(original);
+            parser:FieldNode modifiedOriginalNode = self.modifiedSelections.hasKey(hashCode) ? <parser:FieldNode>self.modifiedSelections.get(hashCode) : original;
+            parser:SelectionNode[] combinedSelections = [...modifiedOriginalNode.getSelections(), ...duplicate.getSelections()];
+            parser:FieldNode latestModifiedOriginalNode = modifiedOriginalNode.modifyWithSelections(combinedSelections);
+            self.modifiedSelections[hashCode] = latestModifiedOriginalNode;
+        }
+        if duplicate is parser:FragmentNode && original is parser:FragmentNode {
+            string hashCode = parser:getHashCode(original);
+            parser:FragmentNode modifiedOriginalNode = self.modifiedSelections.hasKey(hashCode) ? <parser:FragmentNode>self.modifiedSelections.get(hashCode) : original;
+            parser:SelectionNode[] combinedSelections = [...modifiedOriginalNode.getSelections(), ...duplicate.getSelections()];
+            parser:FragmentNode latestModifiedOriginalNode = modifiedOriginalNode.modifyWithSelections(combinedSelections);
+            self.modifiedSelections[hashCode] = latestModifiedOriginalNode;
         }
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    private isolated function removeNode(parser:Node node) {
+        self.removedNodes[parser:getHashCode(node)] = ();
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    private isolated function isRemovedNode(parser:Node node) returns boolean {
+        return self.removedNodes.hasKey(parser:getHashCode(node));
+    }
+
+    private isolated function getModifiedNode(parser:SelectionNode selectionNode) returns parser:SelectionNode {
+        string hashCode = parser:getHashCode(selectionNode);
+        return self.modifiedSelections.hasKey(hashCode) ? self.modifiedSelections.get(hashCode) : selectionNode;
+    }
 }

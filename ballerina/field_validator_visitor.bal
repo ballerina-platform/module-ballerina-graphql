@@ -23,12 +23,14 @@ class FieldValidatorVisitor {
     private ErrorDetail[] errors;
     private map<string> usedFragments;
     private (string|int)[] argumentPath;
+    private NodeModifierContext nodeModifierContext;
 
-    isolated function init(__Schema schema) {
+    isolated function init(__Schema schema, NodeModifierContext nodeModifierContext) {
         self.schema = schema;
         self.errors = [];
         self.usedFragments = {};
         self.argumentPath = [];
+        self.nodeModifierContext = nodeModifierContext;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -38,7 +40,8 @@ class FieldValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors);
+        __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors,
+                                                                 self.nodeModifierContext);
         if operationField is __Field {
             foreach parser:SelectionNode selection in operationNode.getSelections() {
                 selection.accept(self, operationField);
@@ -79,66 +82,75 @@ class FieldValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
+        parser:FragmentNode modifiedFragmentNode = self.nodeModifierContext.getModifiedFragmentNode(fragmentNode);
         __Field parentField = <__Field>data;
         __Type parentType = <__Type>getOfType(parentField.'type);
-        __Type? fragmentOnType = self.validateFragment(fragmentNode, <string>parentType.name);
+        __Type? fragmentOnType = self.validateFragment(modifiedFragmentNode, <string>parentType.name);
 
         if fragmentOnType is __Type {
             parentField = createField(getOfTypeName(fragmentOnType), fragmentOnType);
-            self.validateDirectiveArguments(fragmentNode);
-            foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+            self.validateDirectiveArguments(modifiedFragmentNode);
+            foreach parser:SelectionNode selection in modifiedFragmentNode.getSelections() {
                 selection.accept(self, data);
             }
         }
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        if argumentNode.hasInvalidVariableValue() {
+        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
+        if modifiedArgNode.hasInvalidVariableValue() {
             // This argument node is already validated to have an invalid value. No further validation is needed.
             return;
         }
         __InputValue schemaArg = <__InputValue>(<map<anydata>>data).get("input");
         string fieldName = <string>(<map<anydata>>data).get("fieldName");
-        if argumentNode.isVariableDefinition() {
+        if modifiedArgNode.isVariableDefinition() {
             self.validateVariableValue(argumentNode, schemaArg, fieldName);
-            argumentNode.setKind(getArgumentTypeIdentifierFromType(schemaArg.'type));
-        } else if argumentNode.getKind() == parser:T_INPUT_OBJECT {
+            self.modifyArgumentNode(argumentNode, kind = getArgumentTypeIdentifierFromType(schemaArg.'type));
+        } else if modifiedArgNode.getKind() == parser:T_INPUT_OBJECT {
             self.visitInputObject(argumentNode, schemaArg, fieldName);
-        } else if argumentNode.getKind() == parser:T_LIST {
+        } else if modifiedArgNode.getKind() == parser:T_LIST {
             self.visitListValue(argumentNode, schemaArg, fieldName);
         } else {
-            parser:ArgumentValue|parser:ArgumentValue[] fieldValue = argumentNode.getValue();
+            parser:ArgumentValue|parser:ArgumentValue[] fieldValue = modifiedArgNode.getValue();
             if fieldValue is parser:ArgumentValue {
                 self.coerceArgumentNodeValue(argumentNode, schemaArg);
-                self.validateArgumentValue(fieldValue, argumentNode.getValueLocation(), getTypeName(argumentNode),
+                self.validateArgumentValue(fieldValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
                                            schemaArg);
             }
         }
     }
 
-    isolated function visitInputObject(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
+    isolated function visitInputObject(parser:ArgumentNode argNode, __InputValue schemaArg, string fieldName) {
+        parser:ArgumentNode modifiedArgumentNode = self.nodeModifierContext.getModifiedArgumentNode(argNode);
         __Type argType = getOfType(schemaArg.'type);
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
-            self.updatePath(argumentNode.getName());
-            parser:ArgumentValue[] fields = <parser:ArgumentValue[]>argumentNode.getValue();
-            self.validateInputObjectFields(argumentNode, inputFields);
+            self.updatePath(modifiedArgumentNode.getName());
+            parser:ArgumentValue[] fields = <parser:ArgumentValue[]>modifiedArgumentNode.getValue();
+            self.validateInputObjectFields(modifiedArgumentNode, inputFields);
             foreach __InputValue inputField in inputFields {
                 self.updatePath(inputField.name);
                 __InputValue subInputValue = inputField;
                 boolean isProvidedField = false;
+                parser:ArgumentValue[] value = [];
                 foreach parser:ArgumentValue fieldValue in fields {
                     if fieldValue is parser:ArgumentNode && fieldValue.getName() == inputField.name {
                         fieldValue.accept(self, {input: subInputValue, fieldName: fieldName});
                         isProvidedField = true;
+                        parser:ArgumentNode modfiedField = self.nodeModifierContext.getModifiedArgumentNode(fieldValue);
+                        value.push(modfiedField);
+                    } else {
+                        value.push(fieldValue);
                     }
                 }
+                self.modifyArgumentNode(argNode, value = value);
                 if !isProvidedField {
                     if subInputValue.'type.kind == NON_NULL && schemaArg?.defaultValue is () {
                         string inputFieldName = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string `Field "${inputFieldName}" of required type ` +
                                          string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
-                        self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
+                        self.errors.push(getErrorDetailRecord(message, modifiedArgumentNode.getLocation()));
                     }
                 }
                 self.removePath();
@@ -146,20 +158,22 @@ class FieldValidatorVisitor {
             self.removePath();
         } else {
             string listError = getListElementError(self.argumentPath);
-            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode);
-            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type),
+                                                          modifiedArgumentNode);
+            ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgumentNode.getLocation());
             self.errors.push(errorDetail);
         }
     }
 
     isolated function visitListValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
-        self.updatePath(argumentNode.getName());
+        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
+        self.updatePath(modifiedArgNode.getName());
         if getTypeKind(schemaArg.'type) == LIST {
-            parser:ArgumentValue|parser:ArgumentValue[] listItems = argumentNode.getValue();
+            parser:ArgumentValue|parser:ArgumentValue[] listItems = modifiedArgNode.getValue();
             if listItems is parser:ArgumentValue[] {
                 __InputValue listItemInputValue = createInputValueForListItem(schemaArg);
                 if listItems.length() > 0 {
-                    foreach int i in 0..< listItems.length() {
+                    foreach int i in 0 ..< listItems.length() {
                         parser:ArgumentValue|parser:ArgumentValue[] item = listItems[i];
                         if item is parser:ArgumentNode {
                             self.updatePath(i);
@@ -171,42 +185,53 @@ class FieldValidatorVisitor {
             } else if schemaArg.'type.kind == NON_NULL {
                 string expectedTypeName = getTypeNameFromType(schemaArg.'type);
                 string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
-                ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
+                ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
                 self.errors.push(errorDetail);
             }
         } else {
             string listError = getListElementError(self.argumentPath);
-            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type), argumentNode);
-            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getLocation());
+            string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type),
+                                                          modifiedArgNode);
+            ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getLocation());
             self.errors.push(errorDetail);
         }
         self.removePath();
     }
 
     isolated function validateVariableValue(parser:ArgumentNode argumentNode, __InputValue schemaArg, string fieldName) {
-        anydata variableValue = argumentNode.getVariableValue();
+        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
+        json variableValue = modifiedArgNode.getVariableValue();
         if getOfType(schemaArg.'type).name == UPLOAD {
             return;
-        } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR || getTypeKind(schemaArg.'type) == ENUM) {
+        } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR 
+                  || getTypeKind(schemaArg.'type) == ENUM) {
             self.coerceArgumentNodeValue(argumentNode, schemaArg);
-            self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
-        } else if variableValue is map<anydata> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
-            self.updatePath(argumentNode.getName());
-            self.validateInputObjectVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
+            self.validateArgumentValue(variableValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
+                                       schemaArg);
+        } else if variableValue is map<json> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
+            self.updatePath(modifiedArgNode.getName());
+            map<json> variableValueClone = {...variableValue};
+            self.validateInputObjectVariableValue(variableValueClone, schemaArg, modifiedArgNode.getValueLocation(),
+                                                  fieldName);
+            self.modifyArgumentNode(argumentNode, variableValue = variableValueClone);
             self.removePath();
-        } else if variableValue is anydata[] && getTypeKind(schemaArg.'type) == LIST {
-            self.updatePath(argumentNode.getName());
-            self.validateListVariableValue(variableValue, schemaArg, argumentNode.getValueLocation(), fieldName);
+        } else if variableValue is json[] && getTypeKind(schemaArg.'type) == LIST {
+            self.updatePath(modifiedArgNode.getName());
+            json[] clonedVariableValue = [...variableValue];
+            self.validateListVariableValue(clonedVariableValue, schemaArg, modifiedArgNode.getValueLocation(),
+                                           fieldName);
+            self.modifyArgumentNode(argumentNode, variableValue = clonedVariableValue);
             self.removePath();
         } else if variableValue is () {
-            self.validateArgumentValue(variableValue, argumentNode.getValueLocation(), getTypeName(argumentNode), schemaArg);
+            self.validateArgumentValue(variableValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
+                                       schemaArg);
         } else {
             string expectedTypeName = getOfTypeName(schemaArg.'type);
             string listError = getListElementError(self.argumentPath);
             string value = variableValue is () ? "null" : variableValue.toString();
             string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
                              string ` ${value}`;
-            ErrorDetail errorDetail = getErrorDetailRecord(message, argumentNode.getValueLocation());
+            ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
             self.errors.push(errorDetail);
         }
     }
@@ -246,7 +271,7 @@ class FieldValidatorVisitor {
         }
     }
 
-    isolated function validateInputObjectVariableValue(map<anydata> variableValues, __InputValue inputValue,
+    isolated function validateInputObjectVariableValue(map<json> variableValues, __InputValue inputValue,
                                                        Location location, string fieldName) {
         __Type argType = getOfType(inputValue.'type);
         __InputValue[]? inputFields = argType?.inputFields;
@@ -269,13 +294,17 @@ class FieldValidatorVisitor {
                             self.validateArgumentValue(fieldValue, location, getTypeNameFromScalarValue(fieldValue),
                                                        subInputValue);
                         }
-                    } else if fieldValue is map<anydata> {
+                    } else if fieldValue is map<json> {
                         self.updatePath(subInputValue.name);
-                        self.validateInputObjectVariableValue(fieldValue, subInputValue, location, fieldName);
+                        map<json> fieldValueClone = {...fieldValue};
+                        self.validateInputObjectVariableValue(fieldValueClone, subInputValue, location, fieldName);
+                        variableValues[subInputValue.name] = fieldValueClone;
                         self.removePath();
-                    } else if fieldValue is anydata[] {
+                    } else if fieldValue is json[] {
                         self.updatePath(subInputValue.name);
-                        self.validateListVariableValue(fieldValue, subInputValue, location, fieldName);
+                        json[] fieldValueClone = [...fieldValue];
+                        self.validateListVariableValue(fieldValueClone, subInputValue, location, fieldName);
+                        variableValues[subInputValue.name] = fieldValueClone;
                         self.removePath();
                     } else if fieldValue is () {
                         string expectedTypeName = getOfTypeName(inputValue.'type);
@@ -299,7 +328,7 @@ class FieldValidatorVisitor {
         }
     }
 
-    isolated function validateListVariableValue(anydata[] variableValues, __InputValue inputValue,
+    isolated function validateListVariableValue(json[] variableValues, __InputValue inputValue,
                                                 Location location, string fieldName) {
         if getTypeKind(inputValue.'type) == LIST {
             __InputValue listItemInputValue = createInputValueForListItem(inputValue);
@@ -307,9 +336,9 @@ class FieldValidatorVisitor {
                 return;
             }
             if variableValues.length() > 0 {
-                foreach int i in 0..< variableValues.length() {
+                foreach int i in 0 ..< variableValues.length() {
                     self.updatePath(i);
-                    anydata listItemValue = variableValues[i];
+                    json listItemValue = variableValues[i];
                     if listItemValue is Scalar {
                         if getOfType(listItemInputValue.'type).kind == ENUM {
                             self.validateEnumArgument(listItemValue, location, ENUM, listItemInputValue);
@@ -323,11 +352,16 @@ class FieldValidatorVisitor {
                         }
                     } else if listItemValue is map<json> {
                         self.updatePath(listItemInputValue.name);
-                        self.validateInputObjectVariableValue(listItemValue, listItemInputValue, location, fieldName);
+                        map<json> listItemValueClone = {...listItemValue};
+                        self.validateInputObjectVariableValue(listItemValueClone, listItemInputValue, location,
+                                                              fieldName);
+                        variableValues[i] = listItemValueClone;
                         self.removePath();
                     } else if listItemValue is json[] {
                         self.updatePath(listItemInputValue.name);
-                        self.validateListVariableValue(listItemValue, listItemInputValue, location, fieldName);
+                        json[] listItemValueClone = [...listItemValue];
+                        self.validateListVariableValue(listItemValueClone, listItemInputValue, location, fieldName);
+                        variableValues[i] = listItemValueClone;
                         self.removePath();
                     } else if listItemValue is () {
                         string expectedTypeName = getOfTypeName(listItemInputValue.'type);
@@ -345,23 +379,24 @@ class FieldValidatorVisitor {
         }
     }
 
-    isolated function coerceArgumentNodeValue(parser:ArgumentNode argNode, __InputValue schemaArg) {
+    isolated function coerceArgumentNodeValue(parser:ArgumentNode argumentNode, __InputValue schemaArg) {
+        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
         string expectedTypeName = getOfTypeName(schemaArg.'type);
-        if argNode.isVariableDefinition() && argNode.getVariableValue() is Scalar {
-            Scalar value = <Scalar>argNode.getVariableValue();
+        if modifiedArgNode.isVariableDefinition() && modifiedArgNode.getVariableValue() is Scalar {
+            Scalar value = <Scalar>modifiedArgNode.getVariableValue();
             value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
-                                     argNode.getValueLocation());
-            argNode.setVariableValue(value);
+                                     modifiedArgNode.getValueLocation());
+            self.modifyArgumentNode(argumentNode, value = value);
             if value is decimal|float {
-                argNode.setKind(parser:T_FLOAT);
+                self.modifyArgumentNode(argumentNode, kind = parser:T_FLOAT);
             }
-        } else if argNode.getValue() is Scalar {
-            Scalar value = <Scalar>argNode.getValue();
+        } else if modifiedArgNode.getValue() is Scalar {
+            Scalar value = <Scalar>modifiedArgNode.getValue();
             value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
-                                     argNode.getValueLocation());
-            argNode.setValue(value);
+                                     modifiedArgNode.getValueLocation());
+            self.modifyArgumentNode(argumentNode, value = value);
             if value is decimal|float {
-                argNode.setKind(parser:T_FLOAT);
+                self.modifyArgumentNode(argumentNode, kind = parser:T_FLOAT);
             }
         }
     }
@@ -426,7 +461,8 @@ class FieldValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () && getOfType(inputValue.'type).name != UPLOAD {
+            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () 
+               && getOfType(inputValue.'type).name != UPLOAD {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
@@ -434,7 +470,8 @@ class FieldValidatorVisitor {
     }
 
     isolated function validateFragment(parser:FragmentNode fragmentNode, string schemaTypeName) returns __Type? {
-        if fragmentNode.isUnknown() || fragmentNode.hasCycle() {
+        if self.nodeModifierContext.isUnknownFragment(fragmentNode)
+           || self.nodeModifierContext.isFragmentWithCycles(fragmentNode) {
             return;
         }
         string fragmentOnTypeName = fragmentNode.getOnType();
@@ -543,11 +580,22 @@ class FieldValidatorVisitor {
     public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
     }
+
+    private isolated function modifyArgumentNode(parser:ArgumentNode originalNode, parser:ArgumentType? kind = (),
+                                                 parser:ArgumentValue|parser:ArgumentValue[] value = (),
+                                                 json variableValue = ()) {
+        parser:ArgumentNode previouslyModifiedNode = self.nodeModifierContext.getModifiedArgumentNode(originalNode);
+        parser:ArgumentNode newModifiedNode = previouslyModifiedNode.modifyWith(kind = kind, value = value,
+                                                                                variableValue = variableValue);
+        self.nodeModifierContext.addModifiedArgumentNode(originalNode, newModifiedNode);
+        return;
+    }
 }
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,
-                                                 ErrorDetail[] errors) returns __Field? {
-    if !operationNode.isConfiguredOperationInSchema() {
+                                                 ErrorDetail[] errors, NodeModifierContext nodeModifierContext)
+returns __Field? {
+    if nodeModifierContext.isNonConfiguredOperation(operationNode) {
         return;
     }
     parser:RootOperationType operationType = operationNode.getKind();
@@ -556,7 +604,7 @@ isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:Oper
     if 'type == () {
         string message = string `Schema is not configured for ${operationType.toString()}s.`;
         errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
-        operationNode.setNotConfiguredOperationInSchema();
+        nodeModifierContext.addNonConfiguredOperation(operationNode);
     } else {
         return createField(operationTypeName, 'type);
     }
