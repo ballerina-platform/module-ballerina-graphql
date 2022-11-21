@@ -102,20 +102,25 @@ isolated class Engine {
 
     isolated function validateDocument(parser:DocumentNode document, map<json>? variables, ErrorDetail[] parserErrors)
     returns OutputObject|parser:DocumentNode {
+        ErrorDetail[]|NodeModifierContext validationResult = self.parallellyValidateDocument(document, variables,
+                                                                                             parserErrors);
+        if validationResult is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(validationResult);
+        } else {
+            DocumentNodeModifierVisitor documentNodeModifierVisitor = new (validationResult);
+            document.accept(documentNodeModifierVisitor);
+            return documentNodeModifierVisitor.getDocumentNode();
+        }
+    }
+
+    isolated function parallellyValidateDocument(parser:DocumentNode document, map<json>? variables,
+                                                 ErrorDetail[] parserErrors) returns ErrorDetail[]|NodeModifierContext {
         ErrorDetail[] validationErrors = [...parserErrors];
-        NodeModifierContext nodeModifierContext = new;
+        final NodeModifierContext nodeModifierContext = new;
         ValidatorVisitor[] validators = [
             new FragmentCycleFinderVisitor(document.getFragments(), nodeModifierContext),
-            new FragmentValidatorVisitor(document.getFragments(), nodeModifierContext),
-            new QueryDepthValidatorVisitor(self.maxQueryDepth, nodeModifierContext),
-            new VariableValidatorVisitor(self.schema, variables, nodeModifierContext),
-            new FieldValidatorVisitor(self.schema, nodeModifierContext),
-            new DirectiveValidatorVisitor(self.schema, nodeModifierContext),
-            new SubscriptionValidatorVisitor(nodeModifierContext)
+            new FragmentValidatorVisitor(document.getFragments(), nodeModifierContext)
         ];
-        if !self.introspection {
-            validators.push(new IntrospectionValidatorVisitor(self.introspection, nodeModifierContext));
-        }
 
         foreach ValidatorVisitor validator in validators {
             document.accept(validator);
@@ -124,13 +129,67 @@ isolated class Engine {
                 validationErrors.push(...errors);
             }
         }
-        if validationErrors.length() > 0 {
-            return getOutputObjectFromErrorDetail(validationErrors);
-        } else {
-            DocumentNodeModifierVisitor documentNodeModifierVisitor = new (nodeModifierContext);
-            document.accept(documentNodeModifierVisitor);
-            return documentNodeModifierVisitor.getDocumentNode();
+
+        final readonly & int? maxQueryDepth = self.maxQueryDepth.cloneReadOnly();
+        final readonly & __Schema schema = self.schema;
+        final readonly & map<json>? vars = variables.cloneReadOnly();
+        final readonly & boolean introspection = self.introspection;
+
+        worker AA returns ErrorDetail[] {
+            var validator = new QueryDepthValidatorVisitor(maxQueryDepth, nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
         }
+
+        worker B returns ErrorDetail[] {
+            var validator = new SubscriptionValidatorVisitor(nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker C returns ErrorDetail[] {
+            var validator =  new DirectiveValidatorVisitor(schema, nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker D returns ErrorDetail[] {
+            ErrorDetail[] errors = [];
+             ValidatorVisitor[] validatorVisitors = [
+                new VariableValidatorVisitor(schema, vars, nodeModifierContext),
+                new FieldValidatorVisitor(schema, nodeModifierContext)
+            ];
+            foreach ValidatorVisitor validator in validatorVisitors {
+                document.accept(validator);
+                ErrorDetail[]? visitorErrors = validator.getErrors();
+                if visitorErrors is ErrorDetail[] {
+                    errors.push(...visitorErrors);
+                }
+            }
+            return errors;
+        }
+
+        worker E returns ErrorDetail[] {
+            if introspection {
+                return [];
+            }
+            var validator = new IntrospectionValidatorVisitor(introspection, nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        ErrorDetail[] errors = wait AA;
+        validationErrors.push(...errors);
+        errors = wait B;
+        validationErrors.push(...errors);
+        errors = wait C;
+        validationErrors.push(...errors);
+        errors = wait D;
+        validationErrors.push(...errors);
+        errors = wait E;
+        validationErrors.push(...errors);
+
+        return validationErrors.length() > 0 ? validationErrors : nodeModifierContext;
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)
