@@ -32,6 +32,7 @@ returns websocket:Error? {
             record {|any value;|}|error? next = sourceStream.next();
             while next !is () {
                 if handler !is () && handler.getUnsubscribed() {
+                    closeStream(sourceStream);
                     return;
                 }
                 any|error resultValue = next is error ? next : next.value;
@@ -53,6 +54,7 @@ isolated function handleStreamCompletion(readonly & map<string> customHeaders, w
                                          SubscriptionHandler? handler, stream<any, error?> sourceStream) returns websocket:Error? {
     if customHeaders.hasKey(WS_SUB_PROTOCOL) {
         if handler is () || handler.getUnsubscribed() {
+            closeStream(sourceStream);
             return;
         }
         check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, (), handler.getId());
