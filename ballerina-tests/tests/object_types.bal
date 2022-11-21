@@ -1,3 +1,4 @@
+import ballerina/lang.runtime;
 // Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -316,5 +317,13 @@ public service class AccountDetails {
 
     resource function get createdYear() returns int {
         return self.createdYear;
+    }
+}
+
+class RefreshData {
+    public isolated function next() returns record {|string value;|}? {
+        // emit data every one second
+        runtime:sleep(1);
+        return {value: "data"};
     }
 }

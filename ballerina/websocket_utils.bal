@@ -19,31 +19,56 @@ import graphql.parser;
 
 isolated function executeOperation(Engine engine, Context context, readonly & __Schema schema,
                                    readonly & map<string> customHeaders, websocket:Caller caller,
-                                   parser:OperationNode node, string? connectionId) returns websocket:Error? {
-    RootFieldVisitor rootFieldVisitor = new (node);
-    parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-    stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
-    if sourceStream is stream<any, error?> {
-        record {|any value;|}|error? next = sourceStream.next();
-        while next !is () {
-            any|error resultValue = next is error ? next : next.value;
-            OutputObject outputObject = engine.getResult(node, context, resultValue);
-            if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
-                check sendWebSocketResponse(caller, customHeaders, WS_NEXT, outputObject.toJson(), connectionId);
+                                   parser:OperationNode node, SubscriptionHandler? subscriptionHandler)
+returns websocket:Error? {
+    worker A returns websocket:Error? {
+        SubscriptionHandler? handler = subscriptionHandler;
+        string? connectionId = handler is () ? () : handler.getId();
+        RootFieldVisitor rootFieldVisitor = new (node);
+        parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
+        stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
+        if sourceStream is stream<any, error?> {
+            record {|any value;|}|error? next = sourceStream.next();
+            while next !is () {
+                if handler !is () && handler.getUnsubscribed() {
+                    return;
+                }
+                any|error resultValue = next is error ? next : next.value;
+                OutputObject outputObject = engine.getResult(node, context, resultValue);
+                if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
+                    check sendWebSocketResponse(caller, customHeaders, WS_NEXT, outputObject.toJson(), connectionId);
+                }
+                context.resetErrors(); //Remove previous event's errors before the next one
+                next = sourceStream.next();
             }
-            context.resetErrors(); //Remove previous event's errors before the next one
-            next = sourceStream.next();
-        }
-        if customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, null, connectionId);
+            check handleStreamCompletion(customHeaders, caller, handler);
         } else {
-            closeConnection(caller);
+            check handleStreamCreationError(customHeaders, caller, handler, sourceStream);
         }
+    }
+}
+
+isolated function handleStreamCompletion(readonly & map<string> customHeaders, websocket:Caller caller,
+                                         SubscriptionHandler? handler) returns websocket:Error? {
+    if customHeaders.hasKey(WS_SUB_PROTOCOL) {
+        if handler is () || handler.getUnsubscribed() {
+            return;
+        }
+        check sendWebSocketResponse(caller, customHeaders, WS_COMPLETE, (), handler.getId());
     } else {
-        check sendWebSocketResponse(caller, customHeaders, WS_ERROR, sourceStream, connectionId);
-        if !customHeaders.hasKey(WS_SUB_PROTOCOL) {
-            closeConnection(caller);
-        }
+        closeConnection(caller);
+    }
+}
+
+isolated function handleStreamCreationError(readonly & map<string> customHeaders, websocket:Caller caller,
+                                            SubscriptionHandler? handler, json errors) returns websocket:Error? {
+    if handler !is () && handler.getUnsubscribed() {
+        return;
+    }
+    string? connectionId = handler is () ? () : handler.getId();
+    check sendWebSocketResponse(caller, customHeaders, WS_ERROR, errors, connectionId);
+    if !customHeaders.hasKey(WS_SUB_PROTOCOL) {
+        closeConnection(caller);
     }
 }
 
