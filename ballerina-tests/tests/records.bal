@@ -253,3 +253,8 @@ public type Review record {|
 public type AccountRecords record {|
     map<AccountDetails> details;
 |};
+
+public type DefaultPerson record {|
+    string name = "Sam";
+    Address[] addresses = [];
+|};

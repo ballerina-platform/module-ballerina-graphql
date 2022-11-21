@@ -625,12 +625,65 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 
     check initiateConnectionInitMessage(wsClient);
     check validateConnectionInitMessage(wsClient);
-    
+
     json invalidPayload = {"type": WS_START};
     check wsClient->writeMessage(invalidPayload);
     json|error response = wsClient->readMessage();
     test:assertTrue(response is error);
     test:assertEquals((<error>response).message(), "Request does not contain the id field: Status code: 1002");
+}
+
+@test:Config {
+    groups: ["subscriptions", "recrods", "service"]
+}
+isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
+    string url = "ws://localhost:9090/reviews";
+    websocket:Client wsClient = check new (url);
+    string document = "subscription { live { product { id } score } }";
+    json payload = {query: document};
+    check wsClient->writeMessage(payload);
+    json expectedPayload = {
+        data: {
+            live: {
+                product: {
+                    id: "1"
+                },
+                score: 20
+            }
+        }
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+@test:Config {
+    groups: ["subscriptions", "recrods", "service", "maps"]
+}
+isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
+    string url = "ws://localhost:9090/reviews";
+    websocket:Client wsClient = check new (url);
+    string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
+    json payload = {query: document};
+    check wsClient->writeMessage(payload);
+    json expectedPayload = {
+        data: {
+            accountUpdates: {
+                details: {
+                    name: "James"
+                }
+            }
+        }
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
+    expectedPayload = {
+        data: {
+            accountUpdates: {
+                details: {
+                    name: "James Deen"
+                }
+            }
+        }
+    };
+    check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {

@@ -12,7 +12,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3230] Add Service Interceptor Execution for Record Fields, Maps & Tables](https://github.com/ballerina-platform/ballerina-standard-library/issues/3230)
 - [[#2913] Support Interfaces Implementing Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/2913)
 - [[#3233] Add Service Level Interceptor Support for GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3233)
-- [[#3571] Publish GraphQL Commons APIs](https://github.com/ballerina-platform/ballerina-standard-library/issues/3571)
 
 ### Fixed
 - [[#3294] Fix GraphQL Dynamic Listener Is Not Working for Module Level Service Declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
@@ -24,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3548] Fix Socket Connection Gets Closed when the Operation is Complete or If there is an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/3548)
 - [[#3466] Fix Resolver Returning Null when a Record has a Service Object as its Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/3466)
 - [[#3579] Resolver Produces Null when Resolver Returns a Record Containing a Map of Service Objects as its Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/3579)
+- [[#3062] Fix Allow to Attach a Service with Subscription to a HTTP2 Based Listener](https://github.com/ballerina-platform/ballerina-standard-library/issues/3601)
+- [[#3628] Fix Compilation Failure when Other Annotations are Present](https://github.com/ballerina-platform/ballerina-standard-library/issues/3628)
+- [[#3646] Fix Returning Incorrect Validation Errors for Input Object Fields with Default Values](https://github.com/ballerina-platform/ballerina-standard-library/issues/3646)
+- [[#3661] Fix Stream not Closing After the Completion of the Subscription Operation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3661)
 
 ### Changed
 - [[#3062] Improve Compilation Error Messages To Be More Specific](https://github.com/ballerina-platform/ballerina-standard-library/issues/3062)

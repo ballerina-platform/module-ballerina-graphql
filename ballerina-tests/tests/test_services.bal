@@ -352,6 +352,10 @@ service /input_objects on basicListener {
     isolated resource function get convertKgToGram(WeightInKg weight) returns float {
         return <float>weight.weight * 1000.00;
     }
+
+    isolated resource function get name(DefaultPerson person) returns string {
+        return person.name;
+    }
 }
 
 service /list_inputs on basicListener {
@@ -1925,5 +1929,85 @@ service /reviews on wrappedListener {
 
     resource function get account() returns AccountRecords {
         return {details: {acc1: new ("James", 2022), acc2: new ("Paul", 2015)}};
+    }
+
+    resource function subscribe live() returns stream<Review> {
+        return reviews.toArray().toStream();
+    }
+
+    resource function subscribe accountUpdates() returns stream<AccountRecords> {
+        map<AccountDetails> details = {acc1: new AccountDetails("James", 2022), acc2: new AccountDetails("Paul", 2015)};
+        map<AccountDetails> updatedDetails = {...details};
+        updatedDetails["acc1"] = new AccountDetails("James Deen", 2022);
+        return [{details},{details: updatedDetails}].toStream();
+    }
+}
+
+isolated service /service_with_http2 on http2BasedListener {
+    private Person p;
+    isolated function init() {
+        self.p = p2.clone();
+    }
+
+    isolated resource function get person() returns Person {
+        lock {
+            return self.p;
+        }
+    }
+
+    isolated remote function setName(string name) returns Person {
+        lock {
+            Person p = {name: name, age: self.p.age, address: self.p.address};
+            self.p = p;
+            return self.p;
+        }
+    }
+}
+
+graphql:Service subscriptionService = service object {
+
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        return intArray.toStream();
+    }
+};
+
+isolated service /service_with_http1 on http1BasedListener {
+    private Person p;
+    isolated function init() {
+        self.p = p2.clone();
+    }
+
+    isolated resource function get person() returns Person {
+        lock {
+            return self.p;
+        }
+    }
+
+    isolated remote function setName(string name) returns Person {
+        lock {
+            Person p = {name: name, age: self.p.age, address: self.p.address};
+            self.p = p;
+            return self.p;
+        }
+    }
+
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        return intArray.toStream();
+    }
+}
+
+@display {
+    label: "diplay",
+    id: "display-1"
+}
+service /annotations on wrappedListener {
+    resource function get greeting() returns string {
+        return "Hello";
     }
 }

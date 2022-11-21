@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/log;
 import ballerina/websocket;
 import graphql.parser;
 
@@ -41,7 +42,7 @@ returns websocket:Error? {
                 context.resetErrors(); //Remove previous event's errors before the next one
                 next = sourceStream.next();
             }
-            check handleStreamCompletion(customHeaders, caller, handler);
+            check handleStreamCompletion(customHeaders, caller, handler, sourceStream);
         } else {
             check handleStreamCreationError(customHeaders, caller, handler, sourceStream);
         }
@@ -49,7 +50,7 @@ returns websocket:Error? {
 }
 
 isolated function handleStreamCompletion(readonly & map<string> customHeaders, websocket:Caller caller,
-                                         SubscriptionHandler? handler) returns websocket:Error? {
+                                         SubscriptionHandler? handler, stream<any, error?> sourceStream) returns websocket:Error? {
     if customHeaders.hasKey(WS_SUB_PROTOCOL) {
         if handler is () || handler.getUnsubscribed() {
             return;
@@ -58,6 +59,7 @@ isolated function handleStreamCompletion(readonly & map<string> customHeaders, w
     } else {
         closeConnection(caller);
     }
+    closeStream(sourceStream);
 }
 
 isolated function handleStreamCreationError(readonly & map<string> customHeaders, websocket:Caller caller,
@@ -139,4 +141,12 @@ isolated function validateSubProtocol(websocket:Caller caller, readonly & map<st
         }
     }
     return;
+}
+
+isolated function closeStream(stream<any, error?> sourceStream) {
+    error? result = sourceStream.close();
+    if result is error {
+        error err = error("Failed to close stream", result);
+        log:printError(err.message(), stackTrace = err.stackTrace());
+    }
 }

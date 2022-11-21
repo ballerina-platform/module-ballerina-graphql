@@ -48,7 +48,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
     }
 }
 
-task updateTomlVerions {
+task updateTomlFiles {
     doLast {
         def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("@toml.version@", tomlVersion)
         ballerinaTomlFile.text = newBallerinaToml
@@ -72,6 +72,8 @@ def groupParams = ""
 def disableGroups = ""
 def debugParams = ""
 def balJavaDebugParam = ""
+def nativeFlag = ""
+def testParams = ""
 
 task initializeVariables {
     if (project.hasProperty("groups")) {
@@ -86,11 +88,24 @@ task initializeVariables {
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
     }
+    if (project.hasProperty('balNativeTest')) {
+        nativeFlag = '--native'
+    }
+
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(":${packageName}-ballerina:test")) {
+            if (!project.hasProperty('balNativeTest')) {
+                testParams = "${testCoverageParam}"
+            }
+        } else {
+            testParams = "--skip-tests"
+        }
+    }
 }
 
 task ballerinaTest {
     dependsOn(":${packageName}-${packageOrg}:build")
-    dependsOn(updateTomlVerions)
+    dependsOn(updateTomlFiles)
     dependsOn(initializeVariables)
     finalizedBy(commitTomlFiles)
 
@@ -99,9 +114,9 @@ task ballerinaTest {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${testCoverageParam} --offline ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${nativeFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal test ${testCoverageParam} --offline ${groupParams} ${disableGroups} ${debugParams}"
+                commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal test ${nativeFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams}"
             }
         }
     }

@@ -1,31 +1,31 @@
 {
   "types": [
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Directive"
+      "name": "io.ballerina.stdlib.graphql.commons.types.Directive"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation"
+      "name": "io.ballerina.stdlib.graphql.commons.types.DirectiveLocation"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.DirectiveLocation[]"
+      "name": "io.ballerina.stdlib.graphql.commons.types.DirectiveLocation[]"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.EnumValue"
+      "name": "io.ballerina.stdlib.graphql.commons.types.EnumValue"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Field"
+      "name": "io.ballerina.stdlib.graphql.commons.types.Field"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.InputValue"
+      "name": "io.ballerina.stdlib.graphql.commons.types.InputValue"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Schema"
+      "name": "io.ballerina.stdlib.graphql.commons.types.Schema"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.Type"
+      "name": "io.ballerina.stdlib.graphql.commons.types.Type"
     },
     {
-      "name": "io.ballerina.stdlib.graphql.compiler.schema.types.TypeKind"
+      "name": "io.ballerina.stdlib.graphql.commons.types.TypeKind"
     },
     {
       "name": "java.lang.Enum"
@@ -42,5 +42,6 @@
     {
       "name": "java.util.LinkedHashMap"
     }
-  ]
+  ],
+  "lambdaCapturingTypes": []
 }
