@@ -22,7 +22,7 @@ class DefaultDirectiveProcessorVisitor {
     private final __Schema schema;
     private map<()> removedNodes;
 
-    isolated function init(__Schema schema,map<()> removedNodes) {
+    isolated function init(__Schema schema, map<()> removedNodes) {
         self.schema = schema;
         self.removedNodes = removedNodes;
     }
@@ -80,7 +80,7 @@ class DefaultDirectiveProcessorVisitor {
         if argumentNode.isVariableDefinition() {
             return <boolean>argumentNode.getVariableValue();
         } else {
-            parser:ArgumentValue value = <parser:ArgumentValue> argumentNode.getValue();
+            parser:ArgumentValue value = <parser:ArgumentValue>argumentNode.getValue();
             return <boolean>value;
         }
     }

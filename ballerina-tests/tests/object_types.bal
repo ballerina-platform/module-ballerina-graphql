@@ -1,4 +1,3 @@
-import ballerina/lang.runtime;
 // Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -16,6 +15,7 @@ import ballerina/lang.runtime;
 // under the License.
 
 import ballerina/graphql;
+import ballerina/lang.runtime;
 
 public type PeopleService StudentService|TeacherService;
 

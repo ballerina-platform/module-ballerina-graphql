@@ -373,7 +373,8 @@ class VariableValidatorVisitor {
                                                 Location? valueLocation = (), boolean? isVarDef = (),
                                                 json variableValue = (), boolean? containsInvalidValue = ()) {
         parser:ArgumentNode previouslyModifiedNode = self.nodeModifierContext.getModifiedArgumentNode(originalNode);
-        parser:ArgumentNode newModifiedNode = previouslyModifiedNode.modifyWith(kind, value, valueLocation, isVarDef, variableValue, containsInvalidValue);
+        parser:ArgumentNode newModifiedNode = previouslyModifiedNode.modifyWith(kind, value, valueLocation, isVarDef,
+                                                                                variableValue, containsInvalidValue);
         self.nodeModifierContext.addModifiedArgumentNode(originalNode, newModifiedNode);
         return;
     }
