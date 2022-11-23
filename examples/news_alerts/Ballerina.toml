@@ -1,0 +1,8 @@
+[package]
+org = "thisaru"
+name = "news_alerts"
+version = "0.1.0"
+distribution = "2201.3.0-rc2.2"
+
+[build-options]
+observabilityIncluded = true

@@ -23,7 +23,7 @@ apply plugin: 'java'
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
 
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
-def examples = ["snowtooth", "starwars"]
+def examples = ["snowtooth", "starwars", "news_alerts"]
 def nativeFlag = ""
 
 dependencies {
