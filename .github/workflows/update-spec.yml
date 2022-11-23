@@ -9,7 +9,7 @@ on:
     branches:
       - master
     paths:
-      - 'docs/spec'
+      - 'docs/spec/**'
 
 jobs:
   update_specs:
