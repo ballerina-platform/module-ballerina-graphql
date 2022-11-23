@@ -74,7 +74,7 @@ The conforming implementation of the specification is released and included in t
         * 4.5.1 [Input Union Types](#451-input-union-types)
         * 4.5.2 [Input Objects](#452-input-objects)
     * 4.6 [Interfaces](#46-interfaces)
-    * 4.7 [Interfaces Implementing Interfaces](#47-interfaces-implementing-interfaces)
+        * 4.6.1 [Interfaces Implementing Interfaces](#461-interfaces-implementing-interfaces)
 5. [Directives](#5-directives)
    * 5.1 [@skip](#51-skip)
    * 5.2 [@include](#52-include)
@@ -986,7 +986,7 @@ public isolated distinct service class Teacher {
 
 In the above example, the `Person` object is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Person` interface.
 
-### 4.7 Interfaces Implementing Interfaces
+#### 4.6.1 Interfaces Implementing Interfaces
 
 In GraphQL, an interface can implement another interface. The implementing interface must define each field that is specified by the implemented interface. Interface definitions must not contain cyclic references nor implement themselves.
 
