@@ -74,6 +74,7 @@ The conforming implementation of the specification is released and included in t
         * 4.5.1 [Input Union Types](#451-input-union-types)
         * 4.5.2 [Input Objects](#452-input-objects)
     * 4.6 [Interfaces](#46-interfaces)
+        * 4.6.1 [Interfaces Implementing Interfaces](#461-interfaces-implementing-interfaces)
 5. [Directives](#5-directives)
    * 5.1 [@skip](#51-skip)
    * 5.2 [@include](#52-include)
@@ -984,6 +985,60 @@ public isolated distinct service class Teacher {
 ```
 
 In the above example, the `Person` object is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Person` interface.
+
+#### 4.6.1 Interfaces Implementing Interfaces
+
+In GraphQL, an interface can implement another interface. The implementing interface must define each field that is specified by the implemented interface. Interface definitions must not contain cyclic references nor implement themselves.
+
+In Ballerina, `distinct` `service` objects can be included in other `distinct` `service` objects to achieve interface implementing interface functionality. Including these interface objects, to itself or cyclically within other interface objects results in a compilation error.
+
+An `Object` type which implements an interface must implement all the fields from that interface and its parent interfaces.
+
+###### Example: Interfaces Implementing Interfaces
+```ballerina
+service on new graphql:Listener(9000) {
+    resource function get node() returns Node {
+        return new Image("001", "https://ballerina.io/images/ballerina-logo-white.svg", "logo");
+    }
+}
+
+public type Node distinct service object {
+    resource function get id() returns string;
+};
+
+public type Resource distinct service object {
+    *Node;
+    resource function get url() returns string;
+};
+
+public isolated distinct service class Image {
+    *Resource;
+
+    final string id;
+    final string url;
+    final string thumbnail;
+
+    isolated function init(string id, string url, string thumbnail) {
+        self.id = id;
+        self.url = url;
+        self.thumbnail = thumbnail;
+    }
+
+    isolated resource function get id() returns string {
+        return self.id;
+    }
+
+    isolated resource function get url() returns string {
+        return self.url;
+    }
+
+    isolated resource function get thumbnail() returns string {
+        return self.thumbnail;
+    }
+}
+```
+
+In the above example, the `Node` and `Resource` objects are interfaces. The `Resource` interface implements the `Node` interface. The `Image` class is an `Object` type that implements the `Resource` interface. Since the `Image` object implements the `Resource` interface and the `Resource` interface implements the `Node` interface, the `Image` object must implement the fields from both interfaces.
 
 ## 5. Directives
 
