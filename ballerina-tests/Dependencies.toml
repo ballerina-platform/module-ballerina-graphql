@@ -97,8 +97,11 @@ dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "lang.runtime"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
@@ -242,6 +245,9 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
+]
 
 [[package]]
 org = "ballerina"
@@ -262,6 +268,9 @@ dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"}
+]
+modules = [
+	{org = "ballerina", packageName = "mime", moduleName = "mime"}
 ]
 
 [[package]]
@@ -340,6 +349,9 @@ name = "url"
 version = "2.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "url", moduleName = "url"}
 ]
 
 [[package]]
