@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/10/05  
+_Updated_: 2022/11/23  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -74,6 +74,7 @@ The conforming implementation of the specification is released and included in t
         * 4.5.1 [Input Union Types](#451-input-union-types)
         * 4.5.2 [Input Objects](#452-input-objects)
     * 4.6 [Interfaces](#46-interfaces)
+        * 4.6.1 [Interfaces Implementing Interfaces](#461-interfaces-implementing-interfaces)
 5. [Directives](#5-directives)
    * 5.1 [@skip](#51-skip)
    * 5.2 [@include](#52-include)
@@ -115,14 +116,14 @@ The conforming implementation of the specification is released and included in t
 11. [Security](#11-security)
     * 11.1 [Authentication and Authorization](#111-authentication-and-authorization)
         * 11.1.1 [Declarative Approach](#1111-declarative-approach)
-            * 11.1.1.1 [Basic Auth - File User Store](#11111-basic-auth---file-user-store)
-            * 11.1.1.2 [Basic Auth - LDAP User Store](#11112-basic-auth---ldap-user-store)
-            * 11.1.1.3 [JWT Auth](#11113-jwt-auth)
+            * 11.1.1.1 [Basic Authentication - File User Store](#11111-basic-authentication---file-user-store)
+            * 11.1.1.2 [Basic Authentication - LDAP User Store](#11112-basic-authentication---ldap-user-store)
+            * 11.1.1.3 [JWT Authentication](#11113-jwt-authentication)
             * 11.1.1.4 [OAuth2](#11114-oauth2)
         * 11.1.2 [Imperative Approach](#1112-imperative-approach)
-            * 11.1.2.1 [Basic Auth - File User Store](#11121-basic-auth---file-user-store)
-            * 11.1.2.2 [Basic Auth - LDAP User Store](#11122-basic-auth---ldap-user-store)
-            * 11.1.2.3 [JWT Auth](#11123-jwt-auth)
+            * 11.1.2.1 [Basic Authentication - File User Store](#11121-basic-authentication---file-user-store)
+            * 11.1.2.2 [Basic Authentication - LDAP User Store](#11122-basic-authentication---ldap-user-store)
+            * 11.1.2.3 [JWT Authentication](#11123-jwt-authentication)
             * 11.1.2.4 [OAuth2](#11124-oauth2)
     * 11.2 [SSL/TLS and Mutual SSL](#112-ssltls-and-mutual-ssl)
         * 11.2.1 [SSL/TLS](#1121-ssltls)
@@ -984,6 +985,60 @@ public isolated distinct service class Teacher {
 
 In the above example, the `Person` object is an interface. The `Student` and `Teacher` classes are `Object` types that implement the `Person` interface.
 
+#### 4.6.1 Interfaces Implementing Interfaces
+
+In GraphQL, an interface can implement another interface. The implementing interface must define each field that is specified by the implemented interface. Interface definitions must not contain cyclic references nor implement themselves.
+
+In Ballerina, `distinct` `service` objects can be included in other `distinct` `service` objects to achieve interface implementing interface functionality. Including these interface objects, to itself or cyclically within other interface objects results in a compilation error.
+
+An `Object` type which implements an interface must implement all the fields from that interface and its parent interfaces.
+
+###### Example: Interfaces Implementing Interfaces
+```ballerina
+service on new graphql:Listener(9000) {
+    resource function get node() returns Node {
+        return new Image("001", "https://ballerina.io/images/ballerina-logo-white.svg", "logo");
+    }
+}
+
+public type Node distinct service object {
+    resource function get id() returns string;
+};
+
+public type Resource distinct service object {
+    *Node;
+    resource function get url() returns string;
+};
+
+public isolated distinct service class Image {
+    *Resource;
+
+    final string id;
+    final string url;
+    final string thumbnail;
+
+    isolated function init(string id, string url, string thumbnail) {
+        self.id = id;
+        self.url = url;
+        self.thumbnail = thumbnail;
+    }
+
+    isolated resource function get id() returns string {
+        return self.id;
+    }
+
+    isolated resource function get url() returns string {
+        return self.url;
+    }
+
+    isolated resource function get thumbnail() returns string {
+        return self.thumbnail;
+    }
+}
+```
+
+In the above example, the `Node` and `Resource` objects are interfaces. The `Resource` interface implements the `Node` interface. The `Image` class is an `Object` type that implements the `Resource` interface. Since the `Image` object implements the `Resource` interface and the `Resource` interface implements the `Node` interface, the `Image` object must implement the fields from both interfaces.
+
 ## 5. Directives
 
 Ballerina GraphQL services support three default directives.
@@ -1665,13 +1720,13 @@ This is also known as the configuration-driven approach, which is used for simpl
 
 The service configurations are used to define the authentication and authorization configurations. Users can configure the configurations needed for different authentication schemes and configurations needed for authorizations of each authentication scheme. The configurations can be provided at the service level. The auth handler creation and request authentication/authorization is handled internally without user intervention. The requests that succeeded both authentication and/or authorization phases according to the configurations will be passed to the business logic layer.
 
-##### 11.1.1.1 Basic Auth - File User Store
+##### 11.1.1.1 Basic Authentication - File User Store
 
-A GraphQL service can be secured using [Basic Auth with File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) and optionally by enforcing authorization.
+A GraphQL service can be secured using [Basic Authentication with File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) and optionally by enforcing authorization.
 
 When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from a `TOML` file, that stores the usernames and passwords for authentication and the scopes for authorization.
 
-###### Example: Declarative Basic Auth with File User Store
+###### Example: Declarative Basic Authentication with File User Store
 
 ```ballerina
 @graphql:ServiceConfig {
@@ -1704,13 +1759,13 @@ password="bob@123"
 scopes=["developer", "admin"]
 ```
 
-##### 11.1.1.2 Basic Auth - LDAP User Store
+##### 11.1.1.2 Basic Authentication - LDAP User Store
 
-A GraphQL service can be secured using [Basic Auth with LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
+A GraphQL service can be secured using [Basic Authentication with LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
 
 When configured, it validates the `Authorization` header in the HTTP request that contains the GraphQL document. This reads the data from the configured LDAP, which stores the usernames and passwords for authentication and the scopes for authorization.
 
-###### Example: Declarative Basic Auth with LDAP User Store
+###### Example: Declarative Basic Authentication with LDAP User Store
 
 ```ballerina
 @graphql:ServiceConfig {
@@ -1748,13 +1803,13 @@ service /graphql on securedEP {
 }
 ```
 
-##### 11.1.1.3 JWT Auth
+##### 11.1.1.3 JWT Authentication
 
-A GraphQL service can be secured using [JWT Auth](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
+A GraphQL service can be secured using [JWT Authentication](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
 
 When configured, it validates the JWT sent in the `Authorization` header in the HTTP request that contains the GraphQL document.
 
-###### Example: Declarative JWT Auth
+###### Example: Declarative JWT Authentication
 
 ```ballerina
 @graphql:ServiceConfig {
@@ -1819,11 +1874,11 @@ This is also known as the code-driven approach, which is used for advanced use c
 
 The [`graphql:Context`](#7-context) object and the [`contextInit`](#813-context-initializer-function) method can be used to achieve this.
 
-##### 11.1.2.1 Basic Auth - File User Store
+##### 11.1.2.1 Basic Authentication - File User Store
 
 A file user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
-###### Example: Imperative Basic Auth with File User Store
+###### Example: Imperative Basic Authentication with File User Store
 
 ```ballerina
 graphql:FileUserStoreConfig config = {};
@@ -1873,11 +1928,11 @@ password="bob@123"
 scopes=["developer", "admin"]
 ```
 
-##### 11.1.2.2 Basic Auth - LDAP User Store
+##### 11.1.2.2 Basic Authentication - LDAP User Store
 
 An LDAP user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
-###### Example: Imperative Basic Auth with LDAP User Store
+###### Example: Imperative Basic Authentication with LDAP User Store
 
 ```ballerina
 graphql:LdapUserStoreConfig config = {
@@ -1932,11 +1987,11 @@ service on new graphql:Listener(4000) {
 }
 ```
 
-##### 11.1.2.3 JWT Auth
+##### 11.1.2.3 JWT Authentication
 
 A JWT configuration can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
-###### Example: Imperative JWT Auth
+###### Example: Imperative JWT Authentication
 
 ```ballerina
 graphql:JwtValidatorConfig config = {
