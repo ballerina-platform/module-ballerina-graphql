@@ -129,7 +129,7 @@ isolated service class WsService {
         string? connectionId = handler is () ? () : handler.getId();
         parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
         if node is parser:OperationNode {
-            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, node, handler);
+            _ = start executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, node, handler);
         } else {
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
             if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {

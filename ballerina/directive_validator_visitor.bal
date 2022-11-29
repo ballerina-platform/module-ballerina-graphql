@@ -64,13 +64,12 @@ class DirectiveValidatorVisitor {
 
     // TODO: Check invalid argument type for valid argument name
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
         __Directive directive = <__Directive>data;
         string argumentName = argumentNode.getName();
         __InputValue? inputValue = getInputValueFromArray(directive.args, argumentName);
         if inputValue == () {
             string message = string `Unknown argument "${argumentName}" on directive "${directive.name}".`;
-            self.errors.push(getErrorDetailRecord(message, modifiedArgNode.getLocation()));
+            self.errors.push(getErrorDetailRecord(message, argumentNode.getLocation()));
         } else {
             _ = self.missingArguments.remove(<int>self.missingArguments.indexOf(inputValue));
         }

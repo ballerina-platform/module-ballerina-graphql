@@ -19,15 +19,15 @@ import ballerina/websocket;
 import graphql.parser;
 
 isolated function executeOperation(Engine engine, Context context, readonly & __Schema schema,
-                                   readonly & map<string> customHeaders, websocket:Caller caller,
-                                   parser:OperationNode node, SubscriptionHandler? subscriptionHandler)
-returns websocket:Error? {
-    worker A returns websocket:Error? {
+        readonly & map<string> customHeaders, websocket:Caller caller,
+        parser:OperationNode node, SubscriptionHandler? subscriptionHandler) {
+    stream<any, error?>|json sourceStream;
+    do {
         SubscriptionHandler? handler = subscriptionHandler;
         string? connectionId = handler is () ? () : handler.getId();
         RootFieldVisitor rootFieldVisitor = new (node);
         parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-        stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
+        sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
         if sourceStream is stream<any, error?> {
             record {|any value;|}|error? next = sourceStream.next();
             while next !is () {
@@ -47,11 +47,17 @@ returns websocket:Error? {
         } else {
             check handleStreamCreationError(customHeaders, caller, handler, sourceStream);
         }
+    } on fail error err {
+        log:printError(err.message(), stackTrace = err.stackTrace());
+        if (sourceStream is stream<any, error?>) {
+            closeStream(sourceStream);
+        }
     }
 }
 
 isolated function handleStreamCompletion(readonly & map<string> customHeaders, websocket:Caller caller,
-                                         SubscriptionHandler? handler, stream<any, error?> sourceStream) returns websocket:Error? {
+                                         SubscriptionHandler? handler, stream<any, error?> sourceStream)
+returns websocket:Error? {
     if customHeaders.hasKey(WS_SUB_PROTOCOL) {
         if handler is () || handler.getUnsubscribed() {
             closeStream(sourceStream);

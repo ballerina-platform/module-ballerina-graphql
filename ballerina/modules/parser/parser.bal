@@ -16,17 +16,13 @@
 
 public class Parser {
     private Lexer lexer;
-    private map<FragmentNode> fragments;
-    private map<OperationNode> operations;
-    private ErrorDetail[] errors;
-    private boolean isFirstAnonymousOperation;
+    private map<FragmentNode> fragments = {};
+    private map<OperationNode> operations = {};
+    private ErrorDetail[] errors = [];
+    private boolean isFirstAnonymousOperation = false;
 
     public isolated function init(string text) {
         self.lexer = new (text);
-        self.fragments = {};
-        self.operations = {};
-        self.errors = [];
-        self.isFirstAnonymousOperation = false;
     }
 
     public isolated function parse() returns Error|DocumentNode {

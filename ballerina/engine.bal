@@ -116,10 +116,12 @@ isolated class Engine {
     isolated function parallellyValidateDocument(parser:DocumentNode document, map<json>? variables,
                                                  ErrorDetail[] parserErrors) returns ErrorDetail[]|NodeModifierContext {
         ErrorDetail[] validationErrors = [...parserErrors];
+
+        map<parser:FragmentNode> fragments = document.getFragments();
         final NodeModifierContext nodeModifierContext = new;
         ValidatorVisitor[] validators = [
-            new FragmentCycleFinderVisitor(document.getFragments(), nodeModifierContext),
-            new FragmentValidatorVisitor(document.getFragments(), nodeModifierContext)
+            new FragmentCycleFinderVisitor(fragments, nodeModifierContext),
+            new FragmentValidatorVisitor(fragments, nodeModifierContext)
         ];
 
         foreach ValidatorVisitor validator in validators {
@@ -130,30 +132,30 @@ isolated class Engine {
             }
         }
 
-        final readonly & int? maxQueryDepth = self.maxQueryDepth.cloneReadOnly();
+        final int? maxQueryDepth = self.maxQueryDepth;
         final readonly & __Schema schema = self.schema;
         final readonly & map<json>? vars = variables.cloneReadOnly();
-        final readonly & boolean introspection = self.introspection;
+        final boolean introspection = self.introspection;
 
-        worker AA returns ErrorDetail[] {
-            var validator = new QueryDepthValidatorVisitor(maxQueryDepth, nodeModifierContext);
+        worker queryDepthValidatorWorker returns ErrorDetail[] {
+            QueryDepthValidatorVisitor validator = new (maxQueryDepth, nodeModifierContext);
             document.accept(validator);
             return validator.getErrors() ?: [];
         }
 
-        worker B returns ErrorDetail[] {
-            var validator = new SubscriptionValidatorVisitor(nodeModifierContext);
+        worker subscriptionValidatorWorker returns ErrorDetail[] {
+            SubscriptionValidatorVisitor validator = new (nodeModifierContext);
             document.accept(validator);
             return validator.getErrors() ?: [];
         }
 
-        worker C returns ErrorDetail[] {
-            var validator =  new DirectiveValidatorVisitor(schema, nodeModifierContext);
+        worker directiveValidatorWorker returns ErrorDetail[] {
+            DirectiveValidatorVisitor validator = new (schema, nodeModifierContext);
             document.accept(validator);
             return validator.getErrors() ?: [];
         }
 
-        worker D returns ErrorDetail[] {
+        worker fieldAndVariableValidatorWorker returns ErrorDetail[] {
             ErrorDetail[] errors = [];
              ValidatorVisitor[] validatorVisitors = [
                 new VariableValidatorVisitor(schema, vars, nodeModifierContext),
@@ -169,24 +171,24 @@ isolated class Engine {
             return errors;
         }
 
-        worker E returns ErrorDetail[] {
+        worker introspectionValidatorWorker returns ErrorDetail[] {
             if introspection {
                 return [];
             }
-            var validator = new IntrospectionValidatorVisitor(introspection, nodeModifierContext);
+            IntrospectionValidatorVisitor validator = new (introspection, nodeModifierContext);
             document.accept(validator);
             return validator.getErrors() ?: [];
         }
 
-        ErrorDetail[] errors = wait AA;
+        ErrorDetail[] errors = wait queryDepthValidatorWorker;
         validationErrors.push(...errors);
-        errors = wait B;
+        errors = wait subscriptionValidatorWorker;
         validationErrors.push(...errors);
-        errors = wait C;
+        errors = wait directiveValidatorWorker;
         validationErrors.push(...errors);
-        errors = wait D;
+        errors = wait fieldAndVariableValidatorWorker;
         validationErrors.push(...errors);
-        errors = wait E;
+        errors = wait introspectionValidatorWorker;
         validationErrors.push(...errors);
 
         return validationErrors.length() > 0 ? validationErrors : nodeModifierContext;
