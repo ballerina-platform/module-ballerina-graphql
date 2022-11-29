@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3230] Add Service Interceptor Execution for Record Fields, Maps & Tables](https://github.com/ballerina-platform/ballerina-standard-library/issues/3230)
 - [[#2913] Support Interfaces Implementing Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/2913)
 - [[#3233] Add Service Level Interceptor Support for GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3233)
+- [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
 
 ### Fixed
 - [[#3294] Fix GraphQL Dynamic Listener Is Not Working for Module Level Service Declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3294)
@@ -33,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2848] All the Errors Are Reported for a Given Document in a Single Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/2848)
 - [[#3431] Introduce GraphQL Client Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3431)
 - [[#3463] Updated API Docs to Reflect Slack to Discord Migration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
+- [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
 
 ## [1.4.1] - 2022-09-12
 
