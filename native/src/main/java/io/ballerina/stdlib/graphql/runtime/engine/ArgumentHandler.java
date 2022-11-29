@@ -128,7 +128,7 @@ public class ArgumentHandler {
     }
 
     private Object getIntersectionTypeArgument(BObject argumentNode, IntersectionType intersectionType) {
-        Type effectiveType = getEffectiveType(intersectionType);
+        Type effectiveType = TypeUtils.getReferredType(getEffectiveType(intersectionType));
         if (effectiveType.getTag() == TypeTags.ARRAY_TAG) {
             BArray valueArray = getArrayTypeArgument(argumentNode, (ArrayType) effectiveType);
             valueArray.freezeDirect();
