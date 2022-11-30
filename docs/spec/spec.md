@@ -1851,7 +1851,7 @@ A GraphQL service can be secured using [OAuth2](https://github.com/ballerina-pla
 
 When configured, it validates the OAuth2 token sent in the `Authorization` header in the HTTP request that contains the GraphQL document. This calls the configured OAuth2 introspection endpoint to validate.
 
-###### Example: Declarative OAuth2
+###### Example: Declarative Approach to Secure Service Using OAuth2
 
 ```ballerina
 @graphql:ServiceConfig {
