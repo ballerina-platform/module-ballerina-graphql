@@ -140,7 +140,7 @@ service /graphql on new graphql:Listener(4000) {
         return self.profile;
     }
 
-    remote function updateCity(string city) reutns Person {
+    remote function updateCity(string city) returns Person {
         self.profile.city = city;
         return self.profile;
     }
