@@ -128,7 +128,7 @@ The conforming implementation of the specification is released and included in t
     * 11.2 [Client Authentication and Authorization](#112-client-authentication-and-authorization)
         * 11.2.1. [Basic Authentication](#1121-basic-authentication)
         * 11.2.2. [Bearer Token Authentication](#1122-bearer-token-authentication)
-        * 11.2.3. [Self Signed JWT Authentication](#1123-self-signed-jwt-authentication)
+        * 11.2.3. [Self-Signed JWT Authentication](#1123-self-signed-jwt-authentication)
         * 11.2.4. [OAuth2](#1124-oauth2)
             * 11.2.4.1 [Client Credentials Grant Type](#11241-client-credentials-grant-type)
             * 11.2.4.2 [Password Grant Type](#11242-password-grant-type)
@@ -2248,13 +2248,13 @@ graphql:Client graphqlClient = check new ("http://localhost:4000/graphql",
 
 ### 11.3 SSL/TLS and Mutual SSL
 
-The GraphQL listener can connect or interact with a secured client. The `graphql:ListenerSecureSocket` configuration of the listener exposes the secure connection-related configurations.
+The GraphQL listener can be secured using SSL/TLS. The `graphql:ListenerSecureSocket` configuration of the GraphQL listener exposes the secure connection-related configurations.
 
 ### 11.3.1 Listener
 
 #### 11.3.1.1 SSL/TLS
 
-The GraphQL listener can connect or interact with an HTTPS client using SSL/TLS. The `graphql:ListenerSecureSocket` can be used to configure the listener to expose an HTTPS connection.
+The GraphQL listener can be secured to communicate via HTTPS using SSL/TLS. The `graphql:ListenerSecureSocket` can be used to configure the listener to expose an HTTPS connection.
 
 Alternatively, an HTTP listener configured to connect with an HTTPS client can also be used to create the GraphQL listener to expose an HTTPS connection.
 
@@ -2366,7 +2366,7 @@ service on securedGraphqlListener {
 
 #### 11.3.2.1 SSL/TLS
 
-A GraphQL client with `graphql:ClientSecureSocket` configuration can invoke GraphQL services with SSL/TLS.
+A GraphQL client can communicate with a secured GraphQL service via SSL/TLS. The `graphql:ClientSecureSocket` configuration can be used to provide configurations related to SSL/TLS.
 
 ###### Example: GraphQL Client Using SSL/TLS
 
@@ -2384,7 +2384,7 @@ public function main() returns error? {
 
 #### 11.3.2.2 Mutual SSL
 
-A GraphQL client can invoke GraphQL services with mutual SSL/TLS by passing the `graphql:ClientSecureSocket` for the `auth` configuration of the client along with the client certificate and key files via the `key` configuration of the `graphql:ClientSecureSocket`.
+A GraphQL client can communicate with a secured GraphQL service using mutual SSL. Mutual SSL can be enabled by providing the `graphql:ClientSecureSocket` value for the `auth` configuration of the client along with providing the client certificate and key files via the `key` configuration of the `graphql:ClientSecureSocket`.
 
 ###### Example: GraphQL Client Using Mutual SSL
 
