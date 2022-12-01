@@ -2106,7 +2106,8 @@ public function main() returns error? {
             password: "bob@123"
         }
     );
-    json response = check graphqlClient->execute("{ greeting }");
+    string document = "{ one: profile(id: 100) {name} }";
+    ProfileResponseWithErrors response = check graphqlClient->execute(document);
     // ...
 }
 ```
@@ -2124,12 +2125,13 @@ public function main() returns error? {
             token: "56ede317-4511-44b4-8579-a08f094ee8c5"
         }
     );
-    json response = check graphqlClient->execute("{ greeting }");
+    string document = "{ one: profile(id: 100) {name} }";
+    ProfileResponseWithErrors response = check graphqlClient->execute(document);
     // ...
 }
 ```
 
-##### 11.2.3 Self Signed JWT Authentication
+##### 11.2.3 Self-Signed JWT Authentication
 
 Ballerina GraphQL clients enable authentication using JWTs by setting the `graphql:JwtIssuerConfig` configurations in the client.  The requests from the client are automatically enriched with the `Authorization: Bearer <token>` header when passing the `graphql:JwtIssuerConfig` for the `auth` configuration of the client.
 
@@ -2153,7 +2155,8 @@ public function main() returns error? {
             }
         }
     );
-    json response = check graphqlClient->execute("{ greeting }");
+    string document = "{ one: profile(id: 100) {name} }";
+    ProfileResponseWithErrors response = check graphqlClient->execute(document);
     // ...
 }
 ```
@@ -2377,7 +2380,8 @@ public function main() returns error? {
             cert: "path/to/public.crt"
         }
     );
-    json response = check graphqlClient->execute("{ greeting }");
+    string document = "{ one: profile(id: 100) {name} }";
+    ProfileResponseWithErrors response = check graphqlClient->execute(document);
     // ...
 }
 ```
@@ -2403,7 +2407,8 @@ public function main() returns error? {
             ciphers: ["TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"]
         }
     );
-    json response = check graphqlClient->execute("{ greeting }");
+    string document = "{ one: profile(id: 100) {name} }";
+    ProfileResponseWithErrors response = check graphqlClient->execute(document);
     // ...
 }
 ```
