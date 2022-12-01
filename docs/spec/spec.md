@@ -2251,7 +2251,7 @@ graphql:Client graphqlClient = check new ("http://localhost:4000/graphql",
 
 ### 11.3 SSL/TLS and Mutual SSL
 
-The GraphQL listener can be secured using SSL/TLS. The `graphql:ListenerSecureSocket` configuration of the GraphQL listener exposes the secure connection-related configurations.
+The Ballerina GraphQL listeners/clients can be used to communicate via a secured connection. This section defines the specifications for creating Ballerina GraphQL services and clients to communicate via a secured connection.
 
 ### 11.3.1 Listener
 
