@@ -132,7 +132,7 @@ The conforming implementation of the specification is released and included in t
         * 11.2.4. [OAuth2](#1124-oauth2)
             * 11.2.4.1 [Client Credentials Grant Type](#11241-client-credentials-grant-type)
             * 11.2.4.2 [Password Grant Type](#11242-password-grant-type)
-            * 11.2.4.3 [Refresh Token Trant Type](#11243-refresh-token-trant-type)
+            * 11.2.4.3 [Refresh Token Grant Type](#11243-refresh-token-grant-type)
             * 11.2.4.4 [JWT Bearer Grant Type](#11244-jwt-bearer-grant-type)
     * 11.3 [SSL/TLS and Mutual SSL](#113-ssltls-and-mutual-ssl)
         * 11.3.1 [Listener](#1131-listener)
@@ -2094,7 +2094,7 @@ Authentication and authorization in Ballerina GraphQL clients can be enabled usi
 
 ##### 11.2.1 Basic Authentication
 
-Ballerina GraphQL clients enable basic auth with credentials by setting the `graphql:CredentialsConfig` configurations in the client. The requests from the client are automatically enriched with the `Authorization: Basic <token>` header when passing the `graphql:CredentialsConfig` for the `auth` configuration of the client.
+Ballerina GraphQL clients enable basic authentication with credentials by setting the `graphql:CredentialsConfig` configurations in the client. The requests from the client are automatically enriched with the `Authorization: Basic <token>` header when passing the `graphql:CredentialsConfig` for the `auth` configuration of the client.
 
 ###### Example: Client Using Declarative Basic Authentication
 
@@ -2208,7 +2208,7 @@ graphql:Client graphqlClient = check new ("http://localhost:4000/graphql",
     }
 );
 ```
-###### 11.2.4.3 Refresh Token Trant Type
+###### 11.2.4.3 Refresh Token Grant Type
 
 ```ballerina
 graphql:Client graphqlClient = check new ("http://localhost:4000/graphql",
