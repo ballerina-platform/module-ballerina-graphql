@@ -543,7 +543,7 @@ The above example shows how to use hierarchical resource paths to create a hiera
 
 The `remote` methods are used to define the fields of the `Mutation` type in a GraphQL schema. Remote methods are validated at the compile-time.
 
->**Note:** The `resource` and `remote` methods are called __*resolver functions*__ in GraphQL terminology. Therefore, in this spec, sometimes the term __*resolver function*__ is used to refer `resource` and `remote` methods.
+>**Note:** The `resource` and `remote` methods are called __*resolvers*__ in GraphQL terminology. Therefore, in this spec, sometimes the term __*resolver*__ is used to refer `resource` and `remote` methods.
 
 #### 3.4.1 Remote Method Name
 
@@ -1362,7 +1362,7 @@ function handleErrors(graphql:ClientError clientError) {
 
 ## 8. Context
 
-The `graphql:Context` object is used to pass meta-information among the graphql resolver functions. It will be created per each request.
+The `graphql:Context` object is used to pass meta-information among the graphql resolvers. It will be created per each request.
 
 Attributes can be stored in the `graphql:Context` object using key-value pairs.
 
@@ -1415,7 +1415,7 @@ graphql:Error? result = context.remove("key");
 
 ### 8.4 Accessing the Context
 
-The `graphql:Context` can be accessed inside any resolver function. When needed, the `graphql:Context` must be the _first parameter_ of the method.
+The `graphql:Context` can be accessed inside any resolver. When needed, the `graphql:Context` must be the _first parameter_ of the method.
 
 ###### Example: Accessing the Context
 
@@ -1661,11 +1661,11 @@ service on new graphql:Listener(9090) {
 >**Note:** It is recommended to disable introspection in production environments until it is required.
 
 ## 10. Interceptors
-The GraphQL interceptors can be used to execute a custom code before and after the resolver function gets invoked.
+The GraphQL interceptors can be used to execute a custom code before and after a resolver gets invoked.
 
 ### 10.1 Interceptor Service Object
 
-The interceptor service object is defined in the Ballerina GraphQL package. It includes a single remote method named execute that accepts `Context` and `Field` as the parameters. The function's return type is a union of `anydata` and `error`.
+The interceptor service object is defined in the Ballerina GraphQL package. It includes a single remote method named execute that accepts `Context` and `Field` as the parameters. The return type of the method is a union of `anydata` and `error`.
 
 ```ballerina
 public type Interceptor distinct service object {
@@ -1675,7 +1675,7 @@ public type Interceptor distinct service object {
 
 ### 10.2 GraphQL Field Object
 
-Interceptor `execute` function accepts the `Field` object as an input parameter that consists of APIs to access the execution field information. Following is the implementation of the Field object.
+Interceptor `execute` method accepts the `Field` object as an input parameter that consists of APIs to access the execution field information. Following is the implementation of the Field object.
 
 ```ballerina
 public class Field {
@@ -1685,8 +1685,8 @@ public class Field {
 }
 ```
 
-* The `getName()` function can be used to get the current execution field name.
-* The `getAlias()` function returns an alias if the current execution filed has an alias. If not, it returns the field name.
+* The `getName()` method can be used to get the current execution field name.
+* The `getAlias()` method returns an alias if the current execution filed has an alias. If not, it returns the field name.
 
 ### 10.3 Writing an Interceptor
 Interceptors can be defined as a readonly service class that infers the Interceptor object provided by the GraphQL package. User-specific name can be used as the service class name.
@@ -1703,13 +1703,13 @@ readonly service class InterceptorName {
 }
 ```
 
-The Interceptor service class should have the implementation of the `execute()` remote method that infers from the interceptor service object. Code needed to be included in the interceptor should be kept inside the `execute()` function. Interceptors can not have any other `resource/remote` methods inside the interceptor. However, the users are able to define the usual functions inside the interceptors.
+The Interceptor service class should have the implementation of the `execute()` remote method that infers from the interceptor service object. Code needed to be included in the interceptor should be kept inside the `execute()` method. Interceptors can not have any other `resource/remote` methods inside the interceptor. However, the users are able to define the general methods inside the interceptors.
 
 ### 10.4 Execution
 
-When it comes to interceptor execution, it follows the `onion principle`. Basically, each interceptor function adds a layer before and after the actual resolver invocation. Therefore, the order of the interceptor array in the configuration will be important. In an Interceptor `execute()` function, all the code lines placed before the `context.resolve()` will be executed before the resolver function execution, and the code lines placed after the `context.resolve()` will be executed after the resolver function execution. The [`context.resolve()`](#85-resolving-field-value) function invoke the next interceptor.
+When it comes to interceptor execution, it follows the `onion principle`. Basically, each interceptor adds a layer before and after the actual resolver invocation. Therefore, the order of the interceptor array in the configuration will be important. In an Interceptor `execute()` method, all the code lines placed before the `context.resolve()` will be executed before the resolver execution, and the code lines placed after the `context.resolve()` will be executed after the resolver execution. The [`context.resolve()`](#85-resolving-field-value) method invoke the next interceptor.
 
->**Note:** The inserting order of the interceptor function into the array, will be the execution order of Interceptors.
+>**Note:** The inserting order of the interceptors into the array, will be the execution order of Interceptors.
 
 ###### Example: GraphQL Interceptor
 
@@ -1746,7 +1746,7 @@ Following is the output of the server when a request is processed:
 ```
 
 #### 10.4.1 Service Level Interceptors
-The service level interceptors are applied to all the resolver functions in the GraphQL service. The GraphQL module accept an array of service level interceptors, and it should be inserted as mentioned in the [Service Level Interceptor](#916-service-level-interceptors) section.
+The service level interceptors are applied to all the resolvers in the GraphQL service. The GraphQL module accept an array of service level interceptors, and it should be inserted as mentioned in the [Service Level Interceptor](#916-service-level-interceptors) section.
 
 >**Note:** The service level interceptors are applied to each event in response stream of subscription resolvers.
 
