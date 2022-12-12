@@ -19,17 +19,14 @@ import graphql.parser;
 class DirectiveValidatorVisitor {
     *ValidatorVisitor;
 
+    private __InputValue[] missingArguments = [];
+    private final ErrorDetail[] errors = [];
+    private final map<parser:DirectiveNode> visitedDirectives = {};
     private final __Schema schema;
-    private ErrorDetail[] errors;
-    private map<parser:DirectiveNode> visitedDirectives;
-    private __InputValue[] missingArguments;
-    private NodeModifierContext nodeModifierContext;
+    private final NodeModifierContext nodeModifierContext;
 
     isolated function init(__Schema schema, NodeModifierContext nodeModifierContext) {
         self.schema = schema;
-        self.errors = [];
-        self.visitedDirectives = {};
-        self.missingArguments = [];
         self.nodeModifierContext = nodeModifierContext;
     }
 

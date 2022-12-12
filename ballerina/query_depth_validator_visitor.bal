@@ -22,14 +22,13 @@ class QueryDepthValidatorVisitor {
     private int queryDepth;
     private int maxQueryDepth;
     private int queryDepthLimit;
-    private ErrorDetail[] errors;
-    private NodeModifierContext nodeModifierContext;
+    private final ErrorDetail[] errors = [];
+    private final NodeModifierContext nodeModifierContext;
 
     isolated function init(int? queryDepthLimit, NodeModifierContext nodeModifierContext) {
         self.queryDepth = 0;
         self.maxQueryDepth = 0;
         self.queryDepthLimit = queryDepthLimit is int ? queryDepthLimit : 0;
-        self.errors = [];
         self.nodeModifierContext = nodeModifierContext;
     }
 

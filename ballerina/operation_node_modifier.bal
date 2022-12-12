@@ -19,13 +19,12 @@ import graphql.parser;
 class OperationNodeModifierVisitor {
     *parser:Visitor;
 
-    private map<parser:SelectionNode> modifiedSelections;
-    private parser:OperationNode? operation;
-    private map<()> removedNodes;
+    private final map<parser:SelectionNode> modifiedSelections;
+    private final map<()> removedNodes;
+    private parser:OperationNode? operation = ();
 
     isolated function init(map<parser:SelectionNode> modifiedSelections, map<()> removedNodes) {
         self.modifiedSelections = modifiedSelections;
-        self.operation = ();
         self.removedNodes = removedNodes;
     }
 

@@ -19,22 +19,17 @@ import graphql.parser;
 class VariableValidatorVisitor {
     *ValidatorVisitor;
 
+    private string[] visitedVariableDefinitions = [];
+    private map<parser:VariableNode> variableDefinitions = {};
+    private final ErrorDetail[] errors = [];
+    private final (string|int)[] argumentPath = [];
     private final __Schema schema;
-    private map<json> variables;
-    private string[] visitedVariableDefinitions;
-    private ErrorDetail[] errors;
-    map<parser:VariableNode> variableDefinitions;
-    private (string|int)[] argumentPath;
-    private NodeModifierContext nodeModifierContext;
+    private final map<json> variables;
+    private final NodeModifierContext nodeModifierContext;
 
-    isolated function init(__Schema schema, map<json>? variableValues,
-                           NodeModifierContext nodeModifierContext) {
+    isolated function init(__Schema schema, map<json>? variableValues, NodeModifierContext nodeModifierContext) {
         self.schema = schema;
-        self.visitedVariableDefinitions = [];
-        self.errors = [];
         self.variables = variableValues == () ? {} : variableValues;
-        self.variableDefinitions = {};
-        self.argumentPath = [];
         self.nodeModifierContext = nodeModifierContext;
     }
 

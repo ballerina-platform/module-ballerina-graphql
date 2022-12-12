@@ -20,12 +20,11 @@ class IntrospectionValidatorVisitor {
     *ValidatorVisitor;
 
     private final boolean introspection;
-    private ErrorDetail[] errors;
-    private NodeModifierContext nodeModifierContext;
+    private final ErrorDetail[] errors = [];
+    private final NodeModifierContext nodeModifierContext;
 
     isolated function init(boolean introspection, NodeModifierContext nodeModifierContext) {
         self.introspection = introspection;
-        self.errors = [];
         self.nodeModifierContext = nodeModifierContext;
     }
 

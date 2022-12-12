@@ -19,14 +19,12 @@ import graphql.parser;
 class DocumentNodeModifierVisitor {
     *parser:Visitor;
 
-    private NodeModifierContext nodeModifierContext;
-    private parser:DocumentNode? document;
-    private map<parser:Node> modifiedNodes;
+    private parser:DocumentNode? document = ();
+    private final map<parser:Node> modifiedNodes = {};
+    private final NodeModifierContext nodeModifierContext;
 
     isolated function init(NodeModifierContext nodeModifierContext) {
         self.nodeModifierContext = nodeModifierContext;
-        self.modifiedNodes = {};
-        self.document = ();
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {

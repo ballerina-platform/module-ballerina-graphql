@@ -19,17 +19,15 @@ import graphql.parser;
 class FragmentCycleFinderVisitor {
     *ValidatorVisitor;
 
-    private ErrorDetail[] errors;
-    private map<parser:FragmentNode> fragments;
+    private final ErrorDetail[] errors = [];
+    private final map<parser:FragmentNode> visitedFragments = {};
+    private final map<parser:FragmentNode> fragments;
+    private final NodeModifierContext nodeModifierContext;
     private map<parser:FragmentNode> visitedSpreads;
-    private map<parser:FragmentNode> visitedFragments;
-    private NodeModifierContext nodeModifierContext;
     
     isolated function init(map<parser:FragmentNode> fragments, NodeModifierContext nodeModifierContext) {
-        self.errors = [];
         self.fragments = fragments;
         self.visitedSpreads = {};
-        self.visitedFragments = {};
         self.nodeModifierContext = nodeModifierContext;
     }
 

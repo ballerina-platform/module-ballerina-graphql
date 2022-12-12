@@ -18,8 +18,9 @@ import graphql.parser;
 
 class DuplicateFieldRemoverVisitor {
     *parser:Visitor;
-    private map<()> removedNodes;
-    private map<parser:SelectionNode> modifiedSelections;
+
+    private final map<()> removedNodes;
+    private final map<parser:SelectionNode> modifiedSelections;
 
     isolated function init(map<()> removedNodes, map<parser:SelectionNode> modifiedSelections) {
         self.removedNodes = removedNodes;

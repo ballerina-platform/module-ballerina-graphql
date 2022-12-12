@@ -20,7 +20,7 @@ class DefaultDirectiveProcessorVisitor {
     *parser:Visitor;
 
     private final __Schema schema;
-    private map<()> removedNodes;
+    private final map<()> removedNodes;
 
     isolated function init(__Schema schema, map<()> removedNodes) {
         self.schema = schema;

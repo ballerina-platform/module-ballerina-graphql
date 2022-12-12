@@ -19,11 +19,10 @@ import graphql.parser;
 class SubscriptionValidatorVisitor {
     *ValidatorVisitor;
 
-    private ErrorDetail[] errors;
-    private NodeModifierContext nodeModifierContext;
+    private final ErrorDetail[] errors = [];
+    private final NodeModifierContext nodeModifierContext;
 
     isolated function init(NodeModifierContext nodeModifierContext) {
-        self.errors = [];
         self.nodeModifierContext = nodeModifierContext;
     }
 

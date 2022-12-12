@@ -19,17 +19,14 @@ import graphql.parser;
 class FieldValidatorVisitor {
     *ValidatorVisitor;
 
+    private final ErrorDetail[] errors = [];
+    private final map<string> usedFragments = {};
+    private final (string|int)[] argumentPath = [];
     private final __Schema schema;
-    private ErrorDetail[] errors;
-    private map<string> usedFragments;
-    private (string|int)[] argumentPath;
-    private NodeModifierContext nodeModifierContext;
+    private final NodeModifierContext nodeModifierContext;
 
     isolated function init(__Schema schema, NodeModifierContext nodeModifierContext) {
         self.schema = schema;
-        self.errors = [];
-        self.usedFragments = {};
-        self.argumentPath = [];
         self.nodeModifierContext = nodeModifierContext;
     }
 
