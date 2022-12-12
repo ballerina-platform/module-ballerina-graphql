@@ -701,6 +701,30 @@ isolated function testClientExecuteForDataBindingError() returns error? {
 @test:Config {
     groups: ["client"]
 }
+isolated function testClientDataBindingErrorHavingACause() returns error? {
+    string url = "http://localhost:9095/special_types";
+    string document = string `query { specialHolidays }`;
+
+    graphql:Client graphqlClient = check new (url);
+    ProfileResponseWithErrors|graphql:ClientError payload = graphqlClient->execute(document);
+    test:assertTrue(payload is graphql:PayloadBindingError, "This should be a payload binding error");
+    graphql:PayloadBindingError err = <graphql:PayloadBindingError>payload;
+    graphql:ErrorDetail[] expectedErrorDetails = [
+        {
+            message: "Holiday!",
+            locations: [{line: 1, column: 9}],
+            path: ["specialHolidays", 1]
+        }
+    ];
+
+    graphql:ErrorDetail[]? actualErrorDetails = err.detail().errors;
+    test:assertEquals(actualErrorDetails, expectedErrorDetails);
+    test:assertTrue(err.cause() !is (), "PayloadBindingError should have a cause");
+}
+
+@test:Config {
+    groups: ["client"]
+}
 isolated function testClientConfiguration() returns error? {
     string document = "{ greeting }";
     string url = "https://localhost:9096/basicAuth ";
