@@ -59,7 +59,7 @@ public class SdlSchemaStringGenerator {
     private static final String INPUT_FIELD_FORMAT = "  %s: %s";
     private static final String ARGS_TYPE_FORMAT = "%s = %s";
     private static final String ARGS_VALUE_FORMAT = "%s: %s";
-    private static final String ENUM_VALUE_FORMAT = "  %s%s";
+    private static final String ENUM_VALUE_FORMAT = "%s  %s%s";
     private static final String NON_NULL_FORMAT = "%s!";
     private static final String LIST_FORMAT = "[%s]";
     private static final String DEPRECATE = " @deprecated";
@@ -189,7 +189,8 @@ public class SdlSchemaStringGenerator {
     private static String createEnumValues(Type type) {
         List<String> enumValues = new ArrayList<>();
         for (EnumValue enumValue : type.getEnumValues()) {
-            enumValues.add(getFormattedString(ENUM_VALUE_FORMAT, enumValue.getName(), createDeprecate(enumValue)));
+            enumValues.add(getFormattedString(ENUM_VALUE_FORMAT, createFieldDescription(enumValue.getDescription()),
+                    enumValue.getName(), createDeprecate(enumValue)));
         }
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, enumValues));
     }
