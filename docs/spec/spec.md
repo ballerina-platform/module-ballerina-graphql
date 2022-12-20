@@ -2089,9 +2089,11 @@ readonly service class AuthInterceptor {
         if authn is http:Unauthorized {
             return error("Unauthorized");
         }
-        http:Forbidden? authz = handler.authorize(authn, "admin");
-        if authz is http:Forbidden {
-            return error("Forbidden");
+        if authn is jwt:Payload {
+            http:Forbidden? authz = handler.authorize(authn, "admin");
+            if authz is http:Forbidden {
+                return error("Forbidden");
+            }
         }
         return context.resolve('field);
     }
