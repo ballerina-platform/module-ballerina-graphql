@@ -49,7 +49,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         }
     } on fail error err {
         log:printError(err.message(), stackTrace = err.stackTrace());
-        if (sourceStream is stream<any, error?>) {
+        if sourceStream is stream<any, error?> {
             closeStream(sourceStream);
         }
     }

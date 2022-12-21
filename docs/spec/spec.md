@@ -418,7 +418,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-> **Note:**: A resource method with `subscribe` accessor must return a Ballerina `stream` type.
+>**Note:**: A resource method with a `subscribe` accessor must return a Ballerina `stream` type.
 
 ### 3.2 Wrapping Types
 
