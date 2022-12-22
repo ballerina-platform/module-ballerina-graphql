@@ -328,7 +328,7 @@ When sending a GraphQL request to a GraphQL server using the Ballerina GraphQL c
 
 >**Note:** It is recommended to use the `graphql:GenericResponseWithErrors` or any subtype of it when retrieving a response using the `graphql:Client` using the `execute` method.
 
-When defining the expected type, nullable fields should be defined as a union of the field type and nil (`()`). A [Payload Binding [Error](#732-payload-binding-error) can occur otherwise.
+When defining the expected type, nullable fields should be defined as a union of the field type and nil (`()`). A [Payload Binding Error](#732-payload-binding-error) can occur otherwise.
 
 ###### Example: Handle Response with Data Binding
 
@@ -358,7 +358,7 @@ The `execute` method can return errors when retrieving a response from a GraphQL
 
 #### 2.5.4 Client Configuration
 
-The `graphql:Client` uses `http:Client` as its underlying implementation; this `http:Client` can be configured by providing the `graphql:ClientConfiguration` as an optional parameter via the `graphql``:Client`` init method.
+The `graphql:Client` uses `http:Client` as its underlying implementation; this `http:Client` can be configured by providing the `graphql:ClientConfiguration` as an optional parameter via the `graphql:Client` init method.
 
 ## 3. Schema Generation
 
