@@ -1,10 +1,10 @@
 # Specification: Ballerina GraphQL Library
 
-_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge
-_Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal
-_Created_: 2022/01/06
-_Updated_: 2022/12/22
-_Edition_: Swan Lake
+_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
+_Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
+_Created_: 2022/01/06  
+_Updated_: 2022/12/22  
+_Edition_: Swan Lake  
 
 ## Introduction
 
