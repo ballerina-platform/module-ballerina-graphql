@@ -21,6 +21,8 @@ package io.ballerina.stdlib.graphql.runtime.client;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
+import io.ballerina.runtime.api.types.ObjectType;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
@@ -68,7 +70,8 @@ public class QueryExecutor {
     private static Object invokeClientMethod(Environment env, BObject client, String methodName, Object[] paramFeed) {
         Future balFuture = env.markAsync();
 
-        if (client.getType().isIsolated() && client.getType().isIsolated(methodName)) {
+        ObjectType clientType = (ObjectType) TypeUtils.getReferredType(client.getType());
+        if (clientType.isIsolated() && clientType.isIsolated(methodName)) {
             env.getRuntime()
                     .invokeMethodAsyncConcurrently(client, methodName, null, null, new QueryExecutorCallback(balFuture),
                             null, PredefinedTypes.TYPE_NULL, paramFeed);
