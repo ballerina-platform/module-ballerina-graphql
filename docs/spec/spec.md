@@ -418,8 +418,6 @@ service on new graphql:Listener(9090) {
 }
 ```
 
->**Note:**: A resource method with a `subscribe` accessor must return a Ballerina `stream` type.
-
 ### 3.2 Wrapping Types
 
 Wrapping types are used to wrap the named types in GraphQL. A wrapping type has an underlying named type. There are two wrapping types defined in the GraphQL schema.

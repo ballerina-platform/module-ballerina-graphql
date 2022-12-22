@@ -52,21 +52,18 @@ isolated class Engine {
         if result is OutputObject {
             return result;
         }
-        parser:DocumentNode document = result.document;
-        ErrorDetail[] validationErrors = result.validationErrors;
-        OutputObject|parser:DocumentNode validationResult = self.validateDocument(document, variables, validationErrors);
+
+        OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, variables);
         if validationResult is OutputObject {
             return validationResult;
-        } else {
-            document = validationResult;
-            return self.getOperation(document, operationName);
-        }
+        } 
+        return self.getOperation(validationResult, operationName);
     }
 
     isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
     returns OutputObject {
-        final map<()> removedNodes = {};
-        final map<parser:SelectionNode> modifiedSelections = {};
+        map<()> removedNodes = {};
+        map<parser:SelectionNode> modifiedSelections = {};
         DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema, removedNodes);
         DuplicateFieldRemoverVisitor duplicateFieldRemover = new (removedNodes, modifiedSelections);
 
@@ -100,22 +97,22 @@ isolated class Engine {
         return getOutputObjectFromErrorDetail(errorDetail);
     }
 
-    isolated function validateDocument(parser:DocumentNode document, map<json>? variables, ErrorDetail[] parserErrors)
+    isolated function validateDocument(ParseResult parseResult, map<json>? variables)
     returns OutputObject|parser:DocumentNode {
-        ErrorDetail[]|NodeModifierContext validationResult = self.parallellyValidateDocument(document, variables,
-                                                                                             parserErrors);
+        ErrorDetail[]|NodeModifierContext validationResult = self.parallellyValidateDocument(parseResult, variables);
         if validationResult is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(validationResult);
         } else {
             DocumentNodeModifierVisitor documentNodeModifierVisitor = new (validationResult);
-            document.accept(documentNodeModifierVisitor);
+            parseResult.document.accept(documentNodeModifierVisitor);
             return documentNodeModifierVisitor.getDocumentNode();
         }
     }
 
-    isolated function parallellyValidateDocument(parser:DocumentNode document, map<json>? variables,
-                                                 ErrorDetail[] parserErrors) returns ErrorDetail[]|NodeModifierContext {
-        ErrorDetail[] validationErrors = [...parserErrors];
+    isolated function parallellyValidateDocument(ParseResult parseResult, map<json>? variables)
+    returns ErrorDetail[]|NodeModifierContext {
+        ErrorDetail[] validationErrors = [...parseResult.validationErrors];
+        final parser:DocumentNode document = parseResult.document;
 
         map<parser:FragmentNode> fragments = document.getFragments();
         final NodeModifierContext nodeModifierContext = new;
