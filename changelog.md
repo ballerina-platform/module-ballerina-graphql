@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
+- [[#3870] Add Service Error Handling Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3870)
+- [[#3709] Add Input Default Values Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3709)
 
 ## [1.5.0] - 2022-11-29
 
