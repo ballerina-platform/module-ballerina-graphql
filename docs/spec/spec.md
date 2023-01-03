@@ -68,6 +68,7 @@ The conforming implementation of the specification is released and included in t
     * 4.5 [Input Types](#45-input-types)
         * 4.5.1 [Input Union Types](#451-input-union-types)
         * 4.5.2 [Input Objects](#452-input-objects)
+        * 4.5.3 [Default Values](#453-default-values)
     * 4.6 [Interfaces](#46-interfaces)
         * 4.6.1 [Interfaces Implementing Interfaces](#461-interfaces-implementing-interfaces)
 5. [Directives](#5-directives)
@@ -780,7 +781,7 @@ enum Direction {
 
 ### 4.5 Input Types
 
-In GraphQL, a field can have zero or more input arguments. These arguments can be either `Scalar` type, `Enum` type, or `Object` type.
+In GraphQL, a field can have zero or more input arguments. These arguments can be either a [`Scalar` type](#41-scalars), an [`Enum` type](#44-enums), or an [`INPUT_OBJECT` type](#452-input-objects).
 
 #### 4.5.1 Input Union Types
 
@@ -830,6 +831,20 @@ type Book record {|
     string title;
     string author;
 |};
+```
+
+#### 4.5.3 Default Values
+
+The input arguments of a GraphQL field can have default values. In Ballerina this is allowed by providing default values to input parameters of a `resource` or `remote` method that represents a GraphQL field. When a `resource` or `remote` method input parameter has a default value, it will be added to the generated GraphQL schema. Then, the input parameter can be omitted in the GraphQL document, even if the input type is `NON_NULL`.
+
+>**Note:** Currently, the generated schema does not include the default value of an input parameter due to a Ballerina language limitation. It shows an empty string instead of the default value. This only affects when the generated schema is accessed using introspection or file generation. It does not affect the functionality of the default values.
+
+###### Example: Default Values
+
+```ballerina
+resource function get greeting(string name = "Stranger") returns string {
+    return "Hello, " + name;
+}
 ```
 
 ### 4.6 Interfaces
