@@ -53,7 +53,8 @@ public class SdlSchemaStringGenerator {
     private static final String ARGS_FORMAT = "(%s)";
     private static final String DESC_FORMAT = "%s%n";
     private static final String DEPRECATE_FORMAT = "%s(reason: \"%s\")";
-    private static final String COMMENT_FORMAT = "%s# %s";
+    private static final String DOCUMENT_FORMAT = "%s\"%s\"";
+    private static final String BLOCK_STRING_FORMAT = "%s\"\"\"%n%s%s%n%s\"\"\"";
     private static final String IMPLEMENT_FORMAT = " implements %s";
     private static final String POSSIBLE_TYPE_FORMAT = " = %s";
     private static final String INPUT_FIELD_FORMAT = "  %s: %s";
@@ -71,6 +72,7 @@ public class SdlSchemaStringGenerator {
     private static final String COMMA_SIGN = ", ";
     private static final String AND_SIGN = " & ";
     private static final String PIPE_SIGN = "|";
+    private static final String SPACE = " ";
 
     public static String generate(Schema schema) {
         String sdlSchemaString = getSDLSchemaString(schema);
@@ -168,11 +170,13 @@ public class SdlSchemaStringGenerator {
         if (description == null || description.isEmpty()) {
             return EMPTY_STRING;
         } else {
-            List<String> subStrings = new ArrayList<>();
-            for (String subString : description.split(LINE_SEPARATOR)) {
-                subStrings.add(getFormattedString(COMMENT_FORMAT, EMPTY_STRING, subString));
+            String desc;
+            if (description.split(LINE_SEPARATOR).length > 1) {
+                desc = getFormattedString(BLOCK_STRING_FORMAT, EMPTY_STRING, EMPTY_STRING, description, EMPTY_STRING);
+            } else {
+                desc = getFormattedString(DOCUMENT_FORMAT, EMPTY_STRING, description);
             }
-            return getFormattedString(DESC_FORMAT, String.join(LINE_SEPARATOR, subStrings));
+            return getFormattedString(DESC_FORMAT, desc);
         }
     }
 
@@ -180,8 +184,7 @@ public class SdlSchemaStringGenerator {
         List<String> fields = new ArrayList<>();
         for (Field field : type.getFields()) {
             fields.add(getFormattedString(FIELD_FORMAT, createFieldDescription(field.getDescription()), field.getName(),
-                    createArgs(field.getArgs()), createFieldType(field.getType()),
-                    createDeprecate(field)));
+                    createArgs(field.getArgs()), createFieldType(field.getType()), createDeprecate(field)));
         }
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, fields));
     }
@@ -255,11 +258,15 @@ public class SdlSchemaStringGenerator {
         if (description == null || description.isEmpty()) {
             return EMPTY_STRING;
         } else {
-            List<String> subStrings = new ArrayList<>();
-            for (String subString : description.split(LINE_SEPARATOR)) {
-                subStrings.add(getFormattedString(COMMENT_FORMAT, INDENTATION, subString));
+            String desc;
+            String[] lines = description.split(LINE_SEPARATOR);
+            if (lines.length > 1) {
+                desc = getFormattedString(BLOCK_STRING_FORMAT, INDENTATION, INDENTATION,
+                        String.join(LINE_SEPARATOR + INDENTATION, lines), INDENTATION);
+            } else {
+                desc = getFormattedString(DOCUMENT_FORMAT, INDENTATION, description);
             }
-            return getFormattedString(DESC_FORMAT, String.join(LINE_SEPARATOR, subStrings));
+            return getFormattedString(DESC_FORMAT, desc);
         }
     }
 
@@ -274,21 +281,26 @@ public class SdlSchemaStringGenerator {
     private static String createDeprecate(EnumValue enumValue) {
         if (enumValue.isDeprecated()) {
             if (enumValue.getDeprecationReason() != null) {
-                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE, enumValue.getDeprecationReason());
+                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE,
+                        createDeprecateReason(enumValue.getDeprecationReason()));
+            }
+            return DEPRECATE;
+        }
+        return EMPTY_STRING;
+    }
+    private static String createDeprecate(Field field) {
+        if (field.isDeprecated()) {
+            if (field.getDeprecationReason() != null) {
+                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE,
+                        createDeprecateReason(field.getDeprecationReason()));
             }
             return DEPRECATE;
         }
         return EMPTY_STRING;
     }
 
-    private static String createDeprecate(Field field) {
-        if (field.isDeprecated()) {
-            if (field.getDeprecationReason() != null) {
-                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE, field.getDeprecationReason());
-            }
-            return DEPRECATE;
-        }
-        return EMPTY_STRING;
+    private static String createDeprecateReason(String reason) {
+        return reason.replace(LINE_SEPARATOR, SPACE);
     }
 
     private static String createSpecifiedByUrl(Type type) {
