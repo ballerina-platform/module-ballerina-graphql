@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)
+
 ## [1.5.0] - 2022-11-29
 
 ### Added
