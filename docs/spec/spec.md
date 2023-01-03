@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge  
 _Reviewers_: @shafreenAnfar @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2022/12/22  
+_Updated_: 2023/01/03  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -1044,7 +1044,7 @@ public enum Status {
 }
 ```
 
-In the above service, the generated schema will indicate that the `hello` field of the `Query` type, and the `PRIVATE_PARTY` value of the `Status` enum type are deprecated, with the reasons provided in the doc comments. (The reason will be the line after the `# # Deprecated` line.)
+In the above service, the generated schema will indicate that the `hello` field of the `Query` type and the `PRIVATE_PARTY` value of the `Status` enum type are deprecated, with the reasons provided in the doc comments. (The reason will be the line after the `# # Deprecated` line.)
 
 ## 6. File Upload
 
@@ -1253,7 +1253,7 @@ service class Profile {
 }
 ```
 
-In the above example, the `name` field of the `Profile` object can return an `error`. But the return type does not include the `nil` type. Therefore, if this field returns an `error`, first, the `name` field will become `null`. Since the `name` field is `NON_NULL`, the value is propagated to the upper level, making the `profile` field `null` in the `data` field of the response. But the `profile` field is also wrapped with the `NON_NULL` type as the `profile` resource method does not include `nil` as the return type. Hence, the `null` value will be propagated further, making the whole `data` field `null`.
+Above example shows how the `name` field of the `Profile` object can return an `error`. But the return type does not include the `nil` type. Therefore, if this field returns an `error`, first, the `name` field will become `null`. Since the `name` field is `NON_NULL`, the value is propagated to the upper level, making the `profile` field `null` in the `data` field of the response. But the `profile` field is also wrapped with the `NON_NULL` type as the `profile` resource method does not include `nil` as the return type. Hence, the `null` value will be propagated further, making the whole `data` field `null`.
 
 Similarly, the `age` field of the `Profile` object can return an `error` too. But it has `nil` as one of the possible return types (denoted by `?`: a syntactic sugar for `|()`). In this case, if an `error` is returned from the method, the `age` field of the `Profile` object will become `null`. Since it does allow `null` values (i.e. the type is not wrapped by `NON_NULL` type), the `null` value will not be propagated further. In such cases, the response can contain the `error` as well as the part of the `data` field.
 
@@ -1324,7 +1324,7 @@ The above example shows how to capture the `graphql:ClientError`. This way all t
 There can be errors occurred during sending and validating a GraphQL request. These errors are categorized under the `graphql:RequestError` error type, which is a subtype of the `graphql:ClientError`.
 
 ###### Example: Handle Request Error
-In the above example, the `graphql:RequestError`s are handled separately.
+Above example shows how the `graphql:RequestError`s are handled separately.
 
 ##### 7.3.1.1 HTTP Error
 
