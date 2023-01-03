@@ -19,28 +19,28 @@ import graphql.parser;
 class FragmentValidatorVisitor {
     *ValidatorVisitor;
 
-    private ErrorDetail[] errors;
-    private map<parser:FragmentNode> usedFragments;
-    private map<parser:FragmentNode> fragments;
+    private final ErrorDetail[] errors = [];
+    private final map<parser:FragmentNode> usedFragments = {};
+    private final map<parser:FragmentNode> fragments;
+    private final NodeModifierContext nodeModifierContext;
 
-    public isolated function init(map<parser:FragmentNode> fragments) {
-        self.errors = [];
-        self.usedFragments = {};
+    isolated function init(map<parser:FragmentNode> fragments, NodeModifierContext nodeModifierContext) {
         self.fragments = fragments;
+        self.nodeModifierContext = nodeModifierContext;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
         foreach parser:OperationNode operation in documentNode.getOperations() {
             operation.accept(self);
         }
-
-        foreach [string, parser:FragmentNode] entry in documentNode.getFragments().entries() {
+        map<parser:FragmentNode> fragments = {...documentNode.getFragments()};
+        foreach [string, parser:FragmentNode] entry in fragments.entries() {
             if !self.usedFragments.hasKey(entry[0]) {
-                string message = string`Fragment "${entry[0]}" is never used.`;
+                string message = string `Fragment "${entry[0]}" is never used.`;
                 ErrorDetail errorDetail = getErrorDetailRecord(message, entry[1].getLocation());
                 self.errors.push(errorDetail);
             }
-            _ = documentNode.getFragments().remove(entry[0]);
+            _ = fragments.remove(entry[0]);
         }
     }
 
@@ -59,12 +59,13 @@ class FragmentValidatorVisitor {
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        if fragmentNode.hasCycle() {
+        if self.nodeModifierContext.isFragmentWithCycles(fragmentNode) {
             return;
         }
         self.appendNamedFragmentFields(fragmentNode);
-        self.usedFragments[fragmentNode.getName()] = fragmentNode;
-        foreach parser:SelectionNode selection in fragmentNode.getSelections() {
+        parser:FragmentNode modifiedFragmentNode = self.nodeModifierContext.getModifiedFragmentNode(fragmentNode);
+        self.usedFragments[modifiedFragmentNode.getName()] = modifiedFragmentNode;
+        foreach parser:SelectionNode selection in modifiedFragmentNode.getSelections() {
             selection.accept(self);
         }
     }
@@ -76,21 +77,19 @@ class FragmentValidatorVisitor {
                 self.appendFields(actualFragmentNode, fragmentNode);
             }
         } else {
-            string message = string`Unknown fragment "${fragmentNode.getName()}".`;
+            string message = string `Unknown fragment "${fragmentNode.getName()}".`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, fragmentNode.getLocation());
             self.errors.push(errorDetail);
-            fragmentNode.setUnknown();
+            self.nodeModifierContext.addUnknownFragment(fragmentNode);
         }
     }
 
     isolated function appendFields(parser:FragmentNode actualFragmentNode, parser:FragmentNode fragmentNode) {
-        fragmentNode.setOnType(actualFragmentNode.getOnType());
-        foreach parser:SelectionNode fragmentSelection in actualFragmentNode.getSelections() {
-            fragmentNode.addSelection(fragmentSelection);
-        }
-        foreach parser:DirectiveNode directive in actualFragmentNode.getDirectives() {
-            fragmentNode.addDirective(directive);
-        }
+        parser:SelectionNode[] selections = [...actualFragmentNode.getSelections(), ...fragmentNode.getSelections()];
+        parser:DirectiveNode[] directives = [...actualFragmentNode.getDirectives(), ...fragmentNode.getDirectives()];
+        parser:FragmentNode modifiedFragmentNode = fragmentNode.modifyWith(selections, directives,
+                                                                            actualFragmentNode.getOnType());
+        self.nodeModifierContext.addModifiedFragmentNode(fragmentNode, modifiedFragmentNode);
     }
 
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}

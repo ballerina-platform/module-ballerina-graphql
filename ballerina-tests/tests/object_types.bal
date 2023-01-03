@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/lang.runtime;
 
 public type PeopleService StudentService|TeacherService;
 
@@ -319,5 +320,13 @@ public service class AccountDetails {
 
     resource function get createdYear() returns int {
         return self.createdYear;
+    }
+}
+
+class RefreshData {
+    public isolated function next() returns record {|string value;|}? {
+        // emit data every one second
+        runtime:sleep(1);
+        return {value: "data"};
     }
 }

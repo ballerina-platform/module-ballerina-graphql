@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class ArgumentNode {
+public readonly class ArgumentNode {
     *NamedNode;
 
     private string name;
@@ -23,20 +23,23 @@ public class ArgumentNode {
     private Location valueLocation;
     private ArgumentType kind;
     private string? variableName;
-    private anydata variableValue;
+    private json variableValue;
     private boolean variableDefinition;
     private boolean containsInvalidValue;
 
-    public isolated function init(string name, Location location, ArgumentType kind, boolean isVarDef = false) {
+    public isolated function init(string name, Location location, ArgumentType kind,
+                                  boolean isVarDef = false, Location? valueLocation = (),
+                                  ArgumentValue|ArgumentValue[] value = (), string? variableName = (),
+                                  boolean containsInvalidValue = false, json variableValue = ()) {
         self.name = name;
-        self.location = location;
-        self.value = ();
-        self.valueLocation = location;
+        self.location = location.cloneReadOnly();
+        self.value = value.cloneReadOnly();
+        self.valueLocation = valueLocation is () ? location.cloneReadOnly() : valueLocation.cloneReadOnly();
         self.kind = kind;
         self.variableDefinition = isVarDef;
-        self.variableName = ();
-        self.variableValue = ();
-        self.containsInvalidValue = false;
+        self.variableName = variableName;
+        self.variableValue = variableValue.cloneReadOnly();
+        self.containsInvalidValue = containsInvalidValue;
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -55,24 +58,8 @@ public class ArgumentNode {
         return self.kind;
     }
 
-    public isolated function setKind(ArgumentType kind) {
-        self.kind = kind;
-    }
-
-    public isolated function addVariableName(string name) {
-        self.variableName = name;
-    }
-
     public isolated function getVariableName() returns string? {
         return self.variableName;
-    }
-
-    public isolated function setValue(ArgumentValue|ArgumentValue[] value) {
-        self.value = value;
-    }
-
-    public isolated function setValueLocation(Location location) {
-        self.valueLocation = location;
     }
 
     public isolated function getValue() returns ArgumentValue|ArgumentValue[] {
@@ -83,27 +70,37 @@ public class ArgumentNode {
         return self.valueLocation;
     }
 
-    public isolated function setVariableDefinition(boolean value) {
-        self.variableDefinition = value;
-    }
-
     public isolated function isVariableDefinition() returns boolean {
         return self.variableDefinition;
     }
 
-    public isolated function setVariableValue(anydata inputValue) {
-        self.variableValue = inputValue;
-    }
-
-    public isolated function getVariableValue() returns anydata {
+    public isolated function getVariableValue() returns json {
         return self.variableValue;
-    }
-
-    public isolated function setInvalidVariableValue() {
-        self.containsInvalidValue = true;
     }
 
     public isolated function hasInvalidVariableValue() returns boolean {
         return self.containsInvalidValue;
+    }
+
+    public isolated function modifyWith(ArgumentType? kind = (), ArgumentValue|ArgumentValue[] value = (), 
+                                        Location? valueLocation = (),   boolean? isVarDef = (),
+                                        json variableValue = (), boolean? containsInvalidValue = ()) 
+    returns ArgumentNode {
+
+        ArgumentType kindParam = kind is () ? self.kind : kind;
+        boolean isVarDefParam = isVarDef is () ? self.variableDefinition : isVarDef;
+        Location? valueLocationParam = valueLocation is () ? self.valueLocation : valueLocation;
+        ArgumentValue|ArgumentValue[] valueParam = value is () ? self.value : value;
+        boolean containsInvalidValueParam = containsInvalidValue is () ? self.containsInvalidValue 
+                                                                       : containsInvalidValue;
+        json variableValueParam = variableValue is () ? self.variableValue : variableValue;
+
+        return new (self.name, self.location, kindParam, isVarDefParam, valueLocationParam, valueParam,
+                    self.variableName, containsInvalidValueParam, variableValueParam);
+    }
+
+    public isolated function modifyWithValue(ArgumentValue|ArgumentValue[] value) returns ArgumentNode {
+        return new (self.name, self.location, self.kind, self.variableDefinition, self.valueLocation,
+                    value, self.variableName, self.containsInvalidValue, self.variableValue);
     }
 }
