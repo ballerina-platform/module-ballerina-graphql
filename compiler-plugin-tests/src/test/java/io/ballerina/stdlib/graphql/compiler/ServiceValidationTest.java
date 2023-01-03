@@ -221,7 +221,8 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
     }
 
     @Test(groups = "invalid")
@@ -236,7 +237,8 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
     }
 
     @Test(groups = "invalid")
@@ -295,7 +297,8 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 75, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 93, 5);
+        message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 93, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "ServiceInterceptor");
@@ -622,7 +625,8 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
     }
 
     @Test(groups = "invalid")
@@ -651,7 +655,8 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 25, 15);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 25, 15);
     }
 
     @Test(groups = "invalid")
@@ -931,10 +936,11 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
 
         diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
+        message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
                                          "Subscription.profiles.bytes");
         assertErrorMessage(diagnostic, message, 31, 5);
 

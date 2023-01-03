@@ -33,8 +33,8 @@ public enum DiagnosticMessage {
     ERROR_104("return type not provided for the GraphQL field ''{0}''"),
     ERROR_105("the GraphQL field ''{0}'' has a ballerina union type, but the union does not contain any valid data type"
                       + " to return"),
-    ERROR_106("invalid resource method accessor ''{0}'' used in method ''{1}''. Only " + RESOURCE_FUNCTION_GET
-                      + " allowed"),
+    ERROR_106("invalid resource method accessor ''{0}'' used in method ''{1}''. Only '''" + RESOURCE_FUNCTION_GET
+                      + "''' allowed"),
     ERROR_107("a GraphQL service cannot be attached to multiple listeners"),
     ERROR_108("the GraphQL field ''{0}'' only returns an error type. It must return a data type"),
     ERROR_109("http:Listener and graphql:ListenerConfiguration are mutually exclusive"),
@@ -43,7 +43,7 @@ public enum DiagnosticMessage {
                       + "\", which is reserved by GraphQL introspection"),
     ERROR_112("invalid type found in the GraphQL field ''{0}''. A GraphQL field cannot have \"any\" or \"anydata\" as "
                       + "the type, instead use specific types"),
-    ERROR_113("a GraphQL service must have at least one resource method with a ''" + RESOURCE_FUNCTION_GET + "'' "
+    ERROR_113("a GraphQL service must have at least one resource method with a '''" + RESOURCE_FUNCTION_GET + "''' "
                       + "accessor"),
     ERROR_114("the GraphQL field ''{0}'' use input type ''{1}'' as an output type. A GraphQL field cannot use an input "
                       + "type as an output type"),
@@ -56,14 +56,14 @@ public enum DiagnosticMessage {
     ERROR_119("the graphql:Upload cannot be used as an input type of resource method ''{0}''"),
     ERROR_120("multidimensional graphql:Upload array parameter found in method ''{0}''. GraphQL input cannot have "
                       + "multidimensional graphql:Upload arrays"),
-    ERROR_121("the Graphql input type must not be a subtype of ''error?''"),
+    ERROR_121("the Graphql input type must not be a subtype of '''error?'''"),
     ERROR_122("invalid union type for GraphQL input type"),
     ERROR_123("non-distinct service class ''{0}'' is used as a GraphQL interface implementation"),
     ERROR_124("invalid hierarchical resource path ''{0}'' found in subscribe resource"),
     ERROR_125("invalid return type ''{0}'' found in subscribe resource ''{1}''. GraphQL subscribe resource must return "
-                      + "''stream'' type"),
-    ERROR_126("invalid GraphQL resource accessor ''{0}'' found in resource ''{1}''. Only " + RESOURCE_FUNCTION_GET
-                      + " and " + RESOURCE_FUNCTION_SUBSCRIBE + " are allowed"),
+                      + "'''stream''' type"),
+    ERROR_126("invalid GraphQL resource accessor ''{0}'' found in resource ''{1}''. Only '''" + RESOURCE_FUNCTION_GET
+                      + "''' and '''" + RESOURCE_FUNCTION_SUBSCRIBE + "''' are allowed"),
     ERROR_127("failed to generate the schema from the service. {0}"),
     ERROR_128("invalid resource method ''{0}'' found in GraphQL interceptor. GraphQL interceptors can not have resource"
                       + " methods"),
