@@ -549,8 +549,7 @@ public class ServiceValidator {
                 break;
             default:
                 addDiagnostic(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, location,
-                              rootInputParameterTypeSymbol.getName().orElse(rootInputParameterTypeSymbol.signature()),
-                              getCurrentFieldPath());
+                              rootInputParameterTypeSymbol.signature(), getCurrentFieldPath());
         }
         if (isRootInputParameterTypeSymbol(typeSymbol)) {
             resetRootInputParameterTypeSymbol();
