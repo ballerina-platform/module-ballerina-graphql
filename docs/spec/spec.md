@@ -835,9 +835,9 @@ type Book record {|
 
 #### 4.5.3 Default Values
 
-The input arguments of a GraphQL field can have default values. In Ballerina this is allowed by providing default values to input parameters of a `resource` or `remote` method that represents a GraphQL field. When a `resource` or `remote` method input parameter has a default value, it will be added to the generated GraphQL schema. Then, the input parameter can be omitted in the GraphQL document, even if the input type is `NON_NULL`.
+The input arguments of a GraphQL field can have default values. In Ballerina, this is allowed by providing default values to input parameters of a `resource` or `remote` method that represents a GraphQL field. When a `resource` or `remote` method input parameter has a default value, it will be added to the generated GraphQL schema. Then, the input parameter can be omitted in the GraphQL document, even if the input type is `NON_NULL`.
 
->**Note:** Currently, the generated schema does not include the default value of an input parameter due to a Ballerina language limitation. It shows an empty string instead of the default value. This only affects when the generated schema is accessed using introspection or file generation. It does not affect the functionality of the default values.
+>**Note:** Currently, the generated schema does not include the default value of an input parameter due to a Ballerina language limitation. It shows an empty string instead of the default value. This only affects when accessing the generated schema via introspection or file generation. It does not affect the functionality of the default values.
 
 ###### Example: Default Values
 
