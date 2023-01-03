@@ -351,15 +351,16 @@ public class ServiceValidationTest {
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "anydata", "Query.greet");
         assertErrorMessage(diagnostic, message, 62, 41);
 
+        String subModulePrefix = "graphql_test/test_package.types:0.1.0:";
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "ballerina/http:2.5.2:Headers",
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, subModulePrefix + "Headers",
                                   "Query.greet");
-        assertErrorMessage(diagnostic, message, 68, 46);
+        assertErrorMessage(diagnostic, message, 68, 47);
 
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "ballerina/http:2.5.2:Service",
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, subModulePrefix + "Service",
                                   "Query.greet");
-        assertErrorMessage(diagnostic, message, 74, 46);
+        assertErrorMessage(diagnostic, message, 74, 47);
     }
 
     @Test(groups = "invalid")

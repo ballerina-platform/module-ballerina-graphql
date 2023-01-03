@@ -2,8 +2,3 @@
 org = "graphql_test"
 name = "test_package"
 version = "0.1.0"
-
-[[dependency]]
-org = "ballerina"
-name = "http"
-version = "2.5.2"
