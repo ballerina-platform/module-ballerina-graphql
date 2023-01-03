@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class VariableNode {
+public readonly class VariableNode {
     *NamedNode;
 
     private string name;
@@ -22,11 +22,11 @@ public class VariableNode {
     private Location location;
     private ArgumentNode? defaultValue;
 
-    public isolated function init(string name, string typeName, Location location) {
+    public isolated function init(string name, string typeName, Location location, ArgumentNode? defaultValue = ()) {
         self.name = name;
         self.typeName = typeName;
-        self.location = location;
-        self.defaultValue = ();
+        self.location = location.cloneReadOnly();
+        self.defaultValue = defaultValue.cloneReadOnly();
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -47,9 +47,5 @@ public class VariableNode {
 
     public isolated function getDefaultValue() returns ArgumentNode? {
         return self.defaultValue;
-    }
-
-    public isolated function setDefaultValue(ArgumentNode defaultValue) {
-        self.defaultValue = defaultValue;
     }
 }

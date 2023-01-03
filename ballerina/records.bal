@@ -230,3 +230,8 @@ type WSPayload record {|
     string id?;
     json payload?;
 |};
+
+type ParseResult record {|
+    parser:DocumentNode document;
+    ErrorDetail[] validationErrors;
+|};

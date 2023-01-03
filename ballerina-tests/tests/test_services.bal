@@ -1325,6 +1325,11 @@ service /subscriptions on subscriptionListener {
         EvenNumberGenerator evenNumberGenerator = new;
         return new (evenNumberGenerator);
     }
+    
+    isolated resource function subscribe refresh() returns stream<string> {
+        RefreshData dataRefersher = new;
+        return new (dataRefersher);
+    }
 }
 
 # GraphQL service with documentation.

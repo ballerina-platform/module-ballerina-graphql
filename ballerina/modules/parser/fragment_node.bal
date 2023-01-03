@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class FragmentNode {
+public readonly class FragmentNode {
     *SelectionNode;
 
     private string name;
@@ -24,20 +24,16 @@ public class FragmentNode {
     private boolean inlineFragment;
     private SelectionNode[] selections;
     private DirectiveNode[] directives;
-    private boolean unknownFragment;
-    private boolean containsCycle;
 
     public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
-                                  string onType = "") {
+                                  string onType = "", SelectionNode[] selections = [], DirectiveNode[] directives = []) {
         self.name = name;
-        self.location = location;
-        self.spreadLocation = spreadLocation;
+        self.location = location.cloneReadOnly();
+        self.spreadLocation = spreadLocation.cloneReadOnly();
         self.onType = onType;
         self.inlineFragment = inlineFragment;
-        self.selections = [];
-        self.directives = [];
-        self.unknownFragment = false;
-        self.containsCycle = false;
+        self.selections = selections.cloneReadOnly();
+        self.directives = directives.cloneReadOnly();
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -56,10 +52,6 @@ public class FragmentNode {
         return self.onType;
     }
 
-    public isolated function addSelection(SelectionNode selection) {
-        self.selections.push(selection);
-    }
-
     public isolated function getSelections() returns SelectionNode[] {
         return self.selections;
     }
@@ -72,35 +64,18 @@ public class FragmentNode {
         return self.spreadLocation;
     }
 
-    public isolated function setLocation(Location location) {
-        self.location = location;
-    }
-
-    public isolated function setOnType(string onType) {
-        self.onType = onType;
-    }
-
-    public isolated function addDirective(DirectiveNode directive) {
-        self.directives.push(directive);
-    }
-
     public isolated function getDirectives() returns DirectiveNode[] {
         return self.directives;
     }
 
-    public isolated function setUnknown() {
-        self.unknownFragment = true;
+    public isolated function modifyWith(SelectionNode[] selections, DirectiveNode[] directives, string? onType = ())
+    returns FragmentNode {
+        string onTypeValue = onType is () ? self.onType : onType;
+        return new (self.name, self.location, self.inlineFragment, self.spreadLocation, onTypeValue, selections,
+                    directives);
     }
 
-    public isolated function isUnknown() returns boolean {
-        return self.unknownFragment;
-    }
-
-    public isolated function setHasCycle() {
-        self.containsCycle = true;
-    }
-
-    public isolated function hasCycle() returns boolean {
-        return self.containsCycle;
+    public isolated function modifyWithSelections(SelectionNode[] selections) returns FragmentNode {
+        return new (self.name, self.location, self.inlineFragment, self.spreadLocation, self.onType, selections, self.directives);
     }
 }

@@ -18,6 +18,8 @@
 
 package io.ballerina.stdlib.graphql.runtime.parser;
 
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 /**
@@ -66,5 +68,9 @@ public class ParserUtils {
 
     private static boolean isDigit(int c) {
         return ('0' <= c && '9' >= c);
+    }
+
+    public static BString getHashCode(BObject object) {
+        return StringUtils.fromString(Integer.toString(object.hashCode()));
     }
 }
