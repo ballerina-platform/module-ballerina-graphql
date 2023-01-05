@@ -2,3 +2,4 @@
 org = "ballerina"
 name = "graphql_tests"
 version = "1.6.0"
+
