@@ -35,6 +35,7 @@ public class Type implements Serializable {
     private final String name;
     private final TypeKind kind;
     private final String description;
+    private final Position position;
     private final Map<String, Field> fields;
     private final List<EnumValue> enumValues;
     private final List<Type> possibleTypes;
@@ -50,7 +51,7 @@ public class Type implements Serializable {
      * @param ofType - Type to be wrapped
      */
     public Type(TypeKind kind, Type ofType) {
-        this(null, kind, null, ofType);
+        this(null, kind, null, null, ofType);
     }
 
     /**
@@ -71,7 +72,11 @@ public class Type implements Serializable {
      * @param description - The description of the type from the documentation
      */
     public Type(String name, TypeKind kind, String description) {
-        this(name, kind, description, (Type) null);
+        this(name, kind, description, null, (Type) null);
+    }
+
+    public Type(String name, TypeKind kind, String description, Position position) {
+        this(name, kind, description, position, (Type) null);
     }
 
     /**
@@ -82,8 +87,8 @@ public class Type implements Serializable {
      * @param description - The description of the type from the documentation
      * @param objectKind - The kind of the object. Could be ObjectKind.CLASS or ObjectKind.RECORD
      */
-    public Type(String name, TypeKind kind, String description, ObjectKind objectKind) {
-        this(name, kind, description, null, objectKind);
+    public Type(String name, TypeKind kind, String description, Position position, ObjectKind objectKind) {
+        this(name, kind, description, position, null, objectKind);
     }
 
     /**
@@ -94,14 +99,16 @@ public class Type implements Serializable {
      * @param description - The description of the type from the documentation
      * @param ofType - The type to be wrapped
      */
-    public Type(String name, TypeKind kind, String description, Type ofType) {
-        this(name, kind, description, ofType, null);
+    public Type(String name, TypeKind kind, String description, Position position, Type ofType) {
+        this(name, kind, description, position, ofType, null);
     }
 
-    private Type(String name, TypeKind kind, String description, Type ofType, ObjectKind objectKind) {
+    private Type(String name, TypeKind kind, String description, Position position, Type ofType,
+                 ObjectKind objectKind) {
         this.name = removeEscapeCharacter(name);
         this.kind = kind;
         this.description = description;
+        this.position = position;
         this.fields = kind == TypeKind.OBJECT || kind == TypeKind.INTERFACE ? new LinkedHashMap<>() : null;
         this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
         this.possibleTypes = kind == TypeKind.INTERFACE || kind == TypeKind.UNION ? new ArrayList<>() : null;

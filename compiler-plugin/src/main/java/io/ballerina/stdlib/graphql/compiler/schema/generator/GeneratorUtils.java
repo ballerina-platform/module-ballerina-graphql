@@ -20,12 +20,16 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.symbols.Documentable;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.stdlib.graphql.commons.types.LinePosition;
+import io.ballerina.stdlib.graphql.commons.types.Position;
 import io.ballerina.stdlib.graphql.commons.types.ScalarType;
 import io.ballerina.stdlib.graphql.commons.types.Type;
 import io.ballerina.stdlib.graphql.commons.types.TypeKind;
+import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Utility methods for Ballerina GraphQL schema generator.
@@ -95,5 +99,21 @@ public class GeneratorUtils {
 
     public static Type getWrapperType(Type type, TypeKind typeKind) {
         return new Type(typeKind, type);
+    }
+
+    public static Position getTypePosition(Optional<Location> location) {
+        Position position;
+        if (location.isEmpty()) {
+            position = null;
+        } else {
+            position = new Position(
+                    location.get().lineRange().filePath(),
+                    new LinePosition(location.get().lineRange().startLine().line(),
+                            location.get().lineRange().startLine().offset()),
+                    new LinePosition(location.get().lineRange().endLine().line(),
+                            location.get().lineRange().endLine().offset())
+                   );
+        }
+        return position;
     }
 }

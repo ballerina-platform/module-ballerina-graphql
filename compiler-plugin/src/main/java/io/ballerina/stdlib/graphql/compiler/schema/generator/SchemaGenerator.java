@@ -55,6 +55,7 @@ import io.ballerina.stdlib.graphql.commons.types.EnumValue;
 import io.ballerina.stdlib.graphql.commons.types.Field;
 import io.ballerina.stdlib.graphql.commons.types.InputValue;
 import io.ballerina.stdlib.graphql.commons.types.ObjectKind;
+import io.ballerina.stdlib.graphql.commons.types.Position;
 import io.ballerina.stdlib.graphql.commons.types.ScalarType;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.Type;
@@ -83,6 +84,7 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypePosition;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
@@ -267,7 +269,7 @@ public class SchemaGenerator {
             case ARRAY:
                 return getType((ArrayTypeSymbol) typeSymbol);
             case UNION:
-                return getType(typeName, null, (UnionTypeSymbol) typeSymbol);
+                return getType(typeName, null, null, (UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
                 return getType(null, null, null, (IntersectionTypeSymbol) typeSymbol);
             case STREAM:
@@ -303,9 +305,18 @@ public class SchemaGenerator {
         return this.schema.addType(name, kind, description);
     }
 
-    private Type addType(String name, TypeKind kind, String description, ObjectKind objectKind) {
-        return this.schema.addType(name, kind, description, objectKind);
+    private Type addType(String name, TypeKind kind, String description, Position position) {
+        return this.schema.addType(name, kind, description, position);
     }
+
+    private Type addType(String name, TypeKind kind, String description, Position position, ObjectKind objectKind) {
+        return this.schema.addType(name, kind, description, position, objectKind);
+    }
+
+    // todo: remove
+//    private Type addType(String name, TypeKind kind, String description, ObjectKind objectKind) {
+//        return this.schema.addType(name, kind, description, objectKind);
+//    }
 
     private Type getType(TypeReferenceTypeSymbol typeSymbol, String name) {
         if (typeSymbol.getName().isEmpty()) {
@@ -339,7 +350,8 @@ public class SchemaGenerator {
             RecordTypeSymbol recordType = (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor();
             return getType(name, description, parameterMap, recordType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-            return getType(name, description, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            return getType(name, description, position, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
             IntersectionTypeSymbol intersectionType = (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor();
             return getType(name, description, parameterMap, intersectionType);
@@ -347,13 +359,14 @@ public class SchemaGenerator {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
             ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            return getType(name, description, objectTypeSymbol);
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            return getType(name, description, position, objectTypeSymbol);
         }
         return null;
     }
 
-    private Type getType(String name, String description, ObjectTypeSymbol objectTypeSymbol) {
-        Type objectType = addType(name, TypeKind.INTERFACE, description);
+    private Type getType(String name, String description, Position position, ObjectTypeSymbol objectTypeSymbol) {
+        Type objectType = addType(name, TypeKind.INTERFACE, description, position);
         getTypesFromInterface(name, objectType);
 
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
@@ -366,7 +379,8 @@ public class SchemaGenerator {
 
     private Type getType(String name, ClassSymbol classSymbol) {
         String description = getDescription(classSymbol);
-        Type objectType = addType(name, TypeKind.OBJECT, description, ObjectKind.CLASS);
+        Position position = getTypePosition(classSymbol.getLocation());
+        Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.CLASS);
 
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
@@ -391,7 +405,8 @@ public class SchemaGenerator {
                 TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) implementation;
                 String description = getDescription(typeDefinitionSymbol);
                 ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-                implementedType = getType(implementationName, description, objectTypeSymbol);
+                Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+                implementedType = getType(implementationName, description, position, objectTypeSymbol);
             }
 
             interfaceType.addPossibleType(implementedType);
@@ -418,7 +433,8 @@ public class SchemaGenerator {
 
     private Type getType(String name, EnumSymbol enumSymbol) {
         String description = getDescription(enumSymbol);
-        Type enumType = addType(name, TypeKind.ENUM, description);
+        Position position = getTypePosition(enumSymbol.getLocation());
+        Type enumType = addType(name, TypeKind.ENUM, description, position);
         for (ConstantSymbol enumMember : enumSymbol.members()) {
             addEnumValueToType(enumType, enumMember);
         }
@@ -427,7 +443,8 @@ public class SchemaGenerator {
 
     private Type getType(String name, String description, Map<String, String> fieldMap,
                          RecordTypeSymbol recordTypeSymbol) {
-        Type objectType = addType(name, TypeKind.OBJECT, description, ObjectKind.RECORD);
+        Position position = getTypePosition(recordTypeSymbol.getLocation());
+        Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.RECORD);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
             if (recordFieldSymbol.getName().isEmpty()) {
                 continue;
@@ -460,7 +477,7 @@ public class SchemaGenerator {
         return field;
     }
 
-    private Type getType(String name, String description, UnionTypeSymbol unionTypeSymbol) {
+    private Type getType(String name, String description, Position position, UnionTypeSymbol unionTypeSymbol) {
         List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
         if (effectiveTypes.size() == 1) {
             return getType(effectiveTypes.get(0));
@@ -468,7 +485,7 @@ public class SchemaGenerator {
 
         String typeName = name == null ? getTypeName(effectiveTypes) : name;
         String typeDescription = description == null ? Description.GENERATED_UNION_TYPE.getDescription() : description;
-        Type unionType = addType(typeName, TypeKind.UNION, typeDescription);
+        Type unionType = addType(typeName, TypeKind.UNION, typeDescription, position);
 
         for (TypeSymbol typeSymbol : effectiveTypes) {
             Type possibleType = getType(typeSymbol);

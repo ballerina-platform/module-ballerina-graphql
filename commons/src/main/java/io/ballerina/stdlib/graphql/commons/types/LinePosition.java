@@ -15,11 +15,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.ballerina.stdlib.graphql.commons.types;
 
-module io.ballerina.stdlib.graphql.commons {
-    requires io.ballerina.lang;
-    requires io.ballerina.parser;
-    requires io.ballerina.tools.api;
-    exports io.ballerina.stdlib.graphql.commons.utils;
-    exports io.ballerina.stdlib.graphql.commons.types;
+import java.io.Serializable;
+
+/**
+ * Represents the {@code LinePosition} in Position field in graphql schema.
+ */
+public class LinePosition implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final int line;
+    private final int offset;
+
+    public LinePosition(int line, int offset) {
+        this.line = line;
+        this.offset = offset;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
 }
