@@ -54,6 +54,7 @@ import io.ballerina.stdlib.graphql.commons.types.Directive;
 import io.ballerina.stdlib.graphql.commons.types.EnumValue;
 import io.ballerina.stdlib.graphql.commons.types.Field;
 import io.ballerina.stdlib.graphql.commons.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.types.ObjectKind;
 import io.ballerina.stdlib.graphql.commons.types.ScalarType;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.Type;
@@ -302,6 +303,10 @@ public class SchemaGenerator {
         return this.schema.addType(name, kind, description);
     }
 
+    private Type addType(String name, TypeKind kind, String description, ObjectKind objectKind) {
+        return this.schema.addType(name, kind, description, objectKind);
+    }
+
     private Type getType(TypeReferenceTypeSymbol typeSymbol, String name) {
         if (typeSymbol.getName().isEmpty()) {
             return null;
@@ -361,7 +366,7 @@ public class SchemaGenerator {
 
     private Type getType(String name, ClassSymbol classSymbol) {
         String description = getDescription(classSymbol);
-        Type objectType = addType(name, TypeKind.OBJECT, description);
+        Type objectType = addType(name, TypeKind.OBJECT, description, ObjectKind.CLASS);
 
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
@@ -422,7 +427,7 @@ public class SchemaGenerator {
 
     private Type getType(String name, String description, Map<String, String> fieldMap,
                          RecordTypeSymbol recordTypeSymbol) {
-        Type objectType = addType(name, TypeKind.OBJECT, description);
+        Type objectType = addType(name, TypeKind.OBJECT, description, ObjectKind.RECORD);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
             if (recordFieldSymbol.getName().isEmpty()) {
                 continue;
