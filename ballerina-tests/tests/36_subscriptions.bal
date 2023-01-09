@@ -686,3 +686,41 @@ isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() r
     };
     check validateWebSocketResponse(wsClient, expectedPayload);
 }
+
+@test:Config {
+    groups: ["sub_protocols", "subscriptions", "multiplexing"]
+}
+isolated function testSubscriptionMultiplexing() returns error? {
+    string document = string `subscription { refresh }`;
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_WS]};
+    websocket:Client wsClient = check new (url, config);
+
+    check initiateConnectionInitMessage(wsClient);
+    check validateConnectionInitMessage(wsClient);
+
+    check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = GRAPHQL_WS);
+    check writeWebSocketTextMessage(document, wsClient, id = "2", subProtocol = GRAPHQL_WS);
+
+    boolean subscriptionOneDisabled = false;
+    map<int> subscriptions = {"1": 0, "2": 0};
+    while true {
+        json actualPayload = check wsClient->readMessage();
+        string subscriptionId = check actualPayload.id;
+        subscriptions[subscriptionId] = subscriptions.get(subscriptionId) + 1;
+        if subscriptionOneDisabled && subscriptionId == "1" {
+            test:assertFail("Subscription one already unsubscirbed. No further data should be sent by ther server.");
+        }
+        if subscriptionId == "1" && subscriptions.get(subscriptionId) == 3 {
+            subscriptionOneDisabled = true;
+            check wsClient->writeMessage({'type: WS_STOP, id: subscriptionId});
+        }
+        if subscriptionId == "2" && subscriptions.get(subscriptionId) == 10 {
+            check wsClient->writeMessage({'type: WS_STOP, id: subscriptionId});
+            break;
+        }
+        json payload = {data: {refresh: "data"}};
+        json expectedPayload = {'type: WS_DATA, id: subscriptionId, payload: payload};
+        test:assertEquals(actualPayload, expectedPayload);
+    }
+}

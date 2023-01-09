@@ -103,8 +103,8 @@ public isolated class Context {
     } external;
 
     public isolated function resolve(Field 'field) returns anydata {
-        if self.getEngine() is Engine {
-            Engine engine = <Engine>self.getEngine();
+        Engine? engine = self.getEngine();
+        if engine is Engine {
             return engine.resolve(self, 'field);
         }
         return;

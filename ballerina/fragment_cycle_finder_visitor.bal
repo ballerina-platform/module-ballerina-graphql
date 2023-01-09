@@ -19,16 +19,16 @@ import graphql.parser;
 class FragmentCycleFinderVisitor {
     *ValidatorVisitor;
 
-    private ErrorDetail[] errors;
-    private map<parser:FragmentNode> fragments;
+    private final ErrorDetail[] errors = [];
+    private final map<parser:FragmentNode> visitedFragments = {};
+    private final map<parser:FragmentNode> fragments;
+    private final NodeModifierContext nodeModifierContext;
     private map<parser:FragmentNode> visitedSpreads;
-    private map<parser:FragmentNode> visitedFragments;
-
-    isolated function init(map<parser:FragmentNode> fragments) {
-        self.errors = [];
+    
+    isolated function init(map<parser:FragmentNode> fragments, NodeModifierContext nodeModifierContext) {
         self.fragments = fragments;
         self.visitedSpreads = {};
-        self.visitedFragments = {};
+        self.nodeModifierContext = nodeModifierContext;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data) {
@@ -59,7 +59,7 @@ class FragmentCycleFinderVisitor {
         if self.visitedSpreads.hasKey(fragmentNode.getName()) {
             ErrorDetail errorDetail = getCycleRecursiveFragmentError(fragmentNode, self.visitedSpreads);
             self.errors.push(errorDetail);
-            fragmentNode.setHasCycle();
+            self.nodeModifierContext.addFragmentWithCycles(fragmentNode);
         } else {
             self.visitedFragments[fragmentNode.getName()] = fragmentNode;
             self.visitedSpreads[fragmentNode.getName()] = fragmentNode;

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
+
+### Fixed
+- [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)
+
+### Changed
+- [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
+- [[#3870] Add Service Error Handling Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3870)
+- [[#3709] Add Input Default Values Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3709)
+
 ## [1.5.0] - 2022-11-29
 
 ### Added

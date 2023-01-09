@@ -80,3 +80,7 @@ isolated function isValidFirstChar(string char) returns boolean = @java:Method {
 isolated function isValidChar(string char) returns boolean = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
 } external;
+
+public isolated function getHashCode(object {} obj) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
+} external;

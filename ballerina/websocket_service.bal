@@ -24,7 +24,7 @@ isolated service class WsService {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final Context context;
-    private final map<()> activeConnections;
+    private final map<SubscriptionHandler> activeConnections;
     private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
 
@@ -91,6 +91,7 @@ isolated service class WsService {
                 if connectionId is () {
                     return self.handleIdNotPresentInPayload(caller);
                 }
+                SubscriptionHandler handler = new(connectionId);
                 lock {
                     if !self.initiatedConnection {
                         closeConnection(caller, 4401, "Unauthorized");
@@ -100,9 +101,9 @@ isolated service class WsService {
                         closeConnection(caller, 4409, string `Subscriber for ${connectionId} already exists`);
                         return;
                     }
-                    self.activeConnections[connectionId] = ();
+                    self.activeConnections[connectionId] = handler;
                 }
-                return self.handleSubscriptionRequest(caller, wsPayload, connectionId);
+                return self.handleSubscriptionRequest(caller, wsPayload, handler);
             }
             WS_STOP|WS_COMPLETE => {
                 string? connectionId = wsPayload.id;
@@ -113,7 +114,8 @@ isolated service class WsService {
                     if !self.activeConnections.hasKey(connectionId) {
                         return;
                     }
-                    _ = self.activeConnections.remove(connectionId);
+                    SubscriptionHandler handler = self.activeConnections.remove(connectionId);
+                    handler.setUnsubscribed();
                 }
             }
             WS_PING => {
@@ -122,13 +124,12 @@ isolated service class WsService {
         }
     }
 
-    isolated function handleSubscriptionRequest(websocket:Caller caller, WSPayload|json wsPayload,
-                                                string? connectionId = ())
-    returns websocket:Error? {
+    isolated function handleSubscriptionRequest(websocket:Caller caller, WSPayload|json wsPayload, 
+                                                SubscriptionHandler? handler = ()) returns websocket:Error? {
+        string? connectionId = handler is () ? () : handler.getId();
         parser:OperationNode|json node = validateSubscriptionPayload(wsPayload, self.engine);
         if node is parser:OperationNode {
-            check executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, node,
-                                   connectionId);
+            _ = start executeOperation(self.engine, self.context, self.schema, self.customHeaders, caller, node, handler);
         } else {
             check sendWebSocketResponse(caller, self.customHeaders, WS_ERROR, node, connectionId);
             if !self.customHeaders.hasKey(WS_SUB_PROTOCOL) {

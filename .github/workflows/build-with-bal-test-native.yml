@@ -1,4 +1,4 @@
-name: Build with bal test native
+name: GraalVM Check
 
 on:
     workflow_dispatch:

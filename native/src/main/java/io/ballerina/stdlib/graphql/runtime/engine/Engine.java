@@ -23,12 +23,14 @@ import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
@@ -104,7 +106,8 @@ public class Engine {
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context);
                 Object[] args = argumentHandler.getArguments(fieldNode);
-                if (service.getType().isIsolated() && service.getType().isIsolated(resourceMethod.getName())) {
+                ObjectType objectType = (ObjectType) TypeUtils.getReferredType(service.getType());
+                if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
                             .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
                                                            null, executionCallback, null, typeUnion, args);
