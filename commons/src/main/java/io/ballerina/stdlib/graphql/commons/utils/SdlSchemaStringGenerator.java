@@ -71,7 +71,7 @@ public class SdlSchemaStringGenerator {
     private static final String DOUBLE_INDENTATION = INDENTATION + INDENTATION;
     private static final String EMPTY_STRING = "";
     private static final String COMMA_SIGN = ",";
-    private static final String AND_SIGN = "&";
+    private static final String AMPERSAND_SIGN = "&";
     private static final String PIPE_SIGN = "|";
     private static final String SPACE = " ";
 
@@ -172,7 +172,7 @@ public class SdlSchemaStringGenerator {
         if (description == null) {
             return EMPTY_STRING;
         } else {
-            String[] lines = removeLeadingNewLines(description).split(LINE_SEPARATOR);
+            String[] lines = description.trim().split(LINE_SEPARATOR);
             if (lines.length == 1) {
                 return getFormattedString(DESC_FORMAT, getFormattedString(DOCUMENT_FORMAT, EMPTY_STRING, lines[0]));
             } else {
@@ -268,14 +268,14 @@ public class SdlSchemaStringGenerator {
         for (Type interfaceType : type.getInterfaces()) {
             interfaces.add(interfaceType.getName());
         }
-        return getFormattedString(IMPLEMENT_FORMAT, String.join(SPACE + AND_SIGN + SPACE, interfaces));
+        return getFormattedString(IMPLEMENT_FORMAT, String.join(SPACE + AMPERSAND_SIGN + SPACE, interfaces));
     }
 
     private static String createFieldDescription(String description) {
         if (description == null) {
             return EMPTY_STRING;
         } else {
-            String[] lines = removeLeadingNewLines(description).split(LINE_SEPARATOR);
+            String[] lines = description.trim().split(LINE_SEPARATOR);
             if (lines.length == 1) {
                 return getFormattedString(DESC_FORMAT, getFormattedString(DOCUMENT_FORMAT, INDENTATION, lines[0]));
             } else {
@@ -290,7 +290,7 @@ public class SdlSchemaStringGenerator {
         if (description == null) {
             return EMPTY_STRING;
         } else {
-            String[] lines = removeLeadingNewLines(description).split(LINE_SEPARATOR);
+            String[] lines = description.trim().split(LINE_SEPARATOR);
             if (lines.length == 1) {
                 return getFormattedString(DESC_FORMAT,
                         getFormattedString(DOCUMENT_FORMAT, DOUBLE_INDENTATION, lines[0]));
@@ -374,13 +374,5 @@ public class SdlSchemaStringGenerator {
 
     private static String getFormattedString(String format, String... args) {
         return String.format(format, (Object[]) args);
-    }
-
-    private static String removeLeadingNewLines(String description) {
-        int i = 0;
-        while (i < description.length() && String.valueOf(description.charAt(i)).equals(LINE_SEPARATOR)) {
-            i++;
-        }
-        return description.substring(i);
     }
 }
