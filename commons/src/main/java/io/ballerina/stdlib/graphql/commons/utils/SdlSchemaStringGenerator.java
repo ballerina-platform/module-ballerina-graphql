@@ -47,18 +47,19 @@ public class SdlSchemaStringGenerator {
     private static final String SCALAR_TYPE_FORMAT = "%sscalar %s%s";
     private static final String OBJECT_TYPE_FORMAT = "%stype %s%s %s";
     private static final String ENUM_TYPE_FORMAT = "%senum %s %s";
-    private static final String INPUT_TYPE_FORMAT = "input %s %s";
+    private static final String INPUT_TYPE_FORMAT = "%sinput %s %s";
     private static final String FIELD_FORMAT = "%s  %s%s: %s%s";
     private static final String FIELD_BLOCK_FORMAT = "{%n%s%n}";
-    private static final String ARGS_FORMAT = "(%s)";
+    private static final String ARGS_FORMAT = "(%s%s%s%s)";
     private static final String DESC_FORMAT = "%s%n";
     private static final String DEPRECATE_FORMAT = "%s(reason: \"%s\")";
-    private static final String COMMENT_FORMAT = "%s# %s";
+    private static final String DOCUMENT_FORMAT = "%s\"%s\"";
+    private static final String BLOCK_STRING_FORMAT = "%s\"\"\"%n%s%s%n%s\"\"\"";
     private static final String IMPLEMENT_FORMAT = " implements %s";
     private static final String POSSIBLE_TYPE_FORMAT = " = %s";
-    private static final String INPUT_FIELD_FORMAT = "  %s: %s";
+    private static final String INPUT_FIELD_FORMAT = "%s  %s: %s";
     private static final String ARGS_TYPE_FORMAT = "%s = %s";
-    private static final String ARGS_VALUE_FORMAT = "%s: %s";
+    private static final String ARGS_VALUE_FORMAT = "%s%s%s: %s";
     private static final String ENUM_VALUE_FORMAT = "%s  %s%s";
     private static final String NON_NULL_FORMAT = "%s!";
     private static final String LIST_FORMAT = "[%s]";
@@ -67,10 +68,12 @@ public class SdlSchemaStringGenerator {
     //Schema delimiters
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     private static final String INDENTATION = "  ";
+    private static final String DOUBLE_INDENTATION = INDENTATION + INDENTATION;
     private static final String EMPTY_STRING = "";
-    private static final String COMMA_SIGN = ", ";
-    private static final String AND_SIGN = " & ";
+    private static final String COMMA_SIGN = ",";
+    private static final String AMPERSAND_SIGN = "&";
     private static final String PIPE_SIGN = "|";
+    private static final String SPACE = " ";
 
     public static String generate(Schema schema) {
         String sdlSchemaString = getSDLSchemaString(schema);
@@ -80,7 +83,7 @@ public class SdlSchemaStringGenerator {
     private static String getSDLSchemaString(Schema schema) {
         String directives = getDirectives(schema);
         String types = getTypes(schema);
-        return getFormattedString(SCHEMA_FORMAT, createDescription(schema.getDescription()), directives, types);
+        return getFormattedString(SCHEMA_FORMAT, createTypeDescription(schema.getDescription()), directives, types);
     }
 
     private static String getDirectives(Schema schema) {
@@ -108,7 +111,7 @@ public class SdlSchemaStringGenerator {
     }
 
     private static String createDirective(Directive directive) {
-        return getFormattedString(DIRECTIVE_TYPE_FORMAT, createDescription(directive.getDescription()),
+        return getFormattedString(DIRECTIVE_TYPE_FORMAT, createTypeDescription(directive.getDescription()),
                 directive.getName(), createArgs(directive.getArgs()), createIsRepeatable(directive),
                 createDirectiveLocation(directive.getLocations()));
     }
@@ -136,43 +139,47 @@ public class SdlSchemaStringGenerator {
     }
 
     private static String createScalarType(Type type) {
-        return getFormattedString(SCALAR_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
+        return getFormattedString(SCALAR_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
                 createSpecifiedByUrl(type));
     }
 
     private static String createObjectType(Type type) {
-        return getFormattedString(OBJECT_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
+        return getFormattedString(OBJECT_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
                 createInterfaceImplements(type), createFields(type));
     }
 
     private static String createInterfaceType(Type type) {
-        return getFormattedString(INTERFACE_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
+        return getFormattedString(INTERFACE_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
                 createInterfaceImplements(type), createFields(type));
     }
 
     private static String createUnionType(Type type) {
-        return getFormattedString(UNION_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
+        return getFormattedString(UNION_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
                 createPossibleTypes(type));
     }
 
     private static String createInputObjectType(Type type) {
-        return getFormattedString(INPUT_TYPE_FORMAT, type.getName(), createInputValues(type));
+        return getFormattedString(INPUT_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
+                createInputValues(type));
     }
 
     private static String createEnumType(Type type) {
-        return getFormattedString(ENUM_TYPE_FORMAT, createDescription(type.getDescription()), type.getName(),
+        return getFormattedString(ENUM_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
                 createEnumValues(type));
     }
 
-    private static String createDescription(String description) {
-        if (description == null || description.isEmpty()) {
+    private static String createTypeDescription(String description) {
+        if (description == null) {
             return EMPTY_STRING;
         } else {
-            List<String> subStrings = new ArrayList<>();
-            for (String subString : description.split(LINE_SEPARATOR)) {
-                subStrings.add(getFormattedString(COMMENT_FORMAT, EMPTY_STRING, subString));
+            String[] lines = description.trim().split(LINE_SEPARATOR);
+            if (lines.length == 1) {
+                return getFormattedString(DESC_FORMAT, getFormattedString(DOCUMENT_FORMAT, EMPTY_STRING, lines[0]));
+            } else {
+                String formattedDesc = getFormattedString(BLOCK_STRING_FORMAT, EMPTY_STRING, EMPTY_STRING,
+                        String.join(LINE_SEPARATOR, lines), EMPTY_STRING);
+                return getFormattedString(DESC_FORMAT, formattedDesc);
             }
-            return getFormattedString(DESC_FORMAT, String.join(LINE_SEPARATOR, subStrings));
         }
     }
 
@@ -180,8 +187,7 @@ public class SdlSchemaStringGenerator {
         List<String> fields = new ArrayList<>();
         for (Field field : type.getFields()) {
             fields.add(getFormattedString(FIELD_FORMAT, createFieldDescription(field.getDescription()), field.getName(),
-                    createArgs(field.getArgs()), createFieldType(field.getType()),
-                    createDeprecate(field)));
+                    createArgs(field.getArgs()), createFieldType(field.getType()), createDeprecate(field)));
         }
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, fields));
     }
@@ -198,7 +204,8 @@ public class SdlSchemaStringGenerator {
     private static String createInputValues(Type type) {
         List<String> inputFields = new ArrayList<>();
         for (InputValue inputField : type.getInputFields()) {
-            inputFields.add(getFormattedString(INPUT_FIELD_FORMAT, inputField.getName(), createArgType(inputField)));
+            inputFields.add(getFormattedString(INPUT_FIELD_FORMAT, createFieldDescription(inputField.getDescription()),
+                    inputField.getName(), createArgType(inputField)));
         }
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, inputFields));
     }
@@ -216,10 +223,23 @@ public class SdlSchemaStringGenerator {
         if (inputValues.isEmpty()) {
             return EMPTY_STRING;
         }
-        for (InputValue arg : inputValues) {
-            args.add(getFormattedString(ARGS_VALUE_FORMAT, arg.getName(), createArgType(arg)));
+        boolean hasDescription = inputValues.stream()
+                .anyMatch(input -> input.getDescription() != null && !input.getDescription().isEmpty());
+        if (hasDescription) {
+            for (InputValue arg : inputValues) {
+                args.add(getFormattedString(ARGS_VALUE_FORMAT, createArgDescription(arg.getDescription()),
+                        DOUBLE_INDENTATION, arg.getName(), createArgType(arg)));
+            }
+            return getFormattedString(ARGS_FORMAT, LINE_SEPARATOR, String.join(LINE_SEPARATOR, args),
+                    LINE_SEPARATOR, INDENTATION);
+        } else {
+            for (InputValue arg : inputValues) {
+                args.add(getFormattedString(ARGS_VALUE_FORMAT, EMPTY_STRING, EMPTY_STRING, arg.getName(),
+                        createArgType(arg)));
+            }
+            return getFormattedString(ARGS_FORMAT, EMPTY_STRING, String.join(COMMA_SIGN + SPACE, args), EMPTY_STRING,
+                    EMPTY_STRING);
         }
-        return getFormattedString(ARGS_FORMAT, String.join(COMMA_SIGN, args));
     }
 
     private static String createFieldType(Type type) {
@@ -248,18 +268,37 @@ public class SdlSchemaStringGenerator {
         for (Type interfaceType : type.getInterfaces()) {
             interfaces.add(interfaceType.getName());
         }
-        return getFormattedString(IMPLEMENT_FORMAT, String.join(AND_SIGN, interfaces));
+        return getFormattedString(IMPLEMENT_FORMAT, String.join(SPACE + AMPERSAND_SIGN + SPACE, interfaces));
     }
 
     private static String createFieldDescription(String description) {
-        if (description == null || description.isEmpty()) {
+        if (description == null) {
             return EMPTY_STRING;
         } else {
-            List<String> subStrings = new ArrayList<>();
-            for (String subString : description.split(LINE_SEPARATOR)) {
-                subStrings.add(getFormattedString(COMMENT_FORMAT, INDENTATION, subString));
+            String[] lines = description.trim().split(LINE_SEPARATOR);
+            if (lines.length == 1) {
+                return getFormattedString(DESC_FORMAT, getFormattedString(DOCUMENT_FORMAT, INDENTATION, lines[0]));
+            } else {
+                String formattedDesc = getFormattedString(BLOCK_STRING_FORMAT, INDENTATION, INDENTATION,
+                        String.join(LINE_SEPARATOR + INDENTATION, lines), INDENTATION);
+                return getFormattedString(DESC_FORMAT, formattedDesc);
             }
-            return getFormattedString(DESC_FORMAT, String.join(LINE_SEPARATOR, subStrings));
+        }
+    }
+
+    private static String createArgDescription(String description) {
+        if (description == null) {
+            return EMPTY_STRING;
+        } else {
+            String[] lines = description.trim().split(LINE_SEPARATOR);
+            if (lines.length == 1) {
+                return getFormattedString(DESC_FORMAT,
+                        getFormattedString(DOCUMENT_FORMAT, DOUBLE_INDENTATION, lines[0]));
+            } else {
+                String formattedDesc = getFormattedString(BLOCK_STRING_FORMAT, DOUBLE_INDENTATION, DOUBLE_INDENTATION,
+                        String.join(LINE_SEPARATOR + DOUBLE_INDENTATION, lines), DOUBLE_INDENTATION);
+                return getFormattedString(DESC_FORMAT, formattedDesc);
+            }
         }
     }
 
@@ -274,21 +313,26 @@ public class SdlSchemaStringGenerator {
     private static String createDeprecate(EnumValue enumValue) {
         if (enumValue.isDeprecated()) {
             if (enumValue.getDeprecationReason() != null) {
-                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE, enumValue.getDeprecationReason());
+                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE,
+                        createDeprecateReason(enumValue.getDeprecationReason()));
+            }
+            return DEPRECATE;
+        }
+        return EMPTY_STRING;
+    }
+    private static String createDeprecate(Field field) {
+        if (field.isDeprecated()) {
+            if (field.getDeprecationReason() != null) {
+                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE,
+                        createDeprecateReason(field.getDeprecationReason()));
             }
             return DEPRECATE;
         }
         return EMPTY_STRING;
     }
 
-    private static String createDeprecate(Field field) {
-        if (field.isDeprecated()) {
-            if (field.getDeprecationReason() != null) {
-                return getFormattedString(DEPRECATE_FORMAT, DEPRECATE, field.getDeprecationReason());
-            }
-            return DEPRECATE;
-        }
-        return EMPTY_STRING;
+    private static String createDeprecateReason(String reason) {
+        return reason.replace(LINE_SEPARATOR, SPACE);
     }
 
     private static String createSpecifiedByUrl(Type type) {
