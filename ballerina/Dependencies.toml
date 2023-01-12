@@ -69,7 +69,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.6.0"
+version = "1.9.9"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
@@ -369,5 +369,4 @@ dependencies = [
 modules = [
 	{org = "ballerina", packageName = "websocket", moduleName = "websocket"}
 ]
-
 
