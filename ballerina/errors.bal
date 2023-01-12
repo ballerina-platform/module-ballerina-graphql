@@ -45,3 +45,6 @@ public type ServerError distinct (ClientError & error<record {| json? data?; Err
 
 # Represents client side data binding error.
 public type PayloadBindingError distinct (ClientError & error<record {| ErrorDetail[]? errors; |}>);
+
+// Represents errors related to the termination of a WebSocket subscription connection.
+type SubscriptionError distinct error<record {|int code;|}>;

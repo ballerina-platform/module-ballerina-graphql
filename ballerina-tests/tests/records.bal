@@ -230,12 +230,6 @@ public enum InstrumentType {
     PERCUSSION
 }
 
-type WSPayload record {|
-    string 'type;
-    string id?;
-    json payload?;
-|};
-
 public type Languages record {|
     map<string> name;
 |};

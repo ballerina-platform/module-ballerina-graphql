@@ -435,14 +435,19 @@ isolated function testInterceptorsWithTables() returns error? {
 isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscription_interceptor1";
-    websocket:Client wsClient1 = check new(url);
-    websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document, wsClient1);
-    check writeWebSocketTextMessage(document, wsClient2);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+    check sendSubscriptionMessage(wsClient1, document, "1");
+
+    websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+    check sendSubscriptionMessage(wsClient2, document, "2");
+
     foreach int i in 1 ..< 4 {
-        json expectedPayload = {data: {messages: i * 5 - 5}};
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+        json expectedMsgPayload = {data: {messages: i * 5 - 5}};
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
 }
 
@@ -452,12 +457,14 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
     string url = "ws://localhost:9099/subscription_interceptor2";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {books: {name: "Crime and Punishment", author: "Athur Conan Doyle"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {books: {name: "A Game of Thrones", author: "Athur Conan Doyle"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+    json expectedMsgPayload = {data: {books: {name: "Crime and Punishment", author: "Athur Conan Doyle"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {books: {name: "A Game of Thrones", author: "Athur Conan Doyle"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -466,12 +473,14 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
     string url = "ws://localhost:9099/subscription_interceptor3";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {students: {id: 1, name: "Harry Potter"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {students: {id: 2, name: "Harry Potter"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+    json expectedMsgPayload = {data: {students: {id: 1, name: "Harry Potter"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {students: {id: 2, name: "Harry Potter"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -480,9 +489,11 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
     string url = "ws://localhost:9099/subscription_interceptor4";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+    json expectedMsgPayload = {
         data: {
             multipleValues: {
                 id: 100,
@@ -490,8 +501,8 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
             }
         }
     };
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {
         data: {
             multipleValues: {
                 name: "Walter White",
@@ -499,7 +510,7 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
             }
         }
     };
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -508,14 +519,19 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
 isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscription_interceptor5";
-    websocket:Client wsClient1 = check new(url);
-    websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document, wsClient1);
-    check writeWebSocketTextMessage(document, wsClient2);
-    json expectedPayload = {data: {messages: 1}};
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+    check sendSubscriptionMessage(wsClient1, document, "1");
+
+    websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+    check sendSubscriptionMessage(wsClient2, document, "2");
+
+    json expectedMsgPayload = {data: {messages: 1}};
     foreach int i in 1 ..< 4 {
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
 }
 
@@ -525,28 +541,33 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
 isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscription_interceptor6";
-    websocket:Client wsClient1 = check new(url);
-    websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document, wsClient1);
-    check writeWebSocketTextMessage(document, wsClient2);
-    json expectedPayload = {
-        errors:[
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+    check sendSubscriptionMessage(wsClient1, document, "1");
+
+    websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+    check sendSubscriptionMessage(wsClient2, document, "2");
+
+    json expectedMsgPayload = {
+        errors: [
             {
                 message: "Invalid return type in Interceptor \"DestructiveModification\". Expected type Int!",
                 locations: [
                     {
-                        line:1,
-                        column:16
+                        line: 1,
+                        column: 16
                     }
                 ],
                 path: ["messages"]
             }
         ],
-        data:null
+        data: null
     };
     foreach int i in 1 ..< 4 {
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
 }
 
@@ -556,27 +577,34 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
 isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
     final string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscription_interceptor1";
-    final websocket:Client wsClient1 = check new(url);
-    final websocket:Client wsClient2 = check new(url);
-    final websocket:Client wsClient3 = check new(url);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    final websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+
+    final websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+
+    final websocket:Client wsClient3 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient3);
+
     worker A returns error? {
-        check writeWebSocketTextMessage(document, wsClient1);
+        check sendSubscriptionMessage(wsClient1, document, "1");
         foreach int i in 1 ..< 4 {
-            json expectedPayload = {data: {messages: i * 5 - 5}};
-            check validateWebSocketResponse(wsClient1, expectedPayload);
+            json expectedMsgPayload = {data: {messages: i * 5 - 5}};
+            check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         }
     }
     worker B returns error? {
-        check writeWebSocketTextMessage(document, wsClient2);
+        check sendSubscriptionMessage(wsClient2, document, "2");
         foreach int i in 1 ..< 4 {
-            json expectedPayload = {data: {messages: i * 5 - 5}};
-            check validateWebSocketResponse(wsClient2, expectedPayload);
+            json expectedMsgPayload = {data: {messages: i * 5 - 5}};
+            check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
         }
     }
-    check writeWebSocketTextMessage(document, wsClient3);
+    check sendSubscriptionMessage(wsClient3, document, "3");
     foreach int i in 1 ..< 4 {
-        json expectedPayload = {data: {messages: i * 5 - 5}};
-        check validateWebSocketResponse(wsClient3, expectedPayload);
+        json expectedMsgPayload = {data: {messages: i * 5 - 5}};
+        check validateNextMessage(wsClient3, expectedMsgPayload, id = "3");
     }
     check wait A;
     check wait B;
@@ -588,11 +616,16 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
     final string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
     string url = "ws://localhost:9099/subscription_interceptor4";
-    final websocket:Client wsClient1 = check new(url);
-    final websocket:Client wsClient2 = check new(url);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    final websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+
+    final websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+
     worker A returns error? {
-        check writeWebSocketTextMessage(document, wsClient1);
-        json expectedPayload = {
+        check sendSubscriptionMessage(wsClient1, document, "1");
+        json expectedMsgPayload = {
             data: {
                 multipleValues: {
                     id: 100,
@@ -600,8 +633,8 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns er
                 }
             }
         };
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        expectedPayload = {
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        expectedMsgPayload = {
             data: {
                 multipleValues: {
                     name: "Walter White",
@@ -609,11 +642,11 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns er
                 }
             }
         };
-        check validateWebSocketResponse(wsClient1, expectedPayload);
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
     }
     worker B returns error? {
-        check writeWebSocketTextMessage(document, wsClient2);
-        json expectedPayload = {
+        check sendSubscriptionMessage(wsClient2, document, "2");
+        json expectedMsgPayload = {
             data: {
                 multipleValues: {
                     id: 100,
@@ -621,8 +654,8 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns er
                 }
             }
         };
-        check validateWebSocketResponse(wsClient2, expectedPayload);
-        expectedPayload = {
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        expectedMsgPayload = {
             data: {
                 multipleValues: {
                     name: "Walter White",
@@ -630,7 +663,7 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns er
                 }
             }
         };
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
     check wait A;
     check wait B;

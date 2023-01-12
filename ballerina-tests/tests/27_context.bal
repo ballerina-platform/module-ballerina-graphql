@@ -305,18 +305,20 @@ isolated function testContextWithSubscriptions() returns error? {
     websocket:ClientConfiguration configs = {
         customHeaders: {
             "scope": "admin"
-        }
+        },
+        subProtocols: [GRAPHQL_TRANSPORT_WS]
     };
     websocket:Client wsClient = check new (url, configs);
-    check writeWebSocketTextMessage(document, wsClient);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
     foreach int i in 1 ..< 4 {
         json expectedPayload = {data: {messages: i}};
-        check validateWebSocketResponse(wsClient, expectedPayload);
+        check validateWebSocketResponse(wsClient, {'type: WS_NEXT, id: "1", payload: expectedPayload});
     }
 }
 
 @test:Config {
-    groups: ["context"]
+    groups: ["context", "subscriptions"]
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     string url = "ws://localhost:9092/context";
@@ -324,16 +326,18 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     websocket:ClientConfiguration configs = {
         customHeaders: {
             "scope": "user"
-        }
+        },
+        subProtocols: [GRAPHQL_TRANSPORT_WS]
     };
     websocket:Client wsClient = check new (url, configs);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {
-        errors:[
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+    json expectedMsgPayload = {
+        errors: [
             {
                 message: "You don't have permission to retrieve data"
             }
         ]
     };
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }

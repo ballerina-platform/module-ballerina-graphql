@@ -107,34 +107,49 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
     return 'string:fromBytes(content);
 }
 
-isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload)
-    returns websocket:Error?|error {
+isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload) returns websocket:Error? {
     json actualPayload = check wsClient->readMessage();
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-isolated function writeWebSocketTextMessage(string? document, websocket:Client wsClient, json? variables = {},
-                                            string? operationName = (), string? id = (), string? subProtocol = ())
-                                            returns websocket:Error? {
+isolated function sendSubscriptionMessage(websocket:Client wsClient, string document, string id = "1",
+                                          json? variables = {}, string? operationName = ()) returns websocket:Error? {
     json payload = {query: document, variables: variables, operationName: operationName};
-    if subProtocol !is () && id !is () {
-        json wsPayload = subProtocol == GRAPHQL_WS
-                        ? {"type": WS_START, id: id, payload: payload}
-                        : {"type": WS_SUBSCRIBE, id: id, payload: payload};
-        check wsClient->writeMessage(wsPayload);
-    } else {
-        check wsClient->writeMessage(payload);
-    }
+    json wsPayload = {'type: WS_SUBSCRIBE, id: id, payload: payload};
+    return wsClient->writeMessage(wsPayload);
 }
 
-isolated function validateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error?|error {
-    string expectedPayload = WS_ACK;
-    json jsonPayload = check wsClient->readMessage();
-    WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
-    string actualType = wsPayload.'type;
-    test:assertEquals(actualType, expectedPayload);
+isolated function validateConnectionAckMessage(websocket:Client wsClient) returns websocket:Error? {
+    json response = check wsClient->readMessage();
+    test:assertEquals(response.'type, WS_ACK);
 }
 
-isolated function initiateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error? {
-    check wsClient->writeMessage({"type": WS_INIT});
+isolated function sendConnectionInitMessage(websocket:Client wsClient) returns websocket:Error? {
+    check wsClient->writeMessage({'type: WS_INIT});
+}
+
+isolated function initiateGraphqlWsConnection(websocket:Client wsClient) returns websocket:Error? {
+    check sendConnectionInitMessage(wsClient);
+    check validateConnectionAckMessage(wsClient);
+}
+
+isolated function validateNextMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
+    json expectedPayload = {'type: WS_NEXT, id, payload: expectedMsgPayload};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+isolated function validateErrorMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
+    json expectedPayload = {'type: WS_ERROR, id, payload: expectedMsgPayload};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+isolated function validateCompleteMessage(websocket:Client wsClient, string id = "1") returns websocket:Error? {
+    json expectedPayload = {'type: WS_COMPLETE, id};
+    check validateWebSocketResponse(wsClient, expectedPayload);
+}
+
+isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) returns websocket:Error? {
+    json|error response = wsClient->readMessage();
+    test:assertTrue(response is error);
+    test:assertEquals((<error>response).message(), expectedErrorMsg);
 }
