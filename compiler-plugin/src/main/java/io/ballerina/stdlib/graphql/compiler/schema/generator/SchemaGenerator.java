@@ -271,7 +271,7 @@ public class SchemaGenerator {
             case UNION:
                 return getType(typeName, null, null, (UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
-                return getType(null, null, null, (IntersectionTypeSymbol) typeSymbol);
+                return getType(null, null, null, null, (IntersectionTypeSymbol) typeSymbol);
             case STREAM:
                 return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
             case TABLE:
@@ -347,14 +347,16 @@ public class SchemaGenerator {
             parameterMap = typeDefinitionSymbol.documentation().get().parameterMap();
         }
         if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
             RecordTypeSymbol recordType = (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            return getType(name, description, parameterMap, recordType);
+            return getType(name, description, position, parameterMap, recordType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
             Position position = getTypePosition(typeDefinitionSymbol.getLocation());
             return getType(name, description, position, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
             IntersectionTypeSymbol intersectionType = (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            return getType(name, description, parameterMap, intersectionType);
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            return getType(name, description, position, parameterMap, intersectionType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
@@ -441,9 +443,8 @@ public class SchemaGenerator {
         return enumType;
     }
 
-    private Type getType(String name, String description, Map<String, String> fieldMap,
+    private Type getType(String name, String description, Position position, Map<String, String> fieldMap,
                          RecordTypeSymbol recordTypeSymbol) {
-        Position position = getTypePosition(recordTypeSymbol.getLocation());
         Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.RECORD);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
             if (recordFieldSymbol.getName().isEmpty()) {
@@ -498,7 +499,7 @@ public class SchemaGenerator {
         return unionType;
     }
 
-    private Type getType(String name, String description, Map<String, String> parameterMap,
+    private Type getType(String name, String description, Position position, Map<String, String> parameterMap,
                          IntersectionTypeSymbol intersectionTypeSymbol) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (name == null) {
@@ -507,7 +508,7 @@ public class SchemaGenerator {
             if (parameterMap == null) {
                 parameterMap = new HashMap<>();
             }
-            return getType(name, description, parameterMap, (RecordTypeSymbol) effectiveType);
+            return getType(name, description, position, parameterMap, (RecordTypeSymbol) effectiveType);
         }
     }
 

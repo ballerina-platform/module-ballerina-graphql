@@ -183,4 +183,9 @@ public class Type implements Serializable {
     public ObjectKind getObjectKind() {
         return objectKind;
     }
+
+    public Position getPosition() {
+        return position;
+    }
+
 }
