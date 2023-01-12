@@ -80,6 +80,7 @@ compileJava {
 
 test {
     systemProperty "ballerina.offline.flag", "true"
+    systemProperty "ballerina.graphql.version", project.version
     useTestNG()
 
     testLogging {

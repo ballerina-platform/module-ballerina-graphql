@@ -49,7 +49,7 @@ public enum DiagnosticMessage {
                       + "type as an output type"),
     ERROR_115("the GraphQL field ''{0}'' use output type ''{1}'' as an input type. A GraphQL field cannot use an output"
                       + " type as an input type"),
-    ERROR_116("the graphql:Context should be the first parameter of method ''{0}''"),
+    ERROR_116("the ''{0}'' should be placed before the GraphQL field parameters in method ''{1}''"),
     ERROR_117("found path parameters ''{0}'' in GraphQL resource. Path parameters are not allowed in GraphQL "
                       + "resources"),
     ERROR_118("invalid resource path ''{0}'' found in GraphQL resource"),
