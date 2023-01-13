@@ -3,7 +3,7 @@ id = "graphql-compiler-plugin"
 class = "io.ballerina.stdlib.graphql.compiler.GraphqlCompilerPlugin"
 
 [[dependency]]
-path = "../compiler-plugin/build/libs/graphql-compiler-plugin-1.9.9.jar"
+path = "../compiler-plugin/build/libs/graphql-compiler-plugin-1.8.9.jar"
 
 [[dependency]]
-path = "../commons/build/libs/graphql-commons-1.9.9.jar"
+path = "../commons/build/libs/graphql-commons-1.8.9.jar"
