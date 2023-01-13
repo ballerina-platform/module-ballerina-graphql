@@ -67,6 +67,7 @@ public class SdlSchemaStringGenerator {
 
     //Schema delimiters
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR_REGEX = "\\r\\n?|\\n";
     private static final String INDENTATION = "  ";
     private static final String DOUBLE_INDENTATION = INDENTATION + INDENTATION;
     private static final String EMPTY_STRING = "";
@@ -172,7 +173,7 @@ public class SdlSchemaStringGenerator {
         if (description == null) {
             return EMPTY_STRING;
         } else {
-            String[] lines = description.trim().split(LINE_SEPARATOR);
+            String[] lines = description.trim().split(LINE_SEPARATOR_REGEX);
             if (lines.length == 1) {
                 return getFormattedString(DESC_FORMAT, getFormattedString(DOCUMENT_FORMAT, EMPTY_STRING, lines[0]));
             } else {
@@ -275,7 +276,7 @@ public class SdlSchemaStringGenerator {
         if (description == null) {
             return EMPTY_STRING;
         } else {
-            String[] lines = description.trim().split(LINE_SEPARATOR);
+            String[] lines = description.trim().split(LINE_SEPARATOR_REGEX);
             if (lines.length == 1) {
                 return getFormattedString(DESC_FORMAT, getFormattedString(DOCUMENT_FORMAT, INDENTATION, lines[0]));
             } else {
@@ -290,7 +291,7 @@ public class SdlSchemaStringGenerator {
         if (description == null) {
             return EMPTY_STRING;
         } else {
-            String[] lines = description.trim().split(LINE_SEPARATOR);
+            String[] lines = description.trim().split(LINE_SEPARATOR_REGEX);
             if (lines.length == 1) {
                 return getFormattedString(DESC_FORMAT,
                         getFormattedString(DOCUMENT_FORMAT, DOUBLE_INDENTATION, lines[0]));
@@ -332,7 +333,7 @@ public class SdlSchemaStringGenerator {
     }
 
     private static String createDeprecateReason(String reason) {
-        return reason.replace(LINE_SEPARATOR, SPACE);
+        return reason.replaceAll(LINE_SEPARATOR_REGEX, SPACE);
     }
 
     private static String createSpecifiedByUrl(Type type) {
