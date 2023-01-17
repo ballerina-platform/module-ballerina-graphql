@@ -41,7 +41,7 @@ isolated function testSubscriptionWithoutSubProtocol() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client|error wsClient = new (url);
     string expectedErrorMsg = "InvalidHandshakeError: Invalid handshake response getStatus: 400 Bad Request";
-    test:assertTrue(wsClient is error);
+    test:assertTrue(wsClient is websocket:InvalidHandshakeError, "Invalid handshake error expected");
     test:assertEquals((<error>wsClient).message(), expectedErrorMsg);
 }
 
@@ -325,13 +325,13 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     check sendConnectionInitMessage(wsClient);
 
     string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
-    check validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testUnauthorizedAccessUsingSubProtocol() returns error? {
+isolated function testUnauthorizedAccess() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
@@ -339,13 +339,13 @@ isolated function testUnauthorizedAccessUsingSubProtocol() returns error? {
     check sendSubscriptionMessage(wsClient, document);
 
     string expectedErrorMsg = "Unauthorized: Status code: 4401";
-    check validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
-function testAlreadyExistingSubscriberUsingSubProtocol() returns error? {
+function testAlreadyExistingSubscriber() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
@@ -356,7 +356,7 @@ function testAlreadyExistingSubscriberUsingSubProtocol() returns error? {
     check sendSubscriptionMessage(wsClient, document, clientId);
 
     string expectedErrorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
-    check validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -378,11 +378,11 @@ isolated function testInvalidSubProtocolInSubscriptions() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     string subProtocol = "graphql-invalid-ws";
     websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-    websocket:Client wsClient = check new (url, config);
-    check sendConnectionInitMessage(wsClient);
-
-    string expectedErrorMsg = "Unsupported subprotocol \"graphql-invalid-ws\" requested by the client: Status code: 4406";
-    check validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    websocket:Client|error wsClient = new (url, config);
+    test:assertTrue(wsClient is websocket:InvalidHandshakeError, "Invalid handshake error expected");
+    string expectedErrorMsg = "InvalidHandshakeError: Invalid subprotocol. Actual: null." +
+    " Expected one of: graphql-invalid-ws";
+    test:assertEquals((<error>wsClient).message(), expectedErrorMsg);
 }
 
 @test:Config {
@@ -442,7 +442,7 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    check validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -492,7 +492,7 @@ isolated function testSubscriptionMultiplexing() returns error? {
     boolean subscriptionOneDisabled = false;
     map<int> subscriptions = {"1": 0, "2": 0};
     while true {
-        json actualPayload = check wsClient->readMessage();
+        json actualPayload = check readMessageExcludingPingMessages(wsClient);
         string subscriptionId = check actualPayload.id;
         subscriptions[subscriptionId] = subscriptions.get(subscriptionId) + 1;
         if subscriptionOneDisabled && subscriptionId == "1" {

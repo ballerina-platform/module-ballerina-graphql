@@ -312,8 +312,8 @@ isolated function testContextWithSubscriptions() returns error? {
     check initiateGraphqlWsConnection(wsClient);
     check sendSubscriptionMessage(wsClient, document);
     foreach int i in 1 ..< 4 {
-        json expectedPayload = {data: {messages: i}};
-        check validateWebSocketResponse(wsClient, {'type: WS_NEXT, id: "1", payload: expectedPayload});
+        json expectedMsgPayload = {data: {messages: i}};
+        check validateNextMessage(wsClient, expectedMsgPayload);
     }
 }
 

@@ -71,3 +71,5 @@ const WS_COMPLETE = "complete";
 // Subprotocol constants used in headers 
 const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
+
+const decimal PING_MESSAGE_SCHEDULE_INTERVAL = 15;

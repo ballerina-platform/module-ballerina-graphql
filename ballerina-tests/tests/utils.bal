@@ -107,9 +107,12 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
     return 'string:fromBytes(content);
 }
 
-isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload) returns websocket:Error? {
-    json actualPayload = check wsClient->readMessage();
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+isolated function readMessageExcludingPingMessages(websocket:Client wsClient) returns json|websocket:Error {
+    json message = null;
+    while message == null || message.'type == WS_PING {
+        message = check wsClient->readMessage();
+    }
+    return message;
 }
 
 isolated function sendSubscriptionMessage(websocket:Client wsClient, string document, string id = "1",
@@ -135,21 +138,24 @@ isolated function initiateGraphqlWsConnection(websocket:Client wsClient) returns
 
 isolated function validateNextMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
     json expectedPayload = {'type: WS_NEXT, id, payload: expectedMsgPayload};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    json actualPayload = check readMessageExcludingPingMessages(wsClient);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 isolated function validateErrorMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
     json expectedPayload = {'type: WS_ERROR, id, payload: expectedMsgPayload};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    json actualPayload = check readMessageExcludingPingMessages(wsClient);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 isolated function validateCompleteMessage(websocket:Client wsClient, string id = "1") returns websocket:Error? {
     json expectedPayload = {'type: WS_COMPLETE, id};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    json actualPayload = check readMessageExcludingPingMessages(wsClient);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) returns websocket:Error? {
-    json|error response = wsClient->readMessage();
+isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) {
+    json|error response = readMessageExcludingPingMessages(wsClient);
     test:assertTrue(response is error);
     test:assertEquals((<error>response).message(), expectedErrorMsg);
 }

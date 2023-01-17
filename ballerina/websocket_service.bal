@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.value;
 import ballerina/websocket;
 import graphql.parser;
 
@@ -25,17 +24,16 @@ isolated service class WsService {
     private final readonly & __Schema schema;
     private final Context context;
     private final map<SubscriptionHandler> activeConnections;
-    private final readonly & map<string> customHeaders;
     private boolean initiatedConnection;
+    private boolean pingMessageJobScheduled;
 
-    isolated function init(Engine engine, __Schema & readonly schema, map<string> & readonly customHeaders,
-                           Context context) {
+    isolated function init(Engine engine, __Schema & readonly schema, Context context) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
-        self.customHeaders = customHeaders;
         self.activeConnections = {};
         self.initiatedConnection = false;
+        self.pingMessageJobScheduled = false;
     }
 
     isolated remote function onIdleTimeout(websocket:Caller caller) returns websocket:Error? {
@@ -48,17 +46,13 @@ isolated service class WsService {
     }
 
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
-        SubscriptionError? validationError = validateSubProtocol(caller, self.customHeaders);
-        if validationError is SubscriptionError {
-            return closeConnection(caller, validationError);
-        }
-
-        Message|SubscriptionError message = self.castToMessage(text);
+        Message|SubscriptionError message = castToMessage(text);
         if message is SubscriptionError {
             return closeConnection(caller, message);
         }
         if message is ConnectionInitMessage {
-            return self.handleConnectionInitRequest(caller);
+            check self.handleConnectionInitRequest(caller);
+            return self.startSendingPingMessages(caller);
         }
         if message is SubscribeMessage {
             return self.handleSubscriptionRequest(caller, message);
@@ -71,18 +65,6 @@ isolated service class WsService {
         }
     }
 
-    private isolated function castToMessage(string text) returns Message|SubscriptionError {
-        do {
-            json jsonValue = check value:fromJsonString(text);
-            Message message = check jsonValue.cloneWithType();
-            return message;
-        } on fail {
-            string detail = "payload does not conform to the format required by the '" +
-                GRAPHQL_TRANSPORT_WS + "' subprotocol";
-            return error(string `Invalid format: ${detail}`, code = 1003);
-        }
-    }
-
     private isolated function handleConnectionInitRequest(websocket:Caller caller) returns websocket:Error? {
         lock {
             if self.initiatedConnection {
@@ -92,6 +74,19 @@ isolated service class WsService {
             ConnectionAckMessage response = {'type: WS_ACK};
             check caller->writeMessage(response);
             self.initiatedConnection = true;
+        }
+    }
+
+    private isolated function startSendingPingMessages(websocket:Caller caller) {
+        lock {
+            if self.pingMessageJobScheduled || !self.initiatedConnection {
+                return;
+            }
+        }
+        PingMessageJob job  = new PingMessageJob(caller);
+        job.schedule();
+        lock {
+            self.pingMessageJobScheduled = true;
         }
     }
 
