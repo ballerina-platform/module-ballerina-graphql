@@ -80,6 +80,7 @@ dependencies = [
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
