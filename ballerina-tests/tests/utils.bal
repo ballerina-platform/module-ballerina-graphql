@@ -109,10 +109,22 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
 
 isolated function readMessageExcludingPingMessages(websocket:Client wsClient) returns json|websocket:Error {
     json message = null;
-    while message == null || message.'type == WS_PING {
+    while true {
         message = check wsClient->readMessage();
+        if message == null {
+            continue;
+        } 
+        if message.'type == WS_PING {
+            check sendPongMessage(wsClient);
+            continue;
+        }
+        return message;
     }
-    return message;
+}
+
+isolated function sendPongMessage(websocket:Client wsClient) returns websocket:Error? {
+    json message = {'type: WS_PONG};
+    check wsClient->writeMessage(message);
 }
 
 isolated function sendSubscriptionMessage(websocket:Client wsClient, string document, string id = "1",

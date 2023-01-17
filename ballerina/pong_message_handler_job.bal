@@ -16,29 +16,38 @@
 
 import ballerina/websocket;
 import ballerina/task;
+import ballerina/time;
 
-class PingMessageJob {
+class PongMessageHandlerJob {
     *task:Job;
     private final websocket:Caller caller;
     private task:JobId? id = ();
+    private boolean pongReceived = false;
 
     isolated function init(websocket:Caller caller) {
         self.caller = caller;
     }
 
     public isolated function execute() {
-        self.sendPeriodicPingMessageRequests();
+        self.checkForPongMessages();
+    }
+
+    public isolated function setPongMessageReceived() {
+        lock {
+            self.pongReceived = true;
+        }
     }
 
     public isolated function schedule() {
-        task:JobId|error id = task:scheduleJobRecurByFrequency(self, PING_MESSAGE_SCHEDULE_INTERVAL);
+        time:Civil startTime = time:utcToCivil(time:utcAddSeconds(time:utcNow(), PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL));
+        task:JobId|error id = task:scheduleJobRecurByFrequency(self, PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL, startTime = startTime);
         if id is error {
-            return logError("Failed to schedule PingMessageJob", id);
+            return logError("Failed to schedule PongMessageHandlerJob", id);
         }
         self.id = id;
     }
 
-    private isolated function sendPeriodicPingMessageRequests() {
+    private isolated function checkForPongMessages() {
         do {
             lock {
                 task:JobId? id = self.id;
@@ -50,12 +59,14 @@ class PingMessageJob {
                     self.id = ();
                     return;
                 }
-                PingMessage message = {'type: WS_PING};
-                check self.caller->writeMessage(message);
+                if self.caller.isOpen() && !self.pongReceived {
+                    SubscriptionError err = error("Request timeout", code = 4408);
+                    closeConnection(self.caller, err, timeout = 0);
+                }
+                self.pongReceived = false;
             }
         } on fail error cause {
-            string message = cause is websocket:Error ? "Failed to send ping message"
-                : "Filed to unschedule PingMessageJob";
+            string message = "Filed to unschedule PingMessageJob";
             logError(message, cause);
         }
     }

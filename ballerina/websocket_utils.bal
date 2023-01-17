@@ -99,10 +99,10 @@ isolated function getSubscriptionResponse(Engine engine, __Schema schema, Contex
     return {errors: [{message: errorMessage}]};
 }
 
-isolated function closeConnection(websocket:Caller caller, SubscriptionError cause) {
+isolated function closeConnection(websocket:Caller caller, SubscriptionError cause, decimal timeout = 5) {
     string reason = cause.message();
     int statusCode = cause.detail().code;
-    error? closedConnection = caller->close(statusCode, reason, timeout = 5);
+    error? closedConnection = caller->close(statusCode, reason, timeout);
     if closedConnection is error {
         error err = error("Failed to close WebSocket connection", closedConnection);
         log:printError(err.message(), stackTrace = err.stackTrace());
