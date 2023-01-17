@@ -85,6 +85,7 @@ dependencies = [
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
@@ -340,6 +341,9 @@ name = "time"
 version = "2.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "time", moduleName = "time"}
 ]
 
 [[package]]
