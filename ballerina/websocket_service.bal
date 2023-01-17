@@ -44,7 +44,7 @@ isolated service class WsService {
     }
 
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
-        Message|SubscriptionError message = castToMessage(text);
+        InboundMessage|SubscriptionError message = castToMessage(text);
         if message is SubscriptionError {
             return closeConnection(caller, message);
         }
@@ -74,7 +74,7 @@ isolated service class WsService {
                 return closeConnection(caller, err);
             }
             ConnectionAckMessage response = {'type: WS_ACK};
-            check caller->writeMessage(response);
+            check writeMessage(caller, response);
             self.initiatedConnection = true;
         }
     }
@@ -101,10 +101,10 @@ isolated service class WsService {
         parser:OperationNode|json node = validateSubscriptionPayload(message, self.engine);
         if node is parser:OperationNode {
             _ = start executeOperation(self.engine, self.context, self.schema, caller, node, handler);
-        } else {
-            ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: node};
-            check caller->writeMessage(response);
+            return;
         }
+        ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: node};
+        check writeMessage(caller, response);
     }
 
     private isolated function handleCompleteRequest(CompleteMessage message) {
@@ -120,7 +120,7 @@ isolated service class WsService {
 
     private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
         PongMessage response = {'type: WS_PONG};
-        return caller->writeMessage(response);
+        check writeMessage(caller, response);
     }
 
     private isolated function handlePongRequest() {

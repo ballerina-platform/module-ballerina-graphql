@@ -62,4 +62,5 @@ type CompleteMessage record {|
     string id;
 |};
 
-type Message ConnectionInitMessage|PingMessage|PongMessage|SubscribeMessage|CompleteMessage;
+type InboundMessage ConnectionInitMessage|PingMessage|PongMessage|SubscribeMessage|CompleteMessage;
+type OutboundMessage ConnectionAckMessage|PingMessage|PongMessage|NextMessage|ErrorMessage|CompleteMessage;

@@ -51,7 +51,7 @@ class PingMessageJob {
                     return;
                 }
                 PingMessage message = {'type: WS_PING};
-                check self.caller->writeMessage(message);
+                check writeMessage(self.caller, message);
             }
         } on fail error cause {
             string message = cause is websocket:Error ? "Failed to send ping message"

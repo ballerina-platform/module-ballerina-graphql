@@ -38,7 +38,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
                 OutputObject outputObject = engine.getResult(node, context, resultValue);
                 if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
                     NextMessage response = {'type: 'WS_NEXT, id: handler.getId(), payload: outputObject.toJson()};
-                    check caller->writeMessage(response);
+                    check writeMessage(caller, response);
                 }
                 context.resetErrors(); //Remove previous event's errors before the next one
                 next = sourceStream.next();
@@ -62,7 +62,7 @@ isolated function handleStreamCompletion(websocket:Caller caller, SubscriptionHa
         return;
     }
     CompleteMessage response = {'type: WS_COMPLETE, id: handler.getId()};
-    check caller->writeMessage(response);
+    check writeMessage(caller, response);
     closeStream(sourceStream);
 }
 
@@ -72,7 +72,7 @@ returns websocket:Error? {
         return;
     }
     ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: errors};
-    check caller->writeMessage(response);
+    check writeMessage(caller, response);
 }
 
 isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engine) returns parser:OperationNode|json {
@@ -116,10 +116,10 @@ isolated function closeStream(stream<any, error?> sourceStream) {
     }
 }
 
-isolated function castToMessage(string text) returns Message|SubscriptionError {
+isolated function castToMessage(string text) returns InboundMessage|SubscriptionError {
     do {
         json jsonValue = check value:fromJsonString(text);
-        Message message = check jsonValue.cloneWithType();
+        InboundMessage message = check jsonValue.cloneWithType();
         return message;
     } on fail {
         string detail = "payload does not conform to the format required by the '" +
@@ -131,4 +131,13 @@ isolated function castToMessage(string text) returns Message|SubscriptionError {
 isolated function logError(string message, error cause) {
     error err = error(message, cause);
     log:printError(err.message(), stackTrace = err.stackTrace());
+}
+
+isolated function writeMessage(websocket:Caller caller, OutboundMessage message) returns websocket:Error? {
+    lock {
+        if !caller.isOpen() {
+            return;
+        }
+        check caller->writeMessage(message);
+    }
 }
