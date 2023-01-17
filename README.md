@@ -59,7 +59,7 @@ service /graphql on new graphql:Listener(4000) {
 
 The GraphQL service endpoint URL will be `<host>:<port>/graphql`.
 
-Alternatively, a Ballerina graphql service can not have a path, in which case the endpoint will be the host URL and the port as the following example.
+Alternatively, a Ballerina GraphQL service can not have a path, in which case the endpoint will be the host URL and the port as the following example.
 
 ```ballerina
 import ballerina/graphql;
@@ -180,7 +180,7 @@ mutation updatePerson {
     }
 }
 
-fragment ProfileFragment on Profile {
+fragment ProfileFragment on Person {
     name
     city
 }
