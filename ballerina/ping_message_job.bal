@@ -55,7 +55,7 @@ class PingMessageJob {
             }
         } on fail error cause {
             string message = cause is websocket:Error ? "Failed to send ping message"
-                : "Filed to unschedule PingMessageJob";
+                : "Failed to unschedule PingMessageJob";
             logError(message, cause);
         }
     }
