@@ -66,7 +66,7 @@ class PongMessageHandlerJob {
                 self.pongReceived = false;
             }
         } on fail error cause {
-            string message = "Failed to unschedule PingMessageJob";
+            string message = "Failed to unschedule PongMessageHandlerJob";
             logError(message, cause);
         }
     }
