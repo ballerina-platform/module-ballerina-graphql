@@ -59,7 +59,7 @@ class PongMessageHandlerJob {
                     self.id = ();
                     return;
                 }
-                if self.caller.isOpen() && !self.pongReceived {
+                if !self.pongReceived {
                     SubscriptionError err = error("Request timeout", code = 4408);
                     closeConnection(self.caller, err, timeout = 0);
                 }
