@@ -107,34 +107,67 @@ isolated function getContentFromByteStream(stream<byte[], io:Error?> byteStream)
     return 'string:fromBytes(content);
 }
 
-isolated function validateWebSocketResponse(websocket:Client wsClient, json expectedPayload)
-    returns websocket:Error?|error {
-    json actualPayload = check wsClient->readMessage();
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-isolated function writeWebSocketTextMessage(string? document, websocket:Client wsClient, json? variables = {},
-                                            string? operationName = (), string? id = (), string? subProtocol = ())
-                                            returns websocket:Error? {
-    json payload = {query: document, variables: variables, operationName: operationName};
-    if subProtocol !is () && id !is () {
-        json wsPayload = subProtocol == GRAPHQL_WS
-                        ? {"type": WS_START, id: id, payload: payload}
-                        : {"type": WS_SUBSCRIBE, id: id, payload: payload};
-        check wsClient->writeMessage(wsPayload);
-    } else {
-        check wsClient->writeMessage(payload);
+isolated function readMessageExcludingPingMessages(websocket:Client wsClient) returns json|websocket:Error {
+    json message = null;
+    while true {
+        message = check wsClient->readMessage();
+        if message == null {
+            continue;
+        } 
+        if message.'type == WS_PING {
+            check sendPongMessage(wsClient);
+            continue;
+        }
+        return message;
     }
 }
 
-isolated function validateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error?|error {
-    string expectedPayload = WS_ACK;
-    json jsonPayload = check wsClient->readMessage();
-    WSPayload wsPayload = check jsonPayload.cloneWithType(WSPayload);
-    string actualType = wsPayload.'type;
-    test:assertEquals(actualType, expectedPayload);
+isolated function sendPongMessage(websocket:Client wsClient) returns websocket:Error? {
+    json message = {'type: WS_PONG};
+    check wsClient->writeMessage(message);
 }
 
-isolated function initiateConnectionInitMessage(websocket:Client wsClient) returns websocket:Error? {
-    check wsClient->writeMessage({"type": WS_INIT});
+isolated function sendSubscriptionMessage(websocket:Client wsClient, string document, string id = "1",
+                                          json? variables = {}, string? operationName = ()) returns websocket:Error? {
+    json payload = {query: document, variables: variables, operationName: operationName};
+    json wsPayload = {'type: WS_SUBSCRIBE, id: id, payload: payload};
+    return wsClient->writeMessage(wsPayload);
+}
+
+isolated function validateConnectionAckMessage(websocket:Client wsClient) returns websocket:Error? {
+    json response = check wsClient->readMessage();
+    test:assertEquals(response.'type, WS_ACK);
+}
+
+isolated function sendConnectionInitMessage(websocket:Client wsClient) returns websocket:Error? {
+    check wsClient->writeMessage({'type: WS_INIT});
+}
+
+isolated function initiateGraphqlWsConnection(websocket:Client wsClient) returns websocket:Error? {
+    check sendConnectionInitMessage(wsClient);
+    check validateConnectionAckMessage(wsClient);
+}
+
+isolated function validateNextMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
+    json expectedPayload = {'type: WS_NEXT, id, payload: expectedMsgPayload};
+    json actualPayload = check readMessageExcludingPingMessages(wsClient);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+isolated function validateErrorMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
+    json expectedPayload = {'type: WS_ERROR, id, payload: expectedMsgPayload};
+    json actualPayload = check readMessageExcludingPingMessages(wsClient);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+isolated function validateCompleteMessage(websocket:Client wsClient, string id = "1") returns websocket:Error? {
+    json expectedPayload = {'type: WS_COMPLETE, id};
+    json actualPayload = check readMessageExcludingPingMessages(wsClient);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) {
+    json|error response = readMessageExcludingPingMessages(wsClient);
+    test:assertTrue(response is error);
+    test:assertEquals((<error>response).message(), expectedErrorMsg);
 }

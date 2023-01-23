@@ -225,12 +225,6 @@ enum __DirectiveLocation {
     INPUT_FIELD_DEFINITION
 }
 
-type WSPayload record {|
-    string 'type;
-    string id?;
-    json payload?;
-|};
-
 type ParseResult record {|
     parser:DocumentNode document;
     ErrorDetail[] validationErrors;
