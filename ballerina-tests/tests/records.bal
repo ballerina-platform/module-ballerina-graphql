@@ -49,7 +49,7 @@ public type Address readonly & record {
 
 public type Person readonly & record {
     string name;
-    int age;
+    int age?;
     Address address;
 };
 

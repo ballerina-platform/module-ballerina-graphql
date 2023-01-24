@@ -164,7 +164,7 @@ isolated function testTypeNameIntrospectionOnRecordTypes() returns error? {
 @test:Config {
     groups: ["introspection", "validation", "typename"]
 }
-isolated function testQueryingSubFieldsOnTypeName() returns error? {
+isolated function testQueryingSubfieldsOnTypeName() returns error? {
     string graphqlUrl ="http://localhost:9091/records";
     string document = "{ detective { __typename { name } } }";
     json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);

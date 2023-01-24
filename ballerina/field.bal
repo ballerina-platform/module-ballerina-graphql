@@ -60,7 +60,7 @@ public class Field {
 
     # Returns the names of the subfields of this field as a string array.
     # + return - The names of the subfields of this field
-    public isolated function getSubFieldNames() returns string[] {
+    public isolated function getSubfieldNames() returns string[] {
         return self.getFieldNames(self.internalNode);
     }
 

@@ -1582,7 +1582,7 @@ public class Field {
     
     public isolated function getPath() returns (int|string)[];
     
-    public isolated function getSubFieldNames() returns string[];
+    public isolated function getSubfieldNames() returns string[];
     
     public isolated function getType() returns __Type;
 }
@@ -1634,7 +1634,7 @@ This method returns the names of the subfields of the currently executing field 
 
 ```ballerina
 resource function get profile(graphql:Field 'field) returns Profile {
-    string[] subFieldNames = 'field.getSubFieldNames();
+    string[] subfieldNames = 'field.getSubfieldNames();
 }
 ```
 
