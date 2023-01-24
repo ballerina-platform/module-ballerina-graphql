@@ -83,11 +83,7 @@ class ExecutorVisitor {
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
     isolated function executeQuery(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
-        (string|int)[] path = [fieldNode.getName()];
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
+        Field 'field = getFieldObject(fieldNode, operationType, self.schema, self.engine);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();
@@ -95,11 +91,7 @@ class ExecutorVisitor {
     }
 
     isolated function executeMutation(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
-        (string|int)[] path = [fieldNode.getName()];
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
+        Field 'field = getFieldObject(fieldNode, operationType, self.schema, self.engine);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();
@@ -108,11 +100,7 @@ class ExecutorVisitor {
 
     isolated function executeSubscription(parser:FieldNode fieldNode, parser:RootOperationType operationType,
                                           any|error fieldValue) {
-        (string|int)[] path = [fieldNode.getName()];
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, path = path, operationType = operationType, fieldValue = fieldValue);
+        Field 'field = getFieldObject(fieldNode, operationType, self.schema, self.engine, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();

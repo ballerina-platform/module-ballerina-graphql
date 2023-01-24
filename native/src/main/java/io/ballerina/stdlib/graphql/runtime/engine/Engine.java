@@ -52,6 +52,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_A
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERCEPTOR_EXECUTION_STRAND;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
@@ -95,17 +96,17 @@ public class Engine {
     }
 
     public static Object executeSubscriptionResource(Environment env, BObject context, BObject service,
-                                                     BObject fieldNode) {
+                                                     BObject fieldObject) {
         Future subscriptionFutureResult = env.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
-        BString fieldName = fieldNode.getStringValue(NAME_FIELD);
+        BString fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD);
         ServiceType serviceType = (ServiceType) service.getType();
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
-                ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context);
-                Object[] args = argumentHandler.getArguments(fieldNode);
+                ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
+                Object[] args = argumentHandler.getArguments();
                 ObjectType objectType = (ObjectType) TypeUtils.getReferredType(service.getType());
                 if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
@@ -122,14 +123,14 @@ public class Engine {
     }
 
     public static Object executeQueryResource(Environment environment, BObject context, BObject service,
-                                              ResourceMethodType resourceMethod, BObject fieldNode) {
+                                              ResourceMethodType resourceMethod, BObject fieldObject) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         if (resourceMethod != null) {
-            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context);
-            Object[] arguments = argumentHandler.getArguments(fieldNode);
+            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
+            Object[] arguments = argumentHandler.getArguments();
             if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
                 environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
                                                                        RESOURCE_EXECUTION_STRAND, executionCallback,
@@ -144,15 +145,16 @@ public class Engine {
     }
 
     public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
-                                               BObject fieldNode) {
+                                               BObject fieldObject) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) service.getType();
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
-            if (remoteMethod.getName().equals(fieldNode.getStringValue(NAME_FIELD).getValue())) {
-                ArgumentHandler argumentHandler = new ArgumentHandler(remoteMethod, context);
-                Object[] arguments = argumentHandler.getArguments(fieldNode);
+            String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
+            if (remoteMethod.getName().equals(fieldName)) {
+                ArgumentHandler argumentHandler = new ArgumentHandler(remoteMethod, context, fieldObject);
+                Object[] arguments = argumentHandler.getArguments();
                 if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
                     environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
                                                                            REMOTE_EXECUTION_STRAND, executionCallback,

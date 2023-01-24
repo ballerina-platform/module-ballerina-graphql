@@ -46,9 +46,28 @@ public class Field {
     }
 
     # Returns the effective alias of the field.
-    # + return - The alias of the field. If an alias is not present, the field name will be returned.
+    # + return - The alias of the field. If an alias is not present, the field name will be returned
     public isolated function getAlias() returns string {
         return self.internalNode.getAlias();
+    }
+
+    # Returns the current path of the field. If the field returns an array, the path will include the index of the
+    # element.
+    # + return - The path of the field
+    public isolated function getPath() returns (string|int)[] {
+        return self.path;
+    }
+
+    # Returns the names of the subfields of this field as a string array.
+    # + return - The names of the subfields of this field
+    public isolated function getSubFieldNames() returns string[] {
+        return self.getFieldNames(self.internalNode);
+    }
+
+    # Returns the type of the field.
+    # + return - The type of the field
+    public isolated function getType() returns __Type {
+        return self.fieldType;
     }
 
     isolated function getInternalNode() returns parser:FieldNode {
@@ -57,10 +76,6 @@ public class Field {
 
     isolated function getServiceObject() returns service object {}? {
         return self.serviceObject;
-    }
-
-    isolated function getPath() returns (string|int)[] {
-        return self.path;
     }
 
     isolated function getOperationType() returns parser:RootOperationType {
@@ -77,5 +92,19 @@ public class Field {
 
     isolated function getFieldValue() returns any|error {
         return self.fieldValue;
+    }
+
+    isolated function getFieldNames(parser:SelectionNode selectionNode) returns string[] {
+        string[] result = [];
+        foreach parser:SelectionNode selection in selectionNode.getSelections() {
+            if selection is parser:FieldNode {
+                result.push(selection.getName());
+            } else {
+                foreach parser:SelectionNode fragmentSelectionNode in selectionNode.getSelections() {
+                    result.push(...self.getFieldNames(fragmentSelectionNode));
+                }
+            }
+        }
+        return result;
     }
 }

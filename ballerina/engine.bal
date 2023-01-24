@@ -56,7 +56,7 @@ isolated class Engine {
         OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, variables);
         if validationResult is OutputObject {
             return validationResult;
-        } 
+        }
         return self.getOperation(validationResult, operationName);
     }
 
@@ -276,7 +276,7 @@ isolated class Engine {
             if resourceMethod == () {
                 return self.resolveHierarchicalResource(context, 'field);
             }
-            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field);
         }
         return 'field.getFieldValue();
     }
@@ -284,7 +284,7 @@ isolated class Engine {
     isolated function resolveRemoteMethod(Context context, Field 'field) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
-           return self.executeMutationMethod(context, serviceObject, 'field.getInternalNode());
+           return self.executeMutationMethod(context, serviceObject, 'field);
         }
         return 'field.getFieldValue();
     }
@@ -341,18 +341,18 @@ isolated class Engine {
     } external;
 
     isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
-                                            parser:FieldNode fieldNode)
+                                           Field 'field)
     returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeMutationMethod(Context context, service object {} serviceObject,
-                                            parser:FieldNode fieldNode) returns any|error = @java:Method {
+                                            Field 'field) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeSubscriptionResource(Context context, service object {} serviceObject,
-                                                  parser:FieldNode node) returns any|error = @java:Method {
+                                                  Field 'field) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 

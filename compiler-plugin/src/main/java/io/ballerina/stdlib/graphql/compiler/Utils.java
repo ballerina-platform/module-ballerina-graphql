@@ -194,24 +194,15 @@ public final class Utils {
         return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
-    public static boolean isContextParameter(TypeSymbol typeSymbol) {
+    public static boolean isValidGraphqlParameter(TypeSymbol typeSymbol) {
         if (typeSymbol.getName().isEmpty()) {
             return false;
         }
         if (!isGraphqlModuleSymbol(typeSymbol)) {
             return false;
         }
-        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
-    }
-
-    public static boolean isFieldParameter(TypeSymbol typeSymbol) {
-        if (typeSymbol.getName().isEmpty()) {
-            return false;
-        }
-        if (!isGraphqlModuleSymbol(typeSymbol)) {
-            return false;
-        }
-        return FIELD_IDENTIFIER.equals(typeSymbol.getName().get());
+        String typeName = typeSymbol.getName().get();
+        return FIELD_IDENTIFIER.equals(typeName) || CONTEXT_IDENTIFIER.equals(typeName);
     }
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {

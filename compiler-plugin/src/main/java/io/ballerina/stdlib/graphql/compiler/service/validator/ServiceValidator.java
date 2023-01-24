@@ -61,14 +61,13 @@ import java.util.Set;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isFieldParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isValidGraphqlParameter;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_SUBSCRIBE;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
@@ -480,7 +479,7 @@ public class ServiceValidator {
             List<ParameterSymbol> parameterSymbols = functionTypeSymbol.params().get();
             for (ParameterSymbol parameter : parameterSymbols) {
                 Location inputLocation = getLocation(parameter, location);
-                if (isContextParameter(parameter.typeDescriptor()) || isFieldParameter(parameter.typeDescriptor())) {
+                if (isValidGraphqlParameter(parameter.typeDescriptor())) {
                     continue;
                 }
                 validateInputParameterType(parameter.typeDescriptor(), inputLocation, isResourceMethod(methodSymbol));

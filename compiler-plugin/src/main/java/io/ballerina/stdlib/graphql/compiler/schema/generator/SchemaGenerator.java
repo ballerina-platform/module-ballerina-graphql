@@ -72,11 +72,11 @@ import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharac
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFunctionDefinition;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isValidGraphqlParameter;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_DESCRIPTION;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAP_KEY_ARGUMENT_NAME;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
@@ -221,7 +221,7 @@ public class SchemaGenerator {
             return;
         }
         for (ParameterSymbol parameterSymbol : methodSymbol.typeDescriptor().params().get()) {
-            if (isContextParameter(parameterSymbol.typeDescriptor()) || parameterSymbol.getName().isEmpty()) {
+            if (isValidGraphqlParameter(parameterSymbol.typeDescriptor()) || parameterSymbol.getName().isEmpty()) {
                 continue;
             }
             String parameterName = parameterSymbol.getName().get();
