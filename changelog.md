@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+- [[#3977] Remove Limitation on GraphQL Context Object Parameter Order](https://github.com/ballerina-platform/ballerina-standard-library/issues/3977)
+
 ### Added
 - [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
 - [[#3942] Add Functionality to Send Ping Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3942)
 - [[#3943] Add Functionality to Check for Pong Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3943)
+- [[#3893] Add Support to Access GraphQL Field Information from Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/3893)
 
 ### Fixed
 - [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)

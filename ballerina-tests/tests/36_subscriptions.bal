@@ -18,7 +18,7 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    groups: ["subscriptions", "test"]
+    groups: ["subscriptions"]
 }
 isolated function testSubscription() returns error? {
     string document = string `subscription { name }`;
