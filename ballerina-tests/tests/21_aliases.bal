@@ -50,7 +50,7 @@ isolated function testSameFieldWithMultipleAlias() returns error? {
 @test:Config {
     groups: ["alias", "records"]
 }
-isolated function testSameFieldWithMultipleAliasDifferentSubFields() returns error? {
+isolated function testSameFieldWithMultipleAliasDifferentSubfields() returns error? {
     string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias_different_subfields.graphql");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);

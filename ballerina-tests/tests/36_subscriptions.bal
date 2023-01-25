@@ -267,7 +267,6 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
-    string messageType = WS_NEXT;
     check initiateGraphqlWsConnection(wsClient);
     check sendSubscriptionMessage(wsClient, document);
 
@@ -516,19 +515,18 @@ isolated function testSubscriptionMultiplexing() returns error? {
     groups: ["subscriptions", "recrods", "service"]
 }
 isolated function testConnectionClousureWhenPongNotRecived() returns error? {
-    string document = "subscription { live { product { id } score } }";
     string url = "ws://localhost:9090/reviews";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
     check initiateGraphqlWsConnection(wsClient);
     json|error response;
     while true {
-       response = wsClient->readMessage();
-       if response is json {
-        test:assertTrue(response.'type == WS_PING);
-        continue;
-       }
-       break;
+        response = wsClient->readMessage();
+        if response is json {
+            test:assertTrue(response.'type == WS_PING);
+            continue;
+        }
+        break;
     }
     test:assertTrue(response is error, "Expected connection clousure error");
     test:assertEquals((<error>response).message(), "Request timeout: Status code: 4408");

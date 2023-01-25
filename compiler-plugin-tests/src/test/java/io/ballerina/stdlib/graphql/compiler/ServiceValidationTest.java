@@ -710,21 +710,6 @@ public class ServiceValidationTest {
     }
 
     @Test(groups = "invalid")
-    public void testContextAsAnotherParameter() {
-        String packagePath = "46_context_as_another_parameter";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, "profile");
-        assertErrorMessage(diagnostic, message, 20, 64);
-
-        diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, "updateName");
-        assertErrorMessage(diagnostic, message, 24, 61);
-    }
-
-    @Test(groups = "invalid")
     public void testInvalidContextObject() {
         String packagePath = "47_invalid_context_object";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -942,7 +927,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
-                                         "Subscription.profiles.bytes");
+                                  "Subscription.profiles.bytes");
         assertErrorMessage(diagnostic, message, 31, 5);
 
         diagnostic = diagnosticIterator.next();

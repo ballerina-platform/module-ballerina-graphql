@@ -60,13 +60,7 @@ class ExecutorVisitor {
                 self.data[fieldNode.getAlias()] = SUBSCRIPTION_TYPE_NAME;
             }
         } else {
-            if operationType == parser:OPERATION_QUERY {
-                self.executeQuery(fieldNode, operationType);
-            } else if operationType == parser:OPERATION_MUTATION {
-                self.executeMutation(fieldNode, operationType);
-            } else if operationType == parser:OPERATION_SUBSCRIPTION {
-                self.executeSubscription(fieldNode, operationType, self.result);
-            }
+            self.execute(fieldNode, operationType, self.result);
         }
     }
 
@@ -82,37 +76,8 @@ class ExecutorVisitor {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
-    isolated function executeQuery(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
-        (string|int)[] path = [fieldNode.getName()];
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
-        self.context.resetInterceptorCount();
-        var result = self.engine.resolve(self.context, 'field);
-        self.errors = self.context.getErrors();
-        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
-    }
-
-    isolated function executeMutation(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
-        (string|int)[] path = [fieldNode.getName()];
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, self.engine.getService(), path, operationType);
-        self.context.resetInterceptorCount();
-        var result = self.engine.resolve(self.context, 'field);
-        self.errors = self.context.getErrors();
-        self.data[fieldNode.getAlias()] = result is ErrorDetail ? () : result;
-    }
-
-    isolated function executeSubscription(parser:FieldNode fieldNode, parser:RootOperationType operationType,
-                                          any|error fieldValue) {
-        (string|int)[] path = [fieldNode.getName()];
-        string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-        __Type parentType = <__Type>getTypeFromTypeArray(self.schema.types, operationTypeName);
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, path = path, operationType = operationType, fieldValue = fieldValue);
+    isolated function execute(parser:FieldNode fieldNode, parser:RootOperationType operationType, any|error fieldValue) {
+        Field 'field = getFieldObject(fieldNode, operationType, self.schema, self.engine, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
         var result = self.engine.resolve(self.context, 'field);
         self.errors = self.context.getErrors();

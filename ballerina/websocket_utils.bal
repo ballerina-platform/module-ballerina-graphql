@@ -26,7 +26,8 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         SubscriptionHandler handler = subscriptionHandler;
         RootFieldVisitor rootFieldVisitor = new (node);
         parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-        sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
+        Field 'field = getFieldObject(fieldNode, parser:OPERATION_SUBSCRIPTION, schema, engine);
+        sourceStream = getSubscriptionResponse(engine, schema, context, 'field);
         if sourceStream is stream<any, error?> {
             record {|any value;|}|error? next = sourceStream.next();
             while next !is () {
@@ -66,7 +67,7 @@ isolated function handleStreamCompletion(websocket:Caller caller, SubscriptionHa
     closeStream(sourceStream);
 }
 
-isolated function handleStreamCreationError(websocket:Caller caller, SubscriptionHandler handler, json errors) 
+isolated function handleStreamCreationError(websocket:Caller caller, SubscriptionHandler handler, json errors)
 returns websocket:Error? {
     if handler.getUnsubscribed() {
         return;
@@ -90,8 +91,8 @@ isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engi
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          parser:FieldNode node) returns stream<any, error?>|json {
-    any|error result = engine.executeSubscriptionResource(context, engine.getService(), node);
+                                          Field 'field) returns stream<any, error?>|json {
+    any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field);
     if result is stream<any, error?> {
         return result;
     }
