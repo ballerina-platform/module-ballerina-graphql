@@ -104,7 +104,7 @@ isolated function closeConnection(websocket:Caller caller, SubscriptionError cau
     int statusCode = cause.detail().code;
     error? closedConnection = caller->close(statusCode, reason, timeout);
     if closedConnection is error {
-        logError("Failed to close WebSocket connection", closedConnection);
+        logError("Failed to close WebSocket connection: " + closedConnection.message(), closedConnection);
     }
 }
 
