@@ -25,7 +25,7 @@ isolated service class WsService {
     private final Context context;
     private final map<SubscriptionHandler> activeConnections = {};
     private boolean initiatedConnection = false;
-    private boolean pingMessageJobScheduled = false;
+    private PingMessageJob? pingMessageHandler = ();
     private PongMessageHandlerJob? pongMessageHandler = ();
 
     isolated function init(Engine engine, __Schema & readonly schema, Context context) {
@@ -67,6 +67,25 @@ isolated service class WsService {
         }
     }
 
+    remote function onClose(websocket:Caller caller) {
+        lock {
+            PingMessageJob? pingMessageHandler = self.pingMessageHandler;
+            PongMessageHandlerJob? pongMessageHandler = self.pongMessageHandler;
+            if pingMessageHandler is PingMessageJob {
+                error? err = pingMessageHandler.unschedule();
+                if err is error {
+                    logError(err.message(), err);
+                }
+            }
+            if pongMessageHandler is PongMessageHandlerJob {
+                error? err = pongMessageHandler.unschedule();
+                if err is error {
+                    logError(err.message(), err);
+                }
+            }
+        }
+    }
+
     private isolated function handleConnectionInitRequest(websocket:Caller caller) returns websocket:Error? {
         lock {
             if self.initiatedConnection {
@@ -81,18 +100,16 @@ isolated service class WsService {
 
     private isolated function startSendingPingMessages(websocket:Caller caller) {
         lock {
-            if self.pingMessageJobScheduled || !self.initiatedConnection {
+            if self.pingMessageHandler !is () || !self.initiatedConnection {
                 return;
             }
-        }
-        PingMessageJob job  = new PingMessageJob(caller);
-        job.schedule();
-        lock {
-            self.pingMessageJobScheduled = true;
+            PingMessageJob job = new PingMessageJob(caller);
+            job.schedule();
+            self.pingMessageHandler = job;
         }
     }
 
-    private isolated function handleSubscriptionRequest(websocket:Caller caller, SubscribeMessage message) 
+    private isolated function handleSubscriptionRequest(websocket:Caller caller, SubscribeMessage message)
     returns websocket:Error? {
         SubscriptionHandler|SubscriptionError handler = self.validateSubscriptionRequest(message);
         if handler is SubscriptionError {
@@ -138,13 +155,13 @@ isolated service class WsService {
             if !self.initiatedConnection || self.pongMessageHandler is PongMessageHandlerJob {
                 return;
             }
-            PongMessageHandlerJob handler = new(caller);
+            PongMessageHandlerJob handler = new (caller);
             handler.schedule();
             self.pongMessageHandler = handler;
         }
     }
 
-    private isolated function validateSubscriptionRequest(SubscribeMessage message) 
+    private isolated function validateSubscriptionRequest(SubscribeMessage message)
     returns SubscriptionHandler|SubscriptionError {
         SubscriptionHandler handler = new (message.id);
         lock {

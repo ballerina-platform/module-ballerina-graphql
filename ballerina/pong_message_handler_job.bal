@@ -47,6 +47,15 @@ class PongMessageHandlerJob {
         self.id = id;
     }
 
+    public isolated function unschedule() returns error? {
+        task:JobId? id = self.id;
+        if id is () {
+            return;
+        }
+        check task:unscheduleJob(id);
+        self.id = ();
+    }
+
     private isolated function checkForPongMessages() {
         do {
             lock {
@@ -55,8 +64,7 @@ class PongMessageHandlerJob {
                     return;
                 }
                 if !self.caller.isOpen() {
-                    check task:unscheduleJob(id);
-                    self.id = ();
+                    check self.unschedule();
                     return;
                 }
                 if !self.pongReceived {

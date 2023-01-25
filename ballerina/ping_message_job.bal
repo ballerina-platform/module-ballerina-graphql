@@ -38,6 +38,15 @@ class PingMessageJob {
         self.id = id;
     }
 
+    public isolated function unschedule() returns error? {
+        task:JobId? id = self.id;
+        if id is () {
+            return;
+        }
+        check task:unscheduleJob(id);
+        self.id = ();
+    }
+
     private isolated function sendPeriodicPingMessageRequests() {
         do {
             lock {
@@ -46,16 +55,16 @@ class PingMessageJob {
                     return;
                 }
                 if !self.caller.isOpen() {
-                    check task:unscheduleJob(id);
-                    self.id = ();
+                    check self.unschedule();
                     return;
                 }
                 PingMessage message = {'type: WS_PING};
                 check writeMessage(self.caller, message);
             }
         } on fail error cause {
-            string message = cause is websocket:Error ? "Failed to send ping message"
-                : "Failed to unschedule PingMessageJob";
+            string message = cause is websocket:Error ? "Failed to send ping message: "
+                : "Failed to unschedule PingMessageJob: ";
+            message += cause.message();
             logError(message, cause);
         }
     }
