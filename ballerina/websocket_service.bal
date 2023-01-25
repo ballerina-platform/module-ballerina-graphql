@@ -68,22 +68,7 @@ isolated service class WsService {
     }
 
     remote function onClose(websocket:Caller caller) {
-        lock {
-            PingMessageJob? pingMessageHandler = self.pingMessageHandler;
-            PongMessageHandlerJob? pongMessageHandler = self.pongMessageHandler;
-            if pingMessageHandler is PingMessageJob {
-                error? err = pingMessageHandler.unschedule();
-                if err is error {
-                    logError(err.message(), err);
-                }
-            }
-            if pongMessageHandler is PongMessageHandlerJob {
-                error? err = pongMessageHandler.unschedule();
-                if err is error {
-                    logError(err.message(), err);
-                }
-            }
-        }
+        self.unschedulePingPongHandlers();
     }
 
     private isolated function handleConnectionInitRequest(websocket:Caller caller) returns websocket:Error? {
@@ -174,5 +159,24 @@ isolated service class WsService {
             self.activeConnections[message.id] = handler;
         }
         return handler;
+    }
+
+    private isolated function unschedulePingPongHandlers() {
+        lock {
+            PingMessageJob? pingMessageHandler = self.pingMessageHandler;
+            PongMessageHandlerJob? pongMessageHandler = self.pongMessageHandler;
+            if pingMessageHandler is PingMessageJob {
+                error? err = pingMessageHandler.unschedule();
+                if err is error {
+                    logError(err.message(), err);
+                }
+            }
+            if pongMessageHandler is PongMessageHandlerJob {
+                error? err = pongMessageHandler.unschedule();
+                if err is error {
+                    logError(err.message(), err);
+                }
+            }
+        }
     }
 }
