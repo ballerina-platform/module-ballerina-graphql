@@ -154,12 +154,16 @@ type __Schema record {|
 # + kind - The `__TypeKind` of the type
 # + name - The name of the type. This can be nil if the type is `NON_NULL` or `LIST`
 # + description - The description of the type
-# + fields - The fields of the type. This only applies to if the `kind` is `OBJECT` or `INTERFACE`. Otherwise this will be nil.
-# + interfaces - The interfaces of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise this will be nil.
-# + possibleTypes - The possible types of the type. This only applies if the `kind` is `UNION` or `INTERFACE`. Otherwise this will be nil.
-# + enumValues - The enum values of the type. This only applies if the `kind` is `ENUM`. Otherwise this will be nil.
-# + inputFields - The input fields of the type. This only applies if the `kind` is `INPUT_OBJECT`. Otherwise this will be nil.
-# + ofType - The type of the type. This only applies if the `kind` is `NON_NULL` or `LIST`. Otherwise this will be nil.
+# + fields - The fields of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise,
+#       this will be nil.
+# + interfaces - The interfaces of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise,
+#       this will be nil.
+# + possibleTypes - The possible types of the type. This only applies if the `kind` is `UNION` or `INTERFACE`.
+#       Otherwise, this will be nil.
+# + enumValues - The enum values of the type. This only applies if the `kind` is `ENUM`. Otherwise, this will be nil.
+# + inputFields - The input fields of the type. This only applies if the `kind` is `INPUT_OBJECT`. Otherwise,
+#       this will be nil.
+# + ofType - The type of the type. This only applies if the `kind` is `NON_NULL` or `LIST`. Otherwise, this will be nil.
 public type __Type record {|
     __TypeKind kind;
     string? name = ();

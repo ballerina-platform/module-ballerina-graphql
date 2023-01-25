@@ -1597,8 +1597,10 @@ This method returns the name of the currently executing field. It returns a `str
 ###### Example: Get Field Name
 
 ```ballerina
-resource function get profile(graphql:Field 'field) returns Profile {
-    string name = 'field.getName();
+service on new graphql:Listener(9090) {
+    resource function get profile(graphql:Field 'field) returns Profile {
+        string name = 'field.getName();
+    }
 }
 ```
 
@@ -1609,8 +1611,10 @@ This method returns the alias of the currently executing field as a `string`. If
 ###### Example: Get Field Alias
 
 ```ballerina
-resource function get profile(graphql:Field 'field) returns Profile {
-    srting alias = 'field.getAlias();
+service on new graphql:Listener(9090) {
+    resource function get profile(graphql:Field 'field) returns Profile {
+        srting alias = 'field.getAlias();
+    }
 }
 ```
 
@@ -1621,8 +1625,10 @@ This method returns the path of the currently executing field as an array of `in
 ###### Example: Get Field Path
 
 ```ballerina
-resource function get profile(graphql:Field 'field) returns Profile {
-    (int|string)[] path = 'field.getPath();
+service on new graphql:Listener(9090) {
+    resource function get profile(graphql:Field 'field) returns Profile {
+        (int|string)[] path = 'field.getPath();
+    }
 }
 ```
 
@@ -1633,8 +1639,10 @@ This method returns the names of the subfields of the currently executing field 
 ###### Example: Get Subfield Names
 
 ```ballerina
-resource function get profile(graphql:Field 'field) returns Profile {
-    string[] subfieldNames = 'field.getSubfieldNames();
+service on new graphql:Listener(9090) {
+    resource function get profile(graphql:Field 'field) returns Profile {
+        string[] subfieldNames = 'field.getSubfieldNames();
+    }
 }
 ```
 
