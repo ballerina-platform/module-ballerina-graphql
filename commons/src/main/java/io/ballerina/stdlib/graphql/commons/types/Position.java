@@ -26,12 +26,12 @@ import java.io.Serializable;
 public class Position implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String filePath;
-    private final LinePosition starLine;
+    private final LinePosition startLine;
     private final LinePosition endLine;
 
-    public Position(String filePath, LinePosition starLine, LinePosition endLine) {
+    public Position(String filePath, LinePosition startLine, LinePosition endLine) {
         this.filePath = filePath;
-        this.starLine = starLine;
+        this.startLine = startLine;
         this.endLine = endLine;
     }
 
@@ -40,7 +40,7 @@ public class Position implements Serializable {
     }
 
     public LinePosition getStarLine() {
-        return starLine;
+        return startLine;
     }
 
     public LinePosition getEndLine() {
