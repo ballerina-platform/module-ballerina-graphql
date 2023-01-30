@@ -168,6 +168,9 @@ isolated function validateCompleteMessage(websocket:Client wsClient, string id =
 
 isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) {
     json|error response = readMessageExcludingPingMessages(wsClient);
-    test:assertTrue(response is error);
-    test:assertEquals((<error>response).message(), expectedErrorMsg);
+    if response is error {
+        test:assertEquals(response.message(), expectedErrorMsg);
+        return;
+    }
+    test:assertFail(string `Expected Error found : ${response.toString()}`);
 }

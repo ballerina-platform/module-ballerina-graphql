@@ -353,9 +353,24 @@ function testAlreadyExistingSubscriber() returns error? {
     check initiateGraphqlWsConnection(wsClient);
     check sendSubscriptionMessage(wsClient, document, clientId);
     check sendSubscriptionMessage(wsClient, document, clientId);
-
     string expectedErrorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    int i = 0;
+    json|error response;
+    while true {
+        i += 1;
+        response = readMessageExcludingPingMessages(wsClient);
+        if response is error {
+            break;
+        }
+        if i > 3 {
+            test:assertFail(string `Expected: ${expectedErrorMsg}, Found: ${response.toString()}`);
+        }
+        json|error id = response.id;
+        if id is error {
+            test:assertFail(string `Expected json with id found: ${response.toString()}`);
+        }
+    }
+    test:assertEquals((<error>response).message(), expectedErrorMsg);
 }
 
 @test:Config {
