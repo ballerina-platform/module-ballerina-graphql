@@ -1,0 +1,23 @@
+query QueryName {
+    person {
+        name
+    }
+}
+
+query QueryNameAndAge {
+    person {
+        name
+        age
+    }
+}
+
+query QueryNameAndAgeWithFragments {
+    person {
+        ...PersonNameAndAge
+    }
+}
+
+fragment PersonNameAndAge on Person {
+    name
+    age
+}

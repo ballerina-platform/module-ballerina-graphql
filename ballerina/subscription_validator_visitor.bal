@@ -19,10 +19,11 @@ import graphql.parser;
 class SubscriptionValidatorVisitor {
     *ValidatorVisitor;
 
-    private ErrorDetail[] errors;
+    private final ErrorDetail[] errors = [];
+    private final NodeModifierContext nodeModifierContext;
 
-    public isolated function init() {
-        self.errors = [];
+    isolated function init(NodeModifierContext nodeModifierContext) {
+        self.nodeModifierContext = nodeModifierContext;
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
@@ -53,10 +54,11 @@ class SubscriptionValidatorVisitor {
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
-        if fragmentNode.getSelections().length() > 1 {
-            self.addErrorDetail(fragmentNode.getSelections()[1], <string>data);
+        parser:FragmentNode modifiedFragmentNode = self.nodeModifierContext.getModifiedFragmentNode(fragmentNode);
+        if modifiedFragmentNode.getSelections().length() > 1 {
+            self.addErrorDetail(modifiedFragmentNode.getSelections()[1], <string>data);
         } else {
-            fragmentNode.getSelections()[0].accept(self, data);
+            modifiedFragmentNode.getSelections()[0].accept(self, data);
         }
     }
 

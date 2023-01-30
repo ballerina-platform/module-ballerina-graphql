@@ -48,23 +48,24 @@ isolated class Engine {
     isolated function validate(string documentString, string? operationName, map<json>? variables)
         returns parser:OperationNode|OutputObject {
 
-        parser:DocumentNode|OutputObject result = self.parse(documentString);
+        ParseResult|OutputObject result = self.parse(documentString);
         if result is OutputObject {
             return result;
         }
-        parser:DocumentNode document = <parser:DocumentNode>result;
-        OutputObject? validationResult = self.validateDocument(document, variables);
+
+        OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, variables);
         if validationResult is OutputObject {
             return validationResult;
-        } else {
-            return self.getOperation(document, operationName);
         }
+        return self.getOperation(validationResult, operationName);
     }
 
     isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
     returns OutputObject {
-        DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema);
-        DuplicateFieldRemoverVisitor duplicateFieldRemover = new;
+        map<()> removedNodes = {};
+        map<parser:SelectionNode> modifiedSelections = {};
+        DefaultDirectiveProcessorVisitor defaultDirectiveProcessor = new (self.schema, removedNodes);
+        DuplicateFieldRemoverVisitor duplicateFieldRemover = new (removedNodes, modifiedSelections);
 
         parser:Visitor[] updatingVisitors = [
             defaultDirectiveProcessor,
@@ -75,37 +76,50 @@ isolated class Engine {
             operationNode.accept(visitor);
         }
 
+        OperationNodeModifierVisitor operationNodeModifier = new (modifiedSelections, removedNodes);
+        operationNode.accept(operationNodeModifier);
+        parser:OperationNode modifiedOperationNode = operationNodeModifier.getOperationNode();
+
         ExecutorVisitor executor = new (self, self.schema, context, result);
-        operationNode.accept(executor);
+        modifiedOperationNode.accept(executor);
         OutputObject outputObject = executor.getOutput();
         ResponseFormatter responseFormatter = new (self.schema);
-        return responseFormatter.getCoercedOutputObject(outputObject, operationNode);
+        return responseFormatter.getCoercedOutputObject(outputObject, modifiedOperationNode);
     }
 
-    isolated function parse(string documentString) returns parser:DocumentNode|OutputObject {
+    isolated function parse(string documentString) returns ParseResult|OutputObject {
         parser:Parser parser = new (documentString);
         parser:DocumentNode|parser:Error parseResult = parser.parse();
         if parseResult is parser:DocumentNode {
-            return parseResult;
+            return {document: parseResult, validationErrors: parser.getErrors()};
         }
         ErrorDetail errorDetail = getErrorDetailFromError(<parser:Error>parseResult);
         return getOutputObjectFromErrorDetail(errorDetail);
     }
 
-    isolated function validateDocument(parser:DocumentNode document, map<json>? variables) returns OutputObject? {
-        ErrorDetail[] validationErrors = document.getErrors();
-        ValidatorVisitor[] validators = [
-            new FragmentCycleFinderVisitor(document.getFragments()),
-            new FragmentValidatorVisitor(document.getFragments()),
-            new QueryDepthValidatorVisitor(self.maxQueryDepth),
-            new VariableValidatorVisitor(self.schema, variables),
-            new FieldValidatorVisitor(self.schema),
-            new DirectiveValidatorVisitor(self.schema),
-            new SubscriptionValidatorVisitor()
-        ];
-        if !self.introspection {
-            validators.push(new IntrospectionValidatorVisitor(self.introspection));
+    isolated function validateDocument(ParseResult parseResult, map<json>? variables)
+    returns OutputObject|parser:DocumentNode {
+        ErrorDetail[]|NodeModifierContext validationResult = self.parallellyValidateDocument(parseResult, variables);
+        if validationResult is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(validationResult);
+        } else {
+            DocumentNodeModifierVisitor documentNodeModifierVisitor = new (validationResult);
+            parseResult.document.accept(documentNodeModifierVisitor);
+            return documentNodeModifierVisitor.getDocumentNode();
         }
+    }
+
+    isolated function parallellyValidateDocument(ParseResult parseResult, map<json>? variables)
+    returns ErrorDetail[]|NodeModifierContext {
+        ErrorDetail[] validationErrors = [...parseResult.validationErrors];
+        final parser:DocumentNode document = parseResult.document;
+
+        map<parser:FragmentNode> fragments = document.getFragments();
+        final NodeModifierContext nodeModifierContext = new;
+        ValidatorVisitor[] validators = [
+            new FragmentCycleFinderVisitor(fragments, nodeModifierContext),
+            new FragmentValidatorVisitor(fragments, nodeModifierContext)
+        ];
 
         foreach ValidatorVisitor validator in validators {
             document.accept(validator);
@@ -114,7 +128,67 @@ isolated class Engine {
                 validationErrors.push(...errors);
             }
         }
-        return validationErrors.length() == 0 ? () : getOutputObjectFromErrorDetail(validationErrors);
+
+        final int? maxQueryDepth = self.maxQueryDepth;
+        final readonly & __Schema schema = self.schema;
+        final readonly & map<json>? vars = variables.cloneReadOnly();
+        final boolean introspection = self.introspection;
+
+        worker queryDepthValidatorWorker returns ErrorDetail[] {
+            QueryDepthValidatorVisitor validator = new (maxQueryDepth, nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker subscriptionValidatorWorker returns ErrorDetail[] {
+            SubscriptionValidatorVisitor validator = new (nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker directiveValidatorWorker returns ErrorDetail[] {
+            DirectiveValidatorVisitor validator = new (schema, nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        worker fieldAndVariableValidatorWorker returns ErrorDetail[] {
+            ErrorDetail[] errors = [];
+             ValidatorVisitor[] validatorVisitors = [
+                new VariableValidatorVisitor(schema, vars, nodeModifierContext),
+                new FieldValidatorVisitor(schema, nodeModifierContext)
+            ];
+            foreach ValidatorVisitor validator in validatorVisitors {
+                document.accept(validator);
+                ErrorDetail[]? visitorErrors = validator.getErrors();
+                if visitorErrors is ErrorDetail[] {
+                    errors.push(...visitorErrors);
+                }
+            }
+            return errors;
+        }
+
+        worker introspectionValidatorWorker returns ErrorDetail[] {
+            if introspection {
+                return [];
+            }
+            IntrospectionValidatorVisitor validator = new (introspection, nodeModifierContext);
+            document.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
+        ErrorDetail[] errors = wait queryDepthValidatorWorker;
+        validationErrors.push(...errors);
+        errors = wait subscriptionValidatorWorker;
+        validationErrors.push(...errors);
+        errors = wait directiveValidatorWorker;
+        validationErrors.push(...errors);
+        errors = wait fieldAndVariableValidatorWorker;
+        validationErrors.push(...errors);
+        errors = wait introspectionValidatorWorker;
+        validationErrors.push(...errors);
+
+        return validationErrors.length() > 0 ? validationErrors : nodeModifierContext;
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)
@@ -202,7 +276,7 @@ isolated class Engine {
             if resourceMethod == () {
                 return self.resolveHierarchicalResource(context, 'field);
             }
-            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field.getInternalNode());
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field);
         }
         return 'field.getFieldValue();
     }
@@ -210,7 +284,7 @@ isolated class Engine {
     isolated function resolveRemoteMethod(Context context, Field 'field) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
-           return self.executeMutationMethod(context, serviceObject, 'field.getInternalNode());
+           return self.executeMutationMethod(context, serviceObject, 'field);
         }
         return 'field.getFieldValue();
     }
@@ -267,18 +341,18 @@ isolated class Engine {
     } external;
 
     isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
-                                            parser:FieldNode fieldNode)
+                                           Field 'field)
     returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeMutationMethod(Context context, service object {} serviceObject,
-                                            parser:FieldNode fieldNode) returns any|error = @java:Method {
+                                            Field 'field) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeSubscriptionResource(Context context, service object {} serviceObject,
-                                                  parser:FieldNode node) returns any|error = @java:Method {
+                                                  Field 'field) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 

@@ -1,4 +1,0 @@
-[package]
-org = "graphql_test"
-name = "test_package"
-version = "0.1.0"

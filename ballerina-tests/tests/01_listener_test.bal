@@ -178,19 +178,24 @@ function testAttachServiceWithMutationToHttp1BasedListenerAndClient() returns er
 }
 
 @test:Config {
-    groups: ["listener"]
+    groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9191/service_with_http1";
-    websocket:Client wsClient1 = check new(url);
-    websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document, wsClient1);
-    check writeWebSocketTextMessage(document, wsClient2);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+    check sendSubscriptionMessage(wsClient1, document, "1");
+
+    websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+    check sendSubscriptionMessage(wsClient2, document, "2");
+
     foreach int i in 1 ..< 4 {
-        json expectedPayload = {data: {messages: i}};
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+        json expectedMsgPayload = {data: {messages: i}};
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
 }
 

@@ -61,13 +61,13 @@ import java.util.Set;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
-import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isValidGraphqlParameter;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_SUBSCRIBE;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
@@ -476,27 +476,13 @@ public class ServiceValidator {
     private void validateInputParameters(MethodSymbol methodSymbol, Location location) {
         FunctionTypeSymbol functionTypeSymbol = methodSymbol.typeDescriptor();
         if (functionTypeSymbol.params().isPresent()) {
-            int i = 0;
-            for (ParameterSymbol parameterSymbol : functionTypeSymbol.params().get()) {
-                Location inputLocation = getLocation(parameterSymbol, location);
-                TypeSymbol parameterTypeSymbol = parameterSymbol.typeDescriptor();
-                if (isContextParameter(parameterTypeSymbol)) {
-                    if (i != 0) {
-                        String methodName;
-                        if (isResourceMethod(methodSymbol)) {
-                            ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
-                            methodName = getFieldPath(resourceMethodSymbol);
-                        } else {
-                            methodName = methodSymbol.getName().orElse(methodSymbol.signature());
-                        }
-                        addDiagnostic(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, inputLocation,
-                                      methodName);
-                    }
-                } else {
-                    validateInputParameterType(parameterSymbol.typeDescriptor(), inputLocation,
-                                               isResourceMethod(methodSymbol));
+            List<ParameterSymbol> parameterSymbols = functionTypeSymbol.params().get();
+            for (ParameterSymbol parameter : parameterSymbols) {
+                Location inputLocation = getLocation(parameter, location);
+                if (isValidGraphqlParameter(parameter.typeDescriptor())) {
+                    continue;
                 }
-                i++;
+                validateInputParameterType(parameter.typeDescriptor(), inputLocation, isResourceMethod(methodSymbol));
             }
         }
     }
@@ -549,8 +535,7 @@ public class ServiceValidator {
                 break;
             default:
                 addDiagnostic(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, location,
-                              rootInputParameterTypeSymbol.getName().orElse(rootInputParameterTypeSymbol.signature()),
-                              getCurrentFieldPath());
+                              rootInputParameterTypeSymbol.signature(), getCurrentFieldPath());
         }
         if (isRootInputParameterTypeSymbol(typeSymbol)) {
             resetRootInputParameterTypeSymbol();

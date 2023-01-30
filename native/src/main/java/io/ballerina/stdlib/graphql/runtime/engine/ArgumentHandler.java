@@ -47,7 +47,9 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isIgnoreType;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isField;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 
 /**
@@ -59,15 +61,18 @@ public class ArgumentHandler {
 
     private final BMap<BString, Object> fileInfo;
     private final BObject context;
+    private final BObject field;
 
-    public ArgumentHandler(MethodType method, BObject context) {
+    public ArgumentHandler(MethodType method, BObject context, BObject field) {
         this.method = method;
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
+        this.field = field;
         this.argumentsMap = ValueCreator.createMapValue();
     }
 
-    public Object[] getArguments(BObject fieldNode) {
+    public Object[] getArguments() {
+        BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
         this.populateArgumentsMap(fieldNode);
         return this.getArgumentsForMethod();
     }
@@ -128,7 +133,7 @@ public class ArgumentHandler {
     }
 
     private Object getIntersectionTypeArgument(BObject argumentNode, IntersectionType intersectionType) {
-        Type effectiveType = getEffectiveType(intersectionType);
+        Type effectiveType = TypeUtils.getReferredType(getEffectiveType(intersectionType));
         if (effectiveType.getTag() == TypeTags.ARRAY_TAG) {
             BArray valueArray = getArrayTypeArgument(argumentNode, (ArrayType) effectiveType);
             valueArray.freezeDirect();
@@ -188,8 +193,13 @@ public class ArgumentHandler {
         Parameter[] parameters = this.method.getParameters();
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
-            if (i == 0 && isContext(parameters[i].type)) {
+            if (isContext(parameters[i].type)) {
                 result[i] = this.context;
+                result[j + 1] = true;
+                continue;
+            }
+            if (isField(parameters[i].type)) {
+                result[i] = this.field;
                 result[j + 1] = true;
                 continue;
             }

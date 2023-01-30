@@ -121,8 +121,8 @@ fragment on on Profile {
 isolated function testMultipleAnonymousOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_anonymous_operations.graphql");
     Parser parser = new (document);
-    DocumentNode documentNode = check parser.parse();
-    ErrorDetail[] errors = documentNode.getErrors();
+    _ = check parser.parse();
+    ErrorDetail[] errors = parser.getErrors();
     test:assertEquals(errors.length(), 2);
     ErrorDetail e1 = {
         message: "This anonymous operation must be the only defined operation.",
@@ -163,8 +163,8 @@ query getData {
     }
 }`;
     Parser parser = new (document);
-    DocumentNode documentNode = check parser.parse();
-    ErrorDetail[] errors = documentNode.getErrors();
+    _ = check parser.parse();
+    ErrorDetail[] errors = parser.getErrors();
     test:assertEquals(errors.length(), 1);
     ErrorDetail e1 = {
         message: "This anonymous operation must be the only defined operation.",
@@ -184,8 +184,8 @@ query getData {
 isolated function testNamedOperationWithAnonymousOperation() returns error? {
     string document = check getGraphQLDocumentFromFile("named_operation_with_anonymous_operation.graphql");
     Parser parser = new (document);
-    DocumentNode documentNode = check parser.parse();
-    ErrorDetail[] errors = documentNode.getErrors();
+    _ = check parser.parse();
+    ErrorDetail[] errors = parser.getErrors();
     test:assertEquals(errors.length(), 1);
     ErrorDetail e1 = {
         message: "This anonymous operation must be the only defined operation.",
@@ -205,8 +205,8 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
 isolated function testNamedOperationWithMultipleAnonymousOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("named_operation_with_multiple_anonymous_operations.graphql");
     Parser parser = new (document);
-    DocumentNode documentNode = check parser.parse();
-    ErrorDetail[] errors = documentNode.getErrors();
+    _ = check parser.parse();
+    ErrorDetail[] errors = parser.getErrors();
     test:assertEquals(errors.length(), 2);
     ErrorDetail e1 = {
         message: "This anonymous operation must be the only defined operation.",
@@ -236,8 +236,8 @@ isolated function testNamedOperationWithMultipleAnonymousOperations() returns er
 isolated function testThreeAnonymousOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("three_anonymous_operations.graphql");
     Parser parser = new (document);
-    DocumentNode documentNode = check parser.parse();
-    ErrorDetail[] errors = documentNode.getErrors();
+    _ = check parser.parse();
+    ErrorDetail[] errors = parser.getErrors();
     test:assertEquals(errors.length(), 3);
     ErrorDetail e1 = {
         message: "This anonymous operation must be the only defined operation.",
@@ -277,8 +277,8 @@ isolated function testThreeAnonymousOperations() returns error? {
 isolated function testMultipleOperationsWithSameName() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_with_same_name.graphql");
     Parser parser = new (document);
-    DocumentNode documentNode = check parser.parse();
-    ErrorDetail[] errors = documentNode.getErrors();
+    _ = check parser.parse();
+    ErrorDetail[] errors = parser.getErrors();
     test:assertEquals(errors.length(), 2);
     ErrorDetail e1 = {
         message: string `There can be only one operation named "getData".`,

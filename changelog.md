@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+- [[#3977] Remove Limitation on GraphQL Context Object Parameter Order](https://github.com/ballerina-platform/ballerina-standard-library/issues/3977)
+
+### Added
+- [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
+- [[#3942] Add Functionality to Send Ping Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3942)
+- [[#3943] Add Functionality to Check for Pong Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3943)
+- [[#3893] Add Support to Access GraphQL Field Information from Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/3893)
+
+### Fixed
+- [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)
+
+### Changed
+- [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
+- [[#3870] Add Service Error Handling Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3870)
+- [[#3709] Add Input Default Values Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3709)
+- [[#3941] Remove Support for Non-Compliant Subscription Requests](https://github.com/ballerina-platform/ballerina-standard-library/issues/3941)
+
+## [1.5.0] - 2022-11-29
+
 ### Added
 - [[#2891] Add Support for Disabling Introspection Queries](https://github.com/ballerina-platform/ballerina-standard-library/issues/2891)
 - [[#3289] Support GraphQL interface with ballerina distinct object type](https://github.com/ballerina-platform/ballerina-standard-library/issues/3289)
@@ -33,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#2848] All the Errors Are Reported for a Given Document in a Single Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/2848)
 - [[#3431] Introduce GraphQL Client Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3431)
 - [[#3463] Updated API Docs to Reflect Slack to Discord Migration](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
+- [[#3791] Add Cause to GraphQL Payload Binding Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/3791)
 
 ## [1.4.1] - 2022-09-12
 

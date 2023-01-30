@@ -42,8 +42,8 @@ public class ServiceValidationTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources",
                                                              "validator_tests").toAbsolutePath();
-    private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime")
-            .toAbsolutePath();
+    private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime").toAbsolutePath();
+    private static final String TEST_MODULE_PREFIX = "graphql_test/test_package:0.1.0:";
 
     @Test(groups = "valid")
     public void testValidReturnTypes() {
@@ -221,7 +221,8 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
     }
 
     @Test(groups = "invalid")
@@ -236,7 +237,8 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 23);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
     }
 
     @Test(groups = "invalid")
@@ -295,7 +297,8 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 75, 5);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 93, 5);
+        message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 93, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "ServiceInterceptor");
@@ -318,35 +321,46 @@ public class ServiceValidationTest {
     public void testInvalidInputTypes() {
         String packagePath = "28_invalid_input_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 7);
+        Assert.assertEquals(diagnosticResult.errorCount(), 9);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "json", "Query.greet");
-        assertErrorMessage(diagnostic, message, 20, 38);
+        assertErrorMessage(diagnostic, message, 21, 38);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "map<string>", "Query.greet");
-        assertErrorMessage(diagnostic, message, 26, 45);
+        assertErrorMessage(diagnostic, message, 27, 45);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "byte[]", "Query.greet");
-        assertErrorMessage(diagnostic, message, 32, 40);
+        assertErrorMessage(diagnostic, message, 33, 40);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_INPUT_TYPE_UNION, 43, 39);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_INPUT_TYPE_UNION, 44, 39);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "byte[]", "Query.greet");
-        assertErrorMessage(diagnostic, message, 49, 49);
+        assertErrorMessage(diagnostic, message, 50, 49);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "any", "Query.greet");
-        assertErrorMessage(diagnostic, message, 55, 37);
+        assertErrorMessage(diagnostic, message, 56, 37);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "anydata", "Query.greet");
-        assertErrorMessage(diagnostic, message, 61, 41);
+        assertErrorMessage(diagnostic, message, 62, 41);
+
+        String subModulePrefix = "graphql_test/test_package.types:0.1.0:";
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, subModulePrefix + "Headers",
+                                  "Query.greet");
+        assertErrorMessage(diagnostic, message, 68, 47);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, subModulePrefix + "Service",
+                                  "Query.greet");
+        assertErrorMessage(diagnostic, message, 74, 47);
     }
 
     @Test(groups = "invalid")
@@ -612,7 +626,8 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
     }
 
     @Test(groups = "invalid")
@@ -641,7 +656,8 @@ public class ServiceValidationTest {
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 25, 15);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 25, 15);
     }
 
     @Test(groups = "invalid")
@@ -694,33 +710,19 @@ public class ServiceValidationTest {
     }
 
     @Test(groups = "invalid")
-    public void testContextAsAnotherParameter() {
-        String packagePath = "46_context_as_another_parameter";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, "profile");
-        assertErrorMessage(diagnostic, message, 20, 64);
-
-        diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, "updateName");
-        assertErrorMessage(diagnostic, message, 24, 61);
-    }
-
-    @Test(groups = "invalid")
     public void testInvalidContextObject() {
         String packagePath = "47_invalid_context_object";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "Context",
-                                         "Query.profile");
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE,
+                                         TEST_MODULE_PREFIX + "Context", "Query.profile");
         assertErrorMessage(diagnostic, message, 21, 43);
 
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "Context", "Mutation.updateName");
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, TEST_MODULE_PREFIX + "Context",
+                                  "Mutation.updateName");
         assertErrorMessage(diagnostic, message, 25, 40);
     }
 
@@ -844,11 +846,13 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 115, 56);
 
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "File", "Query.uploadFile");
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, TEST_MODULE_PREFIX + "File",
+                                  "Query.uploadFile");
         assertErrorMessage(diagnostic, message, 122, 52);
 
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "File", "Mutation.upload");
+        message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, TEST_MODULE_PREFIX + "File",
+                                  "Mutation.upload");
         assertErrorMessage(diagnostic, message, 133, 33);
 
         diagnostic = diagnosticIterator.next();
@@ -918,11 +922,12 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, 19, 1);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 19, 1);
 
         diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
-                                         "Subscription.profiles.bytes");
+        message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
+                                  "Subscription.profiles.bytes");
         assertErrorMessage(diagnostic, message, 31, 5);
 
         diagnostic = diagnosticIterator.next();

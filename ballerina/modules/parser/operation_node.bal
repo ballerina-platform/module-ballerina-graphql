@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class OperationNode {
+public readonly class OperationNode {
     *SelectionParentNode;
 
     private string name;
@@ -22,18 +22,18 @@ public class OperationNode {
     private Location location;
     private SelectionNode[] selections;
     private map<VariableNode> variables;
-    private ErrorDetail[] errors;
     private DirectiveNode[] directives;
     private boolean cofiguredInSchema;
 
-    public isolated function init(string name, RootOperationType kind, Location location) {
+    public isolated function init(string name, RootOperationType kind, Location location,
+                                  map<VariableNode> variables = {}, SelectionNode[] selections = [], 
+                                  DirectiveNode[] directives = []) {
         self.name = name;
         self.kind = kind;
-        self.location = location;
-        self.selections = [];
-        self.variables = {};
-        self.errors = [];
-        self.directives = [];
+        self.location = location.cloneReadOnly();
+        self.selections = selections.cloneReadOnly();
+        self.variables = variables.cloneReadOnly();
+        self.directives = directives.cloneReadOnly();
         self.cofiguredInSchema = true;
     }
 
@@ -53,45 +53,28 @@ public class OperationNode {
         return self.location;
     }
 
-    public isolated function addSelection(SelectionNode selection) {
-        self.selections.push(selection);
-    }
-
     public isolated function getSelections() returns SelectionNode[] {
         return self.selections;
-    }
-
-    public isolated function addVariableDefinition(VariableNode variable) {
-        if self.variables.hasKey(variable.getName()) {
-            string message = string `There can be only one variable named "$${variable.getName()}"`;
-            Location location = variable.getLocation();
-            self.errors.push({message: message, locations: [location]});
-        } else {
-            self.variables[variable.getName()] = variable;
-        }
     }
 
     public isolated function getVaribleDefinitions() returns map<VariableNode> {
         return self.variables;
     }
 
-    public isolated function getErrors() returns ErrorDetail[] {
-        return self.errors;
-    }
-
-    public isolated function addDirective(DirectiveNode directive) {
-        self.directives.push(directive);
-    }
-
     public isolated function getDirectives() returns DirectiveNode[] {
         return self.directives;
     }
 
-    public isolated function setNotConfiguredOperationInSchema() {
-        self.cofiguredInSchema = false;
-    }
-
     public isolated function isConfiguredOperationInSchema() returns boolean {
         return self.cofiguredInSchema;
+    }
+
+    public isolated function modifyWith(map<VariableNode> variables, SelectionNode[] selections,
+                                        DirectiveNode[] directives) returns OperationNode {
+        return new (self.name, self.kind, self.location, variables, selections, directives);
+    }
+
+    public isolated function modifyWithSelections(SelectionNode[] selections) returns OperationNode {
+        return new (self.name, self.kind, self.location, self.variables, selections, self.directives);
     }
 }

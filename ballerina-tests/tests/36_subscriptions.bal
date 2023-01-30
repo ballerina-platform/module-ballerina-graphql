@@ -23,30 +23,26 @@ import ballerina/websocket;
 isolated function testSubscription() returns error? {
     string document = string `subscription { name }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    json payload = {query: document};
-    check wsClient->writeMessage(payload);
-    json expectedPayload = {data: {name: "Walter"}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {name: "Skyler"}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {name: "Walter"}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {name: "Skyler"}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testSubscriptionWithMultipleClients() returns error? {
-    string document = string `subscription { messages }`;
+isolated function testSubscriptionWithoutSubProtocol() returns error? {
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient1 = check new(url);
-    websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document, wsClient1);
-    check writeWebSocketTextMessage(document, wsClient2);
-    foreach int i in 1 ..< 4 {
-        json expectedPayload = {data: {messages: i}};
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        check validateWebSocketResponse(wsClient2, expectedPayload);
-    }
+    websocket:Client|error wsClient = new (url);
+    string expectedErrorMsg = "InvalidHandshakeError: Invalid handshake response getStatus: 400 Bad Request";
+    test:assertTrue(wsClient is websocket:InvalidHandshakeError, "Invalid handshake error expected");
+    test:assertEquals((<error>wsClient).message(), expectedErrorMsg);
 }
 
 @test:Config {
@@ -55,36 +51,27 @@ isolated function testSubscriptionWithMultipleClients() returns error? {
 isolated function testSubscriptionsWithMultipleOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_operations.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient1 = check new(url);
-    websocket:Client wsClient2 = check new(url);
-    check writeWebSocketTextMessage(document, wsClient1, {}, "getMessages");
-    check writeWebSocketTextMessage(document, wsClient2, {}, "getStringMessages");
-    json expectedPayload = {data: null};
-    check validateWebSocketResponse(wsClient2, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+    check sendSubscriptionMessage(wsClient1, document, "1", operationName = "getMessages");
+
+    websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+    check sendSubscriptionMessage(wsClient2, document, "2", operationName = "getStringMessages");
+
+    json expectedMsgPayload = {data: null};
+    check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     foreach int i in 1 ..< 4 {
-        expectedPayload = {data: {messages: i}};
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        expectedPayload = {data: {stringMessages: i.toString()}};
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+        expectedMsgPayload = {data: {messages: i}};
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        expectedMsgPayload = {data: {stringMessages: i.toString()}};
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
     string httpUrl = "http://localhost:9099/subscriptions";
     json actualPayload = check getJsonPayloadFromService(httpUrl, document, operationName = "getName");
-    expectedPayload = {data: {name: "Walter White"}};
+    json expectedPayload = {data: {name: "Walter White"}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "subscriptions"]
-}
-isolated function testSubscriptionWithServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
-    string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
 }
 
 @test:Config {
@@ -93,12 +80,15 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
 isolated function testSubscriptionWithRecords() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {books: {name: "Crime and Punishment", author: "Fyodor Dostoevsky"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {books: {name: "A Game of Thrones", author: "George R.R. Martin"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {books: {name: "Crime and Punishment", author: "Fyodor Dostoevsky"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {books: {name: "A Game of Thrones", author: "George R.R. Martin"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -118,12 +108,15 @@ isolated function testQueryWithSameSubscriptionFieldName() returns error? {
 isolated function testSubscriptionWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -132,26 +125,15 @@ isolated function testSubscriptionWithFragments() returns error? {
 isolated function testSubscriptionWithUnionType() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {
-        data: {
-            multipleValues: {
-                id: 1,
-                name: "Jesse Pinkman"
-            }
-        }
-    };
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {
-        data: {
-            multipleValues: {
-                name: "Walter White",
-                subject: "Chemistry"
-            }
-        }
-    };
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {multipleValues: {id: 1, name: "Jesse Pinkman"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {multipleValues: {name: "Walter White", subject: "Chemistry"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -161,11 +143,14 @@ isolated function testSubscriptionWithVariables() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
     json variables = {"value": 4};
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient, variables);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document, variables = variables);
+
     foreach int i in 1 ..< 3 {
-        json expectedPayload = {data: {filterValues: i}};
-        check validateWebSocketResponse(wsClient, expectedPayload);
+        json expectedMsgPayload = {data: {filterValues: i}};
+        check validateNextMessage(wsClient, expectedMsgPayload);
     }
 }
 
@@ -175,10 +160,13 @@ isolated function testSubscriptionWithVariables() returns error? {
 isolated function testSubscriptionWithIntrospectionInFields() returns error? {
     string document = string `subscription { students { __typename } }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {data: {students: {__typename: "StudentService"}}};
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {students: {__typename: "StudentService"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -187,10 +175,13 @@ isolated function testSubscriptionWithIntrospectionInFields() returns error? {
 isolated function testInvalidSubscription() returns error? {
     string document = string `subscription { invalidField }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = check getJsonContentFromFile("subscription_invalid_field.json");
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_field.json");
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -199,10 +190,13 @@ isolated function testInvalidSubscription() returns error? {
 isolated function testInvalidSubscriptionWithMultipleRootFields() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_root_fields.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields.json");
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields.json");
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -211,10 +205,13 @@ isolated function testInvalidSubscriptionWithMultipleRootFields() returns error?
 isolated function testInvalidSubscriptionWithIntrospections() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_introspections.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = check getJsonContentFromFile("subscription_invalid_introspections.json");
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_introspections.json");
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -223,10 +220,13 @@ isolated function testInvalidSubscriptionWithIntrospections() returns error? {
 isolated function testInvalidAnonymousSubscriptionOperationWithIntrospections() returns error? {
     string document = string `subscription { __typename }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = check getJsonContentFromFile("subscription_anonymous_with_invalid_introspections.json");
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = check getJsonContentFromFile("subscription_anonymous_with_invalid_introspections.json");
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -235,10 +235,13 @@ isolated function testInvalidAnonymousSubscriptionOperationWithIntrospections() 
 isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_root_fields_in_fragments.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client wsClient = check new(url);
-    check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields_in_fragments.json");
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields_in_fragments.json");
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
@@ -247,442 +250,299 @@ isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() ret
 isolated function testSubscriptionFunctionWithErrors() returns error? {
     string document = string `subscription getNames { values }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:Client websocketClient = check new(url);
-    check writeWebSocketTextMessage(document, websocketClient);
-    string errorMessage = "{ballerina/lang.array}IndexOutOfRange";
-    json expectedPayload = {errors: [{message: errorMessage}]};
-    check validateWebSocketResponse(websocketClient, expectedPayload);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {errors: [{message: "{ballerina/lang.array}IndexOutOfRange"}]};
+    check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "service", "subscriptions"]
+    groups: ["service", "subscriptions"]
 }
-isolated function testSubscriptionWithServiceObjectsUsingSubProtocol() returns error? {
+isolated function testSubscriptionWithServiceObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
-        check initiateConnectionInitMessage(wsClient);
-        check validateConnectionInitMessage(wsClient);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
 
-        check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
-        json payload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-        json expectedPayload = {"type": messageType, id: "1", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-        payload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
-        expectedPayload = {"type": messageType, id: "1", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-        expectedPayload = {"type": WS_COMPLETE, id: "1", payload: null};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-    }
+    json expectedMsgPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    check validateCompleteMessage(wsClient);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "variables", "subscriptions"]
+    groups: ["subscriptions"]
 }
-isolated function testSubscriptionWithVariablesUsingSubProtocol() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
-    json variables = {"value": 4};
-    string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
-
-        check initiateConnectionInitMessage(wsClient);
-        check validateConnectionInitMessage(wsClient);
-
-        check writeWebSocketTextMessage(document, wsClient, variables, id = "1", subProtocol = subProtocol);
-        foreach int i in 1 ..< 4 {
-            json expectedPayload = {"type": messageType, id: "1", payload: {data: {filterValues: i}}};
-            check validateWebSocketResponse(wsClient, expectedPayload);
-        }
-    }
-}
-
-@test:Config {
-    groups: ["sub_protocols", "subscriptions"]
-}
-isolated function testSubscriptionWithMultipleClientsUsingSubProtocol() returns error? {
+isolated function testSubscriptionWithMultipleClients() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient1 = check new(url, config);
-        websocket:Client wsClient2 = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
 
-        check initiateConnectionInitMessage(wsClient1);
-        check validateConnectionInitMessage(wsClient1);
+    websocket:Client wsClient1 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient1);
+    check sendSubscriptionMessage(wsClient1, document, "1");
 
-        check initiateConnectionInitMessage(wsClient2);
-        check validateConnectionInitMessage(wsClient2);
+    websocket:Client wsClient2 = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient2);
+    check sendSubscriptionMessage(wsClient2, document, "2");
 
-        check writeWebSocketTextMessage(document, wsClient1, id = "1", subProtocol = subProtocol);
-        check writeWebSocketTextMessage(document, wsClient2, id = "2", subProtocol = subProtocol);
-
-        foreach int i in 1 ..< 6 {
-            json expectedPayload = {"type": messageType, id: "1", payload: {data: {messages: i}}};
-            check validateWebSocketResponse(wsClient1, expectedPayload);
-            expectedPayload = {"type": messageType, id: "2", payload: {data: {messages: i}}};
-            check validateWebSocketResponse(wsClient2, expectedPayload);
-        }
-
-        check wsClient1->writeMessage({id: "1", "type": WS_STOP});
-        check wsClient2->writeMessage({id: "2", "type": WS_STOP});
-        json expectedPayload = {"type": WS_COMPLETE, id: "1", payload: null};
-        check validateWebSocketResponse(wsClient1, expectedPayload);
-        expectedPayload = {"type": WS_COMPLETE, id: "2", payload: null};
-        check validateWebSocketResponse(wsClient2, expectedPayload);
+    foreach int i in 1 ..< 6 {
+        json expectedMsgPayload = {data: {messages: i}};
+        check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
+    check validateCompleteMessage(wsClient1, id = "1");
+    check validateCompleteMessage(wsClient2, id = "2");
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
-}
-isolated function testSubscriptionsWithMultipleOperationsUsingSubProtocol() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_operations.graphql");
-    string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient1 = check new(url, config);
-        websocket:Client wsClient2 = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
-
-        check initiateConnectionInitMessage(wsClient1);
-        check validateConnectionInitMessage(wsClient1);
-
-        check initiateConnectionInitMessage(wsClient2);
-        check validateConnectionInitMessage(wsClient2);
-
-        check writeWebSocketTextMessage(document, wsClient1, {}, "getMessages", "1", subProtocol = subProtocol);
-        check writeWebSocketTextMessage(document, wsClient2, {}, "getStringMessages", "2", subProtocol = subProtocol);
-        json expectedPayload = {"type": messageType, id: "2", payload: {data: null}};
-        check validateWebSocketResponse(wsClient2, expectedPayload);
-        foreach int i in 1 ..< 4 {
-            json payload = {data: {messages: i}};
-            expectedPayload = {"type": messageType, id: "1", payload: payload};
-            check validateWebSocketResponse(wsClient1, expectedPayload);
-            payload = {data: {stringMessages: i.toString()}};
-            expectedPayload = {"type": messageType, id: "2", payload: payload};
-            check validateWebSocketResponse(wsClient2, expectedPayload);
-        }
-
-        string httpUrl = "http://localhost:9099/subscriptions";
-        json actualPayload = check getJsonPayloadFromService(httpUrl, document, operationName = "getName");
-        expectedPayload = {data: {name: "Walter White"}};
-        assertJsonValuesWithOrder(actualPayload, expectedPayload);
-    }
-}
-
-@test:Config {
-    groups: ["sub_protocols", "fragments", "subscriptions"]
-}
-isolated function testSubscriptionWithFragmentsUsingSubProtocol() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
-    string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_NEXT;
-
-        check initiateConnectionInitMessage(wsClient);
-        check validateConnectionInitMessage(wsClient);
-
-        check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
-        json payload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-        json expectedPayload = {"type": messageType, id: "1", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-        payload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
-        expectedPayload = {"type": messageType, id: "1", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-    }
-}
-
-@test:Config {
-    groups: ["sub_protocols", "subscriptions"]
-}
-isolated function testInvalidSubscriptionUsingSubProtocol() returns error? {
-    string document = string `subscription { invalidField }`;
-    string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_ERROR;
-        json responsePayload = check getJsonContentFromFile("subscription_invalid_field.json");
-        check initiateConnectionInitMessage(wsClient);
-        check validateConnectionInitMessage(wsClient);
-
-        json payload = {query: document};
-        check wsClient->writeMessage({"type": WS_START, id: "1", payload: payload});
-        json expectedPayload = {'type: messageType, id: "1", payload: responsePayload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-    }
-}
-
-@test:Config {
-    groups: ["sub_protocols", "subscriptions"]
-}
-isolated function testSubscriptionFunctionWithErrorsUsingSubProtocol() returns error? {
-    string document = string `subscription getNames { values }`;
-    string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        string messageType = subProtocol == GRAPHQL_WS ? WS_DATA : WS_ERROR;
-
-        check initiateConnectionInitMessage(wsClient);
-        check validateConnectionInitMessage(wsClient);
-
-        check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
-        string errorMessage = "{ballerina/lang.array}IndexOutOfRange";
-        json payload = {errors: [{message: errorMessage}]};
-        json expectedPayload = {"type": messageType, id: "1", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
-    }
-}
-
-@test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
 isolated function testConnectionInitMessage() returns error? {
     string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        check initiateConnectionInitMessage(wsClient);
-        check validateConnectionInitMessage(wsClient);
-    }
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check sendConnectionInitMessage(wsClient);
+    check validateConnectionAckMessage(wsClient);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
 isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: ["graphql-ws"]};
-    websocket:Client wsClient = check new(url, config);
-    string expectedPayload = WS_ACK;
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendConnectionInitMessage(wsClient);
 
-    check wsClient->writeMessage({"type": WS_INIT, id: "1"});
-
-    json response = check wsClient->readMessage();
-    WSPayload wsPayload = check response.cloneWithType(WSPayload);
-    string actualType = wsPayload.'type;
-    test:assertEquals(actualType, expectedPayload);
-
-    check wsClient->writeMessage({"type": WS_INIT, id: "1"});
-    json|websocket:Error message = wsClient->readMessage();
-    test:assertTrue(message is websocket:Error);
-    string errorMsg = "Too many initialisation requests: Status code: 4429";
-    if message is websocket:Error {
-        test:assertEquals((<error>message).message(), errorMsg);
-    }
+    string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
-isolated function testUnauthorizedAccessUsingSubProtocol() returns error? {
+isolated function testUnauthorizedAccess() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: ["graphql-ws"]};
-    websocket:Client wsClient = check new(url, config);
-    check wsClient->writeMessage({"type": WS_START, id: "1", payload: {query: document}});
-    json|websocket:Error response = wsClient->readMessage();
-    string errorMsg = "Unauthorized: Status code: 4401";
-    test:assertTrue(response is websocket:Error);
-    if response is websocket:Error {
-        test:assertEquals((<error>response).message(), errorMsg);
-    }
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check sendSubscriptionMessage(wsClient, document);
+
+    string expectedErrorMsg = "Unauthorized: Status code: 4401";
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
-function testAlreadyExistingSubscriberUsingSubProtocol() returns error? {
+function testAlreadyExistingSubscriber() returns error? {
     string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
     string url = "ws://localhost:9099/subscriptions";
-    string subProtocol = "graphql-ws";
-    websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-    websocket:Client wsClient = check new(url, config);
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
     string clientId = wsClient.getConnectionId();
-
-    check initiateConnectionInitMessage(wsClient);
-    check validateConnectionInitMessage(wsClient);
-
-    check writeWebSocketTextMessage(document, wsClient, id = clientId, subProtocol = subProtocol);
-    check writeWebSocketTextMessage(document, wsClient, id = clientId, subProtocol = subProtocol);
-    json|websocket:Error message = wsClient->readMessage();
-    while message !is websocket:Error {
-        message = wsClient->readMessage();
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document, clientId);
+    check sendSubscriptionMessage(wsClient, document, clientId);
+    string expectedErrorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
+    int i = 0;
+    json|error response;
+    while true {
+        i += 1;
+        response = readMessageExcludingPingMessages(wsClient);
+        if response is error {
+            break;
+        }
+        if i > 3 {
+            test:assertFail(string `Expected: ${expectedErrorMsg}, Found: ${response.toString()}`);
+        }
+        json|error id = response.id;
+        if id is error {
+            test:assertFail(string `Expected json with id found: ${response.toString()}`);
+        }
     }
-    string errorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
-    test:assertTrue(message is websocket:Error);
-    if message is websocket:Error {
-        test:assertEquals((<error>message).message(), errorMsg);
-    }
+    test:assertEquals((<error>response).message(), expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
 isolated function testOnPing() returns error? {
     string url = "ws://localhost:9099/subscriptions";
-    string[] subProtocols = ["graphql-ws", "graphql-transport-ws"];
-    foreach string subProtocol in subProtocols {
-        websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-        websocket:Client wsClient = check new(url, config);
-        check wsClient->writeMessage({"type": WS_PING});
-        string expectedPayload = WS_PONG;
-        json response = check wsClient->readMessage();
-        WSPayload wsPayload = check response.cloneWithType(WSPayload);
-        string actualType = wsPayload.'type;
-        test:assertEquals(actualType, expectedPayload);
-    }
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check wsClient->writeMessage({'type: WS_PING});
+    json response = check wsClient->readMessage();
+    test:assertEquals(response.'type, WS_PONG);
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
 isolated function testInvalidSubProtocolInSubscriptions() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     string subProtocol = "graphql-invalid-ws";
     websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-    websocket:Client wsClient = check new(url, config);
-    check initiateConnectionInitMessage(wsClient);
-    json|websocket:Error message = wsClient->readMessage();
-    string errorMsg = "Subprotocol not acceptable: Status code: 4406";
-    test:assertTrue(message is websocket:Error);
-    if message is websocket:Error {
-        test:assertEquals((<error>message).message(), errorMsg);
-    }
+    websocket:Client|error wsClient = new (url, config);
+    test:assertTrue(wsClient is websocket:InvalidHandshakeError, "Invalid handshake error expected");
+    string expectedErrorMsg = "InvalidHandshakeError: Invalid subprotocol. Actual: null." +
+    " Expected one of: graphql-invalid-ws";
+    test:assertEquals((<error>wsClient).message(), expectedErrorMsg);
 }
 
- @test:Config {
-     groups: ["subscriptions", "runtime_errors"]
- }
- isolated function testErrorsInStreams() returns error? {
-     string url = "ws://localhost:9099/subscriptions";
-     websocket:Client wsClient = check new(url);
-     string document = "subscription { evenNumber }";
-     json payload = {query: document};
-     check wsClient->writeMessage(payload);
-     json expectedPayload = {data: {evenNumber: 2}};
-     check validateWebSocketResponse(wsClient, expectedPayload);
-     expectedPayload = check getJsonContentFromFile("errors_in_streams.json");
-     check validateWebSocketResponse(wsClient, expectedPayload);
-     expectedPayload = {data: {evenNumber: 6}};
-     check validateWebSocketResponse(wsClient, expectedPayload);
- }
+@test:Config {
+    groups: ["subscriptions", "runtime_errors"]
+}
+isolated function testErrorsInStreams() returns error? {
+    string document = "subscription { evenNumber }";
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {evenNumber: 2}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = check getJsonContentFromFile("errors_in_streams.json");
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {evenNumber: 6}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+}
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
 isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
 
-    check initiateConnectionInitMessage(wsClient);
-    check validateConnectionInitMessage(wsClient);
-
-    check writeWebSocketTextMessage(document, wsClient, {}, id = "1", subProtocol = GRAPHQL_WS);
+    check sendSubscriptionMessage(wsClient, document, "1");
     foreach int i in 1 ..< 6 {
-        json payload = {data: {messages: i}};
-        json expectedPayload = {"type": WS_DATA, id: "1", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
+        json expectedMsgPayload = {data: {messages: i}};
+        check validateNextMessage(wsClient, expectedMsgPayload, id = "1");
     }
-    json unsubscribe = {"type": WS_COMPLETE, id: "1", payload: null};
-    check validateWebSocketResponse(wsClient, unsubscribe);
-    check wsClient->writeMessage(unsubscribe);
+    check validateCompleteMessage(wsClient, id = "1");
 
-    check writeWebSocketTextMessage(document, wsClient, {}, id = "2", subProtocol = GRAPHQL_WS);
+    check sendSubscriptionMessage(wsClient, document, "2");
     foreach int i in 1 ..< 6 {
-        json payload = {data: {messages: i}};
-        json expectedPayload = {"type": WS_DATA, id: "2", payload: payload};
-        check validateWebSocketResponse(wsClient, expectedPayload);
+        json expectedMsgPayload = {data: {messages: i}};
+        check validateNextMessage(wsClient, expectedMsgPayload, id = "2");
     }
+    check validateCompleteMessage(wsClient, id = "2");
 }
 
 @test:Config {
-    groups: ["sub_protocols", "subscriptions"]
+    groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithInvalidPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
-
-    check initiateConnectionInitMessage(wsClient);
-    check validateConnectionInitMessage(wsClient);
-
-    json invalidPayload = {"type": WS_START};
+    check initiateGraphqlWsConnection(wsClient);
+    json invalidPayload = {'type: "start"};
     check wsClient->writeMessage(invalidPayload);
-    json|error response = wsClient->readMessage();
-    test:assertTrue(response is error);
-    test:assertEquals((<error>response).message(), "Request does not contain the id field: Status code: 1002");
+
+    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
+        " 'graphql-transport-ws' subprotocol: Status code: 1003";
+    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
     groups: ["subscriptions", "recrods", "service"]
 }
 isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
-    string url = "ws://localhost:9090/reviews";
-    websocket:Client wsClient = check new (url);
     string document = "subscription { live { product { id } score } }";
-    json payload = {query: document};
-    check wsClient->writeMessage(payload);
-    json expectedPayload = {
-        data: {
-            live: {
-                product: {
-                    id: "1"
-                },
-                score: 20
-            }
-        }
-    };
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    string url = "ws://localhost:9090/reviews";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedPayload = {data: {live: {product: {id: "1"}, score: 20}}};
+    check validateNextMessage(wsClient, expectedPayload);
 }
 
 @test:Config {
     groups: ["subscriptions", "recrods", "service", "maps"]
 }
 isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
-    string url = "ws://localhost:9090/reviews";
-    websocket:Client wsClient = check new (url);
     string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
-    json payload = {query: document};
-    check wsClient->writeMessage(payload);
-    json expectedPayload = {
-        data: {
-            accountUpdates: {
-                details: {
-                    name: "James"
-                }
-            }
+    string url = "ws://localhost:9090/reviews";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {accountUpdates: {details: {name: "James"}}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {accountUpdates: {details: {name: "James Deen"}}}};
+    check validateNextMessage(wsClient, expectedMsgPayload);
+}
+
+@test:Config {
+    groups: ["subscriptions", "multiplexing"]
+}
+isolated function testSubscriptionMultiplexing() returns error? {
+    string document = string `subscription { refresh }`;
+    string url = "ws://localhost:9099/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    check sendSubscriptionMessage(wsClient, document, "1");
+    check sendSubscriptionMessage(wsClient, document, "2");
+
+    boolean subscriptionOneDisabled = false;
+    map<int> subscriptions = {"1": 0, "2": 0};
+    while true {
+        json actualPayload = check readMessageExcludingPingMessages(wsClient);
+        string subscriptionId = check actualPayload.id;
+        subscriptions[subscriptionId] = subscriptions.get(subscriptionId) + 1;
+        if subscriptionOneDisabled && subscriptionId == "1" {
+            test:assertFail("Subscription one already unsubscirbed. No further data should be sent by ther server.");
         }
-    };
-    check validateWebSocketResponse(wsClient, expectedPayload);
-    expectedPayload = {
-        data: {
-            accountUpdates: {
-                details: {
-                    name: "James Deen"
-                }
-            }
+        if subscriptionId == "1" && subscriptions.get(subscriptionId) == 3 {
+            subscriptionOneDisabled = true;
+            check wsClient->writeMessage({'type: WS_COMPLETE, id: subscriptionId});
         }
-    };
-    check validateWebSocketResponse(wsClient, expectedPayload);
+        if subscriptionId == "2" && subscriptions.get(subscriptionId) == 10 {
+            check wsClient->writeMessage({'type: WS_COMPLETE, id: subscriptionId});
+            break;
+        }
+        json payload = {data: {refresh: "data"}};
+        json expectedPayload = {'type: WS_NEXT, id: subscriptionId, payload: payload};
+        test:assertEquals(actualPayload, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["subscriptions", "recrods", "service"]
+}
+isolated function testConnectionClousureWhenPongNotRecived() returns error? {
+    string url = "ws://localhost:9090/reviews";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check initiateGraphqlWsConnection(wsClient);
+    json|error response;
+    while true {
+        response = wsClient->readMessage();
+        if response is json {
+            test:assertTrue(response.'type == WS_PING);
+            continue;
+        }
+        break;
+    }
+    test:assertTrue(response is error, "Expected connection clousure error");
+    test:assertEquals((<error>response).message(), "Request timeout: Status code: 4408");
 }

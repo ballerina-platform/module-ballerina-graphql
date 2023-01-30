@@ -17,7 +17,7 @@
 import ballerina/jballerina.java;
 import ballerina/http;
 
-# The [Ballerina](https://ballerina.io/) generic client for GraphQL(https://graphql.org/) APIs.
+# The Ballerina GraphQL client that can be used to communicate with GraphQL APIs.
 public isolated client class Client {
     final http:Client httpClient;
 

@@ -518,6 +518,27 @@ service /service_types on serviceTypeListener {
     isolated resource function get profile() returns Profile {
         return new;
     }
+
+    isolated resource function get person(graphql:Field 'field) returns Person {
+        string[] subfieldNames = 'field.getSubfieldNames();
+        if subfieldNames == ["name"] {
+            return {
+                name: "Sherlock Holmes",
+                address: {number: "221/B", street: "Baker Street", city: "London"}
+            };
+        } else if subfieldNames == ["name", "age"] {
+            return {
+                name: "Walter White",
+                age: 50,
+                address: {number: "309", street: "Negro Arroyo Lane", city: "Albuquerque"}
+            };
+        }
+        return {
+            name: "Jesse Pinkman",
+            age: 25,
+            address: {number: "208", street: "Margo Street", city: "Albuquerque"}
+        };
+    }
 }
 
 service /service_objects on serviceTypeListener {
@@ -1324,6 +1345,11 @@ service /subscriptions on subscriptionListener {
     isolated resource function subscribe evenNumber() returns stream<int, error?> {
         EvenNumberGenerator evenNumberGenerator = new;
         return new (evenNumberGenerator);
+    }
+
+    isolated resource function subscribe refresh() returns stream<string> {
+        RefreshData dataRefersher = new;
+        return new (dataRefersher);
     }
 }
 

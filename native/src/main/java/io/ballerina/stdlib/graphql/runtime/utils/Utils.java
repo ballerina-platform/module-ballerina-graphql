@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
@@ -36,22 +37,14 @@ public class Utils {
     }
 
     // Inter-op function names
-    static final String EXECUTE_SERVICE_FUNCTION = "executeService";
-
     static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
-
     static final String EXECUTE_INTERCEPTOR_FUNCTION = "executeInterceptor";
-
     // Internal type names
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
-
+    public static final String FIELD_OBJECT = "Field";
     public static final String UPLOAD = "Upload";
-
-    public static final StrandMetadata RESOURCE_STRAND_METADATA = new StrandMetadata(getModule().getOrg(),
-                                                                                     getModule().getName(),
-                                                                                     getModule().getMajorVersion(),
-                                                                                     EXECUTE_SERVICE_FUNCTION);
+    public static final BString INTERNAL_NODE = StringUtils.fromString("internalNode");
 
     public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
                                                                                       getModule().getName(),
@@ -77,6 +70,10 @@ public class Utils {
 
     public static boolean isContext(Type type) {
         return isGraphqlModule(type) && type.getName().equals(CONTEXT_OBJECT);
+    }
+
+    public static boolean isField(Type type) {
+        return isGraphqlModule(type) && type.getName().equals(FIELD_OBJECT);
     }
 
     public static boolean isFileUpload(Type type) {

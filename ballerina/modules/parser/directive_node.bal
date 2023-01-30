@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class DirectiveNode {
+public readonly class DirectiveNode {
     *NamedNode;
 
     private string name;
@@ -22,10 +22,11 @@ public class DirectiveNode {
     private ArgumentNode[] argumentNodes;
     private DirectiveLocation directiveLocation;
 
-    public isolated function init(string name, Location location, DirectiveLocation directiveLocation) {
+    public isolated function init(string name, Location location, DirectiveLocation directiveLocation,
+                                  ArgumentNode[] argumentNodes = []) {
         self.name = name;
-        self.location = location;
-        self.argumentNodes = [];
+        self.location = location.cloneReadOnly();
+        self.argumentNodes = argumentNodes.cloneReadOnly();
         self.directiveLocation = directiveLocation;
     }
 
@@ -45,11 +46,11 @@ public class DirectiveNode {
         return self.argumentNodes;
     }
 
-    public isolated function addArgument(ArgumentNode arg) {
-        self.argumentNodes.push(arg);
-    }
-
     public isolated function getDirectiveLocation() returns DirectiveLocation {
         return self.directiveLocation;
+    }
+
+    public isolated function modifyWith(ArgumentNode[] argumentNodes) returns DirectiveNode {
+        return new (self.name, self.location, self.directiveLocation, argumentNodes);
     }
 }

@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public class FieldNode {
+public readonly class FieldNode {
     *SelectionNode;
 
     private final string name;
@@ -24,13 +24,14 @@ public class FieldNode {
     private SelectionNode[] selections;
     private DirectiveNode[] directives;
 
-    public isolated function init(string name, Location location, string alias) {
+    public isolated function init(string name, Location location, string alias, ArgumentNode[] arguments = [],
+                                  SelectionNode[] selections = [], DirectiveNode[] directives = []) {
         self.name = name;
         self.alias = alias;
-        self.location = location;
-        self.arguments = [];
-        self.selections = [];
-        self.directives = [];
+        self.location = location.cloneReadOnly();
+        self.arguments = arguments.cloneReadOnly();
+        self.selections = selections.cloneReadOnly();
+        self.directives = directives.cloneReadOnly();
     }
 
     public isolated function accept(Visitor visitor, anydata data = ()) {
@@ -49,27 +50,24 @@ public class FieldNode {
         return self.location;
     }
 
-    public isolated function addArgument(ArgumentNode argument) {
-        self.arguments.push(argument);
-    }
-
     public isolated function getArguments() returns ArgumentNode[] {
         return self.arguments;
-    }
-
-    public isolated function addSelection(SelectionNode selection) {
-        self.selections.push(selection);
     }
 
     public isolated function getSelections() returns SelectionNode[] {
         return self.selections;
     }
 
-    public isolated function addDirective(DirectiveNode directive) {
-        self.directives.push(directive);
-    }
-
     public isolated function getDirectives() returns DirectiveNode[] {
         return self.directives;
+    }
+
+    public isolated function modifyWith(ArgumentNode[] arguments, SelectionNode[] selections,
+                                        DirectiveNode[] directives) returns FieldNode {
+        return new (self.name, self.location, self.alias, arguments, selections, directives);
+    }
+
+    public isolated function modifyWithSelections(SelectionNode[] selections) returns FieldNode {
+        return new (self.name, self.location, self.alias, self.arguments, selections, self.directives);
     }
 }

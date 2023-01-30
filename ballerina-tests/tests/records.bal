@@ -49,7 +49,7 @@ public type Address readonly & record {
 
 public type Person readonly & record {
     string name;
-    int age;
+    int age?;
     Address address;
 };
 
@@ -229,12 +229,6 @@ public enum InstrumentType {
     # Instruments with leather, wooden or metal surfaces
     PERCUSSION
 }
-
-type WSPayload record {|
-    string 'type;
-    string id?;
-    json payload?;
-|};
 
 public type Languages record {|
     map<string> name;

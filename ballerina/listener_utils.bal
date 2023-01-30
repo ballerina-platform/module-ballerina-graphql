@@ -354,17 +354,17 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema,
                                       GraphqlServiceConfig? serviceConfig) returns UpgradeService {
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
-    return isolated service object {
-        isolated resource function get .(http:Request request) returns websocket:Service|websocket:UpgradeError {
-            map<string> customHeaders = {};
-            string|http:HeaderNotFoundError subProtocol = request.getHeader(WS_SUB_PROTOCOL);
-            if subProtocol is string {
-                customHeaders = {"Sec-WebSocket-Protocol": subProtocol};
-            }
+    UpgradeService websocketUpgradeService = @websocket:ServiceConfig {
+        subProtocols: [GRAPHQL_TRANSPORT_WS]
+    } isolated service object {
+        isolated resource function get .(http:Request request) 
+        returns websocket:Service|websocket:UpgradeError|http:HeaderNotFoundError {
+            _ = check request.getHeader(WS_SUB_PROTOCOL);
             Context context = check initContext(gqlEngine, contextInitFunction, request);
-            return new WsService(gqlEngine, schema, customHeaders.cloneReadOnly(), context);
+            return new WsService(gqlEngine, schema, context);
         }
     };
+    return websocketUpgradeService;
 }
 
 isolated function initContext(Engine engine, ContextInit contextInit, http:Request request)

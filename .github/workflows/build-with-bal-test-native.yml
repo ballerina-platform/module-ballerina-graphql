@@ -1,4 +1,4 @@
-name: Build with bal test native
+name: GraalVM Check
 
 on:
     workflow_dispatch:
@@ -26,6 +26,6 @@ jobs:
         with:
             lang_tag: ${{ inputs.lang_tag }}
             lang_version: ${{ inputs.lang_version }}
-            native_image_options: ${{ inputs.native_image_options }}
+            native_image_options: '-J-Xmx7G ${{ inputs.native_image_options }}'
             additional_ubuntu_build_flags: '-x :graphql-compiler-plugin-tests:test'
             additional_windows_build_flags: '-x :graphql-compiler-plugin-tests:test'

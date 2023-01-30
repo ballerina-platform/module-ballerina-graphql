@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import test_package.types as types;
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get greet(json name) returns string {
@@ -59,6 +60,18 @@ service graphql:Service on new graphql:Listener(4000) {
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get greet(anydata name) returns string {
+        return "Hello";
+    }
+}
+
+service on new graphql:Listener(4000) {
+    resource function get greet(types:Headers headers) returns string {
+        return "Hello";
+    }
+}
+
+service on new graphql:Listener(4000) {
+    resource function get greet(types:Service 'service) returns string {
         return "Hello";
     }
 }

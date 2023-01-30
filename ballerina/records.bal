@@ -88,7 +88,7 @@ public type ProxyConfig record {|
     *http:ProxyConfig;
 |};
 
-# Provides a set of configurations for controlling the behaviour of the GraphQL client when communicating with 
+# Provides a set of configurations for controlling the behaviour of the GraphQL client when communicating with
 # the GraphQL server that operates over HTTP.
 #
 # + http1Settings - Configurations related to HTTP/1.1 protocol
@@ -150,7 +150,21 @@ type __Schema record {|
     __Directive[] directives = [];
 |};
 
-type __Type record {|
+# Represents a GraphQL schema type.
+# + kind - The `__TypeKind` of the type
+# + name - The name of the type. This can be nil if the type is `NON_NULL` or `LIST`
+# + description - The description of the type
+# + fields - The fields of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise,
+#       this will be nil.
+# + interfaces - The interfaces of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise,
+#       this will be nil.
+# + possibleTypes - The possible types of the type. This only applies if the `kind` is `UNION` or `INTERFACE`.
+#       Otherwise, this will be nil.
+# + enumValues - The enum values of the type. This only applies if the `kind` is `ENUM`. Otherwise, this will be nil.
+# + inputFields - The input fields of the type. This only applies if the `kind` is `INPUT_OBJECT`. Otherwise,
+#       this will be nil.
+# + ofType - The type of the type. This only applies if the `kind` is `NON_NULL` or `LIST`. Otherwise, this will be nil.
+public type __Type record {|
     __TypeKind kind;
     string? name = ();
     string? description = ();
@@ -162,14 +176,26 @@ type __Type record {|
     __Type? ofType = ();
 |};
 
-type __EnumValue record {|
+# Represents a GraphQL enum value.
+# + name - The name of the enum value
+# + description - The description of the enum value
+# + isDeprecated - Whether the enum value is deprecated
+# + deprecationReason - The reason for deprecation of the enum value
+public type __EnumValue record {|
     string name;
     string? description = ();
     boolean isDeprecated = false;
     string? deprecationReason = ();
 |};
 
-type __Field record {|
+# Represents a GraphQL field.
+# + name - The name of the field
+# + description - The description of the field
+# + args - The arguments of the field
+# + type - The type of the field
+# + isDeprecated - Whether the field is deprecated
+# + deprecationReason - The reason for deprecation of the field
+public type __Field record {|
     string name;
     string? description = ();
     __InputValue[] args;
@@ -178,14 +204,28 @@ type __Field record {|
     string? deprecationReason = ();
 |};
 
-type __InputValue record {|
+# Represents a GraphQL input value.
+# + name - The name of the input value
+# + description - The description of the input value
+# + type - The type of the input value
+# + defaultValue - The default value of the input value, if there is one
+public type __InputValue record {|
     string name;
     string? description = ();
     __Type 'type;
     string? defaultValue = ();
 |};
 
-enum __TypeKind {
+# Represents a GraphQL type kind. This is used to represent the kind of a GraphQL type.
+# + SCALAR - Represents a GraphQL scalar type
+# + OBJECT - Represents a GraphQL (output) object type
+# + ENUM - Represents a GraphQL enum type
+# + NON_NULL - Represents a GraphQL non-null type. If a field is of this type, it is guaranteed to be non-null
+# + LIST - Represents a GraphQL list type
+# + UNION - Represents a GraphQL union type
+# + INTERFACE - Represents a GraphQL interface type
+# + INPUT_OBJECT - Represents a GraphQL input object type
+public enum __TypeKind {
     SCALAR,
     OBJECT,
     ENUM,
@@ -225,8 +265,7 @@ enum __DirectiveLocation {
     INPUT_FIELD_DEFINITION
 }
 
-type WSPayload record {|
-    string 'type;
-    string id?;
-    json payload?;
+type ParseResult record {|
+    parser:DocumentNode document;
+    ErrorDetail[] validationErrors;
 |};
