@@ -355,8 +355,19 @@ function testAlreadyExistingSubscriber() returns error? {
     check sendSubscriptionMessage(wsClient, document, clientId);
     check sendSubscriptionMessage(wsClient, document, clientId);
 
+    json|error response;
+    while true {
+        response = readMessageExcludingPingMessages(wsClient);
+        if response is error {
+            break;
+        }
+        json|error id = response.id;
+        if id is error {
+            test:assertFail(string `Expected json with id found: ${response.toString()}`);
+        }
+    }
     string expectedErrorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    test:assertEquals((<error>response).message(), expectedErrorMsg);
 }
 
 @test:Config {
