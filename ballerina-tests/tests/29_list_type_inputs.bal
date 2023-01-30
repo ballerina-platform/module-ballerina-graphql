@@ -82,7 +82,7 @@ isolated function testNullableListTypeInputWithoutValue() returns error? {
 isolated function testNullableListTypeInputWithInvalidValue() returns error? {
     string document = string`query { concat(words: ["Hello!", 5, true, {}, "GraphQL"]) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("nullable_list_type_input_with_invalid_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -108,7 +108,7 @@ isolated function testListTypeInputsWithNestedList() returns error? {
 isolated function testNestedListInputWithInvalidValues1() returns error? {
     string document = string`query { getTotal(prices: [[2, 3, d], [4, 5, 6, "is"], [3, 5, 6, 4 , true, 7]]) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values1.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -119,7 +119,7 @@ isolated function testNestedListInputWithInvalidValues1() returns error? {
 isolated function testNestedListInputWithInvalidValues2() returns error? {
     string document = string`query { getTotal(prices: [ 2, 3, 4, 5, 6]) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -151,7 +151,7 @@ isolated function testListTypeInputWithInvalidVaraibles() returns error? {
     json variables = {
         words: ["Hello!", true, "is", 4, "GraphQL"]
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("list_type_input_with_invalid_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -181,7 +181,7 @@ isolated function testListTypeWithInputObjects() returns error? {
 isolated function testListTypeWithInvalidInputObjectsValue() returns error? {
     string document = check getGraphQLDocumentFromFile("list_type_with_invalid_input_objects_value.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -257,7 +257,7 @@ isolated function testVariablesInsideListValue() returns error? {
 isolated function testInvalidVariablesInsideListValue() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_variables_inside_list_value.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_variables_inside_list_value.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -322,7 +322,7 @@ isolated function testListTypeVariablesInsideListValue() returns error? {
 isolated function testListTypeWithInvalidNestedListInInputObject() returns error? {
     string document = check getGraphQLDocumentFromFile("list_type_with_invalid_nested_list_in_input_object.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_nested_list_in_input_object.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -380,7 +380,7 @@ isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns er
             }
         ]
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = {
         errors: [
             {
@@ -462,7 +462,7 @@ isolated function testListTypeVariableWithInvalidNestedListInInputObject() retur
             }
         ]
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("list_type_variable_with_invalid_nested_list_in_input_object.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -504,7 +504,7 @@ isolated function testEmptyListTypeWithinInputObjects() returns error? {
 isolated function testInvalidListTypeWithinInputObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_list_type_within_input_objects.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_list_type_within_input_objects.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -515,7 +515,7 @@ isolated function testInvalidListTypeWithinInputObjects() returns error? {
 isolated function testInvalidListTypeForInputObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_list_type_for_input_objects.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -538,7 +538,7 @@ isolated function testInvalidListTypeForInputObjects() returns error? {
 isolated function testInvalidValueWithNestedListInInputObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_value_with_nested_list_in_input_objects.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -625,7 +625,7 @@ isolated function testInvalidListTypeWithinInputObjectsWithVariables() returns e
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("invalid_list_type_within_input_objects_with_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -651,7 +651,7 @@ isolated function testListTypeWithEnumValues() returns error? {
 isolated function testListTypeWithInvalidEnumValues() returns error? {
     string document = string`query { isIncludeHoliday(days: [MONDAY, FRIDAY, TUESDAY, SATURDAY, WEdnesday, 4]) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_enum_values.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -831,7 +831,7 @@ isolated function testListTypeWithDefaultValue() returns error? {
 isolated function testListTypeWithInvalidVariableDefaultValues1() returns error? {
     string document = string`query ($words: [String] = ["Hello!", "This", "is", Ballerina, true]){ concat(words: $words) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_1.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -842,7 +842,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues1() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValues2() returns error? {
     string document = string`query ($words: [Int] = ["Hello!", "This", "is", "Ballerina", "GraphQL"]){ concat(words: $words) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -853,7 +853,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues2() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValues3() returns error? {
     string document = string`query ($prices: [[Float!]!] = [[1, true, 3], false]){ getTotal(prices: $prices) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_3.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -864,7 +864,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues3() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValues4() returns error? {
     string document = string`query ($prices: [[Float!]!] = [ 2, 3, 4, 5]){ getTotal(prices: $prices) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_4.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -875,7 +875,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues4() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValues5() returns error? {
     string document = string`query ($prices: [[Float!]!] = [[], [4, 5], [null], null]){ getTotal(prices: $prices) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_5.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -886,7 +886,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues5() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValues6() returns error? {
     string document = string`query ($prices: [[Float!]!] = null){ getTotal(prices: $prices) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -909,7 +909,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues6() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValues7() returns error? {
     string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_values_7.graphql");
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_7.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -920,7 +920,7 @@ isolated function testListTypeWithInvalidVariableDefaultValues7() returns error?
 isolated function testListTypeWithInvalidVariableDefaultValue8() returns error? {
     string document = string`query ($days:[Weekday] = [MONDAY, FRIDAY, TUESDAY, SATURDAY]){ isIncludeHoliday(days: $days) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -943,7 +943,7 @@ isolated function testListTypeWithInvalidVariableDefaultValue8() returns error? 
 isolated function testListTypeWithInvalidVariableDefaultValue9() returns error? {
     string document = string`query ($days:[Weekday!] = [MONDAY, FRIDAY, TUSDAY, SATURDAY]){ isIncludeHoliday(days: $days) }`;
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

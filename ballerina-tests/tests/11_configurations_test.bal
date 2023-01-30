@@ -42,7 +42,7 @@ isolated function testTimeoutResponse() returns error? {
 isolated function testQueryExceedingMaxDepth() returns error? {
     string document = "{ book { author { books { author { books } } } } }";
     string url = "http://localhost:9091/depthLimitService";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -74,7 +74,7 @@ isolated function testQueryExceedingMaxDepth() returns error? {
 isolated function testFragmentQueryExceedingMaxDepth() returns error? {
     string document = check getGraphQLDocumentFromFile("fragment_query_exceeding_max_depth.graphql");
     string url = "http://localhost:9091/depthLimitService";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragment_query_exceeding_max_depth.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -85,7 +85,7 @@ isolated function testFragmentQueryExceedingMaxDepth() returns error? {
 isolated function testQueryWithNamedOperationExceedingMaxDepth() returns error? {
     string document = check getGraphQLDocumentFromFile("query_with_named_operation_exceeding_max_depth.graphql");
     string url = "http://localhost:9091/depthLimitService";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -147,7 +147,7 @@ isolated function testCorsConfigurationsWithSpecificOrigins() returns error? {
 isolated function testIntrospectionDisableConfigWithSchemaIntrospection() returns error? {
     string document = string `{ __schema { queryType { kind fields { name } } } }`;
     string url = "http://localhost:9091/introspection";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -170,7 +170,7 @@ isolated function testIntrospectionDisableConfigWithSchemaIntrospection() return
 isolated function testIntrospectionDisableConfigWithTypeIntrospection() returns error? {
     string document = string `{ person{ name }, __type(name: "Person") { name } }`;
     string url = "http://localhost:9091/introspection";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -193,7 +193,7 @@ isolated function testIntrospectionDisableConfigWithTypeIntrospection() returns 
 isolated function testIntrospectionDisableConfig() returns error? {
     string document = string `{ __schema { queryType { kind fields { name } } }, __type(name: "Person") { name } }`;
     string url = "http://localhost:9091/introspection";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -246,7 +246,7 @@ isolated function testIntrospectionDisableConfigWithTypeNameIntrospection() retu
 isolated function testIntrospectionDisableConfigWithMutation() returns error? {
     string document = string `{ __schema { mutationType { kind fields { name } } } }`;
     string url = "http://localhost:9091/introspection";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -269,7 +269,7 @@ isolated function testIntrospectionDisableConfigWithMutation() returns error? {
 isolated function testIntrospectionDisableConfigWithFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("introspection_disable_config_with_fragments.graphql");
     string url = "http://localhost:9091/introspection";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

@@ -44,7 +44,7 @@ isolated function testBlockStringsWithVariableDefaultValue() returns error? {
 isolated function testInvalidBlockStrings() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_block_strings.graphql");
     string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_block_strings.json");
     test:assertEquals(actualPayload, expectedPayload);
 }

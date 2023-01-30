@@ -64,7 +64,7 @@ isolated function testInlineNestedFragmentsOnRecordObjects() returns error? {
 isolated function testRequestingObjectWithoutFields() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = "{ profile(id: 4) }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = string`Field "profile" of type "Person!" must have a selection of subfields. Did you mean "profile { ... }"?`;
     json expectedPayload = {
         errors: [
@@ -88,7 +88,7 @@ isolated function testRequestingObjectWithoutFields() returns error? {
 isolated function testRequestInvalidField() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = "{ profile(id: 4) { status } }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = "Cannot query field \"status\" on type \"Person\".";
     json expectedPayload = {
         errors: [
@@ -123,7 +123,7 @@ isolated function testRecordTypeArrays() returns error? {
 isolated function testResourcesReturningArraysMissingFields() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = "{ people }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = string`Field "people" of type "[Person!]!" must have a selection of subfields. Did you mean "people { ... }"?`;
     json expectedResult = {
         errors: [

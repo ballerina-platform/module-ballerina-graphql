@@ -39,7 +39,7 @@ isolated function testReturningRecursiveServiceTypes() returns error? {
 isolated function testRequestInvalidFieldFromServiceObjects() returns error? {
     string document = check getGraphQLDocumentFromFile("request_invalid_field_from_service_objects.graphql");
     string url = "http://localhost:9092/snowtooth";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

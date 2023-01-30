@@ -33,7 +33,7 @@ isolated function testComplexIntrospectionQuery() returns error? {
 isolated function testInvalidIntrospectionQuery() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
     string document = "{ __schema { greet } }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = "Cannot query field \"greet\" on type \"__Schema\".";
     json expectedResult = {
         errors: [
@@ -57,7 +57,7 @@ isolated function testInvalidIntrospectionQuery() returns error? {
 isolated function testIntrospectionQueryWithMissingSelection() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
     string document = "{ __schema }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("introspection_query_with_missing_selection.json");
     assertJsonValuesWithOrder(actualResult, expectedResult);
 }
@@ -68,7 +68,7 @@ isolated function testIntrospectionQueryWithMissingSelection() returns error? {
 isolated function testInvalidSchemaIntrospectionField() returns error? {
     string graphqlUrl ="http://localhost:9091/records";
     string document = "{ profile(id: 1) { name __schema { queryType { name } } } }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         errors: [
             {
@@ -124,7 +124,7 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
 isolated function testEnumValueIntrospection() returns error? {
     string graphqlUrl ="http://localhost:9092/service_objects";
     string document = "{ __schema { types { enumValues } } }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("enum_value_introspection.json");
     assertJsonValuesWithOrder(actualResult, expectedResult);
 }
@@ -167,7 +167,7 @@ isolated function testTypeNameIntrospectionOnRecordTypes() returns error? {
 isolated function testQueryingSubfieldsOnTypeName() returns error? {
     string graphqlUrl ="http://localhost:9091/records";
     string document = "{ detective { __typename { name } } }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         errors: [
             {
@@ -245,7 +245,7 @@ isolated function testIntrospectionOnServiceWithInputObjects() returns error? {
 isolated function testTypeNameIntrospectionOnScalar() returns error? {
     string graphqlUrl ="http://localhost:9091/validation";
     string document = "{ name { __typename } }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         errors: [
             {
@@ -268,7 +268,7 @@ isolated function testTypeNameIntrospectionOnScalar() returns error? {
 isolated function testTypeIntrospectionWithoutTypeNameArgument() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("type_introspection_without_type_name_argument.graphql");
-    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_introspection_without_type_name_argument.json");
     assertJsonValuesWithOrder(result, expectedPayload);
 }
@@ -279,7 +279,7 @@ isolated function testTypeIntrospectionWithoutTypeNameArgument() returns error? 
 isolated function testTypeIntrospectionInInvalidPlace() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("type_introspection_in_invalid_place.graphql");
-    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("type_introspection_in_invalid_place.json");
     assertJsonValuesWithOrder(result, expectedPayload);
 }
@@ -312,7 +312,7 @@ isolated function testTypeIntrospectionOnNonExistingType() returns error? {
 isolated function testTypeIntrospectionWithoutFields() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
     string document = string`{ __type(name: "Person") }`;
-    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {

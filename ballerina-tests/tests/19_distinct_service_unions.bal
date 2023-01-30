@@ -40,7 +40,7 @@ isolated function testUnionOfDistinctServiceObjects() returns error? {
 isolated function testInvalidQueryWithDistinctServiceUnions() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_query_with_distinct_service_unions.graphql");
     string url = "http://localhost:9092/unions";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

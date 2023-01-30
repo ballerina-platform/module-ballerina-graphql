@@ -25,7 +25,7 @@ import ballerina/websocket;
 isolated function testMultipleOperationsWithoutOperationNameInRequest() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
     string url = "http://localhost:9091/validation";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -43,7 +43,7 @@ isolated function testMultipleOperationsWithoutOperationNameInRequest() returns 
 isolated function testMultipleOperationsWithInvalidOperationInRequest() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
     string url = "http://localhost:9091/validation";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, operationName = "invalid");
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "invalid");
     json expectedPayload = {
         errors: [
             {

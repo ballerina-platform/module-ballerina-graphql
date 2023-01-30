@@ -48,7 +48,7 @@ isolated function testResourceReturningTables() returns error? {
 isolated function testQueryingTableWithoutSelections() returns error? {
     string document = "{ employees }";
     string url = "http://localhost:9091/tables";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string message = string`Field "employees" of type "[Employee!]" must have a selection of subfields. Did you mean "employees { ... }"?`;
     json expectedPayload = {
         errors: [

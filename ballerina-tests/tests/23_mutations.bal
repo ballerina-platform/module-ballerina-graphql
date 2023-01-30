@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testMutationRequestOnNonMutatableSchema() returns error? {
     string document = string`mutation { setName(name: "Heisenberg") { name } }`;
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -73,7 +73,7 @@ isolated function testMultipleMutations() returns error? {
 isolated function testInvalidMutation() returns error? {
     string document = string`mutation { setAge }`;
     string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

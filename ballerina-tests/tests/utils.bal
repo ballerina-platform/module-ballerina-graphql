@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/file;
+import ballerina/graphql;
 import ballerina/http;
 import ballerina/io;
 import ballerina/test;
@@ -23,10 +24,21 @@ import ballerina/websocket;
 const CONTENT_TYPE_TEXT_HTML = "text/html";
 const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 
-isolated function getJsonPayloadFromService(string url, string document, json? variables = {}, string? operationName = (),
+isolated function getJsonPayloadUsingHttpClient(string url, string document, json? variables = {}, string? operationName = (),
                                             http:HttpVersion httpVersion = http:HTTP_1_1) returns json|error {
     http:Client httpClient = check new(url, httpVersion = httpVersion);
     return httpClient->post("/", { query: document, operationName: operationName, variables: variables});
+}
+
+isolated function getJsonPayloadFromService(string url, string document, json variables = (), string? operationName = (),
+                                            map<string|string[]>? headers = ()) returns json|error {
+    graphql:Client graphqlClient = check new (url);
+    json|graphql:ClientError response = graphqlClient->execute(document, <map<anydata>?>variables, operationName, headers);
+    if response is graphql:InvalidDocumentError || response is graphql:PayloadBindingError {
+        return response.detail().toJson();
+    } else {
+        return response;
+    }
 }
 
 isolated function getTextPayloadFromService(string url, string document, json? variables = {}, string? operationName = ())
@@ -49,22 +61,6 @@ isolated function getJsonContentFromFile(string fileName) returns json|error {
 isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
     string path = check file:joinPath("tests", "resources", "documents", fileName);
     return io:fileReadString(path);
-}
-
-isolated function getJsonPayloadFromBadRequest(string url, string document, json? variables = {}, string? operationName = ())
-returns json|error {
-    http:Client httpClient = check new(url, httpVersion = http:HTTP_1_1);
-    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
-    assertResponseForBadRequest(response);
-    return response.getJsonPayload();
-}
-
-isolated function getTextPayloadFromBadService(string url, string document, json? variables = {}, string? operationName = ())
-returns string|error {
-    http:Client httpClient = check new(url, httpVersion = http:HTTP_1_1);
-    http:Response response = check httpClient->post("/", { query: document, operationName: operationName, variables: variables});
-    assertResponseForBadRequest(response);
-    return response.getTextPayload();
 }
 
 isolated function assertResponseAndGetPayload(string url, string document, json? variables = {},

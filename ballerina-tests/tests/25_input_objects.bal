@@ -39,7 +39,7 @@ isolated function testInputObject() returns error? {
 isolated function testInputObjectWithMissingArgs() returns error? {
     string document = string`{ searchProfile(profileDetail:{age: 34}) { name } }`;
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_missing_arguments.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -50,7 +50,7 @@ isolated function testInputObjectWithMissingArgs() returns error? {
 isolated function testInputObjectWithInvalidArguments1() returns error? {
     string document = string`{searchProfile(profileDetail:{name: 5, age: "Arthur"}){ name }}`;
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments1.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -61,7 +61,7 @@ isolated function testInputObjectWithInvalidArguments1() returns error? {
 isolated function testInputObjectWithInvalidArguments2() returns error? {
     string document = check getGraphQLDocumentFromFile("input_object_with_invalid_arguments2.graphql");
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -123,7 +123,7 @@ isolated function testInputObjectWithDuplicateFields() returns error? {
         }
     };
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_duplicate_fields.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -141,7 +141,7 @@ isolated function testInputObjectWithUndefinedFields() returns error? {
         }
     };
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_undefined_fields.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -153,7 +153,7 @@ isolated function testInputObjectIncludeFieldsWithUndefinedVariables() returns e
     string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_undefined_variables.graphql");
     json variables = { authorAge: 50 };
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_include_fields_with_undefined_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -221,7 +221,7 @@ isolated function testInputObjectWithMissingVariablesArguments() returns error? 
         }
     };
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_missing_variables_arguments.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -306,7 +306,7 @@ isolated function testInputObjectWithInvalidTypeVariables1() returns error? {
         weight: { weight: 70.5 }
     };
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables1.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -320,7 +320,7 @@ isolated function testInputObjectWithInvalidTypeVariables2() returns error? {
     json variables = {
         bAuthor: {name:{}, age:{}}
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables2.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -336,7 +336,7 @@ isolated function testInputObjectWithUnexpectedVariableValues() returns error? {
         bAuthor: [{name:"arthur"},{name:"J.K Rowling"}],
         dir: "Chris Columbus"
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_with_unexpected_variable_values.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -348,7 +348,7 @@ isolated function testInputObjectVariablesWithInvalidTypeName() returns error? {
     string document = string`($profile: Details!){ searchProfile(profileDetail: $profile){ name } }`;
     json variables = { profile: {name: "Arthur", age: 5} };
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile("input_object_variables_with_invalid_type_name.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testRequestSubtypeFromPrimitiveType() returns error? {
     string graphqlUrl = "http://localhost:9091/validation";
     string document = "{ name { first } }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = string`Field "name" must not have a selection since type "String!" has no subfields.`;
     json expectedPayload = {
         errors: [
@@ -46,7 +46,7 @@ isolated function testRequestSubtypeFromPrimitiveType() returns error? {
 isolated function testDocumentWithSyntaxError() returns error? {
     string graphqlUrl = "http://localhost:9091/validation";
     string document = "{ name (id: ) }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = string`Syntax Error: Unexpected ")".`;
     json expectedPayload = {
         errors: [
@@ -70,7 +70,7 @@ isolated function testDocumentWithSyntaxError() returns error? {
 isolated function testInvalidDocumentHavingFragmentWithSameName() returns error? {
     string graphqlUrl = "http://localhost:9091/input_objects";
     string document = check getGraphQLDocumentFromFile("invalid_document_having_fragment_with_same_name.graphql");
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     string expectedMessage = string`There can be only one fragment named "Details".`;
     json expectedPayload = {
         errors: [

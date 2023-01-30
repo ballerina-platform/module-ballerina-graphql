@@ -139,7 +139,7 @@ isolated function testResourceReturningOptionalServiceObjectsArray() returns err
 isolated function testOptionalArrayInvalidQuery() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
     string document = string `{ searchVehicles(keyword: "vehicle") }`;
-    json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {

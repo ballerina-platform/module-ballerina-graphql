@@ -54,7 +54,7 @@ isolated function testNullAsScalarInputValue() returns error? {
 isolated function testNullValueForNonNullArgument() returns error? {
     string url = "http://localhost:9091/inputs";
     string document = "{ greet(name: null) }";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -165,7 +165,7 @@ isolated function testNullValueForNonNullArgumentWithVariableValue() returns err
     json variables = {
         name: null
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = {
         errors: [
             {

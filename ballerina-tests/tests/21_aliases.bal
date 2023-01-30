@@ -64,7 +64,7 @@ isolated function testSameFieldWithMultipleAliasDifferentSubfields() returns err
 isolated function testAliasWithInvalidFieldName() returns error? {
     string document = check getGraphQLDocumentFromFile("alias_with_invalid_field_name.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

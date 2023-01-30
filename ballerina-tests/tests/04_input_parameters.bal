@@ -55,7 +55,7 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
 isolated function testInvalidArgument() returns error? {
     string document = "{ quote(id: 4) }";
     string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -172,7 +172,7 @@ isolated function testCoerceIntInputToFloat() returns error? {
 isolated function testPassingFloatForIntArguments() returns error? {
     string document = "{ isLegal(age: 20.5) }";
     string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -195,7 +195,7 @@ isolated function testPassingFloatForIntArguments() returns error? {
 isolated function testInvalidArgumentWithValidArgument() returns error? {
     string url = "http://localhost:9091/inputs";
     string document = string`{ greet (name: "name", id: 3) }`;
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string expectedMessage = string`Unknown argument "id" on field "Query.greet".`;
     json expectedPayload = {
         errors: [
@@ -219,7 +219,7 @@ isolated function testInvalidArgumentWithValidArgument() returns error? {
 isolated function testObjectWithMissingRequiredArgument() returns error? {
     string url = "http://localhost:9091/inputs";
     string document = "{ greet }";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
 
     string expectedMessage = string`Field "greet" argument "name" of type "String!" is required, but it was not provided.`;
     json expectedPayload = {

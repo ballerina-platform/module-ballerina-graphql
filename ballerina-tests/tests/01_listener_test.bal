@@ -149,7 +149,7 @@ function testAttachServiceWithMutationToHttp1BasedListener() returns error? {
 function testAttachServiceWithQueryToHttp1BasedListenerAndClient() returns error? {
     string document = string `query { person{ age } }`;
     string url = "http://localhost:9191/service_with_http1";
-    json actualPayload = check getJsonPayloadFromService(url, document, httpVersion = http:HTTP_1_0);
+    json actualPayload = check getJsonPayloadUsingHttpClient(url, document, httpVersion = http:HTTP_1_0);
     json expectedPayload = {
         data: {
             person: {
@@ -166,7 +166,7 @@ function testAttachServiceWithQueryToHttp1BasedListenerAndClient() returns error
 function testAttachServiceWithMutationToHttp1BasedListenerAndClient() returns error? {
     string document = string `mutation { setName(name: "Heisenberg") { name } }`;
     string url = "http://localhost:9191/service_with_http1";
-    json actualPayload = check getJsonPayloadFromService(url, document, httpVersion = http:HTTP_1_0);
+    json actualPayload = check getJsonPayloadUsingHttpClient(url, document, httpVersion = http:HTTP_1_0);
     json expectedPayload = {
         data: {
             setName: {

@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testUnknownFragment() returns error? {
     string document = check getGraphQLDocumentFromFile("unknown_fragment.graphql");
     string url = "http://localhost:9091/validation";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string message = string`Unknown fragment "friend".`;
     json expectedPayload = {
         errors: [
@@ -46,7 +46,7 @@ isolated function testUnknownFragment() returns error? {
 isolated function testUnknownNestedFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("unknown_nested_fragments.graphql");
     string url ="http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string message = string`Unknown fragment "fail".`;
     json expectedPayload = {
         errors: [
@@ -70,7 +70,7 @@ isolated function testUnknownNestedFragments() returns error? {
 isolated function testFragmentOnInvalidType() returns error? {
     string document = check getGraphQLDocumentFromFile("fragment_on_invalid_type.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string message = string`Fragment "data" cannot be spread here as objects of type "Query" can never be of type "Person".`;
     json expectedPayload = {
         errors: [
@@ -94,7 +94,7 @@ isolated function testFragmentOnInvalidType() returns error? {
 isolated function testFragmentWithInvalidField() returns error? {
     string document = check getGraphQLDocumentFromFile("fragment_with_invalid_field.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string message = string`Cannot query field "invalid" on type "Person".`;
     json expectedPayload = {
         errors: [
@@ -151,7 +151,7 @@ isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
 isolated function testFragmentsWithInvalidIntrospection() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_invalid_introspection.graphql");
     string url = "http://localhost:9091/validation";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -204,7 +204,7 @@ isolated function testFragmentsQueryingServiceObjects() returns error? {
 isolated function testUnusedFragment() returns error? {
     string document = check getGraphQLDocumentFromFile("unused_fragment.graphql");
     string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {
@@ -238,7 +238,7 @@ isolated function testInlineFragment() returns error? {
 isolated function testUnknownInlineFragment() returns error? {
     string document = check getGraphQLDocumentFromFile("unknown_inline_fragment.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("unknown_inline_fragment.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -249,7 +249,7 @@ isolated function testUnknownInlineFragment() returns error? {
 isolated function testInvalidSpreadInlineFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("invalid_spread_inline_fragments.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_spread_inline_fragments.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -296,7 +296,7 @@ isolated function testNestedFragmentsQueryingServiceObjectsWithMultipleFields() 
 isolated function testFragmentsWithCycles() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_cycles.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_with_cycles.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -307,7 +307,7 @@ isolated function testFragmentsWithCycles() returns error? {
 isolated function testFragmentsWithMultipleCycles() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -318,7 +318,7 @@ isolated function testFragmentsWithMultipleCycles() returns error? {
 isolated function testFragmentsWithMultipleCyclesInSameFragment() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles_in_same_fragment.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles_in_same_fragment.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -329,7 +329,7 @@ isolated function testFragmentsWithMultipleCyclesInSameFragment() returns error?
 isolated function testFragmentsSpreadItself() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_spread_itself.graphql");
     string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("fragments_spread_itself.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

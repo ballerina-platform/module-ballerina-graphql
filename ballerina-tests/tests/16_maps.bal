@@ -62,7 +62,7 @@ isolated function testNestedMap() returns error? {
 isolated function testMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers { name } } }`;
     string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     string message = string`Field "workers" argument "key" of type "String!" is required, but it was not provided.`;
     json expectedPayload = {
         errors: [
@@ -86,7 +86,7 @@ isolated function testMapWithoutKeyInput() returns error? {
 isolated function testNestedMapWithoutKeyInput() returns error? {
     string document = string`query { company { workers(key: "w1") { contacts } } }`;
     string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("nested_map_without_key_input.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

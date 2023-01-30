@@ -67,7 +67,7 @@ isolated function testInterfacesWithNestedFragments() returns error? {
 isolated function testInterfacesWithInvalidField() returns error? {
     string document = check getGraphQLDocumentFromFile("interfaces_with_invalid_field.graphql");
     string url = "http://localhost:9098/interfaces";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("interfaces_with_invalid_field.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
