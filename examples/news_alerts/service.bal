@@ -1,6 +1,8 @@
 import ballerina/uuid;
 import ballerina/graphql;
 
+configurable boolean ENABLE_GRAPHIQL = ?;
+
 @graphql:ServiceConfig {
     graphiql: {
         enabled: ENABLE_GRAPHIQL
@@ -19,19 +21,6 @@ service /news on new graphql:Listener(9090) {
             return from Publisher publisher in publisherTable
                 select publisher.cloneReadOnly();
         }
-    }
-
-    resource function subscribe news(string userId) returns stream<News>|error {
-        stream<News> newsStream;
-        lock {
-            if userTable.hasKey(userId) {
-                NewsStream newsStreamGenerator = check new (userId);
-                newsStream = new (newsStreamGenerator);
-            } else {
-                return error("User not registered");
-            }
-        }
-        return newsStream;
     }
 
     remote function publish(NewsUpdate & readonly update) returns NewsRecord|error {
@@ -59,5 +48,18 @@ service /news on new graphql:Listener(9090) {
             publisherTable.put(publisher);
             return publisher.cloneReadOnly();
         }
+    }
+
+    resource function subscribe news(string userId, Agency agency) returns stream<News>|error {
+        stream<News> newsStream;
+        lock {
+            if userTable.hasKey(userId) {
+                NewsStream newsStreamGenerator = check new (userId, agency);
+                newsStream = new (newsStreamGenerator);
+            } else {
+                return error("User not registered");
+            }
+        }
+        return newsStream;
     }
 }

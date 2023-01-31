@@ -1,2 +1,0 @@
-const NEWS_TOPIC = "DAILY_NEWS";
-const POLL_INTERVAL = 100d;

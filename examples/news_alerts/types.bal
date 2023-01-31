@@ -1,7 +1,8 @@
-type NewsRecord record {|
-    readonly string id;
-    *NewsUpdate;
-|};
+enum Agency {
+    FIRST_NEWS,
+    BNN,
+    CBC
+}
 
 type NewsUpdate record {|
     string headline;
@@ -10,9 +11,9 @@ type NewsUpdate record {|
     string publisherId;
 |};
 
-type User record {|
+type NewsRecord readonly & record {|
     readonly string id;
-    *NewUser;
+    *NewsUpdate;
 |};
 
 type NewUser record {|
@@ -20,48 +21,40 @@ type NewUser record {|
     int age;
 |};
 
-type Publisher record {|
+type User record {|
     readonly string id;
-    *NewPublisher;
+    *NewUser;
 |};
 
 type NewPublisher record {|
     string name;
+    string area;
     Agency agency;
 |};
 
-enum Agency {
-    FIRST_NEWS,
-    BNN,
-    CBC
-}
+type Publisher readonly & record {|
+    readonly string id;
+    *NewPublisher;
+|};
 
 isolated service class News {
-    private final string id;
-    private final string headline;
-    private final string brief;
-    private final string content;
-    private final string publisherId;
+    private final readonly & NewsRecord newsRecord;
 
-    isolated function init(*NewsRecord newsRecord) {
-        self.id = newsRecord.id;
-        self.headline = newsRecord.headline;
-        self.brief = newsRecord.brief;
-        self.content = newsRecord.content;
-        self.publisherId = newsRecord.publisherId;
+    isolated function init(NewsRecord newsRecord) {
+        self.newsRecord = newsRecord;
     }
 
-    isolated resource function get id() returns string => self.id;
+    isolated resource function get id() returns string => self.newsRecord.id;
 
-    isolated resource function get headline() returns string => self.headline;
+    isolated resource function get headline() returns string => self.newsRecord.headline;
 
-    isolated resource function get bried() returns string => self.brief;
+    isolated resource function get brief() returns string => self.newsRecord.brief;
 
-    isolated resource function get content() returns string => self.content;
+    isolated resource function get content() returns string => self.newsRecord.content;
 
     isolated resource function get publisher() returns Publisher {
         lock {
-            return publisherTable.get(self.publisherId).cloneReadOnly();
+            return publisherTable.get(self.newsRecord.publisherId);
         }
     }
 }
