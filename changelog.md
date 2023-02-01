@@ -6,9 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Changed
-- [[#3977] Remove Limitation on GraphQL Context Object Parameter Order](https://github.com/ballerina-platform/ballerina-standard-library/issues/3977)
-
 ### Added
 - [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
 - [[#3942] Add Functionality to Send Ping Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3942)
@@ -24,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3870] Add Service Error Handling Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3870)
 - [[#3709] Add Input Default Values Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3709)
 - [[#3941] Remove Support for Non-Compliant Subscription Requests](https://github.com/ballerina-platform/ballerina-standard-library/issues/3941)
+- [[#3977] Remove Limitation on GraphQL Context Object Parameter Order](https://github.com/ballerina-platform/ballerina-standard-library/issues/3977)
 
 ## [1.5.0] - 2022-11-29
 
