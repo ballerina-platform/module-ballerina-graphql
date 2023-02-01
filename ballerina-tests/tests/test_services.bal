@@ -742,6 +742,10 @@ service /special_types on specialTypesTestListener {
     resource function get company() returns Company {
         return company;
     }
+
+    resource function get month(Month month) returns string {
+        return month;
+    }
 }
 
 service /snowtooth on serviceTypeListener {

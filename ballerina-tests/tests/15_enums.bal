@@ -179,7 +179,7 @@ isolated function testEnumInvalidInputParameter() returns error? {
     json expectedPayload = {
         errors: [
             {
-                message: string`Value "FUNDAY" does not exist in "weekday" enum.`,
+                message: string `Value "FUNDAY" does not exist in "weekday" enum.`,
                 locations: [
                     {
                         line: 1,
@@ -196,13 +196,13 @@ isolated function testEnumInvalidInputParameter() returns error? {
     groups: ["enums"]
 }
 isolated function testEnumInputParameterAsString() returns error? {
-    string document = string`query { isHoliday(weekday: "SUNDAY") }`;
+    string document = string `query { isHoliday(weekday: "SUNDAY") }`;
     string url = "http://localhost:9095/special_types";
     json actualPayload = check getJsonPayloadFromBadRequest(url, document);
     json expectedPayload = {
         errors: [
             {
-                message: string`Enum "Weekday" cannot represent non-enum value: "SUNDAY"`,
+                message: string `Enum "Weekday" cannot represent non-enum value: "SUNDAY"`,
                 locations: [
                     {
                         line: 1,
@@ -211,6 +211,39 @@ isolated function testEnumInputParameterAsString() returns error? {
                 ]
             }
         ]
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["enums"]
+}
+isolated function testEnumWithValuesAssigned() returns error? {
+    string document = string `{ month(month: JANUARY) }`;
+    string url = "http://localhost:9095/special_types";
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            month: "Jan"
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["enums"]
+}
+isolated function testEnumWithValuesAssignedUsingVariables() returns error? {
+    string document = string `query GetMonth($month: Month!) { month(month: $month) }`;
+    map<json> variables = {
+        month: "MAY"
+    };
+    string url = "http://localhost:9095/special_types";
+    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
+    json expectedPayload = {
+        data: {
+            month: "May"
+        }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
