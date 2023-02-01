@@ -224,7 +224,7 @@ isolated function testEnumWithValuesAssigned() returns error? {
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
-            month: "January"
+            month: "Jan"
         }
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);

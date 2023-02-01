@@ -744,31 +744,7 @@ service /special_types on specialTypesTestListener {
     }
 
     resource function get month(Month month) returns string {
-        if month == "Jan" {
-            return "January";
-        } else if month == "Feb" {
-            return "February";
-        } else if month == "Mar" {
-            return "March";
-        } else if month == "Apr" {
-            return "April";
-        } else if month == "May" {
-            return "May";
-        } else if month == "Jun" {
-            return "June";
-        } else if month == "Jul" {
-            return "July";
-        } else if month == "Aug" {
-            return "August";
-        } else if month == "Sep" {
-            return "September";
-        } else if month == "Oct" {
-            return "October";
-        } else if month == "Nov" {
-            return "November";
-        } else {
-            return "December";
-        }
+        return month;
     }
 }
 
