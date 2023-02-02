@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)
 - [[#3721] Fix Passing Incorrect Values when a Resolver Method has an Enum as Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/3721)
+- [[#4038] Fix `__typename` Introspection not Working on Introspection Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/4038)
 
 ### Changed
 - [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
