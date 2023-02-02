@@ -56,6 +56,11 @@ class IntrospectionExecutor {
     }
 
     isolated function getValueFromFieldNode(parser:FieldNode fieldNode, map<anydata> parentValue, Data result) {
+        string fieldName = fieldNode.getName();
+        if fieldName == TYPE_NAME_FIELD {
+            result[fieldNode.getAlias()] = getTypeNameFromValue(parentValue);
+            return;
+        }
         anydata fieldValue = parentValue.get(fieldNode.getName());
         self.getFieldValue(fieldNode, fieldValue, result);
     }
