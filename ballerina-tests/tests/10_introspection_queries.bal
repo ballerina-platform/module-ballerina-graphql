@@ -66,13 +66,13 @@ isolated function testIntrospectionQueryWithMissingSelection() returns error? {
     groups: ["introspection"]
 }
 isolated function testInvalidSchemaIntrospectionField() returns error? {
-    string graphqlUrl ="http://localhost:9091/records";
+    string graphqlUrl = "http://localhost:9091/records";
     string document = "{ profile(id: 1) { name __schema { queryType { name } } } }";
     json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedResult = {
         errors: [
             {
-                message: string`Cannot query field "__schema" on type "Person".`,
+                message: string `Cannot query field "__schema" on type "Person".`,
                 locations: [
                     {
                         line: 1,
@@ -89,7 +89,7 @@ isolated function testInvalidSchemaIntrospectionField() returns error? {
     groups: ["introspection"]
 }
 isolated function testQueryTypeIntrospection() returns error? {
-    string graphqlUrl ="http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9091/validation";
     string document = "{ __schema { queryType { kind fields { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("query_type_introspection.json");
@@ -100,7 +100,7 @@ isolated function testQueryTypeIntrospection() returns error? {
     groups: ["introspection"]
 }
 isolated function testMutationTypeIntrospection() returns error? {
-    string graphqlUrl ="http://localhost:9091/mutations";
+    string graphqlUrl = "http://localhost:9091/mutations";
     string document = "{ __schema { mutationType { kind fields { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("mutation_type_introspection.json");
@@ -122,7 +122,7 @@ isolated function testComplexIntrospectionQueryWithOtherFields() returns error? 
     groups: ["introspection"]
 }
 isolated function testEnumValueIntrospection() returns error? {
-    string graphqlUrl ="http://localhost:9092/service_objects";
+    string graphqlUrl = "http://localhost:9092/service_objects";
     string document = "{ __schema { types { enumValues } } }";
     json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("enum_value_introspection.json");
@@ -133,7 +133,7 @@ isolated function testEnumValueIntrospection() returns error? {
     groups: ["introspection", "typename"]
 }
 isolated function testTypeNameIntrospectionOnOperation() returns error? {
-    string graphqlUrl ="http://localhost:9091/records";
+    string graphqlUrl = "http://localhost:9091/records";
     string document = "{ __typename }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
@@ -148,7 +148,7 @@ isolated function testTypeNameIntrospectionOnOperation() returns error? {
     groups: ["introspection", "typename"]
 }
 isolated function testTypeNameIntrospectionOnRecordTypes() returns error? {
-    string graphqlUrl ="http://localhost:9091/records";
+    string graphqlUrl = "http://localhost:9091/records";
     string document = "{ detective { __typename } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
@@ -164,8 +164,8 @@ isolated function testTypeNameIntrospectionOnRecordTypes() returns error? {
 @test:Config {
     groups: ["introspection", "validation", "typename"]
 }
-isolated function testQueryingSubFieldsOnTypeName() returns error? {
-    string graphqlUrl ="http://localhost:9091/records";
+isolated function testQueryingSubfieldsOnTypeName() returns error? {
+    string graphqlUrl = "http://localhost:9091/records";
     string document = "{ detective { __typename { name } } }";
     json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedResult = {
@@ -243,13 +243,13 @@ isolated function testIntrospectionOnServiceWithInputObjects() returns error? {
     groups: ["introspection", "typename", "validation"]
 }
 isolated function testTypeNameIntrospectionOnScalar() returns error? {
-    string graphqlUrl ="http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9091/validation";
     string document = "{ name { __typename } }";
     json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedResult = {
         errors: [
             {
-                message: string`Field "name" must not have a selection since type "String!" has no subfields.`,
+                message: string `Field "name" must not have a selection since type "String!" has no subfields.`,
                 locations: [
                     {
                         line: 1,
@@ -300,9 +300,9 @@ isolated function testTypeIntrospection() returns error? {
 }
 isolated function testTypeIntrospectionOnNonExistingType() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
-    string document = string`{ __type(name: "INVALID") { kind } }`;
+    string document = string `{ __type(name: "INVALID") { kind } }`;
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = { data: { __type: null } };
+    json expectedPayload = {data: {__type: null}};
     assertJsonValuesWithOrder(result, expectedPayload);
 }
 
@@ -311,12 +311,12 @@ isolated function testTypeIntrospectionOnNonExistingType() returns error? {
 }
 isolated function testTypeIntrospectionWithoutFields() returns error? {
     string graphqlUrl = "http://localhost:9091/records";
-    string document = string`{ __type(name: "Person") }`;
+    string document = string `{ __type(name: "Person") }`;
     json result = check getJsonPayloadFromBadRequest(graphqlUrl, document);
     json expectedPayload = {
         errors: [
             {
-                message: string`Field "__type" of type "__Type" must have a selection of subfields. Did you mean "__type { ... }"?`,
+                message: string `Field "__type" of type "__Type" must have a selection of subfields. Did you mean "__type { ... }"?`,
                 locations: [
                     {
                         line: 1,
@@ -417,5 +417,38 @@ isolated function testTypeIntrospectionWithAlias() returns error? {
     map<json> variables = {includeDeprecated: true};
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document, variables = variables);
     json expectedPayload = check getJsonContentFromFile("type_introspection_with_alias.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["introspection", "type", "typename"]
+}
+isolated function testTypeNameIntrospectionOnTypeRecord() returns error? {
+    string graphqlUrl = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("typename_introspection_on_type_record.graphql");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("typename_introspection_on_type_record.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["introspection", "type", "typename"]
+}
+isolated function testTypeNameIntrospectionOnSchemaIntrospection() returns error? {
+    string graphqlUrl = "http://localhost:9091/validation";
+    string document = check getGraphQLDocumentFromFile("typename_introspection_on_schema_introspection.graphql");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("typename_introspection_on_schema_introspection.json");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["introspection", "field", "typename"]
+}
+isolated function testTypeNameIntrospectionOnField() returns error? {
+    string graphqlUrl = "http://localhost:9091/records";
+    string document = check getGraphQLDocumentFromFile("typename_introspection_on_field.graphql");
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("typename_introspection_on_field.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

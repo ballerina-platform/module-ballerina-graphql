@@ -1,0 +1,21 @@
+{
+    "data": {
+        "__type": {
+            "name": "Person",
+            "fields": [
+                {
+                    "name": "name",
+                    "__typename": "__Field"
+                },
+                {
+                    "name": "age",
+                    "__typename": "__Field"
+                },
+                {
+                    "name": "address",
+                    "__typename": "__Field"
+                }
+            ]
+        }
+    }
+}
