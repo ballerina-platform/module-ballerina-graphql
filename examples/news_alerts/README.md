@@ -8,7 +8,7 @@ In this example, a news alert system is designed. It has the following features.
 - Publishers can register with a news agency.
 - Subscribers can register to the news alert system.
 - Subscribers can subscribe to a particular news agency.
-- Then when a publisher from a news agency publishes news, all the subscribers of that news agency receive the news in real-time.
+- When a publisher from a news agency publishes news, all the subscribers of that news agency receive the news in real-time.
 
 
 ## Design
@@ -282,25 +282,6 @@ There are two main functionalities that are related to Kafka in this example.
 - When a publisher publishes a news update, that update should be published to a Kafka topic.
 - When a user subscribes to an agency, a new Kafka consumer should be created for consuming all the updates from that topic as a Ballerina `stream` type which used to send/receive streams of data in Ballerina. In Ballerina GraphQL, a subscription operation must return a `stream` type in order to send data continuously to the subscribers.
 
-#### Kafka Record Types
-
-In order to produce to/consume from a Kafka topic, first producer and consumer records needs to be defined. Following are the definitions of these record types.
-
-```ballerina
-import ballerinax/kafka;
-
-type NewsProducerRecord record {|
-    *kafka:AnydataProducerRecord;
-    string key;
-    NewsRecord value;
-|};
-
-type NewsConsumerRecord record {|
-    *kafka:AnydataConsumerRecord;
-    NewsRecord value;
-|};
-```
-
 #### Producing News
 
 To produce a news record to a Kafka topic, a Kafka producer is needed. In this example, a single Kafka producer is used to produce the news. Following code shows how to define a Kafka consumer and how to produce a news update to the Kafka topic. In this example, the default Kafka broker is used, therefore the `kafka:DEFAULT_URL` is used as the Kafka broker URL.
@@ -312,18 +293,12 @@ The `getAgency` function is used to retrieve the agency of the publisher. It wil
 ```ballerina
 import ballerina/uuid;
 
-final kafka:Producer producer = check new (kafka:DEFAULT_URL);
-
 isolated function produceNews(NewsUpdate newsUpdate) returns NewsRecord|error {
+    kafka:Producer producer = check new (kafka:DEFAULT_URL);
     string id = uuid:createType1AsString();
     Agency agency = check getAgency(newsUpdate.publisherId);
     NewsRecord news = {id: id, ...newsUpdate};
-    NewsProducerRecord producerRecord = {
-        topic: agency,
-        key: id,
-        value: news
-    };
-    check producer->send(producerRecord);
+    check producer->send({topic: agency, key: id, value: news});
     return news;
 }
 
@@ -364,25 +339,26 @@ isolated class NewsStream {
         kafka:ConsumerConfiguration consumerConfiguration = {
             groupId: consumerGroup,
             offsetReset: "earliest",
-            topics: [agency],
+            topics: agency,
             maxPollRecords: 1 // Limit the number of records to be polled at a time
         };
         self.consumer = check new (kafka:DEFAULT_URL, consumerConfiguration);
     }
 
     public isolated function next() returns record {|News value;|}? {
-        NewsConsumerRecord[]|error consumerRecords = self.consumer->poll(POLL_INTERVAL);
-        if consumerRecords is error {
+        NewsRecord[]|error newsRecords = self.consumer->pollPayload(POLL_INTERVAL);
+        if newsRecords is error {
             // Log the error with the consumer group id and return nil
-            log:printError("Failed to retrieve data from the Kafka server", consumerRecords, id = self.consumerGroup);
+            log:printError("Failed to retrieve data from the Kafka server", newsRecords, id = self.consumerGroup);
             return;
         }
-        if consumerRecords.length() < 1 {
-            // Log the warning with the consumer group id and return nil
+        if newsRecords.length() < 1 {
+            // Log the warning with the consumer group id and return nil. This will end the subscription as returning
+            // nil will be interpreted as the end of the stream.
             log:printWarn(string `No news available in "${self.agency}"`, id = self.consumerGroup);
             return;
         }
-        return {value: new (consumerRecords[0].value)};
+        return {value: new (newsRecords[0])};
     }
 }
 ```
@@ -491,10 +467,9 @@ resource function subscribe news(string userId, Agency agency) returns stream<Ne
 - First, [run the Kafka broker](https://kafka.apache.org/quickstart) in a terminal.
 
 - Then in another terminal, run the Ballerina project. To run the project, execute the following command inside the project directory.
-
-```shell
-bal run
-```
+  ```shell
+  bal run
+  ```
 
 - After running the project, a GraphiQL client will be running on `localhost:9090/graphiql`. Use a web browser to access it.
 - Using the browser, register a new user using the following document.
@@ -519,7 +494,7 @@ bal run
 - Then register a new publisher using the following document.
   ```graphql
   mutation {
-    registerPublisher(newPublisher: {name: "Jane Doe", agency: CBC}) {
+    registerPublisher(newPublisher: {name: "Jane Doe", area: "Colombo", agency: CBC}) {
       id
     }
   }
@@ -549,7 +524,7 @@ bal run
 - In a separate browser tab, use the following document to publish a news.
   ```graphql
   mutation {
-    publish(update: {headline: "Hello", brief: "Hola", content: "Hello world!", publisherId: "01eda2b9-6970-1c10-8f79-534f8bf7ae46"}) {
+    publish(update: {headline: "Hello", brief: "Hi", content: "Hello world!", publisherId: "01eda2b9-6970-1c10-8f79-534f8bf7ae46"}) {
       id
     }
   }
