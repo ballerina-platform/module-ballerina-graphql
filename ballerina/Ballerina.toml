@@ -13,10 +13,10 @@ distribution = "2201.3.0"
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-native"
 version = "1.5.1"
-path = "../native/build/libs/graphql-native-1.5.1-SNAPSHOT.jar"
+path = "../native/build/libs/graphql-native-1.5.1.jar"
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-compiler-plugin"
 version = "1.5.1"
-path = "../commons/build/libs/graphql-commons-1.5.1-SNAPSHOT.jar"
+path = "../commons/build/libs/graphql-commons-1.5.1.jar"
