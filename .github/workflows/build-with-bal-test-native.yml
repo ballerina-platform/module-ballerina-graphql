@@ -28,4 +28,6 @@ jobs:
             lang_version: ${{ inputs.lang_version }}
             native_image_options: '-J-Xmx7G ${{ inputs.native_image_options }}'
             additional_ubuntu_build_flags: '-x :graphql-compiler-plugin-tests:test'
-            additional_windows_build_flags: '-x :graphql-compiler-plugin-tests:test'
+            # additional_windows_build_flags: '-x :graphql-compiler-plugin-tests:test'
+            # TODO : Enable after fixing this issue : https://github.com/ballerina-platform/ballerina-lang/issues/38882
+            additional_windows_build_flags: '-x test'
