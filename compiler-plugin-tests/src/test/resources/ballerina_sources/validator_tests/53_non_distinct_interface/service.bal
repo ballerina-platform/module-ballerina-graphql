@@ -19,7 +19,7 @@ import ballerina/graphql;
 service /graphql on new graphql:Listener(4000) {
     isolated resource function get name(int id) returns Person {
         if id < 10 {
-        return new Student("Jesse Pinkman", 25, "student-1");
+            return new Student("Jesse Pinkman", 25, "student-1");
         }
         return new Teacher("Walter White", 52, "teacher-1", "Chemistry");
     }
