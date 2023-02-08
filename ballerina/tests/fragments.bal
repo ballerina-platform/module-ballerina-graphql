@@ -19,36 +19,34 @@ import graphql.parser;
 
 @test:Config {
     groups: ["fragments", "validation"],
-    dataProvider: dataGen1
+    dataProvider: dataProviderFragmentValidation
 }
 isolated function testFragmentValidation(string documentFileName) returns error? {
     string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     FragmentValidatorVisitor validator = new FragmentValidatorVisitor(documentNode.getFragments(), new);
     documentNode.accept(validator);
-    json actualPayload = validator.getErrors().toJson();
     json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
 @test:Config {
     groups: ["fragment"],
-    dataProvider: dataGen2
+    dataProvider: dataProviderFragmentCycles
 }
 isolated function testFragmentsWithCycles(string documentFileName) returns error? {
     string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     FragmentCycleFinderVisitor validator = new FragmentCycleFinderVisitor(documentNode.getFragments(), new);
     documentNode.accept(validator);
-    json actualPayload = validator.getErrors().toJson();
     json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
-function dataGen1() returns (string[][]) {
+function dataProviderFragmentValidation() returns (string[][]) {
     return [["unknown_fragment"], ["unknown_nested_fragments"], ["unused_fragment"]];
 }
 
-function dataGen2() returns (string[][]) {
+function dataProviderFragmentCycles() returns (string[][]) {
     return [["fragments_with_cycles"], ["fragments_with_multiple_cycles"], ["fragments_with_multiple_cycles_in_same_fragment"]];
 }

@@ -36,72 +36,6 @@ isolated function testDirectives() returns error? {
 }
 
 @test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testUnknownDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_directives.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("unknown_directives.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesInInvalidLocations1() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_in_invalid_locations1.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("directives_in_invalid_locations1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "mutations", "input"]
-}
-isolated function testDirectivesInInvalidLocations2() returns error? {
-    string document = string`mutation @skip(if: false){ setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Directive \"skip\" may not be used on MUTATION.",
-                locations: [
-                    {
-                        line: 1,
-                        column: 10
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesWithoutArgument() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_without_argument.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("directives_without_argument.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesWithUnknownArguments() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_with_unknown_arguments.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("directives_with_unknown_arguments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
     groups: ["directives", "fragments", "variables"]
 }
 isolated function testDirectivesWithVariablesAndFragments() returns error? {
@@ -119,17 +53,6 @@ isolated function testDirectivesWithVariablesAndFragments() returns error? {
             }
         }
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "fragments", "variables"]
-}
-isolated function testDuplicateDirectivesInSameLocation() returns error? {
-    string document = check getGraphQLDocumentFromFile("duplicate_directives_in_same_location.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("duplicate_directives_in_same_location.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

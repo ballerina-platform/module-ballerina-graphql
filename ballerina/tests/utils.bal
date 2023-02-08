@@ -17,7 +17,6 @@
 import ballerina/file;
 import ballerina/io;
 import graphql.parser;
-import ballerina/test;
 
 isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
     string path = check file:joinPath("tests", "resources", "documents", fileName);
@@ -32,20 +31,4 @@ isolated function getJsonContentFromFile(string fileName) returns json|error {
 isolated function getDocumentNode(string documentString) returns parser:DocumentNode|error {
     parser:Parser parser = new (documentString);
     return parser.parse();
-}
-
-isolated function assertJsonValuesWithOrder(json actualPayload, json expectedPayload) {
-    string actual = actualPayload.toJsonString();
-    string expected = expectedPayload.toJsonString();
-    test:assertEquals(actual, expected);
-}
-
-isolated function getResponse(Engine engine, string document, string? operationName = (), map<json>? variables = (),
-                              Context context = new, map<Upload|Upload[]> fileInfo = {}) returns json|error {
-    parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
-    if validationResult is parser:OperationNode {
-        context.setFileInfo(fileInfo);
-        return engine.getResult(validationResult, context).toJson();
-    }
-    return validationResult.toJson();
 }

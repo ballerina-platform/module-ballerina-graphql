@@ -1,0 +1,29 @@
+[
+    {
+        "message": "Unknown directive \"author\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 13
+            }
+        ]
+    },
+    {
+        "message": "Unknown directive \"admin\".",
+        "locations": [
+            {
+                "line": 3,
+                "column": 23
+            }
+        ]
+    },
+    {
+        "message": "Unknown directive \"hide\".",
+        "locations": [
+            {
+                "line": 5,
+                "column": 23
+            }
+        ]
+    }
+]

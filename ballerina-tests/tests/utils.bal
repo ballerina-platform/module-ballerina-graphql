@@ -36,6 +36,8 @@ isolated function getJsonPayloadFromService(string url, string document, json va
     json|graphql:ClientError response = graphqlClient->execute(document, <map<anydata>?>variables, operationName, headers);
     if response is graphql:InvalidDocumentError || response is graphql:PayloadBindingError {
         return response.detail().toJson();
+    } else if response is graphql:HttpError {
+        return response.detail().body.toJson();
     } else {
         return response;
     }
