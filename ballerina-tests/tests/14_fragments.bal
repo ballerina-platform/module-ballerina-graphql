@@ -19,54 +19,6 @@ import ballerina/test;
 @test:Config {
     groups: ["fragments", "validation"]
 }
-isolated function testUnknownFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_fragment.graphql");
-    string url = "http://localhost:9091/validation";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    string message = string`Unknown fragment "friend".`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: message,
-                locations: [
-                    {
-                        line: 2,
-                        column: 8
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "validation"]
-}
-isolated function testUnknownNestedFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_nested_fragments.graphql");
-    string url ="http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    string message = string`Unknown fragment "fail".`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: message,
-                locations: [
-                    {
-                        line: 14,
-                        column: 12
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "validation"]
-}
 isolated function testFragmentOnInvalidType() returns error? {
     string document = check getGraphQLDocumentFromFile("fragment_on_invalid_type.graphql");
     string url = "http://localhost:9091/records";
@@ -199,29 +151,6 @@ isolated function testFragmentsQueryingServiceObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "validation"]
-}
-isolated function testUnusedFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("unused_fragment.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Fragment "fullNameFragment" is never used.`,
-                locations: [
-                    {
-                        line: 9,
-                        column: 1
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
     groups: ["fragments", "inline"]
 }
 isolated function testInlineFragment() returns error? {
@@ -287,39 +216,6 @@ isolated function testNestedFragmentsQueryingServiceObjectsWithMultipleFields() 
             }
         }
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testFragmentsWithCycles() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_cycles.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_cycles.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testFragmentsWithMultipleCycles() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testFragmentsWithMultipleCyclesInSameFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_cycles_in_same_fragment.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_cycles_in_same_fragment.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

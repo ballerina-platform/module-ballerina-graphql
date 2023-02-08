@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Unknown fragment \"friend\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 8
+            }
+        ]
+    }
+]

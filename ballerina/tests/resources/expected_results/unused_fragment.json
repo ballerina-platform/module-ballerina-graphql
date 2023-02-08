@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Fragment \"fullNameFragment\" is never used.",
+        "locations": [
+            {
+                "line": 9,
+                "column": 1
+            }
+        ]
+    }
+]
