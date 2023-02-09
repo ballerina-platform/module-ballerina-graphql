@@ -214,12 +214,12 @@ public class ArgumentHandler {
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (isContext(parameters[i].type)) {
-                result[i] = this.context;
+                result[j] = this.context;
                 result[j + 1] = true;
                 continue;
             }
             if (isField(parameters[i].type)) {
-                result[i] = this.field;
+                result[j] = this.field;
                 result[j + 1] = true;
                 continue;
             }

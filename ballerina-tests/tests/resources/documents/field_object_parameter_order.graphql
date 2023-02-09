@@ -1,0 +1,12 @@
+query FieldObjectParameterOrder1 {
+    student(name: "Skinny Pete", id: 100) {
+        name
+    }
+}
+
+query FieldObjectParameterOrder2 {
+    student(name: "Skinny Pete", id: 100) {
+        name
+        id
+    }
+}

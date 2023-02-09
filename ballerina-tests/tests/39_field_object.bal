@@ -68,3 +68,38 @@ function testFieldObjectUsingFragments() returns error? {
     };
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["field-object"]
+}
+function testFieldObjectParameterOrder() returns error? {
+    string document = check getGraphQLDocumentFromFile("field_object_parameter_order.graphql");
+    string url = "localhost:9092/service_objects";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "FieldObjectParameterOrder1");
+    json expectedPayload = {
+        data: {
+            student: {
+                name: "Jesse Pinkman"
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["field-object"]
+}
+function testFieldObjectParameterOrder2() returns error? {
+    string document = check getGraphQLDocumentFromFile("field_object_parameter_order.graphql");
+    string url = "localhost:9092/service_objects";
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "FieldObjectParameterOrder2");
+    json expectedPayload = {
+        data: {
+            student: {
+                name: "Skinny Pete",
+                id: 100
+            }
+        }
+    };
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
