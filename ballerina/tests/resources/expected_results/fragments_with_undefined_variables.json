@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable \"$profileId\" is not defined.",
+        "locations": [
+            {
+                "line": 6,
+                "column": 17
+            }
+        ]
+    }
+]

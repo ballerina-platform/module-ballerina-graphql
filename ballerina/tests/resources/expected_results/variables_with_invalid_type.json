@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable \"userName\" of type \"Int!\" used in position expecting type \"String!\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 18
+            }
+        ]
+    }
+]

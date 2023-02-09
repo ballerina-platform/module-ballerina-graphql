@@ -187,66 +187,6 @@ isolated function testInvalidSubscription() returns error? {
 @test:Config {
     groups: ["subscriptions"]
 }
-isolated function testInvalidSubscriptionWithMultipleRootFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_root_fields.graphql");
-    string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check initiateGraphqlWsConnection(wsClient);
-    check sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields.json");
-    check validateErrorMessage(wsClient, expectedMsgPayload);
-}
-
-@test:Config {
-    groups: ["introspection", "typename", "subscriptions"]
-}
-isolated function testInvalidSubscriptionWithIntrospections() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_introspections.graphql");
-    string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check initiateGraphqlWsConnection(wsClient);
-    check sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_introspections.json");
-    check validateErrorMessage(wsClient, expectedMsgPayload);
-}
-
-@test:Config {
-    groups: ["introspection", "typename", "subscriptions"]
-}
-isolated function testInvalidAnonymousSubscriptionOperationWithIntrospections() returns error? {
-    string document = string `subscription { __typename }`;
-    string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check initiateGraphqlWsConnection(wsClient);
-    check sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = check getJsonContentFromFile("subscription_anonymous_with_invalid_introspections.json");
-    check validateErrorMessage(wsClient, expectedMsgPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "subscriptions"]
-}
-isolated function testInvalidSubscriptionWithMultipleRootFieldsInFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_root_fields_in_fragments.graphql");
-    string url = "ws://localhost:9099/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check initiateGraphqlWsConnection(wsClient);
-    check sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_multiple_root_fields_in_fragments.json");
-    check validateErrorMessage(wsClient, expectedMsgPayload);
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
 isolated function testSubscriptionFunctionWithErrors() returns error? {
     string document = string `subscription getNames { values }`;
     string url = "ws://localhost:9099/subscriptions";

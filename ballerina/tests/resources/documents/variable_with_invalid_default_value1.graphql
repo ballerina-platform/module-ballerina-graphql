@@ -1,0 +1,3 @@
+query Greeting($userName:String = 3) {
+    greet(name: $userName )
+}

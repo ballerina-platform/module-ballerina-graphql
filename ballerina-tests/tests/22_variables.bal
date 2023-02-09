@@ -44,54 +44,6 @@ isolated function testDuplicateInputVariables() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testUndefinedInputVariables() returns error? {
-    string document = string`{ greet (name: $userName) }`;
-    json variables = { userName:"Thisaru" };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("undefined_input_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testUnusedInputVariables() returns error? {
-    string document = string`query ($userName:String!, $extra:Int){ greet (name: $userName) }`;
-    json variables = { userName:"Thisaru" };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("unused_input_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testInputVariablesWithInvalidArgumentType() returns error? {
-    string document = string`query Greeting($userName:String!){ greet (name: $userName ) }`;
-    json variables = { userName: 4 };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_variables_with_invalid_argument_type.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testInputVariablesWithEmptyInputObjectValue() returns error? {
-    string document = string`query Greeting($userName:String!){ greet (name: $userName ) }`;
-    json variables = { userName: {} };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_variables_with_empty_input_object_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
     groups: ["variables", "fragments", "input"]
 }
 isolated function testFragmentsWithInputVariables() returns error? {
@@ -106,36 +58,12 @@ isolated function testFragmentsWithInputVariables() returns error? {
 @test:Config {
     groups: ["variables", "fragments", "input"]
 }
-isolated function testFragmentsWithUndefinedInputVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_undefined_variables.graphql");
-    json variables = { profileId: 1 };
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_undefined_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
 isolated function testDuplicateVariablesWithMultipleOperations() returns error? {
     string document = check getGraphQLDocumentFromFile("duplicate_variables_with_multiple_operations.graphql");
     json variables = { profileId: 1 };
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document, variables, "B");
     json expectedPayload = check getJsonContentFromFile("duplicate_variables_with_multiple_operations.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
-isolated function testFragmnetsWithUnsusedVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_unused_variables.graphql");
-    json variables = { profileId: 1 };
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables, "B");
-    json expectedPayload = check getJsonContentFromFile("fragments_with_unused_variables.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -177,17 +105,6 @@ isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
         }
     };
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
-isolated function testVariablesWithMissingRequiredArgument() returns error? {
-    string document = string`query Greeting($userName:String!){ greet (name: $userName ) }`;
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variables_with_missing_required_argument.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -247,42 +164,6 @@ isolated function testVariablesWithNestedMap() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "inputs", "input_coerce"]
-}
-isolated function testInvalidUsageOfNullableVariable() returns error? {
-    string document = "($weight:Float){ weightInPounds(weightInKg:$weight) }";
-    json variables = { weight: 1};
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("invalid_usage_of_nullable_variable.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testVariablesWithInvalidType() returns error? {
-    string document = string`query Greeting($userName:Int!){ greet(name: $userName) }`;
-    json variables = { userName: 4 };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("variables_with_invalid_type.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testVariablesWithUnknownType() returns error? {
-    string document = string`query Greeting($userName: userName){ greet(name: $userName) }`;
-    json variables = { userName: 4 };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("variables_with_unknown_type.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
     groups: ["variables", "inputs", "enums"]
 }
 isolated function testNonNullTypeVariablesWithNullableArgument() returns error? {
@@ -295,39 +176,6 @@ isolated function testNonNullTypeVariablesWithNullableArgument() returns error? 
             isHoliday: false
         }
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "input"]
-}
-isolated function testVariableWithInvalidDefaultValue1() returns error? {
-    string document = string`query Greeting($userName:String = 3){ greet (name: $userName ) }`;
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "input_coerce"]
-}
-isolated function testVariableWithInvalidDefaultValue2() returns error? {
-    string document = string`($weight:Float = "Walter"){ weightInPounds(weightInKg:$weight) }`;
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs"]
-}
-isolated function testVariableWithInvalidDefaultValue3() returns error? {
-    string document = string`query Greeting($userName:String = Walter){ greet (name: $userName ) }`;
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variable_with_invalid_default_value3.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -364,28 +212,6 @@ isolated function testNullableVariablesWithoutValue() returns error? {
 @test:Config {
     groups: ["variables", "inputs", "enums"]
 }
-isolated function testVariableDefaultNullValueWithNonNullType() returns error? {
-    string document = "($age:Int! = null){ isLegal(age: $age) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variable_default_null_value_with_non_null_type.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testScalarTypeVariableWithInputObjectValue() returns error? {
-    string document = "($age:Int! = {}){ isLegal(age: $age) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("scalar_type_variable_with_input_object_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
 isolated function testEnumTypeDefaultValueWithVariables() returns error? {
     string document = "($day:Weekday = SUNDAY){ isHoliday(weekday: $day) }";
     string url = "http://localhost:9091/inputs";
@@ -406,17 +232,6 @@ isolated function testInvalidEnumTypeDefaultValueWithVariables() returns error? 
     string url = "http://localhost:9091/inputs";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("invalid_enum_type_default_value_with_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testEnumTypeDefaultValueWithStringLiteral() returns error? {
-    string document = "($day:Weekday = \"MONDAY\"){ isHoliday(weekday: $day) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("enum_type_default_value_with_string_literal.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

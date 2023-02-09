@@ -18,22 +18,21 @@ import ballerina/test;
 import graphql.parser;
 
 @test:Config {
-    groups: ["directives", "validation"],
-    dataProvider: dataProviderDirectiveValidation
+    groups: ["subscriptions", "validation", "fragments"],
+    dataProvider: dataProviderSubscriptionValidation
 }
-function testDirectiveValidation(string documentFileName) returns error? {
+function testSubscriptionValidation(string documentFileName) returns error? {
     string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
-    FragmentValidatorVisitor fragValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
-    documentNode.accept(fragValidator);
-    DirectiveValidatorVisitor validator = new DirectiveValidatorVisitor(schemaWithDefaultDirectives, nodeModifierContext);
+    FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
+    documentNode.accept(fragmentValidator);
+    SubscriptionValidatorVisitor validator = new (nodeModifierContext);
     documentNode.accept(validator);
     json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
-function dataProviderDirectiveValidation() returns (string[][]) {
-    return [["unknown_directives"], ["directives_without_argument"], ["directives_with_unknown_arguments"], ["directives_in_invalid_locations1"],
-            ["directives_in_invalid_locations2"], ["duplicate_directives_in_same_location"]];
+function dataProviderSubscriptionValidation() returns (string[][]) {
+    return [["subscriptions_with_invalid_multiple_root_fields"], ["subscriptions_with_invalid_introspections"], ["invalid_anonymous_subscriptions_with_introspections"], ["multiple_subscriptions_root_fields_in_fragments"]];
 }
