@@ -1,0 +1,3 @@
+query {
+    isLegal(age: 20.5)
+}

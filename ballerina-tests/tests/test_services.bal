@@ -168,24 +168,6 @@ service /fileUpload on basicListener {
     }
 }
 
-service /input_type_introspection on basicListener {
-    isolated resource function get name(string name = "Walter") returns string {
-        return name;
-    }
-
-    isolated resource function get subject(string? subject = "Chemistry") returns string {
-        return subject.toString();
-    }
-
-    isolated resource function get city(string city) returns string {
-        return city;
-    }
-
-    isolated resource function get street(string? street) returns string {
-        return street.toString();
-    }
-}
-
 service /validation on basicListener {
     isolated resource function get name() returns string {
         return "James Moriarty";
@@ -215,15 +197,15 @@ service /inputs on basicListener {
         return "Hello, " + name;
     }
 
+    isolated resource function get name(string name = "Walter") returns string {
+        return name;
+    }
+
     isolated resource function get isLegal(int age) returns boolean {
         if age < 21 {
             return false;
         }
         return true;
-    }
-
-    isolated resource function get quote() returns string {
-        return quote2;
     }
 
     isolated resource function get quoteById(int id = 0) returns string? {
@@ -270,9 +252,7 @@ service /inputs on basicListener {
     isolated resource function get \u{0076}ersion(string name) returns string {
         return name;
     }
-}
 
-service /decimal_inputs on basicListener {
     isolated resource function get convertDecimalToFloat(decimal value) returns float|error {
         return float:fromString(value.toString());
     }
@@ -569,23 +549,6 @@ service /timeoutService on timeoutListener {
     isolated resource function get greet() returns string {
         runtime:sleep(3);
         return "Hello";
-    }
-}
-
-@graphql:ServiceConfig {
-    maxQueryDepth: 2
-}
-service /depthLimitService on basicListener {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-
-    resource function get people() returns Person[] {
-        return people;
-    }
-
-    resource function get students() returns Student[] {
-        return students;
     }
 }
 
@@ -1873,32 +1836,6 @@ service /maps on basicListener {
 
     isolated resource function get languages() returns Languages {
         return self.languages;
-    }
-}
-
-@graphql:ServiceConfig {
-    introspection: false
-}
-service /introspection on basicListener {
-
-    private Person p;
-
-    isolated function init() {
-        self.p = p2.clone();
-    }
-
-    isolated resource function get person() returns Person {
-        lock {
-            return self.p;
-        }
-    }
-
-    isolated remote function setName(string name) returns Person {
-        lock {
-            Person p = {name: name, age: self.p.age, address: self.p.address};
-            self.p = p;
-            return self.p;
-        }
     }
 }
 

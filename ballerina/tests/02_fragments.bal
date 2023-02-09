@@ -44,9 +44,17 @@ isolated function testFragmentsWithCycles(string documentFileName) returns error
 }
 
 function dataProviderFragmentValidation() returns (string[][]) {
-    return [["unknown_fragment"], ["unknown_nested_fragments"], ["unused_fragment"]];
+    return [
+        ["unknown_fragment"],
+        ["unknown_nested_fragments"],
+        ["unused_fragment"]
+    ];
 }
 
 function dataProviderFragmentCycles() returns (string[][]) {
-    return [["fragments_with_cycles"], ["fragments_with_multiple_cycles"], ["fragments_with_multiple_cycles_in_same_fragment"]];
+    return [
+        ["fragments_with_cycles"],
+        ["fragments_with_multiple_cycles"],
+        ["fragments_with_multiple_cycles_in_same_fragment"]
+    ];
 }

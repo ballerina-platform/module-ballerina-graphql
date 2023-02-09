@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/io;
 
 @test:Config {
     groups: ["introspection"]
@@ -330,12 +331,13 @@ isolated function testTypeIntrospectionWithoutFields() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "type", "inputs"]
+    groups: ["ab","introspection", "type", "inputs"]
 }
 isolated function testIntrospectionOnInputsWithDefaultValues() returns error? {
-    string graphqlUrl = "http://localhost:9091/input_type_introspection";
+    string graphqlUrl = "http://localhost:9091/inputs";
     string document = check getGraphQLDocumentFromFile("introspection_on_inputs_with_default_values.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    io:println(actualPayload);
     json expectedPayload = check getJsonContentFromFile("introspection_on_inputs_with_default_values.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

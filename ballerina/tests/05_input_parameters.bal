@@ -18,26 +18,26 @@ import ballerina/test;
 import graphql.parser;
 
 @test:Config {
-    groups: ["subscriptions", "validation", "fragments"],
-    dataProvider: dataProviderSubscriptionValidation
+    groups: ["inputs", "validation"],
+    dataProvider: dataProviderInputParameterValidation
 }
-function testSubscriptionValidation(string documentFileName) returns error? {
+function testInputParameterValidation(string documentFileName) returns error? {
     string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
-    SubscriptionValidatorVisitor validator = new (nodeModifierContext);
+    FieldValidatorVisitor validator = new (schemaWithInputValues, nodeModifierContext);
     documentNode.accept(validator);
     json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
-function dataProviderSubscriptionValidation() returns (string[][]) {
+function dataProviderInputParameterValidation() returns (string[][]) {
     return [
-        ["subscriptions_with_invalid_multiple_root_fields"],
-        ["subscriptions_with_invalid_introspections"],
-        ["invalid_anonymous_subscriptions_with_introspections"],
-        ["multiple_subscriptions_root_fields_in_fragments"]
+        ["invalid_argument1"],
+        ["invalid_argument2"],
+        ["invalid_argument_with_valid_argument"],
+        ["missing_required_argument"]
     ];
 }

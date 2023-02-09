@@ -34,6 +34,12 @@ function testDirectiveValidation(string documentFileName) returns error? {
 }
 
 function dataProviderDirectiveValidation() returns (string[][]) {
-    return [["unknown_directives"], ["directives_without_argument"], ["directives_with_unknown_arguments"], ["directives_in_invalid_locations1"],
-            ["directives_in_invalid_locations2"], ["duplicate_directives_in_same_location"]];
+    return [
+        ["unknown_directives"],
+        ["directives_without_argument"],
+        ["directives_with_unknown_arguments"],
+        ["directives_in_invalid_locations1"],
+        ["directives_in_invalid_locations2"],
+        ["duplicate_directives_in_same_location"]
+    ];
 }

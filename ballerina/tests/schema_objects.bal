@@ -506,7 +506,7 @@ __Schema schemaWithInputValues = {
             {
                 "name": "description",
                 "type": {
-                "kind": "SCALAR"
+                    "kind": "SCALAR"
                 },
                 "args": []
             },
@@ -531,19 +531,19 @@ __Schema schemaWithInputValues = {
         {
             "name": "include",
             "locations": [
-            "FIELD",
-            "FRAGMENT_SPREAD",
-            "INLINE_FRAGMENT"
+                "FIELD",
+                "FRAGMENT_SPREAD",
+                "INLINE_FRAGMENT"
             ],
             "args": [
             {
                 "name": "if",
                 "type": {
-                "kind": "NON_NULL",
-                "ofType": {
-                    "name": "Boolean",
-                    "kind": "SCALAR"
-                }
+                    "kind": "NON_NULL",
+                    "ofType": {
+                        "name": "Boolean",
+                        "kind": "SCALAR"
+                    }
                 }
             }
             ]
@@ -551,19 +551,19 @@ __Schema schemaWithInputValues = {
         {
             "name": "skip",
             "locations": [
-            "FIELD",
-            "FRAGMENT_SPREAD",
-            "INLINE_FRAGMENT"
+                "FIELD",
+                "FRAGMENT_SPREAD",
+                "INLINE_FRAGMENT"
             ],
             "args": [
             {
                 "name": "if",
                 "type": {
-                "kind": "NON_NULL",
-                "ofType": {
-                    "name": "Boolean",
-                    "kind": "SCALAR"
-                }
+                    "kind": "NON_NULL",
+                    "ofType": {
+                        "name": "Boolean",
+                        "kind": "SCALAR"
+                    }
                 }
             }
             ]
@@ -575,13 +575,13 @@ __Schema schemaWithInputValues = {
             "ENUM_VALUE"
             ],
             "args": [
-            {
-                "name": "reason",
-                "type": {
-                "kind": "SCALAR",
-                "ofType": null
+                {
+                    "name": "reason",
+                    "type": {
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
                 }
-            }
             ]
         }
     ]

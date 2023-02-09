@@ -18,7 +18,7 @@ import ballerina/test;
 import graphql.parser;
 
 @test:Config {
-    groups: ["a", "variables", "input", "fragments", "enums"],
+    groups: ["variables", "input", "fragments", "enums"],
     dataProvider: dataProviderVariableValidation
 }
 function testVariableValidation(string documentFileName, map<json>? vars) returns error? {

@@ -1,0 +1,13 @@
+{
+    __schema {
+        queryType {
+            kind
+            fields {
+                name
+            }
+        }
+    },
+    __type(name: "Person") {
+        name
+    }
+}

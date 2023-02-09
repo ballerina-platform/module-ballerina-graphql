@@ -50,29 +50,6 @@ isolated function testInputParameterTypeNotPresentInReturnTypes() returns error?
 }
 
 @test:Config {
-    groups: ["inputs", "validation"]
-}
-isolated function testInvalidArgument() returns error? {
-    string document = "{ quote(id: 4) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Unknown argument "id" on field "Query.quote".`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 9
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
     groups: ["inputs"]
 }
 isolated function testQueryWithoutDefaultParameter() returns error? {
@@ -164,78 +141,6 @@ isolated function testCoerceIntInputToFloat() returns error? {
         }
     };
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "validation"]
-}
-isolated function testPassingFloatForIntArguments() returns error? {
-    string document = "{ isLegal(age: 20.5) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Int cannot represent non Int value: 20.5`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 16
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "validation"]
-}
-isolated function testInvalidArgumentWithValidArgument() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string document = string`{ greet (name: "name", id: 3) }`;
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    string expectedMessage = string`Unknown argument "id" on field "Query.greet".`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 24
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "validation"]
-}
-isolated function testObjectWithMissingRequiredArgument() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string document = "{ greet }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-
-    string expectedMessage = string`Field "greet" argument "name" of type "String!" is required, but it was not provided.`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {

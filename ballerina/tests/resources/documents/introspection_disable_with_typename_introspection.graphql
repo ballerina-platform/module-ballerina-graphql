@@ -1,0 +1,8 @@
+{
+    person{
+        name,
+        age,
+        __typename
+    },
+    __typename
+}
