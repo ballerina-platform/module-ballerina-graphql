@@ -21,4 +21,8 @@ module io.ballerina.stdlib.graphql.compiler {
     requires io.ballerina.tools.api;
     requires io.ballerina.parser;
     requires io.ballerina.stdlib.graphql.commons;
+
+    exports io.ballerina.stdlib.graphql.compiler;
+    exports io.ballerina.stdlib.graphql.compiler.schema.generator;
+    exports io.ballerina.stdlib.graphql.compiler.service;
 }

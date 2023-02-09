@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ConstantSymbol;
@@ -47,7 +48,6 @@ import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
 import io.ballerina.stdlib.graphql.commons.types.Description;
 import io.ballerina.stdlib.graphql.commons.types.Directive;
@@ -100,14 +100,14 @@ public class SchemaGenerator {
     private final Node serviceNode;
     private final InterfaceFinder interfaceFinder;
     private final Schema schema;
-    private final SyntaxNodeAnalysisContext context;
+    private final SemanticModel semanticModel;
     private final List<Type> visitedInterfaces;
 
-    public SchemaGenerator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder,
-                           String description) {
-        this.context = context;
+    public SchemaGenerator(Node serviceNode, InterfaceFinder interfaceFinder,
+                           SemanticModel semanticModel, String description) {
         this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
+        this.semanticModel = semanticModel;
         this.schema = new Schema(description);
         this.visitedInterfaces = new ArrayList<>();
     }
@@ -166,15 +166,15 @@ public class SchemaGenerator {
             ObjectConstructorExpressionNode objectConstructorExpressionNode) {
         // noinspection OptionalGetWithoutIsPresent
         return objectConstructorExpressionNode.members().stream()
-                .filter(member -> isFunctionDefinition(member) && context.semanticModel().symbol(member)
-                        .isPresent()).map(methodNode -> (MethodSymbol) context.semanticModel().symbol(methodNode).get())
+                .filter(member -> isFunctionDefinition(member) && semanticModel.symbol(member)
+                        .isPresent()).map(methodNode -> (MethodSymbol) semanticModel.symbol(methodNode).get())
                 .collect(Collectors.toList());
     }
 
     private Collection<? extends MethodSymbol> getMethods(ServiceDeclarationNode serviceDeclarationNode) {
         // ServiceDeclarationSymbol already validated. Therefore, no need to check isEmpty().
         // noinspection OptionalGetWithoutIsPresent
-        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) context.semanticModel()
+        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) semanticModel
                 .symbol(serviceDeclarationNode).get();
         return serviceDeclarationSymbol.methods().values();
     }
