@@ -102,7 +102,7 @@ isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
 }
 isolated function testFragmentsWithInvalidIntrospection() returns error? {
     string document = check getGraphQLDocumentFromFile("fragments_with_invalid_introspection.graphql");
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [

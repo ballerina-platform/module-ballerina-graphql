@@ -68,3 +68,32 @@ function dataProviderIntrospectionConfigurations() returns map<[boolean, string]
     };
     return dataSet;
 }
+
+@test:Config {
+    groups: ["listener", "graphiql"],
+    dataProvider: dataProviderGraphiQLPath
+}
+function testGraphiQLPath(string path) returns error? {
+    Error? validateGraphiqlPathResult = validateGraphiqlPath(path);
+    test:assertTrue(validateGraphiqlPathResult is Error);
+    Error err = <Error>validateGraphiqlPathResult;
+    test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
+}
+
+
+function dataProviderGraphiQLPath() returns (string[][]) {
+    return [
+        ["/ballerina graphql"],
+        ["/ballerina_+#@#$!"]
+    ];
+}
+
+@test:Config {
+    groups: ["listener", "configs"]
+}
+function testInvalidMaxQueryDepth() returns error? {
+    Engine|Error engine = new ("", 0, testService, [], true);
+    test:assertTrue(engine is Error);
+    Error err = <Error>engine;
+    test:assertEquals(err.message(), "Max query depth value must be a positive integer");
+}

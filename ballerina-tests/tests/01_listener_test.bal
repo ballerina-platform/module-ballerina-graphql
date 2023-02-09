@@ -20,16 +20,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    groups: ["listener", "configs"]
-}
-function testInvalidMaxQueryDepth() returns error? {
-    graphql:Error? result = wrappedListener.attach(invalidMaxQueryDepthService, "invalid");
-    test:assertTrue(result is graphql:Error);
-    graphql:Error err = <graphql:Error>result;
-    test:assertEquals(err.message(), "Max query depth value must be a positive integer");
-}
-
-@test:Config {
     groups: ["listener", "client"]
 }
 function testAttachingGraphQLServiceToDynamicListener() returns error? {

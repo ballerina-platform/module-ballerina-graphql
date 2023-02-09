@@ -18,42 +18,6 @@ import ballerina/graphql;
 import ballerina/http;
 import ballerina/lang.runtime;
 
-graphql:Service invalidMaxQueryDepthService =
-@graphql:ServiceConfig {
-    maxQueryDepth: 0
-}
-service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
-graphql:Service invalidGraphiqlPathConfigService1 =
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: true,
-        path: "/ballerina graphql"
-    }
-}
-isolated service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
-graphql:Service invalidGraphiqlPathConfigService2 =
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: true,
-        path: "/ballerina_+#@#$!"
-    }
-}
-service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
 graphql:Service graphiqlDefaultPathConfigService =
 @graphql:ServiceConfig {
     graphiql: {
@@ -78,18 +42,6 @@ service object {
         return "Hello";
     }
 };
-
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: false,
-        path: "/ballerina graphql"
-    }
-}
-service /invalid_graphiql on basicListener {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-}
 
 @graphql:ServiceConfig {
     graphiql: {
@@ -165,28 +117,6 @@ service /fileUpload on basicListener {
             });
         }
         return fileInfo;
-    }
-}
-
-service /validation on basicListener {
-    isolated resource function get name() returns string {
-        return "James Moriarty";
-    }
-
-    isolated resource function get birthdate() returns string {
-        return "15-05-1848";
-    }
-
-    isolated resource function get ids() returns int[] {
-        return [0, 1, 2];
-    }
-
-    isolated resource function get idsWithErrors() returns (int|error)[] {
-        return [0, 1, 2, error("Not Found!")];
-    }
-
-    isolated resource function get friends() returns (string|error)?[] {
-        return ["walter", "jessie", error("Not Found!")];
     }
 }
 
@@ -705,6 +635,18 @@ service /special_types on specialTypesTestListener {
     resource function get company() returns Company {
         return company;
     }
+
+    isolated resource function get ids() returns int[] {
+        return [0, 1, 2];
+    }
+
+    isolated resource function get idsWithErrors() returns (int|error)[] {
+        return [0, 1, 2, error("Not Found!")];
+    }
+
+    isolated resource function get friends() returns (string|error)?[] {
+        return ["walter", "jessie", error("Not Found!")];
+    }
 }
 
 service /snowtooth on serviceTypeListener {
@@ -838,32 +780,6 @@ service /union_type_names on serviceTypeListener {
 
     isolated resource function get nullableUndefinedUnionTypeArray() returns (StudentService|TeacherService)?[] {
         return [self.s, ()];
-    }
-}
-
-service /duplicates on basicListener {
-    isolated resource function get profile() returns Person {
-        return {
-            name: "Sherlock Holmes",
-            age: 40,
-            address: {number: "221/B", street: "Baker Street", city: "London"}
-        };
-    }
-
-    resource function get people() returns Person[] {
-        return people;
-    }
-
-    resource function get students() returns Student[] {
-        return students;
-    }
-
-    resource function get teacher() returns Person {
-        return p2;
-    }
-
-    resource function get student() returns Person {
-        return p4;
     }
 }
 

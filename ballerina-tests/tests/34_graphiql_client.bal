@@ -19,26 +19,6 @@ import ballerina/http;
 import ballerina/test;
 
 @test:Config {
-    groups: ["listener", "graphiql"]
-}
-function testInvalidGraphiqlPath1() returns error? {
-    graphql:Error? result = basicListener.attach(invalidGraphiqlPathConfigService1, "graphiql1");
-    test:assertTrue(result is graphql:Error);
-    graphql:Error err = <graphql:Error>result;
-    test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
-}
-
-@test:Config {
-    groups: ["listener", "graphiql"]
-}
-function testInvalidGraphiqlPath2() returns error? {
-    graphql:Error? result = basicListener.attach(invalidGraphiqlPathConfigService2, "graphiql2");
-    test:assertTrue(result is graphql:Error);
-    graphql:Error err = <graphql:Error>result;
-    test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
-}
-
-@test:Config {
     groups: ["listener", "graphiql"],
     enable: false
 }

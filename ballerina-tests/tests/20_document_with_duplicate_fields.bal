@@ -21,12 +21,15 @@ import ballerina/test;
 }
 isolated function testDuplicateFieldWithResourceReturningRecord() returns error? {
     string document = check getGraphQLDocumentFromFile("duplicate_fields_with_record_types.graphql");
-    string url = "http://localhost:9091/duplicates";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
             profile: {
-                name: "Sherlock Holmes",
+                name: {
+                    first: "Sherlock",
+                    last: "Holmes"
+                },
                 address: {
                     city: "London",
                     street: "Baker Street"
@@ -42,7 +45,7 @@ isolated function testDuplicateFieldWithResourceReturningRecord() returns error?
 }
 isolated function testNamedFragmentsWithDuplicateFields() returns error? {
     string document = check getGraphQLDocumentFromFile("named_fragments_with_duplicate_fields.graphql");
-    string url = "http://localhost:9091/duplicates";
+    string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("named_fragments_with_duplicate_fields.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -53,7 +56,7 @@ isolated function testNamedFragmentsWithDuplicateFields() returns error? {
 }
 isolated function testDuplicateInlineFragments() returns error? {
     string document = check getGraphQLDocumentFromFile("duplicate_inline_fragments.graphql");
-    string url = "http://localhost:9091/duplicates";
+    string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile("duplicate_inline_fragments.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);

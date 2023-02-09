@@ -24,7 +24,7 @@ import ballerina/websocket;
 }
 isolated function testMultipleOperationsWithoutOperationNameInRequest() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
@@ -42,7 +42,7 @@ isolated function testMultipleOperationsWithoutOperationNameInRequest() returns 
 }
 isolated function testMultipleOperationsWithInvalidOperationInRequest() returns error? {
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "invalid");
     json expectedPayload = {
         errors: [
@@ -60,7 +60,7 @@ isolated function testMultipleOperationsWithInvalidOperationInRequest() returns 
 }
 isolated function testInvalidGetRequestWithoutQuery() returns error? {
     http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
-    http:Response response = check httpClient->get("/validation");
+    http:Response response = check httpClient->get("/records");
     assertResponseForBadRequest(response);
     test:assertEquals(response.getTextPayload(), "Query not found");
 }
@@ -69,15 +69,17 @@ isolated function testInvalidGetRequestWithoutQuery() returns error? {
     groups: ["request_validation", "listener"]
 }
 isolated function testGetRequest() returns error? {
-    string document = "{ name }";
+    string document = "query getDetective{ detective { name }}";
     string encodedDocument = check url:encode(document, "UTF-8");
     json expectedPayload = {
         data: {
-            name: "James Moriarty"
+            detective: {
+                name: "Sherlock Holmes"
+            }
         }
     };
     http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
-    string path = "/validation?query=" + encodedDocument;
+    string path = "/records?query=" + encodedDocument;
     json actualPayload = check httpClient->get(path);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -87,7 +89,7 @@ isolated function testGetRequest() returns error? {
 }
 isolated function testGetRequestWithEmptyQuery() returns error? {
     http:Client httpClient = check new("http://localhost:9091", httpVersion = "1.1");
-    string path = "/validation?query=";
+    string path = "/records?query=";
     http:Response response = check httpClient->get(path);
     assertResponseForBadRequest(response);
     test:assertEquals(response.getTextPayload(), "Query not found");
@@ -99,7 +101,7 @@ isolated function testGetRequestWithEmptyQuery() returns error? {
 isolated function testInvalidJsonPayload() returns error? {
     http:Request request = new;
     request.setJsonPayload({});
-    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/records", request);
     test:assertEquals(payload, "Invalid request body");
 }
 
@@ -109,7 +111,7 @@ isolated function testInvalidJsonPayload() returns error? {
 isolated function testEmptyStringAsQuery() returns error? {
     http:Request request = new;
     request.setJsonPayload({ query: "" });
-    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/records", request);
     test:assertEquals(payload, "Invalid request body");
 }
 
@@ -119,7 +121,7 @@ isolated function testEmptyStringAsQuery() returns error? {
 isolated function testInvalidContentType() returns error? {
     http:Request request= new;
     request.setPayload("invalid");
-    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/records", request);
     test:assertEquals(payload, "Invalid 'Content-type' received");
 }
 
@@ -129,7 +131,7 @@ isolated function testInvalidContentType() returns error? {
 isolated function testContentTypeGraphql() returns error? {
     http:Request request = new;
     request.setHeader("Content-Type", "application/graphql");
-    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/records", request);
     test:assertEquals(payload, "Content-Type 'application/graphql' is not yet supported");
 }
 
@@ -140,7 +142,7 @@ isolated function testInvalidRequestBody() returns error? {
     http:Request request = new;
     request.setTextPayload("Invalid");
     request.setHeader("Content-Type", "application/json");
-    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/validation", request);
+    string payload = check getTextPayloadFromBadRequest("http://localhost:9091/records", request);
     test:assertEquals(payload, "Invalid request body");
 }
 

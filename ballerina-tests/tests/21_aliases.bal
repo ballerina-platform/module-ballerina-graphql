@@ -21,12 +21,14 @@ import ballerina/test;
 }
 isolated function testAlias() returns error? {
     string document = check getGraphQLDocumentFromFile("alias.graphql");
-    string url = "http://localhost:9091/duplicates";
+    string url = "http://localhost:9094/profiles";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {
             sherlock: {
-                name: "Sherlock Holmes",
+                name: {
+                    first: "Sherlock"
+                },
                 address: {
                     city: "London"
                 }

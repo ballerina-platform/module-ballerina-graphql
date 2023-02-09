@@ -297,7 +297,7 @@ isolated function testClientExecuteWithPartialDataRequest() returns error? {
     groups: ["client"]
 }
 isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
     graphql:Client graphqlClient = check new (url);
@@ -318,7 +318,7 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
     groups: ["client"]
 }
 isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
     graphql:Client graphqlClient = check new (url);
@@ -339,12 +339,12 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
     groups: ["client"]
 }
 isolated function testClientExecuteWithTypeWithMultipleOperationsWithOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
     graphql:Client graphqlClient = check new (url);
-    json actualPayload = check graphqlClient->executeWithType(document, operationName = "getName");
-    json expectedPayload = {"data": {"name": "James Moriarty"}};
+    json actualPayload = check graphqlClient->executeWithType(document, operationName = "getDetective");
+    json expectedPayload = {"data": {"detective": {"name": "Sherlock Holmes"}}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -352,12 +352,12 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithOperationNa
     groups: ["client"]
 }
 isolated function testClientExecuteWithMultipleOperationsWithOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
+    string url = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
 
     graphql:Client graphqlClient = check new (url);
-    json actualPayload = check graphqlClient->execute(document, operationName = "getName");
-    json expectedPayload = {"data": {"name": "James Moriarty"}};
+    json actualPayload = check graphqlClient->execute(document, operationName = "getDetective");
+    json expectedPayload = {"data": {"detective": {"name": "Sherlock Holmes"}}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -403,7 +403,7 @@ isolated function testClientExecuteWithMutation() returns error? {
     groups: ["client"]
 }
 isolated function testClientExecuteWithTypeWithAlias() returns error? {
-    string url = "http://localhost:9091/duplicates";
+    string url = "http://localhost:9094/profiles";
     string document = check getGraphQLDocumentFromFile("alias.graphql");
 
     graphql:Client graphqlClient = check new (url);
@@ -411,7 +411,9 @@ isolated function testClientExecuteWithTypeWithAlias() returns error? {
     json expectedPayload = {
         data: {
             sherlock: {
-                name: "Sherlock Holmes",
+                name: {
+                    first: "Sherlock"
+                },
                 address: {
                     city: "London"
                 }
@@ -425,7 +427,7 @@ isolated function testClientExecuteWithTypeWithAlias() returns error? {
     groups: ["client"]
 }
 isolated function testClientExecuteWithAlias() returns error? {
-    string url = "http://localhost:9091/duplicates";
+    string url = "http://localhost:9094/profiles";
     string document = check getGraphQLDocumentFromFile("alias.graphql");
 
     graphql:Client graphqlClient = check new (url);
@@ -433,7 +435,9 @@ isolated function testClientExecuteWithAlias() returns error? {
     json expectedPayload = {
         data: {
             sherlock: {
-                name: "Sherlock Holmes",
+                name: {
+                    first: "Sherlock"
+                },
                 address: {
                     city: "London"
                 }

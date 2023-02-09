@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
 
 @test:Config {
     groups: ["introspection"]
@@ -90,7 +89,7 @@ isolated function testInvalidSchemaIntrospectionField() returns error? {
     groups: ["introspection"]
 }
 isolated function testQueryTypeIntrospection() returns error? {
-    string graphqlUrl ="http://localhost:9091/validation";
+    string graphqlUrl ="http://localhost:9091/records";
     string document = "{ __schema { queryType { kind fields { name } } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = check getJsonContentFromFile("query_type_introspection.json");
@@ -244,8 +243,8 @@ isolated function testIntrospectionOnServiceWithInputObjects() returns error? {
     groups: ["introspection", "typename", "validation"]
 }
 isolated function testTypeNameIntrospectionOnScalar() returns error? {
-    string graphqlUrl ="http://localhost:9091/validation";
-    string document = "{ name { __typename } }";
+    string graphqlUrl ="http://localhost:9091/records";
+    string document = "{ detective { name { __typename } } }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
         errors: [
@@ -254,7 +253,7 @@ isolated function testTypeNameIntrospectionOnScalar() returns error? {
                 locations: [
                     {
                         line: 1,
-                        column: 3
+                        column: 15
                     }
                 ]
             }
@@ -337,7 +336,6 @@ isolated function testIntrospectionOnInputsWithDefaultValues() returns error? {
     string graphqlUrl = "http://localhost:9091/inputs";
     string document = check getGraphQLDocumentFromFile("introspection_on_inputs_with_default_values.graphql");
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
-    io:println(actualPayload);
     json expectedPayload = check getJsonContentFromFile("introspection_on_inputs_with_default_values.json");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -346,7 +344,7 @@ isolated function testIntrospectionOnInputsWithDefaultValues() returns error? {
     groups: ["introspection", "directive_location"]
 }
 isolated function testDirectiveLocations() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9091/records";
     string document = "{__schema { directives { locations } } }";
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("directive_locations.json");
@@ -414,7 +412,7 @@ isolated function testDeprecatedFieldsIntrospectionWithVariables() returns error
     groups: ["introspection", "type"]
 }
 isolated function testTypeIntrospectionWithAlias() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9091/records";
     string document = check getGraphQLDocumentFromFile("type_introspection_with_alias.graphql");
     map<json> variables = {includeDeprecated: true};
     json actualPayload = check getJsonPayloadFromService(graphqlUrl, document, variables = variables);

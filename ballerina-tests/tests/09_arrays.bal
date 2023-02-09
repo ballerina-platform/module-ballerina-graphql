@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["arrays"]
 }
 isolated function testScalarArrays() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9095/special_types";
     string document = "{ ids }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
@@ -35,7 +35,7 @@ isolated function testScalarArrays() returns error? {
     groups: ["arrays"]
 }
 isolated function testScalarArraysWithErrors() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9095/special_types";
     string document = "{ idsWithErrors }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {
@@ -60,7 +60,7 @@ isolated function testScalarArraysWithErrors() returns error? {
     groups: ["arrays"]
 }
 isolated function testScalarNullableArraysWithErrors() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9095/special_types";
     string document = "{ friends }";
     json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedResult = {

@@ -14,21 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/file;
-import ballerina/io;
-import graphql.parser;
-
-isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
-    string path = check file:joinPath("tests", "resources", "documents", fileName);
-    return io:fileReadString(path);
-}
-
-isolated function getJsonContentFromFile(string fileName) returns json|error {
-    string path = check file:joinPath("tests", "resources", "expected_results", fileName);
-    return io:fileReadJson(path);
-}
-
-isolated function getDocumentNode(string documentString) returns parser:DocumentNode|parser:Error {
-    parser:Parser parser = new (documentString);
-    return parser.parse();
-}
+Service testService = service object {
+    isolated resource function get greet() returns string {
+        return "Hello";
+    }
+};
