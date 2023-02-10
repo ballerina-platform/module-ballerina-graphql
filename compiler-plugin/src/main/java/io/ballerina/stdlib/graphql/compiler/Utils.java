@@ -37,6 +37,7 @@ import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
@@ -224,7 +225,7 @@ public final class Utils {
     }
 
     // The function used by the LS extension to get the Schema object
-    public static Schema getSchemaObject(Node node, SemanticModel semanticModel) {
+    public static Schema getSchemaObject(Node node, SemanticModel semanticModel, Project project) {
         String description;
         Node serviceNode;
 
@@ -262,7 +263,7 @@ public final class Utils {
         InterfaceFinder interfaceFinder = new InterfaceFinder();
         interfaceFinder.populateInterfaces(semanticModel);
         SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel,
-                description);
+                project, description);
 
         return schemaGenerator.generate();
     }

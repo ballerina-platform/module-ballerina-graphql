@@ -19,7 +19,14 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.symbols.Documentable;
+import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.Module;
+import io.ballerina.projects.ModuleId;
+import io.ballerina.projects.Package;
+import io.ballerina.projects.Project;
+import io.ballerina.projects.ResolvedPackageDependency;
 import io.ballerina.stdlib.graphql.commons.types.LinePosition;
 import io.ballerina.stdlib.graphql.commons.types.Position;
 import io.ballerina.stdlib.graphql.commons.types.ScalarType;
@@ -27,7 +34,9 @@ import io.ballerina.stdlib.graphql.commons.types.Type;
 import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 import io.ballerina.tools.diagnostics.Location;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,13 +110,16 @@ public class GeneratorUtils {
         return new Type(typeKind, type);
     }
 
-    public static Position getTypePosition(Optional<Location> location) {
+    public static Position getTypePosition(Optional<Location> location, Symbol symbol, Project project) {
         Position position;
         if (location.isEmpty()) {
             position = null;
         } else {
+            Optional<Path> completePath = getFilePathForSymbol(symbol, project);
+            String filePath = completePath.isPresent() ? completePath.get().toAbsolutePath().toString() :
+                    location.get().lineRange().filePath();
             position = new Position(
-                    location.get().lineRange().filePath(),
+                    filePath,
                     new LinePosition(location.get().lineRange().startLine().line(),
                             location.get().lineRange().startLine().offset()),
                     new LinePosition(location.get().lineRange().endLine().line(),
@@ -116,4 +128,51 @@ public class GeneratorUtils {
         }
         return position;
     }
+
+    public static Optional<Path> getFilePathForSymbol(Symbol symbol, Project project) {
+        if (symbol.getLocation().isEmpty() || symbol.getModule().isEmpty()) {
+            return Optional.empty();
+        }
+        String orgName = symbol.getModule().get().id().orgName();
+        String moduleName = symbol.getModule().get().id().moduleName();
+        if (isLangLib(orgName, moduleName)) {
+            return Optional.empty();
+        }
+
+        // We search for the symbol in project's dependencies
+        Collection<ResolvedPackageDependency> dependencies =
+                project.currentPackage().getResolution().dependencyGraph().getNodes();
+        // Symbol location has only the name of the file
+        String sourceFile = symbol.getLocation().get().lineRange().filePath();
+        for (ResolvedPackageDependency depNode : dependencies) {
+            // Check for matching dependency
+            Package depPackage = depNode.packageInstance();
+            if (!depPackage.packageOrg().value().equals(orgName)) {
+                continue;
+            }
+            for (ModuleId moduleId : depPackage.moduleIds()) {
+                if (depPackage.module(moduleId).moduleName().toString().equals(moduleName)) {
+                    Module module = depPackage.module(moduleId);
+                    // Find in source files
+                    for (DocumentId docId : module.documentIds()) {
+                        if (module.document(docId).name().equals(sourceFile)) {
+                            return module.project().documentPath(docId);
+                        }
+                    }
+                    // Find in test sources
+                    for (DocumentId docId : module.testDocumentIds()) {
+                        if (module.document(docId).name().equals(sourceFile)) {
+                            return module.project().documentPath(docId);
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static boolean isLangLib(String orgName, String moduleName) {
+        return orgName.equals("ballerina") && moduleName.startsWith("lang.");
+    }
+
 }

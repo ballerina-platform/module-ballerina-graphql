@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
@@ -57,7 +58,8 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
     public Schema generateSchema(SyntaxNodeAnalysisContext context, InterfaceFinder interfaceFinder, Node node,
                                  String description) {
         SemanticModel semanticModel = context.semanticModel();
-        SchemaGenerator schemaGenerator = new SchemaGenerator(node, interfaceFinder, semanticModel,
+        Project project = context.currentPackage().project();
+        SchemaGenerator schemaGenerator = new SchemaGenerator(node, interfaceFinder, semanticModel, project,
                 description);
         return schemaGenerator.generate();
     }

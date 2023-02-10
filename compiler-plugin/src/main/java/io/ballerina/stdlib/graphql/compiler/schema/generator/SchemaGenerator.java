@@ -48,6 +48,7 @@ import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.projects.Project;
 import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
 import io.ballerina.stdlib.graphql.commons.types.Description;
 import io.ballerina.stdlib.graphql.commons.types.Directive;
@@ -101,14 +102,16 @@ public class SchemaGenerator {
     private final InterfaceFinder interfaceFinder;
     private final Schema schema;
     private final SemanticModel semanticModel;
+    private final Project project;
     private final List<Type> visitedInterfaces;
 
     public SchemaGenerator(Node serviceNode, InterfaceFinder interfaceFinder,
-                           SemanticModel semanticModel, String description) {
+                           SemanticModel semanticModel, Project project, String description) {
         this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
         this.semanticModel = semanticModel;
         this.schema = new Schema(description);
+        this.project = project;
         this.visitedInterfaces = new ArrayList<>();
     }
 
@@ -347,21 +350,21 @@ public class SchemaGenerator {
             parameterMap = typeDefinitionSymbol.documentation().get().parameterMap();
         }
         if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
-            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
             RecordTypeSymbol recordType = (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor();
             return getType(name, description, position, parameterMap, recordType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
             return getType(name, description, position, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
             IntersectionTypeSymbol intersectionType = (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
             return getType(name, description, position, parameterMap, intersectionType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
             ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
             return getType(name, description, position, objectTypeSymbol);
         }
         return null;
@@ -381,7 +384,7 @@ public class SchemaGenerator {
 
     private Type getType(String name, ClassSymbol classSymbol) {
         String description = getDescription(classSymbol);
-        Position position = getTypePosition(classSymbol.getLocation());
+        Position position = getTypePosition(classSymbol.getLocation(), classSymbol, this.project);
         Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.CLASS);
 
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
@@ -407,7 +410,8 @@ public class SchemaGenerator {
                 TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) implementation;
                 String description = getDescription(typeDefinitionSymbol);
                 ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-                Position position = getTypePosition(typeDefinitionSymbol.getLocation());
+                Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol,
+                        this.project);
                 implementedType = getType(implementationName, description, position, objectTypeSymbol);
             }
 
@@ -435,7 +439,7 @@ public class SchemaGenerator {
 
     private Type getType(String name, EnumSymbol enumSymbol) {
         String description = getDescription(enumSymbol);
-        Position position = getTypePosition(enumSymbol.getLocation());
+        Position position = getTypePosition(enumSymbol.getLocation(), enumSymbol, this.project);
         Type enumType = addType(name, TypeKind.ENUM, description, position);
         for (ConstantSymbol enumMember : enumSymbol.members()) {
             addEnumValueToType(enumType, enumMember);
