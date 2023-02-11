@@ -553,7 +553,7 @@ public class SchemaGenerator {
             case UNION:
                 return getInputType((UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
-                return getInputType(null, null, (IntersectionTypeSymbol) typeSymbol);
+                return getInputType(null, null, (IntersectionTypeSymbol) typeSymbol, null);
         }
         return null;
     }
@@ -582,20 +582,21 @@ public class SchemaGenerator {
     private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
         TypeSymbol typeDescriptor = typeDefinitionSymbol.typeDescriptor();
         String description = getDescription(typeDefinitionSymbol);
+        Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
         switch (typeDescriptor.typeKind()) {
             case RECORD:
-                return getInputType(typeName, description, (RecordTypeSymbol) typeDescriptor);
+                return getInputType(typeName, description, (RecordTypeSymbol) typeDescriptor, position);
             case UNION:
                 return getInputType((UnionTypeSymbol) typeDescriptor);
             case INTERSECTION:
-                return getInputType(typeName, description, (IntersectionTypeSymbol) typeDescriptor);
+                return getInputType(typeName, description, (IntersectionTypeSymbol) typeDescriptor, position);
             default:
                 return null;
         }
     }
 
-    private Type getInputType(String name, String description, RecordTypeSymbol recordTypeSymbol) {
-        Type objectType = addType(name, TypeKind.INPUT_OBJECT, description);
+    private Type getInputType(String name, String description, RecordTypeSymbol recordTypeSymbol, Position position) {
+        Type objectType = addType(name, TypeKind.INPUT_OBJECT, description, position);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
             objectType.addInputField(getInputField(recordFieldSymbol));
         }
@@ -610,12 +611,13 @@ public class SchemaGenerator {
         return null;
     }
 
-    private Type getInputType(String typeName, String description, IntersectionTypeSymbol intersectionTypeSymbol) {
+    private Type getInputType(String typeName, String description, IntersectionTypeSymbol intersectionTypeSymbol,
+                              Position position) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (typeName == null) {
             return getInputType(effectiveType);
         } else {
-            return getInputType(typeName, description, (RecordTypeSymbol) effectiveType);
+            return getInputType(typeName, description, (RecordTypeSymbol) effectiveType, position);
         }
     }
 
