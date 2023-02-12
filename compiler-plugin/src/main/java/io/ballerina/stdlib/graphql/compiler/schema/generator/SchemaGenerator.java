@@ -191,8 +191,9 @@ public class SchemaGenerator {
             boolean isDeprecated = methodSymbol.deprecated();
             String deprecationReason = getDeprecationReason(methodSymbol);
             Type fieldType = getType(methodSymbol);
+            Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
-                                    deprecationReason);
+                                    deprecationReason, position);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -216,8 +217,9 @@ public class SchemaGenerator {
             return null;
         }
         Type fieldType = getType(methodSymbol);
+        Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
         Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
-                                deprecationReason);
+                                deprecationReason, position);
         addArgs(field, methodSymbol);
         return field;
     }
