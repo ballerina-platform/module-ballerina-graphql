@@ -30,6 +30,14 @@ isolated function testFragmentValidation(string documentFileName) returns error?
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
+function dataProviderFragmentValidation() returns (string[][]) {
+    return [
+        ["unknown_fragment"],
+        ["unknown_nested_fragments"],
+        ["unused_fragment"]
+    ];
+}
+
 @test:Config {
     groups: ["fragment"],
     dataProvider: dataProviderFragmentCycles
@@ -43,18 +51,11 @@ isolated function testFragmentsWithCycles(string documentFileName) returns error
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
-function dataProviderFragmentValidation() returns (string[][]) {
-    return [
-        ["unknown_fragment"],
-        ["unknown_nested_fragments"],
-        ["unused_fragment"]
-    ];
-}
-
 function dataProviderFragmentCycles() returns (string[][]) {
     return [
         ["fragments_with_cycles"],
         ["fragments_with_multiple_cycles"],
-        ["fragments_with_multiple_cycles_in_same_fragment"]
+        ["fragments_with_multiple_cycles_in_same_fragment"],
+        ["fragments_spread_itself"]
     ];
 }

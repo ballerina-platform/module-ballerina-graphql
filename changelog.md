@@ -6,9 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Changed
-- [[#3977] Remove Limitation on GraphQL Context Object Parameter Order](https://github.com/ballerina-platform/ballerina-standard-library/issues/3977)
-
 ### Added
 - [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
 - [[#3942] Add Functionality to Send Ping Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3942)
@@ -17,12 +14,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)
+- [[#3721] Fix Passing Incorrect Values when a Resolver Method has an Enum as Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/3721)
+- [[#4038] Fix `__typename` Introspection not Working on Introspection Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/4038)
+- [[#3337] Fix Allowing the use of non-distinct Service Objects as GraphQL Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/3337)
 
 ### Changed
 - [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
 - [[#3870] Add Service Error Handling Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3870)
 - [[#3709] Add Input Default Values Section to the Spec](https://github.com/ballerina-platform/ballerina-standard-library/issues/3709)
 - [[#3941] Remove Support for Non-Compliant Subscription Requests](https://github.com/ballerina-platform/ballerina-standard-library/issues/3941)
+- [[#3977] Remove Limitation on GraphQL Context Object Parameter Order](https://github.com/ballerina-platform/ballerina-standard-library/issues/3977)
 
 ## [1.5.0] - 2022-11-29
 

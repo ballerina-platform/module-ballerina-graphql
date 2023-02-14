@@ -22,6 +22,7 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
@@ -161,7 +162,7 @@ public class ArgumentHandler {
 
     private Object getUnionTypeArgument(BObject argumentNode, UnionType unionType) {
         if (isEnum(unionType)) {
-            return getScalarArgumentValue(argumentNode);
+            return getEnumTypeArgument(argumentNode, unionType);
         } else if (unionType.isNilable()) {
             if (argumentNode.getBooleanValue(VARIABLE_DEFINITION) && argumentNode.get(VARIABLE_VALUE_FIELD) == null) {
                 return null;
@@ -171,6 +172,25 @@ public class ArgumentHandler {
         }
         Type effectiveType = getEffectiveType(unionType);
         return getArgumentValue(argumentNode, effectiveType);
+    }
+
+    private Object getEnumTypeArgument(BObject argumentNode, UnionType enumType) {
+        BString enumName;
+        if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+            enumName = argumentNode.getStringValue(VARIABLE_VALUE_FIELD);
+        } else {
+            enumName = argumentNode.getStringValue(VALUE_FIELD);
+        }
+        Object result = enumName;
+        for (Type memberType : enumType.getMemberTypes()) {
+            if (memberType.getTag() == TypeTags.FINITE_TYPE_TAG) {
+                FiniteType finiteType = (FiniteType) memberType;
+                if (enumName.getValue().equals(finiteType.getName())) {
+                    result = finiteType.getZeroValue();
+                }
+            }
+        }
+        return result;
     }
 
     private Object getScalarArgumentValue(BObject argumentNode) {
@@ -194,12 +214,12 @@ public class ArgumentHandler {
         Object[] result = new Object[parameters.length * 2];
         for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
             if (isContext(parameters[i].type)) {
-                result[i] = this.context;
+                result[j] = this.context;
                 result[j + 1] = true;
                 continue;
             }
             if (isField(parameters[i].type)) {
-                result[i] = this.field;
+                result[j] = this.field;
                 result[j + 1] = true;
                 continue;
             }

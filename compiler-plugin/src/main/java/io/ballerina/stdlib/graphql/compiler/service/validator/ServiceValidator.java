@@ -26,6 +26,7 @@ import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
+import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
@@ -419,10 +420,12 @@ public class ServiceValidator {
             return;
         }
         this.visitedClassesAndObjectTypeDefinitions.add(typeDefinitionSymbol);
-        // TODO: Check for distinct keyword and add diagnostic
-        // https://github.com/ballerina-platform/ballerina-standard-library/issues/3337
         boolean resourceMethodFound = false;
         ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
+        if (!objectTypeSymbol.qualifiers().contains(Qualifier.DISTINCT)) {
+            String typeName = typeDefinitionSymbol.getName().orElse("$anonymous");
+            addDiagnostic(CompilationDiagnostic.NON_DISTINCT_INTERFACE, location, typeName);
+        }
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
             Location methodLocation = getLocation(methodSymbol, location);
             if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
@@ -448,7 +451,8 @@ public class ServiceValidator {
             if (implementation.kind() == SymbolKind.CLASS) {
                 if (!isDistinctServiceClass(implementation)) {
                     String implementationName = implementation.getName().get();
-                    addDiagnostic(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, location,
+                    Location implementationLocation = getLocation(implementation, location);
+                    addDiagnostic(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, implementationLocation,
                                   implementationName);
                     continue;
                 }
