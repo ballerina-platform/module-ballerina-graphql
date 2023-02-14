@@ -1378,7 +1378,7 @@ service /intercept_hierachical on basicListener {
 @graphql:ServiceConfig {
     interceptors: [new Destruct()]
 }
-service /intercept_service_obj_arrays on basicListener {
+service /intercept_service_obj_array1 on basicListener {
     resource function get students() returns StudentService[] {
         return [new StudentService(45, "Ron Weasly"), new StudentService(46, "Hermione Granger")];
     }
@@ -1396,7 +1396,7 @@ service /intercept_service_obj on basicListener {
 @graphql:ServiceConfig {
     interceptors: [new ServiceObjectInterceptor2()]
 }
-service /intercept_service_obj_array on basicListener {
+service /intercept_service_obj_array2 on basicListener {
     resource function get students() returns StudentService[] {
         return [new StudentService(45, "Ron Weasly"), new StudentService(46, "Hermione Granger")];
     }

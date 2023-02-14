@@ -1,0 +1,13 @@
+{
+    "data": {
+        "profile": {
+            "name": "Albus Percival Wulfric Brian Dumbledore",
+            "age": 80,
+            "address": {
+                "number": "100",
+                "street": "Margo Street",
+                "city": "London"
+            }
+        }
+    }
+}

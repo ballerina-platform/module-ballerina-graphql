@@ -1,0 +1,11 @@
+{
+    profile {
+        name,
+        age,
+        address {
+            number,
+            street,
+            city
+        }
+    }
+}
