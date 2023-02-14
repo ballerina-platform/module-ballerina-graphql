@@ -38,7 +38,15 @@ public enum TypeName {
     DIRECTIVE_LOCATION("__DirectiveLocation"),
     QUERY("Query"),
     MUTATION("Mutation"),
-    SUBSCRIPTION("Subscription");
+    SUBSCRIPTION("Subscription"),
+
+    // Type names used in federated subgraph schema
+    ANY("_Any"),
+    FIELD_SET("FieldSet"),
+    LINK_IMPORT("link__Import"),
+    LINK_PURPOSE("link__Purpose"),
+    ENTITY("_Entity"),
+    SERVICE("_Service");
 
     private final String name;
 

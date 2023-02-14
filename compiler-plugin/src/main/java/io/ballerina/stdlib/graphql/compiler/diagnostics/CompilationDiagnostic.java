@@ -62,7 +62,15 @@ public enum CompilationDiagnostic {
                                              DiagnosticSeverity.ERROR),
     INVALID_ANONYMOUS_FIELD_TYPE(DiagnosticMessage.ERROR_130, DiagnosticCode.GRAPHQL_130, DiagnosticSeverity.ERROR),
     INVALID_ANONYMOUS_INPUT_TYPE(DiagnosticMessage.ERROR_131, DiagnosticCode.GRAPHQL_131, DiagnosticSeverity.ERROR),
-    INVALID_RETURN_TYPE_CLASS(DiagnosticMessage.ERROR_132, DiagnosticCode.GRAPHQL_132, DiagnosticSeverity.ERROR);
+    INVALID_RETURN_TYPE_CLASS(DiagnosticMessage.ERROR_132, DiagnosticCode.GRAPHQL_132, DiagnosticSeverity.ERROR),
+    INVALID_USE_OF_RESERVED_REMOTE_METHOD_NAME(DiagnosticMessage.ERROR_133, DiagnosticCode.GRAPHQL_133,
+                                               DiagnosticSeverity.ERROR),
+    INVALID_USE_OF_RESERVED_RESOURCE_PATH(DiagnosticMessage.ERROR_134, DiagnosticCode.GRAPHQL_134,
+                                          DiagnosticSeverity.ERROR),
+    INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE(DiagnosticMessage.ERROR_135, DiagnosticCode.GRAPHQL_135,
+                                                DiagnosticSeverity.ERROR),
+    INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE(DiagnosticMessage.ERROR_136, DiagnosticCode.GRAPHQL_136,
+                                      DiagnosticSeverity.ERROR);
 
     private final String diagnostic;
     private final String diagnosticCode;

@@ -28,7 +28,7 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
-import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
@@ -65,15 +65,15 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
             return;
         }
         ObjectConstructorExpressionNode graphqlServiceObjectNode = (ObjectConstructorExpressionNode) expressionNode;
-        InterfaceFinder interfaceFinder = getInterfaceFinder(context);
+        InterfaceEntityFinder interfaceEntityFinder = getInterfaceFinder(context);
         ServiceValidator serviceObjectValidator = getServiceValidator(context, graphqlServiceObjectNode,
-                                                                      interfaceFinder);
+                                                                      interfaceEntityFinder);
         if (serviceObjectValidator.isErrorOccurred()) {
             return;
         }
 
         String description = getDescription(context, moduleVariableDeclarationNode);
-        Schema schema = generateSchema(context, interfaceFinder, graphqlServiceObjectNode, description);
+        Schema schema = generateSchema(context, interfaceEntityFinder, graphqlServiceObjectNode, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, moduleVariableDeclarationNode, schema);
     }

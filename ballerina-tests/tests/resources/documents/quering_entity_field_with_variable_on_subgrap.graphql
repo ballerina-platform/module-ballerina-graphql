@@ -1,0 +1,13 @@
+query _entities($representations: [_Any!]!) {
+  _entities(representations: $representations) {
+    ... on Star {
+      name
+      constellation
+      designation
+    }
+    ... on Planet {
+      name
+      mass
+    }
+  }
+}

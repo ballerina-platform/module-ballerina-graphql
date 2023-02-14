@@ -76,7 +76,7 @@ public class Engine {
         }
     }
 
-    private static Schema getDecodedSchema(BString schemaBString) {
+    public static Schema getDecodedSchema(BString schemaBString) {
         if (schemaBString == null) {
             throw createError("Schema generation failed due to null schema string", ERROR_TYPE);
         }

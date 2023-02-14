@@ -35,9 +35,13 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.utils.SdlSchemaStringGenerator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
 import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
@@ -45,6 +49,7 @@ import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
 import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getDecodedSchema;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -132,6 +137,10 @@ public class EngineUtils {
     public static final String FIELD_OBJECT = "field.object";
 
     public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
+
+    // Entity annotation fields
+    private static final BString ENTITY_ANNOTATION_KEY_FIELD = StringUtils.fromString("key");
+    private static final BString ENTITY_ANNOTATION_RESOLVER_FIELD = StringUtils.fromString("resolveReference");
 
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
@@ -286,5 +295,24 @@ public class EngineUtils {
 
     public static BObject getField(BObject context) {
         return (BObject) context.getNativeData(FIELD_OBJECT);
+    }
+
+    public static Object getSdlString(BString schemaString, BMap<BString, Object> keyDirectives) {
+        Schema schema = getDecodedSchema(schemaString);
+        Map<String, Object[]> directiveFields = getEntityKeyDirectiveFieldValues(keyDirectives);
+        String sdl = SdlSchemaStringGenerator.generate(schema, directiveFields);
+        return StringUtils.fromString(sdl);
+    }
+
+    private static Map<String, Object[]> getEntityKeyDirectiveFieldValues(BMap<BString, Object> keyDirectives) {
+        Map<String, Object[]> entityKeyDirectiveFields = new HashMap<>();
+        for (Map.Entry<BString, Object> keyDirective : keyDirectives.entrySet()) {
+            Map<BString, Object> federatedEntityRecord = (Map<BString, Object>) keyDirective.getValue();
+            String fields = ((BString) federatedEntityRecord.get(ENTITY_ANNOTATION_KEY_FIELD)).getValue();
+            boolean resolvable = federatedEntityRecord.get(ENTITY_ANNOTATION_RESOLVER_FIELD) != null;
+            Object[] tuple = new Object[]{fields, resolvable};
+            entityKeyDirectiveFields.put(keyDirective.getKey().getValue(), tuple);
+        }
+        return entityKeyDirectiveFields;
     }
 }

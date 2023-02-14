@@ -104,6 +104,8 @@ class FieldValidatorVisitor {
         if modifiedArgNode.isVariableDefinition() {
             self.validateVariableValue(argumentNode, schemaArg, fieldName);
             self.modifyArgumentNode(argumentNode, kind = getArgumentTypeIdentifierFromType(schemaArg.'type));
+        } else if getTypeKind(schemaArg.'type) == SCALAR && getOfTypeName(schemaArg.'type) == ANY {
+            self.visistAnyValue(argumentNode, schemaArg);
         } else if modifiedArgNode.getKind() == parser:T_INPUT_OBJECT {
             self.visitInputObject(argumentNode, schemaArg, fieldName);
         } else if modifiedArgNode.getKind() == parser:T_LIST {
@@ -115,6 +117,48 @@ class FieldValidatorVisitor {
                 self.validateArgumentValue(fieldValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
                                            schemaArg);
             }
+        }
+    }
+
+    isolated function visistAnyValue(parser:ArgumentNode argumentNode, __InputValue schemaArg) {
+        parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argumentNode);
+        parser:ArgumentValue|parser:ArgumentValue[] value = modifiedArgNode.getValue();
+        if value is () && schemaArg.'type.kind == NON_NULL {
+            string expectedTypeName = getTypeNameFromType(schemaArg.'type);
+            string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
+            self.errors.push(errorDetail);
+            return;
+        }
+        // _Any scalar is serialized as a generic JSON object, therefore it should be parsed as an array of type parser:ArgumentValue
+        if value !is parser:ArgumentValue[] {
+            string listError = getListElementError(self.argumentPath);
+            string message = string `${listError} "${getTypeNameFromType(schemaArg.'type)}" cannot represent non ${getTypeNameFromType(schemaArg.'type)}` +
+                            string ` value: "${value.toString()}"`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
+            self.errors.push(errorDetail);
+            return;
+        }
+        boolean hasTypename = false;
+        foreach parser:ArgumentValue argumentValue in value {
+            if argumentValue !is parser:ArgumentNode {
+                string listError = getListElementError(self.argumentPath);
+                string message = string `${listError} "${getTypeNameFromType(schemaArg.'type)}" cannot represent non ${getTypeNameFromType(schemaArg.'type)}` +
+                                string ` value: "${value.toString()}"`;
+                ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
+                self.errors.push(errorDetail);
+                continue;
+            }
+            if argumentValue.getName() == TYPE_NAME_FIELD {
+                hasTypename = true;
+            }
+        }
+        if !hasTypename {
+            string listError = getListElementError(self.argumentPath);
+            string message = string `${listError} "${getTypeNameFromType(schemaArg.'type)}" cannot represent non ${getTypeNameFromType(schemaArg.'type)}` +
+                            string ` value: "__typename" field is absent`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
+            self.errors.push(errorDetail);
         }
     }
 
@@ -336,7 +380,12 @@ class FieldValidatorVisitor {
                 foreach int i in 0 ..< variableValues.length() {
                     self.updatePath(i);
                     json listItemValue = variableValues[i];
-                    if listItemValue is Scalar {
+                    if listItemValue is () {
+                        string expectedTypeName = getOfTypeName(listItemInputValue.'type);
+                        self.validateArgumentValue(listItemValue, location, expectedTypeName, listItemInputValue);
+                    } else if getOfTypeName(listItemInputValue.'type) == ANY {
+                        self.validateAnyScalarVariable(listItemValue, location, listItemInputValue);
+                    } else if listItemValue is Scalar {
                         if getOfType(listItemInputValue.'type).kind == ENUM {
                             self.validateEnumArgument(listItemValue, location, ENUM, listItemInputValue);
                         } else {
@@ -360,9 +409,6 @@ class FieldValidatorVisitor {
                         self.validateListVariableValue(listItemValueClone, listItemInputValue, location, fieldName);
                         variableValues[i] = listItemValueClone;
                         self.removePath();
-                    } else if listItemValue is () {
-                        string expectedTypeName = getOfTypeName(listItemInputValue.'type);
-                        self.validateArgumentValue(listItemValue, location, expectedTypeName, listItemInputValue);
                     }
                     self.removePath();
                 }
@@ -373,6 +419,27 @@ class FieldValidatorVisitor {
             string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, location);
             self.errors.push(errorDetail);
+        }
+    }
+
+    isolated function validateAnyScalarVariable(json value, Location valueLocation, __InputValue inputValue) {
+        __Type argType = getOfType(inputValue.'type);
+        string schemaTypeName = getTypeNameFromType(argType);
+        if value !is map<json> {
+            string listError = getListElementError(self.argumentPath);
+            string message = string `${listError} "${schemaTypeName}" cannot represent non ${schemaTypeName}` +
+                             string ` value: "${value.toString()}"`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
+            self.errors.push(errorDetail);
+            return;
+        }
+        if value?.__typename == () {
+            string listError = getListElementError(self.argumentPath);
+            string message = string `${listError} "${schemaTypeName}" cannot represent non ${schemaTypeName}` +
+                             string ` value: "__typename" field is absent`;
+            ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
+            self.errors.push(errorDetail);
+            return;
         }
     }
 

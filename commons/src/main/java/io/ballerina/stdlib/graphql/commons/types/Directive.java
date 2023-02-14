@@ -38,6 +38,11 @@ public class Directive implements Serializable {
         this(defaultDirective.getName(), defaultDirective.getDescription(), defaultDirective.getLocations());
     }
 
+    public Directive(FederatedDirective federatedDirective) {
+        this(federatedDirective.getName(), null, federatedDirective.getLocations());
+        federatedDirective.getArguments().forEach(this::addArg);
+    }
+
     public Directive(String name, String description, List<DirectiveLocation> locations) {
         this.name = removeEscapeCharacter(name);
         this.description = description;

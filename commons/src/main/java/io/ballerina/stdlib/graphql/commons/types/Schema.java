@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.commons.types;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,19 +33,28 @@ public class Schema implements Serializable {
     private final String description;
     private final Map<String, Type> types;
     private final List<Directive> directives;
+    private final List<Type> entities;
+    private final boolean isSubgraph;
     private Type queryType;
     private Type mutationType = null;
     private Type subscriptionType = null;
+    private static final String REPRESENTATIONS_ARGUMENT = "representations";
+    private static final String SDL_FIELD = "sdl";
+
+    public static final String SERVICE_RESOLVER_NAME = "_service";
+    public static final String ENTITIES_RESOLVER_NAME = "_entities";
 
     /**
      * Creates the schema.
      *
      * @param description - The description of the schema
      */
-    public Schema(String description) {
+    public Schema(String description, boolean isSubgraph) {
         this.description = description;
         this.types = new LinkedHashMap<>();
         this.directives = new ArrayList<>();
+        this.entities = new ArrayList<>();
+        this.isSubgraph = isSubgraph;
     }
 
     /**
@@ -127,7 +137,65 @@ public class Schema implements Serializable {
         this.directives.add(directive);
     }
 
+    public void addDirective(FederatedDirective directive) {
+        this.directives.add(new Directive(directive));
+    }
+
     public List<Directive> getDirectives() {
         return this.directives;
+    }
+
+    public void addEntity(Type federatedEntities) {
+        if (!isSubgraph()) {
+            return;
+        }
+        this.entities.add(federatedEntities);
+    }
+
+    public List<Type> getEntities() {
+        return this.entities;
+    }
+
+    public void addSubgraphSchemaAdditions() {
+        if (!isSubgraph()) {
+            return;
+        }
+        ScalarType.getFederatedScalarTypes().forEach(this::addType);
+        Arrays.stream(FederatedEnumValue.values())
+                .forEach(enumType -> this.types.put(enumType.getName(), enumType.getEnumTypeWithValues()));
+        Arrays.stream(FederatedDirective.values()).forEach(this::addDirective);
+        this.addFederatedServiceTypeWithResolver();
+        this.addFederatedEntitiesWithResolver();
+    }
+
+    private void addFederatedServiceTypeWithResolver() {
+        Type service = addType(TypeName.SERVICE.getName(), TypeKind.OBJECT, null);
+
+        Type nonNullableString = new Type(TypeKind.NON_NULL, getType(TypeName.STRING.getName()));
+        service.addField(new Field(SDL_FIELD, nonNullableString));
+        Field serviceField = new Field(SERVICE_RESOLVER_NAME, new Type(TypeKind.NON_NULL, service));
+        Type query = getQueryType();
+        query.addField(serviceField);
+    }
+
+    private void addFederatedEntitiesWithResolver() {
+        if (this.entities.size() == 0) {
+            return;
+        }
+
+        Type entity = addType(TypeName.ENTITY.getName(), TypeKind.UNION, null);
+        getEntities().forEach(entity::addPossibleType);
+
+        Field entities = new Field(ENTITIES_RESOLVER_NAME,
+                                   new Type(TypeKind.NON_NULL, new Type(TypeKind.LIST, entity)));
+        Type nonNullableAnyScalar = new Type(TypeKind.NON_NULL, getType(TypeName.ANY.getName()));
+        Type nonNullableListOfAny = new Type(TypeKind.NON_NULL, new Type(TypeKind.LIST, nonNullableAnyScalar));
+        entities.addArg(new InputValue(REPRESENTATIONS_ARGUMENT, nonNullableListOfAny, null, null));
+        Type query = getQueryType();
+        query.addField(entities);
+    }
+
+    public boolean isSubgraph() {
+        return isSubgraph;
     }
 }

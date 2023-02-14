@@ -106,3 +106,12 @@ public const COMPRESSION_NEVER = "NEVER";
 
 # Options to compress using gzip or deflate.
 public type Compression COMPRESSION_AUTO|COMPRESSION_ALWAYS|COMPRESSION_NEVER;
+
+# Denotes the entity representation outlined in the federation specification.
+# + __typename - GraphQL typename field of the entity beign resolved
+public type Representation record {
+    string __typename;
+};
+
+# Represents the type of entity resolver
+public type ReferenceResolver function (Representation representation) returns record {}|service object {}|error?;

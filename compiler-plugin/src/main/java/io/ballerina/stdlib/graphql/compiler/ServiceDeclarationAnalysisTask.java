@@ -24,7 +24,7 @@ import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
-import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
@@ -51,8 +51,8 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
             return;
         }
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
-        InterfaceFinder interfaceFinder = getInterfaceFinder(context);
-        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceFinder);
+        InterfaceEntityFinder interfaceEntityFinder = getInterfaceFinder(context);
+        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder);
         if (serviceValidator.isErrorOccurred()) {
             return;
         }
@@ -61,7 +61,7 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) context.semanticModel().symbol(node).get();
         String description = getDescription(symbol);
-        Schema schema = generateSchema(context, interfaceFinder, node, description);
+        Schema schema = generateSchema(context, interfaceEntityFinder, node, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, node, schema);
     }

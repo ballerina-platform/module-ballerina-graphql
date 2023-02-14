@@ -69,7 +69,15 @@ public enum DiagnosticMessage {
     ERROR_129("invalid remote method ''{0}'' found in interceptor service. Only \"execute\" remote method is allowed"),
     ERROR_130("anonymous record ''{0}'' cannot be used as the type of the field ''{1}''"),
     ERROR_131("anonymous record ''{0}'' cannot be used as an input object type of the field ''{1}''"),
-    ERROR_132("invalid return type ''{0}'' provided for the GraphQL field ''{1}''. ''{0}'' is not a service class");
+    ERROR_132("invalid return type ''{0}'' provided for the GraphQL field ''{1}''. ''{0}'' is not a service class"),
+    ERROR_133("invalid use of reserved remote method name ''{0}''. The field ''{0}'' is reserved for use in "
+                      + "GraphQL Federation."),
+    ERROR_134("invalid use of reserved resource path ''{0}''. The field ''{0}'' is reserved for use in "
+                      + "GraphQL Federation."),
+    ERROR_135("the GraphQL field ''{0}'' use ''{1}'' as an output type. The type ''{1}'' is reserved for use in "
+                      + "GraphQL Federation."),
+    ERROR_136("invalid usage of type ''{0}'' as input object. The type ''{0}'' is reserved for use in "
+                      + "GraphQL Federation.");
 
     private final String message;
 

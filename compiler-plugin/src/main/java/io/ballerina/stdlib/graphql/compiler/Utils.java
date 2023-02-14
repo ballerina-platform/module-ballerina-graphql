@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
@@ -53,6 +54,7 @@ public final class Utils {
     public static final String FIELD_IDENTIFIER = "Field";
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
+    public static final String SUBGRAPH_ANNOTATION_NAME = "Subgraph";
 
     private Utils() {
     }
@@ -212,5 +214,27 @@ public final class Utils {
     public static boolean isFunctionDefinition(Node node) {
         return node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION
                 || node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION;
+    }
+
+    public static boolean isRecordTypeDefinition(Symbol symbol) {
+        if (symbol.kind() != SymbolKind.TYPE_DEFINITION) {
+            return false;
+        }
+        TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
+        return typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD;
+    }
+
+    public static boolean hasSubgraphAnnotation(List<AnnotationSymbol> annotations) {
+        for (AnnotationSymbol annotation : annotations) {
+            if (annotation.getName().isEmpty() || !isGraphqlModuleSymbol(annotation)) {
+                continue;
+            }
+            String annotationName = annotation.getName().get();
+            if (!annotationName.equals(SUBGRAPH_ANNOTATION_NAME)) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 }

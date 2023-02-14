@@ -101,3 +101,12 @@ isolated function isMap(map<any> value) returns boolean = @java:Method {
 isolated function getTypeNameFromValue(any value) returns string = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;
+
+# Obtains the schema representation of a federated subgraph, expressed in the SDL format.
+# + encodedSchemaString - Compile time auto generated schema
+# + keyDirectives - Map of `graphql:Entity` annotation values of all potential federated entities
+# + return - Subgraph schema in SDL format as a string on success, or an error otherwise
+public isolated function getSdlString(string encodedSchemaString, map<FederatedEntity> keyDirectives)
+returns string|error = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+} external;

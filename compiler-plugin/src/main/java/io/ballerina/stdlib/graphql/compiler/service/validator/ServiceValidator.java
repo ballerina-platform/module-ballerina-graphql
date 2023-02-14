@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
+import io.ballerina.compiler.api.symbols.EnumSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
@@ -47,9 +48,10 @@ import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
-import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -72,6 +74,8 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_SUBSCRIBE;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.isInvalidFieldName;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.isReservedFederatedResolverName;
+import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.isReservedFederatedTypeName;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
 /**
@@ -82,23 +86,26 @@ public class ServiceValidator {
     private final Set<Symbol> visitedClassesAndObjectTypeDefinitions = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
-    private final InterfaceFinder interfaceFinder;
+    private final InterfaceEntityFinder interfaceEntityFinder;
     private final SyntaxNodeAnalysisContext context;
     private final Node serviceNode;
     private int arrayDimension = 0;
     private boolean errorOccurred;
     private boolean hasQueryType;
+    private final boolean isSubgraph;
     private TypeSymbol rootInputParameterTypeSymbol;
 
     private final List<String> currentFieldPath;
 
-    public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder) {
+    public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
+                            InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
         this.context = context;
         this.serviceNode = serviceNode;
-        this.interfaceFinder = interfaceFinder;
+        this.interfaceEntityFinder = interfaceEntityFinder;
         this.errorOccurred = false;
         this.hasQueryType = false;
         this.currentFieldPath = new ArrayList<>();
+        this.isSubgraph = isSubgraph;
     }
 
     public void validate() {
@@ -117,6 +124,7 @@ public class ServiceValidator {
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpressionNode.location());
         }
+        validateEntitiesResolverReturnTypes();
     }
 
     private void validateServiceDeclaration() {
@@ -143,6 +151,7 @@ public class ServiceValidator {
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
+        validateEntitiesResolverReturnTypes();
     }
 
     private void validateServiceMember(Node node) {
@@ -164,7 +173,37 @@ public class ServiceValidator {
         }
     }
 
+    private void validateEntitiesResolverReturnTypes() {
+        if (!this.isSubgraph) {
+            return;
+        }
+        this.currentFieldPath.add(TypeName.QUERY.getName());
+        this.currentFieldPath.add(Schema.ENTITIES_RESOLVER_NAME);
+        for (Symbol symbol : interfaceEntityFinder.getEntities().values()) {
+            if (this.existingReturnTypes.contains(symbol)) {
+                continue;
+            }
+            // noinspection OptionalGetWithoutIsPresent
+            Location location = symbol.getLocation().get();
+            if (symbol.kind() == SymbolKind.CLASS) {
+                validateReturnTypeClass((ClassSymbol) symbol, location);
+            } else if (symbol.kind() == SymbolKind.TYPE_DEFINITION) {
+                RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) ((TypeDefinitionSymbol) symbol).typeDescriptor();
+                String recordName = symbol.getName().orElse(recordTypeSymbol.signature());
+                validateReturnType(recordTypeSymbol, recordTypeSymbol, location, recordName);
+            }
+        }
+        this.currentFieldPath.remove(Schema.ENTITIES_RESOLVER_NAME);
+        this.currentFieldPath.remove(TypeName.QUERY.getName());
+    }
+
     private void validateRootServiceResourceMethod(ResourceMethodSymbol methodSymbol, Location location) {
+        String resourceMethodName = getFieldPath(methodSymbol);
+        Location accessorLocation = getLocation(methodSymbol, location);
+        if (isReservedFederatedResolverName(resourceMethodName)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_RESOURCE_PATH, accessorLocation,
+                          resourceMethodName);
+        }
         String accessor = getAccessor(methodSymbol);
         if (RESOURCE_FUNCTION_SUBSCRIBE.equals(accessor)) {
             this.currentFieldPath.add(TypeName.SUBSCRIPTION.getName());
@@ -176,8 +215,6 @@ public class ServiceValidator {
             validateGetResource(methodSymbol, location);
             this.currentFieldPath.remove(TypeName.QUERY.getName());
         } else {
-            Location accessorLocation = getLocation(methodSymbol, location);
-            String resourceMethodName = getFieldPath(methodSymbol);
             addDiagnostic(CompilationDiagnostic.INVALID_ROOT_RESOURCE_ACCESSOR, accessorLocation, accessor,
                           resourceMethodName);
         }
@@ -259,6 +296,9 @@ public class ServiceValidator {
         this.currentFieldPath.add(fieldName);
         if (isInvalidFieldName(fieldName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_FIELD_NAME, location, getCurrentFieldPath(), fieldName);
+        } else if (isReservedFederatedResolverName(fieldName)) {
+            Location methodLocation = getLocation(methodSymbol, location);
+            addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_REMOTE_METHOD_NAME, methodLocation, fieldName);
         }
         validateMethod(methodSymbol, location);
         this.currentFieldPath.remove(fieldName);
@@ -354,11 +394,24 @@ public class ServiceValidator {
     }
 
     private void validateReturnTypeReference(TypeReferenceTypeSymbol typeReferenceTypeSymbol, Location location) {
-        if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.TYPE_DEFINITION) {
+        SymbolKind symbolKind = typeReferenceTypeSymbol.definition().kind();
+        if (symbolKind == SymbolKind.TYPE_DEFINITION) {
             validateReturnTypeDefinition(typeReferenceTypeSymbol, location);
-        } else if (typeReferenceTypeSymbol.definition().kind() == SymbolKind.CLASS) {
+        } else if (symbolKind == SymbolKind.CLASS) {
             ClassSymbol classSymbol = (ClassSymbol) typeReferenceTypeSymbol.definition();
             validateReturnTypeClass(classSymbol, location);
+        } else if (symbolKind == SymbolKind.ENUM) {
+            validateEnumReturnType((EnumSymbol) typeReferenceTypeSymbol.definition(), location);
+        }
+    }
+
+    private void validateEnumReturnType(EnumSymbol enumSymbol, Location location) {
+        // noinspection OptionalGetWithoutIsPresent
+        String enumName = enumSymbol.getName().get();
+        Location enumLocation = getLocation(enumSymbol, location);
+        if (isReservedFederatedTypeName(enumName)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, enumLocation,
+                          getCurrentFieldPath(), enumName);
         }
     }
 
@@ -406,7 +459,11 @@ public class ServiceValidator {
         }
 
         String objectTypeName = typeDefinitionSymbol.getName().get();
-        if (!this.interfaceFinder.isPossibleInterface(objectTypeName)) {
+        if (isReservedFederatedTypeName(objectTypeName)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
+                          getCurrentFieldPath(), objectTypeName);
+        }
+        if (!this.interfaceEntityFinder.isPossibleInterface(objectTypeName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, objectTypeName, getCurrentFieldPath());
             return;
         }
@@ -441,7 +498,7 @@ public class ServiceValidator {
     }
 
     private void validateInterfaceImplementation(String interfaceName, Location location) {
-        for (Symbol implementation : this.interfaceFinder.getImplementations(interfaceName)) {
+        for (Symbol implementation : this.interfaceEntityFinder.getImplementations(interfaceName)) {
             if (implementation.getName().isEmpty()) {
                 continue;
             }
@@ -461,7 +518,10 @@ public class ServiceValidator {
 
     private void validateReturnType(RecordTypeSymbol recordTypeSymbol, TypeSymbol descriptor, Location location,
                                     String recordTypeName) {
-        if (this.existingInputObjectTypes.contains(descriptor)) {
+        if (isReservedFederatedTypeName(recordTypeName)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
+                          getCurrentFieldPath(), recordTypeName);
+        } else if (this.existingInputObjectTypes.contains(descriptor)) {
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_INPUT_OBJECT, location, getCurrentFieldPath(),
                           recordTypeName);
         } else {
@@ -568,12 +628,15 @@ public class ServiceValidator {
                                             boolean isResourceMethod) {
         TypeSymbol typeDescriptor = typeSymbol.typeDescriptor();
         Symbol typeDefinition = typeSymbol.definition();
+        // noinspection OptionalGetWithoutIsPresent
+        String typeName = typeDefinition.getName().get();
         if (typeDefinition.kind() == SymbolKind.ENUM) {
+            if (isReservedFederatedTypeName(typeName)) {
+                addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, location, typeName);
+            }
             return;
         }
         if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION && typeDescriptor.typeKind() == TypeDescKind.RECORD) {
-            // noinspection OptionalGetWithoutIsPresent
-            String typeName = typeDefinition.getName().get();
             validateInputParameterType((RecordTypeSymbol) typeDescriptor, location, typeName, isResourceMethod);
             return;
         }
@@ -624,6 +687,10 @@ public class ServiceValidator {
                 return;
             }
             this.existingInputObjectTypes.add(recordTypeSymbol);
+            if (isReservedFederatedTypeName(recordTypeName)) {
+                addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, location,
+                              recordTypeName);
+            }
             for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
                 validateInputType(recordFieldSymbol.typeDescriptor(), location, isResourceMethod);
             }
@@ -635,6 +702,12 @@ public class ServiceValidator {
             return;
         }
         this.visitedClassesAndObjectTypeDefinitions.add(classSymbol);
+        // noinspection OptionalGetWithoutIsPresent
+        String className = classSymbol.getName().get();
+        if (isReservedFederatedTypeName(className)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
+                          getCurrentFieldPath(), className);
+        }
         boolean resourceMethodFound = false;
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             Location methodLocation = getLocation(methodSymbol, location);
@@ -643,7 +716,7 @@ public class ServiceValidator {
                 validateResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
             } else if (isRemoteMethod(methodSymbol)) {
                 // noinspection OptionalGetWithoutIsPresent
-                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, methodLocation, classSymbol.getName().get(),
+                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, methodLocation, className,
                               methodSymbol.getName().get());
             }
         }

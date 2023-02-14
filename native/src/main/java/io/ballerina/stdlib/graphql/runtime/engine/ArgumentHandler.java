@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -37,6 +38,8 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
@@ -52,6 +55,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isField;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isGraphqlModule;
 
 /**
  * This class processes the arguments passed to a GraphQL document to pass into Ballerina functions.
@@ -63,6 +67,16 @@ public class ArgumentHandler {
     private final BMap<BString, Object> fileInfo;
     private final BObject context;
     private final BObject field;
+
+    private static final String REPRESENTATION_TYPENAME = "Representation";
+
+    // graphql.parser types
+    private static final int T_STRING = 2;
+    private static final int T_INT = 3;
+    private static final int T_FLOAT = 4;
+    private static final int T_BOOLEAN = 5;
+    private static final int T_INPUT_OBJECT = 22;
+    private static final int T_LIST = 23;
 
     public ArgumentHandler(MethodType method, BObject context, BObject field) {
         this.method = method;
@@ -91,7 +105,10 @@ public class ArgumentHandler {
 
     private Object getArgumentValue(BObject argumentNode, Type parameterType) {
         if (isFileUpload(parameterType)) {
-            return getFileUploadParameter(argumentNode, parameterType);
+            return this.getFileUploadParameter(argumentNode, parameterType);
+        } else if (isRepresentationArgument(parameterType)) {
+            Object jsonRepresentation = this.getJsonArgument(argumentNode);
+            return getRepresentationArgument(jsonRepresentation, parameterType);
         } else if (parameterType.getTag() == TypeTags.RECORD_TYPE_TAG) {
             return this.getInputObjectArgument(argumentNode, (RecordType) parameterType);
         } else if (parameterType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -105,6 +122,12 @@ public class ArgumentHandler {
         } else {
             return this.getScalarArgumentValue(argumentNode);
         }
+    }
+
+    private BMap<BString, Object> getRepresentationArgument(Object jsonRepresentation, Type parameterType) {
+        BMap<BString, ?> map = JsonUtils.convertJSONToMap(jsonRepresentation, PredefinedTypes.TYPE_MAP);
+        return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
+                                              (BMap<BString, Object>) map);
     }
 
     private Object getFileUploadParameter(BObject argumentNode, Type parameterType) {
@@ -133,6 +156,46 @@ public class ArgumentHandler {
         return recordValue;
     }
 
+    private Object getJsonArgument(BObject argumentNode) {
+        int kind = (int) argumentNode.getIntValue(StringUtils.fromString("kind"));
+        Object valueField = argumentNode.get(VALUE_FIELD);
+        switch (kind) {
+            case T_STRING:
+            case T_INT:
+            case T_FLOAT:
+            case T_BOOLEAN:
+                return JsonUtils.convertToJson(valueField, new ArrayList<>());
+            case T_INPUT_OBJECT:
+                return getJsonObject(argumentNode);
+            case T_LIST:
+                return getJsonList(argumentNode);
+        }
+        return null;
+    }
+
+    private Object getJsonList(BObject argumentNode) {
+        BArray valueArray = ValueCreator.createArrayValue(PredefinedTypes.TYPE_JSON_ARRAY);
+        BArray argumentArray = argumentNode.getArrayValue(VALUE_FIELD);
+        for (int i = 0; i < argumentArray.size(); i++) {
+            BObject argumentElementNode = (BObject) argumentArray.get(i);
+            Object elementValue = getJsonArgument(argumentElementNode);
+            valueArray.append(elementValue);
+        }
+        return JsonUtils.convertToJson(valueArray, new ArrayList<>());
+    }
+
+    private Object getJsonObject(BObject argumentNode) {
+        BMap<BString, Object> mapValue = ValueCreator.createMapValue();
+        BArray inputObjectFields = argumentNode.getArrayValue(VALUE_FIELD);
+        for (int i = 0; i < inputObjectFields.size(); i++) {
+            BObject inputObjectField = (BObject) inputObjectFields.get(i);
+            BString inputObjectFieldName = inputObjectField.getStringValue(NAME_FIELD);
+            Object fieldValue = getJsonArgument(inputObjectField);
+            mapValue.put(inputObjectFieldName, fieldValue);
+        }
+        return JsonUtils.convertToJson(mapValue, new ArrayList<>());
+    }
+
     private Object getIntersectionTypeArgument(BObject argumentNode, IntersectionType intersectionType) {
         Type effectiveType = TypeUtils.getReferredType(getEffectiveType(intersectionType));
         if (effectiveType.getTag() == TypeTags.ARRAY_TAG) {
@@ -149,6 +212,12 @@ public class ArgumentHandler {
         BArray valueArray = ValueCreator.createArrayValue(arrayType);
         if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
             BArray argumentsArray = argumentNode.getArrayValue(VARIABLE_VALUE_FIELD);
+            if (isRepresentationArgument(arrayType.getElementType())) {
+                Object[] representations = argumentsArray.getValues();
+                Object[] representationRecords = Arrays.stream(representations)
+                        .map(entity -> this.getRepresentationArgument(entity, arrayType.getElementType())).toArray();
+                return ValueCreator.createArrayValue(representationRecords, arrayType);
+            }
             return (BArray) JsonUtils.convertJSON(argumentsArray, arrayType);
         }
         BArray argumentArray = argumentNode.getArrayValue(VALUE_FIELD);
@@ -250,5 +319,10 @@ public class ArgumentHandler {
             }
         }
         return unionType;
+    }
+
+    private boolean isRepresentationArgument(Type type) {
+        return TypeUtils.getReferredType(type).getTag() == TypeTags.RECORD_TYPE_TAG && isGraphqlModule(type)
+                && type.getName().equals(REPRESENTATION_TYPENAME);
     }
 }

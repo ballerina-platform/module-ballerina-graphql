@@ -18,6 +18,8 @@
 
 package io.ballerina.stdlib.graphql.commons.types;
 
+import java.util.List;
+
 /**
  * Stores the default scalar types in a GraphQL schema.
  */
@@ -27,7 +29,12 @@ public enum ScalarType {
     FLOAT(TypeName.FLOAT, Description.FLOAT, true),
     BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN, true),
     DECIMAL(TypeName.DECIMAL, Description.DECIMAL, false),
-    UPLOAD(TypeName.UPLOAD, Description.UPLOAD, false);
+    UPLOAD(TypeName.UPLOAD, Description.UPLOAD, false),
+
+    // Scalars used in federation subgraph schema
+    ANY(TypeName.ANY, null, false),
+    FIELD_SET(TypeName.FIELD_SET, null, false),
+    LINK_IMPORT(TypeName.LINK_IMPORT, null, false);
 
     private final TypeName typeName;
     private final Description description;
@@ -44,10 +51,17 @@ public enum ScalarType {
     }
 
     public String getDescription() {
+        if (this.description == null) {
+            return null;
+        }
         return this.description.getDescription();
     }
 
     public Boolean isInbuiltType() {
         return this.isInbuiltType;
+    }
+
+    public static List<ScalarType> getFederatedScalarTypes() {
+        return List.of(ANY, FIELD_SET, LINK_IMPORT);
     }
 }

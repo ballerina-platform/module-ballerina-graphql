@@ -1003,6 +1003,62 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 112, 5);
     }
 
+    @Test(groups = "invalid")
+    public void testInvalidUseOfReservedFederatedResolverNames() {
+        String packagePath = "59_invalid_use_of_reserved_federation_resolver_names";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_RESOURCE_PATH, "_entities");
+        assertErrorMessage(diagnostic, message, 20, 23);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_RESOURCE_PATH, "_service");
+        assertErrorMessage(diagnostic, message, 24, 23);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_REMOTE_METHOD_NAME, "_entities");
+        assertErrorMessage(diagnostic, message, 34, 21);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUseOfReservedFederatedTypeNames() {
+        String packagePath = "60_invalid_use_of_reserved_federation_type_names";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 6);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, "Query.any",
+                                         "_Any");
+        assertErrorMessage(diagnostic, message, 43, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE,
+                                  "Mutation.services", "_Service");
+        assertErrorMessage(diagnostic, message, 36, 15);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, "FieldSet");
+        assertErrorMessage(diagnostic, message, 51, 45);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, "Query.linkImport",
+                                  "link__Import");
+        assertErrorMessage(diagnostic, message, 55, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE,
+                                  "Query.linkPurpose", "link__Purpose");
+        assertErrorMessage(diagnostic, message, 27, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, "link__Purpose");
+        assertErrorMessage(diagnostic, message, 63, 51);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
