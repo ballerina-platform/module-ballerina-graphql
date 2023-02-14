@@ -36,6 +36,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.utils.KeyDirectivesArgumentHolder;
 import io.ballerina.stdlib.graphql.commons.utils.SdlSchemaStringGenerator;
 
 import java.util.ArrayList;
@@ -147,8 +148,8 @@ public class EngineUtils {
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
         BArray locations = ValueCreator.createArrayValue(locationsArrayType);
         locations.append(location);
-        ArrayType pathSegmentArrayType = TypeCreator
-                .createArrayType(TypeCreator.createUnionType(PredefinedTypes.TYPE_INT, PredefinedTypes.TYPE_STRING));
+        ArrayType pathSegmentArrayType = TypeCreator.createArrayType(
+                TypeCreator.createUnionType(PredefinedTypes.TYPE_INT, PredefinedTypes.TYPE_STRING));
         BArray pathSegmentArray = ValueCreator.createArrayValue(pathSegments.toArray(), pathSegmentArrayType);
         BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(), ERROR_DETAIL_RECORD);
         errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
@@ -299,20 +300,36 @@ public class EngineUtils {
 
     public static Object getSdlString(BString schemaString, BMap<BString, Object> keyDirectives) {
         Schema schema = getDecodedSchema(schemaString);
-        Map<String, Object[]> directiveFields = getEntityKeyDirectiveFieldValues(keyDirectives);
+        Map<String, KeyDirectivesArgumentHolder> directiveFields = getEntityKeyDirectiveFieldValues(keyDirectives);
         String sdl = SdlSchemaStringGenerator.generate(schema, directiveFields);
         return StringUtils.fromString(sdl);
     }
 
-    private static Map<String, Object[]> getEntityKeyDirectiveFieldValues(BMap<BString, Object> keyDirectives) {
-        Map<String, Object[]> entityKeyDirectiveFields = new HashMap<>();
+    private static Map<String, KeyDirectivesArgumentHolder> getEntityKeyDirectiveFieldValues(
+            BMap<BString, Object> keyDirectives) {
+        Map<String, KeyDirectivesArgumentHolder> entityKeyDirectiveFields = new HashMap<>();
         for (Map.Entry<BString, Object> keyDirective : keyDirectives.entrySet()) {
             Map<BString, Object> federatedEntityRecord = (Map<BString, Object>) keyDirective.getValue();
-            String fields = ((BString) federatedEntityRecord.get(ENTITY_ANNOTATION_KEY_FIELD)).getValue();
+            List<String> entityKeyDirectivesFields = getEntityKeyDirectivesFields(federatedEntityRecord);
             boolean resolvable = federatedEntityRecord.get(ENTITY_ANNOTATION_RESOLVER_FIELD) != null;
-            Object[] tuple = new Object[]{fields, resolvable};
-            entityKeyDirectiveFields.put(keyDirective.getKey().getValue(), tuple);
+            KeyDirectivesArgumentHolder arguments = new KeyDirectivesArgumentHolder(entityKeyDirectivesFields,
+                                                                                    resolvable);
+            entityKeyDirectiveFields.put(keyDirective.getKey().getValue(), arguments);
         }
         return entityKeyDirectiveFields;
+    }
+
+    private static List<String> getEntityKeyDirectivesFields(Map<BString, Object> federatedEntityRecord) {
+        Object keys = federatedEntityRecord.get(ENTITY_ANNOTATION_KEY_FIELD);
+        if (keys instanceof BString) {
+            return List.of(((BString) keys).getValue());
+        }
+        BArray keysArray = (BArray) keys;
+        long size = keysArray.size();
+        List<String> keyDirectiveFields = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            keyDirectiveFields.add(keysArray.getBString(i).getValue());
+        }
+        return keyDirectiveFields;
     }
 }

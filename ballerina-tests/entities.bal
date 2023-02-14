@@ -61,7 +61,7 @@ function findStarByName(string name) returns Star|error {
 }
 
 @graphql:Entity {
-    key: "name",
+    key: ["name", "id"],
     resolveReference: function(graphql:Representation representation) returns Planet? {
         do {
             string name = check representation["name"].ensureType();
@@ -72,6 +72,7 @@ function findStarByName(string name) returns Star|error {
     }
 }
 public type Planet record {
+    int id;
     string name;
     decimal mass;
     int numberOfMoons;
@@ -79,9 +80,9 @@ public type Planet record {
 };
 
 Planet[] planets = [
-    {name: "Mercury", mass: 0.383, numberOfMoons: 0},
-    {name: "Venus", mass: 0.949, numberOfMoons: 0},
-    {name: "Earth", mass: 1, numberOfMoons: 1, moon: {name: "moon"}}
+    {id: 1, name: "Mercury", mass: 0.383, numberOfMoons: 0},
+    {id: 2, name: "Venus", mass: 0.949, numberOfMoons: 0},
+    {id: 3, name: "Earth", mass: 1, numberOfMoons: 1, moon: {name: "moon"}}
 ];
 
 function findPlanetByName(string name) returns Planet|error {

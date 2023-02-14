@@ -57,7 +57,8 @@ public class SdlSchemaStringGenerator {
     private static final String SCALAR_TYPE_FORMAT = "%sscalar %s%s";
     private static final String OBJECT_TYPE_FORMAT = "%stype %s%s %s";
     private static final String ENTITY_TYPE_FORMAT = "%stype %s%s%s %s";
-    private static final String ENTITY_KEY_DIRECTIVE = " @key(fields: \"%s\", resolvable: %s)";
+    private static final String ENTITY_KEY_DIRECTIVE = " @key(fields: \"%s\"%s)";
+    private static final String RESOLVABLE_ARGUMENT = ", resolvable: %s";
     private static final String LINK_DIRECTIVE = "@link(url: \"%s\", import: [%s], as: \"%s\")";
     private static final String ENUM_TYPE_FORMAT = "%senum %s %s";
     private static final String INPUT_TYPE_FORMAT = "%sinput %s %s";
@@ -94,20 +95,20 @@ public class SdlSchemaStringGenerator {
     private static final String DOUBLE_QUOTE = "\"";
 
     private final boolean isSubgraph;
-    private final Map<String, Object[]> entityKeyDirectives;
+    private final Map<String, KeyDirectivesArgumentHolder> entityKeyDirectives;
     private final Schema schema;
 
     public static String generate(Schema schema) {
         return generate(schema, new HashMap<>());
     }
 
-    public static String generate(Schema schema, Map<String, Object[]> entityKeyDirectives) {
+    public static String generate(Schema schema, Map<String, KeyDirectivesArgumentHolder> entityKeyDirectives) {
         schema.addSubgraphSchemaAdditions();
         SdlSchemaStringGenerator sdlGenerator = new SdlSchemaStringGenerator(schema, entityKeyDirectives);
         return sdlGenerator.getSDLSchemaString();
     }
 
-    private SdlSchemaStringGenerator(Schema schema, Map<String, Object[]> entityKeyDirectives) {
+    private SdlSchemaStringGenerator(Schema schema, Map<String, KeyDirectivesArgumentHolder> entityKeyDirectives) {
         this.schema = schema;
         this.isSubgraph = schema.isSubgraph();
         this.entityKeyDirectives = entityKeyDirectives;
@@ -212,28 +213,36 @@ public class SdlSchemaStringGenerator {
         String typeName = type.getName();
         if (this.isSubgraph && this.entityKeyDirectives.containsKey(typeName)) {
             return getFormattedString(ENTITY_TYPE_FORMAT, createTypeDescription(type.getDescription()), typeName,
-                                      createInterfaceImplements(type), createEntityKeyDirective(typeName),
+                                      createInterfaceImplements(type), createEntityKeyDirectives(typeName),
                                       createFields(type));
         }
         return getFormattedString(OBJECT_TYPE_FORMAT, createTypeDescription(type.getDescription()), typeName,
                                   createInterfaceImplements(type), createFields(type));
     }
 
-    private String createEntityKeyDirective(String entityName) {
-        Object[] tuple = this.entityKeyDirectives.get(entityName);
-        String fields = (String) tuple[0];
-        Boolean resolvable = (Boolean) tuple[1];
-        return getFormattedString(ENTITY_KEY_DIRECTIVE, fields, resolvable.toString());
+    private String createEntityKeyDirectives(String entityName) {
+        KeyDirectivesArgumentHolder arguments = this.entityKeyDirectives.get(entityName);
+        // If there are more than one field name in the list, then key directive is repeated for each fieldName
+        List<String> keyDirectiveFields = arguments.getFieldNames();
+        List<String> keyDirectives = keyDirectiveFields.stream()
+                .map(fields -> createEntityKeyDirective(fields, arguments.isResolvable())).collect(Collectors.toList());
+        return String.join(EMPTY_STRING, keyDirectives);
+    }
+
+    private String createEntityKeyDirective(String fieldArgument, Boolean resolvable) {
+        String resolvableArgument = resolvable ? EMPTY_STRING :
+                getFormattedString(RESOLVABLE_ARGUMENT, resolvable.toString());
+        return getFormattedString(ENTITY_KEY_DIRECTIVE, fieldArgument, resolvableArgument);
     }
 
     private String createInterfaceType(Type type) {
         return getFormattedString(INTERFACE_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
-                createInterfaceImplements(type), createFields(type));
+                                  createInterfaceImplements(type), createFields(type));
     }
 
     private String createUnionType(Type type) {
         return getFormattedString(UNION_TYPE_FORMAT, createTypeDescription(type.getDescription()), type.getName(),
-                createPossibleTypes(type));
+                                  createPossibleTypes(type));
     }
 
     private String createInputObjectType(Type type) {

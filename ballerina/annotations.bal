@@ -42,11 +42,11 @@ public annotation GraphqlServiceConfig ServiceConfig on service;
 public annotation Subgraph on service;
 
 # Describes the shape of the `graphql:Entity` annotation
-# + key - GraphQL fields and subfields that contribute to the entity's primary key
+# + key - GraphQL fields and subfields that contribute to the entity's primary key/keys
 # + resolveReference - Function pointer to resolve the entity. if set to nil, indicates the graph router that this
 #                      subgraph does not define a reference resolver for this entity
 public type FederatedEntity record {|
-    string key;
+    string|string[] key;
     ReferenceResolver? resolveReference;
 |};
 
