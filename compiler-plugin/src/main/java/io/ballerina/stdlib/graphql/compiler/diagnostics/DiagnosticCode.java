@@ -37,6 +37,7 @@ public enum DiagnosticCode {
     GRAPHQL_113,
     GRAPHQL_114,
     GRAPHQL_115,
+    GRAPHQL_116,
     GRAPHQL_117,
     GRAPHQL_118,
     GRAPHQL_119,

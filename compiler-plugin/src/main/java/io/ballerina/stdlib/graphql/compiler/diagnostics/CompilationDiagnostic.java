@@ -41,6 +41,7 @@ public enum CompilationDiagnostic {
     INVALID_RETURN_TYPE_INPUT_OBJECT(DiagnosticMessage.ERROR_114, DiagnosticCode.GRAPHQL_114, DiagnosticSeverity.ERROR),
     INVALID_RESOURCE_INPUT_OBJECT_PARAM(DiagnosticMessage.ERROR_115, DiagnosticCode.GRAPHQL_115,
                                         DiagnosticSeverity.ERROR),
+    NON_DISTINCT_INTERFACE(DiagnosticMessage.ERROR_116, DiagnosticCode.GRAPHQL_116, DiagnosticSeverity.ERROR),
     INVALID_PATH_PARAMETERS(DiagnosticMessage.ERROR_117, DiagnosticCode.GRAPHQL_117, DiagnosticSeverity.ERROR),
     INVALID_RESOURCE_PATH(DiagnosticMessage.ERROR_118, DiagnosticCode.GRAPHQL_118, DiagnosticSeverity.ERROR),
     INVALID_FILE_UPLOAD_IN_RESOURCE_FUNCTION(DiagnosticMessage.ERROR_119, DiagnosticCode.GRAPHQL_119,
