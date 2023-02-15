@@ -25,7 +25,7 @@ jobs:
             -   name: Generate CodeCov Report Try 1
                 if: github.event_name == 'pull_request'
                 id: uploadReport1
-                uses: codecov/codecov-action@v2
+                uses: codecov/codecov-action@v3
                 continue-on-error: true
                 with:
                     fail_ci_if_error: true
@@ -36,7 +36,7 @@ jobs:
             -   name: Generate CodeCov Report Try 2
                 if: steps.uploadReport1.outcome == 'failure'
                 id: uploadReport2
-                uses: codecov/codecov-action@v2
+                uses: codecov/codecov-action@v3
                 continue-on-error: true
                 with:
                     fail_ci_if_error: true
@@ -47,7 +47,7 @@ jobs:
             -   name: Generate CodeCov Report Try 3
                 if: steps.uploadReport2.outcome == 'failure'
                 id: uploadReport3
-                uses: codecov/codecov-action@v2
+                uses: codecov/codecov-action@v3
                 continue-on-error: true
                 with:
                     fail_ci_if_error: true
@@ -57,7 +57,7 @@ jobs:
                     sleep 300s
             -   name: Generate CodeCov Report Try 4
                 if: steps.uploadReport3.outcome == 'failure'
-                uses: codecov/codecov-action@v2
+                uses: codecov/codecov-action@v3
 
     windows-build:
         name: Build on Windows
