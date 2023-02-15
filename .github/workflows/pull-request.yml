@@ -29,6 +29,7 @@ jobs:
                 continue-on-error: true
                 with:
                     fail_ci_if_error: true
+                    files: ./ballerina/target/report/graphql/coverage-report.xml,./ballerina-tests/target/report/graphql_tests/coverage-report.xml
             -   name: Wait after upload failure
                 if: steps.uploadReport1.outcome == 'failure'
                 run: |
@@ -40,6 +41,7 @@ jobs:
                 continue-on-error: true
                 with:
                     fail_ci_if_error: true
+                    files: ./ballerina/target/report/graphql/coverage-report.xml,./ballerina-tests/target/report/graphql_tests/coverage-report.xml
             -   name: Wait after upload failure
                 if: steps.uploadReport2.outcome == 'failure'
                 run: |
@@ -51,6 +53,7 @@ jobs:
                 continue-on-error: true
                 with:
                     fail_ci_if_error: true
+                    files: ./ballerina/target/report/graphql/coverage-report.xml,./ballerina-tests/target/report/graphql_tests/coverage-report.xml
             -   name: Wait after upload failure
                 if: steps.uploadReport3.outcome == 'failure'
                 run: |
@@ -58,6 +61,8 @@ jobs:
             -   name: Generate CodeCov Report Try 4
                 if: steps.uploadReport3.outcome == 'failure'
                 uses: codecov/codecov-action@v2
+                with:
+                    files: ./ballerina/target/report/graphql/coverage-report.xml,./ballerina-tests/target/report/graphql_tests/coverage-report.xml
 
     windows-build:
         name: Build on Windows

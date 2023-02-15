@@ -6,6 +6,7 @@ ignore:
     - "compiler-plugin-tests"
     - "compiler-plugin"
     - "commons"
+    - "load-tests"
 
 coverage:
     precision: 2
