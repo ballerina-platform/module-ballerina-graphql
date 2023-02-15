@@ -17,63 +17,22 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["service", "schema_generation"]
+    groups: ["service", "schema_generation"],
+    dataProvider: dataProviderRecursiveServiceTypes
 }
-isolated function testReturningRecursiveServiceTypes() returns error? {
-    string document = string`query { trail(id: "blue-bird") { name } }`;
+isolated function testRecursiveServiceTypes(string documentFileName) returns error? {
     string url = "http://localhost:9092/snowtooth";
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            trail: {
-                name: "Blue Bird"
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["service", "schema_generation"]
-}
-isolated function testRequestInvalidFieldFromServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("request_invalid_field_from_service_objects.graphql");
-    string url = "http://localhost:9092/snowtooth";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Cannot query field "invalid" on type "Lift".`,
-                locations: [
-                    {
-                        line: 5,
-                        column: 9
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "union", "recursive_service", "schema_generation"]
-}
-isolated function testReturningUnionOfServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("returning_union_of_service_objects.graphql");
-    string url = "http://localhost:9092/snowtooth";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("returning_union_of_service_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["introspection", "service", "union", "fragments"]
-}
-isolated function testGraphQLPlaygroundIntrospectionQuery() returns error? {
-    string document = check getGraphQLDocumentFromFile("graphql_playground_introspection_query.graphql");
-    json expectedPayload = check getJsonContentFromFile("graphql_playground_introspection_query.json");
-    string url = "http://localhost:9092/snowtooth";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+function dataProviderRecursiveServiceTypes() returns string[][] {
+    return [
+        ["returning_recursive_service_type"],
+        ["request_invalid_field_from_service_objects"],
+        ["returning_union_of_service_objects"],
+        ["graphql_playground_introspection_query"]
+    ];
 }

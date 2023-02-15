@@ -17,89 +17,26 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["field-object"]
+    groups: ["field-object"],
+    dataProvider: dataProviderFieldObject
 }
-function testFieldObject() returns error? {
-    string document = check getGraphQLDocumentFromFile("field_object.graphql");
-    string url = "localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "QueryName");
-    json expectedPayload = {
-        data: {
-            person: {
-                name: "Sherlock Holmes"
-            }
-        }
-    };
+function testFieldObject(string url, string documentFileName, string jsonFileName, string operationName) returns error? {
+    string document = check getGraphQLDocumentFromFile(documentFileName);
+    json actualPayload = check getJsonPayloadFromService(url, document, operationName = operationName);
+    json expectedPayload = check getJsonContentFromFile(jsonFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["field-object"]
-}
-function testFieldObjectWithMultipleArgs() returns error? {
-    string document = check getGraphQLDocumentFromFile("field_object.graphql");
-    string url = "localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "QueryNameAndAge");
-    json expectedPayload = {
-        data: {
-            person: {
-                name: "Walter White",
-                age: 50
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderFieldObject() returns string[][] {
 
-@test:Config {
-    groups: ["field-object"]
-}
-function testFieldObjectUsingFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("field_object.graphql");
-    string url = "localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "QueryNameAndAgeWithFragments");
-    json expectedPayload = {
-        data: {
-            person: {
-                name: "Walter White",
-                age: 50
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+    string url1 = "localhost:9092/service_types";
+    string url2 = "localhost:9092/service_objects";
 
-@test:Config {
-    groups: ["field-object"]
-}
-function testFieldObjectParameterOrder() returns error? {
-    string document = check getGraphQLDocumentFromFile("field_object_parameter_order.graphql");
-    string url = "localhost:9092/service_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "FieldObjectParameterOrder1");
-    json expectedPayload = {
-        data: {
-            student: {
-                name: "Jesse Pinkman"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["field-object"]
-}
-function testFieldObjectParameterOrder2() returns error? {
-    string document = check getGraphQLDocumentFromFile("field_object_parameter_order.graphql");
-    string url = "localhost:9092/service_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "FieldObjectParameterOrder2");
-    json expectedPayload = {
-        data: {
-            student: {
-                name: "Skinny Pete",
-                id: 100
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "field_object.graphql", "field_object.json", "QueryName"],
+        [url1, "field_object.graphql", "field_object_with_multiple_args.json", "QueryNameAndAge"],
+        [url1, "field_object.graphql", "field_object_with_multiple_args.json", "QueryNameAndAgeWithFragments"],
+        [url2, "field_object_parameter_order.graphql", "field_object_parameter_order1.json", "FieldObjectParameterOrder1"],
+        [url2, "field_object_parameter_order.graphql", "field_object_parameter_order2.json", "FieldObjectParameterOrder2"]
+    ];
 }

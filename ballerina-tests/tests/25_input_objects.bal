@@ -17,73 +17,19 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["input_objects", "input"]
+    groups: ["input_objects", "inputs"],
+    dataProvider: dataProviderInputObject
 }
-isolated function testInputObject() returns error? {
-    string document = string`{ searchProfile(profileDetail:{name:"Jessie", age:28}) { name } }`;
+isolated function testInputObject(string documentFileName, json variables = ()) returns error? {
     string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            searchProfile: {
-                name: "Jessie Pinkman"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithMissingArgs() returns error? {
-    string document = string`{ searchProfile(profileDetail:{age: 34}) { name } }`;
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_missing_arguments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithInvalidArguments1() returns error? {
-    string document = string`{searchProfile(profileDetail:{name: 5, age: "Arthur"}){ name }}`;
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input", "variables"]
-}
-isolated function testInputObjectWithInvalidArguments2() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_arguments2.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_arguments2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithVariables() returns error? {
-    string document = string`($profile: ProfileDetail!){searchProfile(profileDetail:$profile){ name }}`;
-    json variables = { profile: {name: "Arthur", age: 5} };
-    string url = "http://localhost:9091/input_objects";
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_variables.json");
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithNestedInputObjectVariables() returns error? {
-    string document = string`($info: Info!){ book(info:$info){ name }}`;
-    json variables = {
+function dataProviderInputObject() returns map<[string, json]> {
+    json var1 = {
         info: {
             bookName: "Sherlock",
             edition: 4,
@@ -92,285 +38,77 @@ isolated function testInputObjectWithNestedInputObjectVariables() returns error?
             }
         }
     };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_nested_input_object_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectIncludeFieldsWithVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_variables.graphql");
-    json variables = { bName: "Harry Potter", authorAge: 50 };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_include_fields_with_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithDuplicateFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_duplicate_fields.graphql");
-    json variables = {
+    json var2 = {
         bName: "Harry Potter",
         bAuthor: {
             name: "J.K Rowling",
             age: 50
         }
     };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_duplicate_fields.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithUndefinedFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_undefined_fields.graphql");
-    json variables = {
-        bName: "Harry Potter",
-        bAuthor: {
-            name: "J.K Rowling",
-            age: 50
-        }
-    };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_undefined_fields.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectIncludeFieldsWithUndefinedVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_undefined_variables.graphql");
-    json variables = { authorAge: 50 };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_include_fields_with_undefined_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectIncludeFieldsWithComplexVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_include_fields_with_complex_variables.graphql");
-    json variables = {
+    json var3 = {
         bName: "Study in Scarlet",
         bAuthor: {
             name: "J.K Rowling",
             age: 50
         }
     };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_include_fields_with_complex_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithNestedObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_nested_object.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_nested_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithDefaultValues() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_default_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithoutOptionalFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_without_optional_fields.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_without_optional_fields.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithMissingVariablesArguments() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_missing_variables_arguments.graphql");
-    json variables = {
+    json var4 = {
         bName: "Study in Scarlet",
         bAuthor: {
             age: 50
         }
     };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_missing_variables_arguments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input", "enums"]
-}
-isolated function testInputObjectWithEnumTypeVariables() returns error? {
-    string document = "($day:Date!){ isHoliday(date: $day) }";
-    json variables = {
-        day: { day: SUNDAY }
-    };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            isHoliday: true
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithFragmentsAndVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_fragment_and_variables.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json variables = {
+    json var5 = {
         bName: "Harry",
         bAuthor: {
             name: "J.K Rowling"
         }
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_fragment_and_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithInlineFragmentsAndVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json variables = {
+    json var6 = {
         bName: "Harry",
         bAuthor: {
             name: "Doyle"
         },
         dir: "Chris Columbus"
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_inline_fragment_with_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithFloatTypeVariables() returns error? {
-    string document = "($weight:Weight!){ weightInPounds (weight:$weight) }";
-    json variables = {
-        weight: { weightInKg: 70.5 }
-    };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data:{
-            weightInPounds:155.45250000000001
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithInvalidTypeVariables1() returns error? {
-    string document = "($weight:WeightInKg!){ convertKgToGram (weight:$weight) }";
-    json variables = {
-        weight: { weight: 70.5 }
-    };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input", "variables"]
-}
-isolated function testInputObjectWithInvalidTypeVariables2() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_type_variables2.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json variables = {
-        bAuthor: {name:{}, age:{}}
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_invalid_type_variables2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithUnexpectedVariableValues() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_inline_fragment_with_variables.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json variables = {
+    json var7 = {
         bName: "Harry",
-        bAuthor: [{name:"arthur"},{name:"J.K Rowling"}],
+        bAuthor: [{name:"arthur"}, {name:"J.K Rowling"}],
         dir: "Chris Columbus"
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_unexpected_variable_values.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectVariablesWithInvalidTypeName() returns error? {
-    string document = string`($profile: Details!){ searchProfile(profileDetail: $profile){ name } }`;
-    json variables = { profile: {name: "Arthur", age: 5} };
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("input_object_variables_with_invalid_type_name.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input"]
-}
-isolated function testInputObjectWithMissingNullableVariableValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_missing_nullable_variable_value.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("input_object_with_missing_nullable_variable_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["input_objects", "input", "defaultValues"]
-}
-isolated function testDefaultValuesInInputObjectFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("default_values_in_input_object_fields.graphql");
-    string url = "http://localhost:9091/input_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("default_values_in_input_object_fields.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    map<[string, json]> dataSet = {
+        "1": ["input_object"],
+        "2": ["input_object_with_missing_arguments"],
+        "3": ["input_object_with_invalid_arguments1"],
+        "4": ["input_object_with_invalid_arguments2"],
+        "5": ["input_object_with_variables", {profile:{name:"Arthur", age:5}}],
+        "6": ["input_object_with_nested_input_object_variables", var1],
+        "7": ["input_object_include_fields_with_variables", {bName:"Harry Potter", authorAge:50}],
+        "8": ["input_object_with_duplicate_fields", var2],
+        "9": ["input_object_with_undefined_fields", var2],
+        "10": ["input_object_include_fields_with_undefined_variables", {authorAge: 50}],
+        "11": ["input_object_include_fields_with_complex_variables", var3],
+        "12": ["input_object_with_nested_object"],
+        "13": ["input_object_with_default_value"],
+        "14": ["input_object_without_optional_fields"],
+        "15": ["input_object_with_missing_variables_arguments", var4],
+        "16": ["input_object_with_enum_type_argument", {day:{day: SUNDAY}}],
+        "17": ["input_object_with_fragment_and_variables", var5],
+        "18": ["input_object_with_inline_fragment_with_variables", var6],
+        "19": ["input_object_with_float_type_variables", {weight: { weightInKg: 70.5 }}],
+        "20": ["input_object_with_invalid_type_variables1", {weight: { weight: 70.5 }}],
+        "21": ["input_object_with_invalid_type_variables2", {bAuthor: {name:{}, age:{}}}],
+        "22": ["input_object_with_unexpected_variable_values", var7],
+        "23": ["input_object_variables_with_invalid_type_name", {profile:{name: "Arthur", age: 5}}],
+        "24": ["input_object_with_missing_nullable_variable_value"],
+        "25": ["default_values_in_input_object_fields"]
+    };
+    return dataSet;
 }

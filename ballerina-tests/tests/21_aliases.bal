@@ -17,90 +17,27 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["alias"]
+    groups: ["alias"],
+    dataProvider: dataProviderAliases
 }
-isolated function testAlias() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias.graphql");
-    string url = "http://localhost:9094/profiles";
+isolated function testAlias(string url, string documentFileName) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            sherlock: {
-                name: {
-                    first: "Sherlock"
-                },
-                address: {
-                    city: "London"
-                }
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["alias", "records"]
-}
-isolated function testSameFieldWithMultipleAlias() returns error? {
-    string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("same_field_with_multiple_alias.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderAliases() returns string[][] {
+    string url1 = "http://localhost:9094/profiles";
+    string url2 = "http://localhost:9091/records";
+    string url3 = "http://localhost:9092/unions";
 
-@test:Config {
-    groups: ["alias", "records"]
-}
-isolated function testSameFieldWithMultipleAliasDifferentSubfields() returns error? {
-    string document = check getGraphQLDocumentFromFile("same_field_with_multiple_alias_different_subfields.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("same_field_with_multiple_alias_different_subfields.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["alias", "records", "validation"]
-}
-isolated function testAliasWithInvalidFieldName() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias_with_invalid_field_name.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Cannot query field "firstName" on type "Person".`,
-                locations: [
-                    {
-                        line: 3,
-                        column: 9
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["alias", "service", "unions"]
-}
-isolated function testAliasOnServiceObjectsUnion() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias_on_service_objects_union.graphql");
-    string url = "http://localhost:9092/unions";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("alias_on_service_objects_union.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["alias", "hierarchical_paths"]
-}
-isolated function testAliasOnHierarchicalResources() returns error? {
-    string document = check getGraphQLDocumentFromFile("alias_on_hierarchical_resources.graphql");
-    string url = "http://localhost:9094/profiles";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("alias_on_hierarchical_resources.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "alias"],
+        [url2, "same_field_with_multiple_alias"],
+        [url2, "same_field_with_multiple_alias_different_subfields"],
+        [url2, "alias_with_invalid_field_name"],
+        [url3, "alias_on_service_objects_union"],
+        [url1, "alias_on_hierarchical_resources"]
+    ];
 }

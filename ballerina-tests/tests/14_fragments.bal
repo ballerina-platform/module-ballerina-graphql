@@ -17,204 +17,34 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["fragments", "validation"]
+    groups: ["fragments", "validation"],
+    dataProvider: dataProviderFragments
 }
-isolated function testFragmentOnInvalidType() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragment_on_invalid_type.graphql");
-    string url = "http://localhost:9091/records";
+isolated function testFragments(string url, string documentFileName) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    string message = string`Fragment "data" cannot be spread here as objects of type "Query" can never be of type "Person".`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: message,
-                locations: [
-                    {
-                        line: 2,
-                        column: 5
-                    }
-                ]
-            }
-        ]
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["fragments", "validation"]
-}
-isolated function testFragmentWithInvalidField() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragment_with_invalid_field.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    string message = string`Cannot query field "invalid" on type "Person".`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: message,
-                locations: [
-                    {
-                        line: 7,
-                        column: 9
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderFragments() returns string[][] {
+    string url1 = "http://localhost:9091/records";
+    string url2 = "http://localhost:9092/service_types";
+    string url3 = "http://localhost:9092/service_objects";
 
-@test:Config {
-    groups: ["fragments", "records", "array"]
-}
-isolated function testFragmentsOnRecordObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testNestedFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testFragmentsWithMultipleResourceInvocation() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_multiple_resource_invocation.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_multiple_resource_invocation.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "introspection"]
-}
-isolated function testFragmentsWithInvalidIntrospection() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_invalid_introspection.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Cannot query field "invalid" on type "__Type".`,
-                locations: [
-                    {
-                        line: 17,
-                        column: 9
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "introspection"]
-}
-isolated function testFragmentsWithIntrospection() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_introspection.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_introspection.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "service"]
-}
-isolated function testFragmentsQueryingServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_querying_service_objects.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "inline"]
-}
-isolated function testInlineFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "inline"]
-}
-isolated function testUnknownInlineFragment() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_inline_fragment.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("unknown_inline_fragment.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments", "inline"]
-}
-isolated function testInvalidSpreadInlineFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_spread_inline_fragments.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("invalid_spread_inline_fragments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testFragmentsInsideFragmentsWhenReturningServices() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_inside_fragments_when_returning_services.graphql");
-    string url = "http://localhost:9092/service_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            teacher: {
-                name: "Walter White"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["fragments"]
-}
-isolated function testNestedFragmentsQueryingServiceObjectsWithMultipleFields() returns error? {
-    string document =
-        check getGraphQLDocumentFromFile("nested_fragments_querying_service_objects_with_multiple_fields.graphql");
-    string url = "http://localhost:9092/service_objects";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            teacher: {
-                name: "Walter White",
-                subject: "Chemistry"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "fragment_on_invalid_type"],
+        [url1, "fragment_with_invalid_field"],
+        [url1, "fragments_on_record_objects"],
+        [url1, "nested_fragments"],
+        [url1, "fragments_with_multiple_resource_invocation"],
+        [url1, "fragments_with_invalid_introspection"],
+        [url1, "fragments_with_introspection"],
+        [url2, "fragments_querying_service_objects"],
+        [url1, "inline_fragment"],
+        [url1, "unknown_inline_fragment"],
+        [url1, "invalid_spread_inline_fragments"],
+        [url3, "fragments_inside_fragments_when_returning_services"],
+        [url3, "nested_fragments_querying_service_objects_with_multiple_fields"]
+    ];
 }

@@ -17,86 +17,25 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["block_strings"]
+    groups: ["block_strings"],
+    dataProvider: dataProviderBlockString
 }
-isolated function testBlockStrings() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings.graphql");
+isolated function testBlockStrings(string documentFileName) returns error? {
     string url = "http://localhost:9091/inputs";
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("block_strings.json");
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     test:assertEquals(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["block_strings"]
-}
-isolated function testBlockStringsWithVariableDefaultValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings_with_variable_default_value.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_variable_default_value.json");
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["block_strings"]
-}
-isolated function testInvalidBlockStrings() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_block_strings.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("invalid_block_strings.json");
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["block_strings"]
-}
-isolated function testBlockStringsWithEscapedCharacter() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings_with_escaped_character.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_escaped_character.json");
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["block_strings"]
-}
-isolated function testBlockStringsWithDoubleQuotes() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_strings_with_double_quotes.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("block_strings_with_double_quotes.json");
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["block_strings"]
-}
-isolated function testEmptyString() returns error? {
-    string document = string`{ sendEmail(message: "") }`;
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data:{
-            sendEmail:""
-        }
-    };
-    test:assertEquals(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["block_strings"]
-}
-isolated function testEmptyBlockString() returns error? {
-    string document = string`{ sendEmail(message: """""") }`;
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data:{
-            sendEmail:""
-        }
-    };
-    test:assertEquals(actualPayload, expectedPayload);
+function dataProviderBlockString() returns string[][] {
+    return [
+        ["block_strings"],
+        ["block_strings_with_variable_default_value"],
+        ["invalid_block_strings"],
+        ["block_strings_with_escaped_character"],
+        ["block_strings_with_double_quotes"],
+        ["empty_block_string"],
+        ["empty_string"]
+    ];
 }

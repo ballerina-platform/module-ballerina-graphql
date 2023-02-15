@@ -17,6 +17,17 @@
 import ballerina/test;
 import ballerina/websocket;
 
+@test:Config {
+    groups: ["interceptors"],
+    dataProvider: dataProviderInterceptors
+}
+isolated function testInterceptors(string url, string documentFileName) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
 function dataProviderInterceptors() returns string[][] {
     string url1 = "http://localhost:9091/intercept_service_obj";
     string url2 = "http://localhost:9091/intercept_arrays";
@@ -43,6 +54,7 @@ function dataProviderInterceptors() returns string[][] {
     string url23 = "http://localhost:9091/intercept_string";
     string url24 = "http://localhost:9091/intercept_service_obj_array1";
     string url25 = "http://localhost:9091/intercept_service_obj_array2";
+    string url26 = "http://localhost:9092/intercept_unions";
     
     return [
         [url1, "interceptors_with_service_object"],
@@ -71,19 +83,10 @@ function dataProviderInterceptors() returns string[][] {
         [url22, "interceptors_with_table"],
         [url23, "interceptors"],
         [url24, "interceptors_with_destructive_modification1"],
-        [url25, "interceptors_with_destructive_modification2"]
+        [url25, "interceptors_with_destructive_modification2"],
+        [url26, "interceptors_with_union"],
+        [url14, "execute_same_interceptor_multiple_times"]
     ];
-}
-
-@test:Config {
-    groups: ["interceptors", "service", "records", "arrays", "fragments"],
-    dataProvider: dataProviderInterceptors
-}
-isolated function testInterceptorsWithServiceObjects(string url, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {

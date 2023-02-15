@@ -1,0 +1,15 @@
+{
+    "data": {
+        "allVehicles": [
+            {
+                "name": "Benz"
+            },
+            {
+                "name": "BMW"
+            },
+            {
+                "name": "Ford"
+            }
+        ]
+    }
+}

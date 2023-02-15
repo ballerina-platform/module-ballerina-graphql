@@ -17,86 +17,25 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["mutations", "validation"]
+    groups: ["mutations", "validation"],
+    dataProvider: dataProviderMutation
 }
-isolated function testMutationRequestOnNonMutatableSchema() returns error? {
-    string document = string`mutation { setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9091/records";
+isolated function testMutationRequestOnNonMutatableSchema(string url, string documentFileName) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Schema is not configured for mutations.",
-                locations: [
-                    {
-                        line: 1,
-                        column: 1
-                    }
-                ]
-            }
-        ]
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["mutations"]
-}
-isolated function testMutation() returns error? {
-    string document = string`mutation { setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            setName: {
-                name: "Heisenberg"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderMutation() returns string[][] {
+    string url1 = "http://localhost:9091/records";
+    string url2 = "http://localhost:9091/mutations";
 
-@test:Config {
-    groups: ["mutations"]
-}
-isolated function testMultipleMutations() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_mutations.graphql");
-    string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("multiple_mutations.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["mutations"]
-}
-isolated function testInvalidMutation() returns error? {
-    string document = string`mutation { setAge }`;
-    string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Cannot query field "setAge" on type "Mutation".`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 12
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["mutations"]
-}
-isolated function testMultipleMutationsOnServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_mutations_on_service_objects.graphql");
-    string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("multiple_mutations_on_service_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "mutation_request_on_non_mutable_schema"],
+        [url2, "mutation"],
+        [url2, "multiple_mutations"],
+        [url2, "invalid_mutation"],
+        [url2, "multiple_mutations_on_service_objects"]
+    ];
 }

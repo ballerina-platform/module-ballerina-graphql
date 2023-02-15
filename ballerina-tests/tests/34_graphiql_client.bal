@@ -30,62 +30,26 @@ function testGraphiqlWithSamePathAsGraphQLService() returns error? {
 }
 
 @test:Config {
-    groups: ["listener", "graphiql"]
+    groups: ["listener", "graphiql"],
+    dataProvider: dataProviderGraphiqlClient
 }
-function testGraphiqlPathWhenClientDisabled() returns error? {
-    string url = "http://localhost:9091";
+function testGraphiqlClientTest(string url, string path, string contentType) returns error? {
     http:Client httpClient = check new(url, httpVersion = "1.1");
-    http:Response|error response = httpClient->get("/ballerina graphql");
+    http:Response|error response = httpClient->get(path);
     test:assertFalse(response is error);
     http:Response graphiqlResponse = check response;
-    // 'text/plain' is the content type received when the service is not running.
-    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_PLAIN);
+    test:assertEquals(graphiqlResponse.getContentType(), contentType);
 }
 
-@test:Config {
-    groups: ["listener", "graphiql"]
-}
-function testGraphiqlDefaultPath() returns error? {
-    string url = "http://localhost:9091";
-    http:Client httpClient = check new(url, httpVersion = "1.1");
-    http:Response|error response = httpClient->get("/graphiql");
-    test:assertFalse(response is error);
-    http:Response graphiqlResponse = check response;
-    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
-}
+function dataProviderGraphiqlClient() returns string[][] {
+    string url1 = "http://localhost:9091";
+    string url2 = "http://localhost:9092";
 
-@test:Config {
-    groups: ["listener", "graphiql"]
-}
-function testGraphiql() returns error? {
-    string url = "http://localhost:9091";
-    http:Client httpClient = check new(url, httpVersion = "1.1");
-    http:Response|error response = httpClient->get("/ballerina/graphiql");
-    test:assertFalse(response is error);
-    http:Response graphiqlResponse = check response;
-    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
-}
-
-@test:Config {
-    groups: ["listener", "graphiql"]
-}
-function testGraphiqlWithDefaultBasePath() returns error? {
-    string url = "http://localhost:9092";
-    http:Client httpClient = check new(url, httpVersion = "1.1");
-    http:Response|error response = httpClient->get("/graphiql");
-    test:assertFalse(response is error);
-    http:Response graphiqlResponse = check response;
-    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
-}
-
-@test:Config {
-    groups: ["listener", "graphiql"]
-}
-function testGraphiql1() returns error? {
-    string url = "http://localhost:9091/";
-    http:Client httpClient = check new(url, httpVersion = "1.1");
-    http:Response|error response = httpClient->get("graphiql/interface");
-    test:assertFalse(response is error);
-    http:Response graphiqlResponse = check response;
-    test:assertEquals(graphiqlResponse.getContentType(), CONTENT_TYPE_TEXT_HTML);
+    return [
+        [url1, "/ballerina graphql", CONTENT_TYPE_TEXT_PLAIN],
+        [url1, "/graphiql", CONTENT_TYPE_TEXT_HTML],
+        [url1, "/ballerina/graphiql", CONTENT_TYPE_TEXT_HTML],
+        [url2, "/graphiql", CONTENT_TYPE_TEXT_HTML],
+        [url1, "/graphiql/interface", CONTENT_TYPE_TEXT_HTML]
+    ];
 }

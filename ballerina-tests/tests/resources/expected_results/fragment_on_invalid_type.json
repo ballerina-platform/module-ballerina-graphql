@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Fragment \"data\" cannot be spread here as objects of type \"Query\" can never be of type \"Person\".",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

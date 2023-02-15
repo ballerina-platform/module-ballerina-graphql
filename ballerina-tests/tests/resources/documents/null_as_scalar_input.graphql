@@ -1,0 +1,5 @@
+{
+    profile(id: null) {
+        name
+    }
+}

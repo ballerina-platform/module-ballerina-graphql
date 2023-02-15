@@ -1,0 +1,15 @@
+{
+    "errors": [
+        {
+            "message": "Holiday!",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": ["openingDays", 2]
+        }
+    ],
+    "data": null
+}

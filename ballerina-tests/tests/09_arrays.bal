@@ -17,154 +17,29 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["arrays"]
+    groups: ["arrays"],
+    dataProvider: dataProviderArrays
 }
-isolated function testScalarArrays() returns error? {
-    string graphqlUrl = "http://localhost:9095/special_types";
-    string document = "{ ids }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedResult = {
-        data: {
-            ids: [0, 1, 2]
-        }
-    };
-    assertJsonValuesWithOrder(actualResult, expectedResult);
+isolated function testArrays(string url, string documentFileName) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["arrays"]
-}
-isolated function testScalarArraysWithErrors() returns error? {
-    string graphqlUrl = "http://localhost:9095/special_types";
-    string document = "{ idsWithErrors }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedResult = {
-        errors: [
-            {
-                message: "Not Found!",
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ],
-                path: ["idsWithErrors", 3]
-            }
-        ],
-        data: null
-    };
-    assertJsonValuesWithOrder(actualResult, expectedResult);
-}
+function dataProviderArrays() returns string[][] {
+    string url1 = "http://localhost:9095/special_types";
+    string url2 = "http://localhost:9092/service_objects";
 
-@test:Config {
-    groups: ["arrays"]
-}
-isolated function testScalarNullableArraysWithErrors() returns error? {
-    string graphqlUrl = "http://localhost:9095/special_types";
-    string document = "{ friends }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedResult = {
-        errors: [
-            {
-                message: "Not Found!",
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ],
-                path: ["friends", 2]
-            }
-        ],
-        data: {
-            friends: ["walter", "jessie", null]
-        }
-    };
-    assertJsonValuesWithOrder(actualResult, expectedResult);
-}
-
-@test:Config {
-    groups: ["array", "service"]
-}
-isolated function testResourceReturningServiceObjectArray() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = string `{ allVehicles { name } }`;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = {
-        data: {
-            allVehicles: [
-                {
-                    name: "Benz"
-                },
-                {
-                    name: "BMW"
-                },
-                {
-                    name: "Ford"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["array", "service"]
-}
-isolated function testResourceReturningOptionalServiceObjectsArray() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = string `{ searchVehicles(keyword: "vehicle") { ...on Vehicle { id } } }`;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = {
-        data: {
-            searchVehicles: [
-                {
-                    id: "V1"
-                },
-                {
-                    id: "V2"
-                },
-                {
-                    id: "V3"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["array", "service"]
-}
-isolated function testOptionalArrayInvalidQuery() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = string `{ searchVehicles(keyword: "vehicle") }`;
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Field "searchVehicles" of type "[Vehicle!]" must have a selection of subfields. Did you mean "searchVehicles { ... }"?`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["array", "service"]
-}
-isolated function testServiceObjectArrayWithFragmentReturningError() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = check getGraphQLDocumentFromFile("service_object_array_with_fragment_returning_error.graphql");
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("service_object_array_with_fragment_returning_error.json");
-    assertJsonValuesWithOrder(result, expectedPayload);
+    return [
+        [url1, "scalar_arrays"],
+        [url1, "scalar_arrays_with_errors"],
+        [url1, "scalar_nullable_arrays_with_errors"],
+        [url2, "resource_returning_service_object_array"],
+        [url2, "resource_returning_optional_service_object_arrays"],
+        [url2, "optional_arrays_with_invalid_query"],
+        [url2, "service_object_array_with_fragment_returning_error"]
+    ];
 }
 
 @test:Config {
@@ -172,7 +47,7 @@ isolated function testServiceObjectArrayWithFragmentReturningError() returns err
 }
 isolated function testServiceObjectArrayWithInvalidResponseOrder() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = check getGraphQLDocumentFromFile("service_object_array_with_fragment_returning_error.graphql");
+    string document = check getGraphQLDocumentFromFile("service_object_array_with_invalid_response_order.graphql");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
     json expectedPayload = check getJsonContentFromFile("service_object_array_with_invalid_response_order.json");
     test:assertEquals(result, expectedPayload);

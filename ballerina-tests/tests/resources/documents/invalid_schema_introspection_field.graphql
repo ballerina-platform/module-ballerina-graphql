@@ -1,0 +1,10 @@
+{
+    profile(id: 1) {
+        name
+        __schema {
+            queryType {
+                name
+            }
+        }
+    }
+}

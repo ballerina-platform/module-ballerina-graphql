@@ -1,0 +1,10 @@
+{
+    "data": {
+        "detective": {
+            "name": "Sherlock Holmes",
+            "address": {
+                "street": "Baker Street"
+            }
+        }
+    }
+}

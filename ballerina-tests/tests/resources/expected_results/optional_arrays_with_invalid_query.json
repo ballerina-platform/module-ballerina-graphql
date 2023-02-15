@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"searchVehicles\" of type \"[Vehicle!]\" must have a selection of subfields. Did you mean \"searchVehicles { ... }\"?",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

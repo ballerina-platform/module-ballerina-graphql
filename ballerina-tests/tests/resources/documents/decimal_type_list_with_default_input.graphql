@@ -1,0 +1,3 @@
+query getTotalInDecimal($prices:[[Decimal!]!]! = [[1.3323232, 4.856343], [5.63535, 6], [5, 7, 8]]){
+    getTotalInDecimal(prices:$prices)
+}

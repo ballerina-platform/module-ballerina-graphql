@@ -1,0 +1,8 @@
+{
+    latest {
+        product {
+            id
+        }
+        score
+    }
+}

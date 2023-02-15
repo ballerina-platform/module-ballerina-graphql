@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "TvSeries! cannot represent non TvSeries! value: [{name: \"Breaking Bad\", episodes:[{title: \"Cancer Man\", newCharacters:[true, \"graphql\"]}]}]",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 14
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    searchVehicles(keyword: "vehicle") {
+        ...on Vehicle {
+            id
+        }
+    }
+}

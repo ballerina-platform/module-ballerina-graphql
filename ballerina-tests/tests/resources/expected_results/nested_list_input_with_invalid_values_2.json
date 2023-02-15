@@ -1,0 +1,49 @@
+{
+    "errors": [
+        {
+            "message": "prices: In element #0:[Float!]! cannot represent non [Float!]! value: 2",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 24
+                }
+            ]
+        },
+        {
+            "message": "prices: In element #1:[Float!]! cannot represent non [Float!]! value: 3",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 27
+                }
+            ]
+        },
+        {
+            "message": "prices: In element #2:[Float!]! cannot represent non [Float!]! value: 4",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 30
+                }
+            ]
+        },
+        {
+            "message": "prices: In element #3:[Float!]! cannot represent non [Float!]! value: 5",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 33
+                }
+            ]
+        },
+        {
+            "message": "prices: In element #4:[Float!]! cannot represent non [Float!]! value: 6",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 36
+                }
+            ]
+        }
+    ]
+}

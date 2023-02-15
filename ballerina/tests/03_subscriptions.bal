@@ -18,7 +18,7 @@ import ballerina/test;
 import graphql.parser;
 
 @test:Config {
-    groups: ["subscriptions", "validation", "fragments"],
+    groups: ["subscriptions", "validation"],
     dataProvider: dataProviderSubscriptionValidation
 }
 function testSubscriptionValidation(string documentFileName) returns error? {

@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"employees\" of type \"[Employee!]\" must have a selection of subfields. Did you mean \"employees { ... }\"?",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

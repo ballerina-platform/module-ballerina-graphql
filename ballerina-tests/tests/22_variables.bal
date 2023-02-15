@@ -16,7 +16,6 @@
 
 import ballerina/http;
 import ballerina/test;
-import ballerina/lang.value;
 
 @test:Config {
     groups: ["variables", "request_validation"]
@@ -32,235 +31,45 @@ isolated function testInvalidRequestWithVariables() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "input"]
+    groups: ["variables", "input"],
+    dataProvider: dataProviderInputVariables
 }
-isolated function testDuplicateInputVariables() returns error? {
-    string document = string`($userName:String!, $userName:Int!){ greet (name: $userName) }`;
-    json variables = { userName:"Thisaru" };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("duplicate_input_variables.json");
+isolated function testDuplicateInputVariables(string url, string documentFileName, json variables, string? operationName = ()) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables, operationName);
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
-isolated function testFragmentsWithInputVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("fragments_with_input_variables.graphql");
-    json variables = { profileId: 1 };
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("fragments_with_input_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
-isolated function testDuplicateVariablesWithMultipleOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("duplicate_variables_with_multiple_operations.graphql");
-    json variables = { profileId: 1 };
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables, "B");
-    json expectedPayload = check getJsonContentFromFile("duplicate_variables_with_multiple_operations.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
-isolated function testInlineFragmentsWithVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_fragments_with_variables.graphql");
-    json variables = { profileId: 1 };
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("inline_fragments_with_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "fragments", "input"]
-}
-isolated function testVariablesWithDefaultValues() returns error? {
-    string document = check getGraphQLDocumentFromFile("variables_with_default_values.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("variables_with_default_values.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "input_coerce"]
-}
-isolated function testVariablesWithCoerceIntInputToFloat() returns error? {
-    string document = "($weight:Float!){ weightInPounds(weightInKg:$weight) }";
-    json variables = { weight: 1};
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            weightInPounds: <float>2.205
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testEnumTypeVariables() returns error? {
-    string document = "($day:Weekday){ isHoliday(weekday: $day) }";
-    json variables = { day: MONDAY };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            isHoliday: false
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs"]
-}
-isolated function testMultipleVariableTypesWithSingleQuery() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_variable_types_with_single_query.graphql");
-    json variables = {
+function dataProviderInputVariables() returns map<[string, string, json, string?]> {
+    string url1 = "http://localhost:9091/inputs";
+    string url2 = "http://localhost:9091/records";
+    string url3 = "http://localhost:9095/special_types";
+    json var1 = {
         name: "Thisaru",
         age: 30,
         weight: 70.5,
         day: FRIDAY,
         holiday: false
     };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("multiple_variable_types_with_single_query.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["variables", "maps"]
-}
-isolated function testVariablesWithNestedMap() returns error? {
-    string document = string`query ($workerKey:String, $contractKey:String ){ company { workers(key:$workerKey) { contacts(key:$contractKey) { number } } } }`;
-    json variables = { workerKey: "id3", contractKey: "home" };
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            company: {
-                workers: {
-                    contacts: {
-                        number: "+94771234567"
-                    }
-                }
-            }
-        }
+    map<[string, string, json, string?]> dataSet = {
+        "1": [url1, "duplicate_input_variables", {userName: "Thisaru"}],
+        "2": [url2, "fragments_with_input_variables", {profileId: 1}],
+        "3": [url2, "duplicate_variables_with_multiple_operations", {profileId: 1}, "B"],
+        "4": [url2, "inline_fragments_with_variables", {profileId: 1}],
+        "5": [url2, "variables_with_default_values"],
+        "6": [url1, "variables_with_coerce_int_input_to_float", {weight: 1}],
+        "7": [url1, "enum_type_variables", {day: MONDAY}],
+        "8": [url1, "multiple_variable_types_with_single_query", var1],
+        "9": [url3, "variables_with_nested_map", {workerKey: "id3", contractKey: "home"}],
+        "10": [url1, "non_null_type_variables_with_nullable_rgument", {day: MONDAY}],
+        "11": [url1, "variables_with_default_null_value"],
+        "12": [url1, "nullable_variables_without_value"],
+        "13": [url1, "invalid_enum_type_default_value_with_variables"],
+        "14": [url1, "enum_type_default_value_with_variables"],
+        "15": [url1, "variable_default_value_with_coerce_int_input_to_float"],
+        "16": [url1, "float_type_variable_with_default_value"]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testNonNullTypeVariablesWithNullableArgument() returns error? {
-    string document = "($day:Weekday!){ isHoliday(weekday: $day) }";
-    json variables = { day: MONDAY };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            isHoliday: false
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testVariablesWithDefaultNullValue() returns error? {
-    string document = "($day:Weekday = null){ isHoliday(weekday: $day) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isHoliday: false
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testNullableVariablesWithoutValue() returns error? {
-    string document = "($day:Weekday){ isHoliday(weekday: $day) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isHoliday: false
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testEnumTypeDefaultValueWithVariables() returns error? {
-    string document = "($day:Weekday = SUNDAY){ isHoliday(weekday: $day) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isHoliday: true
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testInvalidEnumTypeDefaultValueWithVariables() returns error? {
-    string document = "($day:Weekday = SNDAY){ isHoliday(weekday: $day) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("invalid_enum_type_default_value_with_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "input_coerce"]
-}
-isolated function testVariableDefaultValueWithCoerceIntInputToFloat() returns error? {
-    string document = "($weight:Float = 4){ weightInPounds(weightInKg: $weight) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            weightInPounds: <float>8.82
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs"]
-}
-isolated function testFloatTypeVariableWithDefaultValue() returns error? {
-    string document = "($weight:Float = 4.3534){ weightInPounds(weightInKg: $weight) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            weightInPounds: <float>9.599247
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

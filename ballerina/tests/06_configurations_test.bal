@@ -35,7 +35,6 @@ function dataProviderQueryDepthConfigurations() returns map<[int, string]> {
         "1": [2, "query_exceeding_max_depth"],
         "2": [2, "fragment_query_exceeding_max_depth"],
         "3": [2, "query_with_named_operation_exceeding_max_depth"]
-        
     };
     return dataSet;
 }
@@ -64,7 +63,6 @@ function dataProviderIntrospectionConfigurations() returns map<[boolean, string]
         "4": [false, "introspection_disable_with_typename_introspection"],
         "5": [false, "introspection_disable_with_mutation"],
         "6": [false, "introspection_disable_config_with_fragments"]
-        
     };
     return dataSet;
 }

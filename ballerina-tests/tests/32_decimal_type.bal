@@ -18,19 +18,54 @@ import ballerina/test;
 import ballerina/lang.value;
 
 @test:Config {
-    groups: ["inputs", "decimal"]
+    groups: ["inputs", "decimal"],
+    dataProvider: dataProviderDecimalType1
 }
-isolated function testDecimalTypeInput() returns error? {
-    string document = "{ convertDecimalToFloat(value: 1.33) }";
+isolated function testDecimalType1(string documentFileName, json variables) returns error? {
     string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            convertDecimalToFloat: 1.33
-        }
-    };
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+}
+
+
+function dataProviderDecimalType1() returns map<[string, json]> {
+    map<[string, json]> dataSet = {
+        "1": ["decimal_type_input", ()],
+        "2": ["coerce_int_to_decimal", ()],
+        "3": ["coerce_int_to_decimal_with_variable_input", {val: 2}],
+        "4": ["coerce_int_to_decimal_with_default_value", ()],
+        "5": ["coerce_decimal_to_float", {weight: 56.4d}],
+        "6": ["decimal_with_negative_zero", {val: -0}]
+    };
+    return dataSet;
+}
+
+@test:Config {
+    groups: ["inputs", "decimal"],
+    dataProvider: dataProviderDecimalType2
+}
+isolated function testDecimalType2(string documentFileName, map<json>? variables) returns error? {
+    string url = "http://localhost:9091/inputs";
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    map<value:JsonDecimal> payloadWithFloatValues = check actualPayload.cloneWithType();
+    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
+}
+
+
+function dataProviderDecimalType2() returns map<[string, map<json>?]> {
+    map<[string, map<json>?]> dataSet = {
+        "1": ["decimal_type_list_input", {prices: [[1.3323232, 4.856343], [5.63535, 6], [5, 7, 8]]}],
+        "2": ["decimal_type_list_with_default_input", {}],
+        "3": ["decimal_type_list_with_variable_input", {prices: [[1.3323232, 4.856343], [5.63535, 6], [5, 7, 8]]}],
+        "4": ["decimal_type_with_input_object_variable", {items: [{name: "soap", price: 64.5555332}, {name: "sugar", price: 154}]}],
+        "5": ["decimal_type_with_input_object_default_value", ()]
+    };
+    return dataSet;
 }
 
 @test:Config {
@@ -69,200 +104,6 @@ isolated function testDecimalTypeDefaultValue() returns error? {
 }
 
 @test:Config {
-    groups: ["inputs", "input_coerce", "list", "decimal"]
-}
-isolated function testDecimalTypeListInput() returns error? {
-    string document = "{ getTotalInDecimal(prices: [[1.33, 4.8], [5.6, 6], [5, 7, 8]]) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            getTotalInDecimal: [6.13, 11.6, 20.0]
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "list", "variables", "decimal"]
-}
-isolated function testDecimalTypeListWithVariableInput() returns error? {
-    string document = "($prices:[[Decimal!]!]!){ getTotalInDecimal(prices:$prices) }";
-    string url = "http://localhost:9091/inputs";
-    json variables = {
-        prices: [[1.3323232, 4.856343], [5.63535, 6], [5, 7, 8]] 
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            getTotalInDecimal: [6.1886662, 11.63535, 20.0]
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "list", "decimal"]
-}
-isolated function testDecimalTypeListWithDefaultInput() returns error? {
-    string document = check getGraphQLDocumentFromFile("decimal_types.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getTotalInDecimal");
-    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            getTotalInDecimal: [6.1886662, 11.63535, 20.0]
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "input_object", "decimal"]
-}
-isolated function testDecimalTypeWithInputObject() returns error? {
-    string document = check getGraphQLDocumentFromFile("decimal_types.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getSubTotal");
-    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            getSubTotal: 218.5555332
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "input_object", "decimal"]
-}
-isolated function testDecimalTypeWithInputObjectVariable() returns error? {
-    string document = "($items:[Item!]!){ getSubTotal(items: $items) }";
-    string url = "http://localhost:9091/inputs";
-    json variables = {
-        items: [
-            {name: "soap", price: 64.5555332 },
-            { name: "sugar", price: 154 }
-        ]
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            getSubTotal: 218.5555332
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "input_object", "decimal"]
-}
-isolated function testDecimalTypeWithInputObjectDefaultValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("decimal_types.graphql");
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "getSubTotalWithDefaultValue");
-    map<value:JsonDecimal> payloadWithDecimalValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            getSubTotal: 218.5555332
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithDecimalValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
-}
-isolated function testCoerceIntToDecimal() returns error? {
-    string document = "{ convertDecimalToFloat(value: 1) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            convertDecimalToFloat: 1.0
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
-}
-isolated function testCoerceIntToDecimalWithVariableInput() returns error? {
-    string document = "($val:Decimal!){ convertDecimalToFloat(value:$val) }";
-    json variables = {
-        val: 2
-    };
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            convertDecimalToFloat: 2.0
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
-}
-isolated function testCoerceIntToDecimalWithDefaultValue() returns error? {
-    string document = "($val:Decimal! = 5){ convertDecimalToFloat(value:$val) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            convertDecimalToFloat: 5.0
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
-}
-isolated function testCoerceDecimalToFloat() returns error? {
-    string document = "($weight:Float!){ weightInPounds(weightInKg:$weight) }";
-    string url = "http://localhost:9091/inputs";
-    json variables = {
-        weight: 56.4d 
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            weightInPounds: 124.362
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
-}
-isolated function testDecimalWithNegativeZero() returns error? {
-    string document = "($val:Decimal!){ convertDecimalToFloat(value:$val) }";
-    string url = "http://localhost:9091/inputs";
-    json variables = {
-        val: -0 
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
-    json expectedPayload = {
-        data: {
-            convertDecimalToFloat: 0.0
-        }
-    };
-    assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
-}
-
-@test:Config {
     groups: ["inputs", "input_coerce", "decimal"]
 }
 isolated function testDecimalWithMarginalValue() returns error? {
@@ -282,23 +123,20 @@ isolated function testDecimalWithMarginalValue() returns error? {
 }
 
 @test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
+    groups: ["inputs", "input_coerce", "decimal"],
+    dataProvider: dataProviderDecimalType3
 }
-isolated function testDecimalWithPositiveInfinity() returns error? {
-    string document = "{ convertDecimalToFloat(value: 1.7E309) }";
+isolated function testDecimalType3(string documentFileName) returns error? {
     string url = "http://localhost:9091/inputs";
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("decimal_with_positive_infinity.json");
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["inputs", "input_coerce", "decimal"]
-}
-isolated function testDecimalWithNegativeInfinity() returns error? {
-    string document = "{ convertDecimalToFloat(value: -1.7E309) }";
-    string url = "http://localhost:9091/inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("decimal_with_negative_infinity.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+function dataProviderDecimalType3() returns string[][] {
+    return [
+        ["decimal_with_positive_infinity"],
+        ["decimal_with_negative_infinity"]
+    ];
 }

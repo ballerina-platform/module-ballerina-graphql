@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Cannot query field \"name\" on type \"StudentService_TeacherService\". Did you mean to use a fragment on \"StudentService\" or \"TeacherService\"?",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ]
+        }
+    ]
+}

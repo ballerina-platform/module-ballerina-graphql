@@ -17,258 +17,19 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["list", "input"]
+    groups: ["list", "input"],
+    dataProvider: dataProviderListTypeInput
 }
-isolated function testListTypeInput() returns error? {
-    string document = string`query { concat(words: ["Hello!", "This", "is", "Ballerina", "GraphQL"]) }`;
+isolated function testListTypeInput(string documentFileName, json variables = ()) returns error? {
     string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Hello! This is Ballerina GraphQL"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeInputWithEmptyValue() returns error? {
-    string document = string`query { concat(words: []) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Word list is empty"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeInputWithNullValue() returns error? {
-    string document = string`query { concat(words: ["Hello!", "This", "is", "a", "Null", "Value", "->", null]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Hello! This is a Null Value ->"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testNullableListTypeInputWithoutValue() returns error? {
-    string document = string`query { concat }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Word list is empty"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testNullableListTypeInputWithInvalidValue() returns error? {
-    string document = string`query { concat(words: ["Hello!", 5, true, {}, "GraphQL"]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("nullable_list_type_input_with_invalid_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeInputsWithNestedList() returns error? {
-    string document = string`query { getTotal(prices: [[2,3,4], [4, 5, 6, 7], [3,5,6,4,2,7]]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            getTotal: [9.0, 22.0, 27.0]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testNestedListInputWithInvalidValues1() returns error? {
-    string document = string`query { getTotal(prices: [[2, 3, d], [4, 5, 6, "is"], [3, 5, 6, 4 , true, 7]]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testNestedListInputWithInvalidValues2() returns error? {
-    string document = string`query { getTotal(prices: [ 2, 3, 4, 5, 6]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("nested_list_input_with_invalid_values2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeInputWithVariable() returns error? {
-    string document = string`query ($words:[String!]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
-        words: ["Hello!", "This", "is", "Ballerina", "GraphQL"]
-    };
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            concat: "Hello! This is Ballerina GraphQL"
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeInputWithInvalidVaraibles() returns error? {
-    string document = string`query ($words: [String]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
-        words: ["Hello!", true, "is", 4, "GraphQL"]
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("list_type_input_with_invalid_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testListTypeWithInputObjects() returns error? {
-    string document = string`query { getSuggestions(tvSeries: [{ name: "Breaking Bad", episodes: [{title:"ep1"}] }]) { movieName } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            getSuggestions: [
-                {
-                    movieName: "El Camino"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testListTypeWithInvalidInputObjectsValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_invalid_input_objects_value.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "tvSeries: In element #1:[Episode!] cannot represent non [Episode!] value: true",
-                locations: [
-                    {
-                        line: 2,
-                        column: 116
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testListTypeWithNestedListInInputObject() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_nested_list_in_input_object.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            getSuggestions: [
-                {
-                    movieName: "Escape Plan"
-                },
-                {
-                    movieName: "Papillon"
-                },
-                {
-                    movieName: "The Fugitive"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testVariablesInsideListValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("variables_inside_list_value.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
-        name2: "Jessie"
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            getSuggestions: [
-                {
-                    movieName: "Escape Plan"
-                },
-                {
-                    movieName: "Papillon"
-                },
-                {
-                    movieName: "The Fugitive"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testInvalidVariablesInsideListValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_variables_inside_list_value.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("invalid_variables_inside_list_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testInputObjectTypeVariablesInsideListValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_type_variables_inside_list_value.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+function dataProviderListTypeInput() returns map<[string, json]> {
+    json var1 = {
         series1: {
             name: "Michael",
             episodes: [
@@ -279,61 +40,8 @@ isolated function testInputObjectTypeVariablesInsideListValue() returns error? {
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            getSuggestions: [
-                {
-                    movieName: "Escape Plan"
-                },
-                {
-                    movieName: "Papillon"
-                },
-                {
-                    movieName: "The Fugitive"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeVariablesInsideListValue() returns error? {
-    string document = string`query ($list1: [Float!]!){ getTotal(prices: [[2,3,4], $list1, [3,5,6,4,2,7]]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
-        list1: [4, 5, 6, 7]
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            getTotal: [9.0, 22.0, 27.0]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testListTypeWithInvalidNestedListInInputObject() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_invalid_nested_list_in_input_object.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_nested_list_in_input_object.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testListTypeVariablesWithInputObjects() returns error? {
-    string document = string`query ($tvSeries: [TvSeries!]!){ getSuggestions(tvSeries: $tvSeries) { movieName } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var2 = {
         tvSeries: [
             {
                 name: "Breaking Bad",
@@ -345,26 +53,8 @@ isolated function testListTypeVariablesWithInputObjects() returns error? {
             }
         ]
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            getSuggestions: [
-                {
-                    movieName: "El Camino"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns error? {
-    string document = string`query ($tvSeries: [TvSeries!]!){ getSuggestions(tvSeries: $tvSeries) { movieName } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var3 = {
         tvSeries: [
             {
                 name: "Breaking Bad",
@@ -380,30 +70,8 @@ isolated function testListTypeVariablesWithInvalidInputObjectsValue() returns er
             }
         ]
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "tvSeries: In element #1:[Episode!] cannot represent non [Episode!] value: true",
-                locations: [
-                    {
-                        line: 1,
-                        column: 60
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testListTypeVariablesWithNestedListInInputObject() returns error? {
-    string document = string`query ($tvSeries: [TvSeries!]!){ getSuggestions(tvSeries: $tvSeries) { movieName } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var4 = {
         tvSeries: [
             {
                 name: "GOT",
@@ -420,32 +88,8 @@ isolated function testListTypeVariablesWithNestedListInInputObject() returns err
             }
         ]
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            getSuggestions: [
-                {
-                    movieName: "Escape Plan"
-                },
-                {
-                    movieName: "Papillon"
-                },
-                {
-                    movieName: "The Fugitive"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testListTypeVariableWithInvalidNestedListInInputObject() returns error? {
-    string document = string`query ($tvSeries: [TvSeries!]!) { getSuggestions(tvSeries: $tvSeries) { movieName } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var5 = {
         tvSeries: [
             {
                 name: "GOT",
@@ -462,106 +106,8 @@ isolated function testListTypeVariableWithInvalidNestedListInInputObject() retur
             }
         ]
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("list_type_variable_with_invalid_nested_list_in_input_object.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testListTypeWithinInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_within_input_objects.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            getMovie: [
-                {
-                    movieName: "El Camino",
-                    director: "Vince Gilligan"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testEmptyListTypeWithinInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("empty_list_type_within_input_objects.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("empty_list_type_within_input_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testInvalidListTypeWithinInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_list_type_within_input_objects.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("invalid_list_type_within_input_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testInvalidListTypeForInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_list_type_for_input_objects.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "TvSeries! cannot represent non TvSeries! value: [{name: \"Breaking Bad\", episodes:[{title: \"Cancer Man\", newCharacters:[true, \"graphql\"]}]}]",
-                locations: [
-                    {
-                        line: 2,
-                        column: 14
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input_objects", "input"]
-}
-isolated function testInvalidValueWithNestedListInInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("invalid_value_with_nested_list_in_input_objects.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "[Episode!] cannot represent non [Episode!] value: {title: \"Cancer Man\", newCharacters:[\"paul\"]}",
-                locations: [
-                    {
-                        line: 2,
-                        column: 48
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
-    string document = string`query ($tvSeries: TvSeries!){ getMovie(tvSeries: $tvSeries ) { movieName, director } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var6 = {
         tvSeries:{
             name: "Braking Bad",
             episodes: [
@@ -572,27 +118,8 @@ isolated function testListTypeWithinInputObjectsWithVariables() returns error? {
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            getMovie: [
-                {
-                    movieName: "Sherlock Holmes",
-                    director: "Dexter Fletcher"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testEmptyListTypeWithinInputObjectsWithVariables() returns error? {
-    string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var7 = {
         tvSeries: {
             name: "Breaking Bad",
             episodes: [
@@ -603,18 +130,8 @@ isolated function testEmptyListTypeWithinInputObjectsWithVariables() returns err
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("empty_list_type_within_input_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testInvalidListTypeWithinInputObjectsWithVariables() returns error? {
-    string document = string`query ($tvSeries: TvSeries!) { getMovie(tvSeries: $tvSeries) { movieName, director } }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
+    json var8 = {
         tvSeries: {
             name: "Breaking Bad",
             episodes: [
@@ -625,362 +142,61 @@ isolated function testInvalidListTypeWithinInputObjectsWithVariables() returns e
             ]
         }
     };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("invalid_list_type_within_input_objects_with_variables.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
 
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeWithEnumValues() returns error? {
-    string document = string`query { isIncludeHoliday(days: [MONDAY, FRIDAY, TUESDAY, SATURDAY]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isIncludeHoliday: true
-        }
+    map<[string, json]> dataSet = {
+        "1": ["list_type_input"],
+        "2": ["list_type_input_with_empty_value"],
+        "3": ["list_type_input_with_null_value"],
+        "4": ["nullable_list_type_input_without_value"],
+        "5": ["nullable_list_type_input_with_invalid_value"],
+        "6": ["list_type_inputs_with_nested_list"],
+        "7": ["nested_list_input_with_invalid_values_1"],
+        "8": ["nested_list_input_with_invalid_values_2"],
+        "9": ["list_type_input_with_variable", {words: ["Hello!", "This", "is", "Ballerina", "GraphQL"]}],
+        "10": ["list_type_input_with_invalid_variables", {words: ["Hello!", true, "is", 4, "GraphQL"]}],
+        "11": ["list_type_with_input_objects"],
+        "12": ["list_type_with_invalid_input_objects_value"],
+        "13": ["list_type_with_nested_list_in_input_object"],
+        "14": ["variables_inside_list_value", {name2: "Jessie"}],
+        "15": ["invalid_variables_inside_list_value"],
+        "16": ["input_object_type_variables_inside_list_value", var1],
+        "17": ["list_type_variables_inside_list_value", {list1: [4, 5, 6, 7]}],
+        "18": ["list_type_with_invalid_nested_list_in_input_object"],
+        "19": ["list_type_variables_with_input_objects", var2],
+        "20": ["list_type_variables_with_invalid_input_objects", var3],
+        "21": ["list_type_variables_with_nested_list_in_input_object", var4],
+        "22": ["list_type_variables_with_invalid_nested_list_in_input_object", var5],
+        "23": ["list_type_within_input_objects"],
+        "24": ["empty_list_type_within_input_objects"],
+        "25": ["invalid_list_type_within_input_objects"],
+        "26": ["invalid_list_type_for_input_objects"],
+        "27": ["invalid_value_with_nested_list_in_input_objects"],
+        "28": ["list_type_within_input_objects_with_variables", var6],
+        "29": ["empty_list_type_within_input_objects_with_variables", var7],
+        "30": ["invalid_list_type_within_input_objects_with_variables", var8],
+        "31": ["list_type_with_enum_values"],
+        "32": ["list_type_with_invalid_enum_values"],
+        "33": ["list_type_with_variable_default_values_1"],
+        "34": ["list_type_with_variable_default_values_2"],
+        "35": ["list_type_with_variable_default_values_3"],
+        "36": ["list_type_with_variable_default_values_4"],
+        "37": ["list_type_with_variable_default_values_5"],
+        "38": ["list_type_with_variable_default_values_6"],
+        "39": ["list_type_with_variable_default_values_7"],
+        "40": ["list_type_with_variable_default_values_8"],
+        "41": ["list_type_with_variable_default_values_9"],
+        "42": ["list_type_with_default_value"],
+        "43": ["list_type_with_invalid_variable_default_values_1"],
+        "44": ["list_type_with_invalid_variable_default_values_2"],
+        "45": ["list_type_with_invalid_variable_default_values_3"],
+        "46": ["list_type_with_invalid_variable_default_values_4"],
+        "47": ["list_type_with_invalid_variable_default_values_5"],
+        "48": ["list_type_with_invalid_variable_default_values_6"],
+        "49": ["list_type_with_invalid_variable_default_values_7"],
+        "50": ["list_type_with_invalid_variable_default_values_8"],
+        "51": ["list_type_with_invalid_variable_default_values_9"],
+        "52": ["non_null_list_type_variable_with_empty_list_value_1", {tvSeries: []}],
+        "53": ["non_null_list_type_variable_with_empty_list_value_2", {tvSeries: []}]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeWithInvalidEnumValues() returns error? {
-    string document = string`query { isIncludeHoliday(days: [MONDAY, FRIDAY, TUESDAY, SATURDAY, WEdnesday, 4]) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_enum_values.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues1() returns error? {
-    string document = string`query ($words: [String] = ["Hello!", "This", "is", "Ballerina", "GraphQL"]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Hello! This is Ballerina GraphQL"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues2() returns error? {
-    string document = string`query ($words: [String] = []){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Word list is empty"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues3() returns error? {
-    string document = string`query ($words: [String] = [null, null, "Hello", "GraphQL"]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            concat: "Hello GraphQL"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues4() returns error? {
-    string document = string`query ($prices: [[Float!]!] = [[1, 2, 3], [34, 56, 65]]){ getTotal(prices: $prices) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            getTotal: [6.0, 155.0]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues5() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_values_5.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            searchProfile: [
-                {
-                    name: "Jessie Pinkman",
-                    age: 26
-                },
-                {
-                    name: "Sherlock Holmes",
-                    age: 40
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues6() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_values_6.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            searchProfile: [
-                {
-                    name: "Jessie Pinkman",
-                    age: 26
-                },
-                {
-                    name: "Sherlock Holmes",
-                    age: 40
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues7() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_value_7.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_variable_default_value_7.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input_objects", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues8() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_value_8.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            getMovie: [
-                {
-                    movieName: "Sherlock Holmes",
-                    director: "Dexter Fletcher"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "enum", "input"]
-}
-isolated function testListTypeWithVariableDefaultValues9() returns error? {
-    string document = string`query ($days: [Weekday!] = [MONDAY, FRIDAY, TUESDAY, SATURDAY]){ isIncludeHoliday(days: $days) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isIncludeHoliday: true
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "enum", "input"]
-}
-isolated function testListTypeWithDefaultValue() returns error? {
-    string document = string`query { isIncludeHoliday }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isIncludeHoliday: false
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues1() returns error? {
-    string document = string`query ($words: [String] = ["Hello!", "This", "is", Ballerina, true]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues2() returns error? {
-    string document = string`query ($words: [Int] = ["Hello!", "This", "is", "Ballerina", "GraphQL"]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues3() returns error? {
-    string document = string`query ($prices: [[Float!]!] = [[1, true, 3], false]){ getTotal(prices: $prices) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_3.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues4() returns error? {
-    string document = string`query ($prices: [[Float!]!] = [ 2, 3, 4, 5]){ getTotal(prices: $prices) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_4.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues5() returns error? {
-    string document = string`query ($prices: [[Float!]!] = [[], [4, 5], [null], null]){ getTotal(prices: $prices) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_5.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues6() returns error? {
-    string document = string`query ($prices: [[Float!]!] = null){ getTotal(prices: $prices) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "[[Float!]!]! cannot represent non [[Float!]!]! value: null",
-                locations: [
-                    {
-                        line: 1,
-                        column: 31
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValues7() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_with_variable_default_values_7.graphql");
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("list_type_with_invalid_variable_default_values_7.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValue8() returns error? {
-    string document = string`query ($days:[Weekday] = [MONDAY, FRIDAY, TUESDAY, SATURDAY]){ isIncludeHoliday(days: $days) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Variable \"days\" of type \"[Weekday]\" used in position expecting type \"[Weekday!]!\".",
-                locations: [
-                    {
-                        line: 1,
-                        column: 88
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "input"]
-}
-isolated function testListTypeWithInvalidVariableDefaultValue9() returns error? {
-    string document = string`query ($days:[Weekday!] = [MONDAY, FRIDAY, TUSDAY, SATURDAY]){ isIncludeHoliday(days: $days) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Value \"TUSDAY\" does not exist in \"days\" enum.",
-                locations: [
-                    {
-                        line: 1,
-                        column: 44
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testNonNullListTypeVariableWithEmptyListValue() returns error? {
-    string document  = check getGraphQLDocumentFromFile("non_null_list_type_variable_with_empty_list_value.graphql");
-    json variables = {
-        tvSeries: []
-    };
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile("non_null_list_type_variable_with_empty_list_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "input"]
-}
-isolated function testNonNullListTypeWithEmptyListValue() returns error? {
-    string document = string `{ getSuggestions(tvSeries: []) { movieName, director }}`;
-    string url = "http://localhost:9091/list_inputs";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("non_null_list_type_variable_with_empty_list_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

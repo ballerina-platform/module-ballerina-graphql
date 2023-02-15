@@ -1,0 +1,15 @@
+{
+    "errors": [
+        {
+            "message": "Not Found!",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": ["idsWithErrors", 3]
+        }
+    ],
+    "data": null
+}

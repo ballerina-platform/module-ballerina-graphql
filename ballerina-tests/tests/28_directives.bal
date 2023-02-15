@@ -17,113 +17,28 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["directives", "fragments", "input"]
+    groups: ["directives"],
+    dataProvider: dataProviderDirectives
 }
-isolated function testDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    last: "Holmes"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "fragments", "variables"]
-}
-isolated function testDirectivesWithVariablesAndFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_with_variables_and_fragments.graphql");
-    json variables = { optional: false  };
-    string url = "http://localhost:9091/records";
+isolated function testDirectives(string url, string documentFileName, json variables) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Walter White",
-                address: {
-                    street: "Negra Arroyo Lane"
-                }
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["directives", "variables"]
-}
-isolated function testDirectivesWithDuplicateFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_with_duplicate_fields.graphql");
-    string url = "http://localhost:9091/records";
-    json variables = { optional: false };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Walter White",
-                address: {
-                    number: "308"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderDirectives() returns map<[string, string, json]> {
+    string url1 = "http://localhost:9092/service_types";
+    string url2 = "http://localhost:9091/records";
+    string url3 = "http://localhost:9092/service_objects";
 
-@test:Config {
-    groups: ["directives", "array", "service"]
-}
-isolated function testDirectivesWithServiceReturningObjectsArray() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = string `{ searchVehicles(keyword: "vehicle") { ...on Vehicle { id @skip(if: true) } } }`;
-    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = {
-        data: {
-            searchVehicles: [
-                {},
-                {},
-                {}
-            ]
-        }
+    map<[string, string, json]> dataSet = {
+        "1": [url1, "directives"],
+        "2": [url2, "directives_with_variables_and_fragments", { optional: false  }],
+        "3": [url2, "directives_with_duplicate_fields", { optional: false }],
+        "4": [url3, "directives_with_service_returning_objects_array"],
+        "5": [url2, "multiple_directive_usage_in_fields"],
+        "6": [url2, "directives_skip_all_selections"]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesSkipAllSelections() returns error? {
-    string document = string`query getData { profile(id: 1) @skip(if: true) { name } }`;
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {}
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testMultipleDirectiveUsageInFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_directive_usage_in_fields.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            detective: {
-                address: {
-                    street: "Baker Street"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

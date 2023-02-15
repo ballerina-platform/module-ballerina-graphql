@@ -17,91 +17,24 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["inputs", "input_objects", "nullable_inputs"]
+    groups: ["inputs", "nullable_inputs"],
+    dataProvider: dataProviderNullableInputs
 }
-isolated function testNullInputForNullableRecord() returns error? {
+isolated function testNullInputForNullableRecord(string documentFileName) returns error? {
     string url = "http://localhost:9091/nullable_inputs";
-    string document = "{ city(address: null) }";
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            city: null
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["inputs", "input_objects", "nullable_inputs"]
-}
-isolated function testNonNullInputForNullableRecord() returns error? {
-    string url = "http://localhost:9091/nullable_inputs";
-    string document = check getGraphQLDocumentFromFile("non_null_input_for_nullable_record.graphql");
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            city: "Albequerque"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_objects", "nullable_inputs", "list"]
-}
-isolated function testNullInputForNullableList() returns error? {
-    string url = "http://localhost:9091/nullable_inputs";
-    string document = "{ cities(addresses: null) }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            cities: null
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_objects", "nullable_inputs", "list"]
-}
-isolated function testNonNullInputForNullableList() returns error? {
-    string url = "http://localhost:9091/nullable_inputs";
-    string document = check getGraphQLDocumentFromFile("non_null_input_for_nullable_list.graphql");
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            cities: ["Albequerque", "Hogwarts"]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_objects", "nullable_inputs", "list"]
-}
-isolated function testNullInputForNullableRecordField() returns error? {
-    string url = "http://localhost:9091/nullable_inputs";
-    string document = check getGraphQLDocumentFromFile("null_input_for_nullable_record_field.graphql");
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            accountNumber: 123456
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "input_objects", "nullable_inputs", "list"]
-}
-isolated function testNonNullInputForNullableRecordField() returns error? {
-    string url = "http://localhost:9091/nullable_inputs";
-    string document = check getGraphQLDocumentFromFile("non_null_input_for_nullable_record_field.graphql");
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            accountNumber: 123456
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+function dataProviderNullableInputs() returns string[][] {
+    return [
+        ["nullable_input_for_nullable_record"],
+        ["non_null_input_for_nullable_record"],
+        ["nullable_input_for_nullable_list"],
+        ["non_null_input_for_nullable_list"],
+        ["null_input_for_nullable_record_field"],
+        ["non_null_input_for_nullable_record_field"]
+    ];
 }

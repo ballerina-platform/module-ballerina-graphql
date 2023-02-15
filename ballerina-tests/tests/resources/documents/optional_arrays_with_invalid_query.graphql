@@ -1,0 +1,3 @@
+{
+    searchVehicles(keyword: "vehicle")
+}

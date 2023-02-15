@@ -54,37 +54,27 @@ function testAttachingGraphQLServiceWithAnnotationToDynamicListener() returns er
 }
 
 @test:Config {
-    groups: ["listener"]
+    groups: ["listener"],
+    dataProvider: dataProviderListener
 }
-function testAttachServiceWithQueryToHttp2BasedListener() returns error? {
-    string document = string `query { person{ age } }`;
-    string url = "http://localhost:9190/service_with_http2";
+function testListener(string url, string documentFileName) returns error? {
+    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            person: {
-                age: 50
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["listener"]
-}
-function testAttachServiceWithMutationToHttp2BasedListener() returns error? {
-    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9190/service_with_http2";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            setName: {
-                name: "Heisenberg"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+function dataProviderListener() returns string[][] {
+    string url1 = "http://localhost:9190/service_with_http2";
+    string url2 = "http://localhost:9191/service_with_http1";
+    string url3 = "http://localhost:9090/annotations";
+    return [
+        [url1, "attach_service_with_query_to_http2_based_listener"],
+        [url1, "attach_service_with_mutation_to_http2_based_listener"],
+        [url2, "attach_service_with_query_to_http1_based_listener"],
+        [url2, "attch_service_with_mutation_to_http1_based_listener"],
+        [url3, "service_with_other_annotations"]
+    ];
 }
 
 @test:Config {
@@ -97,40 +87,6 @@ function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? 
     string expecctedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
                               string `provided HTTP(version 2.0) listener`;
     test:assertEquals(err.message(), expecctedMessage);
-}
-
-@test:Config {
-    groups: ["listener"]
-}
-function testAttachServiceWithQueryToHttp1BasedListener() returns error? {
-    string document = string `query { person{ age } }`;
-    string url = "http://localhost:9191/service_with_http1";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            person: {
-                age: 50
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["listener"]
-}
-function testAttachServiceWithMutationToHttp1BasedListener() returns error? {
-    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9191/service_with_http1";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            setName: {
-                name: "Heisenberg"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -187,19 +143,4 @@ function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? 
         check validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
-}
-
-@test:Config {
-    groups: ["listener", "service", "annotations"]
-}
-function testServiceWithOtherAnnotations() returns error? {
-    string document = string `query { greeting }`;
-    string url = "http://localhost:9090/annotations";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            greeting: "Hello"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

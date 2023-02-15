@@ -49,8 +49,8 @@
             "message": "Variable \"words\" of type \"[Int]\" used in position expecting type \"[String]\".",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 90
+                    "line": 2,
+                    "column": 20
                 }
             ]
         }

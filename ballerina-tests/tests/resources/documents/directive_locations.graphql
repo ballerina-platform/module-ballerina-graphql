@@ -1,0 +1,7 @@
+{
+    __schema {
+        directives {
+            locations
+        }
+    }
+}

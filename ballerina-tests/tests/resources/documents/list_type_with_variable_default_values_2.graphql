@@ -1,0 +1,3 @@
+query ($words: [String] = []) {
+    concat(words: $words)
+}

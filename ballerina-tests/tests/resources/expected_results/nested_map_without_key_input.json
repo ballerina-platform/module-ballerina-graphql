@@ -4,8 +4,8 @@
             "message": "Field \"contacts\" argument \"key\" of type \"String!\" is required, but it was not provided.",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 40
+                    "line": 4,
+                    "column": 13
                 }
             ]
         },
@@ -13,8 +13,8 @@
             "message": "Field \"contacts\" of type \"Contact!\" must have a selection of subfields. Did you mean \"contacts { ... }\"?",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 40
+                    "line": 4,
+                    "column": 13
                 }
             ]
         }
