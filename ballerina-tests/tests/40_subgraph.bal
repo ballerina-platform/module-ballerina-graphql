@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/regex;
 import ballerina/test;
 
 @test:Config {
@@ -298,6 +299,10 @@ isolated function testQueringSdlOnSubgraph() returns error? {
     string url = "localhost:9088/subgraph";
     graphql:Client graphqlClient = check new (url);
     json response = check graphqlClient->execute(document);
+    string sdl = check response.data._service.sdl.ensureType();
+    // Replace line seperator on windows "\r\n" with "\n"
+    sdl = regex:replaceAll(sdl, "\r\n", "\n");
+    response = {data: {_service: {sdl}}};
     json expectedPayload = check getJsonContentFromFile("quering_sdl_on_subgraph.json");
     assertJsonValuesWithOrder(response, expectedPayload);
 }

@@ -50,7 +50,7 @@ public class SdlSchemaStringGenerator {
 
     //String formats for SDL schema
     private static final String SCHEMA_FORMAT = "%s%s%s%s";
-    private static final String FEDERATION2_SCHEMA_EXTENSION = "extend schema %s \n\n";
+    private static final String FEDERATION2_SCHEMA_EXTENSION = "extend schema %s %s";
     private static final String DIRECTIVE_TYPE_FORMAT = "%sdirective @%s%s%s on %s";
     private static final String INTERFACE_TYPE_FORMAT = "%sinterface %s%s %s";
     private static final String UNION_TYPE_FORMAT = "%sunion %s%s";
@@ -128,7 +128,7 @@ public class SdlSchemaStringGenerator {
             return EMPTY_STRING;
         }
         String linkDirective = getLinkDirective();
-        return getFormattedString(FEDERATION2_SCHEMA_EXTENSION, linkDirective);
+        return getFormattedString(FEDERATION2_SCHEMA_EXTENSION, linkDirective, LINE_SEPARATOR + LINE_SEPARATOR);
     }
 
     private String getLinkDirective() {
