@@ -122,6 +122,21 @@ isolated function testQueringEntityFieldWithoutTypenameInArgument() returns erro
     json locations = [{line: 1, column: 35}];
     json expectedErrorDetail = [{message, locations}];
     test:assertEquals(err.detail().errors.toJson(), expectedErrorDetail);
+}
+
+@test:Config {
+    groups: ["federation", "subgraph", "entity"]
+}
+isolated function testQueringEntityFieldWithObjectArgument() returns error? {
+    string document = string `{ _entities( representations: { name: "Acamar" } ) { ... on Star { name } } }`;
+    string url = "localhost:9088/subgraph";
+    graphql:Client graphqlClient = check new (url);
+    json|error response = graphqlClient->execute(document);
+    test:assertTrue(response is graphql:InvalidDocumentError);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>response;
+    string message = string `[_Any!]! cannot represent non [_Any!]! value: {name: "Acamar"}`;
+    json locations = [{line: 1, column: 14}];
+    json expectedErrorDetail = [{message, locations}];
     test:assertEquals(err.detail().errors.toJson(), expectedErrorDetail);
 }
 
@@ -199,6 +214,22 @@ isolated function testQueringEntityFieldWithoutTypenameInVariable() returns erro
     graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>response;
     string message = string `representations: In element #0: "_Any" cannot represent non _Any value: ` +
                     string `"__typename" field is absent`;
+    json locations = [{line: 1, column: 55}];
+    json expectedErrorDetail = [{message, locations}];
+    test:assertEquals(err.detail().errors.toJson(), expectedErrorDetail);
+}
+
+@test:Config {
+    groups: ["federation", "subgraph", "entity"]
+}
+isolated function testQueringEntityFieldWithObjectVariable() returns error? {
+    string document = string `query ($rep: [_Any!]!) { _entities( representations: $rep ) { ... on Star { name } } }`;
+    string url = "localhost:9088/subgraph";
+    graphql:Client graphqlClient = check new (url);
+    map<json> variables = {rep: {name: "Acamar"}};
+    json|error response = graphqlClient->execute(document, variables);
+    graphql:InvalidDocumentError err = <graphql:InvalidDocumentError>response;
+    string message = string `[_Any!]! cannot represent non [_Any!]! value: {"name":"Acamar"}`;
     json locations = [{line: 1, column: 55}];
     json expectedErrorDetail = [{message, locations}];
     test:assertEquals(err.detail().errors.toJson(), expectedErrorDetail);

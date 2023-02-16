@@ -268,6 +268,9 @@ class FieldValidatorVisitor {
                                        schemaArg);
         } else {
             string expectedTypeName = getOfTypeName(schemaArg.'type);
+            if variableValue is map<json> && getTypeKind(schemaArg.'type) == LIST {
+                expectedTypeName = getTypeNameFromType(schemaArg.'type);
+            }
             string listError = getListElementError(self.argumentPath);
             string value = variableValue is () ? "null" : variableValue.toString();
             string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
