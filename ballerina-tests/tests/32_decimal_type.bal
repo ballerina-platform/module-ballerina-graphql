@@ -23,9 +23,9 @@ import ballerina/lang.value;
 }
 isolated function testDecimalType1(string documentFileName, json variables) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
@@ -49,9 +49,9 @@ function dataProviderDecimalType1() returns map<[string, json]> {
 }
 isolated function testDecimalType2(string documentFileName, map<json>? variables) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     map<value:JsonDecimal> payloadWithFloatValues = check actualPayload.cloneWithType();
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
@@ -128,9 +128,9 @@ isolated function testDecimalWithMarginalValue() returns error? {
 }
 isolated function testDecimalType3(string documentFileName) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

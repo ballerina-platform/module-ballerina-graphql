@@ -21,9 +21,9 @@ import ballerina/test;
     dataProvider: dataProviderHierarchicalResourcePaths
 }
 isolated function testHierarchicalResourcePaths(string url, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

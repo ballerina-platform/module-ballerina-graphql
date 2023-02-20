@@ -35,9 +35,9 @@ isolated function testInvalidRequestWithVariables() returns error? {
     dataProvider: dataProviderInputVariables
 }
 isolated function testDuplicateInputVariables(string url, string documentFileName, json variables, string? operationName = ()) returns error? {
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     json actualPayload = check getJsonPayloadFromService(url, document, variables, operationName);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

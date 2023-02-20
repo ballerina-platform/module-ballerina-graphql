@@ -174,3 +174,11 @@ isolated function validateConnectionClousureWithError(websocket:Client wsClient,
     }
     test:assertFail(string `Expected Error found : ${response.toString()}`);
 }
+
+isolated function appendGraphqlExtension(string fileName) returns string {
+    return string `${fileName}.graphql`;
+}
+
+isolated function appendJsonExtension(string fileName) returns string {
+    return string `${fileName}.json`;
+}

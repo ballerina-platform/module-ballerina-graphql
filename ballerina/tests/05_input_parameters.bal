@@ -22,14 +22,14 @@ import graphql.parser;
     dataProvider: dataProviderInputParameterValidation
 }
 function testInputParameterValidation(string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     FieldValidatorVisitor validator = new (schemaWithInputValues, nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 

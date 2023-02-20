@@ -22,9 +22,9 @@ import ballerina/test;
 }
 isolated function testRecordObjects(string documentFileName) returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

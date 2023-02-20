@@ -22,14 +22,14 @@ import graphql.parser;
     dataProvider: dataProviderVariableValidation
 }
 function testVariableValidation(string documentFileName, map<json>? vars) returns error? {
-    string document = check getGraphQLDocumentFromFile(string `${documentFileName}.graphql`);
+    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     VariableValidatorVisitor validator = new (schemaWithInputValues, vars, nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(string `${documentFileName}.json`);
+    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 

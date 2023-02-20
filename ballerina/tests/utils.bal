@@ -32,3 +32,11 @@ isolated function getDocumentNode(string documentString) returns parser:Document
     parser:Parser parser = new (documentString);
     return parser.parse();
 }
+
+isolated function appendGraphqlExtension(string fileName) returns string {
+    return string `${fileName}.graphql`;
+}
+
+isolated function appendJsonExtension(string fileName) returns string {
+    return string `${fileName}.json`;
+}
