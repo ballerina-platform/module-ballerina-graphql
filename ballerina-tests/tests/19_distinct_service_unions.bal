@@ -21,9 +21,9 @@ import ballerina/test;
     dataProvider: dataProviderDistinctServiceObjects
 }
 isolated function testUnionOfDistinctServiceObjects(string url, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

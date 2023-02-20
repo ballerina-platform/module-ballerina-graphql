@@ -21,9 +21,9 @@ import ballerina/test;
     dataProvider: dataProviderDirectives
 }
 isolated function testDirectives(string url, string documentFileName, json variables) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

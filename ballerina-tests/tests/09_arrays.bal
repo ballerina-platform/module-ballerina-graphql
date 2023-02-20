@@ -21,9 +21,9 @@ import ballerina/test;
     dataProvider: dataProviderArrays
 }
 isolated function testArrays(string url, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -47,9 +47,9 @@ function dataProviderArrays() returns string[][] {
 }
 isolated function testServiceObjectArrayWithInvalidResponseOrder() returns error? {
     string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = check getGraphQLDocumentFromFile("service_object_array_with_invalid_response_order.graphql");
+    string document = check getGraphqlDocumentFromFile("service_object_array_with_invalid_response_order");
     json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("service_object_array_with_invalid_response_order.json");
+    json expectedPayload = check getJsonContentFromFile("service_object_array_with_invalid_response_order");
     test:assertEquals(result, expectedPayload);
     string actualPayloadString = result.toString();
     string expectedPayloadString = expectedPayload.toString();

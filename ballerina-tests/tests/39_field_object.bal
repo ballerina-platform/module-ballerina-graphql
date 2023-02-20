@@ -21,7 +21,7 @@ import ballerina/test;
     dataProvider: dataProviderFieldObject
 }
 function testFieldObject(string url, string documentFileName, string jsonFileName, string operationName) returns error? {
-    string document = check getGraphQLDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = operationName);
     json expectedPayload = check getJsonContentFromFile(jsonFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
@@ -33,10 +33,10 @@ function dataProviderFieldObject() returns string[][] {
     string url2 = "localhost:9092/service_objects";
 
     return [
-        [url1, "field_object.graphql", "field_object.json", "QueryName"],
-        [url1, "field_object.graphql", "field_object_with_multiple_args.json", "QueryNameAndAge"],
-        [url1, "field_object.graphql", "field_object_with_multiple_args.json", "QueryNameAndAgeWithFragments"],
-        [url2, "field_object_parameter_order.graphql", "field_object_parameter_order1.json", "FieldObjectParameterOrder1"],
-        [url2, "field_object_parameter_order.graphql", "field_object_parameter_order2.json", "FieldObjectParameterOrder2"]
+        [url1, "field_object", "field_object", "QueryName"],
+        [url1, "field_object", "field_object_with_multiple_args", "QueryNameAndAge"],
+        [url1, "field_object", "field_object_with_multiple_args", "QueryNameAndAgeWithFragments"],
+        [url2, "field_object_parameter_order", "field_object_parameter_order1", "FieldObjectParameterOrder1"],
+        [url2, "field_object_parameter_order", "field_object_parameter_order2", "FieldObjectParameterOrder2"]
     ];
 }

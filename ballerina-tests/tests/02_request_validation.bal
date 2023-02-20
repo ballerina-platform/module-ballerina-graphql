@@ -23,7 +23,7 @@ import ballerina/websocket;
     groups: ["request_validation", "listener"]
 }
 isolated function testMultipleOperationsWithoutOperationNameInRequest() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+    string document = check getGraphqlDocumentFromFile("multiple_operations_without_operation_name_in_request");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
@@ -41,7 +41,7 @@ isolated function testMultipleOperationsWithoutOperationNameInRequest() returns 
     groups: ["request_validation", "listener"]
 }
 isolated function testMultipleOperationsWithInvalidOperationInRequest() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+    string document = check getGraphqlDocumentFromFile("multiple_operations_without_operation_name_in_request");
     string url = "http://localhost:9091/records";
     json actualPayload = check getJsonPayloadFromService(url, document, operationName = "invalid");
     json expectedPayload = {
@@ -193,7 +193,7 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_variable_values");
     json variables = [];
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};

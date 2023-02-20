@@ -49,7 +49,7 @@ isolated function testSubscriptionWithoutSubProtocol() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionsWithMultipleOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_multiple_operations.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_multiple_operations");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
@@ -78,7 +78,7 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
     groups: ["records", "subscriptions"]
 }
 isolated function testSubscriptionWithRecords() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_records");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -106,7 +106,7 @@ isolated function testQueryWithSameSubscriptionFieldName() returns error? {
     groups: ["fragments", "subscriptions"]
 }
 isolated function testSubscriptionWithFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_fragments");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -123,7 +123,7 @@ isolated function testSubscriptionWithFragments() returns error? {
     groups: ["union", "subscriptions"]
 }
 isolated function testSubscriptionWithUnionType() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_union_type");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -140,7 +140,7 @@ isolated function testSubscriptionWithUnionType() returns error? {
     groups: ["variables", "subscriptions"]
 }
 isolated function testSubscriptionWithVariables() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_variable_values.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_variable_values");
     json variables = {"value": 4};
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
@@ -180,7 +180,7 @@ isolated function testInvalidSubscription() returns error? {
     check initiateGraphqlWsConnection(wsClient);
     check sendSubscriptionMessage(wsClient, document);
 
-    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_field.json");
+    json expectedMsgPayload = check getJsonContentFromFile("subscription_invalid_field");
     check validateErrorMessage(wsClient, expectedMsgPayload);
 }
 
@@ -203,7 +203,7 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
     groups: ["service", "subscriptions"]
 }
 isolated function testSubscriptionWithServiceObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_service_objects");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -271,7 +271,7 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testUnauthorizedAccess() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_service_objects");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -285,7 +285,7 @@ isolated function testUnauthorizedAccess() returns error? {
     groups: ["subscriptions"]
 }
 function testAlreadyExistingSubscriber() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_service_objects.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_service_objects");
     string url = "ws://localhost:9099/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -352,7 +352,7 @@ isolated function testErrorsInStreams() returns error? {
 
     json expectedMsgPayload = {data: {evenNumber: 2}};
     check validateNextMessage(wsClient, expectedMsgPayload);
-    expectedMsgPayload = check getJsonContentFromFile("errors_in_streams.json");
+    expectedMsgPayload = check getJsonContentFromFile("errors_in_streams");
     check validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {evenNumber: 6}};
     check validateNextMessage(wsClient, expectedMsgPayload);

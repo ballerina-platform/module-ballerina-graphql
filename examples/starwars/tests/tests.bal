@@ -18,7 +18,7 @@ import ballerina/test;
 
 @test:Config{}
 function testHero() returns error? {
-    string document = check getGraphQLDocumentFromFile("hero.graphql");
+    string document = check getGraphqlDocumentFromFile("hero");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {
@@ -34,7 +34,7 @@ function testHero() returns error? {
 
 @test:Config{}
 function testHeroWithAlias() returns error? {
-    string document = check getGraphQLDocumentFromFile("heroWithAlias.graphql");
+    string document = check getGraphqlDocumentFromFile("heroWithAlias");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {
@@ -52,7 +52,7 @@ function testHeroWithAlias() returns error? {
 
 @test:Config{}
 function testHeroWithDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("heroWithDirectives.graphql");
+    string document = check getGraphqlDocumentFromFile("heroWithDirectives");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {
@@ -76,7 +76,7 @@ function testHeroWithDirectives() returns error? {
 
 @test:Config{}
 function testCharacters() returns error? {
-    string document = check getGraphQLDocumentFromFile("characters.graphql");
+    string document = check getGraphqlDocumentFromFile("characters");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {
@@ -97,7 +97,7 @@ function testCharacters() returns error? {
 
 @test:Config{}
 function testReviews() returns error? {
-    string document = check getGraphQLDocumentFromFile("reviews.graphql");
+    string document = check getGraphqlDocumentFromFile("reviews");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {
@@ -114,7 +114,7 @@ function testReviews() returns error? {
 
 @test:Config{}
 function testDroid() returns error? {
-    string document = check getGraphQLDocumentFromFile("droid.graphql");
+    string document = check getGraphqlDocumentFromFile("droid");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data:{
@@ -129,7 +129,7 @@ function testDroid() returns error? {
 
 @test:Config{}
 function testHuman() returns error? {
-    string document = check getGraphQLDocumentFromFile("human.graphql");
+    string document = check getGraphqlDocumentFromFile("human");
     json variables = {
         id: "1000"
     };
@@ -156,7 +156,7 @@ function testHuman() returns error? {
 
 @test:Config{}
 function testSearch() returns error? {
-    string document = check getGraphQLDocumentFromFile("search.graphql");
+    string document = check getGraphqlDocumentFromFile("search");
     json variables = {
         text: "humanInstarship"
     };
@@ -199,7 +199,7 @@ function testSearch() returns error? {
 
 @test:Config{}
 function testCreateReview() returns error? {
-    string document = check getGraphQLDocumentFromFile("createReview.graphql");
+    string document = check getGraphqlDocumentFromFile("createReview");
     json variables = {
         epi: "EMPIRE",
         review: {
@@ -223,7 +223,7 @@ function testCreateReview() returns error? {
 
 @test:Config{}
 function testFriends() returns error? {
-    string document = check getGraphQLDocumentFromFile("friends.graphql");
+    string document = check getGraphqlDocumentFromFile("friends");
     json actualPayload = check getJsonPayloadFromService(document);
     json expectedPayload = {
         data: {

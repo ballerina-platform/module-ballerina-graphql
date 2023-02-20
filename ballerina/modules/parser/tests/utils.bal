@@ -17,7 +17,8 @@
 import ballerina/file;
 import ballerina/io;
 
-isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
-    string path = check file:joinPath("modules", "parser", "tests", "resources", "documents", fileName);
+isolated function getGraphqlDocumentFromFile(string fileName) returns string|error {
+    string gqlFileName = string `${fileName}.graphql`;
+    string path = check file:joinPath("modules", "parser", "tests", "resources", "documents", gqlFileName);
     return io:fileReadString(path);
 }

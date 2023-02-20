@@ -22,9 +22,9 @@ import ballerina/websocket;
     dataProvider: dataProviderInterceptors
 }
 isolated function testInterceptors(string url, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -115,7 +115,7 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
     groups: ["interceptors", "subscriptions", "records"]
 }
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_records");
     string url = "ws://localhost:9099/subscription_interceptor2";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -131,7 +131,7 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
     groups: ["interceptors", "fragments", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_fragments");
     string url = "ws://localhost:9099/subscription_interceptor3";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -147,7 +147,7 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_union_type");
     string url = "ws://localhost:9099/subscription_interceptor4";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -274,7 +274,7 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
-    final string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    final string document = check getGraphqlDocumentFromFile("subscriptions_with_union_type");
     string url = "ws://localhost:9099/subscription_interceptor4";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     final websocket:Client wsClient1 = check new (url, config);

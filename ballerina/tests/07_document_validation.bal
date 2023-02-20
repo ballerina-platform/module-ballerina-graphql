@@ -22,14 +22,14 @@ import graphql.parser;
     dataProvider: dataProviderDocumentValidation1
 }
 function testDocumentValidation1(string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     FieldValidatorVisitor validator = new (schemaWithInputValues, nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
@@ -44,10 +44,10 @@ function dataProviderDocumentValidation1() returns (string[][]) {
     dataProvider: dataProviderDocumentValidation2
 }
 isolated function testDocumentValidation2(string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     parser:Parser parser = new (document);
     _ = check parser.parse();
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     test:assertEquals(parser.getErrors(), expectedPayload);
 }
 

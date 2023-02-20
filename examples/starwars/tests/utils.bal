@@ -27,7 +27,8 @@ function getJsonPayloadFromService(string document, json variables = {}, string?
     return check httpClient->post("/", { query: document, variables: variables });
 }
 
-isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
-    string path = check file:joinPath("starwars", "tests", "resources", "documents", fileName);
+isolated function getGraphqlDocumentFromFile(string fileName) returns string|error {
+    string gqlFileName = string `${fileName}.graphql`;
+    string path = check file:joinPath("starwars", "tests", "resources", "documents", gqlFileName);
     return io:fileReadString(path);
 }

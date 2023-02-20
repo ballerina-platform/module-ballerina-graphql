@@ -22,14 +22,14 @@ import graphql.parser;
     dataProvider: dataProviderSubscriptionValidation
 }
 function testSubscriptionValidation(string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     SubscriptionValidatorVisitor validator = new (nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 

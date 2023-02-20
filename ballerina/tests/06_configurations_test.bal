@@ -22,11 +22,11 @@ import graphql.parser;
     dataProvider: dataProviderQueryDepthConfigurations
 }
 function testQueryDepthConfigurations(int maxQueryDepth, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     QueryDepthValidatorVisitor validator = new (maxQueryDepth, new);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json expectedPayload = check getJsonContentFromFile(documentFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
@@ -44,14 +44,14 @@ function dataProviderQueryDepthConfigurations() returns map<[int, string]> {
     dataProvider: dataProviderIntrospectionConfigurations
 }
 function testIntrospectionConfigurations(boolean introspection, string documentFileName) returns error? {
-    string document = check getGraphQLDocumentFromFile(appendGraphqlExtension(documentFileName));
+    string document = check getGraphqlDocumentFromFile(documentFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     IntrospectionValidatorVisitor validator = new (introspection, nodeModifierContext);
     documentNode.accept(validator);
-    json|error expectedPayload = getJsonContentFromFile(appendJsonExtension(documentFileName));
+    json|error expectedPayload = getJsonContentFromFile(documentFileName);
     test:assertEquals(validator.getErrors(), expectedPayload is error ? () : expectedPayload);
 }
 

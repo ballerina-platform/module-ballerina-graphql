@@ -18,25 +18,19 @@ import ballerina/file;
 import ballerina/io;
 import graphql.parser;
 
-isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
-    string path = check file:joinPath("tests", "resources", "documents", fileName);
+isolated function getGraphqlDocumentFromFile(string fileName) returns string|error {
+    string gqlFileName = string `${fileName}.graphql`;
+    string path = check file:joinPath("tests", "resources", "documents", gqlFileName);
     return io:fileReadString(path);
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
-    string path = check file:joinPath("tests", "resources", "expected_results", fileName);
+    string jsonFileName = string `${fileName}.json`;
+    string path = check file:joinPath("tests", "resources", "expected_results", jsonFileName);
     return io:fileReadJson(path);
 }
 
 isolated function getDocumentNode(string documentString) returns parser:DocumentNode|parser:Error {
     parser:Parser parser = new (documentString);
     return parser.parse();
-}
-
-isolated function appendGraphqlExtension(string fileName) returns string {
-    return string `${fileName}.graphql`;
-}
-
-isolated function appendJsonExtension(string fileName) returns string {
-    return string `${fileName}.json`;
 }

@@ -21,7 +21,7 @@ import ballerina/test;
     dataProvider: dataProviderIntersectionType
 }
 isolated function testIntersectionType(string jsonFileName, string operationName, json variables) returns error? {
-    string document = check getGraphQLDocumentFromFile("intersection_types.graphql");
+    string document = check getGraphqlDocumentFromFile("intersection_types");
     string url = "http://localhost:9091/intersection_types";
     json actualPayload = check getJsonPayloadFromService(url, document, variables, operationName = operationName);
     json expectedPayload = check getJsonContentFromFile(jsonFileName);
@@ -40,16 +40,16 @@ function dataProviderIntersectionType() returns map<[string, string, json]> {
     };
 
     map<[string, string, json]> dataSet = {
-        "1": ["input_with_intersection_parameter.json", "getName", ()],
-        "2": ["input_with_intersection_parameter_reference.json", "getCity", ()],
-        "3": ["output_with_intersection_paramenter.json", "getProfile", ()],
-        "4": ["output_with_intersection_paramenter_reference.json", "getBook", ()],
-        "5": ["input_with_intersection_parameter_array.json", "getNames", ()],
-        "6": ["input_with_intersection_parameter_reference_array.json", "getCities", ()],
-        "7": ["output_with_intersection_parameter_array.json", "getProfiles", ()],
-        "8": ["output_with_intersection_parameter_reference_array.json", "getBooks", ()],
-        "9": ["input_with_intersection_referring_non_intersection_type.json", "getCommonName", variableGetCommonName],
-        "10": ["input_with_non_intersection_type_referring_intersection_type.json", "getOwnerName", ()]
+        "1": ["input_with_intersection_parameter", "getName", ()],
+        "2": ["input_with_intersection_parameter_reference", "getCity", ()],
+        "3": ["output_with_intersection_paramenter", "getProfile", ()],
+        "4": ["output_with_intersection_paramenter_reference", "getBook", ()],
+        "5": ["input_with_intersection_parameter_array", "getNames", ()],
+        "6": ["input_with_intersection_parameter_reference_array", "getCities", ()],
+        "7": ["output_with_intersection_parameter_array", "getProfiles", ()],
+        "8": ["output_with_intersection_parameter_reference_array", "getBooks", ()],
+        "9": ["input_with_intersection_referring_non_intersection_type", "getCommonName", variableGetCommonName],
+        "10": ["input_with_non_intersection_type_referring_intersection_type", "getOwnerName", ()]
     };
     return dataSet;
 }

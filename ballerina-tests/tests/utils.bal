@@ -58,12 +58,14 @@ isolated function getJsonPayloadFromRequest(string url, http:Request request) re
 }
 
 isolated function getJsonContentFromFile(string fileName) returns json|error {
-    string path = check file:joinPath("tests", "resources", "expected_results", fileName);
+    string jsonFileName = string `${fileName}.json`;
+    string path = check file:joinPath("tests", "resources", "expected_results", jsonFileName);
     return io:fileReadJson(path);
 }
 
-isolated function getGraphQLDocumentFromFile(string fileName) returns string|error {
-    string path = check file:joinPath("tests", "resources", "documents", fileName);
+isolated function getGraphqlDocumentFromFile(string fileName) returns string|error {
+    string gqlFileName = string `${fileName}.graphql`;
+    string path = check file:joinPath("tests", "resources", "documents", gqlFileName);
     return io:fileReadString(path);
 }
 
@@ -173,12 +175,4 @@ isolated function validateConnectionClousureWithError(websocket:Client wsClient,
         return;
     }
     test:assertFail(string `Expected Error found : ${response.toString()}`);
-}
-
-isolated function appendGraphqlExtension(string fileName) returns string {
-    return string `${fileName}.graphql`;
-}
-
-isolated function appendJsonExtension(string fileName) returns string {
-    return string `${fileName}.json`;
 }
