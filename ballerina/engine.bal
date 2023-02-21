@@ -21,11 +21,12 @@ import graphql.parser;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final readonly & (readonly & Interceptor)[] interceptors;
+    private final readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) interceptors;
     private final readonly & boolean introspection;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
-                           readonly & (readonly & Interceptor)[] interceptors, boolean introspection)
+                           readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) interceptors,
+                           boolean introspection)
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -41,7 +42,7 @@ isolated class Engine {
         return self.schema;
     }
 
-    isolated function getInterceptors() returns (readonly & Interceptor)[] {
+    isolated function getInterceptors() returns (readonly & Interceptor)|(readonly & Interceptor)[] {
         return self.interceptors;
     }
 

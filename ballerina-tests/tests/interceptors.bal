@@ -154,7 +154,7 @@ readonly service class Destruct {
     }
 }
 
-readonly service class HierarchycalPath {
+readonly service class HierarchicalPath {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {

@@ -1919,7 +1919,18 @@ service on new graphql:Listener(9090) {
 
 The `interceptors` field is used to provide the service level interceptors.
 
-###### Example: Service Level Interceptors
+###### Example: Single Service Level Interceptor
+
+```ballerina
+@graphql:ServiceConfig {
+    interceptors: new Interceptor1()
+}
+service on new graphql:Listener(9090) {
+    // ...
+}
+```
+
+###### Example: Array of Service Level Interceptors
 
 ```ballerina
 @graphql:ServiceConfig {
@@ -2017,7 +2028,7 @@ Following is the output of the server when a request is processed:
 ```
 
 #### 11.3.1 Service Level Interceptors
-The service level interceptors are applied to all the resolvers in the GraphQL service. The GraphQL module accept an array of service level interceptors, and it should be inserted as mentioned in the [Service Level Interceptor](#1016-service-level-interceptors) section.
+The service level interceptors are applied to all the resolvers in the GraphQL service. The GraphQL module accepts a single service level interceptor or an array of service level interceptors, and it should be inserted as mentioned in the [Service Level Interceptor](#1016-service-level-interceptors) section.
 
 >**Note:** The service level interceptors are applied to each event in response stream of subscription resolvers.
 
@@ -2229,7 +2240,7 @@ readonly service class AuthInterceptor {
 
 @graphql:ServiceConfig {
     contextInit: contextInit,
-    interceptors: [new AuthInterceptor()]
+    interceptors: new AuthInterceptor()
 }
 service on new graphql:Listener(9090) {
 
@@ -2313,7 +2324,7 @@ readonly service class AuthInterceptor {
 
 @graphql:ServiceConfig {
     contextInit: contextInit,
-    interceptors: [new AuthInterceptor()]
+    interceptors: new AuthInterceptor()
 }
 service on new graphql:Listener(9090) {
 
@@ -2372,7 +2383,7 @@ readonly service class AuthInterceptor {
 
 @graphql:ServiceConfig {
     contextInit: contextInit,
-    interceptors: [new AuthInterceptor()]
+    interceptors: new AuthInterceptor()
 }
 service on new graphql:Listener(9090) {
 
@@ -2423,7 +2434,7 @@ readonly service class AuthInterceptor {
 
 @graphql:ServiceConfig {
     contextInit: contextInit,
-    interceptors: [new AuthInterceptor()]
+    interceptors: new AuthInterceptor()
 }
 service on new graphql:Listener(9090) {
 

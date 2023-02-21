@@ -153,7 +153,7 @@ isolated function testInterceptorsWithDestructiveModification2() returns error? 
 }
 isolated function testInterceptorsWithHierarchicalPaths() returns error? {
     string document = string `{ name{ first, last } }`;
-    string url = "http://localhost:9091/intercept_hierachical";
+    string url = "http://localhost:9091/intercept_hierarchical";
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         data: {

@@ -1486,7 +1486,7 @@ service /intercept_int on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new RecordInterceptor()]
+    interceptors: new RecordInterceptor()
 }
 service /intercept_records on basicListener {
     isolated resource function get profile() returns Person {
@@ -1499,9 +1499,9 @@ service /intercept_records on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new HierarchycalPath()]
+    interceptors: new HierarchicalPath()
 }
-service /intercept_hierachical on basicListener {
+service /intercept_hierarchical on basicListener {
     isolated resource function get name/first() returns string {
         return "Sherlock";
     }
@@ -1512,7 +1512,7 @@ service /intercept_hierachical on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new Destruct()]
+    interceptors: new Destruct()
 }
 service /intercept_service_obj_arrays on basicListener {
     resource function get students() returns StudentService[] {
@@ -1521,7 +1521,7 @@ service /intercept_service_obj_arrays on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ServiceObjectInterceptor1()]
+    interceptors: new ServiceObjectInterceptor1()
 }
 service /intercept_service_obj on basicListener {
     resource function get teacher() returns TeacherService {
@@ -1530,7 +1530,7 @@ service /intercept_service_obj on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ServiceObjectInterceptor2()]
+    interceptors: new ServiceObjectInterceptor2()
 }
 service /intercept_service_obj_array on basicListener {
     resource function get students() returns StudentService[] {
@@ -1539,7 +1539,7 @@ service /intercept_service_obj_array on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ArrayInterceptor()]
+    interceptors: new ArrayInterceptor()
 }
 service /intercept_arrays on basicListener {
     resource function get houses() returns string[] {
@@ -1548,7 +1548,7 @@ service /intercept_arrays on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new EnumInterceptor()]
+    interceptors: new EnumInterceptor()
 }
 service /intercept_enum on basicListener {
     isolated resource function get holidays() returns Weekday[] {
@@ -1557,7 +1557,7 @@ service /intercept_enum on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new UnionInterceptor()]
+    interceptors: new UnionInterceptor()
 }
 service /intercept_unions on serviceTypeListener {
     isolated resource function get profile(int id) returns StudentService|TeacherService {
@@ -1583,7 +1583,7 @@ service /intercept_record_fields on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new MapInterceptor()]
+    interceptors: new MapInterceptor()
 }
 service /intercept_map on basicListener {
     private final Languages languages;
@@ -1605,7 +1605,7 @@ service /intercept_map on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new TableInterceptor()]
+    interceptors: new TableInterceptor()
 }
 service /intercept_table on basicListener {
     isolated resource function get employees() returns EmployeeTable? {
@@ -1614,7 +1614,7 @@ service /intercept_table on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new InterceptMutation()]
+    interceptors: new InterceptMutation()
 }
 isolated service /mutation_interceptor on basicListener {
     private Person p;
@@ -1673,7 +1673,7 @@ isolated service /subscription_interceptor2 on subscriptionListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new InterceptStudentName()]
+    interceptors: new InterceptStudentName()
 }
 isolated service /subscription_interceptor3 on subscriptionListener {
 
@@ -1688,7 +1688,7 @@ isolated service /subscription_interceptor3 on subscriptionListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new InterceptUnionType()]
+    interceptors: new InterceptUnionType()
 }
 isolated service /subscription_interceptor4 on subscriptionListener {
 
@@ -1704,7 +1704,7 @@ isolated service /subscription_interceptor4 on subscriptionListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ReturnBeforeResolver()]
+    interceptors: new ReturnBeforeResolver()
 }
 isolated service /subscription_interceptor5 on subscriptionListener {
 
@@ -1765,7 +1765,7 @@ service /invalid_interceptor3 on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new InvalidInterceptor7()]
+    interceptors: new InvalidInterceptor7()
 }
 service /invalid_interceptor4 on basicListener {
     resource function get student() returns StudentService {
@@ -1774,7 +1774,7 @@ service /invalid_interceptor4 on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ErrorInterceptor1()]
+    interceptors: new ErrorInterceptor1()
 }
 service /intercept_errors1 on basicListener {
     isolated resource function get greet() returns string|error {
@@ -1792,7 +1792,7 @@ service /intercept_errors2 on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new ErrorInterceptor1()]
+    interceptors: new ErrorInterceptor1()
 }
 service /intercept_errors3 on basicListener {
     isolated resource function get person() returns Person {
@@ -1821,7 +1821,7 @@ service /intercept_order on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new AccessGrant()]
+    interceptors: new AccessGrant()
 }
 service /intercept_erros_with_hierarchical on basicListener {
     resource function get name() returns string {
@@ -1846,7 +1846,7 @@ service /intercept_erros_with_hierarchical on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new RecordInterceptor()]
+    interceptors: new RecordInterceptor()
 }
 service /interceptors_with_null_values1 on basicListener {
     resource function get name() returns string? {
@@ -1855,7 +1855,7 @@ service /interceptors_with_null_values1 on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new NullReturn()]
+    interceptors: new NullReturn()
 }
 service /interceptors_with_null_values2 on basicListener {
     resource function get name() returns string? {
@@ -1864,7 +1864,7 @@ service /interceptors_with_null_values2 on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new NullReturn()]
+    interceptors: new NullReturn()
 }
 service /interceptors_with_null_values3 on basicListener {
     resource function get name() returns string {

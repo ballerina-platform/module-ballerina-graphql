@@ -126,10 +126,18 @@ public isolated class Context {
         lock {
             if self.getEngine() is Engine {
                 Engine engine = <Engine>self.getEngine();
-                if engine.getInterceptors().length() > self.nextInterceptor {
-                    readonly & Interceptor next = engine.getInterceptors()[self.nextInterceptor];
-                    self.nextInterceptor += 1;
-                    return next;
+                if engine.getInterceptors() is (readonly & Interceptor)[] {
+                    (readonly & Interceptor)[] interceptors = <(readonly & Interceptor)[]>engine.getInterceptors();
+                    if interceptors.length() > self.nextInterceptor {
+                        readonly & Interceptor next = interceptors[self.nextInterceptor];
+                        self.nextInterceptor += 1;
+                        return next;
+                    }
+                } else {
+                    if self.nextInterceptor == 0 {
+                        self.nextInterceptor += 1;
+                        return <(readonly & Interceptor)>engine.getInterceptors();
+                    }
                 }
             }
             self.resetInterceptorCount();
