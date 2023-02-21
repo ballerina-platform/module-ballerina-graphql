@@ -35,6 +35,10 @@
                     "kind": "ENUM"
                 },
                 {
+                    "name": "StudentService",
+                    "kind": "OBJECT"
+                },
+                {
                     "name": "String",
                     "kind": "SCALAR"
                 },

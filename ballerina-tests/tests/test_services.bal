@@ -518,6 +518,27 @@ service /service_types on serviceTypeListener {
     isolated resource function get profile() returns Profile {
         return new;
     }
+
+    isolated resource function get person(graphql:Field 'field) returns Person {
+        string[] subfieldNames = 'field.getSubfieldNames();
+        if subfieldNames == ["name"] {
+            return {
+                name: "Sherlock Holmes",
+                address: {number: "221/B", street: "Baker Street", city: "London"}
+            };
+        } else if subfieldNames == ["name", "age"] {
+            return {
+                name: "Walter White",
+                age: 50,
+                address: {number: "309", street: "Negro Arroyo Lane", city: "Albuquerque"}
+            };
+        }
+        return {
+            name: "Jesse Pinkman",
+            age: 25,
+            address: {number: "208", street: "Margo Street", city: "Albuquerque"}
+        };
+    }
 }
 
 service /service_objects on serviceTypeListener {
@@ -541,6 +562,17 @@ service /service_objects on serviceTypeListener {
 
     isolated resource function get teacher() returns TeacherService {
         return new TeacherService(737, "Walter White", "Chemistry");
+    }
+
+    isolated resource function get student(string name, graphql:Context context, int id,
+            graphql:Field 'field) returns StudentService {
+        if context.get("scope") is error {
+            // ignore
+        }
+        if 'field.getSubfieldNames().indexOf("id") is int {
+            return new StudentService(id, name);
+        }
+        return new StudentService(10, "Jesse Pinkman");
     }
 }
 
@@ -720,6 +752,10 @@ service /special_types on specialTypesTestListener {
 
     resource function get company() returns Company {
         return company;
+    }
+
+    resource function get month(Month month) returns string {
+        return month;
     }
 }
 
@@ -1325,7 +1361,7 @@ service /subscriptions on subscriptionListener {
         EvenNumberGenerator evenNumberGenerator = new;
         return new (evenNumberGenerator);
     }
-    
+
     isolated resource function subscribe refresh() returns stream<string> {
         RefreshData dataRefersher = new;
         return new (dataRefersher);
@@ -1896,21 +1932,21 @@ graphql:Service greetingService2 = @graphql:ServiceConfig {maxQueryDepth: 5} ser
 service /covid19 on basicListener {
     resource function get all() returns table<CovidEntry> {
         table<CovidEntry> covidEntryTable = table [
-                {isoCode: "AFG"},
-                {isoCode: "SL"},
-                {isoCode: "US"}
-            ];
+            {isoCode: "AFG"},
+            {isoCode: "SL"},
+            {isoCode: "US"}
+        ];
         return covidEntryTable;
     }
 }
 
 table<Review> reviews = table [
-        {product: new ("1"), score: 20, description: "Product 01"},
-        {product: new ("2"), score: 20, description: "Product 02"},
-        {product: new ("3"), score: 20, description: "Product 03"},
-        {product: new ("4"), score: 20, description: "Product 04"},
-        {product: new ("5"), score: 20, description: "Product 05"}
-    ];
+    {product: new ("1"), score: 20, description: "Product 01"},
+    {product: new ("2"), score: 20, description: "Product 02"},
+    {product: new ("3"), score: 20, description: "Product 03"},
+    {product: new ("4"), score: 20, description: "Product 04"},
+    {product: new ("5"), score: 20, description: "Product 05"}
+];
 
 service /reviews on wrappedListener {
     resource function get latest() returns Review {
@@ -1939,7 +1975,7 @@ service /reviews on wrappedListener {
         map<AccountDetails> details = {acc1: new AccountDetails("James", 2022), acc2: new AccountDetails("Paul", 2015)};
         map<AccountDetails> updatedDetails = {...details};
         updatedDetails["acc1"] = new AccountDetails("James Deen", 2022);
-        return [{details},{details: updatedDetails}].toStream();
+        return [{details}, {details: updatedDetails}].toStream();
     }
 }
 

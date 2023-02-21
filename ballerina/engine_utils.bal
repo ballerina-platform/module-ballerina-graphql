@@ -44,7 +44,7 @@ isolated function validateInterceptorReturnValue(__Type 'type, any|error value, 
         return value;
     }
     string interceptorError = string `Invalid return type in Interceptor "${interceptorName}". ` +
-                              string `Expected type ${getTypeNameFromType('type)}`;
+                            string `Expected type ${getTypeNameFromType('type)}`;
     return error(interceptorError);
 }
 
@@ -79,6 +79,15 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
         return isValidType;
     }
     return false;
+}
+
+isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType, __Schema schema,
+                                 Engine engine, any|error fieldValue = ()) returns Field {
+    (string|int)[] path = [fieldNode.getName()];
+    string operationTypeName = getOperationTypeNameFromOperationType(operationType);
+    __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
+    __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
+    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue);
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {

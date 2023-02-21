@@ -245,7 +245,7 @@ public class ServiceValidationTest {
     public void testInvalidReturnTypes() {
         String packagePath = "27_invalid_return_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 17);
+        Assert.assertEquals(diagnosticResult.errorCount(), 18);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -293,6 +293,10 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 74, 5);
 
         diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE, "Interceptor");
+        assertErrorMessage(diagnostic, message, 93, 5);
+
+        diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
         assertErrorMessage(diagnostic, message, 75, 5);
 
@@ -302,7 +306,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "ServiceInterceptor");
-        assertErrorMessage(diagnostic, message, 93, 5);
+        assertErrorMessage(diagnostic, message, 83, 24);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, "int", "foo");
@@ -710,21 +714,6 @@ public class ServiceValidationTest {
     }
 
     @Test(groups = "invalid")
-    public void testContextAsAnotherParameter() {
-        String packagePath = "46_context_as_another_parameter";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, "profile");
-        assertErrorMessage(diagnostic, message, 20, 64);
-
-        diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_LOCATION_FOR_CONTEXT_PARAMETER, "updateName");
-        assertErrorMessage(diagnostic, message, 24, 61);
-    }
-
-    @Test(groups = "invalid")
     public void testInvalidContextObject() {
         String packagePath = "47_invalid_context_object";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -888,19 +877,25 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
         String message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "Teacher");
-        assertErrorMessage(diagnostic, message, 20, 5);
+        assertErrorMessage(diagnostic, message, 59, 31);
     }
 
-    @Test(groups = "invalid", enabled = false)
+    @Test(groups = "invalid")
     public void testNonDistinctInterface() {
         // TODO: check for non distinct object
         // https://github.com/ballerina-platform/ballerina-standard-library/issues/3337
         String packagePath = "53_non_distinct_interface";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Diagnostic diagnostic = diagnosticResult.errors().iterator().next();
-        String message = "Non-distinct service class `Person` is used as a GraphQL interface";
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE, "Person");
         assertErrorMessage(diagnostic, message, 20, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "Teacher");
+        assertErrorMessage(diagnostic, message, 59, 31);
     }
 
     @Test(groups = "invalid")
@@ -942,7 +937,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
-                                         "Subscription.profiles.bytes");
+                                  "Subscription.profiles.bytes");
         assertErrorMessage(diagnostic, message, 31, 5);
 
         diagnostic = diagnosticIterator.next();

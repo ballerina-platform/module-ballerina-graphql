@@ -62,6 +62,7 @@ public final class Utils {
     // resource function constants
     public static final String LISTENER_IDENTIFIER = "Listener";
     public static final String CONTEXT_IDENTIFIER = "Context";
+    public static final String FIELD_IDENTIFIER = "Field";
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
 
@@ -205,14 +206,15 @@ public final class Utils {
         return FILE_UPLOAD_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
-    public static boolean isContextParameter(TypeSymbol typeSymbol) {
+    public static boolean isValidGraphqlParameter(TypeSymbol typeSymbol) {
         if (typeSymbol.getName().isEmpty()) {
             return false;
         }
         if (!isGraphqlModuleSymbol(typeSymbol)) {
             return false;
         }
-        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
+        String typeName = typeSymbol.getName().get();
+        return FIELD_IDENTIFIER.equals(typeName) || CONTEXT_IDENTIFIER.equals(typeName);
     }
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {

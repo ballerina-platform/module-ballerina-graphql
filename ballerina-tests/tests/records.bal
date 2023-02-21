@@ -49,7 +49,7 @@ public type Address readonly & record {
 
 public type Person readonly & record {
     string name;
-    int age;
+    int age?;
     Address address;
 };
 
@@ -100,6 +100,21 @@ public enum Weekday {
     THURSDAY,
     FRIDAY,
     SATURDAY
+}
+
+enum Month {
+    JANUARY = "Jan",
+    FEBRUARY = "Feb",
+    MARCH = "Mar",
+    APRIL = "Apr",
+    MAY = "May",
+    JUNE = "Jun",
+    JULY = "Jul",
+    AUGUST = "Aug",
+    SEPTEMBER = "Sep",
+    OCTOBER = "Oct",
+    NOVEMBER = "Nov",
+    DECEMBER = "Dec"
 }
 
 public type Time record {|
@@ -229,12 +244,6 @@ public enum InstrumentType {
     # Instruments with leather, wooden or metal surfaces
     PERCUSSION
 }
-
-type WSPayload record {|
-    string 'type;
-    string id?;
-    json payload?;
-|};
 
 public type Languages record {|
     map<string> name;

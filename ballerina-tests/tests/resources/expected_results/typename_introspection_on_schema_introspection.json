@@ -1,0 +1,56 @@
+{
+    "data": {
+        "__schema": {
+            "types": [
+                {
+                    "name": "__Field",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__TypeKind",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "Query",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__Schema",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__Type",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__EnumValue",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__DirectiveLocation",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "String",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__InputValue",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "Boolean",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "Int",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "__Directive",
+                    "__typename": "__Type"
+                }
+            ]
+        }
+    }
+}

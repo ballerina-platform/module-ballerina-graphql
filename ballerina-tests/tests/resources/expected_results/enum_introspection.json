@@ -160,6 +160,47 @@
                     ]
                 },
                 {
+                    "name": "Month",
+                    "enumValues": [
+                        {
+                            "name": "DECEMBER"
+                        },
+                        {
+                            "name": "NOVEMBER"
+                        },
+                        {
+                            "name": "OCTOBER"
+                        },
+                        {
+                            "name": "SEPTEMBER"
+                        },
+                        {
+                            "name": "AUGUST"
+                        },
+                        {
+                            "name": "JULY"
+                        },
+                        {
+                            "name": "JUNE"
+                        },
+                        {
+                            "name": "MAY"
+                        },
+                        {
+                            "name": "APRIL"
+                        },
+                        {
+                            "name": "MARCH"
+                        },
+                        {
+                            "name": "FEBRUARY"
+                        },
+                        {
+                            "name": "JANUARY"
+                        }
+                    ]
+                },
+                {
                     "name": "Worker",
                     "enumValues": null
                 },
