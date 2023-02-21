@@ -20,10 +20,10 @@ import ballerina/test;
     groups: ["duplicate"],
     dataProvider: dataProviderDuplicateFields
 }
-isolated function testDuplicateFields(string url, string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testDuplicateFields(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

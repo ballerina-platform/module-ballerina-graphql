@@ -57,10 +57,10 @@ function testAttachingGraphQLServiceWithAnnotationToDynamicListener() returns er
     groups: ["listener"],
     dataProvider: dataProviderListener
 }
-function testListener(string url, string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+function testListener(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

@@ -20,10 +20,10 @@ import ballerina/test;
     groups: ["maps"],
     dataProvider: dataProviderMaps
 }
-isolated function testMap(string url, string documentFileName, json variables = ()) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testMap(string url, string resourceFileName, json variables = ()) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

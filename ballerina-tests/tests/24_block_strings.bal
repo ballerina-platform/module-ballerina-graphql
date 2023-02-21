@@ -20,11 +20,11 @@ import ballerina/test;
     groups: ["block_strings"],
     dataProvider: dataProviderBlockString
 }
-isolated function testBlockStrings(string documentFileName) returns error? {
+isolated function testBlockStrings(string resourceFileName) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(actualPayload, expectedPayload);
 }
 

@@ -21,11 +21,11 @@ import ballerina/lang.value;
     groups: ["inputs", "decimal"],
     dataProvider: dataProviderDecimalType1
 }
-isolated function testDecimalType1(string documentFileName, json variables) returns error? {
+isolated function testDecimalType1(string resourceFileName, json variables) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     map<value:JsonFloat> payloadWithFloatValues = check actualPayload.cloneWithType();
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
@@ -47,11 +47,11 @@ function dataProviderDecimalType1() returns map<[string, json]> {
     groups: ["inputs", "decimal"],
     dataProvider: dataProviderDecimalType2
 }
-isolated function testDecimalType2(string documentFileName, map<json>? variables) returns error? {
+isolated function testDecimalType2(string resourceFileName, map<json>? variables) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     map<value:JsonDecimal> payloadWithFloatValues = check actualPayload.cloneWithType();
     assertJsonValuesWithOrder(payloadWithFloatValues, expectedPayload);
 }
@@ -126,11 +126,11 @@ isolated function testDecimalWithMarginalValue() returns error? {
     groups: ["inputs", "input_coerce", "decimal"],
     dataProvider: dataProviderDecimalType3
 }
-isolated function testDecimalType3(string documentFileName) returns error? {
+isolated function testDecimalType3(string resourceFileName) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

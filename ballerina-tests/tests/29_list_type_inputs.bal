@@ -20,11 +20,11 @@ import ballerina/test;
     groups: ["list", "input"],
     dataProvider: dataProviderListTypeInput
 }
-isolated function testListTypeInput(string documentFileName, json variables = ()) returns error? {
+isolated function testListTypeInput(string resourceFileName, json variables = ()) returns error? {
     string url = "http://localhost:9091/list_inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

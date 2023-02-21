@@ -20,11 +20,11 @@ import ballerina/test;
     groups: ["records"],
     dataProvider: dataProviderRecordObjects
 }
-isolated function testRecordObjects(string documentFileName) returns error? {
+isolated function testRecordObjects(string resourceFileName) returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

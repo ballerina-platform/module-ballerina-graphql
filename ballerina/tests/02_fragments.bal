@@ -21,12 +21,12 @@ import graphql.parser;
     groups: ["fragments", "validation"],
     dataProvider: dataProviderFragmentValidation
 }
-isolated function testFragmentValidation(string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testFragmentValidation(string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     FragmentValidatorVisitor validator = new FragmentValidatorVisitor(documentNode.getFragments(), new);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
@@ -42,12 +42,12 @@ function dataProviderFragmentValidation() returns (string[][]) {
     groups: ["fragment"],
     dataProvider: dataProviderFragmentCycles
 }
-isolated function testFragmentsWithCycles(string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testFragmentsWithCycles(string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     FragmentCycleFinderVisitor validator = new FragmentCycleFinderVisitor(documentNode.getFragments(), new);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 

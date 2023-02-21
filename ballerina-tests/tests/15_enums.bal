@@ -20,11 +20,11 @@ import ballerina/test;
     groups: ["enums"],
     dataProvider: dataProviderEnums
 }
-isolated function testEnum(string documentFileName, json variables = ()) returns error? {
+isolated function testEnum(string resourceFileName, json variables = ()) returns error? {
     string url = "http://localhost:9095/special_types";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

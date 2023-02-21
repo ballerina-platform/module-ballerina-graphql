@@ -21,12 +21,12 @@ import graphql.parser;
     groups: ["configs", "validation"],
     dataProvider: dataProviderQueryDepthConfigurations
 }
-function testQueryDepthConfigurations(int maxQueryDepth, string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+function testQueryDepthConfigurations(int maxQueryDepth, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     QueryDepthValidatorVisitor validator = new (maxQueryDepth, new);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
@@ -43,15 +43,15 @@ function dataProviderQueryDepthConfigurations() returns map<[int, string]> {
     groups: ["configs", "validation", "introspection"],
     dataProvider: dataProviderIntrospectionConfigurations
 }
-function testIntrospectionConfigurations(boolean introspection, string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+function testIntrospectionConfigurations(boolean introspection, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     IntrospectionValidatorVisitor validator = new (introspection, nodeModifierContext);
     documentNode.accept(validator);
-    json|error expectedPayload = getJsonContentFromFile(documentFileName);
+    json|error expectedPayload = getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload is error ? () : expectedPayload);
 }
 

@@ -21,15 +21,15 @@ import graphql.parser;
     groups: ["validation"],
     dataProvider: dataProviderDocumentValidation1
 }
-function testDocumentValidation1(string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+function testDocumentValidation1(string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     FieldValidatorVisitor validator = new (schemaWithInputValues, nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 
@@ -43,11 +43,11 @@ function dataProviderDocumentValidation1() returns (string[][]) {
     groups: ["fragment", "validation"],
     dataProvider: dataProviderDocumentValidation2
 }
-isolated function testDocumentValidation2(string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testDocumentValidation2(string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:Parser parser = new (document);
     _ = check parser.parse();
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(parser.getErrors(), expectedPayload);
 }
 

@@ -20,10 +20,10 @@ import ballerina/test;
     groups: ["fragments", "validation"],
     dataProvider: dataProviderFragments
 }
-isolated function testFragments(string url, string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testFragments(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

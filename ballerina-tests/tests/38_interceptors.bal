@@ -21,10 +21,10 @@ import ballerina/websocket;
     groups: ["interceptors"],
     dataProvider: dataProviderInterceptors
 }
-isolated function testInterceptors(string url, string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testInterceptors(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

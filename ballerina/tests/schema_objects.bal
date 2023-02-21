@@ -29,29 +29,11 @@ __Schema schemaWithInputValues = {
         {
           "name": "name",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
-        {
-          "name": "description",
-          "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
+        fieldDescription,
         {
           "name": "args",
           "args": [],
@@ -78,41 +60,21 @@ __Schema schemaWithInputValues = {
         {
           "name": "type",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "OBJECT",
-              "name": "__Type",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithObject,
           "isDeprecated": false,
           "deprecationReason": null
         },
         {
           "name": "isDeprecated",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Boolean",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithBoolean,
           "isDeprecated": false,
           "deprecationReason": null
         },
         {
           "name": "deprecationReason",
           "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
+          "type": scalarStringType,
           "isDeprecated": false,
           "deprecationReason": null
         }
@@ -128,48 +90,7 @@ __Schema schemaWithInputValues = {
       "fields": null,
       "inputFields": null,
       "interfaces": null,
-      "enumValues": [
-        {
-          "name": "SCALAR",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "OBJECT",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "INTERFACE",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "UNION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "ENUM",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "INPUT_OBJECT",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "LIST",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "NON_NULL",
-          "isDeprecated": false,
-          "deprecationReason": null
-        }
-      ],
+      "enumValues": typeKinds,
       "possibleTypes": null
     },
     {
@@ -181,27 +102,11 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "name",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithString,
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -210,27 +115,11 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "name",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithString,
               "defaultValue": "\"\""
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -251,15 +140,7 @@ __Schema schemaWithInputValues = {
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Boolean",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithBoolean,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -280,11 +161,7 @@ __Schema schemaWithInputValues = {
               "defaultValue": "\"\""
             }
           ],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
+          "type": scalarStringType,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -330,15 +207,7 @@ __Schema schemaWithInputValues = {
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Boolean",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithBoolean,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -347,15 +216,7 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "isHoliday",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "Boolean",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithBoolean,
               "defaultValue": null
             }
           ],
@@ -384,27 +245,11 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "message",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithString,
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -413,27 +258,11 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "version",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithString,
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -442,27 +271,11 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "name",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithString,
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -471,15 +284,7 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "value",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "Decimal",
-                  "ofType": null
-                }
-              },
+              "type": nonNullTypeWithDecimal,
               "defaultValue": null
             }
           ],
@@ -512,15 +317,7 @@ __Schema schemaWithInputValues = {
                     "ofType": {
                       "kind": "LIST",
                       "name": null,
-                      "ofType": {
-                        "kind": "NON_NULL",
-                        "name": null,
-                        "ofType": {
-                          "kind": "SCALAR",
-                          "name": "Decimal",
-                          "ofType": null
-                        }
-                      }
+                      "ofType": nonNullTypeWithDecimal
                     }
                   }
                 }
@@ -534,15 +331,7 @@ __Schema schemaWithInputValues = {
             "ofType": {
               "kind": "LIST",
               "name": null,
-              "ofType": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "Decimal",
-                  "ofType": null
-                }
-              }
+              "ofType": nonNullTypeWithDecimal
             }
           },
           "isDeprecated": false,
@@ -573,15 +362,7 @@ __Schema schemaWithInputValues = {
               "defaultValue": null
             }
           ],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Decimal",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithDecimal,
           "isDeprecated": false,
           "deprecationReason": null
         }
@@ -595,17 +376,7 @@ __Schema schemaWithInputValues = {
       "kind": "OBJECT",
       "name": "__Schema",
       "fields": [
-        {
-          "name": "description",
-          "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
+        fieldDescription,
         {
           "name": "types",
           "args": [],
@@ -615,15 +386,7 @@ __Schema schemaWithInputValues = {
             "ofType": {
               "kind": "LIST",
               "name": null,
-              "ofType": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "OBJECT",
-                  "name": "__Type",
-                  "ofType": null
-                }
-              }
+              "ofType": nonNullTypeWithObject
             }
           },
           "isDeprecated": false,
@@ -632,37 +395,21 @@ __Schema schemaWithInputValues = {
         {
           "name": "queryType",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "OBJECT",
-              "name": "__Type",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithObject,
           "isDeprecated": false,
           "deprecationReason": null
         },
         {
           "name": "mutationType",
           "args": [],
-          "type": {
-            "kind": "OBJECT",
-            "name": "__Type",
-            "ofType": null
-          },
+          "type": objectType,
           "isDeprecated": false,
           "deprecationReason": null
         },
         {
           "name": "subscriptionType",
           "args": [],
-          "type": {
-            "kind": "OBJECT",
-            "name": "__Type",
-            "ofType": null
-          },
+          "type": objectType,
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -717,35 +464,17 @@ __Schema schemaWithInputValues = {
         {
           "name": "name",
           "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
+          "type": scalarStringType,
           "isDeprecated": false,
           "deprecationReason": null
         },
-        {
-          "name": "description",
-          "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
+        fieldDescription,
         {
           "name": "fields",
           "args": [
             {
               "name": "includeDeprecated",
-              "type": {
-                "kind": "SCALAR",
-                "name": "Boolean",
-                "ofType": null
-              },
+              "type": scalarBooleanType,
               "defaultValue": "false"
             }
           ],
@@ -771,15 +500,7 @@ __Schema schemaWithInputValues = {
           "type": {
             "kind": "LIST",
             "name": null,
-            "ofType": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "__Type",
-                "ofType": null
-              }
-            }
+            "ofType": nonNullTypeWithObject
           },
           "isDeprecated": false,
           "deprecationReason": null
@@ -790,15 +511,7 @@ __Schema schemaWithInputValues = {
           "type": {
             "kind": "LIST",
             "name": null,
-            "ofType": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "__Type",
-                "ofType": null
-              }
-            }
+            "ofType": nonNullTypeWithObject
           },
           "isDeprecated": false,
           "deprecationReason": null
@@ -808,11 +521,7 @@ __Schema schemaWithInputValues = {
           "args": [
             {
               "name": "includeDeprecated",
-              "type": {
-                "kind": "SCALAR",
-                "name": "Boolean",
-                "ofType": null
-              },
+              "type": scalarBooleanType,
               "defaultValue": "false"
             }
           ],
@@ -854,11 +563,7 @@ __Schema schemaWithInputValues = {
         {
           "name": "ofType",
           "args": [],
-          "type": {
-            "kind": "OBJECT",
-            "name": "__Type",
-            "ofType": null
-          },
+          "type": objectType,
           "isDeprecated": false,
           "deprecationReason": null
         }
@@ -875,52 +580,22 @@ __Schema schemaWithInputValues = {
         {
           "name": "name",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
-        {
-          "name": "description",
-          "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
+        fieldDescription,
         {
           "name": "isDeprecated",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Boolean",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithBoolean,
           "isDeprecated": false,
           "deprecationReason": null
         },
         {
           "name": "deprecationReason",
           "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
+          "type": scalarStringType,
           "isDeprecated": false,
           "deprecationReason": null
         }
@@ -936,103 +611,7 @@ __Schema schemaWithInputValues = {
       "fields": null,
       "inputFields": null,
       "interfaces": null,
-      "enumValues": [
-        {
-          "name": "QUERY",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "MUTATION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "SUBSCRIPTION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "FIELD",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "FRAGMENT_DEFINITION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "FRAGMENT_SPREAD",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "INLINE_FRAGMENT",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "VARIABLE_DEFINITION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "SCHEMA",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "SCALAR",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "OBJECT",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "FIELD_DEFINITION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "ARGUMENT_DEFINITION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "INTERFACE",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "UNION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "ENUM",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "ENUM_VALUE",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "INPUT_OBJECT",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        {
-          "name": "INPUT_FIELD_DEFINITION",
-          "isDeprecated": false,
-          "deprecationReason": null
-        }
-      ],
+      "enumValues": directiveLocations,
       "possibleTypes": null
     },
     {
@@ -1078,28 +657,12 @@ __Schema schemaWithInputValues = {
       "inputFields": [
         {
           "name": "name",
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "defaultValue": null
         },
         {
           "name": "price",
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Decimal",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithDecimal,
           "defaultValue": null
         }
       ],
@@ -1123,52 +686,22 @@ __Schema schemaWithInputValues = {
         {
           "name": "name",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
-        {
-          "name": "description",
-          "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
+        fieldDescription,
         {
           "name": "type",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "OBJECT",
-              "name": "__Type",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithObject,
           "isDeprecated": false,
           "deprecationReason": null
         },
         {
           "name": "defaultValue",
           "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
+          "type": scalarStringType,
           "isDeprecated": false,
           "deprecationReason": null
         }
@@ -1194,29 +727,11 @@ __Schema schemaWithInputValues = {
         {
           "name": "name",
           "args": [],
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            }
-          },
+          "type": nonNullTypeWithString,
           "isDeprecated": false,
           "deprecationReason": null
         },
-        {
-          "name": "description",
-          "args": [],
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
+        fieldDescription,
         {
           "name": "locations",
           "args": [],
@@ -1270,70 +785,249 @@ __Schema schemaWithInputValues = {
       "possibleTypes": null
     }
   ],
-  "directives": [
-    {
-      "name": "include",
-      "locations": [
-        "FIELD",
-        "FRAGMENT_SPREAD",
-        "INLINE_FRAGMENT"
-      ],
-      "args": [
-        {
-          "name": "if",
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Boolean",
-              "ofType": null
-            }
-          },
-          "defaultValue": null
-        }
-      ]
-    },
-    {
-      "name": "skip",
-      "locations": [
-        "FIELD",
-        "FRAGMENT_SPREAD",
-        "INLINE_FRAGMENT"
-      ],
-      "args": [
-        {
-          "name": "if",
-          "type": {
-            "kind": "NON_NULL",
-            "name": null,
-            "ofType": {
-              "kind": "SCALAR",
-              "name": "Boolean",
-              "ofType": null
-            }
-          },
-          "defaultValue": null
-        }
-      ]
-    },
-    {
-      "name": "deprecated",
-      "locations": [
-        "FIELD_DEFINITION",
-        "ENUM_VALUE"
-      ],
-      "args": [
-        {
-          "name": "reason",
-          "type": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          },
-          "defaultValue": null
-        }
-      ]
-    }
-  ]
+  "directives": directives
 };
+
+__Type scalarStringType = {
+  "kind": "SCALAR",
+  "name": "String",
+  "ofType": null
+};
+
+__Type scalarBooleanType = {
+  "kind": "SCALAR",
+  "name": "Boolean",
+  "ofType": null
+};
+
+__Type scalarDecimalType = {
+  "kind": "SCALAR",
+  "name": "Decimal",
+  "ofType": null
+};
+
+__Type objectType = {
+  "kind": "OBJECT",
+  "name": "__Type",
+  "ofType": null
+};
+
+__Type nonNullTypeWithString = {
+  "kind": "NON_NULL",
+  "name": null,
+  "ofType": scalarStringType
+};
+
+__Type nonNullTypeWithBoolean = {
+  "kind": "NON_NULL",
+  "name": null,
+  "ofType": scalarBooleanType
+};
+
+__Type nonNullTypeWithDecimal = {
+  "kind": "NON_NULL",
+  "name": null,
+  "ofType": scalarDecimalType
+};
+
+__Type nonNullTypeWithObject = {
+  "kind": "NON_NULL",
+  "name": null,
+  "ofType": objectType
+};
+
+__Field fieldDescription = {
+  "name": "description",
+  "args": [],
+  "type": scalarStringType,
+  "isDeprecated": false,
+  "deprecationReason": null
+};
+
+__Directive[] directives = [
+  {
+    "name": "include",
+    "locations": [
+      "FIELD",
+      "FRAGMENT_SPREAD",
+      "INLINE_FRAGMENT"
+    ],
+    "args": [
+      {
+        "name": "if",
+        "type": nonNullTypeWithBoolean,
+        "defaultValue": null
+      }
+    ]
+  },
+  {
+    "name": "skip",
+    "locations": [
+      "FIELD",
+      "FRAGMENT_SPREAD",
+      "INLINE_FRAGMENT"
+    ],
+    "args": [
+      {
+        "name": "if",
+        "type": nonNullTypeWithBoolean,
+        "defaultValue": null
+      }
+    ]
+  },
+  {
+    "name": "deprecated",
+    "locations": [
+      "FIELD_DEFINITION",
+      "ENUM_VALUE"
+    ],
+    "args": [
+      {
+        "name": "reason",
+        "type": scalarStringType,
+        "defaultValue": null
+      }
+    ]
+  }
+];
+
+__EnumValue[] typeKinds = [
+  {
+    "name": "SCALAR",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "OBJECT",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "INTERFACE",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "UNION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "ENUM",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "INPUT_OBJECT",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "LIST",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "NON_NULL",
+    "isDeprecated": false,
+    "deprecationReason": null
+  }
+];
+
+__EnumValue[] directiveLocations = [
+  {
+    "name": "QUERY",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "MUTATION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "SUBSCRIPTION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "FIELD",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "FRAGMENT_DEFINITION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "FRAGMENT_SPREAD",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "INLINE_FRAGMENT",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "VARIABLE_DEFINITION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "SCHEMA",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "SCALAR",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "OBJECT",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "FIELD_DEFINITION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "ARGUMENT_DEFINITION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "INTERFACE",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "UNION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "ENUM",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "ENUM_VALUE",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "INPUT_OBJECT",
+    "isDeprecated": false,
+    "deprecationReason": null
+  },
+  {
+    "name": "INPUT_FIELD_DEFINITION",
+    "isDeprecated": false,
+    "deprecationReason": null
+  }
+];

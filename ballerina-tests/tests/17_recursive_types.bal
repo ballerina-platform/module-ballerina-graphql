@@ -20,11 +20,11 @@ import ballerina/test;
     groups: ["service", "schema_generation"],
     dataProvider: dataProviderRecursiveServiceTypes
 }
-isolated function testRecursiveServiceTypes(string documentFileName) returns error? {
+isolated function testRecursiveServiceTypes(string resourceFileName) returns error? {
     string url = "http://localhost:9092/snowtooth";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

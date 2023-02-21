@@ -21,15 +21,15 @@ import graphql.parser;
     groups: ["directives"],
     dataProvider: dataProviderDirectiveValidation
 }
-function testDirectiveValidation(string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+function testDirectiveValidation(string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     DirectiveValidatorVisitor validator = new DirectiveValidatorVisitor(schemaWithInputValues, nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 

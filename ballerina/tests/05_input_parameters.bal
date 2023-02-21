@@ -21,15 +21,15 @@ import graphql.parser;
     groups: ["inputs", "validation"],
     dataProvider: dataProviderInputParameterValidation
 }
-function testInputParameterValidation(string documentFileName) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+function testInputParameterValidation(string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     parser:DocumentNode documentNode = check getDocumentNode(document);
     NodeModifierContext nodeModifierContext = new;
     FragmentValidatorVisitor fragmentValidator = new FragmentValidatorVisitor(documentNode.getFragments(), nodeModifierContext);
     documentNode.accept(fragmentValidator);
     FieldValidatorVisitor validator = new (schemaWithInputValues, nodeModifierContext);
     documentNode.accept(validator);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     test:assertEquals(validator.getErrors(), expectedPayload);
 }
 

@@ -20,11 +20,11 @@ import ballerina/test;
     groups: ["inputs", "nullable_inputs"],
     dataProvider: dataProviderNullableInputs
 }
-isolated function testNullInputForNullableRecord(string documentFileName) returns error? {
+isolated function testNullInputForNullableRecord(string resourceFileName) returns error? {
     string url = "http://localhost:9091/nullable_inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

@@ -20,10 +20,10 @@ import ballerina/test;
     groups: ["directives"],
     dataProvider: dataProviderDirectives
 }
-isolated function testDirectives(string url, string documentFileName, json variables) returns error? {
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+isolated function testDirectives(string url, string resourceFileName, json variables) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 

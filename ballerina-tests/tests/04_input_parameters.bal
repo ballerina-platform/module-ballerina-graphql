@@ -21,11 +21,11 @@ import ballerina/lang.value;
     groups: ["inputs"],
     dataProvider: dataProviderInputParameters
 }
-isolated function testInputParameters(string documentFileName) returns error? {
+isolated function testInputParameters(string resourceFileName) returns error? {
     string url = "http://localhost:9091/inputs";
-    string document = check getGraphqlDocumentFromFile(documentFileName);
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile(documentFileName);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
