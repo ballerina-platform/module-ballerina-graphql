@@ -318,11 +318,6 @@ public class SchemaGenerator {
         return this.schema.addType(name, kind, description, position, objectKind);
     }
 
-    // todo: remove
-//    private Type addType(String name, TypeKind kind, String description, ObjectKind objectKind) {
-//        return this.schema.addType(name, kind, description, objectKind);
-//    }
-
     private Type getType(TypeReferenceTypeSymbol typeSymbol, String name) {
         if (typeSymbol.getName().isEmpty()) {
             return null;
