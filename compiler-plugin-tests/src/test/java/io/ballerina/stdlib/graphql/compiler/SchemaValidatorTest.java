@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -117,43 +117,43 @@ public class SchemaValidatorTest {
         schema.getQueryType().getFields().stream().filter(field -> field.getName().equals("animals"))
                 .findFirst().ifPresent(field -> {
                     Assert.assertEquals(field.getPosition().getFilePath(), filePath);
-                    Assert.assertEquals(field.getPosition().getStarLine().getLine(), 14);
+                    Assert.assertEquals(field.getPosition().getStartLine().getLine(), 14);
                     Assert.assertEquals(field.getPosition().getEndLine().getLine(), 14);
                 });
 
         schema.getMutationType().getFields().stream().filter(field -> field.getName().equals("updateAnimal"))
                 .findFirst().ifPresent(field -> {
                     Assert.assertEquals(field.getPosition().getFilePath(), filePath);
-                    Assert.assertEquals(field.getPosition().getStarLine().getLine(), 22);
+                    Assert.assertEquals(field.getPosition().getStartLine().getLine(), 22);
                     Assert.assertEquals(field.getPosition().getEndLine().getLine(), 22);
                 });
 
         schema.getSubscriptionType().getFields().stream().filter(field -> field.getName().equals("names"))
                 .findFirst().ifPresent(field -> {
                     Assert.assertEquals(field.getPosition().getFilePath(), filePath);
-                    Assert.assertEquals(field.getPosition().getStarLine().getLine(), 26);
+                    Assert.assertEquals(field.getPosition().getStartLine().getLine(), 26);
                     Assert.assertEquals(field.getPosition().getEndLine().getLine(), 26);
                 });
 
         // Class
         Assert.assertEquals(schema.getType("Elephant").getObjectKind(), ObjectKind.CLASS);
         io.ballerina.stdlib.graphql.commons.types.Position classPos = schema.getType("Elephant").getPosition();
-        Assert.assertEquals(classPos.getStarLine().getLine(), 43);
-        Assert.assertEquals(classPos.getStarLine().getOffset(), 30);
+        Assert.assertEquals(classPos.getStartLine().getLine(), 43);
+        Assert.assertEquals(classPos.getStartLine().getOffset(), 30);
         Assert.assertEquals(classPos.getEndLine().getOffset(), 38);
 
         //Record
         Assert.assertEquals(schema.getType("Lion").getObjectKind(), ObjectKind.RECORD);
         io.ballerina.stdlib.graphql.commons.types.Position recordPos = schema.getType("Lion").getPosition();
-        Assert.assertEquals(recordPos.getStarLine().getLine(), 71);
-        Assert.assertEquals(recordPos.getStarLine().getOffset(), 5);
+        Assert.assertEquals(recordPos.getStartLine().getLine(), 71);
+        Assert.assertEquals(recordPos.getStartLine().getOffset(), 5);
         Assert.assertEquals(recordPos.getEndLine().getOffset(), 9);
         Assert.assertEquals(recordPos.getFilePath(), filePath);
 
         // Enum
         io.ballerina.stdlib.graphql.commons.types.Position enumPos = schema.getType("Weekday").getPosition();
-        Assert.assertEquals(enumPos.getStarLine().getLine(), 76);
-        Assert.assertEquals(enumPos.getStarLine().getOffset(), 5);
+        Assert.assertEquals(enumPos.getStartLine().getLine(), 76);
+        Assert.assertEquals(enumPos.getStartLine().getOffset(), 5);
         Assert.assertEquals(enumPos.getEndLine().getOffset(), 12);
 
     }
@@ -167,9 +167,9 @@ public class SchemaValidatorTest {
 
         // Input Object
         Assert.assertEquals(schema.getType("Person").getKind(), TypeKind.INPUT_OBJECT);
-        Assert.assertEquals(schema.getType("Person").getPosition().getStarLine().getLine(), 2);
+        Assert.assertEquals(schema.getType("Person").getPosition().getStartLine().getLine(), 2);
         Assert.assertEquals(schema.getType("Address").getKind(), TypeKind.INPUT_OBJECT);
-        Assert.assertEquals(schema.getType("Address").getPosition().getStarLine().getLine(), 8);
+        Assert.assertEquals(schema.getType("Address").getPosition().getStartLine().getLine(), 8);
     }
 
     @Test

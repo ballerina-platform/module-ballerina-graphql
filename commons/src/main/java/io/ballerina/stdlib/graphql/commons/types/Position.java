@@ -39,7 +39,7 @@ public class Position implements Serializable {
         return filePath;
     }
 
-    public LinePosition getStarLine() {
+    public LinePosition getStartLine() {
         return startLine;
     }
 

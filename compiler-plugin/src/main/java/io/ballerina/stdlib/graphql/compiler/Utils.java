@@ -242,7 +242,7 @@ public final class Utils {
             description = getDescription(symbol);
             serviceNode = node;
 
-        } else if (node.kind() == SyntaxKind.MODULE_VAR_DECL && node instanceof ModuleVariableDeclarationNode) {
+        } else if (node.kind() == SyntaxKind.MODULE_VAR_DECL) {
             ModuleVariableDeclarationNode moduleVarDclNode = (ModuleVariableDeclarationNode) node;
             if (!isGraphQLServiceObjectDeclaration(moduleVarDclNode)) {
                 return null;
