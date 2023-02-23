@@ -111,22 +111,19 @@ public class GeneratorUtils {
     }
 
     public static Position getTypePosition(Optional<Location> location, Symbol symbol, Project project) {
-        Position position;
         if (location.isEmpty()) {
-            position = null;
-        } else {
-            Optional<Path> completePath = getFilePathForSymbol(symbol, project);
-            String filePath = completePath.isPresent() ? completePath.get().toAbsolutePath().toString() :
-                    location.get().lineRange().filePath();
-            position = new Position(
-                    filePath,
-                    new LinePosition(location.get().lineRange().startLine().line(),
-                            location.get().lineRange().startLine().offset()),
-                    new LinePosition(location.get().lineRange().endLine().line(),
-                            location.get().lineRange().endLine().offset())
-                   );
+            return null;
         }
-        return position;
+        Optional<Path> completePath = getFilePathForSymbol(symbol, project);
+        String filePath = completePath.isPresent() ? completePath.get().toAbsolutePath().toString() :
+                location.get().lineRange().filePath();
+        return new Position(
+                filePath,
+                new LinePosition(location.get().lineRange().startLine().line(),
+                        location.get().lineRange().startLine().offset()),
+                new LinePosition(location.get().lineRange().endLine().line(),
+                        location.get().lineRange().endLine().offset())
+        );
     }
 
     public static Optional<Path> getFilePathForSymbol(Symbol symbol, Project project) {

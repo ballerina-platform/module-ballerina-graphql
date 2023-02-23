@@ -23,6 +23,6 @@ module io.ballerina.stdlib.graphql.compiler {
     requires io.ballerina.stdlib.graphql.commons;
 
     exports io.ballerina.stdlib.graphql.compiler;
-    exports io.ballerina.stdlib.graphql.compiler.schema.generator;
-    exports io.ballerina.stdlib.graphql.compiler.service;
+//    exports io.ballerina.stdlib.graphql.compiler.schema.generator;
+//    exports io.ballerina.stdlib.graphql.compiler.service;
 }

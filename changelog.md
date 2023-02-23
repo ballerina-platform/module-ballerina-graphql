@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3942] Add Functionality to Send Ping Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3942)
 - [[#3943] Add Functionality to Check for Pong Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3943)
 - [[#3893] Add Support to Access GraphQL Field Information from Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/3893)
+- [[#4120] Add support to GraphQL design view by updating the schema](https://github.com/ballerina-platform/ballerina-standard-library/issues/4120)
 
 ### Fixed
 - [[#3865] Fix Incomplete Type Info Given in Compiler Errors Issued from GraphQL Compiler Plugin](https://github.com/ballerina-platform/ballerina-standard-library/issues/3865)

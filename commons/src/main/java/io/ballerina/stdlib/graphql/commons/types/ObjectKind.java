@@ -22,6 +22,6 @@ package io.ballerina.stdlib.graphql.commons.types;
  * Represents the type of the object {@code objectKind} in GraphQL schema.
  */
 public enum ObjectKind {
-        CLASS,
-        RECORD
+    CLASS,
+    RECORD
 }
