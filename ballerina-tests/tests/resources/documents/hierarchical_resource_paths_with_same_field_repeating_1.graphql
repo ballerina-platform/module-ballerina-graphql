@@ -1,0 +1,9 @@
+{
+    mountain {
+        trail {
+            getLift {
+                name
+            } 
+        }
+    }
+}

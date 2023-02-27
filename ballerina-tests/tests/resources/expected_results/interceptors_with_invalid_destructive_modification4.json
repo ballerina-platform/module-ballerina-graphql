@@ -4,8 +4,8 @@
             "message": "Invalid return type in Interceptor \"InvalidInterceptor7\". Expected type String!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 16
+                    "line": 4,
+                    "column": 9
                 }
             ],
             "path": [

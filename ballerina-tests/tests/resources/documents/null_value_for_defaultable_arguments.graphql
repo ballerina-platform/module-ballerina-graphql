@@ -1,0 +1,5 @@
+mutation {
+    profile(name: null) {
+        name
+    }
+}

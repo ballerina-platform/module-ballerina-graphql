@@ -4,8 +4,8 @@
             "message": "Field \"profileDetail.name\" of required type \"String!\" was not provided.",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 17
+                    "line": 2,
+                    "column": 19
                 }
             ]
         }

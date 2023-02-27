@@ -1,0 +1,7 @@
+{
+    detective {
+        name {
+            __typename
+        }
+    }
+}

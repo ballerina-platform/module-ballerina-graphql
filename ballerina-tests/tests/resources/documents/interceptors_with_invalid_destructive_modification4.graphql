@@ -1,0 +1,6 @@
+{
+    student {
+        id,
+        name
+    }
+}

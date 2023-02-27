@@ -17,137 +17,26 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["records"]
+    groups: ["records"],
+    dataProvider: dataProviderRecordObjects
 }
-isolated function testBallerinaRecordAsGraphqlObject() returns error? {
-    string document = "query getPerson { detective { name, address { street } } }";
+isolated function testRecordObjects(string resourceFileName) returns error? {
     string url = "http://localhost:9091/records";
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            detective: {
-                name: "Sherlock Holmes",
-                address: {
-                    street: "Baker Street"
-                }
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["records", "fragments", "inline"]
-}
-isolated function testInlineFragmentsOnRecordObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_fragments_on_record_objects.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("inline_fragments_on_record_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["records", "fragments", "inline"]
-}
-isolated function testInlineNestedFragmentsOnRecordObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("inline_nested_fragments_on_record_objects.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("inline_nested_fragments_on_record_objects.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["records", "validation"]
-}
-isolated function testRequestingObjectWithoutFields() returns error? {
-    string graphqlUrl = "http://localhost:9091/records";
-    string document = "{ profile(id: 4) }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = string`Field "profile" of type "Person!" must have a selection of subfields. Did you mean "profile { ... }"?`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["records", "validation"]
-}
-isolated function testRequestInvalidField() returns error? {
-    string graphqlUrl = "http://localhost:9091/records";
-    string document = "{ profile(id: 4) { status } }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = "Cannot query field \"status\" on type \"Person\".";
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 20
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["records", "array"]
-}
-isolated function testRecordTypeArrays() returns error? {
-    string graphqlUrl = "http://localhost:9091/records";
-    string document = "{ people { name address { city } } }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedResult = check getJsonContentFromFile("record_type_arrays.json");
-    assertJsonValuesWithOrder(actualResult, expectedResult);
-}
-
-@test:Config {
-    groups: ["records", "array"]
-}
-isolated function testResourcesReturningArraysMissingFields() returns error? {
-    string graphqlUrl = "http://localhost:9091/records";
-    string document = "{ people }";
-    json actualResult = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = string`Field "people" of type "[Person!]!" must have a selection of subfields. Did you mean "people { ... }"?`;
-    json expectedResult = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualResult, expectedResult);
-}
-
-@test:Config {
-    groups: ["array", "service"]
-}
-isolated function testNestedRecordsArray() returns error? {
-    string graphqlUrl = "http://localhost:9091/records";
-    string document = "{ students { name courses { name books { name } } } }";
-    json actualResult = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedResult = check getJsonContentFromFile("nested_records_array.json");
-    assertJsonValuesWithOrder(actualResult, expectedResult);
+function dataProviderRecordObjects() returns string[][] {
+    return [
+        ["ballerina_record_as_graphql_object"],
+        ["inline_fragments_on_record_objects"],
+        ["inline_nested_fragments_on_record_objects"],
+        ["requesting_object_without_fields"],
+        ["request_invalid_field"],
+        ["record_type_arrays"],
+        ["resource_returning_arrays_missing_fields"],
+        ["nested_records_array"]
+    ];
 }

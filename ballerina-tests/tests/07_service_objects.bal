@@ -17,106 +17,26 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["service"]
+    groups: ["service"],
+    dataProvider: dataProviderServiceObjects
 }
-isolated function testResourceReturningServiceObject() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_types";
-    string document = "{ greet { generalGreeting } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-
-    json expectedPayload = {
-        data: {
-            greet: {
-                generalGreeting: "Hello, world"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "validation"]
-}
-isolated function testInvalidQueryFromServiceObjectResource() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_types";
-    string document = "{ profile { name { nonExisting } } }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Cannot query field \"nonExisting\" on type \"Name\".",
-                locations: [
-                    {
-                        line: 1,
-                        column: 20
-                    }
-                ]
-            }
-        ]
-    };
+isolated function testServiceObject(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["service"]
-}
-isolated function testComplexService() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_types";
-    string document = "{ profile { name { first, last } } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
+function dataProviderServiceObjects() returns string[][] {
+    string url1 = "http://localhost:9092/service_types";
+    string url2 = "http://localhost:9090/reviews";
 
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock",
-                    last: "Holmes"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "records"]
-}
-isolated function testServiceObjectDefinedAsRecordField() returns error? {
-    string graphqlUrl = "http://localhost:9090/reviews";
-    string document = "{ latest { product { id } score } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-
-    json expectedPayload = {
-        data: {
-            latest: {
-                product: {
-                    id: "5"
-                },
-                score: 20
-            }
-        }
-    };
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "records", "list"]
-}
-isolated function testResolverReturningListOfNestedServiceObjects() returns error? {
-    string graphqlUrl = "http://localhost:9090/reviews";
-    string document = "{ top3 { product { id } score } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("resolver_returning_list_of_nested_service_objects.json");
-    assertJsonValuesWithOrder(result, expectedPayload);
-}
-
-@test:Config {
-    groups: ["service", "records", "tables"]
-}
-isolated function testResolverReturningTableOfNestedServiceObjects() returns error? {
-    string graphqlUrl = "http://localhost:9090/reviews";
-    string document = "{ all { product { id } score } }";
-    json result = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = check getJsonContentFromFile("resolver_returning_table_of_nested_service_objects.json");
-    assertJsonValuesWithOrder(result, expectedPayload);
+    return [
+        [url1, "resource_returning_service_object"],
+        [url1, "invalid_query_from_service_object_resource"],
+        [url1, "complex_service"],
+        [url2, "service_object_defined_as_record_field"],
+        [url2, "resolver_returning_list_of_nested_service_objects"],
+        [url2, "resolver_returning_table_of_nested_service_objects"]
+    ];
 }

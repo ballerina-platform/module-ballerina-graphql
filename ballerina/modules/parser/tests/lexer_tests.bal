@@ -224,7 +224,7 @@ isolated function testStringWithVariableDefinition() returns error? {
     groups: ["lexer"]
 }
 isolated function testBlockString() returns error? {
-    string document = check getGraphQLDocumentFromFile("block_string.graphql");
+    string document = check getGraphqlDocumentFromFile("block_string");
     Lexer lexer = new (document);
     Token token = check lexer.read();
 
@@ -602,7 +602,7 @@ isolated function testReadIntInvalidCharacter() returns error? {
     groups: ["lexer"]
 }
 isolated function testReadCommentToken() returns error? {
-    string document = check getGraphQLDocumentFromFile("read_comment_token.graphql");
+    string document = check getGraphqlDocumentFromFile("read_comment_token");
     Lexer lexer = new (document);
     Token token = check lexer.read();
     Token expectedToken = getExpectedToken("{", T_OPEN_BRACE, 1, 1);

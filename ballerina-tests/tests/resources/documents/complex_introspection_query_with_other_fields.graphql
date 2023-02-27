@@ -1,0 +1,11 @@
+{
+    __schema {
+        types {
+            name
+            kind
+        }
+    }
+    allVehicles {
+        name
+    }
+}

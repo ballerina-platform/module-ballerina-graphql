@@ -19,35 +19,11 @@ import ballerina/test;
 @test:Config {
     groups: ["validation"]
 }
-isolated function testRequestSubtypeFromPrimitiveType() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
-    string document = "{ name { first } }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = string`Field "name" must not have a selection since type "String!" has no subfields.`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["validation"]
-}
 isolated function testDocumentWithSyntaxError() returns error? {
-    string graphqlUrl = "http://localhost:9091/validation";
+    string graphqlUrl = "http://localhost:9091/records";
     string document = "{ name (id: ) }";
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = string`Syntax Error: Unexpected ")".`;
+    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
+    string expectedMessage = string `Syntax Error: Unexpected ")".`;
     json expectedPayload = {
         errors: [
             {
@@ -58,25 +34,6 @@ isolated function testDocumentWithSyntaxError() returns error? {
                         column: 13
                     }
                 ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["validation"]
-}
-isolated function testInvalidDocumentHavingFragmentWithSameName() returns error? {
-    string graphqlUrl = "http://localhost:9091/input_objects";
-    string document = check getGraphQLDocumentFromFile("invalid_document_having_fragment_with_same_name.graphql");
-    json actualPayload = check getJsonPayloadFromBadRequest(graphqlUrl, document);
-    string expectedMessage = string`There can be only one fragment named "Details".`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedMessage,
-                locations: [{line: 7, column: 1}, {line: 11, column: 1}]
             }
         ]
     };

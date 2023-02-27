@@ -17,233 +17,31 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["enums"]
+    groups: ["enums"],
+    dataProvider: dataProviderEnums
 }
-isolated function testEnum() returns error? {
-    string document = "query { time { weekday } }";
+isolated function testEnum(string resourceFileName, json variables = ()) returns error? {
     string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            time: {
-                weekday: "MONDAY"
-            }
-        }
-    };
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumInsideRecord() returns error? {
-    string document = "query { weekday(number: 3) }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            weekday: "WEDNESDAY"
-        }
+function dataProviderEnums() returns map<[string, json]> {
+    map<[string, json]> dataSet = {
+        "1": ["enum"],
+        "2": ["enum_inside_record"],
+        "3": ["enum_introspection"],
+        "4": ["enum_with_union"],
+        "5": ["enum_input_parameter"],
+        "6": ["returning_enum_array"],
+        "7": ["returning_enum_array_with_errors"],
+        "8": ["returning_nullable_enum_array_with_errors"],
+        "9": ["enum_invalid_input_parameter"],
+        "10": ["enum_input_parameter_as_string"],
+        "11": ["enum_with_values_assigned"],
+        "12": ["enum_with_values_assigned_using_variables", {month: "MAY"}]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums", "introspection"]
-}
-isolated function testEnumIntrospection() returns error? {
-    string document = "{ __schema { types { name enumValues { name } } } }";
-    string url = "http://localhost:9095/special_types";
-    json expectedPayload = check getJsonContentFromFile("enum_introspection.json");
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumWithUnion() returns error? {
-    string document = "query { day(number: 10) }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Invalid number",
-                locations: [
-                    {
-                        line: 1,
-                        column: 9
-                    }
-                ],
-                path: ["day"]
-            }
-        ],
-        data: null
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumInputParameter() returns error? {
-    string document = "query { isHoliday(weekday: SUNDAY) }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isHoliday: true
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums", "array"]
-}
-isolated function testReturningEnumArray() returns error? {
-    string document = "query { holidays }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            holidays: [
-                "SATURDAY",
-                "SUNDAY"
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums", "array"]
-}
-isolated function testReturningEnumArrayWithErrors() returns error? {
-    string document = "query { openingDays }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Holiday!",
-                locations: [
-                    {
-                        line: 1,
-                        column: 9
-                    }
-                ],
-                path: ["openingDays", 2]
-            }
-        ],
-        data: null
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums", "array"]
-}
-isolated function testReturningNullableEnumArrayWithErrors() returns error? {
-    string document = "query { specialHolidays }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Holiday!",
-                locations: [
-                    {
-                        line: 1,
-                        column: 9
-                    }
-                ],
-                path: ["specialHolidays", 1]
-            }
-        ],
-        data: {
-            specialHolidays: ["TUESDAY", null, "THURSDAY"]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumInvalidInputParameter() returns error? {
-    string document = "query { isHoliday(weekday: FUNDAY) }";
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string `Value "FUNDAY" does not exist in "weekday" enum.`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 28
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumInputParameterAsString() returns error? {
-    string document = string `query { isHoliday(weekday: "SUNDAY") }`;
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string `Enum "Weekday" cannot represent non-enum value: "SUNDAY"`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 28
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumWithValuesAssigned() returns error? {
-    string document = string `{ month(month: JANUARY) }`;
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            month: "Jan"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["enums"]
-}
-isolated function testEnumWithValuesAssignedUsingVariables() returns error? {
-    string document = string `query GetMonth($month: Month!) { month(month: $month) }`;
-    map<json> variables = {
-        month: "MAY"
-    };
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = {
-        data: {
-            month: "May"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

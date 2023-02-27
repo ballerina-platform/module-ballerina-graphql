@@ -244,8 +244,7 @@ isolated function testNullableArrayElementValuesWithError() returns error? {
 isolated function testContextWithMissingAttribute() returns error? {
     string url = "http://localhost:9092/context";
     string document = "mutation { update { name } }";
-    json actualPayload = check assertResponseAndGetPayload(url, document,
-                                                           statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = {
         errors: [
             {

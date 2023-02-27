@@ -1,0 +1,15 @@
+{
+    profile {
+        name,
+        age,
+        ...P1
+    }
+}
+
+fragment P1 on Person {
+    address {
+        number,
+        street,
+        city
+    }
+}

@@ -1,0 +1,5 @@
+($info: Info!) {
+    book(info:$info) {
+        name
+    }
+}

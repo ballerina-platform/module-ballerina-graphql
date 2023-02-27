@@ -119,7 +119,7 @@ fragment on on Profile {
     groups: ["operations", "parser"]
 }
 isolated function testMultipleAnonymousOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_anonymous_operations.graphql");
+    string document = check getGraphqlDocumentFromFile("multiple_anonymous_operations");
     Parser parser = new (document);
     _ = check parser.parse();
     ErrorDetail[] errors = parser.getErrors();
@@ -182,7 +182,7 @@ query getData {
     groups: ["operations", "parser"]
 }
 isolated function testNamedOperationWithAnonymousOperation() returns error? {
-    string document = check getGraphQLDocumentFromFile("named_operation_with_anonymous_operation.graphql");
+    string document = check getGraphqlDocumentFromFile("named_operation_with_anonymous_operation");
     Parser parser = new (document);
     _ = check parser.parse();
     ErrorDetail[] errors = parser.getErrors();
@@ -203,7 +203,7 @@ isolated function testNamedOperationWithAnonymousOperation() returns error? {
     groups: ["operations", "parser"]
 }
 isolated function testNamedOperationWithMultipleAnonymousOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("named_operation_with_multiple_anonymous_operations.graphql");
+    string document = check getGraphqlDocumentFromFile("named_operation_with_multiple_anonymous_operations");
     Parser parser = new (document);
     _ = check parser.parse();
     ErrorDetail[] errors = parser.getErrors();
@@ -234,7 +234,7 @@ isolated function testNamedOperationWithMultipleAnonymousOperations() returns er
     groups: ["operations", "parser"]
 }
 isolated function testThreeAnonymousOperations() returns error? {
-    string document = check getGraphQLDocumentFromFile("three_anonymous_operations.graphql");
+    string document = check getGraphqlDocumentFromFile("three_anonymous_operations");
     Parser parser = new (document);
     _ = check parser.parse();
     ErrorDetail[] errors = parser.getErrors();
@@ -275,7 +275,7 @@ isolated function testThreeAnonymousOperations() returns error? {
     groups: ["operations", "parser"]
 }
 isolated function testMultipleOperationsWithSameName() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_operations_with_same_name.graphql");
+    string document = check getGraphqlDocumentFromFile("multiple_operations_with_same_name");
     Parser parser = new (document);
     _ = check parser.parse();
     ErrorDetail[] errors = parser.getErrors();
@@ -822,7 +822,7 @@ isolated function testListTypeWithinInputObjectVariableDefualtValue() returns er
 }
 
 isolated function testListTypeVariablesWithDefualtValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("list_type_variables_with_default_value.graphql");
+    string document = check getGraphqlDocumentFromFile("list_type_variables_with_default_value");
     Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -975,7 +975,7 @@ isolated function testVariablesWithInvalidDefaultValue() returns error? {
     groups: ["variables", "input_objects", "parser"]
 }
 isolated function testInputObjectWithInvalidVariableDefaultValue() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_invalid_variable_default_value.graphql");
+    string document = check getGraphqlDocumentFromFile("input_object_with_invalid_variable_default_value");
     Parser parser = new (document);
     DocumentNode|Error result = parser.parse();
     test:assertTrue(result is InvalidTokenError);
@@ -990,7 +990,7 @@ isolated function testInputObjectWithInvalidVariableDefaultValue() returns error
     groups: ["input_objects", "parser"]
 }
 isolated function testInputObjects() returns error? {
-    string document = check getGraphQLDocumentFromFile("input_object_with_default_value.graphql");
+    string document = check getGraphqlDocumentFromFile("input_object_with_default_value");
     Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -1110,7 +1110,7 @@ isolated function testDirectivesWithoutVariables() returns error? {
     groups: ["directives", "parser"]
 }
 isolated function testDirectivesInUndefinedLocations() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_type_directives_in_undefined_location.graphql");
+    string document = check getGraphqlDocumentFromFile("query_type_directives_in_undefined_location");
     Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -1150,7 +1150,7 @@ isolated function testDirectivesInUndefinedLocations() returns error? {
     groups: ["directives", "parser"]
 }
 isolated function testDirectivesWithMutation() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_type_directives_with_mutation.graphql");
+    string document = check getGraphqlDocumentFromFile("query_type_directives_with_mutation");
     Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);
@@ -1180,7 +1180,7 @@ isolated function testDirectivesWithMutation() returns error? {
     groups: ["directives", "parser"]
 }
 isolated function testDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("query_type_directives.graphql");
+    string document = check getGraphqlDocumentFromFile("query_type_directives");
     Parser parser = new (document);
     DocumentNode documentNode = check parser.parse();
     test:assertEquals(documentNode.getOperations().length(), 1);

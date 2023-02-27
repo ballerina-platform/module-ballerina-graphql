@@ -15,6 +15,10 @@
                     "__typename": "__Type"
                 },
                 {
+                    "name": "Address",
+                    "__typename": "__Type"
+                },
+                {
                     "name": "__Schema",
                     "__typename": "__Type"
                 },
@@ -35,7 +39,23 @@
                     "__typename": "__Type"
                 },
                 {
+                    "name": "Student",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "Int",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "Book",
+                    "__typename": "__Type"
+                },
+                {
                     "name": "__InputValue",
+                    "__typename": "__Type"
+                },
+                {
+                    "name": "Course",
                     "__typename": "__Type"
                 },
                 {
@@ -43,7 +63,7 @@
                     "__typename": "__Type"
                 },
                 {
-                    "name": "Int",
+                    "name": "Person",
                     "__typename": "__Type"
                 },
                 {

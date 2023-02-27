@@ -1,0 +1,15 @@
+{
+    "errors": [
+        {
+            "message": "Invalid number",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": ["day"]
+        }
+    ],
+    "data": null
+}

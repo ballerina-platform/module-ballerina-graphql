@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Subscription \"getStudents\" must select only one top level field.",
+        "locations": [
+            {
+                "line": 14,
+                "column": 5
+            }
+        ]
+    }
+]

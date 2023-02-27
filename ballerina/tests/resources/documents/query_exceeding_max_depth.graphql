@@ -1,0 +1,11 @@
+query {
+    book {
+        author {
+            books {
+                author {
+                    books
+                }
+            }
+        }
+    }
+}

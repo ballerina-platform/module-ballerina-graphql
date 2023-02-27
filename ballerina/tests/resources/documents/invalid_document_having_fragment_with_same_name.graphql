@@ -1,0 +1,11 @@
+{
+    ...Quote
+}
+
+fragment Quote on Query {
+  quoteById(id: 1)
+}
+
+fragment Quote on Query {
+  quoteById(id: 2)
+}

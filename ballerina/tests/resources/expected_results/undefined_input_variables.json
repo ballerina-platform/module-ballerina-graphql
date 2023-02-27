@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable \"$userName\" is not defined.",
+        "locations": [
+            {
+                "line": 2,
+                "column": 18
+            }
+        ]
+    }
+]

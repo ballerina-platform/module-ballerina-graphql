@@ -1,0 +1,8 @@
+query {
+    profile(id: 101) {
+        ... on TeacherService {
+            name
+            holidays
+        }
+    }
+}

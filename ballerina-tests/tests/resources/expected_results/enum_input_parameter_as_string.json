@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Enum \"Weekday\" cannot represent non-enum value: \"SUNDAY\"",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 24
+                }
+            ]
+        }
+    ]
+}
