@@ -34,10 +34,11 @@ public class Field implements Serializable {
     private Type type;
     private final boolean isDeprecated;
     private final String deprecationReason;
+    private final Position position;
     private final List<InputValue> args;
 
     public Field(String name, String description) {
-        this(name, description, null, false, null);
+        this(name, description, null, false, null, null);
     }
 
     public Field(String name, Type type) {
@@ -45,15 +46,17 @@ public class Field implements Serializable {
     }
 
     public Field(String name, String description, Type type) {
-        this(name, description, type, false, null);
+        this(name, description, type, false, null, null);
     }
 
-    public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason) {
+    public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason,
+                 Position position) {
         this.name = removeEscapeCharacter(name);
         this.description = description;
         this.type = type;
         this.isDeprecated = isDeprecated;
         this.deprecationReason = deprecationReason;
+        this.position = position;
         this.args = new ArrayList<>();
     }
 
@@ -83,6 +86,10 @@ public class Field implements Serializable {
 
     public List<InputValue> getArgs() {
         return this.args;
+    }
+
+    public Position getPosition() {
+        return position;
     }
 
     public void setType(Type type) {

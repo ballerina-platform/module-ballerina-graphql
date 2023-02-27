@@ -23,6 +23,7 @@
         <classes>
             <class name="io.ballerina.stdlib.graphql.compiler.ServiceValidationTest"/>
             <class name="io.ballerina.stdlib.graphql.compiler.SchemaGenerationTest"/>
+            <class name="io.ballerina.stdlib.graphql.compiler.SchemaValidatorTest"/>
         </classes>
     </test>
 </suite>

@@ -13,4 +13,11 @@
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>
+    <Match>
+        <And>
+            <Class name="io.ballerina.stdlib.graphql.compiler.Utils" />
+            <Method name = "getSchemaObject" />
+            <Bug pattern="BC_UNCONFIRMED_CAST" />
+        </And>
+    </Match>
 </FindBugsFilter>

@@ -35,12 +35,14 @@ public class Type implements Serializable {
     private final String name;
     private final TypeKind kind;
     private final String description;
+    private final Position position;
     private final Map<String, Field> fields;
     private final List<EnumValue> enumValues;
     private final List<Type> possibleTypes;
     private final List<Type> interfaces;
     private final List<InputValue> inputFields;
     private final Type ofType;
+    private final ObjectKind objectKind;
 
     /**
      * Used to create wrapper (NON_NULL and LIST) types.
@@ -49,7 +51,7 @@ public class Type implements Serializable {
      * @param ofType - Type to be wrapped
      */
     public Type(TypeKind kind, Type ofType) {
-        this(null, kind, null, ofType);
+        this(null, kind, null, null, ofType);
     }
 
     /**
@@ -70,19 +72,50 @@ public class Type implements Serializable {
      * @param description - The description of the type from the documentation
      */
     public Type(String name, TypeKind kind, String description) {
-        this(name, kind, description, null);
+        this(name, kind, description, null, (Type) null);
     }
 
-    private Type(String name, TypeKind kind, String description, Type ofType) {
+    public Type(String name, TypeKind kind, String description, Position position) {
+        this(name, kind, description, position, (Type) null);
+    }
+
+    /**
+     * Used to create wrapper OBJECT type.
+     *
+     * @param name - Name of the type
+     * @param kind - TypeKind of the type. Will be an OBJECT
+     * @param description - The description of the type from the documentation
+     * @param objectKind - The kind of the object. Could be ObjectKind.CLASS or ObjectKind.RECORD
+     */
+    public Type(String name, TypeKind kind, String description, Position position, ObjectKind objectKind) {
+        this(name, kind, description, position, null, objectKind);
+    }
+
+    /**
+     * Used to create type without ObjectKind.
+     *
+     * @param name - Name of the type
+     * @param kind - TypeKind of the type. Cannot be an OBJECT
+     * @param description - The description of the type from the documentation
+     * @param ofType - The type to be wrapped
+     */
+    public Type(String name, TypeKind kind, String description, Position position, Type ofType) {
+        this(name, kind, description, position, ofType, null);
+    }
+
+    private Type(String name, TypeKind kind, String description, Position position, Type ofType,
+                 ObjectKind objectKind) {
         this.name = removeEscapeCharacter(name);
         this.kind = kind;
         this.description = description;
+        this.position = position;
         this.fields = kind == TypeKind.OBJECT || kind == TypeKind.INTERFACE ? new LinkedHashMap<>() : null;
         this.enumValues = kind == TypeKind.ENUM ? new ArrayList<>() : null;
         this.possibleTypes = kind == TypeKind.INTERFACE || kind == TypeKind.UNION ? new ArrayList<>() : null;
         this.interfaces = kind == TypeKind.OBJECT || kind == TypeKind.INTERFACE ? new ArrayList<>() : null;
         this.inputFields = kind == TypeKind.INPUT_OBJECT ? new ArrayList<>() : null;
         this.ofType = ofType;
+        this.objectKind = objectKind;
     }
 
     public Collection<Field> getFields() {
@@ -146,4 +179,13 @@ public class Type implements Serializable {
     public Type getOfType() {
         return this.ofType;
     }
+
+    public ObjectKind getObjectKind() {
+        return objectKind;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
 }

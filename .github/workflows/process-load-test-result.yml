@@ -4,80 +4,11 @@ on:
         types: [ graphql-load-test ]
 
 jobs:
-    process-results:
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v2
-
-            -   name: Process results
-                id: processResults
-                run: |
-                    git config --global user.email "ballerina-bot@ballerina.org"
-                    git config --global user.name "ballerina-bot"
-                    git pull
-                    git checkout -b load-test-results
-                    echo '${{ toJson(github.event.client_payload.results) }}' | jq -c '.[]' |
-                    while read -r result; do
-                        status=$(echo "$result" | jq -r '.status')
-                        test_scenario=$(echo "$result" | jq -r '.name')
-                        if [[ $status == "success" ]]
-                        then
-                            echo $(echo "$result" | jq -r '.result') >> load-tests/$test_scenario/results/summary.csv
-                            git add load-tests/$test_scenario/results/summary.csv
-                            git commit -m "Update $test_scenario test results on $(date)"
-                            printf "hasPassed=true" >> $GITHUB_OUTPUT
-                        else
-                            echo $test_scenario "test has failed with error rate" $(echo "$result" | jq -r '.errorRate')
-                            printf "hasFailed=true" >> $GITHUB_OUTPUT
-                        fi
-                    done
-                env:
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-
-            -   name: Push Results
-                if: ${{ steps.processResults.outputs.hasPassed }}
-                run: git push origin "load-test-results"
-                env:
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-
-            -   name: Create pull request for new summary
-                id: createPR
-                if: ${{ steps.processResults.outputs.hasPassed }}
-                run: printf "prUrl=%s" $(gh pr create --title "[Automated] Update summary csv files" --body "Update summary csv files") >> $GITHUB_OUTPUT
-                env:
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-
-            -   name: Approve PR
-                if: ${{ steps.processResults.outputs.hasPassed }}
-                run: |
-                    sleep 5
-                    gh pr review --approve ${{ steps.createPR.outputs.prUrl }}
-                env:
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_REVIEWER_BOT_TOKEN }}
-
-            -   name: Merge PR
-                if: ${{ steps.processResults.outputs.hasPassed }}
-                run: |
-                    checkCount="0"
-                    while [ "$checkCount" != "3" ]
-                    do
-                      sleep 20
-                      checkCount=$(gh pr status --jq '[.currentBranch .statusCheckRollup[] | select((.conclusion=="SUCCESS") and ((.name=="Build on Ubuntu") or (.name=="Build on Windows") or (.name=="codecov/project")))] | length' --json statusCheckRollup)
-                      failedCount=$(gh pr status --jq '[.currentBranch .statusCheckRollup[] | select((.conclusion=="FAILURE") and ((.name=="Build on Ubuntu") or (.name=="Build on Windows") or (.name=="codecov/project")))]|length' --json statusCheckRollup)
-                      if [[ "$failedCount" != "0" ]]
-                      then
-                        echo "PR Build has failed"
-                        exit 1
-                      fi
-                    done
-                    sleep 20
-                    gh pr merge --merge --delete-branch
-                env:
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-            -   name: Fail workflow
-                if: ${{ steps.processResults.outputs.hasFailed }}
-                run: |
-                    echo "One or more load tests have been failed"
-                    echo '${{ toJson(github.event.client_payload.results) }}'
-                    exit 1
+    call_stdlib_process_load_test_results_workflow:
+        name: Run StdLib Process Load Test Results Workflow
+        uses: ballerina-platform/ballerina-standard-library/.github/workflows/process-load-test-results-template.yml@main
+        with:
+            results: ${{ toJson(github.event.client_payload.results) }}
+        secrets:
+            ballerina_bot_token: ${{ secrets.BALLERINA_BOT_TOKEN }}
+            ballerina_reviewer_bot_token: ${{ secrets.BALLERINA_REVIEWER_BOT_TOKEN }}

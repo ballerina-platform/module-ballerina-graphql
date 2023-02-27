@@ -66,6 +66,36 @@ public class Schema implements Serializable {
         return type;
     }
 
+    public Type addType(String typeName, TypeKind kind, String description, Position position) {
+        if (this.types.containsKey(typeName)) {
+            return this.types.get(typeName);
+        }
+        Type type = new Type(typeName, kind, description, position);
+        this.types.put(typeName, type);
+        return type;
+    }
+
+    /**
+     * Adds a Object type to the schema from a given ObjectKind and returns it. If the object type already exist,
+     * returns the existing scalar type.
+     *
+     * @param typeName - The name of the type
+     * @param kind - The TypeKind of the type
+     * @param description - The description of the type
+     * @param objectKind - The objectKind of the type
+     *
+     * @return - The created or existing type with the provided name
+     */
+    public Type addType(String typeName, TypeKind kind, String description, Position position,
+                        ObjectKind objectKind) {
+        if (this.types.containsKey(typeName)) {
+            return this.types.get(typeName);
+        }
+        Type type = new Type(typeName, kind, description, position, objectKind);
+        this.types.put(typeName, type);
+        return type;
+    }
+
     /**
      * Adds a Scalar type to the schema from a given ScalarType and returns it. If the scalar type already exist,
      * returns the existing scalar type.
