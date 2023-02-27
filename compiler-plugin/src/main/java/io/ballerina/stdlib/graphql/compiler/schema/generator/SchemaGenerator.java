@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ConstantSymbol;
@@ -47,13 +48,15 @@ import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.projects.Project;
 import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
 import io.ballerina.stdlib.graphql.commons.types.Description;
 import io.ballerina.stdlib.graphql.commons.types.Directive;
 import io.ballerina.stdlib.graphql.commons.types.EnumValue;
 import io.ballerina.stdlib.graphql.commons.types.Field;
 import io.ballerina.stdlib.graphql.commons.types.InputValue;
+import io.ballerina.stdlib.graphql.commons.types.ObjectKind;
+import io.ballerina.stdlib.graphql.commons.types.Position;
 import io.ballerina.stdlib.graphql.commons.types.ScalarType;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.Type;
@@ -82,6 +85,7 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDeprecationReason;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypeName;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getTypePosition;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getWrapperType;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 
@@ -97,15 +101,17 @@ public class SchemaGenerator {
     private final Node serviceNode;
     private final InterfaceFinder interfaceFinder;
     private final Schema schema;
-    private final SyntaxNodeAnalysisContext context;
+    private final SemanticModel semanticModel;
+    private final Project project;
     private final List<Type> visitedInterfaces;
 
-    public SchemaGenerator(SyntaxNodeAnalysisContext context, Node serviceNode, InterfaceFinder interfaceFinder,
-                           String description) {
-        this.context = context;
+    public SchemaGenerator(Node serviceNode, InterfaceFinder interfaceFinder,
+                           SemanticModel semanticModel, Project project, String description) {
         this.serviceNode = serviceNode;
         this.interfaceFinder = interfaceFinder;
+        this.semanticModel = semanticModel;
         this.schema = new Schema(description);
+        this.project = project;
         this.visitedInterfaces = new ArrayList<>();
     }
 
@@ -163,15 +169,15 @@ public class SchemaGenerator {
             ObjectConstructorExpressionNode objectConstructorExpressionNode) {
         // noinspection OptionalGetWithoutIsPresent
         return objectConstructorExpressionNode.members().stream()
-                .filter(member -> isFunctionDefinition(member) && context.semanticModel().symbol(member)
-                        .isPresent()).map(methodNode -> (MethodSymbol) context.semanticModel().symbol(methodNode).get())
+                .filter(member -> isFunctionDefinition(member) && semanticModel.symbol(member)
+                        .isPresent()).map(methodNode -> (MethodSymbol) semanticModel.symbol(methodNode).get())
                 .collect(Collectors.toList());
     }
 
     private Collection<? extends MethodSymbol> getMethods(ServiceDeclarationNode serviceDeclarationNode) {
         // ServiceDeclarationSymbol already validated. Therefore, no need to check isEmpty().
         // noinspection OptionalGetWithoutIsPresent
-        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) context.semanticModel()
+        ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) semanticModel
                 .symbol(serviceDeclarationNode).get();
         return serviceDeclarationSymbol.methods().values();
     }
@@ -185,8 +191,9 @@ public class SchemaGenerator {
             boolean isDeprecated = methodSymbol.deprecated();
             String deprecationReason = getDeprecationReason(methodSymbol);
             Type fieldType = getType(methodSymbol);
+            Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
-                                    deprecationReason);
+                                    deprecationReason, position);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -210,8 +217,9 @@ public class SchemaGenerator {
             return null;
         }
         Type fieldType = getType(methodSymbol);
+        Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
         Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
-                                deprecationReason);
+                                deprecationReason, position);
         addArgs(field, methodSymbol);
         return field;
     }
@@ -266,9 +274,9 @@ public class SchemaGenerator {
             case ARRAY:
                 return getType((ArrayTypeSymbol) typeSymbol);
             case UNION:
-                return getType(typeName, null, (UnionTypeSymbol) typeSymbol);
+                return getType(typeName, null, null, (UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
-                return getType(null, null, null, (IntersectionTypeSymbol) typeSymbol);
+                return getType(null, null, null, null, (IntersectionTypeSymbol) typeSymbol);
             case STREAM:
                 return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
             case TABLE:
@@ -302,6 +310,14 @@ public class SchemaGenerator {
         return this.schema.addType(name, kind, description);
     }
 
+    private Type addType(String name, TypeKind kind, String description, Position position) {
+        return this.schema.addType(name, kind, description, position);
+    }
+
+    private Type addType(String name, TypeKind kind, String description, Position position, ObjectKind objectKind) {
+        return this.schema.addType(name, kind, description, position, objectKind);
+    }
+
     private Type getType(TypeReferenceTypeSymbol typeSymbol, String name) {
         if (typeSymbol.getName().isEmpty()) {
             return null;
@@ -331,24 +347,28 @@ public class SchemaGenerator {
             parameterMap = typeDefinitionSymbol.documentation().get().parameterMap();
         }
         if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
             RecordTypeSymbol recordType = (RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            return getType(name, description, parameterMap, recordType);
+            return getType(name, description, position, parameterMap, recordType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.UNION) {
-            return getType(name, description, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
+            return getType(name, description, position, (UnionTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
             IntersectionTypeSymbol intersectionType = (IntersectionTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            return getType(name, description, parameterMap, intersectionType);
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
+            return getType(name, description, position, parameterMap, intersectionType);
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.TABLE) {
             return getType((TableTypeSymbol) typeDefinitionSymbol.typeDescriptor());
         } else if (typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
             ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-            return getType(name, description, objectTypeSymbol);
+            Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
+            return getType(name, description, position, objectTypeSymbol);
         }
         return null;
     }
 
-    private Type getType(String name, String description, ObjectTypeSymbol objectTypeSymbol) {
-        Type objectType = addType(name, TypeKind.INTERFACE, description);
+    private Type getType(String name, String description, Position position, ObjectTypeSymbol objectTypeSymbol) {
+        Type objectType = addType(name, TypeKind.INTERFACE, description, position);
         getTypesFromInterface(name, objectType);
 
         for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
@@ -361,7 +381,8 @@ public class SchemaGenerator {
 
     private Type getType(String name, ClassSymbol classSymbol) {
         String description = getDescription(classSymbol);
-        Type objectType = addType(name, TypeKind.OBJECT, description);
+        Position position = getTypePosition(classSymbol.getLocation(), classSymbol, this.project);
+        Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.CLASS);
 
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
             if (isResourceMethod(methodSymbol)) {
@@ -386,7 +407,9 @@ public class SchemaGenerator {
                 TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) implementation;
                 String description = getDescription(typeDefinitionSymbol);
                 ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
-                implementedType = getType(implementationName, description, objectTypeSymbol);
+                Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol,
+                        this.project);
+                implementedType = getType(implementationName, description, position, objectTypeSymbol);
             }
 
             interfaceType.addPossibleType(implementedType);
@@ -413,16 +436,17 @@ public class SchemaGenerator {
 
     private Type getType(String name, EnumSymbol enumSymbol) {
         String description = getDescription(enumSymbol);
-        Type enumType = addType(name, TypeKind.ENUM, description);
+        Position position = getTypePosition(enumSymbol.getLocation(), enumSymbol, this.project);
+        Type enumType = addType(name, TypeKind.ENUM, description, position);
         for (ConstantSymbol enumMember : enumSymbol.members()) {
             addEnumValueToType(enumType, enumMember);
         }
         return enumType;
     }
 
-    private Type getType(String name, String description, Map<String, String> fieldMap,
+    private Type getType(String name, String description, Position position, Map<String, String> fieldMap,
                          RecordTypeSymbol recordTypeSymbol) {
-        Type objectType = addType(name, TypeKind.OBJECT, description);
+        Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.RECORD);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
             if (recordFieldSymbol.getName().isEmpty()) {
                 continue;
@@ -455,7 +479,7 @@ public class SchemaGenerator {
         return field;
     }
 
-    private Type getType(String name, String description, UnionTypeSymbol unionTypeSymbol) {
+    private Type getType(String name, String description, Position position, UnionTypeSymbol unionTypeSymbol) {
         List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
         if (effectiveTypes.size() == 1) {
             return getType(effectiveTypes.get(0));
@@ -463,7 +487,7 @@ public class SchemaGenerator {
 
         String typeName = name == null ? getTypeName(effectiveTypes) : name;
         String typeDescription = description == null ? Description.GENERATED_UNION_TYPE.getDescription() : description;
-        Type unionType = addType(typeName, TypeKind.UNION, typeDescription);
+        Type unionType = addType(typeName, TypeKind.UNION, typeDescription, position);
 
         for (TypeSymbol typeSymbol : effectiveTypes) {
             Type possibleType = getType(typeSymbol);
@@ -476,7 +500,7 @@ public class SchemaGenerator {
         return unionType;
     }
 
-    private Type getType(String name, String description, Map<String, String> parameterMap,
+    private Type getType(String name, String description, Position position, Map<String, String> parameterMap,
                          IntersectionTypeSymbol intersectionTypeSymbol) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (name == null) {
@@ -485,7 +509,7 @@ public class SchemaGenerator {
             if (parameterMap == null) {
                 parameterMap = new HashMap<>();
             }
-            return getType(name, description, parameterMap, (RecordTypeSymbol) effectiveType);
+            return getType(name, description, position, parameterMap, (RecordTypeSymbol) effectiveType);
         }
     }
 
@@ -526,7 +550,7 @@ public class SchemaGenerator {
             case UNION:
                 return getInputType((UnionTypeSymbol) typeSymbol);
             case INTERSECTION:
-                return getInputType(null, null, (IntersectionTypeSymbol) typeSymbol);
+                return getInputType(null, null, (IntersectionTypeSymbol) typeSymbol, null);
         }
         return null;
     }
@@ -555,20 +579,21 @@ public class SchemaGenerator {
     private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
         TypeSymbol typeDescriptor = typeDefinitionSymbol.typeDescriptor();
         String description = getDescription(typeDefinitionSymbol);
+        Position position = getTypePosition(typeDefinitionSymbol.getLocation(), typeDefinitionSymbol, this.project);
         switch (typeDescriptor.typeKind()) {
             case RECORD:
-                return getInputType(typeName, description, (RecordTypeSymbol) typeDescriptor);
+                return getInputType(typeName, description, (RecordTypeSymbol) typeDescriptor, position);
             case UNION:
                 return getInputType((UnionTypeSymbol) typeDescriptor);
             case INTERSECTION:
-                return getInputType(typeName, description, (IntersectionTypeSymbol) typeDescriptor);
+                return getInputType(typeName, description, (IntersectionTypeSymbol) typeDescriptor, position);
             default:
                 return null;
         }
     }
 
-    private Type getInputType(String name, String description, RecordTypeSymbol recordTypeSymbol) {
-        Type objectType = addType(name, TypeKind.INPUT_OBJECT, description);
+    private Type getInputType(String name, String description, RecordTypeSymbol recordTypeSymbol, Position position) {
+        Type objectType = addType(name, TypeKind.INPUT_OBJECT, description, position);
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
             objectType.addInputField(getInputField(recordFieldSymbol));
         }
@@ -583,12 +608,13 @@ public class SchemaGenerator {
         return null;
     }
 
-    private Type getInputType(String typeName, String description, IntersectionTypeSymbol intersectionTypeSymbol) {
+    private Type getInputType(String typeName, String description, IntersectionTypeSymbol intersectionTypeSymbol,
+                              Position position) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (typeName == null) {
             return getInputType(effectiveType);
         } else {
-            return getInputType(typeName, description, (RecordTypeSymbol) effectiveType);
+            return getInputType(typeName, description, (RecordTypeSymbol) effectiveType, position);
         }
     }
 

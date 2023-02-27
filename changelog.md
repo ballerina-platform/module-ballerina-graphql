@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- [[#4120] Add support to GraphQL design view by updating the schema](https://github.com/ballerina-platform/ballerina-standard-library/issues/4120)
+
 ## [1.6.0] - 2023-02-20
 
 ### Added
