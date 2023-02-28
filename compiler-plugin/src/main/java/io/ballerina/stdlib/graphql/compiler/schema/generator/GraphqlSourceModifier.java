@@ -22,6 +22,7 @@ import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.MetadataNode;
@@ -54,8 +55,11 @@ import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.Location;
 import io.ballerina.tools.text.TextDocument;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -63,9 +67,11 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.SUBGRAPH_SUB_MODULE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.Utils.SERVICE_CONFIG_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.SCHEMA_STRING_FIELD;
 
@@ -73,9 +79,13 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
  * Modifies the GraphQL service to add an annotation to the service with the generated schema.
  */
 public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext> {
+    private static final String ENTITY = "__Entity";
+    public static final String MAP_DEFINITION_PLACEHOLDER = "mapDef";
+    private static final String SUBGRAPH_MODULE_PLACEHOLDER = "subgraph";
     private final Map<DocumentId, GraphqlModifierContext> modifierContextMap;
     private final Map<Node, String> entityTypeNamesMap;
-    private static final String ENTITY = "__Entity";
+    private String subgraphModulePrefix;
+    private SourceModifierContext context;
     private int entityUnionSuffix = 0;
     private String entityUnionTypeName;
     private List<String> entities;
@@ -88,6 +98,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
 
     @Override
     public void modify(SourceModifierContext sourceModifierContext) {
+        this.context = sourceModifierContext;
         for (Map.Entry<DocumentId, GraphqlModifierContext> entry : this.modifierContextMap.entrySet()) {
             DocumentId documentId = entry.getKey();
             GraphqlModifierContext modifierContext = entry.getValue();
@@ -106,6 +117,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
 
     private ModulePartNode modifyDocument(SourceModifierContext context, ModulePartNode rootNode,
                                           GraphqlModifierContext modifierContext) {
+        this.subgraphModulePrefix = getSubgraphModulePrefix(rootNode);
         Map<Node, Node> nodeMap = new HashMap<>();
         Map<Node, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
         for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
@@ -156,6 +168,22 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         return rootNode.modify(rootNode.imports(), members, rootNode.eofToken());
     }
 
+    private String getSubgraphModulePrefix(ModulePartNode rootNode) {
+        List<ImportDeclarationNode> imports = rootNode.imports().stream().collect(Collectors.toList());
+        if (imports.isEmpty()) {
+            return null;
+        }
+        for (ImportDeclarationNode importDeclarationNode : imports) {
+            if (importDeclarationNode.prefix().isPresent()) {
+                if (importDeclarationNode.moduleName().stream().map(Token::text).collect(Collectors.joining("."))
+                        .equals(SUBGRAPH_SUB_MODULE_NAME)) {
+                    return importDeclarationNode.prefix().get().prefix().text();
+                }
+            }
+        }
+        return null;
+    }
+
     private NodeList<ModuleMemberDeclarationNode> addEntityTypeDefinition(
             NodeList<ModuleMemberDeclarationNode> moduleMembers) {
         if (!this.isSubgraph) {
@@ -197,9 +225,9 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         modifier = modifier.withAnnotations(annotations);
         NodeList<Node> members = node.members();
         if (this.isSubgraph) {
-            members = addServiceResourceResolverToMembers(members);
+            members = addServiceResourceResolverToMembers(members, node.location());
             if (this.entities.size() > 0) {
-                members = addEntityResourceResolverToMembers(members);
+                members = addEntityResourceResolverToMembers(members, node.location());
             }
         }
         modifier = modifier.withMembers(members);
@@ -212,79 +240,72 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         modifier = modifier.withMetadata(metadataNode);
         NodeList<Node> members = node.members();
         if (this.isSubgraph) {
-            members = addServiceResourceResolverToMembers(members);
+            members = addServiceResourceResolverToMembers(members, node.location());
             if (this.entities.size() > 0) {
-                members = addEntityResourceResolverToMembers(members);
+                members = addEntityResourceResolverToMembers(members, node.location());
             }
         }
         modifier = modifier.withMembers(members);
         return modifier.apply();
     }
 
-    private NodeList<Node> addEntityResourceResolverToMembers(NodeList<Node> serviceMembers) {
-        FunctionDefinitionNode entityResolver = getEntityResolver();
+    private NodeList<Node> addEntityResourceResolverToMembers(NodeList<Node> serviceMembers, Location location) {
+        FunctionDefinitionNode entityResolver = getEntityResolver(location);
         return serviceMembers.add(entityResolver);
     }
 
-    private NodeList<Node> addServiceResourceResolverToMembers(NodeList<Node> serviceMembers) {
-        FunctionDefinitionNode serviceResolver = getServiceResolver();
+    private NodeList<Node> addServiceResourceResolverToMembers(NodeList<Node> serviceMembers, Location location) {
+        FunctionDefinitionNode serviceResolver = getServiceResolver(location);
         return serviceMembers.add(serviceResolver);
     }
 
-    private FunctionDefinitionNode getEntityResolver() {
-        String mapDef = getEntityTypedescMapInitializer();
-        String entityResolver = "\t resource function get _entities(subgraph:Representation[] representations) "
-                + "\t returns (" + this.entityUnionTypeName + "|error?)[] {\n"
-                + "\t map<typedesc<" + this.entityUnionTypeName + ">> typedescs = " + mapDef + ";\n"
-                + "\t (" + this.entityUnionTypeName + "|error?)[] entities = [];\n"
-                + "\t foreach subgraph:Representation rep in representations {\n"
-                + "\t if !typedescs.hasKey(rep.__typename) {\n"
-                + "\t     entities.push(error(string `No entities found for {__typename: '${rep.__typename}'}`));\n"
-                + "\t     continue;\n"
-                + "\t }\n"
-                + "\t typedesc<" + this.entityUnionTypeName + "> entityTypedesc = typedescs.get(rep.__typename);\n"
-                + "\t subgraph:FederatedEntity? federatedEntity = entityTypedesc.@subgraph:Entity;\n"
-                + "\t if federatedEntity is () {\n"
-                + "\t     entities.push(error(string `No entities found for {__typename: '${rep.__typename}'}`));\n"
-                + "\t     continue;\n"
-                + "\t }\n"
-                + "\t subgraph:ReferenceResolver? resolve = federatedEntity.resolveReference;\n"
-                + "\t if resolve is () {\n"
-                + "\t     entities.push(error(string `No resolvers defined for '${rep.__typename}' entity`));\n"
-                + "\t     continue;\n"
-                + "\t }\n"
-                + "\t record {}|service object {}|error? entity = resolve(rep);\n"
-                + "\t if entity is error? {\n"
-                + "\t      entities.push(entity);\n"
-                + "\t      continue;\n"
-                + "\t }\n"
-                + "\t " + this.entityUnionTypeName + "|error entityWithType = entity.ensureType(entityTypedesc);\n"
-                + "\t if entityWithType is error {\n"
-                + "\t      entities.push(error(string `Incorrect return type specified for the "
-                + "'${rep.__typename}' entity reference resolver.`));\n"
-                + "\t      continue;\n"
-                + "\t }\n"
-                + "\t entities.push(entityWithType);\n"
-                + "\t }\n"
-                + "\treturn entities;\n"
-                + "\t}";
-        return (FunctionDefinitionNode) NodeParser.parseObjectMember(entityResolver);
+    private FunctionDefinitionNode getEntityResolver(Location location) {
+        try {
+            String mapDef = getEntityTypedescMapInitializer();
+            Class<GraphqlSourceModifier> currentClass = GraphqlSourceModifier.class;
+            InputStream inputStream = currentClass.getResourceAsStream("/entity_resolver.bal.partial");
+            String entityResolver = readFromInputStream(inputStream);
+            Objects.requireNonNull(inputStream).close();
+            entityResolver = entityResolver.replaceAll(ENTITY, this.entityUnionTypeName);
+            entityResolver = entityResolver.replaceAll(MAP_DEFINITION_PLACEHOLDER, mapDef);
+            if (this.subgraphModulePrefix != null) {
+                entityResolver = entityResolver.replaceAll(SUBGRAPH_MODULE_PLACEHOLDER, this.subgraphModulePrefix);
+            }
+            return (FunctionDefinitionNode) NodeParser.parseObjectMember(entityResolver);
+        } catch (IOException | NullPointerException e) {
+            updateContext(this.context, location, CompilationDiagnostic.FAILED_TO_ADD_ENTITY_RESOLVER, e.getMessage());
+            return null;
+        }
     }
 
-    private FunctionDefinitionNode getServiceResolver() {
-        String mapDef = getEntityTypedescMapInitializer();
-        String entityResolver = "\t resource function get _service() returns record { string sdl; }|error {\n"
-                + "\t map<typedesc> typedescs = " + mapDef + ";\n"
-                + "\t map<subgraph:FederatedEntity> keyDirectives = {};\n"
-                + "\t foreach var [entity, entityTypedesc] in typedescs.entries() {\n"
-                + "\t   subgraph:FederatedEntity keyDirective = check entityTypedesc.@subgraph:Entity.ensureType();\n"
-                + "\t   keyDirectives[entity] = keyDirective;\n"
-                + "\t }\n"
-                + "\t graphql:GraphqlServiceConfig config = check (typeof self).@graphql:ServiceConfig.ensureType();\n"
-                + "\t string sdl = check graphql:getSdlString(config.schemaString, keyDirectives);\n"
-                + "\t return {sdl};\n"
-                + "\t}\n";
-        return (FunctionDefinitionNode) NodeParser.parseObjectMember(entityResolver);
+    private String readFromInputStream(InputStream inputStream) throws IOException {
+        StringBuilder resultStringBuilder = new StringBuilder();
+        InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        try (BufferedReader bufferedReader = new BufferedReader(streamReader)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                resultStringBuilder.append(line).append("\n");
+            }
+        }
+        return resultStringBuilder.toString();
+    }
+
+    private FunctionDefinitionNode getServiceResolver(Location location) {
+        try {
+            String mapDef = getEntityTypedescMapInitializer();
+            Class<GraphqlSourceModifier> currentClass = GraphqlSourceModifier.class;
+            InputStream inputStream = currentClass.getResourceAsStream("/service_resolver.bal.partial");
+            String serviceResolver = readFromInputStream(inputStream);
+            Objects.requireNonNull(inputStream).close();
+            serviceResolver = serviceResolver.replaceAll(MAP_DEFINITION_PLACEHOLDER, mapDef);
+            if (this.subgraphModulePrefix != null) {
+                serviceResolver = serviceResolver.replaceAll(SUBGRAPH_MODULE_PLACEHOLDER, this.subgraphModulePrefix);
+            }
+            return (FunctionDefinitionNode) NodeParser.parseObjectMember(serviceResolver);
+        } catch (IOException | NullPointerException e) {
+            updateContext(this.context, location, CompilationDiagnostic.FAILED_TO_ADD_ENTITY_RESOLVER, e.getMessage());
+            return null;
+        }
     }
 
     private String getEntityTypedescMapInitializer() {

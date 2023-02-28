@@ -1,0 +1,11 @@
+resource function get _service() returns record {string sdl;}|error {
+    map<typedesc> typedescs = mapDef;
+    map<subgraph:FederatedEntity> keyDirectives = {};
+    foreach var [entity, entityTypedesc] in typedescs.entries() {
+        subgraph:FederatedEntity keyDirective = check entityTypedesc.@subgraph:Entity.ensureType();
+        keyDirectives[entity] = keyDirective;
+    }
+    graphql:GraphqlServiceConfig config = check (typeof self).@graphql:ServiceConfig.ensureType();
+    string sdl = check graphql:getSdlString(config.schemaString, keyDirectives);
+    return {sdl};
+};

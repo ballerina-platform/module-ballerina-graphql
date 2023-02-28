@@ -1,0 +1,33 @@
+resource function get _entities(subgraph:Representation[] representations) returns (__Entity|error?)[] {
+    map<typedesc<__Entity>> typedescs = mapDef;
+    (__Entity|error?)[] entities = [];
+    foreach subgraph:Representation rep in representations {
+        if !typedescs.hasKey(rep.__typename) {
+            entities.push(error(string `No entities found for {__typename: '${rep.__typename}'}`));
+            continue;
+        }
+        typedesc<__Entity> entityTypedesc = typedescs.get(rep.__typename);
+        subgraph:FederatedEntity? federatedEntity = entityTypedesc.@subgraph:Entity;
+        if federatedEntity is () {
+            entities.push(error(string `No entities found for {__typename: '${rep.__typename}'}`));
+            continue;
+        }
+        subgraph:ReferenceResolver? resolve = federatedEntity.resolveReference;
+        if resolve is () {
+            entities.push(error(string `No resolvers defined for '${rep.__typename}' entity`));
+            continue;
+        }
+        record {}|service object {}|error? entity = resolve(rep);
+        if entity is error? {
+            entities.push(entity);
+            continue;
+        }
+        __Entity|error entityWithType = entity.ensureType(entityTypedesc);
+        if entityWithType is error {
+            entities.push(error(string `Incorrect return type specified for the '${rep.__typename}' entity reference resolver.`));
+            continue;
+        }
+        entities.push(entityWithType);
+    }
+    return entities;
+};

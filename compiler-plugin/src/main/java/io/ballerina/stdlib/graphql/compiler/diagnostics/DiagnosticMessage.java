@@ -78,7 +78,9 @@ public enum DiagnosticMessage {
     ERROR_135("the GraphQL field ''{0}'' use ''{1}'' as an output type. The type ''{1}'' is reserved for use in "
                       + "GraphQL Federation."),
     ERROR_136("invalid usage of type ''{0}'' as input object. The type ''{0}'' is reserved for use in "
-                      + "GraphQL Federation");
+                      + "GraphQL Federation"),
+    ERROR_137("failed to add _entities resolver to the subgraph service"),
+    ERROR_138("failed to add _service service to the subgraph service");
 
     private final String message;
 
