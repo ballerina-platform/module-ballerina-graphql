@@ -44,7 +44,7 @@ function dataProviderInterceptors() returns string[][] {
     string url13 = "http://localhost:9091/intercept_enum";
     string url14 = "http://localhost:9091/intercept_int";
     string url15 = "http://localhost:9091/intercept_order";
-    string url16 = "http://localhost:9091/intercept_hierachical";
+    string url16 = "http://localhost:9091/intercept_hierarchical";
     string url17 = "http://localhost:9091/mutation_interceptor";
     string url18 = "http://localhost:9091/interceptors_with_null_values1";
     string url19 = "http://localhost:9091/interceptors_with_null_values1";
