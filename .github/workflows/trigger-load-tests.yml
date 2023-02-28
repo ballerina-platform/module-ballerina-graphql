@@ -11,6 +11,10 @@ on:
                 description: 'Cluster name'
                 default: 'graphql-perf-cluster-test'
                 required: false
+            branch:
+                description: 'Branch of the given repository'
+                default: ''
+                required: false
     schedule:
         - cron: '0 19 * * *'
 
