@@ -19,6 +19,12 @@
       "name": "io.ballerina.stdlib.graphql.commons.types.InputValue"
     },
     {
+      "name": "io.ballerina.stdlib.graphql.commons.types.LinePosition"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.commons.types.Position"
+    },
+    {
       "name": "io.ballerina.stdlib.graphql.commons.types.Schema"
     },
     {
