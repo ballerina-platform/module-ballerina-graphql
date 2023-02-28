@@ -122,22 +122,15 @@ public isolated class Context {
         }
     }
 
-    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
+    isolated function getNextInterceptor() returns Interceptor? {
         lock {
             Engine? engine = self.getEngine();
             if engine is Engine {
-                (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = engine.getInterceptors();
-                if interceptors is (readonly & Interceptor)[] {
-                    if interceptors.length() > self.nextInterceptor {
-                        readonly & Interceptor next = interceptors[self.nextInterceptor];
-                        self.nextInterceptor += 1;
-                        return next;
-                    }
-                } else {
-                    if self.nextInterceptor == 0 {
-                        self.nextInterceptor += 1;
-                        return interceptors;
-                    }
+                Interceptor[] interceptors = engine.getInterceptors();
+                if interceptors.length() > self.nextInterceptor {
+                    Interceptor next = interceptors[self.nextInterceptor];
+                    self.nextInterceptor += 1;
+                    return next;
                 }
             }
             self.resetInterceptorCount();

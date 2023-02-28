@@ -31,7 +31,7 @@ public type GraphqlServiceConfig record {|
     CorsConfig cors?;
     Graphiql graphiql = {};
     readonly string schemaString = "";
-    readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
+    readonly Interceptor|Interceptor[] interceptors = [];
     boolean introspection = true;
 |};
 

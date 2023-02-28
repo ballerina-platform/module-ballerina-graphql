@@ -71,7 +71,7 @@ isolated service class UpgradeService {
 }
 
 # Represent a GraphQL interceptor
-public type Interceptor distinct service object {
+public type Interceptor readonly & distinct service object {
     isolated remote function execute(Context context, Field 'field) returns anydata|error;
 };
 

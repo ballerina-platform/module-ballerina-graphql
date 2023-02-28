@@ -61,10 +61,14 @@ isolated function getSchemaString(GraphqlServiceConfig? serviceConfig) returns s
     return "";
 }
 
-isolated function getServiceInterceptors(GraphqlServiceConfig? serviceConfig)
-    returns readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) {
+isolated function getServiceInterceptors(GraphqlServiceConfig? serviceConfig) returns readonly & Interceptor[] {
     if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.interceptors;
+        readonly & (Interceptor|Interceptor[]) interceptors = serviceConfig.interceptors;
+        if interceptors is Interceptor {
+            return [interceptors];
+        } else {
+            return interceptors;
+        }
     }
     return [];
 }
