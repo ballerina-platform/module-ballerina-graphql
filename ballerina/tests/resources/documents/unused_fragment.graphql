@@ -1,0 +1,11 @@
+query {
+    profile {
+        name {
+            first
+        }
+    }
+}
+
+fragment fullNameFragment on Name {
+    first
+}

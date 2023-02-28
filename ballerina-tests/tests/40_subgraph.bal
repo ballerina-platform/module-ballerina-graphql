@@ -34,7 +34,7 @@ isolated function testSubgrapWithValidQuery() returns error? {
     groups: ["federation", "subgraph", "entity"]
 }
 isolated function testQueringEntityFieldOnSubgraph() returns error? {
-    string document = check getGraphQLDocumentFromFile("querying_entity_field_on_subgraph.graphql");
+    string document = check getGraphqlDocumentFromFile("querying_entity_field_on_subgraph");
     string url = "localhost:9088/subgraph";
     graphql:Client graphqlClient = check new (url);
     json response = check graphqlClient->execute(document);
@@ -240,7 +240,7 @@ isolated function testQueringEntityFieldWithObjectVariable() returns error? {
     groups: ["federation", "subgraph", "entity"]
 }
 isolated function testQueringEntityFieldWithVariableOnSubgraph() returns error? {
-    string document = check getGraphQLDocumentFromFile("quering_entity_field_with_variable_on_subgrap.graphql");
+    string document = check getGraphqlDocumentFromFile("querying_entity_field_with_variable_on_subgraph");
     string url = "localhost:9088/subgraph";
     graphql:Client graphqlClient = check new (url);
     map<json> variables = {
@@ -265,7 +265,7 @@ isolated function testQueringEntityFieldWithVariableOnSubgraph() returns error? 
     groups: ["federation", "subgraph", "entity", "introspection"]
 }
 isolated function testIntrospectionOnSubgraph() returns error? {
-    string document = check getGraphQLDocumentFromFile("introspection_on_subgraph.graphql");
+    string document = check getGraphqlDocumentFromFile("introspection_on_subgraph");
     string url = "localhost:9088/subgraph";
     graphql:Client graphqlClient = check new (url);
     map<json> variables = {
@@ -275,7 +275,7 @@ isolated function testIntrospectionOnSubgraph() returns error? {
         ]
     };
     json response = check graphqlClient->execute(document, variables);
-    json expectedPayload = check getJsonContentFromFile("introspection_on_subgraph.json");
+    json expectedPayload = check getJsonContentFromFile("introspection_on_subgraph");
     test:assertEquals(response, expectedPayload);
 }
 
@@ -303,7 +303,7 @@ isolated function testQueringSdlOnSubgraph() returns error? {
     // Replace line seperator on windows "\r\n" with "\n"
     sdl = regex:replaceAll(sdl, "\r\n", "\n");
     response = {data: {_service: {sdl}}};
-    json expectedPayload = check getJsonContentFromFile("quering_sdl_on_subgraph.json");
+    json expectedPayload = check getJsonContentFromFile("quering_sdl_on_subgraph");
     assertJsonValuesWithOrder(response, expectedPayload);
 }
 
@@ -315,7 +315,7 @@ isolated function testResolverReturnigErrorForInvalidEntity() returns error? {
     string url = "localhost:9088/subgraph";
     graphql:Client graphqlClient = check new (url);
     json response = check graphqlClient->execute(document);
-    json expectedPayload = check getJsonContentFromFile("resolver_returnig_error_for_invalid_entity.json");
+    json expectedPayload = check getJsonContentFromFile("resolver_returnig_error_for_invalid_entity");
     assertJsonValuesWithOrder(response, expectedPayload);
 }
 
@@ -368,7 +368,7 @@ function testAttachingSubgraphServiceToDynamicListener() returns error? {
     check specialTypesTestListener.attach(subgraphServivce, "subgraph");
     string url = "http://localhost:9095/subgraph";
     graphql:Client graphqlClient = check new (url);
-    string document = check getGraphQLDocumentFromFile("querying_entity_field_on_subgraph.graphql");
+    string document = check getGraphqlDocumentFromFile("querying_entity_field_on_subgraph");
     json response = check graphqlClient->execute(document);
     json expectedPayload = {
         data: {

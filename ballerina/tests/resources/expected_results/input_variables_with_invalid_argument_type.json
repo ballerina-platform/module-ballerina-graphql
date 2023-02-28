@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable userName expected value of type \"String!\", found 4",
+        "locations": [
+            {
+                "line": 2,
+                "column": 18
+            }
+        ]
+    }
+]

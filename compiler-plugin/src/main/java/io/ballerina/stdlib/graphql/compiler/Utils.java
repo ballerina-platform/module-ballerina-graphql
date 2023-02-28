@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
@@ -25,6 +26,7 @@ import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
+import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
@@ -32,17 +34,27 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.hasGraphqlListener;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isSubgraphModuleSymbol;
+import static io.ballerina.stdlib.graphql.compiler.ModuleLevelVariableDeclarationAnalysisTask.getDescription;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 
 /**
  * Util class for the compiler plugin.
@@ -236,5 +248,50 @@ public final class Utils {
             }
         }
         return false;
+    }
+
+    // The function used by the LS extension to get the Schema object
+    public static Schema getSchemaObject(Node node, SemanticModel semanticModel, Project project) {
+        String description;
+        Node serviceNode;
+
+        if (node.kind() == SyntaxKind.SERVICE_DECLARATION) {
+            if (semanticModel.symbol(node).isEmpty()) {
+                return null;
+            }
+            ServiceDeclarationSymbol symbol = (ServiceDeclarationSymbol) semanticModel.symbol(node).get();
+            if (!hasGraphqlListener(symbol)) {
+                return null;
+            }
+            description = getDescription(symbol);
+            serviceNode = node;
+
+        } else if (node.kind() == SyntaxKind.MODULE_VAR_DECL) {
+            ModuleVariableDeclarationNode moduleVarDclNode = (ModuleVariableDeclarationNode) node;
+            if (!isGraphQLServiceObjectDeclaration(moduleVarDclNode)) {
+                return null;
+            }
+            if (moduleVarDclNode.initializer().isEmpty()) {
+                return null;
+            }
+            ExpressionNode expressionNode = moduleVarDclNode.initializer().get();
+            if (expressionNode.kind() != SyntaxKind.OBJECT_CONSTRUCTOR) {
+                return null;
+            }
+
+            serviceNode = expressionNode;
+            description = getDescription(semanticModel, moduleVarDclNode);
+
+        } else {
+            return null;
+        }
+
+        InterfaceEntityFinder interfaceFinder = new InterfaceEntityFinder();
+        interfaceFinder.populateInterfaces(semanticModel);
+        // isSubgraph field is now set to false as we don't support subgraph schema generation yet
+        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel,
+                project, description, false); // is subgraph is not set to false need to fix this
+
+        return schemaGenerator.generate();
     }
 }

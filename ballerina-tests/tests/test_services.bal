@@ -18,42 +18,6 @@ import ballerina/graphql;
 import ballerina/http;
 import ballerina/lang.runtime;
 
-graphql:Service invalidMaxQueryDepthService =
-@graphql:ServiceConfig {
-    maxQueryDepth: 0
-}
-service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
-graphql:Service invalidGraphiqlPathConfigService1 =
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: true,
-        path: "/ballerina graphql"
-    }
-}
-isolated service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
-graphql:Service invalidGraphiqlPathConfigService2 =
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: true,
-        path: "/ballerina_+#@#$!"
-    }
-}
-service object {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-};
-
 graphql:Service graphiqlDefaultPathConfigService =
 @graphql:ServiceConfig {
     graphiql: {
@@ -78,18 +42,6 @@ service object {
         return "Hello";
     }
 };
-
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: false,
-        path: "/ballerina graphql"
-    }
-}
-service /invalid_graphiql on basicListener {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-}
 
 @graphql:ServiceConfig {
     graphiql: {
@@ -168,46 +120,6 @@ service /fileUpload on basicListener {
     }
 }
 
-service /input_type_introspection on basicListener {
-    isolated resource function get name(string name = "Walter") returns string {
-        return name;
-    }
-
-    isolated resource function get subject(string? subject = "Chemistry") returns string {
-        return subject.toString();
-    }
-
-    isolated resource function get city(string city) returns string {
-        return city;
-    }
-
-    isolated resource function get street(string? street) returns string {
-        return street.toString();
-    }
-}
-
-service /validation on basicListener {
-    isolated resource function get name() returns string {
-        return "James Moriarty";
-    }
-
-    isolated resource function get birthdate() returns string {
-        return "15-05-1848";
-    }
-
-    isolated resource function get ids() returns int[] {
-        return [0, 1, 2];
-    }
-
-    isolated resource function get idsWithErrors() returns (int|error)[] {
-        return [0, 1, 2, error("Not Found!")];
-    }
-
-    isolated resource function get friends() returns (string|error)?[] {
-        return ["walter", "jessie", error("Not Found!")];
-    }
-}
-
 const float CONVERSION_KG_TO_LBS = 2.205;
 
 service /inputs on basicListener {
@@ -215,15 +127,15 @@ service /inputs on basicListener {
         return "Hello, " + name;
     }
 
+    isolated resource function get name(string name = "Walter") returns string {
+        return name;
+    }
+
     isolated resource function get isLegal(int age) returns boolean {
         if age < 21 {
             return false;
         }
         return true;
-    }
-
-    isolated resource function get quote() returns string {
-        return quote2;
     }
 
     isolated resource function get quoteById(int id = 0) returns string? {
@@ -270,9 +182,7 @@ service /inputs on basicListener {
     isolated resource function get \u{0076}ersion(string name) returns string {
         return name;
     }
-}
 
-service /decimal_inputs on basicListener {
     isolated resource function get convertDecimalToFloat(decimal value) returns float|error {
         return float:fromString(value.toString());
     }
@@ -584,23 +494,6 @@ service /timeoutService on timeoutListener {
 }
 
 @graphql:ServiceConfig {
-    maxQueryDepth: 2
-}
-service /depthLimitService on basicListener {
-    isolated resource function get greet() returns string {
-        return "Hello";
-    }
-
-    resource function get people() returns Person[] {
-        return people;
-    }
-
-    resource function get students() returns Student[] {
-        return students;
-    }
-}
-
-@graphql:ServiceConfig {
     cors: {
         allowOrigins: ["*"],
         allowCredentials: true,
@@ -757,6 +650,18 @@ service /special_types on specialTypesTestListener {
     resource function get month(Month month) returns string {
         return month;
     }
+
+    isolated resource function get ids() returns int[] {
+        return [0, 1, 2];
+    }
+
+    isolated resource function get idsWithErrors() returns (int|error)[] {
+        return [0, 1, 2, error("Not Found!")];
+    }
+
+    isolated resource function get friends() returns (string|error)?[] {
+        return ["walter", "jessie", error("Not Found!")];
+    }
 }
 
 service /snowtooth on serviceTypeListener {
@@ -890,32 +795,6 @@ service /union_type_names on serviceTypeListener {
 
     isolated resource function get nullableUndefinedUnionTypeArray() returns (StudentService|TeacherService)?[] {
         return [self.s, ()];
-    }
-}
-
-service /duplicates on basicListener {
-    isolated resource function get profile() returns Person {
-        return {
-            name: "Sherlock Holmes",
-            age: 40,
-            address: {number: "221/B", street: "Baker Street", city: "London"}
-        };
-    }
-
-    resource function get people() returns Person[] {
-        return people;
-    }
-
-    resource function get students() returns Student[] {
-        return students;
-    }
-
-    resource function get teacher() returns Person {
-        return p2;
-    }
-
-    resource function get student() returns Person {
-        return p4;
     }
 }
 
@@ -1514,7 +1393,7 @@ service /intercept_hierachical on basicListener {
 @graphql:ServiceConfig {
     interceptors: [new Destruct()]
 }
-service /intercept_service_obj_arrays on basicListener {
+service /intercept_service_obj_array1 on basicListener {
     resource function get students() returns StudentService[] {
         return [new StudentService(45, "Ron Weasly"), new StudentService(46, "Hermione Granger")];
     }
@@ -1532,7 +1411,7 @@ service /intercept_service_obj on basicListener {
 @graphql:ServiceConfig {
     interceptors: [new ServiceObjectInterceptor2()]
 }
-service /intercept_service_obj_array on basicListener {
+service /intercept_service_obj_array2 on basicListener {
     resource function get students() returns StudentService[] {
         return [new StudentService(45, "Ron Weasly"), new StudentService(46, "Hermione Granger")];
     }
@@ -1888,32 +1767,6 @@ service /maps on basicListener {
 
     isolated resource function get languages() returns Languages {
         return self.languages;
-    }
-}
-
-@graphql:ServiceConfig {
-    introspection: false
-}
-service /introspection on basicListener {
-
-    private Person p;
-
-    isolated function init() {
-        self.p = p2.clone();
-    }
-
-    isolated resource function get person() returns Person {
-        lock {
-            return self.p;
-        }
-    }
-
-    isolated remote function setName(string name) returns Person {
-        lock {
-            Person p = {name: name, age: self.p.age, address: self.p.address};
-            self.p = p;
-            return self.p;
-        }
     }
 }
 

@@ -1,0 +1,3 @@
+query {
+    isHoliday(weekday: "SUNDAY")
+}

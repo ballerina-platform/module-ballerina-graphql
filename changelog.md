@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#4120] Add support to GraphQL design view by updating the schema](https://github.com/ballerina-platform/ballerina-standard-library/issues/4120)
+
+## [1.6.0] - 2023-02-20
+
+### Added
 - [[#3569] Support Multiplexing with graphql-ws Subprotocol](https://github.com/ballerina-platform/ballerina-standard-library/issues/3569)
 - [[#3942] Add Functionality to Send Ping Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3942)
 - [[#3943] Add Functionality to Check for Pong Messages Periodically](https://github.com/ballerina-platform/ballerina-standard-library/issues/3943)

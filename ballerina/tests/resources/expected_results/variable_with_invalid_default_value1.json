@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable \"userName\" expected value of type \"String\", found 3",
+        "locations": [
+            {
+                "line": 1,
+                "column": 35
+            }
+        ]
+    }
+]

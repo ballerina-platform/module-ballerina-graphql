@@ -1,0 +1,3 @@
+query ($prices: [[Float!]!] = [[], [4, 5], [null], null]) {
+    getTotal(prices: $prices)
+}

@@ -4,8 +4,8 @@
             "message": "Invalid return type in Interceptor \"InvalidInterceptor4\". Expected type [String!]!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 3
+                    "line": 2,
+                    "column": 5
                 }
             ],
             "path": [
@@ -16,8 +16,8 @@
             "message": "Invalid return type in Interceptor \"InvalidInterceptor3\". Expected type [String!]!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 3
+                    "line": 2,
+                    "column": 5
                 }
             ],
             "path": [

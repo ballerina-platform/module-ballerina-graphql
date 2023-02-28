@@ -1,0 +1,15 @@
+{
+    "data": {
+        "getSuggestions": [
+            {
+                "movieName": "Escape Plan"
+            },
+            {
+                "movieName": "Papillon"
+            },
+            {
+                "movieName": "The Fugitive"
+            }
+        ]
+    }
+}

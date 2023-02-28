@@ -18,415 +18,75 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    groups: ["interceptors"]
+    groups: ["interceptors"],
+    dataProvider: dataProviderInterceptors
 }
-isolated function testInterceptors() returns error? {
-    string document = string `{ enemy }`;
-    string url = "http://localhost:9091/intercept_string";
+isolated function testInterceptors(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data:{
-            enemy: "Tom Marvolo Riddle - voldemort"
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["interceptors", "service"]
-}
-isolated function testInterceptorsWithServiceObjects() returns error? {
-    string document = string `{ teacher{ id, name, subject }}`;
-    string url = "http://localhost:9091/intercept_service_obj";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_service_object.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "array"]
-}
-isolated function testInterceptorsWithArrays() returns error? {
-    string document = string `{ houses }`;
-    string url = "http://localhost:9091/intercept_arrays";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_arrays.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "records"]
-}
-isolated function testInterceptorsWithRecords() returns error? {
-    string document = string `{ profile{ name, address{ number, street }}}`;
-    string url = "http://localhost:9091/intercept_records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_records.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "enums"]
-}
-isolated function testInterceptorsWithEnums() returns error? {
-    string document = string `{ holidays }`;
-    string url = "http://localhost:9091/intercept_enum";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            holidays: [SATURDAY, SUNDAY, MONDAY, TUESDAY]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "union"]
-}
-isolated function testInterceptorsWithUnion() returns error? {
-    string document = string `{ profile(id: 4){ ...on StudentService{ id, name }}}`;
-    string url = "http://localhost:9092/intercept_unions";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                id: 3,
-                name: "Minerva McGonagall"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testExecuteSameInterceptorMultipleTimes() returns error? {
-    string document = string `{ age }`;
-    string url = "http://localhost:9091/intercept_int";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data:{
-            age: 26
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorWithDestructiveModification1() returns error? {
-    string document = string `{ students{ id, name }}`;
-    string url = "http://localhost:9091/intercept_service_obj_arrays";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            students: [
-                {
-                    id: 3,
-                    name: "Minerva McGonagall"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsWithDestructiveModification2() returns error? {
-    string document = string `{ students{ id, name }}`;
-    string url = "http://localhost:9091/intercept_service_obj_array";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            students: ["Ballerina","GraphQL"]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsWithHierarchicalPaths() returns error? {
-    string document = string `{ name{ first, last } }`;
-    string url = "http://localhost:9091/intercept_hierachical";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            name: {
-                first: "Harry",
-                last: "Potter"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "fragments"]
-}
-isolated function testInterceptorsWithFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("interceptors_with_fragments.graphql");
-    string url = "http://localhost:9091/intercept_service_obj";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_service_object.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "mutation"]
-}
-isolated function testInterceptorWithMutation() returns error? {
-    string document = string `mutation { setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9091/mutation_interceptor";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            setName: {
-                name: "Albus Percival Wulfric Brian Dumbledore"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsWithInvalidDestructiveModification1() returns error? {
-    string document = string `{ age }`;
-    string url = "http://localhost:9091/invalid_interceptor1";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsWithInvalidDestructiveModification2() returns error? {
-    string document = string `{ friends }`;
-    string url = "http://localhost:9091/invalid_interceptor2";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsWithInvalidDestructiveModification3() returns error? {
-    string document = string `{ person { name, address{ city }}}`;
-    string url = "http://localhost:9091/invalid_interceptor3";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification3.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsWithInvalidDestructiveModification4() returns error? {
-    string document = string `{ student{ id, name }}`;
-    string url = "http://localhost:9091/invalid_interceptor4";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_with_invalid_destructive_modification4.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturningError1() returns error? {
-    string document = string `{ greet }`;
-    string url = "http://localhost:9091/intercept_errors1";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturningError2() returns error? {
-    string document = string `{ friends }`;
-    string url = "http://localhost:9091/intercept_errors2";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error2.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturningError3() returns error? {
-    string document = string `{ person{ name, age } }`;
-    string url = "http://localhost:9091/intercept_errors3";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_error3.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorExecutionOrder() returns error? {
-    string document = string `{ quote }`;
-    string url = "http://localhost:9091/intercept_order";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            quote: "Ballerina is an open-source programming language."
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "hierarchical_paths"]
-}
-isolated function testInterceptorsReturningErrorsWithHierarchicalResources() returns error? {
-    string document = string `{ name, age, address{city, street, number}}`;
-    string url = "http://localhost:9091/intercept_erros_with_hierarchical";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_errors_with_hierarchical_resources.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturningNullValues1() returns error? {
-    string document = string `{ name }`;
-    string url = "http://localhost:9091/interceptors_with_null_values1";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            name: null
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturningNullValues2() returns error? {
-    string document = string `{ name }`;
-    string url = "http://localhost:9091/interceptors_with_null_values2";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            name: null
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors"]
-}
-isolated function testInterceptorsReturningInvalidValue() returns error? {
-    string document = string `{ name }`;
-    string url = "http://localhost:9091/interceptors_with_null_values3";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("interceptors_returning_invalid_value.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "records"]
-}
-isolated function testInterceptorsWithRecordFields() returns error? {
-    string document = string `{ profile{ name, age, address{ number, street, city }}}`;
-    string url = "http://localhost:9091/intercept_record_fields";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Albus Percival Wulfric Brian Dumbledore",
-                age: 80,
-                address: {
-                    number: "100",
-                    street: "Margo Street",
-                    city: "London"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "records", "fragments"]
-}
-isolated function testInterceptorsWithRecordFieldsAndFragments() returns error? {
-    string document = string `{ profile{ name, age, ...P1 }} fragment P1 on Person{ address{ number, street, city }}`;
-    string url = "http://localhost:9091/intercept_record_fields";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Albus Percival Wulfric Brian Dumbledore",
-                age: 80,
-                address: {
-                    number: "100",
-                    street: "Margo Street",
-                    city: "London"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "map"]
-}
-isolated function testInterceptorsWithMap() returns error? {
-    string document = check getGraphQLDocumentFromFile("interceptors_with_map.graphql");
-    string url = "http://localhost:9091/intercept_map";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data:{
-            languages:{
-                backend: "Java",
-                frontend: "Flutter",
-                data: "Ballerina",
-                native: "C#"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["interceptors", "table"]
-}
-isolated function testInterceptorsWithTables() returns error? {
-    string document = "{ employees { name } }";
-    string url = "http://localhost:9091/intercept_table";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            employees: [
-                {
-                    name: "Eng. John Doe"
-                },
-                {
-                    name: "Eng. Jane Doe"
-                },
-                {
-                    name: "Eng. Johnny Roe"
-                }
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+function dataProviderInterceptors() returns string[][] {
+    string url1 = "http://localhost:9091/intercept_service_obj";
+    string url2 = "http://localhost:9091/intercept_arrays";
+    string url3 = "http://localhost:9091/intercept_records";
+    string url4 = "http://localhost:9091/invalid_interceptor1";
+    string url5 = "http://localhost:9091/invalid_interceptor2";
+    string url6 = "http://localhost:9091/invalid_interceptor3";
+    string url7 = "http://localhost:9091/invalid_interceptor4";
+    string url8 = "http://localhost:9091/intercept_errors1";
+    string url9 = "http://localhost:9091/intercept_errors2";
+    string url10 = "http://localhost:9091/intercept_errors3";
+    string url11 = "http://localhost:9091/intercept_erros_with_hierarchical";
+    string url12 = "http://localhost:9091/interceptors_with_null_values3";
+    string url13 = "http://localhost:9091/intercept_enum";
+    string url14 = "http://localhost:9091/intercept_int";
+    string url15 = "http://localhost:9091/intercept_order";
+    string url16 = "http://localhost:9091/intercept_hierachical";
+    string url17 = "http://localhost:9091/mutation_interceptor";
+    string url18 = "http://localhost:9091/interceptors_with_null_values1";
+    string url19 = "http://localhost:9091/interceptors_with_null_values1";
+    string url20 = "http://localhost:9091/intercept_record_fields";
+    string url21 = "http://localhost:9091/intercept_map";
+    string url22 = "http://localhost:9091/intercept_table";
+    string url23 = "http://localhost:9091/intercept_string";
+    string url24 = "http://localhost:9091/intercept_service_obj_array1";
+    string url25 = "http://localhost:9091/intercept_service_obj_array2";
+    string url26 = "http://localhost:9092/intercept_unions";
+    
+    return [
+        [url1, "interceptors_with_service_object"],
+        [url2, "interceptors_with_arrays"],
+        [url3, "interceptors_with_records"],
+        [url4, "interceptors_with_invalid_destructive_modification1"],
+        [url5, "interceptors_with_invalid_destructive_modification2"],
+        [url6, "interceptors_with_invalid_destructive_modification3"],
+        [url7, "interceptors_with_invalid_destructive_modification4"],
+        [url8, "interceptors_returning_error1"],
+        [url9, "interceptors_returning_error2"],
+        [url10, "interceptors_returning_error3"],
+        [url11, "interceptors_returning_errors_with_hierarchical_resources"],
+        [url12, "interceptors_returning_invalid_value"],
+        [url1, "interceptors_with_fragments"],
+        [url13, "interceptors_with_enum"],
+        [url14, "duplicate_interceptors"],
+        [url15, "interceptor_execution_order"],
+        [url16, "interceptors_with_hierarchical_paths"],
+        [url17, "interceptors_with_mutation"],
+        [url18, "interceptors_with_null_value1"],
+        [url19, "interceptors_with_null_value2"],
+        [url20, "interceptors_with_record_fields"],
+        [url20, "interceptors_with_records_and_fragments"],
+        [url21, "interceptors_with_map"],
+        [url22, "interceptors_with_table"],
+        [url23, "interceptors"],
+        [url24, "interceptors_with_destructive_modification1"],
+        [url25, "interceptors_with_destructive_modification2"],
+        [url26, "interceptors_with_union"],
+        [url14, "execute_same_interceptor_multiple_times"]
+    ];
 }
 
 @test:Config {
@@ -455,7 +115,7 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
     groups: ["interceptors", "subscriptions", "records"]
 }
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_records.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_records");
     string url = "ws://localhost:9099/subscription_interceptor2";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -471,7 +131,7 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
     groups: ["interceptors", "fragments", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_fragments.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_fragments");
     string url = "ws://localhost:9099/subscription_interceptor3";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -487,7 +147,7 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
-    string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    string document = check getGraphqlDocumentFromFile("subscriptions_with_union_type");
     string url = "ws://localhost:9099/subscription_interceptor4";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -614,7 +274,7 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
-    final string document = check getGraphQLDocumentFromFile("subscriptions_with_union_type.graphql");
+    final string document = check getGraphqlDocumentFromFile("subscriptions_with_union_type");
     string url = "ws://localhost:9099/subscription_interceptor4";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     final websocket:Client wsClient1 = check new (url, config);

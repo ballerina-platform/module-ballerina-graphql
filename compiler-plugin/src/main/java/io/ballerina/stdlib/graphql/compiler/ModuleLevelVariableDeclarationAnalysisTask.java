@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
@@ -65,25 +66,24 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
             return;
         }
         ObjectConstructorExpressionNode graphqlServiceObjectNode = (ObjectConstructorExpressionNode) expressionNode;
-        InterfaceEntityFinder interfaceEntityFinder = getInterfaceFinder(context);
+        InterfaceEntityFinder interfaceEntityFinder = getInterfaceFinder(context.semanticModel());
         ServiceValidator serviceObjectValidator = getServiceValidator(context, graphqlServiceObjectNode,
                                                                       interfaceEntityFinder);
         if (serviceObjectValidator.isErrorOccurred()) {
             return;
         }
-
-        String description = getDescription(context, moduleVariableDeclarationNode);
+        String description = getDescription(context.semanticModel(), moduleVariableDeclarationNode);
         Schema schema = generateSchema(context, interfaceEntityFinder, graphqlServiceObjectNode, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, moduleVariableDeclarationNode, schema);
     }
 
-    String getDescription(SyntaxNodeAnalysisContext context,
+    public static String getDescription(SemanticModel semanticModel,
                           ModuleVariableDeclarationNode moduleVariableDeclarationNode) {
-        if (context.semanticModel().symbol(moduleVariableDeclarationNode).isEmpty()) {
+        if (semanticModel.symbol(moduleVariableDeclarationNode).isEmpty()) {
             return null;
         }
-        VariableSymbol serviceVariableSymbol = (VariableSymbol) context.semanticModel()
+        VariableSymbol serviceVariableSymbol = (VariableSymbol) semanticModel
                 .symbol(moduleVariableDeclarationNode).get();
         return GeneratorUtils.getDescription(serviceVariableSymbol);
     }

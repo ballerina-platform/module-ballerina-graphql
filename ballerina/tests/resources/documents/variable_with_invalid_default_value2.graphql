@@ -1,0 +1,3 @@
+query($weight:Float = "Walter") {
+    weightInPounds(weightInKg:$weight)
+}

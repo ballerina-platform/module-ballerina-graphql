@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.service;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
@@ -25,7 +26,6 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,8 +54,8 @@ public class InterfaceEntityFinder {
         this.entities = new HashMap<>();
     }
 
-    public void populateInterfaces(SyntaxNodeAnalysisContext context) {
-        for (Symbol symbol : context.semanticModel().moduleSymbols()) {
+    public void populateInterfaces(SemanticModel semanticModel) {
+        for (Symbol symbol : semanticModel.moduleSymbols()) {
             if (symbol.getName().isEmpty()) {
                 continue;
             }

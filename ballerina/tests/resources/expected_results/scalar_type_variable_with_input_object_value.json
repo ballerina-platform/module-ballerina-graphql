@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable \"age\" expected value of type \"Int!\", found {}",
+        "locations": [
+            {
+                "line": 1,
+                "column": 20
+            }
+        ]
+    }
+]

@@ -1,0 +1,31 @@
+{
+    "errors": [
+        {
+            "message": "prices: In element #0: In element #2:Float cannot represent non Float value: d",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 30
+                }
+            ]
+        },
+        {
+            "message": "prices: In element #1: In element #3:Float cannot represent non Float value: is",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 44
+                }
+            ]
+        },
+        {
+            "message": "prices: In element #2: In element #4:Float cannot represent non Float value: true",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 65
+                }
+            ]
+        }
+    ]
+}

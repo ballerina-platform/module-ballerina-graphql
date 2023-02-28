@@ -1,0 +1,11 @@
+[
+    {
+        "message": "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __type.",
+        "locations": [
+            {
+                "line": 5,
+                "column": 5
+            }
+        ]
+    }
+]

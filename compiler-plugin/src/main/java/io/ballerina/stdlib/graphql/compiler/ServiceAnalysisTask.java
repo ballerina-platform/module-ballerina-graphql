@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
@@ -26,6 +27,7 @@ import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
@@ -63,17 +65,19 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         return serviceValidator;
     }
 
-    public InterfaceEntityFinder getInterfaceFinder(SyntaxNodeAnalysisContext context) {
+    public InterfaceEntityFinder getInterfaceFinder(SemanticModel semanticModel) {
         InterfaceEntityFinder interfaceEntityFinder = new InterfaceEntityFinder();
-        interfaceEntityFinder.populateInterfaces(context);
+        interfaceEntityFinder.populateInterfaces(semanticModel);
         return interfaceEntityFinder;
     }
 
     public Schema generateSchema(SyntaxNodeAnalysisContext context, InterfaceEntityFinder interfaceEntityFinder,
                                  Node node, String description) {
         boolean isSubgraph = nodeSubgraphMap.get(node);
-        SchemaGenerator schemaGenerator = new SchemaGenerator(context, node, interfaceEntityFinder, description,
-                                                              isSubgraph);
+        SemanticModel semanticModel = context.semanticModel();
+        Project project = context.currentPackage().project();
+        SchemaGenerator schemaGenerator = new SchemaGenerator(node, interfaceEntityFinder, semanticModel, project,
+                                                              description, isSubgraph);
         return schemaGenerator.generate();
     }
 

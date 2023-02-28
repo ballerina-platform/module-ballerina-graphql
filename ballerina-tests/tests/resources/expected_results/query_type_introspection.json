@@ -5,19 +5,22 @@
                 "kind": "OBJECT",
                 "fields": [
                     {
-                        "name": "name"
+                        "name": "detective"
                     },
                     {
-                        "name": "birthdate"
+                        "name": "teacher"
                     },
                     {
-                        "name": "ids"
+                        "name": "student"
                     },
                     {
-                        "name": "idsWithErrors"
+                        "name": "profile"
                     },
                     {
-                        "name": "friends"
+                        "name": "people"
+                    },
+                    {
+                        "name": "students"
                     }
                 ]
             }

@@ -1,0 +1,3 @@
+query($userName:String!, $extra:Int) {
+    greet(name: $userName)
+}

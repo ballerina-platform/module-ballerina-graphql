@@ -1,0 +1,3 @@
+query getSubTotal{
+    getSubTotal(items: [{ name: "soap", price: 64.5555332 }, { name: "sugar", price: 154 }])
+}

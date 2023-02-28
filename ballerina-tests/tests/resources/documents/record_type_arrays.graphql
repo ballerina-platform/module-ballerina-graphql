@@ -1,0 +1,8 @@
+{
+    people {
+        name
+        address {
+            city
+        }
+    }
+}

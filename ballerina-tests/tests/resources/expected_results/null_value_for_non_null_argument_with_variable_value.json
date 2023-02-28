@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Variable name expected value of type \"String!\", found null",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 18
+                }
+            ]
+        }
+    ]
+}

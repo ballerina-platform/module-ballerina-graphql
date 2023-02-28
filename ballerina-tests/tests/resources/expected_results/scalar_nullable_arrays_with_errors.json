@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "Not Found!",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": ["friends", 2]
+        }
+    ],
+    "data": {
+        "friends": ["walter", "jessie", null]
+    }
+}

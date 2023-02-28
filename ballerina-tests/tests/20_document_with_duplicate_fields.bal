@@ -17,44 +17,23 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["duplicate", "records"]
+    groups: ["duplicate"],
+    dataProvider: dataProviderDuplicateFields
 }
-isolated function testDuplicateFieldWithResourceReturningRecord() returns error? {
-    string document = check getGraphQLDocumentFromFile("duplicate_fields_with_record_types.graphql");
-    string url = "http://localhost:9091/duplicates";
+isolated function testDuplicateFields(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Sherlock Holmes",
-                address: {
-                    city: "London",
-                    street: "Baker Street"
-                }
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["duplicate", "fragments"]
-}
-isolated function testNamedFragmentsWithDuplicateFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("named_fragments_with_duplicate_fields.graphql");
-    string url = "http://localhost:9091/duplicates";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("named_fragments_with_duplicate_fields.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderDuplicateFields() returns string[][] {
+    string url1 = "http://localhost:9094/profiles";
+    string url2 = "http://localhost:9091/records";
 
-@test:Config {
-    groups: ["duplicate", "fragments", "inline"]
-}
-isolated function testDuplicateInlineFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("duplicate_inline_fragments.graphql");
-    string url = "http://localhost:9091/duplicates";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = check getJsonContentFromFile("duplicate_inline_fragments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "duplicate_fields_with_record_types"],
+        [url2, "named_fragments_with_duplicate_fields"],
+        [url2, "duplicate_inline_fragments"]
+    ];
 }

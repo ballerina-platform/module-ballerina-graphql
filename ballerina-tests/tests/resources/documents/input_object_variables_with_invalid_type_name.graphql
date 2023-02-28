@@ -1,0 +1,5 @@
+($profile: Details!) {
+    searchProfile(profileDetail: $profile) {
+        name
+    }
+}

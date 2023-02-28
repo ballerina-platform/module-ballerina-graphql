@@ -17,125 +17,29 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["maps"]
+    groups: ["maps"],
+    dataProvider: dataProviderMaps
 }
-isolated function testMap() returns error? {
-    string document = string`query { company { workers(key: "id1") { name } } }`;
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            company: {
-                workers: {
-                    name: "John Doe"
-                }
-            }
-        }
+isolated function testMap(string url, string resourceFileName, json variables = ()) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+function dataProviderMaps() returns map<[string, string, json]> {
+    string url1 = "http://localhost:9095/special_types";
+    string url2 = "http://localhost:9091/maps";
+    string url3 = "http://localhost:9090/reviews";
+
+    map<[string, string, json ]> dataSet = {
+        "1": [url1, "map"],
+        "2": [url1, "nested_map"],
+        "3": [url1, "map_without_key_input"],
+        "4": [url1, "nested_map_without_key_input"],
+        "5": [url2, "map_with_valid_key", {purpose: "backend"}],
+        "6": [url2, "map_with_invalid_key", {purpose: "desktop"}],
+        "7": [url3, "resolver_returning_map_of_service_objects"]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["maps"]
-}
-isolated function testNestedMap() returns error? {
-    string document = string`query { company { workers(key: "id3") { contacts(key: "home") { number } } } }`;
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            company: {
-                workers: {
-                    contacts: {
-                        number: "+94771234567"
-                    }
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["maps"]
-}
-isolated function testMapWithoutKeyInput() returns error? {
-    string document = string`query { company { workers { name } } }`;
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    string message = string`Field "workers" argument "key" of type "String!" is required, but it was not provided.`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: message,
-                locations: [
-                    {
-                        line: 1,
-                        column: 19
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["maps"]
-}
-isolated function testNestedMapWithoutKeyInput() returns error? {
-    string document = string`query { company { workers(key: "w1") { contacts } } }`;
-    string url = "http://localhost:9095/special_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("nested_map_without_key_input.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["maps"]
-}
-isolated function testMapWithValidKey() returns error? {
-    string document = check getGraphQLDocumentFromFile("map_with_valid_key.graphql");
-    json variables = {purpose: "backend"};
-    string url = "http://localhost:9091/maps";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = {
-        data: {
-            languages: {
-                backend: "Ballerina"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["maps"]
-}
-isolated function testMapWithInvalidKey() returns error? {
-    string document = check getGraphQLDocumentFromFile("map_with_invalid_key.graphql");
-    json variables = {purpose: "desktop"};
-    string url = "http://localhost:9091/maps";
-    json actualPayload = check getJsonPayloadFromService(url, document, variables = variables);
-    json expectedPayload = check getJsonContentFromFile("map_with_invalid_key.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["maps"]
-}
-isolated function testResolverReturningMapOfServiceObjects() returns error? {
-    string document = string`query { account { details(key: "acc1") { name } } }`;
-    string url = "http://localhost:9090/reviews";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            account: {
-                details: {
-                    name: "James"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

@@ -1,6 +1,11 @@
-query getName {
-    name
+query getDetective {
+    detective {
+        name
+    }
 }
-query getBirthdate {
-    birthdate
+
+query getAge {
+    teacher {
+        age
+    }
 }

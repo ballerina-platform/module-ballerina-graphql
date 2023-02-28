@@ -1,0 +1,15 @@
+[
+    {
+        "message": "There can be only one fragment named \"Quote\".",
+        "locations": [
+            {
+                "line": 5,
+                "column": 1
+            },
+            {
+                "line": 9,
+                "column": 1
+            }
+        ]
+    }
+]

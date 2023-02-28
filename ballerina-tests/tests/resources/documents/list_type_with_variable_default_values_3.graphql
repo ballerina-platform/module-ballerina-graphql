@@ -1,0 +1,3 @@
+query ($words: [String] = [null, null, "Hello", "GraphQL"]) {
+    concat(words: $words)
+}

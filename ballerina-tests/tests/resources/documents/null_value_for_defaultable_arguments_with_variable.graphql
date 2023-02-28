@@ -1,0 +1,5 @@
+mutation($name: String) {
+    profile(name: $name) {
+        name
+    }
+}

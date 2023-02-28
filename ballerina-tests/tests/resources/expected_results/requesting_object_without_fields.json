@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"profile\" of type \"Person!\" must have a selection of subfields. Did you mean \"profile { ... }\"?",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

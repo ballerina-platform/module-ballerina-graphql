@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Cannot query field \"__schema\" on type \"Person\".",
+            "locations": [
+                {
+                    "line": 4,
+                    "column": 9
+                }
+            ]
+        }
+    ]
+}

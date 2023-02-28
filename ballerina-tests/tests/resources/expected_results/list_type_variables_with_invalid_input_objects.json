@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "tvSeries: In element #1:[Episode!] cannot represent non [Episode!] value: true",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 31
+                }
+            ]
+        }
+    ]
+}

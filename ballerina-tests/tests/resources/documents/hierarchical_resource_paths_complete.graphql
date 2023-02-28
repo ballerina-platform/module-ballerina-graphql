@@ -1,0 +1,9 @@
+{
+    profile {
+        name {
+            first
+            last
+        }
+        age
+    }
+}

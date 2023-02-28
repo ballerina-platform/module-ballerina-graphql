@@ -4,8 +4,8 @@
             "message": "String cannot represent non String value: 5",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 37
+                    "line": 2,
+                    "column": 40
                 }
             ]
         },
@@ -13,8 +13,8 @@
             "message": "Int cannot represent non Int value: Arthur",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 45
+                    "line": 2,
+                    "column": 48
                 }
             ]
         }

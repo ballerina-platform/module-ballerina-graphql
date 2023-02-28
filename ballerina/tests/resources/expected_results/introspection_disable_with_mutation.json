@@ -1,0 +1,11 @@
+[
+    {
+        "message": "GraphQL introspection is not allowed by the GraphQL Service, but the query contained __schema.",
+        "locations": [
+            {
+                "line": 2,
+                "column": 5
+            }
+        ]
+    }
+]

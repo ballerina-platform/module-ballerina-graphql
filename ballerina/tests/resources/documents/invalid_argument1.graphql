@@ -1,0 +1,3 @@
+query {
+    isLegal(id: 4)
+}

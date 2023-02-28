@@ -4,8 +4,8 @@
             "message": "Access denied!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 9
+                    "line": 3,
+                    "column": 5
                 }
             ],
             "path": [
@@ -16,8 +16,8 @@
             "message": "Access denied!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 28
+                    "line": 6,
+                    "column": 9
                 }
             ],
             "path": [
@@ -29,8 +29,8 @@
             "message": "Access denied!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 36
+                    "line": 7,
+                    "column": 9
                 }
             ],
             "path": [

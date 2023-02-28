@@ -17,190 +17,28 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["directives", "fragments", "input"]
+    groups: ["directives"],
+    dataProvider: dataProviderDirectives
 }
-isolated function testDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    last: "Holmes"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testUnknownDirectives() returns error? {
-    string document = check getGraphQLDocumentFromFile("unknown_directives.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("unknown_directives.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesInInvalidLocations1() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_in_invalid_locations1.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("directives_in_invalid_locations1.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "mutations", "input"]
-}
-isolated function testDirectivesInInvalidLocations2() returns error? {
-    string document = string`mutation @skip(if: false){ setName(name: "Heisenberg") { name } }`;
-    string url = "http://localhost:9091/mutations";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: "Directive \"skip\" may not be used on MUTATION.",
-                locations: [
-                    {
-                        line: 1,
-                        column: 10
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesWithoutArgument() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_without_argument.graphql");
-    string url = "http://localhost:9092/service_types";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("directives_without_argument.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesWithUnknownArguments() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_with_unknown_arguments.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("directives_with_unknown_arguments.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "fragments", "variables"]
-}
-isolated function testDirectivesWithVariablesAndFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_with_variables_and_fragments.graphql");
-    json variables = { optional: false  };
-    string url = "http://localhost:9091/records";
+isolated function testDirectives(string url, string resourceFileName, json variables) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Walter White",
-                address: {
-                    street: "Negra Arroyo Lane"
-                }
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["directives", "fragments", "variables"]
-}
-isolated function testDuplicateDirectivesInSameLocation() returns error? {
-    string document = check getGraphQLDocumentFromFile("duplicate_directives_in_same_location.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = check getJsonContentFromFile("duplicate_directives_in_same_location.json");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderDirectives() returns map<[string, string, json]> {
+    string url1 = "http://localhost:9092/service_types";
+    string url2 = "http://localhost:9091/records";
+    string url3 = "http://localhost:9092/service_objects";
 
-@test:Config {
-    groups: ["directives", "variables"]
-}
-isolated function testDirectivesWithDuplicateFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("directives_with_duplicate_fields.graphql");
-    string url = "http://localhost:9091/records";
-    json variables = { optional: false };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Walter White",
-                address: {
-                    number: "308"
-                }
-            }
-        }
+    map<[string, string, json]> dataSet = {
+        "1": [url1, "directives"],
+        "2": [url2, "directives_with_variables_and_fragments", { optional: false  }],
+        "3": [url2, "directives_with_duplicate_fields", { optional: false }],
+        "4": [url3, "directives_with_service_returning_objects_array"],
+        "5": [url2, "multiple_directive_usage_in_fields"],
+        "6": [url2, "directives_skip_all_selections"]
     };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "array", "service"]
-}
-isolated function testDirectivesWithServiceReturningObjectsArray() returns error? {
-    string graphqlUrl = "http://localhost:9092/service_objects";
-    string document = string `{ searchVehicles(keyword: "vehicle") { ...on Vehicle { id @skip(if: true) } } }`;
-    json actualPayload = check getJsonPayloadFromService(graphqlUrl, document);
-    json expectedPayload = {
-        data: {
-            searchVehicles: [
-                {},
-                {},
-                {}
-            ]
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testDirectivesSkipAllSelections() returns error? {
-    string document = string`query getData { profile(id: 1) @skip(if: true) { name } }`;
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {}
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["directives", "input"]
-}
-isolated function testMultipleDirectiveUsageInFields() returns error? {
-    string document = check getGraphQLDocumentFromFile("multiple_directive_usage_in_fields.graphql");
-    string url = "http://localhost:9091/records";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            detective: {
-                address: {
-                    street: "Baker Street"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

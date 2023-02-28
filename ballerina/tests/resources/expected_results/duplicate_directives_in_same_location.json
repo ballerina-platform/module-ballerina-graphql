@@ -1,0 +1,41 @@
+[
+    {
+        "message": "The directive \"skip\" can only be used once at this location.",
+        "locations": [
+            {
+                "line": 3,
+                "column": 32
+            },
+            {
+                "line": 3,
+                "column": 49
+            }
+        ]
+    },
+    {
+        "message": "The directive \"include\" can only be used once at this location.",
+        "locations": [
+            {
+                "line": 5,
+                "column": 22
+            },
+            {
+                "line": 5,
+                "column": 41
+            }
+        ]
+    },
+    {
+        "message": "The directive \"skip\" can only be used once at this location.",
+        "locations": [
+            {
+                "line": 14,
+                "column": 14
+            },
+            {
+                "line": 14,
+                "column": 30
+            }
+        ]
+    }
+]

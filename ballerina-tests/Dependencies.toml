@@ -66,7 +66,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.6.0"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
@@ -93,7 +93,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_tests"
-version = "1.6.0"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "graphql"},
@@ -114,7 +114,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -279,13 +279,14 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "oauth2"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "time"}
+	{org = "ballerina", name = "time"},
+	{org = "ballerina", name = "url"}
 ]
 
 [[package]]

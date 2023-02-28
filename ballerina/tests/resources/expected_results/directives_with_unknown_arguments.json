@@ -1,0 +1,83 @@
+[
+    {
+        "message": "Directive \"include\" may not be used on QUERY.",
+        "locations": [
+            {
+                "line": 1,
+                "column": 17
+            }
+        ]
+    },
+    {
+        "message": "Unknown argument \"id\" on directive \"include\".",
+        "locations": [
+            {
+                "line": 1,
+                "column": 26
+            }
+        ]
+    },
+    {
+        "message": "Directive \"include\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+        "locations": [
+            {
+                "line": 1,
+                "column": 17
+            }
+        ]
+    },
+    {
+        "message": "Unknown argument \"name\" on directive \"skip\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 30
+            }
+        ]
+    },
+    {
+        "message": "Unknown argument \"day\" on directive \"skip\".",
+        "locations": [
+            {
+                "line": 3,
+                "column": 20
+            }
+        ]
+    },
+    {
+        "message": "Directive \"skip\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+        "locations": [
+            {
+                "line": 3,
+                "column": 14
+            }
+        ]
+    },
+    {
+        "message": "Unknown argument \"value\" on directive \"include\".",
+        "locations": [
+            {
+                "line": 3,
+                "column": 41
+            }
+        ]
+    },
+    {
+        "message": "Unknown argument \"id\" on directive \"include\".",
+        "locations": [
+            {
+                "line": 6,
+                "column": 29
+            }
+        ]
+    },
+    {
+        "message": "Directive \"include\" argument \"if\" of type\"Boolean!\" is required but not provided.",
+        "locations": [
+            {
+                "line": 6,
+                "column": 20
+            }
+        ]
+    }
+]

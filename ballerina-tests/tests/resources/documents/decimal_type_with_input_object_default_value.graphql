@@ -1,0 +1,3 @@
+query getSubTotalWithDefaultValue($items: [Item!] = [{ name: "soap", price: 64.5555332 }, { name: "sugar", price: 154 }]){
+    getSubTotal(items: $items)
+}
