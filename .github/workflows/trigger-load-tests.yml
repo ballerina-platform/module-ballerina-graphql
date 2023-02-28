@@ -26,5 +26,5 @@ jobs:
             cluster_name: ${{ inputs.clusterName }}
             tests: ${{ inputs.tests }}
             branch: ${{ inputs.branch }}
-            secrets:
-                ballerina_bot_token: ${{ secrets.BALLERINA_BOT_TOKEN }}
+        secrets:
+            ballerina_bot_token: ${{ secrets.BALLERINA_BOT_TOKEN }}
