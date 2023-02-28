@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/graphql;
+import ballerina/graphql.subgraph;
 
-@graphql:Entity {
+@subgraph:Entity {
     key: "name",
-    resolveReference: function(graphql:Representation representation) returns Star|error {
+    resolveReference: function(subgraph:Representation representation) returns Star|error {
         string name = check representation["name"].ensureType();
         return findStarByName(name);
     }
@@ -60,9 +60,9 @@ function findStarByName(string name) returns Star|error {
     return trap stars.filter(star => star.getName() == name).shift();
 }
 
-@graphql:Entity {
+@subgraph:Entity {
     key: ["name", "id"],
-    resolveReference: function(graphql:Representation representation) returns Planet? {
+    resolveReference: function(subgraph:Representation representation) returns Planet? {
         do {
             string name = check representation["name"].ensureType();
             return check findPlanetByName(name);
@@ -89,7 +89,7 @@ function findPlanetByName(string name) returns Planet|error {
     return trap planets.filter(planet => planet.name == name).shift();
 }
 
-@graphql:Entity {
+@subgraph:Entity {
     key: "name",
     resolveReference: ()
 }
@@ -98,9 +98,9 @@ public type Moon record {
 };
 
 // This entity has invalid resolveReference return type - (ie. doesn't return Satellite)
-@graphql:Entity {
+@subgraph:Entity {
     key: "name",
-    resolveReference: function(graphql:Representation representation) returns record {} {
+    resolveReference: function(subgraph:Representation representation) returns record {} {
         return {};
     }
 }

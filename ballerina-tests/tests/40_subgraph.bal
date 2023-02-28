@@ -34,7 +34,7 @@ isolated function testSubgrapWithValidQuery() returns error? {
     groups: ["federation", "subgraph", "entity"]
 }
 isolated function testQueringEntityFieldOnSubgraph() returns error? {
-    string document = check getGraphQLDocumentFromFile("quering_entity_field_on_subgrap.graphql");
+    string document = check getGraphQLDocumentFromFile("querying_entity_field_on_subgraph.graphql");
     string url = "localhost:9088/subgraph";
     graphql:Client graphqlClient = check new (url);
     json response = check graphqlClient->execute(document);
@@ -368,7 +368,7 @@ function testAttachingSubgraphServiceToDynamicListener() returns error? {
     check specialTypesTestListener.attach(subgraphServivce, "subgraph");
     string url = "http://localhost:9095/subgraph";
     graphql:Client graphqlClient = check new (url);
-    string document = check getGraphQLDocumentFromFile("quering_entity_field_on_subgrap.graphql");
+    string document = check getGraphQLDocumentFromFile("querying_entity_field_on_subgraph.graphql");
     json response = check graphqlClient->execute(document);
     json expectedPayload = {
         data: {

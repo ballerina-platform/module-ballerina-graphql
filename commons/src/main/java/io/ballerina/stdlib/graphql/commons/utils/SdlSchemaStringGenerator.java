@@ -119,7 +119,7 @@ public class SdlSchemaStringGenerator {
         String directives = getDirectives();
         String types = getTypes();
         String schemaExtension = getFederationSchemaExtensionLink();
-        return getFormattedString(SCHEMA_FORMAT, schemaExtension, createTypeDescription(schema.getDescription()),
+        return getFormattedString(SCHEMA_FORMAT, schemaExtension, createTypeDescription(this.schema.getDescription()),
                                   directives, types);
     }
 
@@ -154,7 +154,7 @@ public class SdlSchemaStringGenerator {
 
     private String getDirectives() {
         List<String> directives = new ArrayList<>();
-        for (Directive directive : schema.getDirectives()) {
+        for (Directive directive : this.schema.getDirectives()) {
             if (!isDefaultDirective(directive)) {
                 directives.add(createDirective(directive));
             }
@@ -168,7 +168,7 @@ public class SdlSchemaStringGenerator {
 
     private String getTypes() {
         List<String> types = new ArrayList<>();
-        for (Map.Entry<String, Type> entry : schema.getTypes().entrySet()) {
+        for (Map.Entry<String, Type> entry : this.schema.getTypes().entrySet()) {
             if (!isIntrospectionType(entry.getValue()) && !isBuiltInScalarType(entry.getValue())) {
                 types.add(createType(entry.getValue()));
             }

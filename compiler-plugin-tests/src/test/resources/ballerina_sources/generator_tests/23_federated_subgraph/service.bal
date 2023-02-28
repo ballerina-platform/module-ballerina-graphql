@@ -15,17 +15,18 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/graphql.subgraph;
 
-@graphql:Subgraph
+@subgraph:Subgraph
 service on new graphql:Listener(4001) {
     resource function get greet() returns string {
         return "welcome";
     }
 }
 
-@graphql:Entity {
+@subgraph:Entity {
     key: "email",
-    resolveReference: isolated function(graphql:Representation representation) returns User? {
+    resolveReference: isolated function(subgraph:Representation representation) returns User? {
         return new;
     }
 }
@@ -39,9 +40,9 @@ distinct service class User {
     }
 }
 
-@graphql:Entity {
+@subgraph:Entity {
     key: "id",
-    resolveReference: isolated function(graphql:Representation representation) returns App? {
+    resolveReference: isolated function(subgraph:Representation representation) returns App? {
         return {id: 1, name: "Demo"};
     }
 }

@@ -40,6 +40,7 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 public class Utils {
 
     public static final String PACKAGE_NAME = "graphql";
+    public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
     public static final String PACKAGE_ORG = "ballerina";
     public static final String SERVICE_NAME = "Service";
 
@@ -79,12 +80,20 @@ public class Utils {
     }
 
     public static boolean isGraphqlModuleSymbol(Symbol symbol) {
+        return hasExpectedModuleName(symbol, PACKAGE_NAME, PACKAGE_ORG);
+    }
+
+    public static boolean isSubgraphModuleSymbol(Symbol symbol) {
+        return hasExpectedModuleName(symbol, SUBGRAPH_SUB_MODULE_NAME, PACKAGE_ORG);
+    }
+
+    private static boolean hasExpectedModuleName(Symbol symbol, String expectedModuleName, String expectedOrgName) {
         if (symbol.getModule().isEmpty()) {
             return false;
         }
         String moduleName = symbol.getModule().get().id().moduleName();
         String orgName = symbol.getModule().get().id().orgName();
-        return PACKAGE_NAME.equals(moduleName) && PACKAGE_ORG.equals(orgName);
+        return expectedModuleName.equals(moduleName) && expectedOrgName.equals(orgName);
     }
 
     public static boolean isGraphQLServiceObjectDeclaration(ModuleVariableDeclarationNode variableNode) {

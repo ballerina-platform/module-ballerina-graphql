@@ -13,14 +13,11 @@
 // KIND, either express or implied.  See the License for the
 // specific language gove
 
-import ballerina/graphql;
-import ballerina/graphql.subgraph;
-
-@subgraph:Subgraph
-service /subgraph on new graphql:Listener(9088) {
-    resource function get greet() returns string => "welcome";
-}
-
-public graphql:Service subgraphServivce = @subgraph:Subgraph service object {
-    resource function get greeting() returns string => "welcome";
+# Denotes the entity representation outlined in the federation specification.
+# + __typename - GraphQL typename field of the entity beign resolved
+public type Representation record {
+    string __typename;
 };
+
+# Represents the type of entity resolver
+public type ReferenceResolver function (Representation representation) returns record {}|service object {}|error?;

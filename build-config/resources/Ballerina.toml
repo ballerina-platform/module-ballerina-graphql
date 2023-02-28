@@ -3,6 +3,7 @@ org = "ballerina"
 name = "graphql"
 version = "@toml.version@"
 authors = ["Ballerina"]
+export=["graphql", "graphql.subgraph"]
 keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"

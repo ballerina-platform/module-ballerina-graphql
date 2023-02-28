@@ -55,7 +55,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isField;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isGraphqlModule;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isSubgraphModule;
 
 /**
  * This class processes the arguments passed to a GraphQL document to pass into Ballerina functions.
@@ -322,7 +322,7 @@ public class ArgumentHandler {
     }
 
     private boolean isRepresentationArgument(Type type) {
-        return TypeUtils.getReferredType(type).getTag() == TypeTags.RECORD_TYPE_TAG && isGraphqlModule(type)
+        return TypeUtils.getReferredType(type).getTag() == TypeTags.RECORD_TYPE_TAG && isSubgraphModule(type)
                 && type.getName().equals(REPRESENTATION_TYPENAME);
     }
 }

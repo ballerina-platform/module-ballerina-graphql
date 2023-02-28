@@ -15,6 +15,7 @@
 // under the License.
 
 import graphql.parser;
+import graphql.subgraph;
 
 class FieldValidatorVisitor {
     *ValidatorVisitor;
@@ -104,7 +105,7 @@ class FieldValidatorVisitor {
         if modifiedArgNode.isVariableDefinition() {
             self.validateVariableValue(argumentNode, schemaArg, fieldName);
             self.modifyArgumentNode(argumentNode, kind = getArgumentTypeIdentifierFromType(schemaArg.'type));
-        } else if getTypeKind(schemaArg.'type) == SCALAR && getOfTypeName(schemaArg.'type) == ANY {
+        } else if getTypeKind(schemaArg.'type) == SCALAR && getOfTypeName(schemaArg.'type) == subgraph:ANY {
             self.visistAnyValue(argumentNode, schemaArg);
         } else if modifiedArgNode.getKind() == parser:T_INPUT_OBJECT {
             self.visitInputObject(argumentNode, schemaArg, fieldName);
@@ -386,7 +387,7 @@ class FieldValidatorVisitor {
                     if listItemValue is () {
                         string expectedTypeName = getOfTypeName(listItemInputValue.'type);
                         self.validateArgumentValue(listItemValue, location, expectedTypeName, listItemInputValue);
-                    } else if getOfTypeName(listItemInputValue.'type) == ANY {
+                    } else if getOfTypeName(listItemInputValue.'type) == subgraph:ANY {
                         self.validateAnyScalarVariable(listItemValue, location, listItemInputValue);
                     } else if listItemValue is Scalar {
                         if getOfType(listItemInputValue.'type).kind == ENUM {

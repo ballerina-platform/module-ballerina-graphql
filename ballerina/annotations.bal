@@ -38,17 +38,3 @@ public type GraphqlServiceConfig record {|
 # The annotation to configure a GraphQL service.
 public annotation GraphqlServiceConfig ServiceConfig on service;
 
-# The annotation to designate a GraphQL service as a federated GraphQL subgraph.
-public annotation Subgraph on service;
-
-# Describes the shape of the `graphql:Entity` annotation
-# + key - GraphQL fields and subfields that contribute to the entity's primary key/keys
-# + resolveReference - Function pointer to resolve the entity. if set to nil, indicates the graph router that this
-#                      subgraph does not define a reference resolver for this entity
-public type FederatedEntity record {|
-    string|string[] key;
-    ReferenceResolver? resolveReference;
-|};
-
-# The annotation to designate a GraphQL object type as a federated entity.
-public annotation FederatedEntity Entity on class, type;

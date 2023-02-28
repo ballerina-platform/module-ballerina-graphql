@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isSubgraphModuleSymbol;
 
 /**
  * Util class for the compiler plugin.
@@ -226,14 +227,13 @@ public final class Utils {
 
     public static boolean hasSubgraphAnnotation(List<AnnotationSymbol> annotations) {
         for (AnnotationSymbol annotation : annotations) {
-            if (annotation.getName().isEmpty() || !isGraphqlModuleSymbol(annotation)) {
+            if (annotation.getName().isEmpty() || !isSubgraphModuleSymbol(annotation)) {
                 continue;
             }
             String annotationName = annotation.getName().get();
-            if (!annotationName.equals(SUBGRAPH_ANNOTATION_NAME)) {
-                continue;
+            if (annotationName.equals(SUBGRAPH_ANNOTATION_NAME)) {
+                return true;
             }
-            return true;
         }
         return false;
     }

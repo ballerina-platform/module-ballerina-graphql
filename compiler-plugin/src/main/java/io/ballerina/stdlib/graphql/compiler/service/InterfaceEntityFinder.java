@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isSubgraphModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getObjectTypeSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRecordTypeDefinition;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
@@ -130,7 +130,7 @@ public class InterfaceEntityFinder {
 
     private boolean hasEntityAnnotation(List<AnnotationSymbol> annotations) {
         for (AnnotationSymbol annotation : annotations) {
-            if (!isGraphqlModuleSymbol(annotation)) {
+            if (!isSubgraphModuleSymbol(annotation)) {
                 continue;
             }
             if (annotation.getName().isEmpty()) {
