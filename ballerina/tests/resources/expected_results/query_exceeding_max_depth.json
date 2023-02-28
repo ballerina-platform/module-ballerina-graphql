@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Query has depth of 5, which exceeds max depth of 2",
+        "locations": [
+            {
+                "line": 1,
+                "column": 1
+            }
+        ]
+    }
+]

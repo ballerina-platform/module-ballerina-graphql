@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Cannot spread fragment \"TypeFragment\" within itself.",
+        "locations": [
+            {
+                "line": 11,
+                "column": 9
+            }
+        ]
+    }
+]

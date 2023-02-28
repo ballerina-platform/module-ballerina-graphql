@@ -1,0 +1,10 @@
+{
+    "data": {
+        "profile": {
+            "name": "Walter White",
+            "address": {
+                "street": "Negra Arroyo Lane"
+            }
+        }
+    }
+}

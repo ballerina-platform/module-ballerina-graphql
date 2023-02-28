@@ -1,0 +1,3 @@
+query ($days:[Weekday!] = [MONDAY, FRIDAY, TUSDAY, SATURDAY]) {
+    isIncludeHoliday(days: $days)
+}

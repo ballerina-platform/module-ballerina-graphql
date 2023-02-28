@@ -4,8 +4,8 @@
             "message": "Decimal cannot represent non Decimal value: -Infinity",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 32
+                    "line": 2,
+                    "column": 34
                 }
             ]
         }

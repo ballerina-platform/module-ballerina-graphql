@@ -1,0 +1,30 @@
+{
+    "data": {
+        "getSuggestions": [
+            {
+                "movieName": "Harry Potter and the Sorcerer's Stone",
+                "director": "Chris Columbus"
+            },
+            {
+                "movieName": "Sherlock Holmes",
+                "director": "Dexter Fletcher"
+            },
+            {
+                "movieName": "El Camino",
+                "director": "Vince Gilligan"
+            },
+            {
+                "movieName": "Escape Plan",
+                "director": "Mikael Hafstrom"
+            },
+            {
+                "movieName": "Papillon",
+                "director": "Franklin Schaffner"
+            },
+            {
+                "movieName": "The Fugitive",
+                "director": "Andrew Davis"
+            }
+        ]
+    }
+}

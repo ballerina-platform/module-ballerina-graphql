@@ -1,0 +1,8 @@
+{
+    top3 {
+        product {
+            id
+        }
+    score
+    }
+}

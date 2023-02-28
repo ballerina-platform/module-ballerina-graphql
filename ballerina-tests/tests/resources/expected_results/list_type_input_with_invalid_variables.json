@@ -4,8 +4,8 @@
             "message": "words: In element #1:String cannot represent non String value: true",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 42
+                    "line": 2,
+                    "column": 20
                 }
             ]
         },
@@ -13,8 +13,8 @@
             "message": "words: In element #3:String cannot represent non String value: 4",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 42
+                    "line": 2,
+                    "column": 20
                 }
             ]
         }

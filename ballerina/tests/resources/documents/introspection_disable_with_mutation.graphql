@@ -1,0 +1,10 @@
+{
+    __schema {
+        mutationType {
+            kind
+            fields {
+                name
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "data":{
+        "profile":{
+            "holidays":["SATURDAY", "SUNDAY"],
+            "school":{
+                "name":"CHEM",
+                "openingDays":["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
+            }
+        }
+    }
+}

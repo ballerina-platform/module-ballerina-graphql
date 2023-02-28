@@ -51,7 +51,7 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
             return;
         }
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
-        InterfaceFinder interfaceFinder = getInterfaceFinder(context);
+        InterfaceFinder interfaceFinder = getInterfaceFinder(context.semanticModel());
         ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceFinder);
         if (serviceValidator.isErrorOccurred()) {
             return;

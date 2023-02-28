@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Variable \"$extra\" is never used.",
+        "locations": [
+            {
+                "line": 1,
+                "column": 32
+            }
+        ]
+    }
+]

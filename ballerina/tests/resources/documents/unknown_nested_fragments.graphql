@@ -1,0 +1,16 @@
+query {
+    ...data
+}
+
+fragment data on Query {
+    students {
+        ...details
+    }
+}
+
+fragment details on Student {
+    courses {
+        name
+        ...fail
+    }
+}

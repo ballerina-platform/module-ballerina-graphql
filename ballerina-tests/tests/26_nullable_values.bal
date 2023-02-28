@@ -17,266 +17,36 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["inputs", "enums", "nullable"]
+    groups: ["inputs", "nullable"],
+    dataProvider: dataProviderNullableValues
 }
-isolated function testNullAsEnumInputValue() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string document = "{ isHoliday(weekday: null) }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            isHoliday: false
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "nullable"]
-}
-isolated function testNullAsScalarInputValue() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "{ profile(id: null) { name } }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Sherlock Holmes"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "nullable"]
-}
-isolated function testNullValueForNonNullArgument() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string document = "{ greet(name: null) }";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string`Expected value of type "String!", found null.`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 15
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "nullable"]
-}
-isolated function testNullValueForDefaultableArguments() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "mutation { profile(name: null) { name } }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Sherlock Holmes"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "nullable"]
-}
-isolated function testNullValueInInputObjectField() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "{ book(author: { name: null, id: 1 }) { name } }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            book: {
-                name: "The Art of Electronics"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "nullable"]
-}
-isolated function testNullAsResourceFunctionName() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "{ null(value: null) }";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            'null: null
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["variables", "inputs", "enums"]
-}
-isolated function testNullAsEnumInputWithVariableValue() returns error? {
-    string document = "($day:Weekday){ isHoliday(weekday: $day) }";
-    json variables = { day: null };
-    string url = "http://localhost:9091/inputs";
+isolated function testNullableValues(string url, string resourceFileName, json variables = ()) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            isHoliday: false
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["inputs", "variables", "nullable"]
-}
-isolated function testNullAsScalarInputWithVariableValue() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "($id:Int){ profile(id: $id) { name } }";
-    json variables = {
-        id: null
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Sherlock Holmes"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderNullableValues() returns map<[string, string, json]> {
+    string url1 = "http://localhost:9091/inputs";
+    string url2 = "http://localhost:9091/null_values";
+    string url3 = "http://localhost:9091/list_inputs";
 
-@test:Config {
-    groups: ["inputs", "variables", "nullable"]
-}
-isolated function testNullValueForNonNullArgumentWithVariableValue() returns error? {
-    string url = "http://localhost:9091/inputs";
-    string document = "($name: String!){ greet(name: $name) }";
-    json variables = {
-        name: null
+    map<[string, string, json]> dataSet = {
+        "1": [url1, "null_as_enum_input"],
+        "2": [url2, "null_as_scalar_input"],
+        "3": [url1, "null_value_for_non_null_argument"],
+        "4": [url2, "null_value_for_defaultable_arguments"],
+        "5": [url2, "null_value_in_input_object_field"],
+        "6": [url2, "null_as_resource_function_name"],
+        "7": [url1, "null_as_enum_input_with_variable_value", {day: null}],
+        "8": [url2, "null_as_scalar_input_with_variable_value", {id: null}],
+        "9": [url1, "null_value_for_non_null_argument_with_variable_value", {name: null}],
+        "10": [url2, "null_value_for_defaultable_arguments_with_variable", {name: null}],
+        "11": [url2, "null_value_in_input_object_field_with_variable_value", {author: {name: null, id: 1}}],
+        "12": [url3, "null_value_in_list_type_input_with_variables", {words: ["Hello!", null, "GraphQL"]}],
+        "13": [url2, "null_value_for_nullable_input_object_with_variable_value", {author: null}],
+        "14": [url3, "null_value_for_nullable_list_type_input_with_variables", {words: null}]
     };
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document, variables);
-    json expectedPayload = {
-        errors: [
-            {
-                message: string `Variable name expected value of type "String!", found null`,
-                locations: [
-                    {
-                        line: 1,
-                        column: 32
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "variables", "nullable"]
-}
-isolated function testNullValueForDefaultableArgumentsWithVariable() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "mutation($name: String){ profile(name: $name) { name } }";
-    json variables = {
-        name: null
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: "Sherlock Holmes"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "variables", "nullable"]
-}
-isolated function testNullValueInInputObjectFieldWithVariableValue() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "($author: Author){ book(author: $author) { name } }";
-    json variables = {
-        author: {
-            name: null,
-            id: 1
-        }
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            book: {
-                name: "The Art of Electronics"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "inputs"]
-}
-isolated function testNullValueInListTypeInputWithVaraibles() returns error? {
-    string document = string`query ($words: [String]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
-        words: ["Hello!", null, "GraphQL"]
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            concat:  "Hello! GraphQL"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["inputs", "variables", "nullable"]
-}
-isolated function testNullValueForNullableInputObjectWithVariableValue() returns error? {
-    string url = "http://localhost:9091/null_values";
-    string document = "($author: Author){ book(author: $author) { name } }";
-    json variables = {
-        author: null
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            book: {
-                name: "Algorithms to Live By"
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["list", "variables", "inputs"]
-}
-isolated function testNullValueForNullableListTypeInputWithVaraibles() returns error? {
-    string document = string`query ($words: [String]){ concat(words: $words) }`;
-    string url = "http://localhost:9091/list_inputs";
-    json variables = {
-        words: null
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document, variables);
-    json expectedPayload = {
-        data: {
-            concat:  "Word list is empty"
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return dataSet;
 }

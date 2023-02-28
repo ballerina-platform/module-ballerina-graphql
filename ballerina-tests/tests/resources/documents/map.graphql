@@ -1,0 +1,7 @@
+query {
+    company {
+        workers(key: "id1") {
+            name
+        }
+    }
+}

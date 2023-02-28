@@ -1,0 +1,9 @@
+{
+    profile {
+        personal {
+            name {
+                first
+            }
+        }
+    }
+}

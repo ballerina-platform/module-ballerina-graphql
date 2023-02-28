@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Unknown fragment \"fail\".",
+        "locations": [
+            {
+                "line": 14,
+                "column": 12
+            }
+        ]
+    }
+]

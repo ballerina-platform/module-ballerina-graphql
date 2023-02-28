@@ -1,0 +1,6 @@
+{
+    getSuggestions(tvSeries: []) {
+        movieName,
+        director
+    }
+}

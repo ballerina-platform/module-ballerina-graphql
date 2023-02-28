@@ -1,0 +1,11 @@
+{
+    students {
+        name
+        courses {
+            name
+            books {
+                name
+            }
+        }
+    }
+}

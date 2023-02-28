@@ -1,6 +1,11 @@
 query getPerson {
     profile {
-        name
+        name {
+            first
+        }
+        name {
+            last
+        }
         address {
             city
         }

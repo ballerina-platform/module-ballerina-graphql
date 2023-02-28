@@ -1,0 +1,8 @@
+{
+    profile(id: 4) {
+        ...on StudentService {
+            id,
+            name
+        }
+    }
+}

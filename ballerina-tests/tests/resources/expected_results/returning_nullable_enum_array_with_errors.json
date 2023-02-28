@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "Holiday!",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": ["specialHolidays", 1]
+        }
+    ],
+    "data": {
+        "specialHolidays": ["TUESDAY", null, "THURSDAY"]
+    }
+}

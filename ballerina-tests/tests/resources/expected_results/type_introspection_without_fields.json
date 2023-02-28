@@ -1,0 +1,13 @@
+{
+    "errors": [
+        {
+            "message": "Field \"__type\" of type \"__Type\" must have a selection of subfields. Did you mean \"__type { ... }\"?",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

@@ -17,62 +17,23 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["tables"]
+    groups: ["tables"],
+    dataProvider: dataProviderTables
 }
-isolated function testResourceReturningTables() returns error? {
-    string document = "{ employees { name } }";
-    string url = "http://localhost:9091/tables";
+isolated function testTables(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-
-    json expectedPayload = {
-        data: {
-            employees: [
-                {
-                    name: "John Doe"
-                },
-                {
-                    name: "Jane Doe"
-                },
-                {
-                    name: "Johnny Roe"
-                }
-            ]
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["tables", "validation"]
-}
-isolated function testQueryingTableWithoutSelections() returns error? {
-    string document = "{ employees }";
-    string url = "http://localhost:9091/tables";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-    string message = string`Field "employees" of type "[Employee!]" must have a selection of subfields. Did you mean "employees { ... }"?`;
-    json expectedPayload = {
-        errors: [
-            {
-                message: message,
-                locations: [
-                    {
-                        line: 1,
-                        column: 3
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderTables() returns string[][] {
+    string url1 = "http://localhost:9091/tables";
+    string url2 = "http://localhost:9091/covid19";
 
-@test:Config {
-    groups: ["tables"]
-}
-isolated function testResolverReturningTables() returns error? {
-    string document = "{ all { isoCode } }";
-    string url = "http://localhost:9091/covid19";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {data: {all: [{isoCode: "AFG"}, {isoCode: "SL"}, {isoCode: "US"}]}};
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "resource_returning_tables"],
+        [url1, "querying_table_without_selections"],
+        [url2, "resolver_returning_tables"]
+    ];
 }

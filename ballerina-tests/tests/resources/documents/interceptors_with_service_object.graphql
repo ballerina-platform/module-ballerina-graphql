@@ -1,0 +1,7 @@
+{
+    teacher{
+        id,
+        name,
+        subject
+    }
+}

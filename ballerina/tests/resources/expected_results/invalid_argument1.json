@@ -1,0 +1,20 @@
+[
+    {
+        "message": "Unknown argument \"id\" on field \"Query.isLegal\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 13
+            }
+        ]
+    },
+    {
+        "message": "Field \"isLegal\" argument \"age\" of type \"Int!\" is required, but it was not provided.",
+        "locations": [
+            {
+                "line": 2,
+                "column": 5
+            }
+        ]
+    }
+]

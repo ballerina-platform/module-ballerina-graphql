@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Unknown argument \"id\" on field \"Query.greet\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 25
+            }
+        ]
+    }
+]

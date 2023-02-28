@@ -3,7 +3,7 @@
 All the listeners are defined in the `test_listeners.bal` file.
 All the services are defined in the `test_services.bal` file.
 When the GraphQL document is too long, it is saved as a separate file inside the `tests/resources/documents` directory ad a `txt` file. 
-All the text files can be read using the `getGraphQLDocumentFromFile()` utility function. We have to pass the file name to that function.
+All the text files can be read using the `getGraphqlDocumentFromFile()` utility function. We have to pass the file name to that function.
 
 Similarly, when the expected JSON file is too long, they are stored as separate JSON files under the `tests/resources/expected_results.json` directory.
 Those files can be read using the `getJsonContentFromFile` utility function by passing the name of the JSON file.

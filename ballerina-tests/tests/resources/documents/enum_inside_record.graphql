@@ -1,0 +1,3 @@
+query {
+    weekday(number: 3)
+}

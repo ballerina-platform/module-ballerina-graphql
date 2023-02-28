@@ -4,6 +4,22 @@
             "queryType": {
                 "fields": [
                     {
+                        "name": "greet",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
                         "name": "name",
                         "args": [
                             {
@@ -20,20 +36,84 @@
                         ]
                     },
                     {
-                        "name": "subject",
+                        "name": "isLegal",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Int"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "quoteById",
                         "args": [
                             {
                                 "defaultValue": "\"\"",
                                 "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String",
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Int"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "weightInPounds",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Float"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "isHoliday",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "ENUM",
+                                    "name": "Weekday",
                                     "ofType": null
                                 }
                             }
                         ]
                     },
                     {
-                        "name": "city",
+                        "name": "getDay",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Boolean"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "sendEmail",
                         "args": [
                             {
                                 "defaultValue": null,
@@ -49,14 +129,81 @@
                         ]
                     },
                     {
-                        "name": "street",
+                        "name": "type",
                         "args": [
                             {
                                 "defaultValue": null,
                                 "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String",
-                                    "ofType": null
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "version",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "convertDecimalToFloat",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Decimal"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "getTotalInDecimal",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "LIST",
+                                        "name": null
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "getSubTotal",
+                        "args": [
+                            {
+                                "defaultValue": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "LIST",
+                                        "name": null
+                                    }
                                 }
                             }
                         ]

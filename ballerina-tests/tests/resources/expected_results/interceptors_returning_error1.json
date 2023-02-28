@@ -4,8 +4,8 @@
             "message": "This field is not accessible!",
             "locations": [
                 {
-                    "line": 1,
-                    "column": 3
+                    "line": 2,
+                    "column": 5
                 }
             ],
             "path": [

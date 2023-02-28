@@ -17,191 +17,31 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["hierarchical_paths"]
+    groups: ["hierarchical_paths"],
+    dataProvider: dataProviderHierarchicalResourcePaths
 }
-isolated function testHierarchicalResourcePaths() returns error? {
-    string document = "{ profile { name { first } } }";
-    string url = "http://localhost:9094/profiles";
+isolated function testHierarchicalResourcePaths(string url, string resourceFileName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
-
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock"
-                }
-            }
-        }
-    };
+    json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    groups: ["hierarchical_paths"]
-}
-isolated function testHierarchicalResourcePathsMultipleFields() returns error? {
-    string document = "{ profile { name { first last } } }";
-    string url = "http://localhost:9094/profiles";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock",
-                    last: "Holmes"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
+function dataProviderHierarchicalResourcePaths() returns string[][] {
+    string url1 = "http://localhost:9094/profiles";
+    string url2 = "http://localhost:9094/snowtooth";
+    string url3 = "http://localhost:9094/hierarchical";
 
-@test:Config {
-    groups: ["hierarchical_paths"]
-}
-isolated function testHierarchicalResourcePathsComplete() returns error? {
-    string document = "{ profile { name { first last } age } }";
-    string url = "http://localhost:9094/profiles";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock",
-                    last: "Holmes"
-                },
-                age: 40
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["hierarchical_paths"]
-}
-isolated function testHierarchicalPathsSameTypeInMultiplePaths() returns error? {
-    string document = "{ profile { name { address { street } } } }";
-    string url = "http://localhost:9094/profiles";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    json expectedPayload = { data: null };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["negative", "hierarchical_paths"]
-}
-isolated function testInvalidHierarchicalResourcePaths() returns error? {
-    string document = "{ profile { name { first middle } } }";
-    string url = "http://localhost:9094/profiles";
-    json actualPayload = check getJsonPayloadFromBadRequest(url, document);
-
-    string expectedErrorMessage = "Cannot query field \"middle\" on type \"name\".";
-    json expectedPayload = {
-        errors: [
-            {
-                message: expectedErrorMessage,
-                locations: [
-                    {
-                        line: 1,
-                        column: 26
-                    }
-                ]
-            }
-        ]
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["introspection", "hierarchical_paths"]
-}
-isolated function testHierarchicalResourcePathsIntrospection() returns error? {
-    string document = "{ __schema { types { name fields { name } } } }";
-    string url = "http://localhost:9094/profiles";
-    json expectedPayload = check getJsonContentFromFile("hierarchical_resource_paths_introspection.json");
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["hierarchical_paths"]
-}
-isolated function testHierarchicalResourcePathsWithSameFieldRepeating() returns error? {
-    string document = "{ mountain { trail { getLift { name } } } }";
-    string url = "http://localhost:9094/snowtooth";
-    json expectedPayload = {
-        data: {
-            mountain: {
-                trail: {
-                    getLift: {
-                        name: "Lift2"
-                    }
-                }
-            }
-        }
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["hierarchical_paths"]
-}
-isolated function testHierarchicalResourcePathsWithSameFieldRepeating2() returns error? {
-    string document = "{ lift { name } }";
-    string url = "http://localhost:9094/snowtooth";
-    json expectedPayload = {
-        data: {
-            lift: {
-                name: "Lift1"
-            }
-        }
-    };
-    json actualPayload = check getJsonPayloadFromService(url, document);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["hierarchical_paths"]
-}
-isolated function testHierarchicalResourcePathsReturningServicesWithHierarchicalResourcePath() returns error? {
-    string document = "{ profile { personal { name { first } } } }";
-    string url = "http://localhost:9094/hierarchical";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-
-    json expectedPayload = {
-        data: {
-            profile: {
-                personal: {
-                    name: {
-                        first: "Sherlock"
-                    }
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
-@test:Config {
-    groups: ["hierarchical_paths", "fragments"]
-}
-isolated function testHierarchicalResourcePathsWithFragments() returns error? {
-    string document = check getGraphQLDocumentFromFile("hierarchical_resource_paths_with_fragments.graphql");
-    string url = "http://localhost:9094/profiles";
-    json actualPayload = check getJsonPayloadFromService(url, document);
-
-    json expectedPayload = {
-        data: {
-            profile: {
-                name: {
-                    first: "Sherlock",
-                    last: "Holmes"
-                }
-            }
-        }
-    };
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    return [
+        [url1, "hierarchical_resource_paths"],
+        [url1, "hierarchical_resource_paths_with_multiple_fields"],
+        [url1, "hierarchical_resource_paths_complete"],
+        [url1, "hierarchical_paths_same_type_in_multiple_paths"],
+        [url1, "invalid_hierarchical_resource_paths"],
+        [url1, "hierarchical_resource_paths_introspection"],
+        [url2, "hierarchical_resource_paths_with_same_field_repeating_1"],
+        [url2, "hierarchical_resource_paths_with_same_field_repeating_2"],
+        [url3, "hierarchical_resource_paths_returning_services_with_hierarchical_resource_path"],
+        [url1, "hierarchical_resource_paths_with_fragments"]
+    ];
 }

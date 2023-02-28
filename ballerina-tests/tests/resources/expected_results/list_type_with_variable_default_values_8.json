@@ -1,0 +1,10 @@
+{
+    "data": {
+        "getMovie": [
+            {
+                "movieName": "Sherlock Holmes",
+                "director": "Dexter Fletcher"
+            }
+        ]
+    }
+}

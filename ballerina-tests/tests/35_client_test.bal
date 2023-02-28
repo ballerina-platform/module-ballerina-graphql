@@ -297,8 +297,8 @@ isolated function testClientExecuteWithPartialDataRequest() returns error? {
     groups: ["client"]
 }
 isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+    string url = "http://localhost:9091/records";
+    string document = check getGraphqlDocumentFromFile("multiple_operations_without_operation_name_in_request");
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->executeWithType(document);
@@ -318,8 +318,8 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithoutOperatio
     groups: ["client"]
 }
 isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+    string url = "http://localhost:9091/records";
+    string document = check getGraphqlDocumentFromFile("multiple_operations_without_operation_name_in_request");
 
     graphql:Client graphqlClient = check new (url);
     json|graphql:ClientError payload = graphqlClient->execute(document);
@@ -339,12 +339,12 @@ isolated function testClientExecuteWithMultipleOperationsWithoutOperationNameInR
     groups: ["client"]
 }
 isolated function testClientExecuteWithTypeWithMultipleOperationsWithOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+    string url = "http://localhost:9091/records";
+    string document = check getGraphqlDocumentFromFile("multiple_operations_without_operation_name_in_request");
 
     graphql:Client graphqlClient = check new (url);
-    json actualPayload = check graphqlClient->executeWithType(document, operationName = "getName");
-    json expectedPayload = {"data": {"name": "James Moriarty"}};
+    json actualPayload = check graphqlClient->executeWithType(document, operationName = "getDetective");
+    json expectedPayload = {"data": {"detective": {"name": "Sherlock Holmes"}}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -352,12 +352,12 @@ isolated function testClientExecuteWithTypeWithMultipleOperationsWithOperationNa
     groups: ["client"]
 }
 isolated function testClientExecuteWithMultipleOperationsWithOperationNameInRequest() returns error? {
-    string url = "http://localhost:9091/validation";
-    string document = check getGraphQLDocumentFromFile("multiple_operations_without_operation_name_in_request.graphql");
+    string url = "http://localhost:9091/records";
+    string document = check getGraphqlDocumentFromFile("multiple_operations_without_operation_name_in_request");
 
     graphql:Client graphqlClient = check new (url);
-    json actualPayload = check graphqlClient->execute(document, operationName = "getName");
-    json expectedPayload = {"data": {"name": "James Moriarty"}};
+    json actualPayload = check graphqlClient->execute(document, operationName = "getDetective");
+    json expectedPayload = {"data": {"detective": {"name": "Sherlock Holmes"}}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -403,15 +403,17 @@ isolated function testClientExecuteWithMutation() returns error? {
     groups: ["client"]
 }
 isolated function testClientExecuteWithTypeWithAlias() returns error? {
-    string url = "http://localhost:9091/duplicates";
-    string document = check getGraphQLDocumentFromFile("alias.graphql");
+    string url = "http://localhost:9094/profiles";
+    string document = check getGraphqlDocumentFromFile("alias");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = {
         data: {
             sherlock: {
-                name: "Sherlock Holmes",
+                name: {
+                    first: "Sherlock"
+                },
                 address: {
                     city: "London"
                 }
@@ -425,15 +427,17 @@ isolated function testClientExecuteWithTypeWithAlias() returns error? {
     groups: ["client"]
 }
 isolated function testClientExecuteWithAlias() returns error? {
-    string url = "http://localhost:9091/duplicates";
-    string document = check getGraphQLDocumentFromFile("alias.graphql");
+    string url = "http://localhost:9094/profiles";
+    string document = check getGraphqlDocumentFromFile("alias");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
     json expectedPayload = {
         data: {
             sherlock: {
-                name: "Sherlock Holmes",
+                name: {
+                    first: "Sherlock"
+                },
                 address: {
                     city: "London"
                 }
@@ -486,11 +490,11 @@ isolated function testClientExecuteWithEnum() returns error? {
 }
 isolated function testClientExecuteWithTypeWithFragmentsOnRecordObjects() returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
+    string document = check getGraphqlDocumentFromFile("fragments_on_record_objects");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
-    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
+    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -499,11 +503,11 @@ isolated function testClientExecuteWithTypeWithFragmentsOnRecordObjects() return
 }
 isolated function testClientExecuteWithFragmentsOnRecordObjects() returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("fragments_on_record_objects.graphql");
+    string document = check getGraphqlDocumentFromFile("fragments_on_record_objects");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
-    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects.json");
+    json expectedPayload = check getJsonContentFromFile("fragments_on_record_objects");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -512,11 +516,11 @@ isolated function testClientExecuteWithFragmentsOnRecordObjects() returns error?
 }
 isolated function testClientExecuteWithTypeWithNestedFragments() returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
+    string document = check getGraphqlDocumentFromFile("nested_fragments");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
-    json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
+    json expectedPayload = check getJsonContentFromFile("nested_fragments");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -525,11 +529,11 @@ isolated function testClientExecuteWithTypeWithNestedFragments() returns error? 
 }
 isolated function testClientExecuteWithNestedFragments() returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("nested_fragments.graphql");
+    string document = check getGraphqlDocumentFromFile("nested_fragments");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
-    json expectedPayload = check getJsonContentFromFile("nested_fragments.json");
+    json expectedPayload = check getJsonContentFromFile("nested_fragments");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -538,11 +542,11 @@ isolated function testClientExecuteWithNestedFragments() returns error? {
 }
 isolated function testClientExecuteWithTypeWithInlineFragment() returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
+    string document = check getGraphqlDocumentFromFile("inline_fragment");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->executeWithType(document);
-    json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
+    json expectedPayload = check getJsonContentFromFile("inline_fragment");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -551,11 +555,11 @@ isolated function testClientExecuteWithTypeWithInlineFragment() returns error? {
 }
 isolated function testClientExecuteWithInlineFragment() returns error? {
     string url = "http://localhost:9091/records";
-    string document = check getGraphQLDocumentFromFile("inline_fragment.graphql");
+    string document = check getGraphqlDocumentFromFile("inline_fragment");
 
     graphql:Client graphqlClient = check new (url);
     json actualPayload = check graphqlClient->execute(document);
-    json expectedPayload = check getJsonContentFromFile("inline_fragment.json");
+    json expectedPayload = check getJsonContentFromFile("inline_fragment");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
