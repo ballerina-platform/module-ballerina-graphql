@@ -1,0 +1,12 @@
+{
+  "data": {
+    "_entities": [
+      {
+        "name": "Acamar",
+        "constellation": "Acamar",
+        "designation": "θ1 Eridani A"
+      },
+      { "name": "Earth", "mass": 1 }
+    ]
+  }
+}

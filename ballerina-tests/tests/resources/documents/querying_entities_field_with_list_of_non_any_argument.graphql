@@ -1,0 +1,7 @@
+{
+  _entities(representations: [1, "string", 1.23]) {
+    ... on Star {
+      name
+    }
+  }
+}

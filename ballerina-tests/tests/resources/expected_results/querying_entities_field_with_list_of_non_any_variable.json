@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "message": "representations: In element #0: \"_Any\" cannot represent non _Any value: \"1\"",
+      "locations": [{ "line": 2, "column": 31 }]
+    },
+    {
+      "message": "representations: In element #1: \"_Any\" cannot represent non _Any value: \"string\"",
+      "locations": [{ "line": 2, "column": 31 }]
+    },
+    {
+      "message": "representations: In element #2: \"_Any\" cannot represent non _Any value: \"1.23\"",
+      "locations": [{ "line": 2, "column": 31 }]
+    }
+  ]
+}

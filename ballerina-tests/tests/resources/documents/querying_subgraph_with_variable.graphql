@@ -1,5 +1,5 @@
-query _entities($representations: [_Any!]!) {
-  _entities(representations: $representations) {
+query _entities($rep: [_Any!]!) {
+  _entities(representations: $rep) {
     ... on Star {
       name
       constellation
@@ -8,6 +8,9 @@ query _entities($representations: [_Any!]!) {
     ... on Planet {
       name
       mass
+    }
+    ... on Moon {
+      name
     }
   }
 }
