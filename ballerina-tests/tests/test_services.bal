@@ -1900,3 +1900,16 @@ service /annotations on wrappedListener {
         return "Hello";
     }
 }
+
+service /parallel on wrappedListener {
+    private string data = "Hello";
+    resource function get a() returns string {
+        runtime:sleep(1);
+        self.data += "!";
+        return self.data;
+    }
+    resource function get b() returns string {
+        self.data += " World";
+        return self.data;
+    }
+}

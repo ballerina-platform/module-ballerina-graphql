@@ -265,7 +265,8 @@ isolated class Engine {
                 }
             }
         }
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
+                                                   operationType == parser:OPERATION_MUTATION);
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
 
