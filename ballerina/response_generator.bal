@@ -286,7 +286,7 @@ class ResponseGenerator {
                                                         parser:SelectionNode parentNode, Data result,
                                                         (string|int)[] path) {
         if !self.isMutationOperation {
-            return self.resolveSelectionsParalley(selectionFunctionName, parentValue, parentNode, result, path);
+            return self.resolveSelectionsParallelly(selectionFunctionName, parentValue, parentNode, result, path);
         }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             var executeSelectionFunction = self.executeSelectionFunction;
@@ -295,7 +295,7 @@ class ResponseGenerator {
         return;
     }
 
-    private isolated function resolveSelectionsParalley(string selectionFunctionName,
+    private isolated function resolveSelectionsParallelly(string selectionFunctionName,
                                                         map<any>|service object {} parentValue,
                                                         parser:SelectionNode parentNode, Data result,
                                                         (string|int)[] path) {
