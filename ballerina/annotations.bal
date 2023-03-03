@@ -37,4 +37,3 @@ public type GraphqlServiceConfig record {|
 
 # The annotation to configure a GraphQL service.
 public annotation GraphqlServiceConfig ServiceConfig on service;
-

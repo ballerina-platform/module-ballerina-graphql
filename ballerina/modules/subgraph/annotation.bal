@@ -22,7 +22,7 @@ public annotation Subgraph on service;
 #                      subgraph does not define a reference resolver for this entity
 public type FederatedEntity record {|
     string|string[] key;
-    ReferenceResolver? resolveReference;
+    ReferenceResolver? resolveReference = ();
 |};
 
 # The annotation to designate a GraphQL object type as a federated entity.

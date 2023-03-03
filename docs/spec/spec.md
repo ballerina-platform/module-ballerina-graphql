@@ -155,7 +155,7 @@ The conforming implementation of the specification is released and included in t
     * 13.1 [Federated Subgraph](#131-federated-subgraph)
         * 13.1.1 [The `@subgraph:Subgraph` Annotation](#1311-the-graphqlsubgraph-annotation)
         * 13.1.2 [The `@subgraph:Entity` Annotation](#1312-the-graphqlentity-annotation)
-        * 13.1.3 [The `ReferenceResolver`](#1311-the-referenceresolver)
+        * 13.1.3 [The `subgraph:ReferenceResolver`](#1311-the-referenceresolver)
 14. [Tools](#13-tools)
     * 14.1 [GraphiQL Client](#131-graphiql-client)
 
@@ -2863,6 +2863,7 @@ type Product @key(fields: "id") {
 }
 type Product record {
     string id;
+    string sku;
     string name;
     int price;
 };
@@ -2874,6 +2875,7 @@ type Product record {
 ```graphql
 type Product @key(fields: "id") @key(fields: "sku") {
     id: String!
+    sku: String!
     name: String!
     price: Int!
 }
@@ -2941,7 +2943,7 @@ type Product @key(fields: "id", resolvable: false) {
 
 #### 13.1.3 The `subgraph:ReferenceResolver`
 
-Reference resolver is a function that resolves an entity of a specific type using its primary key. When the graph router needs to resolve an entity, it calls the reference resolver and passes the primary key and the `__typename` field of the entity. The reference resolver then returns the entity with the given primary key. Following is the type definition of a reference resolver defined in `graphql.subgraph` module.
+Reference resolver is a function that resolves an entity of a specific type using its primary key. When the router requires a particular entity to be resolved, it invokes the corresponding entity's reference resolver. Following is the type definition of a reference resolver defined in `graphql.subgraph` module.
 
 ```ballerina
 public type ReferenceResolver function (subgraph:Representation representation) returns record {}|service object {}|error?;

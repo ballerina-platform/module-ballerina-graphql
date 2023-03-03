@@ -37,6 +37,7 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
@@ -48,6 +49,7 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.hasGraphqlListener;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
@@ -254,7 +256,7 @@ public final class Utils {
     public static Schema getSchemaObject(Node node, SemanticModel semanticModel, Project project) {
         String description;
         Node serviceNode;
-
+        boolean isSubgraph;
         if (node.kind() == SyntaxKind.SERVICE_DECLARATION) {
             if (semanticModel.symbol(node).isEmpty()) {
                 return null;
@@ -263,9 +265,9 @@ public final class Utils {
             if (!hasGraphqlListener(symbol)) {
                 return null;
             }
+            isSubgraph = hasSubgraphAnnotation(symbol.annotations());
             description = getDescription(symbol);
             serviceNode = node;
-
         } else if (node.kind() == SyntaxKind.MODULE_VAR_DECL) {
             ModuleVariableDeclarationNode moduleVarDclNode = (ModuleVariableDeclarationNode) node;
             if (!isGraphQLServiceObjectDeclaration(moduleVarDclNode)) {
@@ -278,19 +280,22 @@ public final class Utils {
             if (expressionNode.kind() != SyntaxKind.OBJECT_CONSTRUCTOR) {
                 return null;
             }
-
+            ObjectConstructorExpressionNode objectNode = (ObjectConstructorExpressionNode) expressionNode;
+            // noinspection OptionalGetWithoutIsPresent
+            var annotations = objectNode.annotations().stream()
+                    .map(annotationNode -> (AnnotationSymbol) semanticModel.symbol(annotationNode).get())
+                    .collect(Collectors.toList());
+            isSubgraph = hasSubgraphAnnotation(annotations);
             serviceNode = expressionNode;
             description = getDescription(semanticModel, moduleVarDclNode);
-
         } else {
             return null;
         }
 
         InterfaceEntityFinder interfaceFinder = new InterfaceEntityFinder();
         interfaceFinder.populateInterfaces(semanticModel);
-        // isSubgraph field is now set to false as we don't support subgraph schema generation yet
-        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel,
-                project, description, false); // is subgraph is not set to false need to fix this
+        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel, project,
+                                                              description, isSubgraph);
 
         return schemaGenerator.generate();
     }

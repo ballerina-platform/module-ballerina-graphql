@@ -28,7 +28,8 @@ import static io.ballerina.stdlib.graphql.commons.types.Description.SECURITY;
  */
 public enum FederatedEnumValue {
 
-    LINK_PURPOSE(TypeName.LINK_PURPOSE, null, List.of(getExecutionEnumValue(), getSecurityEnumValue()));
+    LINK_PURPOSE(TypeName.LINK_PURPOSE, null, List.of(new EnumValue("EXECUTION", EXECUTION.getDescription()),
+                                                      new EnumValue("SECURITY", SECURITY.getDescription())));
 
     private final TypeName name;
     private final String description;
@@ -52,13 +53,5 @@ public enum FederatedEnumValue {
         Type enumType = new Type(getName(), TypeKind.ENUM);
         values.forEach(enumType::addEnumValue);
         return enumType;
-    }
-
-    private static EnumValue getSecurityEnumValue() {
-        return new EnumValue("SECURITY", SECURITY.getDescription());
-    }
-
-    private static EnumValue getExecutionEnumValue() {
-        return new EnumValue("EXECUTION", EXECUTION.getDescription());
     }
 }
