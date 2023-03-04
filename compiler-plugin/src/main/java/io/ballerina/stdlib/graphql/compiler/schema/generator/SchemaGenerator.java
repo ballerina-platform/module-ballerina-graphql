@@ -62,7 +62,7 @@ import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.Type;
 import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
-import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.ballerina.stdlib.graphql.commons.utils.Utils.removeEscapeCharacter;
+import static io.ballerina.stdlib.graphql.commons.utils.TypeUtils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
@@ -99,18 +99,18 @@ public class SchemaGenerator {
     private static final String DEFAULT_VALUE = "\"\"";
 
     private final Node serviceNode;
-    private final InterfaceFinder interfaceFinder;
+    private final InterfaceEntityFinder interfaceEntityFinder;
     private final Schema schema;
     private final SemanticModel semanticModel;
     private final Project project;
     private final List<Type> visitedInterfaces;
 
-    public SchemaGenerator(Node serviceNode, InterfaceFinder interfaceFinder,
-                           SemanticModel semanticModel, Project project, String description) {
+    public SchemaGenerator(Node serviceNode, InterfaceEntityFinder interfaceEntityFinder, SemanticModel semanticModel,
+                           Project project, String description, boolean isSubgraph) {
         this.serviceNode = serviceNode;
-        this.interfaceFinder = interfaceFinder;
+        this.interfaceEntityFinder = interfaceEntityFinder;
+        this.schema = new Schema(description, isSubgraph);
         this.semanticModel = semanticModel;
-        this.schema = new Schema(description);
         this.project = project;
         this.visitedInterfaces = new ArrayList<>();
     }
@@ -118,7 +118,23 @@ public class SchemaGenerator {
     public Schema generate() {
         findRootTypes(this.serviceNode);
         findIntrospectionTypes();
+        addEntityTypes();
         return this.schema;
+    }
+
+    private void addEntityTypes() {
+        if (!this.schema.isSubgraph()) {
+            return;
+        }
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            String entityName = entry.getKey();
+            Symbol symbol = entry.getValue();
+            if (symbol.kind() == SymbolKind.TYPE_DEFINITION) {
+                this.schema.addEntity(getType(entityName, (TypeDefinitionSymbol) symbol));
+            } else if (symbol.kind() == SymbolKind.CLASS) {
+                this.schema.addEntity(getType(entityName, (ClassSymbol) symbol));
+            }
+        }
     }
 
     private void findIntrospectionTypes() {
@@ -394,7 +410,7 @@ public class SchemaGenerator {
 
     private void getTypesFromInterface(String typeName, Type interfaceType) {
         // Implementations can only contain class symbols or object type definitions
-        List<Symbol> implementations = this.interfaceFinder.getImplementations(typeName);
+        List<Symbol> implementations = this.interfaceEntityFinder.getImplementations(typeName);
         visitedInterfaces.add(interfaceType);
         for (Symbol implementation : implementations) {
             Type implementedType;

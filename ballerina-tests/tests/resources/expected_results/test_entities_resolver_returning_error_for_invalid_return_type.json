@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "Incorrect return type specified for the 'Satellite' entity reference resolver.",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["_entities", 0]
+    }
+  ],
+  "data": { "_entities": [null] }
+}
