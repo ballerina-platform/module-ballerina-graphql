@@ -1,0 +1,18 @@
+{
+  _entities(
+    representations: [
+      { __typename: "Star", name: "Acamar" }
+      { __typename: "Planet", name: "Earth" }
+    ]
+  ) {
+    ... on Star {
+      name
+      constellation
+      designation
+    }
+    ... on Planet {
+      name
+      mass
+    }
+  }
+}

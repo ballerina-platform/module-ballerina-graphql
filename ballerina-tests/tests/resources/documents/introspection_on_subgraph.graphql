@@ -1,0 +1,58 @@
+{
+  __schema {
+    types {
+      name
+      kind
+    }
+  }
+
+  Query: __type(name: "Query") {
+    name
+    fields {
+      name
+      args {
+        name
+        type {
+          kind
+          ofType {
+            kind
+            ofType {
+              kind
+            }
+            ofType {
+              kind
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  _Entity: __type(name: "_Entity") {
+    name
+    possibleTypes {
+      name
+    }
+  }
+
+  Service: __type(name: "_Service") {
+    name
+    fields {
+      name
+      type {
+        kind
+        ofType {
+          kind
+          name
+        }
+      }
+    }
+  }
+}
