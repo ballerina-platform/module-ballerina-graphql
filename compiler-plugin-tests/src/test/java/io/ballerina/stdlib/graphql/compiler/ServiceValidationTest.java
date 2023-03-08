@@ -1070,7 +1070,7 @@ public class ServiceValidationTest {
     }
     
     public void testUnsupportedPrimitiveTypeAlias() {
-        String packagePath = "59_unsupported_primitive_type_alias";
+        String packagePath = "61_unsupported_primitive_type_alias";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
