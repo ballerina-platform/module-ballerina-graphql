@@ -303,7 +303,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             }
             return (FunctionDefinitionNode) NodeParser.parseObjectMember(serviceResolver);
         } catch (IOException | NullPointerException e) {
-            updateContext(this.context, location, CompilationDiagnostic.FAILED_TO_ADD_ENTITY_RESOLVER, e.getMessage());
+            updateContext(this.context, location, CompilationDiagnostic.FAILED_TO_ADD_SERVICE_RESOLVER, e.getMessage());
             return null;
         }
     }
