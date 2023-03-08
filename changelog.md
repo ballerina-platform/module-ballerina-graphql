@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#4172] Fix Compilation Failure when Type Alias is Used with Primitive type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4172)
+
 ## [1.6.0] - 2023-02-20
 
 ### Added
