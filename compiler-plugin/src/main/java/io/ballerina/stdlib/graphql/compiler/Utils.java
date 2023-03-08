@@ -211,4 +211,23 @@ public final class Utils {
         return node.kind() == SyntaxKind.RESOURCE_ACCESSOR_DEFINITION
                 || node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION;
     }
+
+    public static boolean isPrimitiveTypeSymbol(TypeSymbol typeSymbol) {
+        switch (typeSymbol.typeKind()) {
+            case INT:
+            case INT_SIGNED8:
+            case INT_UNSIGNED8:
+            case INT_SIGNED16:
+            case INT_UNSIGNED16:
+            case INT_SIGNED32:
+            case INT_UNSIGNED32:
+            case STRING:
+            case STRING_CHAR:
+            case BOOLEAN:
+            case DECIMAL:
+            case FLOAT:
+                return true;
+        }
+        return false;
+    }
 }

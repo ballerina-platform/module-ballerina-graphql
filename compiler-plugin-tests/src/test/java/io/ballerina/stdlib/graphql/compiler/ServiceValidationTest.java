@@ -998,6 +998,23 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 112, 5);
     }
 
+    @Test(groups = "invalid")
+    public void testUnsupportedPrimitiveTypeAlias() {
+        String packagePath = "59_unsupported_primitive_type_alias";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS, "Id", "int");
+        // error message for return type with primitive type alias
+        assertErrorMessage(diagnostic, message, 19, 6);
+
+        diagnostic = diagnosticIterator.next();
+        // a duplicate error message is expected for input type with primitive type alias
+        assertErrorMessage(diagnostic, message, 19, 6);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);

@@ -64,7 +64,8 @@ public enum CompilationDiagnostic {
                                              DiagnosticSeverity.ERROR),
     INVALID_ANONYMOUS_FIELD_TYPE(DiagnosticMessage.ERROR_130, DiagnosticCode.GRAPHQL_130, DiagnosticSeverity.ERROR),
     INVALID_ANONYMOUS_INPUT_TYPE(DiagnosticMessage.ERROR_131, DiagnosticCode.GRAPHQL_131, DiagnosticSeverity.ERROR),
-    INVALID_RETURN_TYPE_CLASS(DiagnosticMessage.ERROR_132, DiagnosticCode.GRAPHQL_132, DiagnosticSeverity.ERROR);
+    INVALID_RETURN_TYPE_CLASS(DiagnosticMessage.ERROR_132, DiagnosticCode.GRAPHQL_132, DiagnosticSeverity.ERROR),
+    UNSUPPORTED_PRIMITIVE_TYPE_ALIAS(DiagnosticMessage.ERROR_133, DiagnosticCode.GRAPHQL_133, DiagnosticSeverity.ERROR);
 
     private final String diagnostic;
     private final String diagnosticCode;

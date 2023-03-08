@@ -69,8 +69,8 @@ public enum DiagnosticMessage {
     ERROR_129("Invalid remote method `{0}` found in interceptor service. Only \"execute\" remote method is allowed"),
     ERROR_130("Anonymous record `{0}` cannot be used as the type of the field `{1}`"),
     ERROR_131("Anonymous record `{0}` cannot be used as an input object type of the field `{1}`"),
-    ERROR_132("Invalid return type `{0}` provided for the GraphQL field `{1}`. `{0}` is not a service class");
-
+    ERROR_132("Invalid return type `{0}` provided for the GraphQL field `{1}`. `{0}` is not a service class"),
+    ERROR_133("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported");
     private final String message;
 
     DiagnosticMessage(String message) {
