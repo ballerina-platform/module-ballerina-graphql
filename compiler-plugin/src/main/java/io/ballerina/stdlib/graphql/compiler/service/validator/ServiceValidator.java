@@ -67,6 +67,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveTypeSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
@@ -446,6 +447,11 @@ public class ServiceValidator {
             validateReturnType(recordTypeSymbol, typeReferenceTypeSymbol.typeDescriptor(), location, recordName);
         } else if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
             validateReturnTypeObject(typeDefinitionSymbol, location);
+        } else if (isPrimitiveTypeSymbol(typeReferenceTypeSymbol.typeDescriptor())) {
+            // noinspection OptionalGetWithoutIsPresent
+            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS,
+                          getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
+                          typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
         } else {
             validateReturnType(typeDefinitionSymbol.typeDescriptor(), location);
         }
@@ -642,6 +648,12 @@ public class ServiceValidator {
         }
         if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION && typeDescriptor.typeKind() == TypeDescKind.RECORD) {
             validateInputParameterType((RecordTypeSymbol) typeDescriptor, location, typeName, isResourceMethod);
+            return;
+        }
+        if (isPrimitiveTypeSymbol(typeDescriptor)) {
+            // noinspection OptionalGetWithoutIsPresent
+            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS, getLocation(typeSymbol, location),
+                          typeSymbol.getName().get(), typeDescriptor.typeKind().getName());
             return;
         }
         validateInputParameterType(typeDescriptor, location, isResourceMethod);
