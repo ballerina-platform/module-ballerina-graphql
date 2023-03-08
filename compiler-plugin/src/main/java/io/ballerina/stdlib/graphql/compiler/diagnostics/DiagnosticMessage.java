@@ -80,7 +80,8 @@ public enum DiagnosticMessage {
     ERROR_136("invalid usage of type ''{0}'' as input object. The type ''{0}'' is reserved for use in "
                       + "GraphQL Federation"),
     ERROR_137("failed to add _entities resolver to the subgraph service"),
-    ERROR_138("failed to add _service service to the subgraph service");
+    ERROR_138("failed to add _service service to the subgraph service"),
+    ERROR_139("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported");
 
     private final String message;
 
