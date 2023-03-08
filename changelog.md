@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3721] Fix Passing Incorrect Values when a Resolver Method has an Enum as Input Parameter](https://github.com/ballerina-platform/ballerina-standard-library/issues/3721)
 - [[#4038] Fix `__typename` Introspection not Working on Introspection Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/4038)
 - [[#3337] Fix Allowing the use of non-distinct Service Objects as GraphQL Interfaces](https://github.com/ballerina-platform/ballerina-standard-library/issues/3337)
+- [[#4172] Fix Compilation Failure when Type Alias is Used with Primitive type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4172)
 
 ### Changed
 - [[#3430] Parallelise GraphQL Document Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/3430)
