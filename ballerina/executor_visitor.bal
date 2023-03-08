@@ -20,7 +20,7 @@ import ballerina/jballerina.java;
 isolated class ExecutorVisitor {
     *parser:Visitor;
 
-    private final __Schema schema;
+    private final readonly & __Schema schema;
     private final Engine engine; // This field needed to be accessed from the native code
     private Data data;
     private ErrorDetail[] errors;
@@ -29,7 +29,7 @@ isolated class ExecutorVisitor {
 
     isolated function init(Engine engine, __Schema schema, Context context, any|error result = ()) {
         self.engine = engine;
-        self.schema = schema.clone();
+        self.schema = schema.cloneReadOnly();
         self.context = context;
         self.data = {};
         self.errors = [];
@@ -115,7 +115,7 @@ isolated class ExecutorVisitor {
         Context context;
         lock {
             result = self.getResult();
-            schema = self.schema.clone();
+            schema = self.schema;
             engine = self.engine;
             context = self.context;
         }
