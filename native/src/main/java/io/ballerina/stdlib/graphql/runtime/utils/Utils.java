@@ -22,11 +22,18 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.RemoteMethodType;
+import io.ballerina.runtime.api.types.ResourceMethodType;
+import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getRemoteMethod;
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getResourceMethod;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -103,5 +110,29 @@ public class Utils {
         }
         return type.getPackage().getOrg().equals(expectedOrgName) && type.getPackage().getName()
                 .equals(expectedModuleName);
+    }
+
+    public static Object getResourceAnnotation(BObject service, BArray path, BString methodName) {
+        //should return remote method annotations as well
+        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(service, path);
+        if (resourceMethod != null) {
+            BString identifier = StringUtils.fromString("graphql:ResourceConfig");
+            return resourceMethod.getAnnotation(identifier);
+        }
+        RemoteMethodType remoteMethod = getRemoteMethod((ServiceType) service.getType(), String.valueOf(methodName));
+        if (remoteMethod != null) {
+            BString identifier = StringUtils.fromString("graphql:RemoteResourceConfig");
+            return remoteMethod.getAnnotation(identifier);
+        }
+        return null;
+        // ServiceType serviceType = (ServiceType) service.getType();
+        // ResourceMethodType[] functions = serviceType.getResourceMethods();
+        // for (ResourceMethodType function : functions) {
+        //     if (IdentifierUtils.decodeIdentifier(function.getName()).equals(
+        //             resourceName.getValue().strip().replace("\\", ""))) {
+        //         BString identifier = StringUtils.fromString("graphql:ResourceConfig");
+        //         return function.getAnnotation(identifier);
+        //     }
+        // }
     }
 }
