@@ -73,7 +73,8 @@ public enum CompilationDiagnostic {
     INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE(DiagnosticMessage.ERROR_136, DiagnosticCode.GRAPHQL_136,
                                       DiagnosticSeverity.ERROR),
     FAILED_TO_ADD_ENTITY_RESOLVER(DiagnosticMessage.ERROR_137, DiagnosticCode.GRAPHQL_137, DiagnosticSeverity.ERROR),
-    FAILED_TO_ADD_SERVICE_RESOLVER(DiagnosticMessage.ERROR_138, DiagnosticCode.GRAPHQL_138, DiagnosticSeverity.ERROR);
+    FAILED_TO_ADD_SERVICE_RESOLVER(DiagnosticMessage.ERROR_138, DiagnosticCode.GRAPHQL_138, DiagnosticSeverity.ERROR),
+    UNSUPPORTED_PRIMITIVE_TYPE_ALIAS(DiagnosticMessage.ERROR_139, DiagnosticCode.GRAPHQL_139, DiagnosticSeverity.ERROR);
 
     private final String diagnostic;
     private final String diagnosticCode;
