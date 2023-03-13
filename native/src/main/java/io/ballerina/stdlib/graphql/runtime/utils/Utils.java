@@ -56,6 +56,9 @@ public class Utils {
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
     public static final String PACKAGE_ORG = "ballerina";
 
+    public static final String COLON = ":";
+    public static final String RESOURCE_CONFIG = "ResourceConfig";
+
     public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
                                                                                       getModule().getName(),
                                                                                       getModule().getMajorVersion(),
@@ -113,26 +116,15 @@ public class Utils {
     }
 
     public static Object getResourceAnnotation(BObject service, BArray path, BString methodName) {
-        //should return remote method annotations as well
         ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(service, path);
+        BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
         if (resourceMethod != null) {
-            BString identifier = StringUtils.fromString("graphql:ResourceConfig");
             return resourceMethod.getAnnotation(identifier);
         }
         RemoteMethodType remoteMethod = getRemoteMethod((ServiceType) service.getType(), String.valueOf(methodName));
         if (remoteMethod != null) {
-            BString identifier = StringUtils.fromString("graphql:RemoteResourceConfig");
             return remoteMethod.getAnnotation(identifier);
         }
         return null;
-        // ServiceType serviceType = (ServiceType) service.getType();
-        // ResourceMethodType[] functions = serviceType.getResourceMethods();
-        // for (ResourceMethodType function : functions) {
-        //     if (IdentifierUtils.decodeIdentifier(function.getName()).equals(
-        //             resourceName.getValue().strip().replace("\\", ""))) {
-        //         BString identifier = StringUtils.fromString("graphql:ResourceConfig");
-        //         return function.getAnnotation(identifier);
-        //     }
-        // }
     }
 }

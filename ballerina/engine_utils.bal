@@ -84,11 +84,15 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
 
 isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType, __Schema schema,
                                  Engine engine, any|error fieldValue = ()) returns Field {
-    (string|int)[] path = [fieldNode.getName()];
+    string fieldName = fieldNode.getName();
+    (string|int)[] path = [fieldName];
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
-    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue);
+    GraphqlResourceConfig? resourceConfig = getResourceConfig(engine.getService(), [fieldName], fieldName);
+    readonly & Interceptor[] fieldInterceptors = getFieldInterceptors(resourceConfig);
+    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue,
+                fieldInterceptors = fieldInterceptors);
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {

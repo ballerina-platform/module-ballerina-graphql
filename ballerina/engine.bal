@@ -222,7 +222,7 @@ isolated class Engine {
     isolated function resolve(Context context, Field 'field) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
         parser:RootOperationType operationType = 'field.getOperationType();
-        (Interceptor & readonly)? interceptor = context.getNextInterceptor();
+        (Interceptor & readonly)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {
