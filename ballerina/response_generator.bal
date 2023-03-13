@@ -178,7 +178,6 @@ class ResponseGenerator {
     isolated function getResultFromArrayParallelly((any|error)[] parentValue, parser:FieldNode parentNode, (string|int)[] path)
     returns anydata {
         int i = 0;
-        anydata[] result = [];
         future<anydata>[] futures = [];
         var getResult = self.getResult;
         foreach any|error element in parentValue {
@@ -188,13 +187,24 @@ class ResponseGenerator {
             i += 1;
             _ = path.pop();
         }
+
+        i = 0;
+        anydata[] result = [];
         foreach future<anydata> elementFuture in futures {
-            anydata elementValue = checkpanic wait elementFuture;
-            if elementValue is ErrorDetail {
+            path.push(i);
+            anydata|error elementValue = wait elementFuture;
+            if elementValue is error {
+                log:printError("Error occurred while attempting to resolve element future", elementValue,
+                                stackTrace = elementValue.stackTrace());
+                _ = self.addError(elementValue, parentNode, path);
+                result.push(());
+            } else if elementValue is ErrorDetail {
                 result.push(());
             } else {
                 result.push(elementValue);
             }
+            i += 1;
+            _ = path.pop();
         }
         return result;
     }
@@ -218,16 +228,22 @@ class ResponseGenerator {
 
     isolated function getResultFromTableParallelly(table<map<any>> parentValue, parser:FieldNode parentNode,
                                                   (string|int)[] path) returns anydata {
-        anydata[] result = [];
         future<anydata>[] futures = [];
         var getResult = self.getResult;
         foreach any element in parentValue {
             future<anydata> 'future = start getResult(element, parentNode, path);
             futures.push('future);
         }
+
+        anydata[] result = [];
         foreach future<anydata> elementFuture in futures {
-            anydata elementValue = checkpanic wait elementFuture;
-            if elementValue is ErrorDetail {
+            anydata|error elementValue = wait elementFuture;
+            if elementValue is error {
+                log:printError("Error occurred while attempting to resolve element future", elementValue,
+                                stackTrace = elementValue.stackTrace());
+                _ = self.addError(elementValue, parentNode, path);
+                result.push(());
+            } else if elementValue is ErrorDetail {
                 result.push(());
             } else {
                 result.push(elementValue);
@@ -299,15 +315,24 @@ class ResponseGenerator {
                                                         map<any>|service object {} parentValue,
                                                         parser:SelectionNode parentNode, Data result,
                                                         (string|int)[] path) {
-        future<()>[] futures = [];
+        [parser:SelectionNode, future<()>][] selectionFutures = [];
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             var executeSelectionFunction = self.executeSelectionFunction;
             future<()> 'future = start executeSelectionFunction(selectionFunctionName, parentValue, selection, result,
                                                                 path);
-            futures.push('future);
+            selectionFutures.push([selection, 'future]);
         }
-        foreach future<()> 'future in futures {
-            _ = checkpanic wait 'future;
+        foreach [parser:SelectionNode, future<()>] [selection, 'future] in selectionFutures {
+            error? err = wait 'future;
+            if err is () {
+                continue;
+            }
+            log:printError("Error occurred while attempting to resolve selection future", err,
+                            stackTrace = err.stackTrace());
+            if selection is parser:FieldNode {
+                _ = self.addError(err, selection, path.clone());
+                result[selection.getAlias()] = ();
+            }
         }
     }
 
