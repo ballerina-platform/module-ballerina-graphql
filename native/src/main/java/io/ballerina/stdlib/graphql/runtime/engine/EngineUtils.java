@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
-import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
@@ -30,7 +29,6 @@ import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
-import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
@@ -44,14 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.ballerina.runtime.api.TypeTags.BOOLEAN_TAG;
-import static io.ballerina.runtime.api.TypeTags.DECIMAL_TAG;
-import static io.ballerina.runtime.api.TypeTags.FLOAT_TAG;
-import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
-import static io.ballerina.runtime.api.TypeTags.STRING_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getDecodedSchema;
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
@@ -82,7 +74,6 @@ public class EngineUtils {
     public static final BString DEPRECATION_REASON_FIELD = StringUtils.fromString("deprecationReason");
     public static final BString IS_DEPRECATED_FIELD = StringUtils.fromString("isDeprecated");
     public static final BString DIRECTIVES_FIELD = StringUtils.fromString("directives");
-    public static final BString ALIAS_FIELD = StringUtils.fromString("alias");
     public static final BString KIND_FIELD = StringUtils.fromString("kind");
     public static final BString FIELDS_FIELD = StringUtils.fromString("fields");
     public static final BString ARGS_FIELD = StringUtils.fromString("args");
@@ -98,40 +89,15 @@ public class EngineUtils {
     public static final String MUTATION = "Mutation";
     public static final String SUBSCRIPTION = "Subscription";
 
-    // Input values
-    public static final String KEY = "key";
-
     //Accessor names
     public static final String GET_ACCESSOR = "get";
     public static final String SUBSCRIBE_ACCESSOR = "subscribe";
     public static final String INTERCEPTOR_EXECUTE = "execute";
 
-    // Visitor object fields
-    static final BString ERRORS_FIELD = StringUtils.fromString("errors");
-    static final BString ENGINE_FIELD = StringUtils.fromString("engine");
-    static final BString CONTEXT_FIELD = StringUtils.fromString("context");
-
-    // Internal Types
-    static final String ERROR_DETAIL_RECORD = "ErrorDetail";
-    static final String DATA_RECORD = "Data";
-
-    // Record fields
-    static final BString LOCATION_FIELD = StringUtils.fromString("location");
     public static final BString LOCATIONS_FIELD = StringUtils.fromString("locations");
-    static final BString PATH_FIELD = StringUtils.fromString("path");
-    static final BString MESSAGE_FIELD = StringUtils.fromString("message");
-    static final BString SELECTIONS_FIELD = StringUtils.fromString("selections");
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
     static final BString VARIABLE_NAME_FIELD = StringUtils.fromString("variableName");
-    static final BString ON_TYPE_FIELD = StringUtils.fromString("onType");
-    static final BString SCHEMA_FIELD = StringUtils.fromString("schema");
-
-    // Node Types
-    static final BString FRAGMENT_NODE = StringUtils.fromString("FragmentNode");
-
-    // Query Fields
-    public static final String TYPENAME_FIELD = "__typename";
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";
@@ -142,40 +108,6 @@ public class EngineUtils {
     // Entity annotation fields
     private static final BString ENTITY_ANNOTATION_KEY_FIELD = StringUtils.fromString("key");
     private static final BString ENTITY_ANNOTATION_RESOLVER_FIELD = StringUtils.fromString("resolveReference");
-
-    static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
-        BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
-        ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());
-        BArray locations = ValueCreator.createArrayValue(locationsArrayType);
-        locations.append(location);
-        ArrayType pathSegmentArrayType = TypeCreator.createArrayType(
-                TypeCreator.createUnionType(PredefinedTypes.TYPE_INT, PredefinedTypes.TYPE_STRING));
-        BArray pathSegmentArray = ValueCreator.createArrayValue(pathSegments.toArray(), pathSegmentArrayType);
-        BMap<BString, Object> errorDetail = ValueCreator.createRecordValue(getModule(), ERROR_DETAIL_RECORD);
-        errorDetail.put(MESSAGE_FIELD, StringUtils.fromString(error.getMessage()));
-        errorDetail.put(LOCATIONS_FIELD, locations);
-        errorDetail.put(PATH_FIELD, pathSegmentArray);
-        return errorDetail;
-    }
-
-    static BMap<BString, Object> createDataRecord() {
-        return ValueCreator.createRecordValue(getModule(), DATA_RECORD);
-    }
-
-    static boolean isScalarType(Type type) {
-        int tag = type.getTag();
-        if (tag == TypeTags.UNION_TAG) {
-            if (isEnum((UnionType) type)) {
-                return true;
-            }
-            List<Type> memberTypes = getMemberTypes((UnionType) type);
-            if (memberTypes.size() == 1) {
-                return isScalarType(memberTypes.get(0));
-            }
-            return false;
-        }
-        return tag == INT_TAG || tag == FLOAT_TAG || tag == BOOLEAN_TAG || tag == STRING_TAG || tag == DECIMAL_TAG;
-    }
 
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
         String[] resourcePath = resourceMethod.getResourcePath();
@@ -189,22 +121,6 @@ public class EngineUtils {
             }
         }
         return true;
-    }
-
-    static List<String> copyAndUpdateResourcePathsList(List<String> paths, BObject node) {
-        List<String> updatedPaths = new ArrayList<>(paths);
-        updatedPaths.add(node.getStringValue(NAME_FIELD).getValue());
-        return updatedPaths;
-    }
-
-    static List<Object> updatePathSegments(List<Object> pathSegments, Object segment) {
-        List<Object> updatedPathSegments = new ArrayList<>(pathSegments);
-        if (segment instanceof String) {
-            updatedPathSegments.add(StringUtils.fromString((String) segment));
-        } else {
-            updatedPathSegments.add(segment);
-        }
-        return updatedPathSegments;
     }
 
     public static boolean isEnum(UnionType unionType) {
@@ -238,16 +154,6 @@ public class EngineUtils {
 
     public static boolean isIgnoreType(Type type) {
         return type.getTag() == TypeTags.ERROR_TAG || type.getTag() == TypeTags.NULL_TAG;
-    }
-
-    public static BMap<BString, Object> getTypeFromTypeArray(String typeName, BArray types) {
-        for (int i = 0; i < types.size(); i++) {
-            BMap<BString, Object> type = (BMap<BString, Object>) types.get(i);
-            if (type.getStringValue(NAME_FIELD).getValue().equals(typeName)) {
-                return type;
-            }
-        }
-        return null;
     }
 
     public static void addService(BObject engine, BObject service) {
