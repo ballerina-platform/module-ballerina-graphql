@@ -13,3 +13,4 @@ coverage:
         project:
             default:
                 target: 80
+    files: ./ballerina/target/report/graphql/coverage-report.xml,./ballerina-tests/target/report/graphql_tests/coverage-report.xml,./compiler-plugin-tests/build/reports/jacoco/test/jacocoTestReport.xml
