@@ -4,8 +4,6 @@ fixes:
 ignore:
     - "ballerina-tests"
     - "compiler-plugin-tests"
-    - "compiler-plugin"
-    - "commons"
 
 coverage:
     precision: 2

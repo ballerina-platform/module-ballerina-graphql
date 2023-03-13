@@ -20,6 +20,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'com.github.spotbugs'
+    id 'jacoco'
 }
 
 description = 'Ballerina - GraphQL Compiler Plugin Tests'
@@ -80,6 +81,20 @@ compileJava {
     }
 }
 
+jacoco {
+    toolVersion = "${jacocoVersion}"
+    reportsDirectory = file("$buildDir/reports/jacoco")
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = false
+    }
+    sourceSets project(':graphql-compiler-plugin').sourceSets.main
+}
+
 test {
     systemProperty "ballerina.offline.flag", "true"
     systemProperty "ballerina.graphql.version", project.version
@@ -99,3 +114,5 @@ test {
 }
 
 test.dependsOn ":graphql-ballerina:build"
+test.finalizedBy jacocoTestReport
+jacocoTestReport.dependsOn test
