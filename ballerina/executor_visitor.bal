@@ -26,7 +26,7 @@ isolated class ExecutorVisitor {
     private Data data;
     private ErrorDetail[] errors;
     private Context context;
-    private any|error result; // The value of this field is set from the native code
+    private any|error result; // The value of this field is set using setResult method
 
     isolated function init(Engine engine, readonly & __Schema schema, Context context, any|error result = ()) {
         self.engine = engine;
