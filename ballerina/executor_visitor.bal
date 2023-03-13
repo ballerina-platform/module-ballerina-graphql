@@ -28,9 +28,9 @@ isolated class ExecutorVisitor {
     private Context context;
     private any|error result; // The value of this field is set from the native code
 
-    isolated function init(Engine engine, __Schema schema, Context context, any|error result = ()) {
+    isolated function init(Engine engine, readonly & __Schema schema, Context context, any|error result = ()) {
         self.engine = engine;
-        self.schema = schema.cloneReadOnly();
+        self.schema = schema;
         self.context = context;
         self.data = {};
         self.errors = [];
