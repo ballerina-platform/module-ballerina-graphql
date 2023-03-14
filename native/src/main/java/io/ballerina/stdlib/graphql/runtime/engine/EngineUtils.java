@@ -104,6 +104,8 @@ public class EngineUtils {
     public static final String FIELD_OBJECT = "field.object";
 
     public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
+    public static final BString HAS_FILE_INFO_FIELD = StringUtils.fromString("hasFileInfo");
+    public static final BString RESULT_FIELD = StringUtils.fromString("result");
 
     // Entity annotation fields
     private static final BString ENTITY_ANNOTATION_KEY_FIELD = StringUtils.fromString("key");
@@ -166,6 +168,7 @@ public class EngineUtils {
 
     public static void setFileInfo(BObject context, BMap<BString, Object> fileInfo) {
         context.addNativeData(FILE_INFO_FIELD, fileInfo);
+        context.set(HAS_FILE_INFO_FIELD, true);
     }
 
     public static BMap<BString, Object> getFileInfo(BObject context) {
@@ -237,5 +240,13 @@ public class EngineUtils {
             keyDirectiveFields.add(keysArray.getBString(i).getValue());
         }
         return keyDirectiveFields;
+    }
+
+    public static void setResult(BObject executorVisitor, Object result) {
+        executorVisitor.set(RESULT_FIELD, result);
+    }
+
+    public static Object getResult(BObject executorVisitor) {
+        return executorVisitor.get(RESULT_FIELD);
     }
 }

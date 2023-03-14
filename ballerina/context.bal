@@ -24,12 +24,20 @@ public isolated class Context {
     private final ErrorDetail[] errors;
     private Engine? engine;
     private int nextInterceptor;
+    private boolean hasFileInfo = false; // This field value changed by setFileInfo method
 
-    public isolated function init() {
+    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (), 
+                                  int nextInterceptor = 0) {
         self.attributes = {};
-        self.engine = ();
+        self.engine = engine;
         self.errors = [];
-        self.nextInterceptor = 0;
+        self.nextInterceptor = nextInterceptor;
+        
+        foreach var item in attributes.entries() {
+            string key = item[0];
+            value:Cloneable|isolated object {} value = item[1];
+            self.attributes[key] = value;
+        }
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -85,6 +93,13 @@ public isolated class Context {
     isolated function addError(ErrorDetail err) {
         lock {
             self.errors.push(err.clone());
+        }
+    }
+
+    isolated function addErrors(ErrorDetail[] errs) {
+        readonly & ErrorDetail[] errors = errs.cloneReadOnly();
+        lock {
+            self.errors.push(...errors);
         }
     }
 
@@ -146,6 +161,16 @@ public isolated class Context {
     isolated function resetErrors() {
         lock {
             self.errors.removeAll();
+        }
+    }
+
+    isolated function cloneWithoutErrors() returns Context {
+        lock {
+            Context clonedContext = new(self.attributes, self.engine, self.nextInterceptor);
+            if self.hasFileInfo {
+                clonedContext.setFileInfo(self.getFileInfo());
+            }
+            return clonedContext;
         }
     }
 }
