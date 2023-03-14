@@ -1,11 +1,10 @@
 fixes:
     - "ballerina/graphql/**/::../ballerina/"
+    - "io/ballerina/stdlib/graphql/compiler/::./compiler-plugin/src/main/java/io/ballerina/stdlib/graphql/compiler/"
+    - "io/ballerina/stdlib/graphql/commons/::./commons/src/main/java/io/ballerina/stdlib/graphql/commons/"
 
 ignore:
     - "ballerina-tests"
-    - "compiler-plugin-tests"
-    - "compiler-plugin"
-    - "commons"
 
 coverage:
     precision: 2
