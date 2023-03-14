@@ -78,17 +78,23 @@ isolated function getIntrospection(GraphqlServiceConfig? serviceConfig) returns 
     return true;
 }
 
-isolated function getFieldInterceptors(GraphqlResourceConfig? resourceConfig) returns
+isolated function getFieldInterceptors(service object {} serviceObj, string fieldName, string[] resourcePath) returns
     readonly & (readonly & Interceptor)[] {
+    GraphqlResourceConfig? resourceConfig = getResourceConfig(serviceObj, fieldName, resourcePath);
     if resourceConfig is GraphqlResourceConfig {
-        return resourceConfig.interceptors;
+        readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) interceptors = resourceConfig.interceptors;
+        if interceptors is (readonly & Interceptor) {
+            return [interceptors];
+        } else {
+            return interceptors;
+        }
     }
     return [];
 }
 
-isolated function getResourceConfig(Service serviceRef, string[] resourcePath, string methodName)
+isolated function getResourceConfig(service object {} serviceObj, string methodName, string[] resourcePath)
 returns GraphqlResourceConfig? {
-    any resourceAnnotation = getResourceAnnotation(serviceRef, resourcePath, methodName);
+    any resourceAnnotation = getResourceAnnotation(serviceObj, resourcePath, methodName);
     if resourceAnnotation !is () {
         GraphqlResourceConfig resourceConfig = <GraphqlResourceConfig>resourceAnnotation;
         return resourceConfig;
@@ -98,5 +104,5 @@ returns GraphqlResourceConfig? {
 
 isolated function getResourceAnnotation(service object {} serviceObject, string[] path, string methodName)
 returns any = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;

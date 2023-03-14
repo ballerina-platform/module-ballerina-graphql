@@ -143,6 +143,10 @@ public class EngineUtils {
     private static final BString ENTITY_ANNOTATION_KEY_FIELD = StringUtils.fromString("key");
     private static final BString ENTITY_ANNOTATION_RESOLVER_FIELD = StringUtils.fromString("resolveReference");
 
+    // Resource annotation
+    public static final String RESOURCE_CONFIG = "ResourceConfig";
+    public static final String COLON = ":";
+
     static BMap<BString, Object> getErrorDetailRecord(BError error, BObject node, List<Object> pathSegments) {
         BMap<BString, Object> location = node.getMapValue(LOCATION_FIELD);
         ArrayType locationsArrayType = TypeCreator.createArrayType(location.getType());

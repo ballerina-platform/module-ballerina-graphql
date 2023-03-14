@@ -42,7 +42,7 @@ public annotation GraphqlServiceConfig ServiceConfig on service;
 #
 # + interceptors - GraphQL field level interceptors
 public type GraphqlResourceConfig record {|
-    readonly readonly & Interceptor[] interceptors = [];
+    readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
 |};
 
 # The annotation to configure a GraphQL resolver.

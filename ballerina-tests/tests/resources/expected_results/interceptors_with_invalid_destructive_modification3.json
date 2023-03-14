@@ -1,6 +1,18 @@
 {
     "errors": [
         {
+            "message":"Invalid return type in Interceptor \"InvalidInterceptor9\". Expected type Person!",
+            "locations":[
+                {
+                    "line":2,
+                    "column":5
+                }
+            ],
+            "path":[
+                "person"
+            ]
+        },
+        {
             "message": "Invalid return type in Interceptor \"InvalidInterceptor6\". Expected type Person!",
             "locations": [
                 {

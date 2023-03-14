@@ -2,6 +2,10 @@
     "data": {
         "setName": {
             "name": "Albus Percival Wulfric Brian Dumbledore"
+        },
+        "setAge": {
+            "name": "Albert",
+            "age": 53
         }
     }
 }

@@ -189,6 +189,12 @@ final readonly & EmployeeTable employees = table[
     { id: 3, name: "Johnny Roe", salary: 500.00 }
 ];
 
+final readonly & EmployeeTable oldEmployees = table[
+    { id: 4, name: "John", salary: 5000.00 },
+    { id: 5, name: "Jane", salary: 7000.00 },
+    { id: 6, name: "Johnny", salary: 1000.00 }
+];
+
 public final readonly & table<LiftRecord> key(id) liftTable = table [
     { id: "astra-express", name: "Astra Express", status: OPEN, capacity: 10, night: false, elevationgain: 20},
     { id: "jazz-cat", name: "Jazz Cat", status: CLOSED, capacity: 5, night: true, elevationgain: 30},

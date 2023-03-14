@@ -1,5 +1,6 @@
 {
     "data": {
-        "students": ["Ballerina","GraphQL"]
+        "students": ["Ballerina","GraphQL"],
+        "teachers": ["Hello","World!"]
     }
 }

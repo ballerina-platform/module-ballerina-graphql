@@ -5,5 +5,8 @@
             number,
             street
         }
+    },
+    contact {
+        number
     }
 }

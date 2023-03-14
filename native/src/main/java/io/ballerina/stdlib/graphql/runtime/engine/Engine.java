@@ -45,11 +45,14 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.RESOURCE_CONFIG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERCEPTOR_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
@@ -235,5 +238,28 @@ public class Engine {
     public static BString getInterceptorName(BObject interceptor) {
         ServiceType serviceType = (ServiceType) interceptor.getType();
         return StringUtils.fromString(serviceType.getName());
+    }
+
+    public static Object getResourceAnnotation(BObject service, BArray path, BString methodName) {
+        BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
+        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(service, path, GET_ACCESSOR);
+        if (resourceMethod != null) {
+            return resourceMethod.getAnnotation(identifier);
+        }
+        RemoteMethodType remoteMethod = getRemoteMethod((ServiceType) service.getType(), String.valueOf(methodName));
+        if (remoteMethod != null) {
+            return remoteMethod.getAnnotation(identifier);
+        }
+        resourceMethod = (ResourceMethodType) getResourceMethod(service, path, SUBSCRIBE_ACCESSOR);
+        if (resourceMethod != null) {
+            return resourceMethod.getAnnotation(identifier);
+        }
+        return null;
+    }
+
+    private static Object getResourceMethod(BObject service, BArray path, String accessor) {
+        ServiceType serviceType = (ServiceType) service.getType();
+        List<String> pathList = getPathList(path);
+        return getResourceMethod(serviceType, pathList, accessor);
     }
 }

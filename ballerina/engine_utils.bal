@@ -59,9 +59,9 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
         return true;
     } else if 'type.kind is ENUM && value is string {
         return true;
-    } else if 'type.kind is LIST && value is anydata[] {
+    } else if 'type.kind is LIST && (value is anydata[] || value is table<anydata>) {
         return true;
-    } else if 'type.kind is OBJECT && value is map<anydata> {
+    } else if 'type.kind is OBJECT && (value is map<anydata>) {
         return true;
     } else if 'type.kind is SCALAR && value is Scalar {
         if getOfTypeName('type) == getTypeNameFromScalarValue(value) {
@@ -89,10 +89,7 @@ isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperatio
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
-    GraphqlResourceConfig? resourceConfig = getResourceConfig(engine.getService(), [fieldName], fieldName);
-    readonly & Interceptor[] fieldInterceptors = getFieldInterceptors(resourceConfig);
-    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue,
-                fieldInterceptors = fieldInterceptors);
+    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue);
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {

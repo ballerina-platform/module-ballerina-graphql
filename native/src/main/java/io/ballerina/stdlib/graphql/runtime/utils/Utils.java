@@ -22,18 +22,11 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.RemoteMethodType;
-import io.ballerina.runtime.api.types.ResourceMethodType;
-import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
-import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
-import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getRemoteMethod;
-import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getResourceMethod;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -55,9 +48,6 @@ public class Utils {
 
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
     public static final String PACKAGE_ORG = "ballerina";
-
-    public static final String COLON = ":";
-    public static final String RESOURCE_CONFIG = "ResourceConfig";
 
     public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
                                                                                       getModule().getName(),
@@ -113,18 +103,5 @@ public class Utils {
         }
         return type.getPackage().getOrg().equals(expectedOrgName) && type.getPackage().getName()
                 .equals(expectedModuleName);
-    }
-
-    public static Object getResourceAnnotation(BObject service, BArray path, BString methodName) {
-        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(service, path);
-        BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
-        if (resourceMethod != null) {
-            return resourceMethod.getAnnotation(identifier);
-        }
-        RemoteMethodType remoteMethod = getRemoteMethod((ServiceType) service.getType(), String.valueOf(methodName));
-        if (remoteMethod != null) {
-            return remoteMethod.getAnnotation(identifier);
-        }
-        return null;
     }
 }
