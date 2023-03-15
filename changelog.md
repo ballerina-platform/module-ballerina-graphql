@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#4120] Add support to GraphQL design view by updating the schema](https://github.com/ballerina-platform/ballerina-standard-library/issues/4120)
+- [[#3504] Add Support for Federation Subgraph](https://github.com/ballerina-platform/ballerina-standard-library/issues/3504)
 - [[#4122] Add Parallel Execution for GraphQL Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/4122)
 
 ### Fixed
