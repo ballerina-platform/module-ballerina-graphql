@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#4208] Fix Subscription Payload Returned with Invalid GraphQL Error Format](https://github.com/ballerina-platform/ballerina-standard-library/issues/4208)
+
 ## [1.6.1] - 2023-03-09
 
 ### Fixed
