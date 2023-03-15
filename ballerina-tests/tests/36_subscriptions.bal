@@ -249,9 +249,14 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
     string url = "ws://localhost:9099/subscriptions";
     websocket:Client websocketClient = check new(url);
     check writeWebSocketTextMessage(document, websocketClient);
-    string errorMessage = "{ballerina/lang.array}IndexOutOfRange";
-    json expectedPayload = {errors: [{message: errorMessage}]};
-    check validateWebSocketResponse(websocketClient, expectedPayload);
+    json expectedErrorPayload = [
+        {
+            message: "{ballerina/lang.array}IndexOutOfRange",
+            locations: [{line: 1, column: 25}],
+            path: ["values"]
+        }
+    ];
+    check validateWebSocketResponse(websocketClient, expectedErrorPayload);
 }
 
 @test:Config {
@@ -445,7 +450,7 @@ isolated function testSubscriptionFunctionWithErrorsUsingSubProtocol() returns e
 
         check writeWebSocketTextMessage(document, wsClient, id = "1", subProtocol = subProtocol);
         string errorMessage = "{ballerina/lang.array}IndexOutOfRange";
-        json payload = {errors: [{message: errorMessage}]};
+        json payload = [{message: errorMessage, locations: [{line: 1, column: 25}], path: ["values"]}];
         json expectedPayload = {"type": messageType, id: "1", payload: payload};
         check validateWebSocketResponse(wsClient, expectedPayload);
     }

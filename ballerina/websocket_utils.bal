@@ -23,7 +23,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
                                    parser:OperationNode node, string? connectionId) returns websocket:Error? {
     RootFieldVisitor rootFieldVisitor = new (node);
     parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-    stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode);
+    stream<any, error?>|json sourceStream = getSubscriptionResponse(engine, schema, context, fieldNode, node);
     if sourceStream is stream<any, error?> {
         record {|any value;|}|error? next = sourceStream.next();
         while next !is () {
@@ -76,13 +76,18 @@ isolated function validateSubscriptionPayload(json|WSPayload data, Engine engine
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          parser:FieldNode node) returns stream<any, error?>|json {
+                                          parser:FieldNode node,parser:OperationNode operationNode)
+returns stream<any, error?>|json {
     any|error result = engine.executeSubscriptionResource(context, engine.getService(), node);
     if result is stream<any, error?> {
         return result;
     }
-    string errorMessage = result is error ? result.message() : "Error ocurred in the subscription resolver";
-    return {errors: [{message: errorMessage}]};
+    error err = error("Error ocurred in the subscription resolver");
+    if result is error {
+        err = result;
+    }
+    OutputObject outputObject = engine.getResult(operationNode, context, err);
+    return outputObject.errors.toJson();
 }
 
 isolated function sendWebSocketResponse(websocket:Caller caller, map<string> & readonly customHeaders, string wsType,

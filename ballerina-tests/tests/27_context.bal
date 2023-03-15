@@ -328,12 +328,12 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     };
     websocket:Client wsClient = check new (url, configs);
     check writeWebSocketTextMessage(document, wsClient);
-    json expectedPayload = {
-        errors:[
-            {
-                message: "You don't have permission to retrieve data"
-            }
-        ]
-    };
-    check validateWebSocketResponse(wsClient, expectedPayload);
+    json expectedErrorPayload = [
+        {
+            message: "You don't have permission to retrieve data",
+            locations: [{line: 1, column: 16}],
+            path: ["messages"]
+        }
+    ];
+    check validateWebSocketResponse(wsClient, expectedErrorPayload);
 }
