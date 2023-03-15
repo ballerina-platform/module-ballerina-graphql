@@ -41,7 +41,8 @@ public readonly class DocumentNode {
         return self.fragments[name];
     }
 
-    public isolated function modifyWith(map<OperationNode> operations) returns DocumentNode {
-        return new (operations, {});
+    public isolated function modifyWith(map<OperationNode> operations, map<FragmentNode> fragments = {})
+    returns DocumentNode {
+        return new (operations, fragments);
     }
 }
