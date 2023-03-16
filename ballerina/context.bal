@@ -137,13 +137,13 @@ public isolated class Context {
         }
     }
 
-    isolated function getNextInterceptor() returns Interceptor? {
+    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
         lock {
             Engine? engine = self.getEngine();
             if engine is Engine {
-                Interceptor[] interceptors = engine.getInterceptors();
+                (readonly & Interceptor)[] interceptors = engine.getInterceptors();
                 if interceptors.length() > self.nextInterceptor {
-                    Interceptor next = interceptors[self.nextInterceptor];
+                    (readonly & Interceptor) next = interceptors[self.nextInterceptor];
                     self.nextInterceptor += 1;
                     return next;
                 }

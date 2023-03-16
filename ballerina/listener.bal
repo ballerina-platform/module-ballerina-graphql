@@ -54,7 +54,7 @@ public class Listener {
         Graphiql graphiql = getGraphiqlConfig(serviceConfig);
         string schemaString = getSchemaString(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        readonly & Interceptor[] interceptors = getServiceInterceptors(serviceConfig);
+        readonly & (readonly & Interceptor)[] interceptors = getServiceInterceptors(serviceConfig);
         boolean introspection = getIntrospection(serviceConfig);
         Engine engine;
         if graphiql.enabled {
