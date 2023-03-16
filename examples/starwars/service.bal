@@ -46,10 +46,6 @@ public type ReviewInput record {|
 service /graphql on new graphql:Listener(9090) {
     private final pubsub:PubSub pubsub = new;
 
-    function init() returns error? {
-        check self.pubsub.createTopic("reviews");
-    }
-
     # Fetch the hero of the Star Wars
     # + return - The hero
     resource function get hero(Episode? episode) returns Character {
