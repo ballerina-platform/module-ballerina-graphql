@@ -25,7 +25,6 @@ description = 'Ballerina - GraphQL Compiler Plugin Tests'
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def examples = ["snowtooth", "starwars", "news_alerts"]
 def nativeFlag = ""
-def kafkaPackage = "ballerinax/kafka"
 
 dependencies {
     implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
