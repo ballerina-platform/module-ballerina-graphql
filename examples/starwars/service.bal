@@ -68,14 +68,14 @@ service /graphql on new graphql:Listener(9090) {
     # Returns characters by id, or null if character is not found
     # + return - The characters
     resource function get characters(string[] idList) returns Character?[] {
-        Character[] characters = [];
+        Character?[] characters = [];
         foreach string id in idList {
             if ds:humanTable.hasKey(id) {
                 characters.push(new Human(ds:humanTable.get(id)));
             } else if ds:droidTable.hasKey(id) {
                 characters.push(new Droid(ds:droidTable.get(id)));
             } else {
-                characters.push();
+                characters.push(());
             }
         }
         return characters;
