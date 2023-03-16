@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
@@ -36,21 +37,24 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
-import io.ballerina.stdlib.graphql.compiler.service.InterfaceFinder;
+import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.hasGraphqlListener;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isSubgraphModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.ModuleLevelVariableDeclarationAnalysisTask.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 
@@ -65,6 +69,7 @@ public final class Utils {
     public static final String FIELD_IDENTIFIER = "Field";
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
+    public static final String SUBGRAPH_ANNOTATION_NAME = "Subgraph";
 
     private Utils() {
     }
@@ -226,11 +231,32 @@ public final class Utils {
                 || node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION;
     }
 
+    public static boolean isRecordTypeDefinition(Symbol symbol) {
+        if (symbol.kind() != SymbolKind.TYPE_DEFINITION) {
+            return false;
+        }
+        TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol;
+        return typeDefinitionSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD;
+    }
+
+    public static boolean hasSubgraphAnnotation(List<AnnotationSymbol> annotations) {
+        for (AnnotationSymbol annotation : annotations) {
+            if (annotation.getName().isEmpty() || !isSubgraphModuleSymbol(annotation)) {
+                continue;
+            }
+            String annotationName = annotation.getName().get();
+            if (annotationName.equals(SUBGRAPH_ANNOTATION_NAME)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // The function used by the LS extension to get the Schema object
     public static Schema getSchemaObject(Node node, SemanticModel semanticModel, Project project) {
         String description;
         Node serviceNode;
-
+        boolean isSubgraph;
         if (node.kind() == SyntaxKind.SERVICE_DECLARATION) {
             if (semanticModel.symbol(node).isEmpty()) {
                 return null;
@@ -239,9 +265,9 @@ public final class Utils {
             if (!hasGraphqlListener(symbol)) {
                 return null;
             }
+            isSubgraph = hasSubgraphAnnotation(symbol.annotations());
             description = getDescription(symbol);
             serviceNode = node;
-
         } else if (node.kind() == SyntaxKind.MODULE_VAR_DECL) {
             ModuleVariableDeclarationNode moduleVarDclNode = (ModuleVariableDeclarationNode) node;
             if (!isGraphQLServiceObjectDeclaration(moduleVarDclNode)) {
@@ -254,19 +280,42 @@ public final class Utils {
             if (expressionNode.kind() != SyntaxKind.OBJECT_CONSTRUCTOR) {
                 return null;
             }
-
+            ObjectConstructorExpressionNode objectNode = (ObjectConstructorExpressionNode) expressionNode;
+            // noinspection OptionalGetWithoutIsPresent
+            var annotations = objectNode.annotations().stream()
+                    .map(annotationNode -> (AnnotationSymbol) semanticModel.symbol(annotationNode).get())
+                    .collect(Collectors.toList());
+            isSubgraph = hasSubgraphAnnotation(annotations);
             serviceNode = expressionNode;
             description = getDescription(semanticModel, moduleVarDclNode);
-
         } else {
             return null;
         }
 
-        InterfaceFinder interfaceFinder = new InterfaceFinder();
+        InterfaceEntityFinder interfaceFinder = new InterfaceEntityFinder();
         interfaceFinder.populateInterfaces(semanticModel);
-        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel,
-                project, description);
+        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel, project,
+                                                              description, isSubgraph);
 
         return schemaGenerator.generate();
+    }
+    
+    public static boolean isPrimitiveTypeSymbol(TypeSymbol typeSymbol) {
+        switch (typeSymbol.typeKind()) {
+            case INT:
+            case INT_SIGNED8:
+            case INT_UNSIGNED8:
+            case INT_SIGNED16:
+            case INT_UNSIGNED16:
+            case INT_SIGNED32:
+            case INT_UNSIGNED32:
+            case STRING:
+            case STRING_CHAR:
+            case BOOLEAN:
+            case DECIMAL:
+            case FLOAT:
+                return true;
+        }
+        return false;
     }
 }

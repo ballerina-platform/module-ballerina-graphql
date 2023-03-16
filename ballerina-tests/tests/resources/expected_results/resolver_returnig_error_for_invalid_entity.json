@@ -1,0 +1,22 @@
+{
+  "errors": [
+    {
+      "message": "No entities found for {__typename: 'Invalid'}",
+      "locations": [
+        {
+          "line": 1,
+          "column": 3
+        }
+      ],
+      "path": [
+        "_entities",
+        0
+      ]
+    }
+  ],
+  "data": {
+    "_entities": [
+      null
+    ]
+  }
+}

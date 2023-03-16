@@ -85,6 +85,7 @@ public class SchemaRecordGenerator {
 
     public SchemaRecordGenerator(Schema schema) {
         this.schema = schema;
+        this.schema.addSubgraphSchemaAdditions();
         this.typeRecords = new HashMap<>();
         this.populateTypeRecordMap();
         this.populateFieldsOfTypes();

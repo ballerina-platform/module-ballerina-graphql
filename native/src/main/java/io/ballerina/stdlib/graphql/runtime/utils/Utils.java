@@ -46,6 +46,9 @@ public class Utils {
     public static final String UPLOAD = "Upload";
     public static final BString INTERNAL_NODE = StringUtils.fromString("internalNode");
 
+    public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
+    public static final String PACKAGE_ORG = "ballerina";
+
     public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
                                                                                       getModule().getName(),
                                                                                       getModule().getMajorVersion(),
@@ -84,13 +87,21 @@ public class Utils {
     }
 
     public static boolean isGraphqlModule(Type type) {
+        return hasExpectedModuleName(type, getModule().getName(), getModule().getOrg());
+    }
+
+    public static boolean isSubgraphModule(Type type) {
+        return hasExpectedModuleName(type, SUBGRAPH_SUB_MODULE_NAME, PACKAGE_ORG);
+    }
+
+    private static boolean hasExpectedModuleName(Type type, String expectedModuleName, String expectedOrgName) {
         if (type.getPackage() == null) {
             return false;
         }
         if (type.getPackage().getOrg() == null || type.getPackage().getName() == null) {
             return false;
         }
-        return type.getPackage().getOrg().equals(ModuleUtils.getModule().getOrg()) &&
-                type.getPackage().getName().equals(ModuleUtils.getModule().getName());
+        return type.getPackage().getOrg().equals(expectedOrgName) && type.getPackage().getName()
+                .equals(expectedModuleName);
     }
 }

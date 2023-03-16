@@ -11,6 +11,10 @@ on:
                 description: 'Cluster name'
                 default: 'graphql-perf-cluster-test'
                 required: false
+            branch:
+                description: 'Branch of the given repository'
+                default: ''
+                required: false
     schedule:
         - cron: '0 19 * * *'
 
@@ -26,5 +30,5 @@ jobs:
             cluster_name: ${{ inputs.clusterName }}
             tests: ${{ inputs.tests }}
             branch: ${{ inputs.branch }}
-            secrets:
-                ballerina_bot_token: ${{ secrets.BALLERINA_BOT_TOKEN }}
+        secrets:
+            ballerina_bot_token: ${{ secrets.BALLERINA_BOT_TOKEN }}

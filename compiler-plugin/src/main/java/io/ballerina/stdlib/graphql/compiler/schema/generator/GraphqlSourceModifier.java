@@ -20,7 +20,9 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.MetadataNode;
@@ -45,6 +47,7 @@ import io.ballerina.projects.Module;
 import io.ballerina.projects.plugins.ModifierTask;
 import io.ballerina.projects.plugins.SourceModifierContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.commons.types.Type;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
@@ -52,8 +55,11 @@ import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.Location;
 import io.ballerina.tools.text.TextDocument;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -61,8 +67,11 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.SUBGRAPH_SUB_MODULE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.Utils.SERVICE_CONFIG_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.SCHEMA_STRING_FIELD;
 
@@ -70,14 +79,26 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
  * Modifies the GraphQL service to add an annotation to the service with the generated schema.
  */
 public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext> {
+    private static final String ENTITY = "__Entity";
+    public static final String MAP_DEFINITION_PLACEHOLDER = "mapDef";
+    private static final String SUBGRAPH_MODULE_PLACEHOLDER = "subgraph";
     private final Map<DocumentId, GraphqlModifierContext> modifierContextMap;
+    private final Map<Node, String> entityTypeNamesMap;
+    private String subgraphModulePrefix;
+    private SourceModifierContext context;
+    private int entityUnionSuffix = 0;
+    private String entityUnionTypeName;
+    private List<String> entities;
+    private boolean isSubgraph = false;
 
     public GraphqlSourceModifier(Map<DocumentId, GraphqlModifierContext> modifierContextMap) {
         this.modifierContextMap = modifierContextMap;
+        this.entityTypeNamesMap = new HashMap<>();
     }
 
     @Override
     public void modify(SourceModifierContext sourceModifierContext) {
+        this.context = sourceModifierContext;
         for (Map.Entry<DocumentId, GraphqlModifierContext> entry : this.modifierContextMap.entrySet()) {
             DocumentId documentId = entry.getKey();
             GraphqlModifierContext modifierContext = entry.getValue();
@@ -96,10 +117,14 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
 
     private ModulePartNode modifyDocument(SourceModifierContext context, ModulePartNode rootNode,
                                           GraphqlModifierContext modifierContext) {
+        this.subgraphModulePrefix = getSubgraphModulePrefix(rootNode);
         Map<Node, Node> nodeMap = new HashMap<>();
         Map<Node, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
         for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
             Schema schema = entry.getValue();
+            this.isSubgraph = schema.isSubgraph();
+            this.entities = schema.getEntities().stream().map(Type::getName).collect(Collectors.toList());
+            this.entityUnionTypeName = ENTITY + this.entityUnionSuffix;
             try {
                 String schemaString = getSchemaAsEncodedString(schema);
                 Node targetNode = entry.getKey();
@@ -107,12 +132,16 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                     ServiceDeclarationNode updatedNode = modifyServiceDeclarationNode(
                             (ServiceDeclarationNode) targetNode, schemaString);
                     nodeMap.put(targetNode, updatedNode);
+                    this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
+                    this.entityUnionSuffix++;
                 } else if (targetNode.kind() == SyntaxKind.MODULE_VAR_DECL) {
                     ModuleVariableDeclarationNode graphqlServiceVariableDeclaration
                             = (ModuleVariableDeclarationNode) targetNode;
-                    ModuleVariableDeclarationNode updatedNode = modifyServiceVariableDeclarationNode(schemaString,
-                            graphqlServiceVariableDeclaration);
+                    ModuleVariableDeclarationNode updatedNode = modifyServiceVariableDeclarationNode(
+                            schemaString, graphqlServiceVariableDeclaration);
                     nodeMap.put(targetNode, updatedNode);
+                    this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
+                    this.entityUnionSuffix++;
                 }
             } catch (IOException e) {
                 updateContext(context, entry.getKey().location(), CompilationDiagnostic.SCHEMA_GENERATION_FAILED,
@@ -123,6 +152,13 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         for (ModuleMemberDeclarationNode member : rootNode.members()) {
             if (member.kind() == SyntaxKind.SERVICE_DECLARATION || member.kind() == SyntaxKind.MODULE_VAR_DECL) {
                 if (nodeMap.containsKey(member)) {
+                    this.entityUnionTypeName = this.entityTypeNamesMap.get(member);
+                    Schema schema = nodeSchemaMap.get(member);
+                    isSubgraph = schema.isSubgraph();
+                    if (schema.getEntities().size() > 0) {
+                        this.entities = schema.getEntities().stream().map(Type::getName).collect(Collectors.toList());
+                        members = addEntityTypeDefinition(members);
+                    }
                     members = members.add((ModuleMemberDeclarationNode) nodeMap.get(member));
                     continue;
                 }
@@ -132,14 +168,45 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         return rootNode.modify(rootNode.imports(), members, rootNode.eofToken());
     }
 
+    private String getSubgraphModulePrefix(ModulePartNode rootNode) {
+        List<ImportDeclarationNode> imports = rootNode.imports().stream().collect(Collectors.toList());
+        if (imports.isEmpty()) {
+            return null;
+        }
+        for (ImportDeclarationNode importDeclarationNode : imports) {
+            if (importDeclarationNode.prefix().isPresent()) {
+                if (importDeclarationNode.moduleName().stream().map(Token::text).collect(Collectors.joining("."))
+                        .equals(SUBGRAPH_SUB_MODULE_NAME)) {
+                    return importDeclarationNode.prefix().get().prefix().text();
+                }
+            }
+        }
+        return null;
+    }
+
+    private NodeList<ModuleMemberDeclarationNode> addEntityTypeDefinition(
+            NodeList<ModuleMemberDeclarationNode> moduleMembers) {
+        if (!this.isSubgraph) {
+            return moduleMembers;
+        }
+        ModuleMemberDeclarationNode typeDefinition = getEntityTypeDefinition();
+        return moduleMembers.add(typeDefinition);
+    }
+
+    private ModuleMemberDeclarationNode getEntityTypeDefinition() {
+        String unionOfEntities = String.join("|", this.entities);
+        return NodeParser.parseModuleMemberDeclaration(
+                "type " + this.entityUnionTypeName + " " + unionOfEntities + ";");
+    }
+
     private ModuleVariableDeclarationNode modifyServiceVariableDeclarationNode(String schemaString,
-                                          ModuleVariableDeclarationNode moduleVariableDeclarationNode) {
+                                                                               ModuleVariableDeclarationNode node) {
         // noinspection OptionalGetWithoutIsPresent
         ObjectConstructorExpressionNode graphqlServiceObject
-                = (ObjectConstructorExpressionNode) moduleVariableDeclarationNode.initializer().get();
+                = (ObjectConstructorExpressionNode) node.initializer().get();
         ObjectConstructorExpressionNode updatedGraphqlServiceObject = modifyServiceObjectNode(graphqlServiceObject,
-                schemaString);
-        return moduleVariableDeclarationNode.modify().withInitializer(updatedGraphqlServiceObject).apply();
+                                                                                              schemaString);
+        return node.modify().withInitializer(updatedGraphqlServiceObject).apply();
     }
 
     private ObjectConstructorExpressionNode modifyServiceObjectNode(ObjectConstructorExpressionNode node,
@@ -154,12 +221,97 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                 annotations = annotations.add(annotationNode);
             }
         }
-        return node.modify().withAnnotations(annotations).apply();
+        ObjectConstructorExpressionNode.ObjectConstructorExpressionNodeModifier modifier = node.modify();
+        modifier = modifier.withAnnotations(annotations);
+        NodeList<Node> members = node.members();
+        if (this.isSubgraph) {
+            members = addServiceResourceResolverToMembers(members, node.location());
+            if (this.entities.size() > 0) {
+                members = addEntityResourceResolverToMembers(members, node.location());
+            }
+        }
+        modifier = modifier.withMembers(members);
+        return modifier.apply();
     }
 
     private ServiceDeclarationNode modifyServiceDeclarationNode(ServiceDeclarationNode node, String schemaString) {
         MetadataNode metadataNode = getMetadataNode(node, schemaString);
-        return node.modify().withMetadata(metadataNode).apply();
+        ServiceDeclarationNode.ServiceDeclarationNodeModifier modifier = node.modify();
+        modifier = modifier.withMetadata(metadataNode);
+        NodeList<Node> members = node.members();
+        if (this.isSubgraph) {
+            members = addServiceResourceResolverToMembers(members, node.location());
+            if (this.entities.size() > 0) {
+                members = addEntityResourceResolverToMembers(members, node.location());
+            }
+        }
+        modifier = modifier.withMembers(members);
+        return modifier.apply();
+    }
+
+    private NodeList<Node> addEntityResourceResolverToMembers(NodeList<Node> serviceMembers, Location location) {
+        FunctionDefinitionNode entityResolver = getEntityResolver(location);
+        return serviceMembers.add(entityResolver);
+    }
+
+    private NodeList<Node> addServiceResourceResolverToMembers(NodeList<Node> serviceMembers, Location location) {
+        FunctionDefinitionNode serviceResolver = getServiceResolver(location);
+        return serviceMembers.add(serviceResolver);
+    }
+
+    private FunctionDefinitionNode getEntityResolver(Location location) {
+        try {
+            String mapDef = getEntityTypedescMapInitializer();
+            Class<GraphqlSourceModifier> currentClass = GraphqlSourceModifier.class;
+            InputStream inputStream = currentClass.getResourceAsStream("/entity_resolver.bal.partial");
+            String entityResolver = readFromInputStream(inputStream);
+            Objects.requireNonNull(inputStream).close();
+            entityResolver = entityResolver.replaceAll(ENTITY, this.entityUnionTypeName);
+            entityResolver = entityResolver.replaceAll(MAP_DEFINITION_PLACEHOLDER, mapDef);
+            if (this.subgraphModulePrefix != null) {
+                entityResolver = entityResolver.replaceAll(SUBGRAPH_MODULE_PLACEHOLDER, this.subgraphModulePrefix);
+            }
+            return (FunctionDefinitionNode) NodeParser.parseObjectMember(entityResolver);
+        } catch (IOException | NullPointerException e) {
+            updateContext(this.context, location, CompilationDiagnostic.FAILED_TO_ADD_ENTITY_RESOLVER, e.getMessage());
+            return null;
+        }
+    }
+
+    private String readFromInputStream(InputStream inputStream) throws IOException {
+        StringBuilder resultStringBuilder = new StringBuilder();
+        InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        try (BufferedReader bufferedReader = new BufferedReader(streamReader)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                resultStringBuilder.append(line).append("\n");
+            }
+        }
+        return resultStringBuilder.toString();
+    }
+
+    private FunctionDefinitionNode getServiceResolver(Location location) {
+        try {
+            String mapDef = getEntityTypedescMapInitializer();
+            Class<GraphqlSourceModifier> currentClass = GraphqlSourceModifier.class;
+            InputStream inputStream = currentClass.getResourceAsStream("/service_resolver.bal.partial");
+            String serviceResolver = readFromInputStream(inputStream);
+            Objects.requireNonNull(inputStream).close();
+            serviceResolver = serviceResolver.replaceAll(MAP_DEFINITION_PLACEHOLDER, mapDef);
+            if (this.subgraphModulePrefix != null) {
+                serviceResolver = serviceResolver.replaceAll(SUBGRAPH_MODULE_PLACEHOLDER, this.subgraphModulePrefix);
+            }
+            return (FunctionDefinitionNode) NodeParser.parseObjectMember(serviceResolver);
+        } catch (IOException | NullPointerException e) {
+            updateContext(this.context, location, CompilationDiagnostic.FAILED_TO_ADD_SERVICE_RESOLVER, e.getMessage());
+            return null;
+        }
+    }
+
+    private String getEntityTypedescMapInitializer() {
+        List<String> mapFields = this.entities.stream().map(entity -> "\"" + entity + "\"" + ":" + entity)
+                .collect(Collectors.toList());
+        return "{" + String.join(", ", mapFields) + "}";
     }
 
     private MetadataNode getMetadataNode(ServiceDeclarationNode node, String schemaString) {

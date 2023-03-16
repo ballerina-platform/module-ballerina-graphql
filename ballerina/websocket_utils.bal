@@ -27,7 +27,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         RootFieldVisitor rootFieldVisitor = new (node);
         parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
         Field 'field = getFieldObject(fieldNode, parser:OPERATION_SUBSCRIPTION, schema, engine);
-        sourceStream = getSubscriptionResponse(engine, schema, context, 'field);
+        sourceStream = getSubscriptionResponse(engine, schema, context, 'field, node);
         if sourceStream is stream<any, error?> {
             record {|any value;|}|error? next = sourceStream.next();
             while next !is () {
@@ -91,13 +91,18 @@ isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engi
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          Field 'field) returns stream<any, error?>|json {
+                                          Field 'field, parser:OperationNode operationNode)
+returns stream<any, error?>|json {
     any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field);
     if result is stream<any, error?> {
         return result;
     }
-    string errorMessage = result is error ? result.message() : "Error ocurred in the subscription resolver";
-    return {errors: [{message: errorMessage}]};
+    error err = error("Error ocurred in the subscription resolver");
+    if result is error {
+        err = result;
+    }
+    OutputObject outputObject = engine.getResult(operationNode, context, err);
+    return outputObject.errors.toJson();
 }
 
 isolated function closeConnection(websocket:Caller caller, SubscriptionError cause, decimal timeout = 5) {

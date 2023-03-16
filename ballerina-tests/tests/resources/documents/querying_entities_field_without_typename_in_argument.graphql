@@ -1,0 +1,7 @@
+{
+  _entities(representations: [{ name: "Acamar" }]) {
+    ... on Star {
+      name
+    }
+  }
+}

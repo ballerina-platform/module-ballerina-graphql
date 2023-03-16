@@ -20,11 +20,20 @@ package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.Location;
+
+import java.util.List;
+
+import static io.ballerina.stdlib.graphql.commons.types.TypeName.ANY;
+import static io.ballerina.stdlib.graphql.commons.types.TypeName.FIELD_SET;
+import static io.ballerina.stdlib.graphql.commons.types.TypeName.LINK_IMPORT;
+import static io.ballerina.stdlib.graphql.commons.types.TypeName.LINK_PURPOSE;
+import static io.ballerina.stdlib.graphql.commons.types.TypeName.SERVICE;
 
 /**
  * Utility functions for the Ballerina GraphQL compiler validations.
@@ -41,8 +50,8 @@ public final class ValidatorUtils {
 
     public static void updateContext(SyntaxNodeAnalysisContext context, CompilationDiagnostic errorCode,
                                      Location location) {
-        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                errorCode.getDiagnosticCode(), errorCode.getDiagnostic(), errorCode.getDiagnosticSeverity());
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(errorCode.getDiagnosticCode(), errorCode.getDiagnostic(),
+                                                           errorCode.getDiagnosticSeverity());
         Diagnostic diagnostic = DiagnosticFactory.createDiagnostic(diagnosticInfo, location);
         context.reportDiagnostic(diagnostic);
     }
@@ -64,5 +73,15 @@ public final class ValidatorUtils {
 
     public static boolean isInvalidFieldName(String fieldName) {
         return fieldName.startsWith(DOUBLE_UNDERSCORES);
+    }
+
+    public static boolean isReservedFederatedResolverName(String methodName) {
+        return methodName.equals(Schema.ENTITIES_RESOLVER_NAME) || methodName.equals(Schema.SERVICE_RESOLVER_NAME);
+    }
+
+    public static boolean isReservedFederatedTypeName(String typeName) {
+        List<String> reservedTypes = List.of(ANY.getName(), FIELD_SET.getName(), LINK_IMPORT.getName(),
+                                             LINK_PURPOSE.getName(), SERVICE.getName());
+        return reservedTypes.contains(typeName);
     }
 }

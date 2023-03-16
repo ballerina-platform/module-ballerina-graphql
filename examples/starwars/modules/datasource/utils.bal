@@ -14,11 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public isolated function updateReviews(EpisodeEnum episode, ReviewRecord review) returns ReviewRecord[] {
+public isolated function updateReviews(ReviewRecord review) {
     lock {
         reviewTable.add(review);
     }
-    return getReviews(episode);
 }
 
 public isolated function getReviews(EpisodeEnum episode) returns ReviewRecord[] {

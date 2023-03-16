@@ -72,7 +72,11 @@ public enum Description {
     INCLUDE_IF("Included when true."),
     DEPRECATED_REASON(
             "Explains why this element was deprecated, usually also including a suggestion for how to access " +
-                    "supported similar data. Formatted using the Markdown syntax.");
+                    "supported similar data. Formatted using the Markdown syntax."),
+
+    // Descriptions used in federation subgraph schema
+    SECURITY("`SECURITY` features provide metadata necessary to securely resolve fields."),
+    EXECUTION("`EXECUTION` features provide metadata necessary for operation execution.");
 
     private final String description;
 

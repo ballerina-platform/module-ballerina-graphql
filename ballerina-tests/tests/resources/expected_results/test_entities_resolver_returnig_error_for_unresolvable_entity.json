@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "No resolvers defined for 'Moon' entity",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["_entities", 0]
+    }
+  ],
+  "data": { "_entities": [null] }
+}

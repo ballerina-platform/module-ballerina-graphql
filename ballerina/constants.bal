@@ -68,9 +68,13 @@ const WS_NEXT = "next";
 const WS_ERROR = "error";
 const WS_COMPLETE = "complete";
 
-// Subprotocol constants used in headers 
+// Subprotocol constants used in headers
 const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 
 const decimal PING_MESSAGE_SCHEDULE_INTERVAL = 15;
 const decimal PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL = 15;
+
+// Constants used in the executor visitor
+const OPERATION_TYPE = "operationType";
+const PATH = "path";
