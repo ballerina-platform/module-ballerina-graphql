@@ -53,8 +53,13 @@ isolated class Engine {
             return result;
         }
 
-        OutputObject|parser:OperationNode validationResult = self.validateDocument(result, operationName, variables);
-        return validationResult;
+        OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, operationName, variables);
+        if validationResult is OutputObject {
+            return validationResult;
+        }
+        // Since unused operation nodes are removed from the Document node, it includes only the operation node
+        // related to the currently executing operation. Hence directly access that node from here.
+        return validationResult.getOperations()[0];
     }
 
     isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
@@ -95,7 +100,7 @@ isolated class Engine {
     }
 
     isolated function validateDocument(ParseResult parseResult, string? operationName, map<json>? variables)
-    returns OutputObject|parser:OperationNode {
+    returns OutputObject|parser:DocumentNode {
         ErrorDetail[]|NodeModifierContext validationResult =
             self.parallellyValidateDocument(parseResult, operationName, variables);
         if validationResult is ErrorDetail[] {
@@ -103,7 +108,7 @@ isolated class Engine {
         } else {
             DocumentNodeModifierVisitor documentNodeModifierVisitor = new (validationResult);
             parseResult.document.accept(documentNodeModifierVisitor);
-            return documentNodeModifierVisitor.getDocumentNode().getOperations()[0];
+            return documentNodeModifierVisitor.getDocumentNode();
         }
     }
 
