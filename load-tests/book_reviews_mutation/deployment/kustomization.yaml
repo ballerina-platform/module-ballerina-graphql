@@ -1,0 +1,3 @@
+resources:
+    - book_reviews_mutation.yaml
+    - ingress.yaml
