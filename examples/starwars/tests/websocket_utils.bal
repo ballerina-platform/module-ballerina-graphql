@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
 import ballerina/websocket;
 
 const WS_INIT = "connection_init";
@@ -57,7 +56,6 @@ isolated function readMessageExcludingPingMessages(websocket:Client wsClient) re
     json message = null;
     foreach int i in 0..<10 {
         message = check wsClient->readMessage();
-        io:println("Received message: ", message);
         if message == null {
             continue;
         }
