@@ -6,6 +6,10 @@ jobs:
     ubuntu-build:
         name: Build on Ubuntu
         runs-on: ubuntu-latest
+        timeout-minutes: 60
+        concurrency:
+            group: ${{ github.head_ref }}-ubuntu
+            cancel-in-progress: true
         steps:
             -   name: Checkout Repository
                 uses: actions/checkout@v1
@@ -31,6 +35,10 @@ jobs:
     windows-build:
         name: Build on Windows
         runs-on: windows-latest
+        timeout-minutes: 60
+        concurrency:
+            group: ${{ github.head_ref }}-windows
+            cancel-in-progress: true
         steps:
             -   name: Checkout Repository
                 uses: actions/checkout@v1
