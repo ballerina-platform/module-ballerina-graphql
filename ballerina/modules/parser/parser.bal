@@ -446,8 +446,8 @@ public class Parser {
         return new (name, location, T_LIST, valueLocation = valueLocation, value = listMembers);
     }
 
-    isolated function getScalarTypeArgument(string name, Location location,
-            boolean isAllowVariableValue = true) returns ArgumentNode|Error {
+    isolated function getScalarTypeArgument(string name, Location location, boolean isAllowVariableValue = true)
+        returns ArgumentNode|Error {
         Token token = check self.readNextNonSeparatorToken();
         if token.kind == T_DOLLAR {
             if isAllowVariableValue {
@@ -514,16 +514,12 @@ public class Parser {
     }
 
     isolated function peekNextNonSeparatorToken() returns Token|Error {
-        int i = 1;
+        int i = 0;
         Token token = check self.lexer.peek(i);
-        while true {
-            if token.kind is LexicalType {
-                break;
-            }
+        while token.kind is IgnoreType {
             i += 1;
             token = check self.lexer.peek(i);
         }
-
         return token;
     }
 
