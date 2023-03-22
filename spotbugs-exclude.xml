@@ -20,4 +20,11 @@
             <Bug pattern="BC_UNCONFIRMED_CAST" />
         </And>
     </Match>
+    <Match>
+        <And>
+            <Class name="io.ballerina.stdlib.graphql.runtime.engine.ExecutionCallback" />
+            <Method name = "notifyFailure" />
+            <Bug pattern="DM_EXIT" />
+        </And>
+    </Match>
 </FindBugsFilter>

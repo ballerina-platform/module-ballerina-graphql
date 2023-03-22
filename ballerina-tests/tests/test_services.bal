@@ -407,8 +407,8 @@ service /records on basicListener {
         };
     }
 
-    resource function get profile(int id) returns Person {
-        return people[id];
+    resource function get profile(int id) returns Person|error {
+        return trap people[id];
     }
 
     resource function get people() returns Person[] {
@@ -1224,9 +1224,9 @@ service /subscriptions on subscriptionListener {
         return filteredArray.toStream();
     }
 
-    isolated resource function subscribe values() returns stream<int> {
+    isolated resource function subscribe values() returns stream<int>|error {
         int[] array = [];
-        int _ = array.remove(0);
+        int _ = check trap array.remove(0);
         return array.toStream();
     }
 

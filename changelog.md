@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - [[#3885] Allow Adding a Single Service Level Interceptor](https://github.com/ballerina-platform/ballerina-standard-library/issues/3885)
+- [[#4237] Exit the Listener When Panic Occurred](https://github.com/ballerina-platform/ballerina-standard-library/issues/4237)
 
 ## [1.6.0] - 2023-02-20
 
