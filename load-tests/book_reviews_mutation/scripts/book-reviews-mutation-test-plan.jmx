@@ -89,7 +89,7 @@
           <hashTree/>
           <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">data</stringProp>
-            <stringProp name="EXPECTED_VALUE">{&quot;addReview&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;, &quot;comment&quot;:&quot;Good book.&quot;, &quot;book&quot;:{&quot;id&quot;:&quot;1&quot;, &quot;title&quot;:&quot;The Alchemist&quot;, &quot;author&quot;:&quot;Paulo Coelho&quot;}}}</stringProp>
+            <stringProp name="EXPECTED_VALUE">{&quot;addReview&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;,&quot;comment&quot;:&quot;Good book.&quot;,&quot;book&quot;:{&quot;id&quot;:&quot;1&quot;,&quot;title&quot;:&quot;The Alchemist&quot;,&quot;author&quot;:&quot;Paulo Coelho&quot;}}}</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
             <boolProp name="EXPECT_NULL">false</boolProp>
             <boolProp name="INVERT">false</boolProp>

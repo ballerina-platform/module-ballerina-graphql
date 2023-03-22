@@ -89,7 +89,7 @@
           <hashTree/>
           <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">data</stringProp>
-            <stringProp name="EXPECTED_VALUE">{&quot;addReview&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;, &quot;comment&quot;:&quot;Good book.&quot;, &quot;book&quot;:{&quot;id&quot;:&quot;1&quot;, &quot;title&quot;:&quot;The Alchemist&quot;, &quot;author&quot;:&quot;Paulo Coelho&quot;}}}</stringProp>
+            <stringProp name="EXPECTED_VALUE">{&quot;addReview&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;,&quot;comment&quot;:&quot;Good book.&quot;,&quot;book&quot;:{&quot;id&quot;:&quot;1&quot;,&quot;title&quot;:&quot;The Alchemist&quot;,&quot;author&quot;:&quot;Paulo Coelho&quot;}}}</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
             <boolProp name="EXPECT_NULL">false</boolProp>
             <boolProp name="INVERT">false</boolProp>
@@ -415,7 +415,7 @@
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="1829207862">{&quot;type&quot;:&quot;ping&quot;}</stringProp>
                 <stringProp name="2077859998">{&quot;type&quot;:&quot;next&quot;, &quot;id&quot;:&quot;1&quot;, &quot;payload&quot;:{&quot;data&quot;:{&quot;review&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;, &quot;comment&quot;:&quot;Good book.&quot;}}}}</stringProp>
-                <stringProp name="0"></stringProp>
+                <stringProp name="1835593700">{&quot;type&quot;:&quot;next&quot;,&quot;id&quot;:&quot;1&quot;,&quot;payload&quot;:{&quot;data&quot;:{&quot;review&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;,&quot;comment&quot;:&quot;Good book.&quot;}}}}</stringProp>
               </collectionProp>
               <stringProp name="Assertion.custom_message">Expected payload not found in subscription response</stringProp>
               <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
