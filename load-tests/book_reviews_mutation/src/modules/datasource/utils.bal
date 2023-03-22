@@ -14,12 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-isolated function getNextReviewId() returns string {
-    lock {
-        lastReviewId += 1;
-        return lastReviewId.toString();
-    }
-}
+import ballerina/uuid;
 
 public isolated function getReviewsByBookId(string bookId) returns ReviewRow[] {
     lock {
@@ -32,9 +27,9 @@ public isolated function addReview(readonly & ReviewData review) returns ReviewR
         return error(string `No books found with bookId: ${review.bookId}`);
     }
     lock {
-        ReviewRow reviewRow = {id: getNextReviewId(), ...review};
+        ReviewRow reviewRow = {id: uuid:createType1AsString(), ...review};
         reviews.add(reviewRow);
-        return reviewRow.cloneReadOnly();
+        return reviewRow;
     }
 }
 

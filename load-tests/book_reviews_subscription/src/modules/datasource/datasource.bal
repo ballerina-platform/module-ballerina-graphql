@@ -20,10 +20,8 @@ final readonly & table<BookRow> key(id) books = table [
 ];
 
 isolated final table<ReviewRow> key(id) reviews = table [
-    {id: "1", author: "John", comment: "Good", bookId: "1"},
-    {id: "2", author: "Peter", comment: "Excellent", bookId: "1"},
-    {id: "3", author: "John", comment: "Good", bookId: "2"},
-    {id: "4", author: "Peter", comment: "Excellent", bookId: "2"}
+    {id: "01edc8a2-be38-1bd6-9234-6f5c8109f616", author: "John", comment: "Good", bookId: "1"},
+    {id: "01edc8a2-c729-18ee-8479-87e51fdf9389", author: "Peter", comment: "Excellent", bookId: "1"},
+    {id: "01edc8a2-cbee-1428-9740-220e68a4dbb6", author: "John", comment: "Good", bookId: "2"},
+    {id: "01edc8a2-d0b2-1f68-8ed3-f5469c33a27d", author: "Peter", comment: "Excellent", bookId: "2"}
 ];
-
-isolated int lastReviewId = 4;

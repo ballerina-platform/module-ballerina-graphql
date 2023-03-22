@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type BookRow record {
-    readonly string id;
+public type BookRow readonly & record {
+    string id;
     string title;
     string author;
 };
@@ -30,7 +30,7 @@ public type ReviewData record {|
     string comment;
 |};
 
-public type ReviewRow record {
-    readonly string id;
+public type ReviewRow readonly & record {
+    string id;
     *ReviewData;
 };

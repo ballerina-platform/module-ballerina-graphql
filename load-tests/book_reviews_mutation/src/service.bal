@@ -34,9 +34,9 @@ service /graphql on new graphql:Listener(9000) {
     # Add review to a book
     # + input - represents a review input
     # + return - the newly added Review
-    isolated remote function reviewAdd(readonly & ReviewInput input) returns Review|error {
+    isolated remote function addReview(ReviewInput input) returns Review|error {
         ds:ReviewRow reviewRow = check ds:addReview(input);
-        check self.pubsub.publish("Reviews", reviewRow.cloneReadOnly(), timeout = -1);
+        check self.pubsub.publish("Reviews", reviewRow, timeout = -1);
         return new (reviewRow);
     }
 
@@ -49,6 +49,6 @@ service /graphql on new graphql:Listener(9000) {
 }
 
 # Represents a book review input
-public type ReviewInput record {|
+public type ReviewInput readonly & record {|
     *ds:ReviewData;
 |};

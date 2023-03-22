@@ -37,7 +37,7 @@
     &quot;author&quot;: &quot;Southern Lady Reads&quot;,
     &quot;comment&quot;: &quot;Good book.&quot;
   }
-},&quot;query&quot;:&quot;mutation Mutation($input: ReviewInput!) {\n  reviewAdd(input: $input) {\n    author\n    comment\n    book {\n      id\n      title\n      author\n    }\n  }\n}&quot;}</stringProp>
+},&quot;query&quot;:&quot;mutation Mutation($input: ReviewInput!) {\n  addReview(input: $input) {\n    author\n    comment\n    book {\n      id\n      title\n      author\n    }\n  }\n}&quot;}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -55,7 +55,7 @@
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="GraphQLHTTPSampler.operationName"></stringProp>
           <stringProp name="GraphQLHTTPSampler.query">mutation Mutation($input: ReviewInput!) {
-  reviewAdd(input: $input) {
+  addReview(input: $input) {
     author
     comment
     book {
@@ -89,7 +89,7 @@
           <hashTree/>
           <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">data</stringProp>
-            <stringProp name="EXPECTED_VALUE">{&quot;reviewAdd&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;, &quot;comment&quot;:&quot;Good book.&quot;, &quot;book&quot;:{&quot;id&quot;:&quot;1&quot;, &quot;title&quot;:&quot;The Alchemist&quot;, &quot;author&quot;:&quot;Paulo Coelho&quot;}}}</stringProp>
+            <stringProp name="EXPECTED_VALUE">{&quot;addReview&quot;:{&quot;author&quot;:&quot;Southern Lady Reads&quot;, &quot;comment&quot;:&quot;Good book.&quot;, &quot;book&quot;:{&quot;id&quot;:&quot;1&quot;, &quot;title&quot;:&quot;The Alchemist&quot;, &quot;author&quot;:&quot;Paulo Coelho&quot;}}}</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
             <boolProp name="EXPECT_NULL">false</boolProp>
             <boolProp name="INVERT">false</boolProp>
@@ -134,43 +134,6 @@
           </ResultCollector>
           <hashTree/>
         </hashTree>
-        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
-          <boolProp name="ResultCollector.error_logging">false</boolProp>
-          <objProp>
-            <name>saveConfig</name>
-            <value class="SampleSaveConfiguration">
-              <time>true</time>
-              <latency>true</latency>
-              <timestamp>true</timestamp>
-              <success>true</success>
-              <label>true</label>
-              <code>true</code>
-              <message>true</message>
-              <threadName>true</threadName>
-              <dataType>true</dataType>
-              <encoding>false</encoding>
-              <assertions>true</assertions>
-              <subresults>true</subresults>
-              <responseData>false</responseData>
-              <samplerData>false</samplerData>
-              <xml>false</xml>
-              <fieldNames>true</fieldNames>
-              <responseHeaders>false</responseHeaders>
-              <requestHeaders>false</requestHeaders>
-              <responseDataOnError>false</responseDataOnError>
-              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-              <assertionsResultsToSave>0</assertionsResultsToSave>
-              <bytes>true</bytes>
-              <sentBytes>true</sentBytes>
-              <url>true</url>
-              <threadCounts>true</threadCounts>
-              <idleTime>true</idleTime>
-              <connectTime>true</connectTime>
-            </value>
-          </objProp>
-          <stringProp name="filename"></stringProp>
-        </ResultCollector>
-        <hashTree/>
       </hashTree>
     </hashTree>
   </hashTree>
