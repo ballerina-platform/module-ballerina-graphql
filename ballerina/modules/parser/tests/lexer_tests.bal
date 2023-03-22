@@ -87,15 +87,15 @@ isolated function testPeek() returns error? {
     Token expectedToken = getExpectedToken("test", T_IDENTIFIER, 1, 1);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.peek(3);
+    token = check lexer.peek(2);
     expectedToken = getExpectedToken("integer", T_IDENTIFIER, 1, 6);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.peek(5);
+    token = check lexer.peek(4);
     expectedToken = getExpectedToken(-273, T_INT, 1, 14);
     test:assertEquals(token, expectedToken);
 
-    token = check lexer.peek(2);
+    token = check lexer.peek(1);
     expectedToken = getExpectedToken(" ", T_WHITE_SPACE, 1, 5);
     test:assertEquals(token, expectedToken);
 
