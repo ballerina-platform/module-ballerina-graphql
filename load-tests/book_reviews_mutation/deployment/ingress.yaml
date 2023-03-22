@@ -15,6 +15,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: book-reviews-mutation-svc
+                name: book-reviews-mu
                 port:
                   number: 9000

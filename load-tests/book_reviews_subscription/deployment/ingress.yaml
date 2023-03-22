@@ -15,6 +15,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: book-reviews-subscription-svc
+                name: book-reviews-su
                 port:
                   number: 9000
