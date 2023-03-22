@@ -18,10 +18,10 @@ import book_reviews_mutation.datasource as ds;
 
 # Represents a review of a book.
 public isolated distinct service class Review {
-    private final readonly & ds:ReviewRow reviewRow;
+    private final ds:ReviewRow reviewRow;
 
     isolated function init(ds:ReviewRow reviewRow) {
-        self.reviewRow = reviewRow.cloneReadOnly();
+        self.reviewRow = reviewRow;
     }
 
     # The unique identifier of the review

@@ -18,10 +18,10 @@ import book_reviews_mutation.datasource as ds;
 
 # Represents a book.
 public isolated distinct service class Book {
-    private final readonly & ds:BookRow bookRow;
+    private final ds:BookRow bookRow;
 
     function init(ds:BookRow bookRow) {
-        self.bookRow = bookRow.cloneReadOnly();
+        self.bookRow = bookRow;
     }
 
     # The unique identifier of the book
