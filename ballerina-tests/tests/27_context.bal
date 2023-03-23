@@ -331,12 +331,12 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     websocket:Client wsClient = check new (url, configs);
     check initiateGraphqlWsConnection(wsClient);
     check sendSubscriptionMessage(wsClient, document);
-    json expectedMsgPayload = {
-        errors: [
-            {
-                message: "You don't have permission to retrieve data"
-            }
-        ]
-    };
-    check validateErrorMessage(wsClient, expectedMsgPayload);
+    json expectedErrorPayload = [
+        {
+            message: "You don't have permission to retrieve data",
+            locations: [{line: 1, column: 16}],
+            path: ["messages"]
+        }
+    ];
+    check validateErrorMessage(wsClient, expectedErrorPayload);
 }

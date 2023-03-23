@@ -1,0 +1,16 @@
+subscription ReviewAdded($episode: Episode!) {
+    review: reviewAdded(episode: $episode) {
+        ...ReviewDetails
+    }
+}
+
+mutation CreateReview($episode: Episode!, $review: ReviewInput!) {
+    review: createReview(episode: $episode, reviewInput: $review) {
+        ...ReviewDetails
+    }
+}
+
+fragment ReviewDetails on Review {
+    stars
+    commentary
+}

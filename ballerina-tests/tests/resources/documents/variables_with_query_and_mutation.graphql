@@ -1,0 +1,10 @@
+query Greeting($name: String!) {
+    greeting(name: $name)
+}
+
+mutation Shape($name: String!, $edges: Int!) {
+    addShape(name: $name, edges:$edges) {
+        name
+        edges
+    }
+}

@@ -217,7 +217,7 @@ public class Engine {
         return result;
     }
 
-    public static RemoteMethodType getRemoteMethod(ServiceType serviceType, String methodName) {
+    private static RemoteMethodType getRemoteMethod(ServiceType serviceType, String methodName) {
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(methodName)) {
                 return remoteMethod;
@@ -242,24 +242,26 @@ public class Engine {
 
     public static Object getResourceAnnotation(BObject service, BArray path, BString methodName) {
         BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
-        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(service, path, GET_ACCESSOR);
+        ServiceType serviceType = (ServiceType) service.getType();
+        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(serviceType, getPathList(path));
         if (resourceMethod != null) {
             return resourceMethod.getAnnotation(identifier);
         }
-        RemoteMethodType remoteMethod = getRemoteMethod((ServiceType) service.getType(), String.valueOf(methodName));
+        RemoteMethodType remoteMethod = getRemoteMethod(serviceType, String.valueOf(methodName));
         if (remoteMethod != null) {
             return remoteMethod.getAnnotation(identifier);
-        }
-        resourceMethod = (ResourceMethodType) getResourceMethod(service, path, SUBSCRIBE_ACCESSOR);
-        if (resourceMethod != null) {
-            return resourceMethod.getAnnotation(identifier);
         }
         return null;
     }
 
-    private static Object getResourceMethod(BObject service, BArray path, String accessor) {
-        ServiceType serviceType = (ServiceType) service.getType();
-        List<String> pathList = getPathList(path);
-        return getResourceMethod(serviceType, pathList, accessor);
+    private static Object getResourceMethod(ServiceType serviceType, List<String> pathList) {
+        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
+            String accessor = resourceMethod.getAccessor();
+            if ((GET_ACCESSOR.equals(accessor) || SUBSCRIBE_ACCESSOR.equals(accessor)) &&
+                    isPathsMatching(resourceMethod, pathList)) {
+                return resourceMethod;
+            }
+        }
+        return null;
     }
 }

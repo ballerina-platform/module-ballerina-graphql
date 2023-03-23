@@ -73,13 +73,27 @@ isolated function getErrorMessageTypeNameForError(Token token) returns string {
     return string `"${token.value}"`;
 }
 
-isolated function isValidFirstChar(string char) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
-} external;
+isolated function isValidFirstChar(string char) returns boolean {
+    int codePoint = char.getCodePoint(0);
+    return isValidIdentifierFirstCharacter(codePoint);
+}
 
-isolated function isValidChar(string char) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
-} external;
+isolated function isValidChar(string char) returns boolean {
+    int codePoint = char.getCodePoint(0);
+    return isValidIdentifierFirstCharacter(codePoint) || isAsciiDigit(codePoint);
+}
+
+isolated function isValidIdentifierFirstCharacter(int codePoint) returns boolean {
+    return isAciiLetter(codePoint) || codePoint == 95;
+}
+
+isolated function isAciiLetter(int codePoint) returns boolean {
+    return (codePoint >= 65 && codePoint <= 90) || (codePoint >= 97 && codePoint <= 122);
+}
+
+isolated function isAsciiDigit(int codePoint) returns boolean {
+    return codePoint >= 48 && codePoint <= 57;
+}
 
 public isolated function getHashCode(object {} obj) returns string = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"

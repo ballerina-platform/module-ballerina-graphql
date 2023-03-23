@@ -361,8 +361,6 @@ public distinct isolated service class Customer {
     }
 }
 
-
-
 public distinct isolated service class CustomerAddress {
     private final int number;
     private final string street;

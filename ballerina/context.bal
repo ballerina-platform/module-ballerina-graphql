@@ -24,12 +24,20 @@ public isolated class Context {
     private final ErrorDetail[] errors;
     private Engine? engine;
     private int nextInterceptor;
+    private boolean hasFileInfo = false; // This field value changed by setFileInfo method
 
-    public isolated function init() {
+    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (), 
+                                  int nextInterceptor = 0) {
         self.attributes = {};
-        self.engine = ();
+        self.engine = engine;
         self.errors = [];
-        self.nextInterceptor = 0;
+        self.nextInterceptor = nextInterceptor;
+        
+        foreach var item in attributes.entries() {
+            string key = item[0];
+            value:Cloneable|isolated object {} value = item[1];
+            self.attributes[key] = value;
+        }
     }
 
     # Sets a given value for a given key in the GraphQL context.
@@ -88,6 +96,13 @@ public isolated class Context {
         }
     }
 
+    isolated function addErrors(ErrorDetail[] errs) {
+        readonly & ErrorDetail[] errors = errs.cloneReadOnly();
+        lock {
+            self.errors.push(...errors);
+        }
+    }
+
     isolated function getErrors() returns ErrorDetail[] {
         lock {
             return self.errors.clone();
@@ -124,10 +139,11 @@ public isolated class Context {
 
     isolated function getNextInterceptor(Field 'field) returns (readonly & Interceptor)? {
         lock {
-            if self.getEngine() is Engine {
-                Engine engine = <Engine>self.getEngine();
-                if engine.getInterceptors().length() > self.nextInterceptor {
-                    readonly & Interceptor next = engine.getInterceptors()[self.nextInterceptor];
+            Engine? engine = self.getEngine();
+            if engine is Engine {
+                (readonly & Interceptor)[] interceptors = engine.getInterceptors();
+                if interceptors.length() > self.nextInterceptor {
+                    (readonly & Interceptor) next = interceptors[self.nextInterceptor];
                     self.nextInterceptor += 1;
                     return next;
                 }
@@ -152,6 +168,16 @@ public isolated class Context {
     isolated function resetErrors() {
         lock {
             self.errors.removeAll();
+        }
+    }
+
+    isolated function cloneWithoutErrors() returns Context {
+        lock {
+            Context clonedContext = new(self.attributes, self.engine, self.nextInterceptor);
+            if self.hasFileInfo {
+                clonedContext.setFileInfo(self.getFileInfo());
+            }
+            return clonedContext;
         }
     }
 }

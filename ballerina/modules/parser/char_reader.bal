@@ -16,38 +16,37 @@
 
 public class CharReader {
     private CharIterator iterator;
-    private boolean eof;
-    private string[] buffer;
+    private string:Char?[] buffer;
 
     public isolated function init(string document) {
         self.iterator = document.iterator();
-        self.eof = false;
         self.buffer = [];
     }
 
-    public isolated function isEof() returns boolean {
-        return self.eof;
-    }
-
-    public isolated function peek() returns string {
-        if self.buffer.length() > 0 {
-            return self.buffer[0];
+    public isolated function peek(int into = 0) returns string:Char? {
+        if self.buffer.length() > into {
+            return self.buffer[into];
         }
-        string char = self.read();
-        self.buffer.push(char);
-        return char;
+        int startIndex = self.buffer.length();
+        foreach int i in startIndex ... into {
+            string:Char? char = self.next();
+            self.buffer.push(char);
+        }
+        return self.buffer[into];
     }
 
-    public isolated function read() returns string {
+    public isolated function read() returns string:Char? {
         if self.buffer.length() > 0 {
             return self.buffer.shift();
         }
+        return self.next();
+    }
+
+    isolated function next() returns string:Char? {
         CharIteratorNode? next = self.iterator.next();
         if next is () {
-            self.eof = true;
-            return EOF;
+            return;
         }
-        CharIteratorNode nextNode = <CharIteratorNode>next;
-        return nextNode.value;
+        return next.value;
     }
 }

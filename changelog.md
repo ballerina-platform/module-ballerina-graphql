@@ -8,10 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#4120] Add support to GraphQL design view by updating the schema](https://github.com/ballerina-platform/ballerina-standard-library/issues/4120)
+- [[#3504] Add Support for Federation Subgraph](https://github.com/ballerina-platform/ballerina-standard-library/issues/3504)
+- [[#4122] Add Parallel Execution for GraphQL Resolvers](https://github.com/ballerina-platform/ballerina-standard-library/issues/4122)
 - [[#3234] Add Support for Field Interceptors](https://github.com/ballerina-platform/ballerina-standard-library/issues/3234)
 
 ### Fixed
 - [[#4172] Fix Compilation Failure when Type Alias is Used with Primitive Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4172)
+- [[#4208] Fix Subscription Payload Returned with Invalid GraphQL Error Format](https://github.com/ballerina-platform/ballerina-standard-library/issues/4208)
+
+### Changed
+- [[#3885] Allow Adding a Single Service Level Interceptor](https://github.com/ballerina-platform/ballerina-standard-library/issues/3885)
+- [[#4237] Exit the Listener When Panic Occurred](https://github.com/ballerina-platform/ballerina-standard-library/issues/4237)
 
 ## [1.6.0] - 2023-02-20
 

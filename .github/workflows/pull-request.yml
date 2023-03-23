@@ -6,6 +6,10 @@ jobs:
     ubuntu-build:
         name: Build on Ubuntu
         runs-on: ubuntu-latest
+        timeout-minutes: 60
+        concurrency:
+            group: ${{ github.head_ref }}-ubuntu
+            cancel-in-progress: true
         steps:
             -   name: Checkout Repository
                 uses: actions/checkout@v1
@@ -24,13 +28,17 @@ jobs:
 
             -   name: Generate CodeCov Report
                 if: github.event_name == 'pull_request'
-                uses: codecov/codecov-action@v2
+                uses: codecov/codecov-action@v3
                 with:
                     token: ${{ secrets.CODECOV_TOKEN }}
 
     windows-build:
         name: Build on Windows
         runs-on: windows-latest
+        timeout-minutes: 60
+        concurrency:
+            group: ${{ github.head_ref }}-windows
+            cancel-in-progress: true
         steps:
             -   name: Checkout Repository
                 uses: actions/checkout@v1
