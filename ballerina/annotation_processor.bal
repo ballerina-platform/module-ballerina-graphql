@@ -100,9 +100,8 @@ isolated function getFieldInterceptors(service object {} serviceObj, string fiel
 isolated function getResourceConfig(service object {} serviceObj, string methodName, string[] resourcePath)
 returns GraphqlResourceConfig? {
     any resourceAnnotation = getResourceAnnotation(serviceObj, resourcePath, methodName);
-    if resourceAnnotation !is () {
-        GraphqlResourceConfig resourceConfig = <GraphqlResourceConfig>resourceAnnotation;
-        return resourceConfig;
+    if resourceAnnotation is GraphqlResourceConfig {
+        return resourceAnnotation;
     }
     return;
 }

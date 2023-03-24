@@ -2040,7 +2040,7 @@ When it comes to interceptor execution, it follows the `onion principle`. Each i
 >**Note:** The inserting order of the interceptors into the array, will be the execution order of Interceptors. The interceptors are applied to each event in response stream of subscription resolvers.
 
 #### 11.3.1 Service Interceptors
-The service interceptors are applied to all the resolvers in the GraphQL service. A GraphQL service accepts an array of service interceptors, and it should be inserted as mentioned in the [Service Interceptor](#1016-service-interceptors) section.
+The service interceptors are applied to all the resolvers in the GraphQL service. A GraphQL service accepts a single service interceptor or an array of service interceptors, and it should be inserted as mentioned in the [Service Interceptor](#1016-service-interceptors) section.
 
 ###### Example: GraphQL Service Interceptor
 
@@ -2077,7 +2077,7 @@ Following is the output of the server when a request is processed:
 ```
 
 #### 11.3.2 Field Interceptors
-The field interceptors are applied to a specific resolver in the GraphQL service. A GraphQL resolver accepts an array of field interceptors, and it should be inserted as mentioned in the [Field Interceptor](#1021-field-interceptors) section.
+The field interceptors are applied to a specific resolver in the GraphQL service. A GraphQL resolver accepts a single field interceptor or an array of field interceptors, and it should be inserted as mentioned in the [Field Interceptor](#1021-field-interceptors) section.
 
 ###### Example: GraphQL Field Interceptor
 
@@ -2097,7 +2097,7 @@ readonly service class FieldInterceptor {
 
 service /graphql on new graphql:Listener(9000) {
     @graphql:ResourceConfig {
-        interceptors: [new FieldInterceptor()]
+        interceptors: new FieldInterceptor()
     }
     resource function get name(int id) returns string {
         log:printInfo("Resolver: name");

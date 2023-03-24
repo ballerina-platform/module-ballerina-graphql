@@ -29,8 +29,7 @@ public class Field {
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
-                           string[] resourcePath = [], any|error fieldValue = (),
-                           readonly & Interceptor[] fieldInterceptors = []) {
+                           string[] resourcePath = [], any|error fieldValue = ()) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;

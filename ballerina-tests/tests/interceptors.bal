@@ -39,7 +39,7 @@ readonly service class StringInterceptor2 {
         return result;
     }
 }
- 
+
 readonly service class StringInterceptor3 {
     *graphql:Interceptor;
 
@@ -93,7 +93,7 @@ readonly service class RecordInterceptor1 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        if result is record{} && 'field.getName() == "profile" {
+        if result is record {} && 'field.getName() == "profile" {
             return {
                 name: "Rubeus Hagrid",
                 age: 70,
@@ -109,7 +109,7 @@ readonly service class RecordInterceptor2 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        if result is record{} {
+        if result is record {} {
             return {
                 number: "+87654321"
             };
@@ -174,11 +174,10 @@ readonly service class UnionInterceptor1 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
         if 'field.getName() == "profile1" {
             return {id: 3, name: "Minerva McGonagall", subject: "Transfiguration"};
         }
-        return result;
+        return context.resolve('field);
     }
 }
 
@@ -198,11 +197,10 @@ readonly service class ServiceObjectInterceptor1 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
         if 'field.getName() == "teacher" {
             return {id: 3, name: "Minerva McGonagall", subject: "Transfiguration"};
         }
-        return result;
+        return context.resolve('field);
     }
 }
 
@@ -210,11 +208,10 @@ readonly service class ServiceObjectInterceptor2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
         if 'field.getName() == "students" {
             return ["Ballerina", "GraphQL"];
         }
-        return result;
+        return context.resolve('field);
     }
 }
 
@@ -321,7 +318,7 @@ readonly service class InterceptMutation2 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        Person p = {name: "Albert", age: 53, address: { number: "103", street: "Mould-on-the-Wold", city: "London"}};
+        Person p = {name: "Albert", age: 53, address: {number: "103", street: "Mould-on-the-Wold", city: "London"}};
         return p;
     }
 }
@@ -359,7 +356,7 @@ readonly service class InvalidInterceptor3 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        if result is record{} {
+        if result is record {} {
             return "Harry Potter";
         }
         return result;
@@ -371,7 +368,7 @@ readonly service class InvalidInterceptor4 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        if result is record{} {
+        if result is record {} {
             return {
                 name: "Albus Percival Wulfric Brian Dumbledore",
                 age: 80,
@@ -387,7 +384,7 @@ readonly service class InvalidInterceptor5 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        if result is record{} {
+        if result is record {} {
             return "Harry Potter";
         }
         return result;
@@ -399,7 +396,7 @@ readonly service class InvalidInterceptor6 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
-        if result is record{} {
+        if result is record {} {
             return ["Ballerina", "GraphQL"];
         }
         return result;
@@ -662,9 +659,9 @@ readonly service class TableInterceptor2 {
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         var result = context.resolve('field);
         return [
-            { id: 4, name: "John", salary: 5000.00 },
-            { id: 5, name: "Jane", salary: 7000.00 },
-            { id: 6, name: "Johnny", salary: 1000.00 }
+            {id: 4, name: "John", salary: 5000.00},
+            {id: 5, name: "Jane", salary: 7000.00},
+            {id: 6, name: "Johnny", salary: 1000.00}
         ];
     }
 }
@@ -756,7 +753,7 @@ readonly service class InterceptUnionType2 {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         _ = context.resolve('field);
-        return {id:0, name:"Walter White", subject:"Chemistry"};
+        return {id: 0, name: "Walter White", subject: "Chemistry"};
     }
 }
 

@@ -1690,16 +1690,16 @@ isolated service /subscription_interceptor4 on subscriptionListener {
         return "Walter White";
     }
 
-    isolated resource function subscribe multipleValues1() returns stream<(PeopleService)>|error {
+    isolated resource function subscribe multipleValues1() returns stream<PeopleService>|error {
         StudentService s = new StudentService(1, "Jesse Pinkman");
         TeacherService t = new TeacherService(0, "Walter White", "Chemistry");
         return [s, t].toStream();
     }
 
     @graphql:ResourceConfig {
-        interceptors: [new InterceptUnionType2()]
+        interceptors: new InterceptUnionType2()
     }
-    isolated resource function subscribe multipleValues2() returns stream<(PeopleService)>|error {
+    isolated resource function subscribe multipleValues2() returns stream<PeopleService>|error {
         StudentService s = new StudentService(1, "Harry Potter");
         TeacherService t = new TeacherService(3, "Severus Snape", "Dark Arts");
         return [s, t].toStream();
@@ -1907,7 +1907,7 @@ service /interceptors_with_null_values3 on basicListener {
         return "Ballerina";
     }
 
-     @graphql:ResourceConfig {
+    @graphql:ResourceConfig {
         interceptors: new NullReturn2()
     }
     resource function get age() returns int {
