@@ -19,4 +19,4 @@
 set -e
 source base-scenario.sh
 
-jmeter -n -t "${scriptsDir}/"book-reviews-mutation-test-plan.jmx -l "${resultsDir}/"original.jtl -Jusers=10 -JrampUpPeriod=10 -Jduration=100 -Jhost=bal.perf.test -Jport=80 -Jprotocol=http -Jpath=graphql ${payload_flags}
+jmeter -n -t "${scriptsDir}/"book-reviews-mutation-test-plan.jmx -l "${resultsDir}/"original.jtl -Jusers=10 -JrampUpPeriod=600 -Jduration=3600 -Jhost=bal.perf.test -Jport=80 -Jprotocol=http -Jpath=graphql ${payload_flags}
