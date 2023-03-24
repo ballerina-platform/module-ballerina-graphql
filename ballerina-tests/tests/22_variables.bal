@@ -34,7 +34,7 @@ isolated function testInvalidRequestWithVariables() returns error? {
     groups: ["variables", "input"],
     dataProvider: dataProviderInputVariables
 }
-isolated function testDuplicateInputVariables(string url, string resourceFileName, json variables, string? operationName = ()) returns error? {
+isolated function testInputVariables(string url, string resourceFileName, json variables, string? operationName = ()) returns error? {
     string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document, variables, operationName);
     json expectedPayload = check getJsonContentFromFile(resourceFileName);
@@ -45,6 +45,8 @@ function dataProviderInputVariables() returns map<[string, string, json, string?
     string url1 = "http://localhost:9091/inputs";
     string url2 = "http://localhost:9091/records";
     string url3 = "http://localhost:9095/special_types";
+    string url4 = "http://localhost:9091/null_values";
+    string url5 = "http://localhost:9091/documentation";
     json var1 = {
         name: "Thisaru",
         age: 30,
@@ -69,7 +71,9 @@ function dataProviderInputVariables() returns map<[string, string, json, string?
         "13": [url1, "invalid_enum_type_default_value_with_variables"],
         "14": [url1, "enum_type_default_value_with_variables"],
         "15": [url1, "variable_default_value_with_coerce_int_input_to_float"],
-        "16": [url1, "float_type_variable_with_default_value"]
+        "16": [url1, "float_type_variable_with_default_value"],
+        "17": [url4, "variables_with_multiple_operations", {id: 2}, "GetProfile"],
+        "18": [url5, "variables_with_query_and_mutation", {name: "Cube", edges: 12}, "Shape"]
     };
     return dataSet;
 }

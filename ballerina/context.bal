@@ -139,10 +139,11 @@ public isolated class Context {
 
     isolated function getNextInterceptor() returns (readonly & Interceptor)? {
         lock {
-            if self.getEngine() is Engine {
-                Engine engine = <Engine>self.getEngine();
-                if engine.getInterceptors().length() > self.nextInterceptor {
-                    readonly & Interceptor next = engine.getInterceptors()[self.nextInterceptor];
+            Engine? engine = self.getEngine();
+            if engine is Engine {
+                (readonly & Interceptor)[] interceptors = engine.getInterceptors();
+                if interceptors.length() > self.nextInterceptor {
+                    (readonly & Interceptor) next = interceptors[self.nextInterceptor];
                     self.nextInterceptor += 1;
                     return next;
                 }

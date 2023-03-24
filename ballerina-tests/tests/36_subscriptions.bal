@@ -195,8 +195,14 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
     check initiateGraphqlWsConnection(wsClient);
     check sendSubscriptionMessage(wsClient, document);
 
-    json expectedMsgPayload = {errors: [{message: "{ballerina/lang.array}IndexOutOfRange"}]};
-    check validateErrorMessage(wsClient, expectedMsgPayload);
+    json expectedErrorPayload = [
+        {
+            message: "{ballerina/lang.array}IndexOutOfRange",
+            locations: [{line: 1, column: 25}],
+            path: ["values"]
+        }
+    ];
+    check validateErrorMessage(wsClient, expectedErrorPayload);
 }
 
 @test:Config {
