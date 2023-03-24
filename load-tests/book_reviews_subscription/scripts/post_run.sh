@@ -17,6 +17,7 @@
 # Pre run script for ballerina performance tests
 # ----------------------------------------------------------------------------
 set -e
+source base-scenario.sh
 
 echo "----------Pick WS Next responses from jtl----------"
 # 'WS Next' is the lable of the WS sampler in JMeter
