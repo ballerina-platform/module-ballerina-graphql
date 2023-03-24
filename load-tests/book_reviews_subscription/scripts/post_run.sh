@@ -17,9 +17,10 @@
 # Pre run script for ballerina performance tests
 # ----------------------------------------------------------------------------
 set -e
+source base-scenario.sh
 
 echo "----------Pick WS Next responses from jtl----------"
-# "WS Next" is the lable of the WS sampler in JMeter
+# 'WS Next' is the lable of the WS sampler in JMeter
 grep -E 'WS Next|label' "${resultsDir}/"original.jtl > "${resultsDir}/".temp.jtl
 rm "${resultsDir}/"original.jtl
 mv "${resultsDir}/".temp.jtl "${resultsDir}/"original.jtl
