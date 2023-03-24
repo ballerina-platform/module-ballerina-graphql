@@ -28,48 +28,6 @@ import io.ballerina.runtime.api.values.BString;
 public class ParserUtils {
     private ParserUtils() {}
 
-    /**
-     * Validates whether a given character is a valid first character for a GraphQL identifier. The input is a BString,
-     * but it should only contain a single character.
-     *
-     * @param character - The {@code BString} value of the character to be validated
-     * @return {@code true} if the character is a valid first character for a GraphQL identifier, otherwise {@code
-     * false}
-     */
-    public static boolean isValidFirstChar(BString character) {
-        int c = character.getValue().charAt(0);
-        return isIdentifierInitialChar(c);
-    }
-
-    /**
-     * Validates whether a given character is a valid non-first character for a GraphQL identifier. The input is a
-     * BString, but it should only contain a single character.
-     *
-     * @param character - The {@code BString} value of the character to be validated
-     * @return {@code true} if the character is a valid non-first character for a GraphQL identifier, otherwise {@code
-     * false}
-     */
-    public static boolean isValidChar(BString character) {
-        int c = character.getValue().charAt(0);
-        return isIdentifierInitialChar(c) || isDigit(c);
-    }
-
-    private static boolean isIdentifierInitialChar(int c) {
-        if ('A' <= c && 'Z' >= c) {
-            return true;
-        }
-
-        if ('a' <= c && 'z' >= c) {
-            return true;
-        }
-
-        return c == '_';
-    }
-
-    private static boolean isDigit(int c) {
-        return ('0' <= c && '9' >= c);
-    }
-
     public static BString getHashCode(BObject object) {
         return StringUtils.fromString(Integer.toString(object.hashCode()));
     }

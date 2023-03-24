@@ -53,11 +53,13 @@ isolated class Engine {
             return result;
         }
 
-        OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, variables);
+        OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, operationName, variables);
         if validationResult is OutputObject {
             return validationResult;
         }
-        return self.getOperation(validationResult, operationName);
+        // Since unused operation nodes are removed from the Document node, it includes only the operation node
+        // related to the currently executing operation. Hence directly access that node from here.
+        return validationResult.getOperations()[0];
     }
 
     isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
@@ -97,9 +99,10 @@ isolated class Engine {
         return getOutputObjectFromErrorDetail(errorDetail);
     }
 
-    isolated function validateDocument(ParseResult parseResult, map<json>? variables)
+    isolated function validateDocument(ParseResult parseResult, string? operationName, map<json>? variables)
     returns OutputObject|parser:DocumentNode {
-        ErrorDetail[]|NodeModifierContext validationResult = self.parallellyValidateDocument(parseResult, variables);
+        ErrorDetail[]|NodeModifierContext validationResult =
+            self.parallellyValidateDocument(parseResult, operationName, variables);
         if validationResult is ErrorDetail[] {
             return getOutputObjectFromErrorDetail(validationResult);
         } else {
@@ -109,10 +112,15 @@ isolated class Engine {
         }
     }
 
-    isolated function parallellyValidateDocument(ParseResult parseResult, map<json>? variables)
+    isolated function parallellyValidateDocument(ParseResult parseResult, string? operationName, map<json>? variables)
     returns ErrorDetail[]|NodeModifierContext {
+        parser:DocumentNode document = parseResult.document;
         ErrorDetail[] validationErrors = [...parseResult.validationErrors];
-        final parser:DocumentNode document = parseResult.document;
+
+        ErrorDetail|parser:OperationNode operationNode = self.getOperation(document, operationName);
+        if operationNode is ErrorDetail {
+            return [operationNode];
+        }
 
         map<parser:FragmentNode> fragments = document.getFragments();
         final NodeModifierContext nodeModifierContext = new;
@@ -134,21 +142,26 @@ isolated class Engine {
         final readonly & map<json>? vars = variables.cloneReadOnly();
         final boolean introspection = self.introspection;
 
+        map<parser:OperationNode> operations = {};
+        operations[operationNode.getName()] = operationNode;
+        final parser:DocumentNode modifiedDocument = document.modifyWith(operations, document.getFragments());
+        parseResult.document = modifiedDocument;
+
         worker queryDepthValidatorWorker returns ErrorDetail[] {
             QueryDepthValidatorVisitor validator = new (maxQueryDepth, nodeModifierContext);
-            document.accept(validator);
+            modifiedDocument.accept(validator);
             return validator.getErrors() ?: [];
         }
 
         worker subscriptionValidatorWorker returns ErrorDetail[] {
             SubscriptionValidatorVisitor validator = new (nodeModifierContext);
-            document.accept(validator);
+            modifiedDocument.accept(validator);
             return validator.getErrors() ?: [];
         }
 
         worker directiveValidatorWorker returns ErrorDetail[] {
             DirectiveValidatorVisitor validator = new (schema, nodeModifierContext);
-            document.accept(validator);
+            modifiedDocument.accept(validator);
             return validator.getErrors() ?: [];
         }
 
@@ -159,7 +172,7 @@ isolated class Engine {
                 new FieldValidatorVisitor(schema, nodeModifierContext)
             ];
             foreach ValidatorVisitor validator in validatorVisitors {
-                document.accept(validator);
+                modifiedDocument.accept(validator);
                 ErrorDetail[]? visitorErrors = validator.getErrors();
                 if visitorErrors is ErrorDetail[] {
                     errors.push(...visitorErrors);
@@ -173,7 +186,7 @@ isolated class Engine {
                 return [];
             }
             IntrospectionValidatorVisitor validator = new (introspection, nodeModifierContext);
-            document.accept(validator);
+            modifiedDocument.accept(validator);
             return validator.getErrors() ?: [];
         }
 
@@ -192,17 +205,16 @@ isolated class Engine {
     }
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)
-    returns parser:OperationNode|OutputObject {
+    returns ErrorDetail|parser:OperationNode {
         if operationName == () {
             if document.getOperations().length() == 1 {
                 return document.getOperations()[0];
             } else {
                 string message = string `Must provide operation name if query contains multiple operations.`;
-                ErrorDetail errorDetail = {
+                return {
                     message: message,
                     locations: []
                 };
-                return getOutputObjectFromErrorDetail(errorDetail);
             }
         } else {
             foreach parser:OperationNode operationNode in document.getOperations() {
@@ -211,18 +223,17 @@ isolated class Engine {
                 }
             }
             string message = string `Unknown operation named "${operationName}".`;
-            ErrorDetail errorDetail = {
+            return {
                 message: message,
                 locations: []
             };
-            return getOutputObjectFromErrorDetail(errorDetail);
         }
     }
 
     isolated function resolve(Context context, Field 'field) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
         parser:RootOperationType operationType = 'field.getOperationType();
-        (Interceptor & readonly)? interceptor = context.getNextInterceptor();
+        (readonly & Interceptor)? interceptor = context.getNextInterceptor();
         __Type fieldType = 'field.getFieldType();
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {

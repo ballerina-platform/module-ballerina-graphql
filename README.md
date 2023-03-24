@@ -113,7 +113,7 @@ The `remote` functions inside the GraphQL service represent the resolvers of the
 
 When a `remote` function is defined inside a GraphQL service, the schema will have a `Mutation` operation and the `remote` function will be a field of the `Mutation` object.
 
-For example, consider the following service that has a `Person` record named `person`. It has a `Query` field named `profile`, which returns the `person` record. It also has two `remote` functions named `updateName` and `updateCity`, which are used as mutations.
+For example, consider the following service that has a `Person` record named `profile`. It has a `Query` field named `profile`, which returns the `Person` record. It also has two `remote` functions named `updateName` and `updateCity`, which are used as mutations.
 
 ```ballerina
 import ballerina/graphql;
