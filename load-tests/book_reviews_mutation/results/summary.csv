@@ -1,1 +1,2 @@
 Label,# Samples,Average,Median,90% Line,95% Line,99% Line,Min,Max,Error %,Throughput,Received KB/sec,Std. Dev.,Date,Payload,Users
+GraphQL Mutation Request,87065,380,91,1257,1596,2256,11,3554,0.00%,25.0,6.9,531.54,1679948319,50,10
