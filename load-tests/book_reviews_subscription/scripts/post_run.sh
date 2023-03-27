@@ -26,5 +26,5 @@ rm "${resultsDir}/"original.jtl
 mv "${resultsDir}/".temp.jtl "${resultsDir}/"original.jtl
 
 echo "----------Modified original.jtl----------"
-cat "${resultsDir}/"original.jtl
+tail -5 "${resultsDir}/"original.jtl
 echo "----------End jtl"----------"
