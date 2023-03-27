@@ -29,3 +29,20 @@ echo "----------Modified original.jtl----------"
 tail -5 "${resultsDir}/original.jtl"
 echo "----------End jtl----------"
 
+echo "--------Processing Results--------"
+pushd "${REPO_NAME}"/load-tests/"${SCENARIO_NAME}"/results/
+echo "--------Splitting Results--------"
+jtl-splitter.sh -- -f original.jtl -t 120 -u SECONDS -s
+ls -ltr
+echo "--------Splitting Completed--------"
+
+echo "--------Generating CSV--------"
+sudo chmod +x $JMETER_HOME/bin/JMeterPluginsCMD.sh
+JMeterPluginsCMD.sh --generate-csv temp_summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport
+echo "--------CSV generated--------"
+
+echo "--------Merge CSV--------"
+create-csv.sh temp_summary.csv /home/ballerina/"${REPO_NAME}"/load-tests/"${SCENARIO_NAME}"/results/summary.csv "${payload_size}" "${concurrent_users}"
+echo "--------CSV merged--------"
+popd
+
