@@ -27,4 +27,4 @@ mv "${resultsDir}/".temp.jtl "${resultsDir}/"original.jtl
 
 echo "----------Modified original.jtl----------"
 cat "${resultsDir}/"original.jtl
-echo "----------End of original.jtl"----------"
+echo "----------End jtl"----------"
