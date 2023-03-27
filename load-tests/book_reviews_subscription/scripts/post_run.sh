@@ -29,4 +29,4 @@ echo "----------Modified original.jtl----------"
 tail -5 "${resultsDir}/original.jtl"
 echo "----------End jtl----------"
 
-FORCE_ENABLE_JMETER_PROCESSING=false # enable jmeter processing
+FORCE_ENABLE_JMETER_PROCESSING=true # enable jmeter processing
