@@ -24,3 +24,7 @@ echo "----------Pick WS Next responses from jtl----------"
 grep -E 'WS Next|label' "${resultsDir}/"original.jtl > "${resultsDir}/".temp.jtl
 rm "${resultsDir}/"original.jtl
 mv "${resultsDir}/".temp.jtl "${resultsDir}/"original.jtl
+
+echo "----------Modified original.jtl----------"
+cat "${resultsDir}/"original.jtl
+echo "----------End of original.jtl"----------"
