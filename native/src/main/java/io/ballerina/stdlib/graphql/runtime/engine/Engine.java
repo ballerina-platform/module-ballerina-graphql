@@ -50,10 +50,10 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.OPERATION_QUERY;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.OPERATION_SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.RESOURCE_CONFIG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -248,9 +248,9 @@ public class Engine {
         ServiceType serviceType = (ServiceType) service.getType();
         BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
         MethodType methodType = null;
-        if (operationType.getValue().equalsIgnoreCase(QUERY)) {
+        if (OPERATION_QUERY.equals(operationType.getValue())) {
             methodType = getResourceMethod(serviceType, getPathList(path), GET_ACCESSOR);
-        } else if (operationType.getValue().equalsIgnoreCase(SUBSCRIPTION)) {
+        } else if (OPERATION_SUBSCRIPTION.equals(operationType.getValue())) {
             methodType = getResourceMethod(serviceType, getPathList(path), SUBSCRIBE_ACCESSOR);
         } else {
             methodType = getRemoteMethod(serviceType, String.valueOf(methodName));

@@ -115,6 +115,10 @@ public class EngineUtils {
     public static final String RESOURCE_CONFIG = "ResourceConfig";
     public static final String COLON = ":";
 
+    // Root operation types
+    public static final String OPERATION_QUERY = "query";
+    public static final String OPERATION_SUBSCRIPTION = "subscription";
+
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
         String[] resourcePath = resourceMethod.getResourcePath();
         if (resourcePath.length != paths.size()) {
