@@ -39,7 +39,7 @@ public class Field {
         self.fieldValue = fieldValue;
         self.resourcePath.push(internalNode.getName());
         self.fieldInterceptors = serviceObject is service object {} ?
-            getFieldInterceptors(serviceObject, internalNode.getName(), self.resourcePath) : [];
+            getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
     }
 
     # Returns the name of the field.

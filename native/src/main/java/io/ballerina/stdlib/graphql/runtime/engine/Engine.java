@@ -23,6 +23,7 @@ import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
@@ -49,8 +50,10 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.RESOURCE_CONFIG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIPTION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -240,27 +243,20 @@ public class Engine {
         return StringUtils.fromString(serviceType.getName());
     }
 
-    public static Object getResourceAnnotation(BObject service, BArray path, BString methodName) {
-        BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
+    public static Object getResourceAnnotation(BObject service, BString operationType, BArray path,
+                                               BString methodName) {
         ServiceType serviceType = (ServiceType) service.getType();
-        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(serviceType, getPathList(path));
-        if (resourceMethod != null) {
-            return resourceMethod.getAnnotation(identifier);
+        BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
+        MethodType methodType = null;
+        if (operationType.getValue().equalsIgnoreCase(QUERY)) {
+            methodType = getResourceMethod(serviceType, getPathList(path), GET_ACCESSOR);
+        } else if (operationType.getValue().equalsIgnoreCase(SUBSCRIPTION)) {
+            methodType = getResourceMethod(serviceType, getPathList(path), SUBSCRIBE_ACCESSOR);
+        } else {
+            methodType = getRemoteMethod(serviceType, String.valueOf(methodName));
         }
-        RemoteMethodType remoteMethod = getRemoteMethod(serviceType, String.valueOf(methodName));
-        if (remoteMethod != null) {
-            return remoteMethod.getAnnotation(identifier);
-        }
-        return null;
-    }
-
-    private static Object getResourceMethod(ServiceType serviceType, List<String> pathList) {
-        for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
-            String accessor = resourceMethod.getAccessor();
-            if ((GET_ACCESSOR.equals(accessor) || SUBSCRIBE_ACCESSOR.equals(accessor)) &&
-                    isPathsMatching(resourceMethod, pathList)) {
-                return resourceMethod;
-            }
+        if (methodType != null) {
+            return methodType.getAnnotation(identifier);
         }
         return null;
     }

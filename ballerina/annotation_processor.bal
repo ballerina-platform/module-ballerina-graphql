@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/jballerina.java;
+import graphql.parser;
 
 isolated function getCorsConfig(GraphqlServiceConfig? serviceConfig) returns CorsConfig {
     if serviceConfig is GraphqlServiceConfig && serviceConfig.cors is CorsConfig {
@@ -83,9 +84,9 @@ isolated function getIntrospection(GraphqlServiceConfig? serviceConfig) returns 
     return true;
 }
 
-isolated function getFieldInterceptors(service object {} serviceObj, string fieldName, string[] resourcePath) returns
-    readonly & (readonly & Interceptor)[] {
-    GraphqlResourceConfig? resourceConfig = getResourceConfig(serviceObj, fieldName, resourcePath);
+isolated function getFieldInterceptors(service object {} serviceObj, parser:RootOperationType operationType,
+        string fieldName, string[] resourcePath) returns readonly & (readonly & Interceptor)[] {
+    GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj, operationType, resourcePath, fieldName);
     if resourceConfig is GraphqlResourceConfig {
         readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) interceptors = resourceConfig.interceptors;
         if interceptors is (readonly & Interceptor) {
@@ -97,16 +98,7 @@ isolated function getFieldInterceptors(service object {} serviceObj, string fiel
     return [];
 }
 
-isolated function getResourceConfig(service object {} serviceObj, string methodName, string[] resourcePath)
-returns GraphqlResourceConfig? {
-    any resourceAnnotation = getResourceAnnotation(serviceObj, resourcePath, methodName);
-    if resourceAnnotation is GraphqlResourceConfig {
-        return resourceAnnotation;
-    }
-    return;
-}
-
-isolated function getResourceAnnotation(service object {} serviceObject, string[] path, string methodName)
-returns any = @java:Method {
+isolated function getResourceAnnotation(service object {} serviceObject, parser:RootOperationType operationType,
+        string[] path, string methodName) returns GraphqlResourceConfig? = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
