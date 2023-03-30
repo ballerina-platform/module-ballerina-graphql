@@ -38,7 +38,8 @@ function dataProviderArrays() returns string[][] {
         [url2, "resource_returning_service_object_array"],
         [url2, "resource_returning_optional_service_object_arrays"],
         [url2, "optional_arrays_with_invalid_query"],
-        [url2, "service_object_array_with_fragment_returning_error"]
+        [url2, "service_object_array_with_fragment_returning_error"],
+        [url1, "arrays_with_errors_in_record_field"]
     ];
 }
 

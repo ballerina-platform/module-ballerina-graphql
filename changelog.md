@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#4172] Fix Compilation Failure when Type Alias is Used with Primitive Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4172)
 - [[#4208] Fix Subscription Payload Returned with Invalid GraphQL Error Format](https://github.com/ballerina-platform/ballerina-standard-library/issues/4208)
+- [[#4286] Fix Invalid Path Returning for Errors in Record Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/4286)
 
 ### Changed
 - [[#3885] Allow Adding a Single Service Level Interceptor](https://github.com/ballerina-platform/ballerina-standard-library/issues/3885)
