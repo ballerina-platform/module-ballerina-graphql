@@ -267,3 +267,16 @@ public type DefaultPerson record {|
     string name = "Sam";
     Address[] addresses = [];
 |};
+
+public type Project record {|
+    string name;
+    string manager;
+    Task tasks;
+|};
+
+public type Task record {|
+    readonly int sprint;
+    (string|error)[]? subTasks;
+|};
+
+type TaskTable table<Task> key(sprint);
