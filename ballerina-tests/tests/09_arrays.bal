@@ -180,3 +180,14 @@ isolated function testServiceObjectArrayWithInvalidResponseOrder() returns error
     string expectedPayloadString = expectedPayload.toString();
     test:assertNotEquals(actualPayloadString, expectedPayloadString);
 }
+
+@test:Config {
+    groups: ["array"]
+}
+isolated function testArraysWithErrorsInRecordField() returns error? {
+    string graphqlUrl = "http://localhost:9095/special_types";
+    string document = check getGraphQLDocumentFromFile("arrays_with_errors_in_record_field.graphql");
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("arrays_with_errors_in_record_field.json");
+    assertJsonValuesWithOrder(result, expectedPayload);
+}

@@ -76,3 +76,14 @@ isolated function testResolverReturningTables() returns error? {
     json expectedPayload = {data: {all: [{isoCode: "AFG"}, {isoCode: "SL"}, {isoCode: "US"}]}};
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["tables"]
+}
+isolated function testResolverReturningTablesWithErrors() returns error? {
+    string graphqlUrl = "http://localhost:9091/tables";
+    string document = check getGraphQLDocumentFromFile("resolver_returning_tables_with_errors.graphql");
+    json result = check getJsonPayloadFromService(graphqlUrl, document);
+    json expectedPayload = check getJsonContentFromFile("resolver_returning_tables_with_errors.json");
+    assertJsonValuesWithOrder(result, expectedPayload);
+}
