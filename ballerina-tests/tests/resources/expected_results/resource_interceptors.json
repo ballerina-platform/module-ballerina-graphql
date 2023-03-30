@@ -1,0 +1,13 @@
+{
+    "data":{
+        "customer":{
+            "id": 4,
+            "name": null,
+            "address":{
+                "number": 227,
+                "street": "Street 3",
+                "city": "New York"
+            }
+        }
+    }
+}

@@ -59,7 +59,7 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
         return true;
     } else if 'type.kind is ENUM && value is string {
         return true;
-    } else if 'type.kind is LIST && value is anydata[] {
+    } else if 'type.kind is LIST && (value is anydata[] || value is table<anydata>) {
         return true;
     } else if 'type.kind is OBJECT && value is map<anydata> {
         return true;

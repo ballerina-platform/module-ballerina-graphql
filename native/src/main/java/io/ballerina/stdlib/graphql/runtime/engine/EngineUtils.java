@@ -111,6 +111,14 @@ public class EngineUtils {
     private static final BString ENTITY_ANNOTATION_KEY_FIELD = StringUtils.fromString("key");
     private static final BString ENTITY_ANNOTATION_RESOLVER_FIELD = StringUtils.fromString("resolveReference");
 
+    // Resource annotation
+    public static final String RESOURCE_CONFIG = "ResourceConfig";
+    public static final String COLON = ":";
+
+    // Root operation types
+    public static final String OPERATION_QUERY = "query";
+    public static final String OPERATION_SUBSCRIPTION = "subscription";
+
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
         String[] resourcePath = resourceMethod.getResourcePath();
         if (resourcePath.length != paths.size()) {

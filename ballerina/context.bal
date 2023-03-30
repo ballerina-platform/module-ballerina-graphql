@@ -137,13 +137,19 @@ public isolated class Context {
         }
     }
 
-    isolated function getNextInterceptor() returns (readonly & Interceptor)? {
+    isolated function getNextInterceptor(Field 'field) returns (readonly & Interceptor)? {
         lock {
             Engine? engine = self.getEngine();
             if engine is Engine {
                 (readonly & Interceptor)[] interceptors = engine.getInterceptors();
                 if interceptors.length() > self.nextInterceptor {
                     (readonly & Interceptor) next = interceptors[self.nextInterceptor];
+                    self.nextInterceptor += 1;
+                    return next;
+                }
+                int nextFieldInterceptor = self.nextInterceptor - engine.getInterceptors().length();
+                if 'field.getFieldInterceptors().length() > nextFieldInterceptor {
+                    readonly & Interceptor next = 'field.getFieldInterceptors()[nextFieldInterceptor];
                     self.nextInterceptor += 1;
                     return next;
                 }

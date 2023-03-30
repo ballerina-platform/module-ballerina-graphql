@@ -330,3 +330,66 @@ class RefreshData {
         return {value: "data"};
     }
 }
+
+public distinct isolated service class Customer {
+    private final int id;
+    private final string name;
+
+    public isolated function init(int id, string name) {
+        self.id = id;
+        self.name = name;
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: [new Counter(), new Counter(), new Counter()]
+    }
+    isolated resource function get id() returns int {
+        return self.id;
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: new NullReturn1()
+    }
+    isolated resource function get name() returns string? {
+        lock {
+            return self.name;
+        }
+    }
+
+    isolated resource function get address() returns CustomerAddress {
+        return new (225, "Bakers street", "London");
+    }
+}
+
+public distinct isolated service class CustomerAddress {
+    private final int number;
+    private final string street;
+    private final string city;
+
+    public isolated function init(int number, string street, string city) {
+        self.number = number;
+        self.street = street;
+        self.city = city;
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: [new Counter(), new Counter()]
+    }
+    isolated resource function get number() returns int {
+        return self.number;
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: new Street()
+    }
+    isolated resource function get street() returns string {
+        return self.street;
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: new City()
+    }
+    isolated resource function get city() returns string {
+        return self.city;
+    }
+}

@@ -25,6 +25,7 @@ public class Field {
     private final __Type fieldType;
     private (string|int)[] path;
     private string[] resourcePath;
+    private readonly & Interceptor[] fieldInterceptors;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
@@ -37,6 +38,8 @@ public class Field {
         self.resourcePath = resourcePath;
         self.fieldValue = fieldValue;
         self.resourcePath.push(internalNode.getName());
+        self.fieldInterceptors = serviceObject is service object {} ?
+            getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
     }
 
     # Returns the name of the field.
@@ -106,5 +109,9 @@ public class Field {
             }
         }
         return result;
+    }
+
+    isolated function getFieldInterceptors() returns readonly & Interceptor[] {
+        return self.fieldInterceptors;
     }
 }

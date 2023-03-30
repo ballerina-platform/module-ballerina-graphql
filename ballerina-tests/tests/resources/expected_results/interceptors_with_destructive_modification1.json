@@ -5,6 +5,13 @@
                 "id": 3,
                 "name": "Minerva McGonagall"
             }
+        ],
+        "teachers": [
+            {
+                "id": 46,
+                "name": "Sybill Trelawney",
+                "subject": "Divination"
+            }
         ]
     }
 }

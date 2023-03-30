@@ -1,0 +1,11 @@
+query {
+    customer {
+        id
+        name
+        address {
+            number
+            street
+            city
+        }
+    }
+}

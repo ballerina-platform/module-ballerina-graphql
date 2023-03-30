@@ -6,6 +6,9 @@
                 "number": "103",
                 "street": "Mould-on-the-Wold"
             }
+        },
+        "contact": {
+            "number": "+87654321"
         }
     }
 }

@@ -13,6 +13,19 @@
             ]
         },
         {
+            "message":"This field is not accessible!",
+            "locations":[
+                {
+                    "line":5,
+                    "column":9
+                }
+            ],
+            "path":[
+                "address",
+                "city"
+            ]
+        },
+        {
             "message": "Access denied!",
             "locations": [
                 {
@@ -43,7 +56,7 @@
         "name": "Walter",
         "age": null,
         "address": {
-            "city": "London",
+            "city": null,
             "street": null,
             "number": null
         }

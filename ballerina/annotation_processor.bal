@@ -14,6 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
+import graphql.parser;
+
 isolated function getCorsConfig(GraphqlServiceConfig? serviceConfig) returns CorsConfig {
     if serviceConfig is GraphqlServiceConfig && serviceConfig.cors is CorsConfig {
         return <CorsConfig> serviceConfig.cors;
@@ -80,3 +83,22 @@ isolated function getIntrospection(GraphqlServiceConfig? serviceConfig) returns 
     }
     return true;
 }
+
+isolated function getFieldInterceptors(service object {} serviceObj, parser:RootOperationType operationType,
+        string fieldName, string[] resourcePath) returns readonly & (readonly & Interceptor)[] {
+    GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj, operationType, resourcePath, fieldName);
+    if resourceConfig is GraphqlResourceConfig {
+        readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) interceptors = resourceConfig.interceptors;
+        if interceptors is (readonly & Interceptor) {
+            return [interceptors];
+        } else {
+            return interceptors;
+        }
+    }
+    return [];
+}
+
+isolated function getResourceAnnotation(service object {} serviceObject, parser:RootOperationType operationType,
+        string[] path, string methodName) returns GraphqlResourceConfig? = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;
