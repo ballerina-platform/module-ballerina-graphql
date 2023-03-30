@@ -99,10 +99,8 @@ class ResponseGenerator {
             if parentValue.hasKey(mapKey) {
                 return self.getResult(parentValue.get(mapKey), parentNode);
             } else {
-                self.path.push(parentNode.getName());
                 string message = string `The field "${parentNode.getName()}" is a map, but it does not contain the key "${mapKey}"`;
                 var result = self.getResult(error(message), parentNode);
-                _ = self.path.pop();
                 return result;
             }
         } else if parentValue is map<anydata> {
@@ -129,7 +127,9 @@ class ResponseGenerator {
         }
         any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
         __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
-        Field 'field = new (fieldNode, fieldType, path = self.path, fieldValue = fieldValue);
+        (string|int)[] path = self.path.clone();
+        path.push(fieldNode.getName());
+        Field 'field = new (fieldNode, fieldType, path = path, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
         return self.engine.resolve(self.context, 'field);
     }
