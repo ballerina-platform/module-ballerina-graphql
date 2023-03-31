@@ -1,14 +1,14 @@
 {
     "errors": [
         {
-            "message":"Invalid return type in Interceptor \"InvalidInterceptor9\". Expected type Person!",
-            "locations":[
+            "message": "Invalid return type in Interceptor \"InvalidInterceptor9\". Expected type Person!",
+            "locations": [
                 {
-                    "line":2,
-                    "column":5
+                    "line": 2,
+                    "column": 5
                 }
             ],
-            "path":[
+            "path": [
                 "person"
             ]
         },
@@ -45,19 +45,8 @@
                 }
             ],
             "path": [
-                "person"
-            ]
-        },
-        {
-            "message": "Invalid return type in Interceptor \"InvalidInterceptor5\". Expected type Address!",
-            "locations": [
-                {
-                    "line": 4,
-                    "column": 9
-                }
-            ],
-            "path": [
-                "person"
+                "person",
+                "address"
             ]
         }
     ],

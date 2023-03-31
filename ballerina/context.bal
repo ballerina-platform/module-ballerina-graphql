@@ -138,30 +138,44 @@ public isolated class Context {
     }
 
     isolated function getNextInterceptor(Field 'field) returns (readonly & Interceptor)? {
-        lock {
-            Engine? engine = self.getEngine();
-            if engine is Engine {
-                (readonly & Interceptor)[] interceptors = engine.getInterceptors();
-                if interceptors.length() > self.nextInterceptor {
-                    (readonly & Interceptor) next = interceptors[self.nextInterceptor];
-                    self.nextInterceptor += 1;
-                    return next;
+        Engine? engine = self.getEngine();
+        if engine is Engine {
+            (readonly & Interceptor)[] interceptors = engine.getInterceptors();
+            if interceptors.length() > self.getInterceptorCount() {
+                (readonly & Interceptor) next = interceptors[self.getInterceptorCount()];
+                if !isGlobalInterceptor(next) && 'field.getPath().length() > 1 {
+                    self.increaseInterceptorCount();
+                    return self.getNextInterceptor('field);
                 }
-                int nextFieldInterceptor = self.nextInterceptor - engine.getInterceptors().length();
-                if 'field.getFieldInterceptors().length() > nextFieldInterceptor {
-                    readonly & Interceptor next = 'field.getFieldInterceptors()[nextFieldInterceptor];
-                    self.nextInterceptor += 1;
-                    return next;
-                }
+                self.increaseInterceptorCount();
+                return next;
             }
-            self.resetInterceptorCount();
-            return;
+            int nextFieldInterceptor = self.getInterceptorCount() - engine.getInterceptors().length();
+            if 'field.getFieldInterceptors().length() > nextFieldInterceptor {
+                readonly & Interceptor next = 'field.getFieldInterceptors()[nextFieldInterceptor];
+                self.increaseInterceptorCount();
+                return next;
+            }
         }
+        self.resetInterceptorCount();
+        return;
     }
 
     isolated function resetInterceptorCount() {
         lock {
             self.nextInterceptor = 0;
+        }
+    }
+
+    isolated function getInterceptorCount() returns int {
+        lock {
+            return self.nextInterceptor;
+        }
+    }
+
+    isolated function increaseInterceptorCount() {
+        lock {
+            self.nextInterceptor += 1;
         }
     }
 

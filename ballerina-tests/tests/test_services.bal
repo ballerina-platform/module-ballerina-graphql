@@ -1506,7 +1506,7 @@ service /intercept_unions on serviceTypeListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new RecordFieldInterceptor1(), new RecordFieldInterceptor2(), new RecordFieldInterceptor3()]
+    interceptors: [new RecordFieldInterceptor1(), new RecordFieldInterceptor2(), new ServiceLevelInterceptor(), new RecordFieldInterceptor3()]
 }
 service /intercept_record_fields on basicListener {
     isolated resource function get profile() returns Person {
@@ -1571,7 +1571,7 @@ service /intercept_table on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: new InterceptMutation1()
+    interceptors: [new InterceptMutation1(), new ServiceLevelInterceptor()]
 }
 isolated service /mutation_interceptor on basicListener {
     private Person p;
@@ -1629,7 +1629,7 @@ isolated service /subscription_interceptor1 on subscriptionListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: [new InterceptAuthor()]
+    interceptors: [new InterceptAuthor(), new ServiceLevelInterceptor()]
 }
 isolated service /subscription_interceptor2 on subscriptionListener {
 
