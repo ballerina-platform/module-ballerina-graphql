@@ -570,6 +570,10 @@ service /tables on basicListener {
     resource function get employees() returns EmployeeTable? {
         return employees;
     }
+
+    resource function get tasks() returns TaskTable {
+        return tasks;
+    }
 }
 
 service /special_types on specialTypesTestListener {
@@ -661,6 +665,17 @@ service /special_types on specialTypesTestListener {
 
     isolated resource function get friends() returns (string|error)?[] {
         return ["walter", "jessie", error("Not Found!")];
+    }
+
+    isolated resource function get project() returns Project {
+        return {
+            name: "Ballerina",
+            manager: "Unknown",
+            tasks: {
+                sprint: 75,
+                subTasks: ["GraphQL-task1", error("Undefined task!"), "HTTP-task2"]
+            }
+        };
     }
 }
 

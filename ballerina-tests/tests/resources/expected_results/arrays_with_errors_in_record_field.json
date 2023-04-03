@@ -1,0 +1,27 @@
+{
+    "errors": [
+        {
+            "message": "Undefined task!",
+            "locations": [
+                {
+                    "line": 5,
+                    "column": 13
+                }
+            ],
+            "path": [
+                "project",
+                "tasks",
+                "subTasks",
+                1
+            ]
+        }
+    ],
+    "data": {
+        "project": {
+            "name": "Ballerina",
+            "tasks": {
+                "subTasks": null
+            }
+        }
+    }
+}
