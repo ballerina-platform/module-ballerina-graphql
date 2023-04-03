@@ -4,6 +4,9 @@
         age,
         ...P1
     }
+    newProfile {
+        ...P1
+    }
 }
 
 fragment P1 on Person {

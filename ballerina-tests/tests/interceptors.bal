@@ -17,7 +17,7 @@
 import ballerina/graphql;
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class StringInterceptor1 {
     *graphql:Interceptor;
@@ -56,7 +56,7 @@ readonly service class StringInterceptor3 {
 }
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class StringInterceptor4 {
     *graphql:Interceptor;
@@ -98,7 +98,7 @@ readonly service class StringInterceptor6 {
 }
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class RecordInterceptor1 {
     *graphql:Interceptor;
@@ -408,7 +408,7 @@ readonly service class InvalidInterceptor4 {
 }
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class InvalidInterceptor5 {
     *graphql:Interceptor;
@@ -465,7 +465,7 @@ readonly service class InvalidInterceptor9 {
 }
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class ErrorInterceptor1 {
     *graphql:Interceptor;
@@ -800,7 +800,7 @@ readonly service class ReturnBeforeResolver {
 }
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class DestructiveModification {
     *graphql:Interceptor;
@@ -830,7 +830,7 @@ readonly service class City {
 }
 
 @graphql:InterceptorConfig {
-    global:false
+    global: false
 }
 readonly service class ServiceLevelInterceptor {
     *graphql:Interceptor;

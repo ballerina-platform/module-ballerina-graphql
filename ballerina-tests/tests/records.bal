@@ -275,6 +275,8 @@ public type Project record {|
 |};
 
 public type Task record {|
-    int sprint;
+    readonly int sprint;
     (string|error)[]? subTasks;
 |};
+
+type TaskTable table<Task> key(sprint);

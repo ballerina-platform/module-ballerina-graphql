@@ -34,6 +34,7 @@ function dataProviderTables() returns string[][] {
     return [
         [url1, "resource_returning_tables"],
         [url1, "querying_table_without_selections"],
-        [url2, "resolver_returning_tables"]
+        [url2, "resolver_returning_tables"],
+        [url1, "resolver_returning_tables_with_errors"]
     ];
 }

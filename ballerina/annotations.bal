@@ -55,5 +55,5 @@ public type GraphqlInterceptorConfig record {|
     boolean global = true;
 |};
 
-# The annotation to configure a GraphQL resolver.
+# The annotation to configure a GraphQL interceptor.
 public annotation GraphqlInterceptorConfig InterceptorConfig on class;

@@ -1,0 +1,8 @@
+query {
+    project {
+        name
+        tasks {
+            subTasks
+        }
+    }
+}

@@ -121,7 +121,7 @@ The conforming implementation of the specification is released and included in t
     * 10.2 [Resource Configuration](#102-resource-configuration)
         * 10.2.1 [Field Interceptors](#1021-field-interceptors)
     * 10.3 [Interceptor Configuration](#103-interceptor-configuration)
-        * 10.3.1 [Global Configuration](#1031-global-configuration)
+        * 10.3.1 [Scope Configuration](#1031-scope-configuration)
 11. [Interceptors](#11-interceptors)
     * 11.1 [Interceptor Service Object](#111-interceptor-service-object)
     * 11.2 [Writing an Interceptor](#112-writing-an-interceptor)
@@ -2007,13 +2007,13 @@ service on new graphql:Listener(9090) {
 
 The configurations stated in the `graphql:InterceptorConfig`, are used to change the behavior of a particular GraphQL interceptor.
 
-#### 10.3.1 Global Configuration
+#### 10.3.1 Scope Configuration
 
 The field `global` is used to configure the scope of the interceptor. If the `global` field is set as `true`, the interceptor will be applied to each field and subfield. If the flag is set as `false`, the interceptor will be applied only to the particular type. By default, the `global` flag is set as `true`.
 
->**Note:** The Global Configuration is applied only to the GraphQL [service interceptors](#1131-service-interceptors).
+>**Note:** The scope configuration is applied only to the GraphQL [service interceptors](#1131-service-interceptors).
 
-###### Example: Global Configuration
+###### Example: Scope Configuration
 
 ```ballerina
 @graphql:InterceptorConfig {
@@ -2023,8 +2023,7 @@ readonly service class LogInterceptor {
    *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var output = context.resolve('field);
-        log:printInfo('field.getName());
+        // ...
     }
 }
 ```
@@ -2068,7 +2067,7 @@ When it comes to interceptor execution, it follows the `onion principle`. Each i
 >**Note:** The inserting order of the interceptors into the array, will be the execution order of Interceptors. The interceptors are applied to each event in response stream of subscription resolvers.
 
 #### 11.3.1 Service Interceptors
-The service interceptors are applied to all the resolvers in the GraphQL service. A GraphQL service accepts a single service interceptor or an array of service interceptors, and it should be inserted as mentioned in the [Service Interceptor](#1016-service-interceptors) section. The scope of the interceptor can be configured as defined in the [interceptor configuration](#103-interceptor-configuration) section.
+The service interceptors are applied to all the resolvers in the GraphQL service. A GraphQL service accepts a single service interceptor or an array of service interceptors, and it should be inserted as mentioned in the [Service Interceptor](#1016-service-interceptors) section. The scope of the interceptor can be configured as defined in the [scope configuration](#1031-scope-configuration) section.
 
 ###### Example: GraphQL Service Interceptor
 
@@ -2929,17 +2928,16 @@ To fully define an entity within a Ballerina GraphQL subgraph, you must:
 ###### Example: Federated Entity Definition and Corresponding GraphQL Schema
 
 <table>
-    <tr>
-        <th>Example</th>
+  <tr>
+    <th>Example</th>
         <th>Ballerina definition</th>
         <th>GraphQL schema</th>
-    </tr>
-    <tr>
-        <td>
-            Simple key
-        </td>
-        <td>
-            <pre lang="ballerina">
+  </tr>
+  <tr>
+    <td>Simple key</td>
+    <td>
+    <pre lang='ballerina'>
+
 ```ballerina
 @subgraph:Entity {
     key: "id",
@@ -2951,10 +2949,11 @@ type Product record {
     int price;
 };
 ```
-            </pre>
-        </td>
-        <td>
-            <pre lang="graphql">
+</pre>
+    </td>
+    <td>
+<pre lang='graphql'>
+
 ```graphql
 type Product @key(fields: "id") {
     id: String!
@@ -2962,15 +2961,14 @@ type Product @key(fields: "id") {
     price: Int!
 }
 ```
-            </pre>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Mutiple keys
-        </td>
-        <td>
-            <pre lang="ballerina">
+</pre>
+    </td>
+  </tr>
+  <tr>
+    <td>Mutiple keys</td>
+    <td>
+    <pre lang='ballerina'>
+
 ```ballerina
 @subgraph:Entity {
     key: ["id", "sku"],
@@ -2983,10 +2981,11 @@ type Product record {
     int price;
 };
 ```
-            </pre>
-        </td>
-        <td>
-            <pre lang="graphql">
+</pre>
+    </td>
+    <td>
+    <pre lang='graphql'>
+
 ```graphql
 type Product @key(fields: "id") @key(fields: "sku") {
     id: String!
@@ -2995,15 +2994,14 @@ type Product @key(fields: "id") @key(fields: "sku") {
     price: Int!
 }
 ```
-            </pre>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Compound key
-        </td>
-        <td>
-            <pre lang="ballerina">
+</pre>
+    </td>
+  </tr>
+  <tr>
+    <td>Compound key</td>
+    <td>
+    <pre lang='ballerina'>
+
 ```ballerina
 @subgraph:Entity {
     key: "id organization { id }",
@@ -3014,25 +3012,25 @@ type User record {
     Organization organization;
 }
 ```
-            </pre>
-        </td>
-        <td>
-            <pre lang="graphql">
+</pre>
+    </td>
+    <td>
+    <pre lang='graphql'>
+
 ```graphql
 type User @key(fields: "id organization { id }") {
     id: String!
     organization: Organization!
 }
 ```
-            </pre>
-        </td>
-    </tr>
-      <tr>
-        <td>
-            Non resolvable
-        </td>
-        <td>
-            <pre lang="ballerina">
+</pre>
+    </td>
+  </tr>
+  <tr>
+    <td>Non resolvable</td>
+    <td>
+    <pre lang='ballerina'>
+
 ```ballerina
 @subgraph:Entity {
     key: "id"
@@ -3042,18 +3040,19 @@ type Product record {
   id: String!
 }
 ```
-            </pre>
-        </td>
-        <td>
-            <pre lang="graphql">
+</pre>
+    </td>
+    <td>
+    <pre lang='graphql'>
+
 ```graphql
 type Product @key(fields: "id", resolvable: false) {
     id: ID!
 }
 ```
-            </pre>
-        </td>
-    </tr>
+</pre>
+    </td>
+  </tr>
 </table>
 
 #### 13.1.3 The `subgraph:ReferenceResolver`
