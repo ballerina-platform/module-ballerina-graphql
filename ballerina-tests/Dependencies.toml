@@ -60,18 +60,25 @@ dependencies = [
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "time"}
 ]
+modules = [
+	{org = "ballerina", packageName = "file", moduleName = "file"}
+]
 
 [[package]]
 org = "ballerina"
 name = "graphql"
 version = "1.7.0"
 dependencies = [
+	{org = "ballerina", name = "auth"},
+	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.array"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "task"},
@@ -89,11 +96,13 @@ org = "ballerina"
 name = "graphql_tests"
 version = "1.7.0"
 dependencies = [
+	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
@@ -265,6 +274,9 @@ dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"}
+]
+modules = [
+	{org = "ballerina", packageName = "mime", moduleName = "mime"}
 ]
 
 [[package]]
