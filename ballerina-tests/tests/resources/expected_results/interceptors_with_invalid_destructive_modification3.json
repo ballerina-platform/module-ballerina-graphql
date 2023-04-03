@@ -45,7 +45,8 @@
                 }
             ],
             "path": [
-                "person"
+                "person",
+                "address"
             ]
         },
         {
@@ -57,7 +58,8 @@
                 }
             ],
             "path": [
-                "person"
+                "person",
+                "address"
             ]
         }
     ],

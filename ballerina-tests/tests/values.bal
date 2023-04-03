@@ -253,6 +253,10 @@ final readonly & Company company = {
     contacts: contacts.cloneReadOnly()
 };
 
+final readonly & TaskTable tasks = table[
+    {sprint: 77, subTasks: ["GraphQL-task1", error("Undefined task!"), "HTTP-task2"]}
+];
+
 // WebSocket Message types
 const WS_INIT = "connection_init";
 const WS_ACK = "connection_ack";

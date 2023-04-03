@@ -1,0 +1,3 @@
+resources:
+    - book_reviews_subscription.yaml
+    - ingress.yaml
