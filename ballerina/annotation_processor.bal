@@ -100,7 +100,7 @@ isolated function getFieldInterceptors(service object {} serviceObj, parser:Root
 
 isolated function isGlobalInterceptor(readonly & Interceptor interceptor) returns boolean {
     GraphqlInterceptorConfig? interceptorConfig = getInterceptorConfig(interceptor);
-    if (interceptorConfig is GraphqlInterceptorConfig) {
+    if interceptorConfig is GraphqlInterceptorConfig {
         return interceptorConfig.global;
     }
     return true;

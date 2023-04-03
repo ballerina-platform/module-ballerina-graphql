@@ -7,10 +7,6 @@
                     "enumValues": null
                 },
                 {
-                    "name": "Task",
-                    "enumValues": null
-                },
-                {
                     "name": "__Field",
                     "enumValues": null
                 },
@@ -203,10 +199,6 @@
                             "name": "JANUARY"
                         }
                     ]
-                },
-                {
-                    "name": "Project",
-                    "enumValues": null
                 },
                 {
                     "name": "Worker",

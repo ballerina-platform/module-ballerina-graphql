@@ -311,6 +311,22 @@ readonly service class HierarchicalPath2 {
     }
 }
 
+
+@graphql:InterceptorConfig {
+    global: false
+}
+readonly service class HierarchicalPath3 {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var result = context.resolve('field);
+        if result is string && 'field.getName().equalsIgnoreCaseAscii("last") {
+            return "Potter";
+        }
+        return result;
+    }
+}
+
 readonly service class InterceptMutation1 {
     *graphql:Interceptor;
 

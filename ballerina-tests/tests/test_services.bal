@@ -1393,7 +1393,7 @@ service /intercept_records on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: new HierarchicalPath1()
+    interceptors: [new HierarchicalPath1(), new HierarchicalPath3()]
 }
 service /intercept_hierarchical on basicListener {
     @graphql:ResourceConfig {
