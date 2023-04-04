@@ -2009,7 +2009,7 @@ The configurations stated in the `graphql:InterceptorConfig`, are used to change
 
 #### 10.3.1 Scope Configuration
 
-The field `global` is used to configure the scope of the interceptor. If the `global` field is set as `true`, the interceptor will be applied to each field and subfield. If the flag is set as `false`, the interceptor will be applied only to the particular type. By default, the `global` flag is set as `true`.
+The field `global` is used to configure the scope of the interceptor. If the `global` field is set as `true`, the interceptor will be applied to each field and subfield of the service. If the flag is set as `false`, the interceptor will be applied only to the fields of the type, but not to the subfields of the type. By default, the `global` flag is set as `true`.
 
 >**Note:** The scope configuration is applied only to the GraphQL [service interceptors](#1131-service-interceptors).
 
