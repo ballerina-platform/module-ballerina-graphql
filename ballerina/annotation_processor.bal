@@ -98,6 +98,19 @@ isolated function getFieldInterceptors(service object {} serviceObj, parser:Root
     return [];
 }
 
+isolated function isGlobalInterceptor(readonly & Interceptor interceptor) returns boolean {
+    GraphqlInterceptorConfig? interceptorConfig = getInterceptorConfig(interceptor);
+    if interceptorConfig is GraphqlInterceptorConfig {
+        return interceptorConfig.global;
+    }
+    return true;
+}
+
+isolated function getInterceptorConfig(readonly & Interceptor interceptor) returns GraphqlInterceptorConfig? {
+    typedesc<any> classType = typeof interceptor;
+    return classType.@InterceptorConfig;
+}
+
 isolated function getResourceAnnotation(service object {} serviceObject, parser:RootOperationType operationType,
         string[] path, string methodName) returns GraphqlResourceConfig? = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"

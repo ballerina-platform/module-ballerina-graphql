@@ -8,4 +8,7 @@ query {
             city
         }
     }
+    newPerson {
+        name
+    }
 }

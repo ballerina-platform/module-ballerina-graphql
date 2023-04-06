@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar  
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2023/03/07
+_Updated_: 2023/04/03
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -120,6 +120,8 @@ The conforming implementation of the specification is released and included in t
         * 10.1.7 [Introspection Configurations](#1017-introspection-configurations)
     * 10.2 [Resource Configuration](#102-resource-configuration)
         * 10.2.1 [Field Interceptors](#1021-field-interceptors)
+    * 10.3 [Interceptor Configuration](#103-interceptor-configuration)
+        * 10.3.1 [Scope Configuration](#1031-scope-configuration)
 11. [Interceptors](#11-interceptors)
     * 11.1 [Interceptor Service Object](#111-interceptor-service-object)
     * 11.2 [Writing an Interceptor](#112-writing-an-interceptor)
@@ -2001,6 +2003,31 @@ service on new graphql:Listener(9090) {
 }
 ```
 
+### 10.3 Interceptor Configuration
+
+The configurations stated in the `graphql:InterceptorConfig`, are used to change the behavior of a particular GraphQL interceptor.
+
+#### 10.3.1 Scope Configuration
+
+The field `global` is used to configure the scope of the interceptor. If the `global` field is set as `true`, the interceptor will be applied to each field and subfield of the service. If the flag is set as `false`, the interceptor will be applied only to the fields of the type, but not to the subfields of the type. By default, the `global` flag is set as `true`.
+
+>**Note:** The scope configuration is applied only to the GraphQL [service interceptors](#1131-service-interceptors).
+
+###### Example: Scope Configuration
+
+```ballerina
+@graphql:InterceptorConfig {
+    global:false
+}
+readonly service class LogInterceptor {
+   *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        // ...
+    }
+}
+```
+
 ## 11. Interceptors
 
 The GraphQL interceptors can be used to execute a custom code before and after a resolver gets invoked.
@@ -2040,7 +2067,7 @@ When it comes to interceptor execution, it follows the `onion principle`. Each i
 >**Note:** The inserting order of the interceptors into the array, will be the execution order of Interceptors. The interceptors are applied to each event in response stream of subscription resolvers.
 
 #### 11.3.1 Service Interceptors
-The service interceptors are applied to all the resolvers in the GraphQL service. A GraphQL service accepts a single service interceptor or an array of service interceptors, and it should be inserted as mentioned in the [Service Interceptor](#1016-service-interceptors) section.
+The service interceptors are applied to all the resolvers in the GraphQL service. A GraphQL service accepts a single service interceptor or an array of service interceptors, and it should be inserted as mentioned in the [Service Interceptor](#1016-service-interceptors) section. The scope of the interceptor can be configured as defined in the [scope configuration](#1031-scope-configuration) section.
 
 ###### Example: GraphQL Service Interceptor
 

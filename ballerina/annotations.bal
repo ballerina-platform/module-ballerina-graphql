@@ -47,3 +47,13 @@ public type GraphqlResourceConfig record {|
 
 # The annotation to configure a GraphQL resolver.
 public annotation GraphqlResourceConfig ResourceConfig on object function;
+
+# Provides a set of configurations for the GraphQL interceptors.
+#
+# + global - Scope of the interceptor. If `true`, the interceptor will be applied to all the resolvers.
+public type GraphqlInterceptorConfig record {|
+    boolean global = true;
+|};
+
+# The annotation to configure a GraphQL interceptor.
+public annotation GraphqlInterceptorConfig InterceptorConfig on class;
