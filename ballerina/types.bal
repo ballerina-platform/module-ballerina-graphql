@@ -18,6 +18,14 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/websocket;
 
+// Types allowed to have as the ID type.
+public type IdTypes record {|
+    string|int id = "default";
+|};
+
+// Represents the annotation of the ID type.
+public annotation IdTypes ID on field, record field, parameter, return;
+
 # Represents the Scalar types supported by the Ballerina GraphQL module.
 public type Scalar boolean|int|float|string|decimal;
 
