@@ -1,4 +1,18 @@
 {
+    "errors": [
+        {
+            "message": "Access denied!",
+            "locations": [
+                {
+                    "line": 11,
+                    "column": 5
+                }
+            ],
+            "path": [
+                "newProfile"
+            ]
+        }
+    ],
     "data": {
         "profile": {
             "name": "Albus Percival Wulfric Brian Dumbledore",
@@ -8,6 +22,7 @@
                 "street": "Margo Street",
                 "city": "London"
             }
-        }
+        },
+        "newProfile": null
     }
 }

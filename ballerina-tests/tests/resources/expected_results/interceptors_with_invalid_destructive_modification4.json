@@ -1,6 +1,18 @@
 {
     "errors": [
         {
+            "message":"Invalid return type in Interceptor \"InvalidInterceptor9\". Expected type StudentService!",
+            "locations":[
+                {
+                    "line":2,
+                    "column":5
+                }
+            ],
+            "path":[
+                "student"
+            ]
+        },
+        {
             "message": "Invalid return type in Interceptor \"InvalidInterceptor7\". Expected type String!",
             "locations": [
                 {

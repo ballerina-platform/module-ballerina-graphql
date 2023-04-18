@@ -5,6 +5,12 @@
             "frontend": "Flutter",
             "data": "Ballerina",
             "native": "C#"
+        },
+        "updatedLanguages":{
+            "backend":"PHP",
+            "frontend":"JavaScript",
+            "data":"Python",
+            "native":"C#"
         }
     }
 }

@@ -1,0 +1,13 @@
+subscription A{ 
+    books {
+        name 
+        author  
+    } 
+}
+
+subscription B{ 
+    newBooks {
+        name 
+        author  
+    } 
+}

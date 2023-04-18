@@ -4,5 +4,11 @@ query {
         frontend: name(key: "frontend"),
         data: name(key: "data"),
         native: name(key: "native"),
+    },
+    updatedLanguages {
+        backend: name(key: "backend"),
+        frontend: name(key: "frontend"),
+        data: name(key: "data"),
+        native: name(key: "native")
     }
 }
