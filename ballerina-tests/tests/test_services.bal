@@ -1503,9 +1503,8 @@ service /intercept_unions on serviceTypeListener {
     isolated resource function get profile1(int id) returns StudentService|TeacherService {
         if id < 100 {
             return new StudentService(1, "Jesse Pinkman");
-        } else {
-            return new TeacherService(737, "Walter White", "Chemistry");
         }
+        return new TeacherService(737, "Walter White", "Chemistry");
     }
 
     @graphql:ResourceConfig {
@@ -1514,9 +1513,8 @@ service /intercept_unions on serviceTypeListener {
     isolated resource function get profile2(int id) returns StudentService|TeacherService {
         if id > 100 {
             return new StudentService(1, "Jesse Pinkman");
-        } else {
-            return new TeacherService(737, "Walter White", "Chemistry");
         }
+        return new TeacherService(737, "Walter White", "Chemistry");
     }
 }
 
