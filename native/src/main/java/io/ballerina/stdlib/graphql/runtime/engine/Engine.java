@@ -246,7 +246,6 @@ public class Engine {
     public static Object getResourceAnnotation(BObject service, BString operationType, BArray path,
                                                BString methodName) {
         ServiceType serviceType = (ServiceType) service.getType();
-        BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
         MethodType methodType = null;
         if (OPERATION_QUERY.equals(operationType.getValue())) {
             methodType = getResourceMethod(serviceType, getPathList(path), GET_ACCESSOR);
@@ -256,6 +255,7 @@ public class Engine {
             methodType = getRemoteMethod(serviceType, String.valueOf(methodName));
         }
         if (methodType != null) {
+            BString identifier = StringUtils.fromString(getModule().toString() + COLON + RESOURCE_CONFIG);
             return methodType.getAnnotation(identifier);
         }
         return null;
