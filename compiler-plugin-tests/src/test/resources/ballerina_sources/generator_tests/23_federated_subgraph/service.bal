@@ -47,6 +47,6 @@ distinct service class User {
     }
 }
 type App record {
-    int id;
+    @graphql:ID int id;
     string name;
 };
