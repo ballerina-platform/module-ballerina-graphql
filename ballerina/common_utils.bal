@@ -181,6 +181,16 @@ isolated function getOfType(__Type schemaType) returns __Type {
     }
 }
 
+isolated function getUnwarppedPath(__Type schemaType) returns string[] {
+    if schemaType.kind == NON_NULL {
+        return getUnwarppedPath(<__Type>schemaType?.ofType);
+    } else if schemaType.kind == LIST {
+        return ["@", ...getUnwarppedPath(<__Type>schemaType?.ofType)];
+    } else {
+        return [];
+    }
+}
+
 isolated function getOfTypeName(__Type schemaType) returns string {
     return <string>getOfType(schemaType).name;
 }
