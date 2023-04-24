@@ -1,5 +1,12 @@
 # Snowtooth: A Fake Ski Resort
 
+[![Star on Github](https://img.shields.io/badge/-Star%20on%20Github-blue?style=social&logo=github)](https://github.com/ballerina-platform/module-ballerina-graphql)
+
+_Authors_: @shafreenAnfar  
+_Reviewers_: @ThisaruGuruge  
+_Created_: 2021/07/11  
+_Updated_: 2022/09/16
+
 # Overview
  
 This is an implementation of the popular [snowtooth example](https://snowtooth.moonhighway.com/) in Ballerina. Snowtooth is a fake ski resort which includes a bunch of chairlifts and trails. A GraphQL API is built around this for a mobile application.
