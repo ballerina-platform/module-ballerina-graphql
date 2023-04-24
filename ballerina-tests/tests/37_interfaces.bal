@@ -29,7 +29,7 @@ isolated function testInterfaces(string url, string resourceFileName) returns er
 
 function dataProviderInterface() returns string[][] {
     string url1 = "http://localhost:9098/interfaces";
-    string url2 = "http://localhost:9089/interfaces_implementing_interface";
+    string url2 = "http://localhost:9098/interfaces_implementing_interface";
 
     return [
         [url1, "interfaces"],
