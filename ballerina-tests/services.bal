@@ -14,9 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/graphql;
+import ballerina/graphql as gql;
 
-service /interfaces on new graphql:Listener(9098) {
+listener gql:Listener graphqlListener = new(9098);
+
+service /interfaces on graphqlListener {
     isolated resource function get character(int id) returns Character {
         return new Human("Luke Skywalker", 1);
     }
@@ -30,7 +32,7 @@ service /interfaces on new graphql:Listener(9098) {
     }
 }
 
-service /interfaces_implementing_interface on new graphql:Listener(9089) {
+service /interfaces_implementing_interface on graphqlListener {
     resource function get animal(int id) returns Animalia? {
         return id <= animals.length() && id > 0 ? animals[id - 1] : ();
     }

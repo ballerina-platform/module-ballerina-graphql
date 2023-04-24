@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- [[#4364]Fix Compilation Error when GraphQL Package Import has a Prefix](https://github.com/ballerina-platform/ballerina-standard-library/issues/4364)
+- [[#4379] Fix Schema Generation Failure when Import is Missing](https://github.com/ballerina-platform/ballerina-standard-library/issues/4379)
 
 ## [1.6.2] - 2023-03-31
 
