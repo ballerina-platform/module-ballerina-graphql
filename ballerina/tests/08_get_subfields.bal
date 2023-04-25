@@ -20,12 +20,13 @@ final readonly & string[] missionSubFieldNames = ["id", "designation", "startDat
 final readonly & string[] astronautSubFieldNames = ["id", "name", "missions"];
 
 @test:Config {
-    groups: ["getSubfields"]
+    groups: ["getSubfields"],
+    dataProvider: fieldObjectProvider1
 }
-function testGetSubfields1() {
-    Field[]? subFields = field_object1.getSubfields();
+function testGetSubfields1(Field 'field) {
+    Field[]? subFields = 'field.getSubfields();
     if subFields is () {
-        test:assertFail(msg = "subfields of field_object1 is null");
+        test:assertFail(msg = "subfields of 'field is null");
     }
     test:assertEquals(subFields.length(), missionSubFieldNames.length());
 
@@ -36,13 +37,21 @@ function testGetSubfields1() {
     }
 }
 
-@test:Config {
-    groups: ["getSubfields"]
+function fieldObjectProvider1() returns (Field[][]) {
+    return [
+        [field_object1],
+        [field_object4]
+    ];
 }
-function testGetSubfields2() {
+
+@test:Config {
+    groups: ["getSubfields"],
+    dataProvider: fieldObjectProvider2
+}
+function testGetSubfields2(Field 'field) {
     Field[]? subFields = field_object2.getSubfields();
     if subFields is () {
-        test:assertFail(msg = "subfields of field_object2 is null");
+        test:assertFail(msg = "subfields of 'field is null");
     }
     test:assertEquals(subFields.length(), missionSubFieldNames.length());
 
@@ -54,13 +63,21 @@ function testGetSubfields2() {
     }
 }
 
-@test:Config {
-    groups: ["getSubfields"]
+function fieldObjectProvider2() returns (Field[][]) {
+    return [
+        [field_object2],
+        [field_object5]
+    ];
 }
-function testGetSubfields3() {
+
+@test:Config {
+    groups: ["getSubfields"],
+    dataProvider: fieldObjectProvider3
+}
+function testGetSubfields3(Field 'field) {
     Field[]? subFields = field_object3.getSubfields();
     if subFields is () {
-        test:assertFail(msg = "subfields of field_object3 is null");
+        test:assertFail(msg = "subfields of 'field is null");
     }
     test:assertEquals(subFields.length(), astronautSubFieldNames.length());
 
@@ -84,4 +101,11 @@ function testGetSubfields3() {
             msg = "path of subfield is not correct");
         }
     }
+}
+
+function fieldObjectProvider3() returns (Field[][]) {
+    return [
+        [field_object3],
+        [field_object6]
+    ];
 }
