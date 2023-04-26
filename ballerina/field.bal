@@ -108,33 +108,33 @@ public class Field {
     }
 
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
-
         string[] currentPath = self.path.clone().'map((item) => item is int? "@" : item);
         string[] unwrappedPath = getUnwarppedPath('type);
-
-        __Type currentType = getOfType('type);
-        if currentType.kind == OBJECT || currentType.kind == INTERFACE {
-            Field[] result = [];
-            foreach parser:SelectionNode selection in selectionNode.getSelections() {
-                if selection is parser:FieldNode {
-                    foreach __Field 'field in <__Field[]>currentType.fields {
-                        if 'field.name == selection.getName() {
-                            result.push(new Field(selection, 'field.'type, (),
-                                [...currentPath, ...unwrappedPath, 'field.name], self.operationType, self.resourcePath
-                            ));
-                        }
-                    }
-                } else {
-                    foreach parser:SelectionNode fragmentSelectionNode in selectionNode.getSelections() {
-                        Field[] fields = self.getFieldObjects(fragmentSelectionNode, 'type);
-                        result.push(...fields);
-                    }
-                }
-            }
-            return result;
-        } else {
+        __Type unwrappedType = getOfType('type);
+        
+        if unwrappedType.kind != OBJECT && unwrappedType.kind != INTERFACE {
             return [];
         }
+
+        Field[] result = [];
+        foreach parser:SelectionNode selection in selectionNode.getSelections() {
+            if selection is parser:FieldNode {
+                foreach __Field 'field in <__Field[]>unwrappedType.fields {
+                    if 'field.name == selection.getName() {
+                        result.push(new Field(selection, 'field.'type, (),
+                            [...currentPath, ...unwrappedPath, 'field.name], self.operationType, self.resourcePath
+                        ));
+                        break;
+                    }
+                }
+            } else {
+                foreach parser:SelectionNode fragmentSelectionNode in selectionNode.getSelections() {
+                    Field[] fields = self.getFieldObjects(fragmentSelectionNode, 'type);
+                    result.push(...fields);
+                }
+            }
+        }
+        return result;      
     }
 
     isolated function getFieldNames(parser:SelectionNode selectionNode) returns string[] {
