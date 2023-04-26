@@ -1703,7 +1703,7 @@ service on new graphql:Listener(9090) {
 
 #### 9.1.6 Get Subfields
 
-This method returns the subfields of the currently executing field as an array of `graphql:Field` objects. If the field does not have any subfields, it returns `nil`.
+This method returns the subfields of the currently executing field as an array of `graphql:Field` objects. It will return `nil` if the field is not an `INTERFACE` or an `OBJECT`, i.e. if it does not have subfields.
 
 #### Example: Get Subfields
 
