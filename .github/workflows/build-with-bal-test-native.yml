@@ -17,6 +17,14 @@ on:
                 default: ''
     schedule:
         -   cron: '30 18 * * *'
+    pull_request:
+        branches:
+            - master
+        types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+    cancel-in-progress: true
 
 jobs:
     call_stdlib_workflow:
