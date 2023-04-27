@@ -106,14 +106,14 @@ public class Engine {
         Future subscriptionFutureResult = env.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
         BString fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD);
-        ServiceType serviceType = (ServiceType) service.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
                 Object[] args = argumentHandler.getArguments();
-                ObjectType objectType = (ObjectType) TypeUtils.getReferredType(service.getType());
+                ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
                 if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
                     env.getRuntime()
                             .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
@@ -132,7 +132,7 @@ public class Engine {
                                               ResourceMethodType resourceMethod, BObject fieldObject) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) service.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         if (resourceMethod != null) {
             ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
@@ -154,7 +154,7 @@ public class Engine {
                                                BObject fieldObject) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) service.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
@@ -179,7 +179,7 @@ public class Engine {
                                             BObject context) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) interceptor.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(interceptor);
         RemoteMethodType remoteMethod = getRemoteMethod(serviceType, INTERCEPTOR_EXECUTE);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         if (remoteMethod != null) {
@@ -197,7 +197,7 @@ public class Engine {
     }
 
     public static Object getResourceMethod(BObject service, BArray path) {
-        ServiceType serviceType = (ServiceType) service.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         List<String> pathList = getPathList(path);
         return getResourceMethod(serviceType, pathList, GET_ACCESSOR);
     }
@@ -239,13 +239,13 @@ public class Engine {
     }
 
     public static BString getInterceptorName(BObject interceptor) {
-        ServiceType serviceType = (ServiceType) interceptor.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(interceptor);
         return StringUtils.fromString(serviceType.getName());
     }
 
     public static Object getResourceAnnotation(BObject service, BString operationType, BArray path,
                                                BString methodName) {
-        ServiceType serviceType = (ServiceType) service.getType();
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         MethodType methodType = null;
         if (OPERATION_QUERY.equals(operationType.getValue())) {
             methodType = getResourceMethod(serviceType, getPathList(path), GET_ACCESSOR);

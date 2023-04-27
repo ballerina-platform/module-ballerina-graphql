@@ -70,7 +70,7 @@ public class QueryExecutor {
     private static Object invokeClientMethod(Environment env, BObject client, String methodName, Object[] paramFeed) {
         Future balFuture = env.markAsync();
 
-        ObjectType clientType = (ObjectType) TypeUtils.getReferredType(client.getType());
+        ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(client));
         if (clientType.isIsolated() && clientType.isIsolated(methodName)) {
             env.getRuntime()
                     .invokeMethodAsyncConcurrently(client, methodName, null, null, new QueryExecutorCallback(balFuture),
