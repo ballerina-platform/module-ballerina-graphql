@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.parser;
-
 __Field id = {
     "name": "id",
     "description": null,
@@ -204,65 +202,3 @@ __Type AstronautNonNullList = {
         "ofType": Astronaut
     }
 };
-
-Location location = {
-    line: 0,
-    column: 0
-};
-
-parser:FieldNode missionFieldNode = new ("mission", location, "mission", selections = [
-    new parser:FieldNode("id", location, "id"),
-    new parser:FieldNode("designation", location, "designation"),
-    new parser:FieldNode("startDate", location, "startDate"),
-    new parser:FieldNode("endDate", location, "endDate")
-]);
-
-parser:FieldNode missionsFieldNode = new ("missions", location, "missions", selections = [
-    new parser:FieldNode("id", location, "id"),
-    new parser:FieldNode("designation", location, "designation"),
-    new parser:FieldNode("startDate", location, "startDate"),
-    new parser:FieldNode("endDate", location, "endDate")
-]);
-
-parser:FieldNode astronautsFieldNode = new ("astronauts", location, "astronauts", selections = [
-    new parser:FieldNode("id", location, "id"),
-    new parser:FieldNode("name", location, "name"),
-    missionsFieldNode
-]);
-
-parser:FragmentNode missionFields = new ("missionFields", location, true, onType = "Mission",selections = [
-    new parser:FieldNode("id", location, "id"),
-    new parser:FieldNode("designation", location, "designation"),
-    new parser:FieldNode("startDate", location, "startDate"),
-    new parser:FieldNode("endDate", location, "endDate")
-]);
-
-parser:FieldNode missionFieldNodeWithFragmentSelection = new ("mission", location, "mission", selections = [
-    missionFields
-]);
-
-parser:FieldNode missionsFieldNodeWithFragmentSelection = new ("missions", location, "missions", selections = [
-    missionFields
-]);
-
-parser:FragmentNode astronautFields = new ("astronautFields", location, true, onType = "Astronaut", selections = [
-    new parser:FieldNode("id", location, "id"),
-    new parser:FieldNode("name", location, "name")
-]);
-
-parser:FieldNode astronautsFieldNodeWithFragmentSelection = new ("astronauts", location, "astronauts", selections = [
-    astronautFields,
-    missionFieldNode
-]);
-
-Field field_object1 = new (missionFieldNode, Mission, path = ["mission"]);
-
-Field field_object2 = new (missionsFieldNode, MissionNonNullList, path = ["missions"]);
-
-Field field_object3 = new (astronautsFieldNode, AstronautNonNullList, path = ["astronauts"]);
-
-Field field_object4 = new (missionFieldNodeWithFragmentSelection, Mission, path = ["mission"]);
-
-Field field_object5 = new (missionsFieldNodeWithFragmentSelection, MissionNonNullList, path = ["missions"]);
-
-Field field_object6 = new (astronautsFieldNodeWithFragmentSelection, AstronautNonNullList, path = ["astronauts"]);

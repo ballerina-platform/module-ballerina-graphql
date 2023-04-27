@@ -1,0 +1,12 @@
+query{
+    astronauts{
+        id
+        name
+        missions{
+            id
+            designation
+            startDate
+            endDate
+        }
+    }
+}
