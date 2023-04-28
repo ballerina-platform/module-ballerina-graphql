@@ -19,7 +19,6 @@ import ballerina/http;
 import ballerina/jwt;
 import ballerina/log;
 import ballerina/oauth2;
-import ballerina/regex;
 
 // Uses for declarative auth design, where the authentication decision is taken by reading the auth annotations
 // provided in service and the `Authorization` header of request.
@@ -169,7 +168,7 @@ isolated function authenticateWithOAuth2IntrospectionConfig(OAuth2IntrospectionC
 
 // Extract the scheme from `string` header.
 isolated function extractScheme(string header) returns string {
-    return regex:split(header, " ")[0];
+    return re` `.split(header)[0];
 }
 
 isolated function createUnauthorizedResponse() returns http:Response {

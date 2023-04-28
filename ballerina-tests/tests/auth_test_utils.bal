@@ -17,7 +17,6 @@
 // NOTE: All the tokens/credentials used in this test are dummy tokens/credentials and used only for testing purposes.
 
 import ballerina/http;
-import ballerina/regex;
 import ballerina/test;
 
 const string KEYSTORE_PATH = "tests/resources/keystore/ballerinaKeystore.p12";
@@ -263,10 +262,10 @@ service /oauth2 on sts {
     isolated resource function post introspect(http:Request request) returns AuthResponse {
         string|http:ClientError payload = request.getTextPayload();
         if payload is string {
-            string[] parts = regex:split(payload, "&");
+            string[] parts = re`&`.split(payload);
             foreach string part in parts {
                 if part.indexOf("token=") is int {
-                    string token = regex:split(part, "=")[1];
+                    string token = re`=`.split(part)[1];
                     if token == ACCESS_TOKEN_1 {
                         return {body: {active: true, exp: 3600, scp: "write update"}};
                     } else if token == ACCESS_TOKEN_2 {
