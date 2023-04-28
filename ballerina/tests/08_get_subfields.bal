@@ -24,7 +24,7 @@ import graphql.parser;
 function testGetSubfields1(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
-    Field 'field = getFieldNode(fields[0], fieldType, path);
+    Field 'field = getFieldNode(fields[0], fieldType, [path[0]]);
 
     Field[]? subfields = 'field.getSubfields();
     string[] subfieldNames = 'field.getSubfieldNames();
@@ -41,7 +41,9 @@ function testGetSubfields1(string fileName, __Type fieldType, string[] path) ret
 function fieldObjectProvider1() returns [string, __Type, string[]][] {
     return [
         ["field_object_mission", Mission, ["mission"]],
-        ["field_object_mission_with_fragment", Mission, ["mission"]]
+        ["field_object_mission_with_fragment", Mission, ["mission"]],
+        ["field_object_missions", MissionNonNullList, ["missions", "@"]],
+        ["field_object_missions_with_fragment", MissionNonNullList, ["missions", "@"]]
     ];
 }
 
@@ -52,7 +54,7 @@ function fieldObjectProvider1() returns [string, __Type, string[]][] {
 function testGetSubfields2(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
-    Field 'field = getFieldNode(fields[0], fieldType, path);
+    Field 'field = getFieldNode(fields[0], fieldType, [path[0]]);
 
     Field[]? subfields = 'field.getSubfields();
     string[] subfieldNames = 'field.getSubfieldNames();
@@ -61,54 +63,20 @@ function testGetSubfields2(string fileName, __Type fieldType, string[] path) ret
 
     foreach Field subfield in <Field[]>subfields {
         test:assertFalse(subfieldNames.indexOf(subfield.getName()) is (), msg = "subfield name not found");
-        test:assertTrue(subfield.getSubfields() is (), msg = "subfields of subfield is not null");
-        test:assertEquals(subfield.getPath(), [...path, "@", subfield.getName()]);
+        Field[]? subSubFields = subfield.getSubfields();
+        string[] subSubfieldNames = subfield.getSubfieldNames();
+        test:assertFalse(subSubFields is ());
+        test:assertEquals((<Field[]>subSubFields).length(), subSubfieldNames.length());
+        foreach Field subSubField in <Field[]>subSubFields {
+            test:assertTrue(subSubField.getSubfields() is ());
+            test:assertEquals(subSubField.getPath(), [...path, subSubField.getName()]);
+        }
     }
 }
 
 function fieldObjectProvider2() returns [string, __Type, string[]][] {
     return [
-        ["field_object_missions", MissionNonNullList, ["missions"]],
-        ["field_object_missions_with_fragment", MissionNonNullList, ["missions"]]
-    ];
-}
-
-@test:Config {
-    groups: ["getSubfields"],
-    dataProvider: fieldObjectProvider3
-}
-function testGetSubfields3(string fileName, __Type fieldType, string[] path) returns error? {
-    parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
-    test:assertTrue(fields.length() == 1);
-    Field 'field = getFieldNode(fields[0], fieldType, path);
-
-    Field[]? subfields = 'field.getSubfields();
-    string[] subfieldNames = 'field.getSubfieldNames();
-    test:assertFalse(subfields is ());
-    test:assertEquals((<Field[]>subfields).length(), subfieldNames.length());
-
-    foreach Field subfield in <Field[]>subfields {
-        test:assertFalse(subfieldNames.indexOf(subfield.getName()) is (), msg = "subfield name not found");
-
-        if subfield.getName() == "missions" {
-            Field[]? subSubFields = subfield.getSubfields();
-            string[] subSubfieldNames = subfield.getSubfieldNames();
-            test:assertFalse(subSubFields is ());
-            test:assertEquals((<Field[]>subSubFields).length(), subSubfieldNames.length());
-            foreach Field subSubField in <Field[]>subSubFields {
-                test:assertTrue(subSubField.getSubfields() is ());
-                test:assertEquals(subSubField.getPath(), [...path, "@", "missions", "@", subSubField.getName()]);
-            }
-        } else {
-            test:assertTrue(subfield.getSubfields() is ());
-            test:assertEquals(subfield.getPath(), [...path, "@", subfield.getName()]);
-        }
-    }
-}
-
-function fieldObjectProvider3() returns [string, __Type, string[]][] {
-    return [
-        ["field_object_astronauts", AstronautNonNullList, ["astronauts"]],
-        ["field_object_astronauts_with_fragments", AstronautNonNullList, ["astronauts"]]
+        ["field_object_astronauts", AstronautNonNullList, ["astronauts", "@", "missions", "@"]],
+        ["field_object_astronauts_with_fragments", AstronautNonNullList, ["astronauts", "@", "missions", "@"]]
     ];
 }
