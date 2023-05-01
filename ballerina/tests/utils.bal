@@ -56,6 +56,6 @@ isolated function getFieldNodesFromDocumentFile(string fileName) returns parser:
     return fieldNodes;
 }
 
-isolated function getFieldNode(parser:FieldNode fieldNode, __Type fieldType, string[] path) returns Field {
+isolated function getField(parser:FieldNode fieldNode, __Type fieldType, string[] path) returns Field {
     return new Field(fieldNode, fieldType, path = path);
 }

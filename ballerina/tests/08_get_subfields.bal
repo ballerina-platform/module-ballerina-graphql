@@ -24,7 +24,7 @@ import graphql.parser;
 function testGetSubfields1(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
-    Field 'field = getFieldNode(fields[0], fieldType, [path[0]]);
+    Field 'field = getField(fields[0], fieldType, [path[0]]);
 
     Field[]? subfields = 'field.getSubfields();
     string[] subfieldNames = 'field.getSubfieldNames();
@@ -54,7 +54,7 @@ function fieldObjectProvider1() returns [string, __Type, string[]][] {
 function testGetSubfields2(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
-    Field 'field = getFieldNode(fields[0], fieldType, [path[0]]);
+    Field 'field = getField(fields[0], fieldType, [path[0]]);
 
     Field[]? subfields = 'field.getSubfields();
     string[] subfieldNames = 'field.getSubfieldNames();
