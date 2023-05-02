@@ -80,3 +80,4 @@ function fieldObjectProvider2() returns [string, __Type, string[]][] {
         ["field_object_astronauts_with_fragments", AstronautNonNullList, ["astronauts", "@", "missions", "@"]]
     ];
 }
+

@@ -108,7 +108,7 @@ public class Field {
     }
 
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
-        string[] currentPath = self.path.clone().'map((item) => item is int? "@" : item);
+        string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwarppedPath('type);
         __Type unwrappedType = getOfType('type);
         
