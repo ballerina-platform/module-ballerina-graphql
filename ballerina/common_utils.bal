@@ -186,9 +186,8 @@ isolated function getUnwarppedPath(__Type schemaType) returns string[] {
         return getUnwarppedPath(<__Type>schemaType?.ofType);
     } else if schemaType.kind == LIST {
         return ["@", ...getUnwarppedPath(<__Type>schemaType?.ofType)];
-    } else {
-        return [];
     }
+    return [];
 }
 
 isolated function getOfTypeName(__Type schemaType) returns string {
