@@ -49,7 +49,7 @@ isolated function getFieldNodesFromDocumentFile(string fileName) returns parser:
     parser:DocumentNode documentNode = check getDocumentNode(documentString);
     parser:FieldNode[] fieldNodes = [];
     foreach parser:SelectionNode selectionNode in getSelectionNodesFromDocumentNode(documentNode) {
-        if (selectionNode is parser:FieldNode) {
+        if selectionNode is parser:FieldNode {
             fieldNodes.push(selectionNode);
         }
     }
@@ -57,5 +57,5 @@ isolated function getFieldNodesFromDocumentFile(string fileName) returns parser:
 }
 
 isolated function getField(parser:FieldNode fieldNode, __Type fieldType, string[] path) returns Field {
-    return new Field(fieldNode, fieldType, path = path);
+    return new (fieldNode, fieldType, path = path);
 }
