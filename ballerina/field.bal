@@ -61,6 +61,16 @@ public class Field {
         return self.path;
     }
 
+    # Returns the subfields of this field as a `Field` object array.
+    # + return - The subfield objects of this field
+    public isolated function getSubfields() returns Field[]? {
+        Field[] fields = self.getFieldObjects(self.internalNode, self.fieldType);
+        if fields.length() > 0 {
+            return fields;
+        }
+        return;
+    }
+
     # Returns the names of the subfields of this field as a string array.
     # + return - The names of the subfields of this field
     public isolated function getSubfieldNames() returns string[] {
@@ -95,6 +105,37 @@ public class Field {
 
     isolated function getFieldValue() returns any|error {
         return self.fieldValue;
+    }
+
+    isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
+        string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
+        string[] unwrappedPath = getUnwrappedPath('type);
+        __Type unwrappedType = getOfType('type);
+
+        __Field[]? typeFields = unwrappedType.fields;
+        if typeFields is () {
+            return [];
+        }
+
+        Field[] result = [];
+        foreach parser:SelectionNode selection in selectionNode.getSelections() {
+            if selection is parser:FieldNode {
+                foreach __Field 'field in typeFields {
+                    if 'field.name == selection.getName() {
+                        result.push(new Field(selection, 'field.'type, (),
+                            [...currentPath, ...unwrappedPath, 'field.name], self.operationType, self.resourcePath
+                        ));
+                        break;
+                    }
+                }
+            } else {
+                foreach parser:SelectionNode fragmentSelectionNode in selectionNode.getSelections() {
+                    Field[] fields = self.getFieldObjects(fragmentSelectionNode, 'type);
+                    result.push(...fields);
+                }
+            }
+        }
+        return result;
     }
 
     isolated function getFieldNames(parser:SelectionNode selectionNode) returns string[] {

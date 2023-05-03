@@ -1,0 +1,8 @@
+query {
+  mission(id: 1) {
+    id
+    designation
+    startDate
+    endDate
+  }
+}
