@@ -15,190 +15,95 @@
 // under the License.
 
 __Field id = {
-    "name": "id",
-    "description": null,
-    "args": [],
-    "type": NonNullScalarInt,
-    "isDeprecated": false,
-    "deprecationReason": null
+    name: "id",
+    args: [],
+    'type: NonNullScalarInt
 };
 
 __Field designation = {
-    "name": "designation",
-    "description": null,
-    "args": [],
-    "type": ScalarString,
-    "isDeprecated": false,
-    "deprecationReason": null
+    name: "designation",
+    args: [],
+    'type: ScalarString
 };
 
 __Field startDate = {
-    "name": "startDate",
-    "description": null,
-    "args": [],
-    "type": ScalarString,
-    "isDeprecated": false,
-    "deprecationReason": null
+    name: "startDate",
+    args: [],
+    'type: ScalarString
 };
 
 __Field endDate = {
-    "name": "endDate",
-    "description": null,
-    "args": [],
-    "type": ScalarString,
-    "isDeprecated": false,
-    "deprecationReason": null
+    name: "endDate",
+    args: [],
+    'type: ScalarString
 };
 
 __Field name = {
-    "name": "name",
-    "description": null,
-    "args": [],
-    "type": ScalarString,
-    "isDeprecated": false,
-    "deprecationReason": null
+    name: "name",
+    args: [],
+    'type: ScalarString
 };
 
 __Field missions = {
-    "name": "missions",
-    "description": null,
-    "args": [],
-    "type": {
-        "kind": "LIST",
-        "name": null,
-        "description": null,
-        "fields": null,
-        "interfaces": null,
-        "possibleTypes": null,
-        "enumValues": null,
-        "inputFields": null,
-        "ofType": {
-            "kind": "NON_NULL",
-            "name": null,
-            "description": null,
-            "fields": null,
-            "interfaces": null,
-            "possibleTypes": null,
-            "enumValues": null,
-            "inputFields": null,
-            "ofType": Mission
-        }
-    },
-    "isDeprecated": false,
-    "deprecationReason": null
+    name: "missions",
+    args: [],
+    'type: MissionNonNullList
 };
 
 __Type ScalarString = {
-    "kind": "SCALAR",
-    "name": "String",
-    "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences." +
-    "The String type is most often used by GraphQL to represent free-form human-readable text.",
-    "fields": null,
-    "interfaces": null,
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": null
+    kind: "SCALAR",
+    name: "String",
+    description: "The `String` scalar type represents textual data, represented as UTF-8 character sequences." +
+    "The String type is most often used by GraphQL to represent free-form human-readable text."
 };
 
 __Type ScalarInt = {
-    "kind": "SCALAR",
-    "name": "Int",
-    "description": "The `Int` scalar type represents non-fractional signed whole numeric values." +
-    "Int can represent values between -(2^31) and 2^31 - 1.",
-    "fields": null,
-    "interfaces": null,
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": null
+    kind: "SCALAR",
+    name: "Int",
+    description: "The `Int` scalar type represents non-fractional signed whole numeric values." +
+    "Int can represent values between -(2^31) and 2^31 - 1."
 };
 
 __Type NonNullScalarInt = {
-    "kind": "NON_NULL",
-    "name": null,
-    "description": null,
-    "fields": null,
-    "interfaces": null,
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": ScalarInt
+    kind: "NON_NULL",
+    ofType: ScalarInt
 };
 
 __Type Mission = {
-    "kind": "OBJECT",
-    "name": "Mission",
-    "description": null,
-    "fields": [
+    kind: "OBJECT",
+    name: "Mission",
+    fields: [
         id,
         designation,
         startDate,
         endDate
     ],
-    "interfaces": [],
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": null
+    interfaces: []
 };
 
 __Type Astronaut = {
-    "kind": "OBJECT",
-    "name": "Astronaut",
-    "description": null,
-    "fields": [
+    kind: "OBJECT",
+    name: "Astronaut",
+    fields: [
         id,
         name,
         missions
     ],
-    "interfaces": [],
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": null
+    interfaces: []
 };
 
 __Type MissionNonNullList = {
-    "kind": "LIST",
-    "name": null,
-    "description": null,
-    "fields": null,
-    "interfaces": null,
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": {
-        "kind": "NON_NULL",
-        "name": null,
-        "description": null,
-        "fields": null,
-        "interfaces": null,
-        "possibleTypes": null,
-        "enumValues": null,
-        "inputFields": null,
-        "ofType": Mission
+    kind: "LIST",
+    ofType: {
+        kind: "NON_NULL",
+        ofType: Mission
     }
 };
 
 __Type AstronautNonNullList = {
-    "kind": "LIST",
-    "name": null,
-    "description": null,
-    "fields": null,
-    "interfaces": null,
-    "possibleTypes": null,
-    "enumValues": null,
-    "inputFields": null,
-    "ofType": {
-        "kind": "NON_NULL",
-        "name": null,
-        "description": null,
-        "fields": null,
-        "interfaces": null,
-        "possibleTypes": null,
-        "enumValues": null,
-        "inputFields": null,
-        "ofType": Astronaut
+    kind: "LIST",
+    ofType: {
+        kind: "NON_NULL",
+        ofType: Astronaut
     }
 };

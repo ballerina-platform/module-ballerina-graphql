@@ -1,10 +1,10 @@
-query{
-    astronauts{
-        missions{
-            id
-            designation
-            startDate
-            endDate
-        }
+query {
+  astronauts {
+    missions {
+      id
+      designation
+      startDate
+      endDate
     }
+  }
 }

@@ -1,10 +1,10 @@
-query{
-    missions{
-        ... on Mission{
-            id
-            designation
-            startDate
-            endDate
-        }
+query {
+  missions {
+    ... on Mission {
+      id
+      designation
+      startDate
+      endDate
     }
+  }
 }

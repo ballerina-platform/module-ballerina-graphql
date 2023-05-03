@@ -111,15 +111,16 @@ public class Field {
         string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
         __Type unwrappedType = getOfType('type);
-        
-        if unwrappedType.kind != OBJECT && unwrappedType.kind != INTERFACE {
+
+        __Field[]? typeFields = unwrappedType.fields;
+        if typeFields is () {
             return [];
         }
 
         Field[] result = [];
         foreach parser:SelectionNode selection in selectionNode.getSelections() {
             if selection is parser:FieldNode {
-                foreach __Field 'field in <__Field[]>unwrappedType.fields {
+                foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
                         result.push(new Field(selection, 'field.'type, (),
                             [...currentPath, ...unwrappedPath, 'field.name], self.operationType, self.resourcePath
@@ -134,7 +135,7 @@ public class Field {
                 }
             }
         }
-        return result;      
+        return result;
     }
 
     isolated function getFieldNames(parser:SelectionNode selectionNode) returns string[] {
