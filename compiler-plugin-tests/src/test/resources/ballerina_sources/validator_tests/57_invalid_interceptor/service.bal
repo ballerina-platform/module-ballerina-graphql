@@ -24,7 +24,7 @@ readonly service class ServiceInterceptor {
         return result;
     }
 
-    isolated resource function get name(int id) returns string {
+    isolated resource function get name(@graphql:ID int id) returns string {
         if id < 10 {
             return "Ballerina";
         }
