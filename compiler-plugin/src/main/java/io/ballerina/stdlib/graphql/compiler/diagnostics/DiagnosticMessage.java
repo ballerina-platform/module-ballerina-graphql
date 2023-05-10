@@ -81,7 +81,9 @@ public enum DiagnosticMessage {
                       + "GraphQL Federation"),
     ERROR_137("failed to add _entities resolver to the subgraph service"),
     ERROR_138("failed to add _service service to the subgraph service"),
-    ERROR_139("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported");
+    ERROR_139("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported"),
+    ERROR_140("Invalid usage of @graphql:ID annotation. @graphql:ID annotation can only be used with string, "
+                      + "int, float, and decimal type");
 
     private final String message;
 
