@@ -18,8 +18,11 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
@@ -34,17 +37,22 @@ import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.values.BTypedesc;
+import io.ballerina.stdlib.constraint.Constraints;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.PATH_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NAME_FIELD;
@@ -63,12 +71,15 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isSubgraphModule;
 public class ArgumentHandler {
     private final BMap<BString, Object> argumentsMap;
     private final MethodType method;
-
     private final BMap<BString, Object> fileInfo;
     private final BObject context;
     private final BObject field;
+    private final BObject responseGenerator;
+    private final Boolean validation;
+    private Boolean hasConstraintErrors;
 
     private static final String REPRESENTATION_TYPENAME = "Representation";
+    private static final String ADD_ERRORS_METHOD_NAME = "addErrors";
 
     // graphql.parser types
     private static final int T_STRING = 2;
@@ -78,18 +89,49 @@ public class ArgumentHandler {
     private static final int T_INPUT_OBJECT = 22;
     private static final int T_LIST = 23;
 
-    public ArgumentHandler(MethodType method, BObject context, BObject field) {
+    public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
+                           Boolean validation) {
         this.method = method;
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
         this.field = field;
         this.argumentsMap = ValueCreator.createMapValue();
+        this.responseGenerator = responseGenerator;
+        this.validation = validation;
+        this.hasConstraintErrors = false;
+        BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
+        this.populateArgumentsMap(fieldNode);
     }
 
     public Object[] getArguments() {
-        BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
-        this.populateArgumentsMap(fieldNode);
         return this.getArgumentsForMethod();
+    }
+
+    public void validateInputConstraint(Environment environment) {
+        if (this.validation) {
+            BArray errors = ValueCreator.createArrayValue(TypeCreator.createArrayType(PredefinedTypes.TYPE_ERROR));
+            BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
+            BArray argumentArray = fieldNode.getArrayValue(ARGUMENTS_FIELD);
+            for (int i = 0; i < argumentArray.size(); i++) {
+                BObject argumentNode = (BObject) argumentArray.get(i);
+                BString argumentName = argumentNode.getStringValue(NAME_FIELD);
+                Parameter parameter = Objects.requireNonNull(getParameterForArgumentNode(argumentName));
+                Object argumentValue = this.argumentsMap.get(argumentName);
+                BTypedesc bTypedesc = this.getTypeDescFromParameter(parameter);
+                Object validationResult = Constraints.validate(argumentValue, bTypedesc);
+                if (validationResult instanceof BError) {
+                    this.hasConstraintErrors = true;
+                    errors.append(validationResult);
+                }
+            }
+            if (this.hasConstraintErrors) {
+                this.addErrors(environment, errors);
+            }
+        }
+    }
+
+    public Boolean hasConstraintErrors() {
+        return this.hasConstraintErrors;
     }
 
     private void populateArgumentsMap(BObject fieldNode) {
@@ -324,5 +366,35 @@ public class ArgumentHandler {
     private boolean isRepresentationArgument(Type type) {
         return TypeUtils.getReferredType(type).getTag() == TypeTags.RECORD_TYPE_TAG && isSubgraphModule(type)
                 && type.getName().equals(REPRESENTATION_TYPENAME);
+    }
+
+    private void addErrors(Environment environment, BArray errors) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
+        Object[] arguments = getAddErrorArguments(errors, fieldNode, this.responseGenerator.getArrayValue(PATH_FIELD));
+        environment.getRuntime()
+                .invokeMethodAsyncConcurrently(this.responseGenerator, ADD_ERRORS_METHOD_NAME, null, null,
+                        executionCallback, null, PredefinedTypes.TYPE_NULL, arguments);
+    }
+
+    private static BTypedesc getTypeDescFromParameter(Parameter parameter) {
+        BTypedesc bTypedesc = ValueCreator.createTypedescValue(parameter.type);
+        if (bTypedesc.getDescribingType().getTag() == INTERSECTION_TAG) {
+            Type type = getEffectiveType((IntersectionType) bTypedesc.getDescribingType());
+            return ValueCreator.createTypedescValue(type);
+        }
+        return bTypedesc;
+    }
+
+    private static Object[] getAddErrorArguments(BArray errors, BObject fieldNode, BArray path) {
+        Object[] args = new Object[6];
+        args[0] = errors;
+        args[1] = true;
+        args[2] = fieldNode;
+        args[3] = true;
+        args[4] = path;
+        args[5] = true;
+        return args;
     }
 }

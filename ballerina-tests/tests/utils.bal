@@ -174,5 +174,5 @@ isolated function validateConnectionClousureWithError(websocket:Client wsClient,
         test:assertEquals(response.message(), expectedErrorMsg);
         return;
     }
-    test:assertFail(string `Expected Error found : ${response.toString()}`);
+    test:assertFail(string `Unexpected Error found : ${response.toString()}`);
 }

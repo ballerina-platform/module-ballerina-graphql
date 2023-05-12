@@ -93,15 +93,18 @@ isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engi
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
                                           Field 'field, parser:OperationNode operationNode)
 returns stream<any, error?>|json {
-    any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field);
+    ResponseGenerator responseGenerator = new (engine, context, 'field.getFieldType(), 'field.getPath().clone(), false);
+    any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field, responseGenerator, engine.getValidation());
     if result is stream<any, error?> {
         return result;
     }
-    error err = error("Error ocurred in the subscription resolver");
-    if result is error {
-        err = result;
+    if result !is error {
+        if context.getErrors().length() == 0 {
+            result = error("Error ocurred in the subscription resolver");
+        }
+        result = ();
     }
-    OutputObject outputObject = engine.getResult(operationNode, context, err);
+    OutputObject outputObject = engine.getResult(operationNode, context, result);
     return outputObject.errors.toJson();
 }
 

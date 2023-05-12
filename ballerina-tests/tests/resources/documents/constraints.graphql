@@ -1,0 +1,47 @@
+query A {
+    movie (
+        movie: {name: "Interstellar", downloads: 12, imdb: 1.0, reviews:[]}
+    )
+}
+
+mutation B {
+    addMovie (
+        movie: {name: "Spider-Man: Into the Spider-Verse", downloads: 12, imdb: 1.0, reviews:[]}
+    )
+}
+
+query C {
+    movies(
+        movies: [
+            {name: "", downloads: 1, imdb: 0.5, reviews:[]},
+            {name: "Avengers: Endgame", downloads: 22, imdb: 0.6, reviews:[null]},
+            {name: "The Lord of the Rings: The Return of the King", downloads: 3, imdb: 4.0, reviews:[]}
+        ]
+    )
+}
+
+subscription Sub {
+    movie (movie: {
+        name: "Saving Private Ryan",
+        downloads: 12,
+        imdb: 1.0,
+        reviews: []
+    })
+}
+
+query D {
+    reviewStars(
+        reviews: [
+            {comments: ["Good", "Nice"], stars: 7},
+            {comments: ["Good", "Nice", "Bad"], stars: 7}
+        ]
+    )
+}
+
+query E($movie: MovieDetails!) {
+    movie (movie: $movie)
+}
+
+query F($movies: [MovieDetails!]!) {
+    movies(movies: $movies)
+}

@@ -2104,3 +2104,43 @@ service /parallel on wrappedListener {
         return self.data;
     }
 }
+
+@graphql:ServiceConfig {
+    validation: false
+}
+service /constraints_config on basicListener {
+
+    isolated resource function get movie(MovieDetails movie) returns string {
+        return movie.name;
+    }
+}
+
+service /constraints on basicListener {
+
+    private string[] movies;
+    isolated function init() {
+        self.movies = [];
+    }
+
+    isolated resource function get movie(MovieDetails movie) returns string {
+        return movie.name;
+    }
+
+    isolated resource function get movies(MovieDetails[] & readonly movies) returns string[] {
+        return movies.map(m => m.name);
+    }
+
+    isolated resource function get reviewStars(Reviews[] reviews) returns int[] {
+        return reviews.map(r => r.stars);
+    }
+
+    isolated remote function addMovie(MovieDetails movie) returns string {
+        string name = movie.name;
+        self.movies.push(name);
+        return name;
+    }
+
+    isolated resource function subscribe movie(MovieDetails movie) returns stream<Reviews?, error?> {
+        return movie.reviews.toStream();
+    }
+}

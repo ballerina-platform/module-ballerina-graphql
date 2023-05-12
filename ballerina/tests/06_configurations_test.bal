@@ -90,7 +90,7 @@ function dataProviderGraphiQLPath() returns (string[][]) {
     groups: ["listener", "configs"]
 }
 function testInvalidMaxQueryDepth() returns error? {
-    Engine|Error engine = new ("", 0, testService, [], true);
+    Engine|Error engine = new ("", 0, testService, [], true, true);
     test:assertTrue(engine is Error);
     Error err = <Error>engine;
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");

@@ -119,6 +119,7 @@ The conforming implementation of the specification is released and included in t
         * 10.1.5 [GraphiQL Configurations](#1015-graphiql-configurations)
         * 10.1.6 [Service Interceptors](#1016-service-interceptors)
         * 10.1.7 [Introspection Configurations](#1017-introspection-configurations)
+        * 10.1.8 [Constraint Configurations](#1018-constraint-configurations)
     * 10.2 [Resource Configuration](#102-resource-configuration)
         * 10.2.1 [Field Interceptors](#1021-field-interceptors)
     * 10.3 [Interceptor Configuration](#103-interceptor-configuration)
@@ -1967,6 +1968,10 @@ service on new graphql:Listener(9090) {
 #### 10.1.7 Introspection Configurations
 
 The `introspection` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled. By default, introspection is enabled for Ballerina GraphQL services.
+
+#### 10.1.8 Constraint Configurations
+
+The `validation` field is used to enable or disable the validation of constraints defined on GraphQL input types. If constraint validation support is enabled, the GraphQL service verifies all constraints set on the GraphQL inputs when executing the resolver. If there are any constraint validation errors, they will be added to the GraphQL response. By default, constraint validation is enabled for Ballerina GraphQL services.
 
 ###### Example: Disable Introspection Query Support
 

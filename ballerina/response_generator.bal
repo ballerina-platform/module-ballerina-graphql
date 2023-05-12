@@ -104,6 +104,21 @@ class ResponseGenerator {
         return errorDetail;
     }
 
+    isolated function addErrors(error[] errors, parser:FieldNode fieldNode, (string|int)[] path) {
+        ErrorDetail[] errorDetails = [];
+        foreach error err in errors {
+            string formattedErrorMsg = string `Input validation failed in the field "${fieldNode.getAlias()}": ${err.message()}`;
+            log:printError(formattedErrorMsg, stackTrace = err.stackTrace());
+            ErrorDetail errorDetail = {
+                message: formattedErrorMsg,
+                locations: [fieldNode.getLocation()],
+                path: path.clone()
+            };
+            errorDetails.push(errorDetail);
+        }
+        self.context.addErrors(errorDetails);
+    }
+
     isolated function getResultFromMap(map<any> parentValue, parser:FieldNode parentNode, (string|int)[] path)
     returns anydata {
         string? mapKey = self.getKeyArgument(parentNode);

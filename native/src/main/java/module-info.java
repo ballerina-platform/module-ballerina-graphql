@@ -18,5 +18,6 @@
 
 module io.ballerina.stdlib.graphql.runtime {
     requires io.ballerina.runtime;
+    requires io.ballerina.stdlib.constraint;
     requires io.ballerina.stdlib.graphql.commons;
 }

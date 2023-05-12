@@ -101,27 +101,32 @@ public class Engine {
         }
     }
 
-    public static Object executeSubscriptionResource(Environment env, BObject context, BObject service,
-                                                     BObject fieldObject) {
-        Future subscriptionFutureResult = env.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
+    public static Object executeSubscriptionResource(Environment environment, BObject context, BObject service,
+                                                     BObject fieldObject, BObject responseGenerator,
+                                                     Boolean validation) {
         BString fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD);
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
-                ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
-                Object[] args = argumentHandler.getArguments();
-                ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
-                if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
-                    env.getRuntime()
-                            .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                                           null, executionCallback, null, typeUnion, args);
-                } else {
-                    env.getRuntime()
-                            .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                                           null, executionCallback, null, typeUnion, args);
+                ArgumentHandler argumentHandler =
+                        new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
+                argumentHandler.validateInputConstraint(environment);
+                if (!argumentHandler.hasConstraintErrors()) {
+                    Future subscriptionFutureResult = environment.markAsync();
+                    ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
+                    Object[] args = argumentHandler.getArguments();
+                    ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
+                    if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
+                        environment.getRuntime()
+                                .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                                        null, executionCallback, null, typeUnion, args);
+                    } else {
+                        environment.getRuntime()
+                                .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                                        null, executionCallback, null, typeUnion, args);
+                    }
                 }
             }
         }
@@ -129,46 +134,55 @@ public class Engine {
     }
 
     public static Object executeQueryResource(Environment environment, BObject context, BObject service,
-                                              ResourceMethodType resourceMethod, BObject fieldObject) {
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+                                              ResourceMethodType resourceMethod, BObject fieldObject,
+                                              BObject responseGenerator, Boolean validation) {
         if (resourceMethod != null) {
-            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
-            Object[] arguments = argumentHandler.getArguments();
-            if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-                environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
-                                                                       null, returnType, arguments);
-            } else {
-                environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
-                                                                       null, returnType, arguments);
+            ArgumentHandler argumentHandler =
+                    new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
+            argumentHandler.validateInputConstraint(environment);
+            if (!argumentHandler.hasConstraintErrors()) {
+                Future future = environment.markAsync();
+                ExecutionCallback executionCallback = new ExecutionCallback(future);
+                ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+                Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+                Object[] arguments = argumentHandler.getArguments();
+                if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+                    environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                            RESOURCE_EXECUTION_STRAND, executionCallback,
+                            null, returnType, arguments);
+                } else {
+                    environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                            RESOURCE_EXECUTION_STRAND, executionCallback,
+                            null, returnType, arguments);
+                }
             }
         }
         return null;
     }
 
     public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
-                                               BObject fieldObject) {
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
+                                               BObject fieldObject, BObject responseGenerator, Boolean validation) {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
             if (remoteMethod.getName().equals(fieldName)) {
-                ArgumentHandler argumentHandler = new ArgumentHandler(remoteMethod, context, fieldObject);
-                Object[] arguments = argumentHandler.getArguments();
-                if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                    environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
-                                                                           REMOTE_EXECUTION_STRAND, executionCallback,
-                                                                           null, returnType, arguments);
-                } else {
-                    environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
-                                                                           REMOTE_EXECUTION_STRAND, executionCallback,
-                                                                           null, returnType, arguments);
+                ArgumentHandler argumentHandler =
+                        new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
+                argumentHandler.validateInputConstraint(environment);
+                if (!argumentHandler.hasConstraintErrors()) {
+                    Future future = environment.markAsync();
+                    ExecutionCallback executionCallback = new ExecutionCallback(future);
+                    Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+                    Object[] arguments = argumentHandler.getArguments();
+                    if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+                        environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
+                                REMOTE_EXECUTION_STRAND, executionCallback,
+                                null, returnType, arguments);
+                    } else {
+                        environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
+                                REMOTE_EXECUTION_STRAND, executionCallback,
+                                null, returnType, arguments);
+                    }
                 }
             }
         }
