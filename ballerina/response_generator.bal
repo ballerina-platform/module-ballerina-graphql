@@ -24,9 +24,7 @@ class ResponseGenerator {
     private (string|int)[] path;
     private final __Type fieldType;
 
-    private final string functionNameGetSelectionFromRecord = "getSelectionFromRecord";
-    private final string functionNameGetSelectionFromService = "getSelectionFromService";
-    private final string functionNameGetFragmentFromService = "getFragmentFromService";
+    private final string functionNameGetFragmentFromService = "";
 
     isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = []) {
         self.engine = engine;
@@ -118,17 +116,15 @@ class ResponseGenerator {
     isolated function getResultFromRecord(map<any> parentValue, parser:FieldNode parentNode)
     returns anydata {
         Data result = {};
-        self.resolveSelections(self.functionNameGetSelectionFromRecord, parentValue, parentNode, result);
-        return result;
-    }
-
-    isolated function getSelectionFromRecord(map<any> parentValue, parser:SelectionNode selection, Data result) {
-        if selection is parser:FieldNode {
-            anydata fieldValue = self.getRecordResult(parentValue, selection);
-            result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
-        } else if selection is parser:FragmentNode {
-            self.getResultForFragmentFromMap(parentValue, selection, result);
+        foreach parser:SelectionNode selection in parentNode.getSelections() {
+            if selection is parser:FieldNode {
+                anydata fieldValue = self.getRecordResult(parentValue, selection);
+                result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+            } else if selection is parser:FragmentNode {
+                self.getResultForFragmentFromMap(parentValue, selection, result);
+            }
         }
+        return result;
     }
 
     isolated function getRecordResult(map<any> parentValue, parser:FieldNode fieldNode) returns anydata {
@@ -179,18 +175,15 @@ class ResponseGenerator {
 
     isolated function getResultFromService(service object {} serviceObject, parser:FieldNode parentNode) returns anydata {
         Data result = {};
-        self.resolveSelections(self.functionNameGetSelectionFromService, serviceObject, parentNode, result);
-        return result;
-    }
-
-    isolated function getSelectionFromService(service object {} serviceObject, parser:SelectionNode selection,
-                                              Data result) {
-        if selection is parser:FieldNode {
-            anydata selectionValue = self.getResultFromObject(serviceObject, selection);
-            result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
-        } else if selection is parser:FragmentNode {
-            self.getResultForFragmentFromService(serviceObject, selection, result);
+        foreach parser:SelectionNode selection in parentNode.getSelections() {
+            if selection is parser:FieldNode {
+                anydata selectionValue = self.getResultFromObject(serviceObject, selection);
+                result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
+            } else if selection is parser:FragmentNode {
+                self.getResultForFragmentFromService(serviceObject, selection, result);
+            }
         }
+        return result;
     }
 
     isolated function getResultForFragmentFromMap(map<any> parentValue, parser:FragmentNode parentNode, Data result) {
@@ -198,7 +191,14 @@ class ResponseGenerator {
         if parentNode.getOnType() != typeName {
             return;
         }
-        self.resolveSelections(self.functionNameGetSelectionFromRecord, parentValue, parentNode, result);
+        foreach parser:SelectionNode selection in parentNode.getSelections() {
+           if selection is parser:FieldNode {
+                anydata fieldValue = self.getRecordResult(parentValue, selection);
+                result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+            } else if selection is parser:FragmentNode {
+                self.getResultForFragmentFromMap(parentValue, selection, result);
+            }
+        }
     }
 
     isolated function getResultForFragmentFromService(service object {} parentValue, parser:FragmentNode parentNode,
@@ -207,40 +207,14 @@ class ResponseGenerator {
         if parentNode.getOnType() != typeName && !self.isPossibleTypeOfInterface(parentNode.getOnType(), typeName) {
             return;
         }
-        self.resolveSelections(self.functionNameGetFragmentFromService, parentValue, parentNode, result);
-    }
-
-    isolated function getFragmentFromService(service object {} parentValue, parser:SelectionNode selection,
-                                             Data result) {
-        if selection is parser:FieldNode {
-            anydata selectionValue = self.getResultFromObject(parentValue, selection);
-            result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
-        } else if selection is parser:FragmentNode {
-            self.getResultForFragmentFromService(parentValue, selection, result);
-        }
-    }
-
-    private isolated function resolveSelections(string selectionFunctionName,
-                                                        map<any>|service object {} parentValue,
-                                                        parser:SelectionNode parentNode, Data result) {
         foreach parser:SelectionNode selection in parentNode.getSelections() {
-            var executeSelectionFunction = self.executeSelectionFunction;
-            executeSelectionFunction(selectionFunctionName, parentValue, selection, result);
+            if selection is parser:FieldNode {
+                anydata selectionValue = self.getResultFromObject(parentValue, selection);
+                result[selection.getAlias()] = selectionValue is ErrorDetail ? () : selectionValue;
+            } else if selection is parser:FragmentNode {
+                self.getResultForFragmentFromService(parentValue, selection, result);
+            }
         }
-        return;
-    }
-
-    private isolated function executeSelectionFunction(string functionName, map<any>|service object {} parentValue,
-                                                       parser:SelectionNode selection, Data result) {
-            if functionName == self.functionNameGetSelectionFromRecord {
-                return self.getSelectionFromRecord(<map<any>>parentValue, selection, result);
-            }
-            if functionName ==  self.functionNameGetSelectionFromService {
-                return self.getSelectionFromService(<service object {}>parentValue, selection, result);
-            }
-            if functionName ==  self.functionNameGetFragmentFromService {
-                return self.getFragmentFromService(<service object {}>parentValue, selection, result);
-            }
     }
 
     private isolated function isPossibleTypeOfInterface(string interfaceName, 
