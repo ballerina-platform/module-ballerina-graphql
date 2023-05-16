@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ConstantSymbol;
@@ -255,7 +256,16 @@ public class SchemaGenerator {
     }
 
     private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
-        Type type = getInputFieldType(parameterSymbol.typeDescriptor());
+        boolean isID = false;
+        List<AnnotationSymbol> annotationSymbols = parameterSymbol.annotations();
+        if (!annotationSymbols.isEmpty()) {
+            for (AnnotationSymbol annotationSymbol : annotationSymbols) {
+                if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals("ID")) {
+                    isID = true;
+                }
+            }
+        }
+        Type type = getInputFieldType(parameterSymbol.typeDescriptor(), isID);
         String defaultValue = getDefaultValue(parameterSymbol);
         return new InputValue(parameterName, type, description, defaultValue);
     }
@@ -265,10 +275,17 @@ public class SchemaGenerator {
             return null;
         }
         TypeSymbol typeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
-        return getFieldType(typeSymbol);
+        if (methodSymbol.typeDescriptor().returnTypeAnnotations().isEmpty()) {
+            return getFieldType(typeSymbol, false);
+        } else {
+            return getFieldType(typeSymbol, true);
+        }
     }
 
-    private Type getType(TypeSymbol typeSymbol) {
+    private Type getType(TypeSymbol typeSymbol, boolean isID) {
+        if (isID) {
+            return addType(ScalarType.ID);
+        }
         String typeName = getTypeName(typeSymbol);
         if (this.schema.containsType(typeName)) {
             return this.schema.getType(typeName);
@@ -294,7 +311,7 @@ public class SchemaGenerator {
             case INTERSECTION:
                 return getType(null, null, null, null, (IntersectionTypeSymbol) typeSymbol);
             case STREAM:
-                return getType(((StreamTypeSymbol) typeSymbol).typeParameter());
+                return getType(((StreamTypeSymbol) typeSymbol).typeParameter(), false);
             case TABLE:
                 return getType((TableTypeSymbol) typeSymbol);
         }
@@ -351,7 +368,7 @@ public class SchemaGenerator {
 
     private Type getType(ArrayTypeSymbol arrayTypeSymbol) {
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-        return getWrapperType(getFieldType(memberTypeSymbol), TypeKind.LIST);
+        return getWrapperType(getFieldType(memberTypeSymbol, false), TypeKind.LIST);
     }
 
     private Type getType(String name, TypeDefinitionSymbol typeDefinitionSymbol) {
@@ -482,11 +499,11 @@ public class SchemaGenerator {
         TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
         Type type;
         if (typeSymbol.typeKind() == TypeDescKind.MAP) {
-            type = getType(((MapTypeSymbol) typeSymbol).typeParam());
+            type = getType(((MapTypeSymbol) typeSymbol).typeParam(), false);
             Type argType = getWrapperType(addType(ScalarType.STRING), TypeKind.NON_NULL);
             field.addArg(new InputValue(MAP_KEY_ARGUMENT_NAME, argType, MAP_KEY_ARGUMENT_DESCRIPTION, null));
         } else {
-            type = getType(typeSymbol);
+            type = getType(typeSymbol, false);
         }
         if (!isNilable(typeSymbol) && !recordFieldSymbol.isOptional()) {
             type = getWrapperType(type, TypeKind.NON_NULL);
@@ -498,7 +515,7 @@ public class SchemaGenerator {
     private Type getType(String name, String description, Position position, UnionTypeSymbol unionTypeSymbol) {
         List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
         if (effectiveTypes.size() == 1) {
-            return getType(effectiveTypes.get(0));
+            return getType(effectiveTypes.get(0), false);
         }
 
         String typeName = name == null ? getTypeName(effectiveTypes) : name;
@@ -506,7 +523,7 @@ public class SchemaGenerator {
         Type unionType = addType(typeName, TypeKind.UNION, typeDescription, position);
 
         for (TypeSymbol typeSymbol : effectiveTypes) {
-            Type possibleType = getType(typeSymbol);
+            Type possibleType = getType(typeSymbol, false);
             String memberTypeName = getTypeName(typeSymbol);
             if (memberTypeName == null) {
                 continue;
@@ -520,7 +537,7 @@ public class SchemaGenerator {
                          IntersectionTypeSymbol intersectionTypeSymbol) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (name == null) {
-            return getType(effectiveType);
+            return getType(effectiveType, false);
         } else {
             if (parameterMap == null) {
                 parameterMap = new HashMap<>();
@@ -531,7 +548,7 @@ public class SchemaGenerator {
 
     private Type getType(TableTypeSymbol tableTypeSymbol) {
         TypeSymbol typeSymbol = tableTypeSymbol.rowTypeParameter();
-        Type type = getType(typeSymbol);
+        Type type = getType(typeSymbol, false);
         return getWrapperType(getWrapperType(type, TypeKind.NON_NULL), TypeKind.LIST);
     }
 
@@ -542,7 +559,10 @@ public class SchemaGenerator {
         return methodSymbol.documentation().get().parameterMap().get(parameterName);
     }
 
-    private Type getInputType(TypeSymbol typeSymbol) {
+    private Type getInputType(TypeSymbol typeSymbol, boolean isID) {
+        if (isID) {
+            return addType(ScalarType.ID);
+        }
         String typeName = getTypeName(typeSymbol);
         if (this.schema.containsType(typeName)) {
             return this.schema.getType(typeName);
@@ -589,7 +609,7 @@ public class SchemaGenerator {
 
     private Type getInputType(ArrayTypeSymbol arrayTypeSymbol) {
         TypeSymbol memberTypeSymbol = arrayTypeSymbol.memberTypeDescriptor();
-        return getWrapperType(getInputFieldType(memberTypeSymbol), TypeKind.LIST);
+        return getWrapperType(getInputFieldType(memberTypeSymbol, false), TypeKind.LIST);
     }
 
     private Type getInputType(String typeName, TypeDefinitionSymbol typeDefinitionSymbol) {
@@ -619,7 +639,7 @@ public class SchemaGenerator {
     private Type getInputType(UnionTypeSymbol unionTypeSymbol) {
         List<TypeSymbol> effectiveTypes = getEffectiveTypes(unionTypeSymbol);
         for (TypeSymbol typeSymbol : effectiveTypes) {
-            return getInputType(typeSymbol);
+            return getInputType(typeSymbol, true);
         }
         return null;
     }
@@ -628,7 +648,7 @@ public class SchemaGenerator {
                               Position position) {
         TypeSymbol effectiveType = getEffectiveType(intersectionTypeSymbol);
         if (typeName == null) {
-            return getInputType(effectiveType);
+            return getInputType(effectiveType, true);
         } else {
             return getInputType(typeName, description, (RecordTypeSymbol) effectiveType, position);
         }
@@ -640,7 +660,7 @@ public class SchemaGenerator {
         }
         String name = recordFieldSymbol.getName().get();
         String description = getDescription(recordFieldSymbol);
-        Type type = getInputType(recordFieldSymbol.typeDescriptor());
+        Type type = getInputType(recordFieldSymbol.typeDescriptor(), false);
         if (!isNilable(recordFieldSymbol.typeDescriptor()) && !recordFieldSymbol.isOptional()) {
             type = getWrapperType(type, TypeKind.NON_NULL);
         }
@@ -660,16 +680,16 @@ public class SchemaGenerator {
         type.addEnumValue(enumValue);
     }
 
-    private Type getFieldType(TypeSymbol typeSymbol) {
-        Type type = getType(typeSymbol);
+    private Type getFieldType(TypeSymbol typeSymbol, boolean isID) {
+        Type type = getType(typeSymbol, isID);
         if (isNilable(typeSymbol)) {
             return type;
         }
         return getWrapperType(type, TypeKind.NON_NULL);
     }
 
-    private Type getInputFieldType(TypeSymbol typeSymbol) {
-        Type type = getInputType(typeSymbol);
+    private Type getInputFieldType(TypeSymbol typeSymbol, boolean isId) {
+        Type type = getInputType(typeSymbol, isId);
         if (isNilable(typeSymbol)) {
             return type;
         }

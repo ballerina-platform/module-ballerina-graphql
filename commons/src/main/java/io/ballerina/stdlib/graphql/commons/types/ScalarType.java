@@ -29,6 +29,7 @@ public enum ScalarType {
     FLOAT(TypeName.FLOAT, Description.FLOAT, true),
     BOOLEAN(TypeName.BOOLEAN, Description.BOOLEAN, true),
     DECIMAL(TypeName.DECIMAL, Description.DECIMAL, false),
+    ID(TypeName.ID, Description.ID, false),
     UPLOAD(TypeName.UPLOAD, Description.UPLOAD, false),
 
     // Scalars used in federation subgraph schema

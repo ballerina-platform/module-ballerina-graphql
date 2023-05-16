@@ -30,6 +30,8 @@ public enum Description {
     BOOLEAN("The `Boolean` scalar type represents `true` or `false`."),
     DECIMAL("The `Decimal` type corresponds to a subset of IEEE 754-2008 128-bit decimal (radix 10) floating point " +
                     "numbers"),
+    ID("The `ID` scalar type is a unique identifier that is serialized as a string. It is commonly represented as a " +
+            "string, integer, or UUID."),
     UPLOAD("The `Upload` type represents file upload in a GraphQL schema"),
     GENERATED_UNION_TYPE("auto-generated union type from Ballerina"),
     GENERATED_TYPE("auto-generated type from hierarchical resource path"),

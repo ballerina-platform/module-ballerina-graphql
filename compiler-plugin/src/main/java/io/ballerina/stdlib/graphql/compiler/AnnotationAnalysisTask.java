@@ -34,7 +34,8 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  * Validates the usages of the annotation, @graphql:ID.
  */
 public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext> {
-    private static final String ID_ANNOTATION = "@graphql:ID";
+    private static final String ID_ANNOTATION = "graphql:ID";
+    // todo: add UUID
     private static final String[] allowedTypes = {"int", "string", "float", "decimal"};
 
     @Override
