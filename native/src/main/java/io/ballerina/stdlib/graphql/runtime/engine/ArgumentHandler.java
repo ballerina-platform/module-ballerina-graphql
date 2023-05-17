@@ -33,6 +33,7 @@ import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
+import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -77,13 +78,28 @@ public class ArgumentHandler {
     private static final int T_BOOLEAN = 5;
     private static final int T_INPUT_OBJECT = 22;
     private static final int T_LIST = 23;
+    private static final ArrayList<String> idsList = new ArrayList<String>();
 
     public ArgumentHandler(MethodType method, BObject context, BObject field) {
         this.method = method;
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
         this.field = field;
+        getIDTypeArguments(method.getAnnotations());
         this.argumentsMap = ValueCreator.createMapValue();
+    }
+
+    private void getIDTypeArguments(BMap<BString, Object> annotations) {
+        int i = 0;
+        for (Object annotation: annotations.values().toArray()) {
+            BMap annotationMap = (BMap) annotation;
+            for (Object annotationKey: annotationMap.getKeys()) {
+                  if (((BString) annotationKey).getValue().endsWith("ID")) {
+                      idsList.add(annotations.getKeys()[i].getValue().split("\\.")[1]);
+                      i++;
+                  }
+            }
+        }
     }
 
     public Object[] getArguments() {
@@ -119,9 +135,27 @@ public class ArgumentHandler {
             return this.getUnionTypeArgument(argumentNode, (UnionType) parameterType);
         } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
             return this.getArgumentValue(argumentNode, TypeUtils.getReferredType(parameterType));
+        } else if (idsList.contains(argumentNode.getStringValue(StringUtils.fromString("name")).getValue())) {
+            return this.getIDArgumentValue(argumentNode, parameterType);
         } else {
             return this.getScalarArgumentValue(argumentNode);
         }
+    }
+
+    private Object getIDArgumentValue(BObject argumentNode, Type parameterType) {
+        if (argumentNode.get(VALUE_FIELD) instanceof BString) {
+            String obj = ((BString) argumentNode.get(VALUE_FIELD)).getValue();
+            if (parameterType.getTag() == TypeTags.STRING_TAG) {
+                return obj;
+            } else if (parameterType.getTag() == TypeTags.INT_TAG) {
+                return Integer.parseInt(obj);
+            } else if (parameterType.getTag() == TypeTags.FLOAT_TAG) {
+                return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
+            } else if (parameterType.getTag() == TypeTags.DECIMAL_TAG) {
+                return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
+            }
+        }
+        return argumentNode.get(VALUE_FIELD);
     }
 
     private BMap<BString, Object> getRepresentationArgument(Object jsonRepresentation, Type parameterType) {
