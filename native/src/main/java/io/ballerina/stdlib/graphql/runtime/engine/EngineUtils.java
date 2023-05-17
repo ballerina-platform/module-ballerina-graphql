@@ -98,7 +98,6 @@ public class EngineUtils {
     static final BString ARGUMENTS_FIELD = StringUtils.fromString("arguments");
     static final BString VALUE_FIELD = StringUtils.fromString("value");
     static final BString VARIABLE_NAME_FIELD = StringUtils.fromString("variableName");
-    public static final BString PATH_FIELD = StringUtils.fromString("path");
 
     // Native Data Fields
     public static final String GRAPHQL_SERVICE_OBJECT = "graphql.service.object";

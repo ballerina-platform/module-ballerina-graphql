@@ -52,7 +52,6 @@ import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
-import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.PATH_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NAME_FIELD;
@@ -372,7 +371,7 @@ public class ArgumentHandler {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
-        Object[] arguments = getAddErrorArguments(errors, fieldNode, this.responseGenerator.getArrayValue(PATH_FIELD));
+        Object[] arguments = getAddErrorArguments(errors, fieldNode);
         environment.getRuntime()
                 .invokeMethodAsyncConcurrently(this.responseGenerator, ADD_ERRORS_METHOD_NAME, null, null,
                         executionCallback, null, PredefinedTypes.TYPE_NULL, arguments);
@@ -387,14 +386,12 @@ public class ArgumentHandler {
         return bTypedesc;
     }
 
-    private static Object[] getAddErrorArguments(BArray errors, BObject fieldNode, BArray path) {
-        Object[] args = new Object[6];
+    private static Object[] getAddErrorArguments(BArray errors, BObject fieldNode) {
+        Object[] args = new Object[4];
         args[0] = errors;
         args[1] = true;
         args[2] = fieldNode;
         args[3] = true;
-        args[4] = path;
-        args[5] = true;
         return args;
     }
 }

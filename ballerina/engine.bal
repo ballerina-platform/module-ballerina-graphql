@@ -242,8 +242,7 @@ isolated class Engine {
         parser:RootOperationType operationType = 'field.getOperationType();
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
-                                                   operationType == parser:OPERATION_MUTATION);
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {
             if interceptor is () {

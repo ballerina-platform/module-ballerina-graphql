@@ -1,11 +1,11 @@
 query A {
-    movie (
+    movie(
         movie: {name: "Interstellar", downloads: 12, imdb: 1.0, reviews:[]}
     )
 }
 
 mutation B {
-    addMovie (
+    addMovie(
         movie: {name: "Spider-Man: Into the Spider-Verse", downloads: 12, imdb: 1.0, reviews:[]}
     )
 }
@@ -21,7 +21,7 @@ query C {
 }
 
 subscription Sub {
-    movie (movie: {
+    movie(movie: {
         name: "Saving Private Ryan",
         downloads: 12,
         imdb: 1.0,
@@ -39,7 +39,7 @@ query D {
 }
 
 query E($movie: MovieDetails!) {
-    movie (movie: $movie)
+    movie(movie: $movie)
 }
 
 query F($movies: [MovieDetails!]!) {
