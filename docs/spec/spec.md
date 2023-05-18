@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar  
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2023/04/03
+_Updated_: 2023/05/18  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -130,41 +130,43 @@ The conforming implementation of the specification is released and included in t
     * 11.3 [Execution](#113-execution)
         * 11.3.1 [Service Interceptors](#1131-service-interceptors)
         * 11.3.2 [Field Interceptors](#1132-field-interceptors)
-12. [Security](#12-security)
-    * 12.1 [Service Authentication and Authorization](#121-service-authentication-and-authorization)
-        * 12.1.1 [Declarative Approach](#1211-declarative-approach)
-            * 12.1.1.1 [Basic Authentication - File User Store](#12111-basic-authentication---file-user-store)
-            * 12.1.1.2 [Basic Authentication - LDAP User Store](#12112-basic-authentication---ldap-user-store)
-            * 12.1.1.3 [JWT Authentication](#12113-jwt-authentication)
-            * 12.1.1.4 [OAuth2](#12114-oauth2)
-        * 12.1.2 [Imperative Approach](#1212-imperative-approach)
-            * 12.1.2.1 [Basic Authentication - File User Store](#12121-basic-authentication---file-user-store)
-            * 12.1.2.2 [Basic Authentication - LDAP User Store](#12122-basic-authentication---ldap-user-store)
-            * 12.1.2.3 [JWT Authentication](#12123-jwt-authentication)
-            * 12.1.2.4 [OAuth2](#12124-oauth2)
-    * 12.2 [Client Authentication and Authorization](#122-client-authentication-and-authorization)
-        * 12.2.1. [Basic Authentication](#1221-basic-authentication)
-        * 12.2.2. [Bearer Token Authentication](#1222-bearer-token-authentication)
-        * 12.2.3. [Self-Signed JWT Authentication](#1223-self-signed-jwt-authentication)
-        * 12.2.4. [OAuth2](#1224-oauth2)
-            * 12.2.4.1 [Client Credentials Grant Type](#12241-client-credentials-grant-type)
-            * 12.2.4.2 [Password Grant Type](#12242-password-grant-type)
-            * 12.2.4.3 [Refresh Token Grant Type](#12243-refresh-token-grant-type)
-            * 12.2.4.4 [JWT Bearer Grant Type](#12244-jwt-bearer-grant-type)
-    * 12.3 [SSL/TLS and Mutual SSL](#123-ssltls-and-mutual-ssl)
-        * 12.3.1 [Listener](#1231-listener)
-            * 12.3.1.1 [SSL/TLS](#12311-ssltls)
-            * 12.3.1.2 [Mutual SSL](#12312-mutual-ssl)
-        * 12.3.2 [Client](#1232-client)
-            * 12.3.2.1 [SSL/TLS](#12321-ssltls)
-            * 12.3.2.2 [Mutual SSL](#12322-mutual-ssl)
-13. [Federation](#13-federation)
-    * 13.1 [Federated Subgraph](#131-federated-subgraph)
-        * 13.1.1 [The `@subgraph:Subgraph` Annotation](#1311-the-graphqlsubgraph-annotation)
-        * 13.1.2 [The `@subgraph:Entity` Annotation](#1312-the-graphqlentity-annotation)
-        * 13.1.3 [The `subgraph:ReferenceResolver`](#1311-the-referenceresolver)
-14. [Tools](#14-tools)
-    * 14.1 [GraphiQL Client](#141-graphiql-client)
+12. [Constraint Validation](#12-constraint-validation)
+    * 12.1 [Input Constraints](#121-input-constraints)
+13. [Security](#13-security)
+    * 13.1 [Service Authentication and Authorization](#131-service-authentication-and-authorization)
+        * 13.1.1 [Declarative Approach](#1311-declarative-approach)
+            * 13.1.1.1 [Basic Authentication - File User Store](#13111-basic-authentication---file-user-store)
+            * 13.1.1.2 [Basic Authentication - LDAP User Store](#13112-basic-authentication---ldap-user-store)
+            * 13.1.1.3 [JWT Authentication](#13113-jwt-authentication)
+            * 13.1.1.4 [OAuth2](#13114-oauth2)
+        * 13.1.2 [Imperative Approach](#1312-imperative-approach)
+            * 13.1.2.1 [Basic Authentication - File User Store](#13121-basic-authentication---file-user-store)
+            * 13.1.2.2 [Basic Authentication - LDAP User Store](#13122-basic-authentication---ldap-user-store)
+            * 13.1.2.3 [JWT Authentication](#13123-jwt-authentication)
+            * 13.1.2.4 [OAuth2](#13124-oauth2)
+    * 13.2 [Client Authentication and Authorization](#132-client-authentication-and-authorization)
+        * 13.2.1 [Basic Authentication](#1321-basic-authentication)
+        * 13.2.2 [Bearer Token Authentication](#1322-bearer-token-authentication)
+        * 13.2.3 [Self-Signed JWT Authentication](#1323-self-signed-jwt-authentication)
+        * 13.2.4 [OAuth2](#1324-oauth2)
+            * 13.2.4.1 [Client Credentials Grant Type](#13241-client-credentials-grant-type)
+            * 13.2.4.2 [Password Grant Type](#13242-password-grant-type)
+            * 13.2.4.3 [Refresh Token Grant Type](#13243-refresh-token-grant-type)
+            * 13.2.4.4 [JWT Bearer Grant Type](#13244-jwt-bearer-grant-type)
+    * 13.3 [SSL/TLS and Mutual SSL](#133-ssltls-and-mutual-ssl)
+        * 13.3.1 [Listener](#1331-listener)
+            * 13.3.1.1 [SSL/TLS](#13311-ssltls)
+            * 13.3.1.2 [Mutual SSL](#13312-mutual-ssl)
+        * 13.3.2 [Client](#1332-client)
+            * 13.3.2.1 [SSL/TLS](#13321-ssltls)
+            * 13.3.2.2 [Mutual SSL](3322-mutual-ssl)
+14. [Federation](#14-federation)
+    * 14.1 [Federated Subgraph](#141-federated-subgraph)
+        * 14.1.1 [The `@subgraph:Subgraph` Annotation](#1411-the-graphqlsubgraph-annotation)
+        * 14.1.2 [The `@subgraph:Entity` Annotation](#1412-the-graphqlentity-annotation)
+        * 14.1.3 [The `subgraph:ReferenceResolver`](#1411-the-referenceresolver)
+15. [Tools](#15-tools)
+    * 15.1 [GraphiQL Client](#151-graphiql-client)
 
 ## 1. Overview
 
@@ -1847,7 +1849,7 @@ This will result in the following response.
 
 #### 10.1.2 Auth Configurations
 
-The `auth` field is used to provide configurations related to authentication and authorization for the GraphQL API. The [Security](#12-security) section will explain this configuration in detail.
+The `auth` field is used to provide configurations related to authentication and authorization for the GraphQL API. The [Security](#13-security) section will explain this configuration in detail.
 
 
 #### 10.1.3 Context Initializer Function
@@ -1897,7 +1899,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
->**Note:** The init function has `http:RequestContext` and `http:Request` objects as inputs. These objects are passed into the function when a request is received. The HTTP headers and the request context can be used to perform additional validations to a request before proceeding to the GraphQL validations. This can be useful to validate the HTTP request before performing the GraphQL operations. The [Imperative Approach in Security](#1212-imperative-approach) section will discuss this in detail.
+>**Note:** The init function has `http:RequestContext` and `http:Request` objects as inputs. These objects are passed into the function when a request is received. The HTTP headers and the request context can be used to perform additional validations to a request before proceeding to the GraphQL validations. This can be useful to validate the HTTP request before performing the GraphQL operations. The [Imperative Approach in Security](#1312-imperative-approach) section will discuss this in detail.
 
 #### 10.1.4 CORS Configurations
 
@@ -1969,10 +1971,6 @@ service on new graphql:Listener(9090) {
 
 The `introspection` field is used to enable or disable the GraphQL introspection query support. If the introspection query support is disabled, the GraphQL service won't allow the execution of the `__schema` and the `__type` introspection queries. However, the `__typename` introspection will work even if the introspection query support is disabled. By default, introspection is enabled for Ballerina GraphQL services.
 
-#### 10.1.8 Constraint Configurations
-
-The `validation` field is used to enable or disable the validation of constraints defined on GraphQL input types. If constraint validation support is enabled, the GraphQL service verifies all constraints set on the GraphQL inputs when executing the resolver. If there are any constraint validation errors, they will be added to the GraphQL response. By default, constraint validation is enabled for Ballerina GraphQL services.
-
 ###### Example: Disable Introspection Query Support
 
 ```ballerina
@@ -1984,6 +1982,21 @@ service on new graphql:Listener(9090) {
 }
 ```
 >**Note:** It is recommended to disable introspection in production environments until it is required.
+
+#### 10.1.8 Constraint Configurations
+
+The `validation` field is used to enable or disable the validation of constraints defined on GraphQL input types. If constraint validation support is enabled, the GraphQL service verifies all constraints set on the GraphQL inputs when executing the resolver. By default, constraint validation is enabled for Ballerina GraphQL services.
+
+###### Example: Disable Constraint Validation Support
+
+```ballerina
+@graphql:ServiceConfig {
+    validation: false
+}
+service on new graphql:Listener(9090) {
+    // ...
+}
+```
 
 ### 10.2 Resource Configuration
 
@@ -2160,22 +2173,63 @@ Following is the output of the server when a request is processed:
 5. Connection closed!
 ```
 
-## 12. Security
+## 12. Constraint Validation
 
-### 12.1 Service Authentication and Authorization
+The Ballerina GraphQL package validates the constraints set on GraphQL input types. This can be configured as defined in the [constraint configurations](#1018-constraint-configurations) section.
 
-There are two ways to enable authentication and authorization in Ballerina GraphQL service.
+### 12.1 Input Constraints
+
+The input constraints can be defined using the Ballerina [Constraint package](https://ballerina.io/spec/constraint/). The user has to import the constraint package to define the constraints on GraphQL input types.
+
+###### Example: Defining Input Constraints
+
+```ballerina
+import ballerina/constraint;
+import ballerina/graphql;
+
+public type MovieDetails record {|
+    @constraint:String {
+        minLength: 1
+    }
+    string name;
+
+    @constraint:Int {
+        minValue: 0
+    }
+    int downloads;
+
+    @constraint:Float {
+        minValue: 0
+        maxValue: 10
+    }
+    float imdb;
+|};
+
+service /graphql on new graphql:Listener(9000) {
+    isolated resource function get name(MovieDetails movie) returns string {
+        return movie.name;
+    }
+}
+```
+
+In the above [example](#example-defining-input-constraints), If there are any constraint validation errors found related to the given user input, they will be added to the GraphQL response.
+
+## 13. Security
+
+### 13.1 Service Authentication and Authorization
+
+There are two ways to enable authentication and authorization in the Ballerina GraphQL service.
 
 1. Declarative approach
 2. Imperative approach
 
-#### 12.1.1 Declarative Approach
+#### 13.1.1 Declarative Approach
 
-This is also known as the configuration-driven approach, which is used for simple use cases, where users have to provide a set of configurations and do not need to be worried more about how authentication and authorization works. The user does not have full control over the configuration-driven approach.
+This is also known as the configuration-driven approach, which is used for simple use cases, where users have to provide a set of configurations and do not need to be worried more about how authentication and authorization work. The user does not have full control over the configuration-driven approach.
 
 The service configurations are used to define the authentication and authorization configurations. Users can configure the configurations needed for different authentication schemes and configurations needed for authorizations of each authentication scheme. The configurations can be provided at the service level. The auth handler creation and request authentication/authorization is handled internally without user intervention. The requests that succeeded both authentication and/or authorization phases according to the configurations will be passed to the business logic layer.
 
-##### 12.1.1.1 Basic Authentication - File User Store
+##### 13.1.1.1 Basic Authentication - File User Store
 
 A GraphQL service can be secured using [Basic Authentication with File User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#311-file-user-store) and optionally by enforcing authorization.
 
@@ -2214,7 +2268,7 @@ password="bob@123"
 scopes=["developer", "admin"]
 ```
 
-##### 12.1.1.2 Basic Authentication - LDAP User Store
+##### 13.1.1.2 Basic Authentication - LDAP User Store
 
 A GraphQL service can be secured using [Basic Authentication with LDAP User Store](https://github.com/ballerina-platform/module-ballerina-auth/blob/master/docs/spec/spec.md#312-ldap-user-store) and optionally by enforcing authorization.
 
@@ -2258,7 +2312,7 @@ service /graphql on securedEP {
 }
 ```
 
-##### 12.1.1.3 JWT Authentication
+##### 13.1.1.3 JWT Authentication
 
 A GraphQL service can be secured using [JWT Authentication](https://github.com/ballerina-platform/module-ballerina-jwt/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
 
@@ -2289,7 +2343,7 @@ service /graphql on securedEP {
 }
 ```
 
-##### 12.1.1.4 OAuth2
+##### 13.1.1.4 OAuth2
 
 A GraphQL service can be secured using [OAuth2](https://github.com/ballerina-platform/module-ballerina-oauth2/blob/master/docs/spec/spec.md) and by enforcing authorization optionally.
 
@@ -2323,13 +2377,13 @@ service /graphql on securedEP {
 }
 ```
 
-#### 12.1.2 Imperative Approach
+#### 13.1.2 Imperative Approach
 
 This is also known as the code-driven approach, which is used for advanced use cases, where users need to be worried more about how authentication and authorization work and need to have further customizations. The user has full control of the code-driven approach. The handler creation and authentication/authorization calls are made by the user at the business logic layer.
 
 The [`graphql:Context`](#8-context-object) object and the [`contextInit`](#1013-context-initializer-function) method can be used to achieve this.
 
-##### 12.1.2.1 Basic Authentication - File User Store
+##### 13.1.2.1 Basic Authentication - File User Store
 
 A file user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -2393,7 +2447,7 @@ password="bob@123"
 scopes=["developer", "admin"]
 ```
 
-##### 12.1.2.2 Basic Authentication - LDAP User Store
+##### 13.1.2.2 Basic Authentication - LDAP User Store
 
 An LDAP user store can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -2462,7 +2516,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-##### 12.1.2.3 JWT Authentication
+##### 13.1.2.3 JWT Authentication
 
 A JWT configuration can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -2521,7 +2575,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-##### 12.1.2.4 OAuth2
+##### 13.1.2.4 OAuth2
 
 An OAuth2 introspection endpoint can be used to validate the `Authorization` header in the HTTP request that contains the GraphQL document.
 
@@ -2572,11 +2626,11 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-### 12.2 Client Authentication and Authorization
+### 13.2 Client Authentication and Authorization
 
 Authentication and authorization in Ballerina GraphQL clients can be enabled using the declarative approach.
 
-##### 12.2.1 Basic Authentication
+##### 13.2.1 Basic Authentication
 
 Ballerina GraphQL clients enable basic authentication with credentials by setting the `graphql:CredentialsConfig` configurations in the client. The requests from the client are automatically enriched with the `Authorization: Basic <token>` header when passing the `graphql:CredentialsConfig` for the `auth` configuration of the client.
 
@@ -2596,7 +2650,7 @@ public function main() returns error? {
 }
 ```
 
-##### 12.2.2 Bearer Token Authentication
+##### 13.2.2 Bearer Token Authentication
 
 Ballerina GraphQL clients enable authentication using bearer tokens by setting the `graphql:BearerTokenConfig` configurations in the client. The requests from the client are automatically enriched with the `Authorization: Bearer <token>` header when passing the `graphql:BearerTokenConfig` for the `auth` configuration of the client.
 
@@ -2615,7 +2669,7 @@ public function main() returns error? {
 }
 ```
 
-##### 12.2.3 Self-Signed JWT Authentication
+##### 13.2.3 Self-Signed JWT Authentication
 
 Ballerina GraphQL clients enable authentication using JWTs by setting the `graphql:JwtIssuerConfig` configurations in the client.  The requests from the client are automatically enriched with the `Authorization: Bearer <token>` header when passing the `graphql:JwtIssuerConfig` for the `auth` configuration of the client.
 
@@ -2645,11 +2699,11 @@ public function main() returns error? {
 }
 ```
 
-##### 12.2.4 OAuth2
+##### 13.2.4 OAuth2
 
 Ballerina GraphQL clients enable authentication using OAuth2 by setting the `graphql:OAuth2GrantConfig` configurations in the client. The requests from the client are automatically enriched with the `Authorization: Bearer <token>` header when passing the `graphql:OAuth2GrantConfig` for the `auth` configuration of the client. OAuth2 can configure in following 4 ways
 
-###### 12.2.4.1 Client Credentials Grant Type
+###### 13.2.4.1 Client Credentials Grant Type
 
 ```ballerina
 graphql:Client graphqlClient = check new ("localhost:9090/graphql",
@@ -2667,7 +2721,7 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
 );
 ```
 
-###### 12.2.4.2 Password Grant Type
+###### 13.2.4.2 Password Grant Type
 
 ```ballerina
 graphql:Client graphqlClient = check new ("localhost:9090/graphql",
@@ -2695,7 +2749,7 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
     }
 );
 ```
-###### 12.2.4.3 Refresh Token Grant Type
+###### 13.2.4.3 Refresh Token Grant Type
 
 ```ballerina
 graphql:Client graphqlClient = check new ("localhost:9090/graphql",
@@ -2714,7 +2768,7 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
 );
 ```
 
-###### 12.2.4.4 JWT Bearer Grant Type
+###### 13.2.4.4 JWT Bearer Grant Type
 
 ```ballerina
 graphql:Client graphqlClient = check new ("localhost:9090/graphql",
@@ -2733,13 +2787,13 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
 );
 ```
 
-### 12.3 SSL/TLS and Mutual SSL
+### 13.3 SSL/TLS and Mutual SSL
 
 The Ballerina GraphQL listeners/clients can be used to communicate via a secured connection. This section defines the specifications for creating Ballerina GraphQL listeners and clients to communicate via a secured connection.
 
-### 12.3.1 Listener
+### 13.3.1 Listener
 
-#### 12.3.1.1 SSL/TLS
+#### 13.3.1.1 SSL/TLS
 
 The GraphQL listener can be secured to communicate via HTTPS using SSL/TLS. The `graphql:ListenerSecureSocket` can be used to configure the listener to expose an HTTPS connection.
 
@@ -2784,7 +2838,7 @@ service on securedGraphqlListener {
 }
 ```
 
-#### 12.3.1.2 Mutual SSL
+#### 13.3.1.2 Mutual SSL
 
 The GraphQL listener supports mutual SSL, which is a certificate-based authentication process in which two parties (the client and the server) authenticate each other by verifying the digital certificates.
 
@@ -2849,9 +2903,9 @@ service on securedGraphqlListener {
 }
 ```
 
-### 12.3.2 Client
+### 13.3.2 Client
 
-#### 12.3.2.1 SSL/TLS
+#### 13.3.2.1 SSL/TLS
 
 A GraphQL client can communicate with a secured GraphQL service via SSL/TLS. The `graphql:ClientSecureSocket` configuration can be used to provide configurations related to SSL/TLS.
 
@@ -2870,7 +2924,7 @@ public function main() returns error? {
 }
 ```
 
-#### 12.3.2.2 Mutual SSL
+#### 13.3.2.2 Mutual SSL
 
 A GraphQL client can communicate with a secured GraphQL service using mutual SSL. Mutual SSL can be enabled by providing the `graphql:ClientSecureSocket` value for the `auth` configuration of the client along with providing the client certificate and key files via the `key` configuration of the `graphql:ClientSecureSocket`.
 
@@ -2897,9 +2951,9 @@ public function main() returns error? {
 }
 ```
 
-## 13. Federation
+## 14. Federation
 
-### 13.1 Federated Subgraph
+### 14.1 Federated Subgraph
 
 The Ballerina GraphQL module provides the capability to expose a `graphql:Service` as a [federation2 subgraph](https://www.apollographql.com/docs/federation/subgraph-spec). To convert a Ballerina GraphQL service into a federation2 subgraph, the `graphql.subgraph` sub module must be imported.
 
@@ -2909,7 +2963,7 @@ import ballerina/graphql.subgraph;
 
 > **Note:** The current implementation of the subgraph only supports dynamic schema composition through introspection.
 
-#### 13.1.1 The `@subgraph:Subgraph` Annotation
+#### 14.1.1 The `@subgraph:Subgraph` Annotation
 
 To make a Ballerina GraphQL service a federation2 subgraph, it should be annotated with `@subgraph:Subgraph`. This annotation adds all the subgraph schema additions to the GraphQL schema as described in the [subgraph specification](https://www.apollographql.com/docs/federation/subgraph-spec/#subgraph-schema-additions). Moreover, this annotation automatically adds resolvers for the `_entities` and `_service` root Query fields.
 
@@ -2922,7 +2976,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-#### 13.1.2 The `@subgraph:Entity` Annotation
+#### 14.1.2 The `@subgraph:Entity` Annotation
 
 In a federated graph, an entity is an object type that can resolve its fields across multiple subgraphs. Each subgraph can contribute different fields to the entity and is responsible for resolving only the fields that it contributes. The `@subgraph:Entity` designates an object type as an entity in Ballerina. The following type definition describes the shape of the `@subgraph:Entity` annotation.
 
@@ -2943,7 +2997,7 @@ To fully define an entity within a Ballerina GraphQL subgraph, you must:
 
 1. Assign the `@subgraph:Entity` annotation to an object type.
 2. Define the `key` field of the annotation to be the fields and subfields that contribute to the entity's primary key/keys.
-3. Define the `resolveReference` field of the annotation to be a function pointer to resolve the entity. If this field is set to `nil`, it indicates to the graph router that this subgraph does not define a reference resolver for this entity. For more details, see [ReferenceResolver](#133-the-referenceresolver).
+3. Define the `resolveReference` field of the annotation to be a function pointer to resolve the entity. If this field is set to `nil`, it indicates to the graph router that this subgraph does not define a reference resolver for this entity. For more details, see [ReferenceResolver](#1413-the-subgraphreferenceresolver).
 
 ###### Example: Federated Entity Definition and Corresponding GraphQL Schema
 
@@ -3075,7 +3129,7 @@ type Product @key(fields: "id", resolvable: false) {
   </tr>
 </table>
 
-#### 13.1.3 The `subgraph:ReferenceResolver`
+#### 14.1.3 The `subgraph:ReferenceResolver`
 
 Reference resolver is a function that resolves an entity of a specific type using its primary key. When the router requires a particular entity to be resolved, it invokes the corresponding entity's reference resolver. Following is the type definition of a reference resolver defined in `graphql.subgraph` module.
 
@@ -3105,9 +3159,9 @@ type Product record {
 
 >**Note:** If the reference resolver returns an entity of a different type than the entity being resolved, a runtime error will be returned to the router. For example, if the resolver returns a `User` for a `Product` entity, a runtime error will occur.
 
-## 14. Tools
+## 15. Tools
 
-### 14.1 GraphiQL client
+### 15.1 GraphiQL client
 
 The Ballerina GraphQL package provides an integrated GraphiQL client tool which is provided by the GraphQL Foundation. The client is implemented using CDN assets, and it provides a Graphical User Interface to execute the GraphQL queries. To enable the GraphiQL client, configuration should be provided as mentioned in the [GraphiQL configuration](#1015-graphiql-configurations) section.
 

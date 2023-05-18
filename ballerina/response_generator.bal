@@ -97,7 +97,7 @@ class ResponseGenerator {
         return errorDetail;
     }
 
-    isolated function addErrors(error[] errors, parser:FieldNode fieldNode) {
+    isolated function addConstraintValidationErrors(error[] errors, parser:FieldNode fieldNode) {
         ErrorDetail[] errorDetails = [];
         foreach error err in errors {
             string formattedErrorMsg = string `Input validation failed in the field "${fieldNode.getAlias()}": ${err.message()}`;

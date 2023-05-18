@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#3234] Add Support for Field Interceptors](https://github.com/ballerina-platform/ballerina-standard-library/issues/3234)
 - [[#4254] Introduce GraphQL Interceptor Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/4254)
 - [[#4376] Introduce an API to get Subfields of a `graphql:Field` Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/4376)
-- [[#4176] Add Support for Constraint Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/4176)
+- [[#4176] Add Support for Input Constraint Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/4176)
 
 ### Fixed
 - [[#4364]Fix Compilation Error when GraphQL Package Import has a Prefix](https://github.com/ballerina-platform/ballerina-standard-library/issues/4364)

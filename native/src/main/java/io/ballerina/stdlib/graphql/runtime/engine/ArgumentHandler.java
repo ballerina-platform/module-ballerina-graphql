@@ -78,7 +78,7 @@ public class ArgumentHandler {
     private Boolean hasConstraintErrors;
 
     private static final String REPRESENTATION_TYPENAME = "Representation";
-    private static final String ADD_ERRORS_METHOD_NAME = "addErrors";
+    private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
 
     // graphql.parser types
     private static final int T_STRING = 2;
@@ -124,7 +124,7 @@ public class ArgumentHandler {
                 }
             }
             if (this.hasConstraintErrors) {
-                this.addErrors(environment, errors);
+                this.addConstraintValidationErrors(environment, errors);
             }
         }
     }
@@ -367,13 +367,13 @@ public class ArgumentHandler {
                 && type.getName().equals(REPRESENTATION_TYPENAME);
     }
 
-    private void addErrors(Environment environment, BArray errors) {
+    private void addConstraintValidationErrors(Environment environment, BArray errors) {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
         Object[] arguments = getAddErrorArguments(errors, fieldNode);
         environment.getRuntime()
-                .invokeMethodAsyncConcurrently(this.responseGenerator, ADD_ERRORS_METHOD_NAME, null, null,
+                .invokeMethodAsyncConcurrently(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null, null,
                         executionCallback, null, PredefinedTypes.TYPE_NULL, arguments);
     }
 
