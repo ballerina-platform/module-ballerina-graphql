@@ -345,7 +345,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.7.1"
+version = "2.7.2"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
