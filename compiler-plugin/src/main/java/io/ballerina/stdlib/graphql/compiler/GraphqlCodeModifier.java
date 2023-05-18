@@ -51,5 +51,6 @@ public class GraphqlCodeModifier extends CodeModifier {
                                                   Arrays.asList(SyntaxKind.IMPLICIT_NEW_EXPRESSION,
                                                                 SyntaxKind.EXPLICIT_NEW_EXPRESSION));
         modifierContext.addSourceModifierTask(new GraphqlSourceModifier(this.modifierContextMap));
+        modifierContext.addSyntaxNodeAnalysisTask(new AnnotationAnalysisTask(), SyntaxKind.ANNOTATION);
     }
 }
