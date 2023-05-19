@@ -75,10 +75,10 @@ public class ArgumentHandler {
     private final BObject field;
     private final BObject responseGenerator;
     private final Boolean validation;
-    private Boolean hasConstraintErrors;
 
     private static final String REPRESENTATION_TYPENAME = "Representation";
     private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
+    private static final String CONSTRAINT_ERROR_MESSAGE = "Constraint validation errors found.";
 
     // graphql.parser types
     private static final int T_STRING = 2;
@@ -97,7 +97,6 @@ public class ArgumentHandler {
         this.argumentsMap = ValueCreator.createMapValue();
         this.responseGenerator = responseGenerator;
         this.validation = validation;
-        this.hasConstraintErrors = false;
         BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
         this.populateArgumentsMap(fieldNode);
     }
@@ -106,7 +105,7 @@ public class ArgumentHandler {
         return this.getArgumentsForMethod();
     }
 
-    public void validateInputConstraint(Environment environment) {
+    public void validateInputConstraint(Environment environment) throws Exception {
         if (this.validation) {
             BArray errors = ValueCreator.createArrayValue(TypeCreator.createArrayType(PredefinedTypes.TYPE_ERROR));
             BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
@@ -119,18 +118,14 @@ public class ArgumentHandler {
                 BTypedesc bTypedesc = this.getTypeDescFromParameter(parameter);
                 Object validationResult = Constraints.validate(argumentValue, bTypedesc);
                 if (validationResult instanceof BError) {
-                    this.hasConstraintErrors = true;
                     errors.append(validationResult);
                 }
             }
-            if (this.hasConstraintErrors) {
+            if (!errors.isEmpty()) {
                 this.addConstraintValidationErrors(environment, errors);
+                throw new Exception(CONSTRAINT_ERROR_MESSAGE);
             }
         }
-    }
-
-    public Boolean hasConstraintErrors() {
-        return this.hasConstraintErrors;
     }
 
     private void populateArgumentsMap(BObject fieldNode) {
@@ -371,7 +366,7 @@ public class ArgumentHandler {
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
-        Object[] arguments = getAddErrorArguments(errors, fieldNode);
+        Object[] arguments = {errors, true, fieldNode, true};
         environment.getRuntime()
                 .invokeMethodAsyncConcurrently(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null, null,
                         executionCallback, null, PredefinedTypes.TYPE_NULL, arguments);
@@ -384,14 +379,5 @@ public class ArgumentHandler {
             return ValueCreator.createTypedescValue(type);
         }
         return bTypedesc;
-    }
-
-    private static Object[] getAddErrorArguments(BArray errors, BObject fieldNode) {
-        Object[] args = new Object[4];
-        args[0] = errors;
-        args[1] = true;
-        args[2] = fieldNode;
-        args[3] = true;
-        return args;
     }
 }

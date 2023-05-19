@@ -112,8 +112,8 @@ public class Engine {
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-                argumentHandler.validateInputConstraint(environment);
-                if (!argumentHandler.hasConstraintErrors()) {
+                try {
+                    argumentHandler.validateInputConstraint(environment);
                     Future subscriptionFutureResult = environment.markAsync();
                     ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
                     Object[] args = argumentHandler.getArguments();
@@ -127,6 +127,8 @@ public class Engine {
                                 .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
                                         null, executionCallback, null, typeUnion, args);
                     }
+                } catch (Exception e) {
+                    return null;
                 }
             }
         }
@@ -139,8 +141,8 @@ public class Engine {
         if (resourceMethod != null) {
             ArgumentHandler argumentHandler =
                     new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-            argumentHandler.validateInputConstraint(environment);
-            if (!argumentHandler.hasConstraintErrors()) {
+            try {
+                argumentHandler.validateInputConstraint(environment);
                 Future future = environment.markAsync();
                 ExecutionCallback executionCallback = new ExecutionCallback(future);
                 ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
@@ -155,6 +157,8 @@ public class Engine {
                             RESOURCE_EXECUTION_STRAND, executionCallback,
                             null, returnType, arguments);
                 }
+            } catch (Exception e) {
+                return null;
             }
         }
         return null;
@@ -168,8 +172,8 @@ public class Engine {
             if (remoteMethod.getName().equals(fieldName)) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
-                argumentHandler.validateInputConstraint(environment);
-                if (!argumentHandler.hasConstraintErrors()) {
+                try {
+                    argumentHandler.validateInputConstraint(environment);
                     Future future = environment.markAsync();
                     ExecutionCallback executionCallback = new ExecutionCallback(future);
                     Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
@@ -183,6 +187,8 @@ public class Engine {
                                 REMOTE_EXECUTION_STRAND, executionCallback,
                                 null, returnType, arguments);
                     }
+                } catch (Exception e) {
+                    return null;
                 }
             }
         }
