@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ConstantSymbol;
@@ -95,6 +96,7 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
 public class SchemaGenerator {
 
     private static final String IF_ARG_NAME = "if";
+    private static final String ID_ANNOT_NAME = "ID";
     private static final String REASON_ARG_NAME = "reason";
     private static final String DEFAULT_VALUE = "\"\"";
 
@@ -255,9 +257,25 @@ public class SchemaGenerator {
     }
 
     private InputValue getArg(String parameterName, String description, ParameterSymbol parameterSymbol) {
-        Type type = getInputFieldType(parameterSymbol.typeDescriptor());
+        Type type = getInputTypeForID(parameterSymbol);
+        if (type == null) {
+            type = getInputFieldType(parameterSymbol.typeDescriptor());
+        }
         String defaultValue = getDefaultValue(parameterSymbol);
         return new InputValue(parameterName, type, description, defaultValue);
+    }
+
+    private Type getInputTypeForID(ParameterSymbol parameterSymbol) {
+        List<AnnotationSymbol> annotationSymbols = parameterSymbol.annotations();
+        if (annotationSymbols.isEmpty()) {
+            return null;
+        }
+        for (AnnotationSymbol annotationSymbol : annotationSymbols) {
+            if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)) {
+                return getTypeForID(parameterSymbol.typeDescriptor());
+            }
+        }
+        return null;
     }
 
     private Type getType(MethodSymbol methodSymbol) {
@@ -265,7 +283,24 @@ public class SchemaGenerator {
             return null;
         }
         TypeSymbol typeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
-        return getFieldType(typeSymbol);
+        if (methodSymbol.typeDescriptor().returnTypeAnnotations().isEmpty()) {
+            return getFieldType(typeSymbol);
+        } else {
+            return getTypeForID(methodSymbol.typeDescriptor().returnTypeDescriptor().get());
+        }
+    }
+
+    private Type getTypeForID(TypeSymbol typeSymbol) {
+        Type type;
+        if (this.schema.containsType(ScalarType.ID.getName())) {
+            return this.schema.getType(ScalarType.ID.getName());
+        } else {
+            type = addType(ScalarType.ID);
+        }
+        if (isNilable(typeSymbol)) {
+            return type;
+        }
+        return getWrapperType(type, TypeKind.NON_NULL);
     }
 
     private Type getType(TypeSymbol typeSymbol) {
@@ -480,11 +515,21 @@ public class SchemaGenerator {
         String name = recordFieldSymbol.getName().get();
         Field field = new Field(name, description);
         TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
-        Type type;
+        Type type = null;
         if (typeSymbol.typeKind() == TypeDescKind.MAP) {
             type = getType(((MapTypeSymbol) typeSymbol).typeParam());
             Type argType = getWrapperType(addType(ScalarType.STRING), TypeKind.NON_NULL);
             field.addArg(new InputValue(MAP_KEY_ARGUMENT_NAME, argType, MAP_KEY_ARGUMENT_DESCRIPTION, null));
+        } else if (!recordFieldSymbol.annotations().isEmpty()) {
+            for (AnnotationSymbol annotationSymbol : recordFieldSymbol.annotations()) {
+                if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)) {
+                    type = addType(ScalarType.ID);
+                    break;
+                }
+            }
+            if (type == null) {
+                type = getInputType(recordFieldSymbol.typeDescriptor());
+            }
         } else {
             type = getType(typeSymbol);
         }
@@ -640,7 +685,16 @@ public class SchemaGenerator {
         }
         String name = recordFieldSymbol.getName().get();
         String description = getDescription(recordFieldSymbol);
-        Type type = getInputType(recordFieldSymbol.typeDescriptor());
+        Type type = null;
+        for (AnnotationSymbol annotationSymbol : recordFieldSymbol.annotations()) {
+            if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)) {
+                type = addType(ScalarType.ID);
+                break;
+            }
+        }
+        if (type == null) {
+            type = getInputType(recordFieldSymbol.typeDescriptor());
+        }
         if (!isNilable(recordFieldSymbol.typeDescriptor()) && !recordFieldSymbol.isOptional()) {
             type = getWrapperType(type, TypeKind.NON_NULL);
         }
