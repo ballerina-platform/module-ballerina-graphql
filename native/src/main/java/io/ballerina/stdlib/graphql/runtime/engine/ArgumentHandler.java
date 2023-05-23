@@ -43,6 +43,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
+import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,7 +106,7 @@ public class ArgumentHandler {
         return this.getArgumentsForMethod();
     }
 
-    public void validateInputConstraint(Environment environment) throws Exception {
+    public void validateInputConstraint(Environment environment) throws ConstraintValidationException {
         if (this.validation) {
             BArray errors = ValueCreator.createArrayValue(TypeCreator.createArrayType(PredefinedTypes.TYPE_ERROR));
             BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
@@ -123,7 +124,7 @@ public class ArgumentHandler {
             }
             if (!errors.isEmpty()) {
                 this.addConstraintValidationErrors(environment, errors);
-                throw new Exception(CONSTRAINT_ERROR_MESSAGE);
+                throw new ConstraintValidationException(CONSTRAINT_ERROR_MESSAGE);
             }
         }
     }

@@ -37,6 +37,7 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -127,7 +128,7 @@ public class Engine {
                                 .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
                                         null, executionCallback, null, typeUnion, args);
                     }
-                } catch (Exception e) {
+                } catch (ConstraintValidationException e) {
                     return null;
                 }
             }
@@ -157,7 +158,7 @@ public class Engine {
                             RESOURCE_EXECUTION_STRAND, executionCallback,
                             null, returnType, arguments);
                 }
-            } catch (Exception e) {
+            } catch (ConstraintValidationException e) {
                 return null;
             }
         }
@@ -187,7 +188,7 @@ public class Engine {
                                 REMOTE_EXECUTION_STRAND, executionCallback,
                                 null, returnType, arguments);
                     }
-                } catch (Exception e) {
+                } catch (ConstraintValidationException e) {
                     return null;
                 }
             }
