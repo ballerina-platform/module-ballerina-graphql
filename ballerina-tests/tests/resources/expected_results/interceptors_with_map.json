@@ -1,16 +1,28 @@
 {
-    "data":{
-        "languages":{
-            "backend": "Java",
-            "frontend": "Flutter",
-            "data": "Ballerina",
-            "native": "C#"
+    "data": {
+        "backend": {
+            "name": "Java"
         },
-        "updatedLanguages":{
-            "backend":"PHP",
-            "frontend":"JavaScript",
-            "data":"Python",
-            "native":"C#"
+        "frontend": {
+            "name": "Flutter"
+        },
+        "data": {
+            "name": "Ballerina"
+        },
+        "native": {
+            "name": "C#"
+        },
+        "backend1": {
+            "name": "PHP"
+        },
+        "frontend1": {
+            "name": "JavaScript"
+        },
+        "data1": {
+            "name": "Python"
+        },
+        "native1": {
+            "name": "C#"
         }
     }
 }

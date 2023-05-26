@@ -133,6 +133,12 @@ class ResponseFormatter {
             return self.coerceArray(fieldValue, fieldNode, fieldType, onType);
         } else if fieldValue is Data {
             __Type fieldType = self.getFieldType(fieldNode.getName(), parentType, onType);
+            if isMap(fieldValue) && getKeyArgument(fieldNode) is string {
+                Data updatedData = {};
+                fieldValue = fieldValue[<string>getKeyArgument(fieldNode)];
+                updatedData[fieldNode.getAlias()] = fieldValue;
+                return self.coerceObjectField(updatedData, fieldNode, parentType, onType);
+            }
             return self.coerceObject(fieldValue, fieldNode, fieldType, onType);
         } else {
             return fieldValue;

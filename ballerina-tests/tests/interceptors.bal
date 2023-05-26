@@ -663,13 +663,16 @@ readonly service class MapInterceptor2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        return {
-            backend: "PHP",
-            frontend: "JavaScript",
-            data: "Python",
-            native: "C#"
+        Languages ls = {
+            name: {
+                backend: "PHP",
+                frontend: "JavaScript",
+                data: "Python",
+                native: "C#"
+            }
         };
+        _ = context.resolve('field);
+        return ls;
     }
 }
 
