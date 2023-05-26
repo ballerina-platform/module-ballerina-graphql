@@ -523,7 +523,7 @@ public class SchemaGenerator {
         } else if (!recordFieldSymbol.annotations().isEmpty()) {
             for (AnnotationSymbol annotationSymbol : recordFieldSymbol.annotations()) {
                 if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)) {
-                    type = addType(ScalarType.ID);
+                    type = getTypeForID(recordFieldSymbol.typeDescriptor());
                     break;
                 }
             }

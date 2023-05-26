@@ -303,7 +303,7 @@ class FieldValidatorVisitor {
             if expectedTypeName == "ID" && (actualTypeName == INT || actualTypeName == STRING) {
                 return;
             }
-            if expectedTypeName == "ID" && (value is int|float|string|decimal) {
+            if expectedTypeName == "ID" && (value is int|string) {
                 return;
             }
             if (expectedTypeName == FLOAT || expectedTypeName == DECIMAL) && value is int|float|decimal {
