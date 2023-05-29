@@ -115,21 +115,21 @@ public class Engine {
                         new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
                 try {
                     argumentHandler.validateInputConstraint(environment);
-                    Future subscriptionFutureResult = environment.markAsync();
-                    ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
-                    Object[] args = argumentHandler.getArguments();
-                    ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
-                    if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
-                        environment.getRuntime()
-                                .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                        null, executionCallback, null, typeUnion, args);
-                    } else {
-                        environment.getRuntime()
-                                .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                        null, executionCallback, null, typeUnion, args);
-                    }
                 } catch (ConstraintValidationException e) {
                     return null;
+                }
+                Future subscriptionFutureResult = environment.markAsync();
+                ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
+                Object[] args = argumentHandler.getArguments();
+                ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
+                if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
+                    environment.getRuntime()
+                            .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                                    null, executionCallback, null, typeUnion, args);
+                } else {
+                    environment.getRuntime()
+                            .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                                    null, executionCallback, null, typeUnion, args);
                 }
             }
         }
@@ -144,22 +144,22 @@ public class Engine {
                     new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
             try {
                 argumentHandler.validateInputConstraint(environment);
-                Future future = environment.markAsync();
-                ExecutionCallback executionCallback = new ExecutionCallback(future);
-                ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-                Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-                Object[] arguments = argumentHandler.getArguments();
-                if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-                    environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                            RESOURCE_EXECUTION_STRAND, executionCallback,
-                            null, returnType, arguments);
-                } else {
-                    environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                            RESOURCE_EXECUTION_STRAND, executionCallback,
-                            null, returnType, arguments);
-                }
             } catch (ConstraintValidationException e) {
                 return null;
+            }
+            Future future = environment.markAsync();
+            ExecutionCallback executionCallback = new ExecutionCallback(future);
+            ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+            Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+            Object[] arguments = argumentHandler.getArguments();
+            if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+                environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
+                        RESOURCE_EXECUTION_STRAND, executionCallback,
+                        null, returnType, arguments);
+            } else {
+                environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
+                        RESOURCE_EXECUTION_STRAND, executionCallback,
+                        null, returnType, arguments);
             }
         }
         return null;
@@ -175,21 +175,21 @@ public class Engine {
                         new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
                 try {
                     argumentHandler.validateInputConstraint(environment);
-                    Future future = environment.markAsync();
-                    ExecutionCallback executionCallback = new ExecutionCallback(future);
-                    Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-                    Object[] arguments = argumentHandler.getArguments();
-                    if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                        environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
-                                REMOTE_EXECUTION_STRAND, executionCallback,
-                                null, returnType, arguments);
-                    } else {
-                        environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
-                                REMOTE_EXECUTION_STRAND, executionCallback,
-                                null, returnType, arguments);
-                    }
                 } catch (ConstraintValidationException e) {
                     return null;
+                }
+                Future future = environment.markAsync();
+                ExecutionCallback executionCallback = new ExecutionCallback(future);
+                Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+                Object[] arguments = argumentHandler.getArguments();
+                if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+                    environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
+                            REMOTE_EXECUTION_STRAND, executionCallback,
+                            null, returnType, arguments);
+                } else {
+                    environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
+                            REMOTE_EXECUTION_STRAND, executionCallback,
+                            null, returnType, arguments);
                 }
             }
         }
