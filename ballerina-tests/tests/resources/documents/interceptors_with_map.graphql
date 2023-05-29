@@ -1,26 +1,14 @@
-query { 
-    backend: languages {
-        name(key: "backend")
-    }
-    frontend: languages {
-        name(key: "frontend")
-    }
-    data: languages {
-        name(key: "data")
-    }
-    native: languages {
-        name(key: "native")
+query {
+    languages {
+        backend: name(key: "backend"),
+        name(key: "frontend"),
+        data: name(key: "data"),
+        native: name(key: "native")
     },
-    backend1: updatedLanguages {
-        name(key: "backend")
+    updatedLanguages {
+        backend: name(key: "backend"),
+        frontend: name(key: "frontend"),
+        data: name(key: "data"),
+        native: name(key: "native")
     }
-    frontend1: updatedLanguages {
-        name(key: "frontend")
-    }
-    data1: updatedLanguages {
-        name(key: "data")
-    }
-    native1: updatedLanguages {
-        name(key: "native")
-    },
 }

@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#4364]Fix Compilation Error when GraphQL Package Import has a Prefix](https://github.com/ballerina-platform/ballerina-standard-library/issues/4364)
 - [[#4379] Fix Schema Generation Failure when Import is Missing](https://github.com/ballerina-platform/ballerina-standard-library/issues/4379)
 - [[#4447] Fix non-isolated Function Pointers in Function Calls Within Isolated Functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/4447)
+- [[#4255] Fix Interceptors Returning Invalid Response for Maps](https://github.com/ballerina-platform/ballerina-standard-library/issues/4255)
+- [[#4490] Fix Interceptors Returning Invalid Responses when Alias Present](https://github.com/ballerina-platform/ballerina-standard-library/issues/4490)
 
 ## [1.7.0] - 2023-04-10
 

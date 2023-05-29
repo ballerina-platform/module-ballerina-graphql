@@ -345,7 +345,7 @@ readonly service class InterceptMutation2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         Person p = {name: "Albert", age: 53, address: {number: "103", street: "Mould-on-the-Wold", city: "London"}};
         return p;
     }
@@ -450,7 +450,7 @@ readonly service class InvalidInterceptor8 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         return {id: 5, name: "Jessie"};
     }
 }
@@ -459,7 +459,7 @@ readonly service class InvalidInterceptor9 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         return "Ballerina";
     }
 }
@@ -694,7 +694,7 @@ readonly service class TableInterceptor2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         return [
             {id: 4, name: "John", salary: 5000.00},
             {id: 5, name: "Jane", salary: 7000.00},
@@ -743,7 +743,7 @@ readonly service class InterceptBook {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         Book b = {name: "A Game of Thrones", author: "George R.R. Martin"};
         return b;
     }
