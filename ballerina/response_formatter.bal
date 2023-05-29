@@ -188,10 +188,8 @@ class ResponseFormatter {
     isolated function getFieldValue(Data data, parser:FieldNode fieldNode) returns anydata|anydata[] {
         if data.hasKey(fieldNode.getAlias()) {
             return data[fieldNode.getAlias()];
-        } else if data.hasKey(fieldNode.getName()) {
-            return data[fieldNode.getName()];
         }
-        return;
+        return data[fieldNode.getName()];
     }
 }
 
