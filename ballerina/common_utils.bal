@@ -489,3 +489,19 @@ isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArr
     }
     return parentType;
 }
+
+// TODO: This returns () for the hierarchiacal paths. Find a better way to handle this.
+isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
+    if fieldNode.getArguments().length() == 0 {
+        return;
+    }
+    parser:ArgumentNode argumentNode = fieldNode.getArguments()[0];
+    if argumentNode.getName() != KEY_ARGUMENT {
+        return;
+    }
+    if argumentNode.isVariableDefinition() {
+        return <string>argumentNode.getVariableValue();
+    } else {
+        return <string>argumentNode.getValue();
+    }
+}
