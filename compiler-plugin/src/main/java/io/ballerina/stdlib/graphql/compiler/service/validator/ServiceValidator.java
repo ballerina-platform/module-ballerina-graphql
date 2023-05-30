@@ -85,6 +85,8 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  */
 public class ServiceValidator {
     private static final String FIELD_PATH_SEPARATOR = ".";
+    private static final String ID_ANNOT_NAME = "ID";
+    private static final String[] allowedIDTypes = {"int", "string", "float", "decimal", "uuid:UUID"};
     private final Set<Symbol> visitedClassesAndObjectTypeDefinitions = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
@@ -552,10 +554,14 @@ public class ServiceValidator {
                 if (isValidGraphqlParameter(parameter.typeDescriptor())) {
                     continue;
                 }
-                validateInputParameterType(parameter.typeDescriptor(), inputLocation, isResourceMethod(methodSymbol));
+                if (parameter.annotations().isEmpty()) {
+                    validateInputParameterType(parameter.typeDescriptor(), inputLocation,
+                            isResourceMethod(methodSymbol));
+                }
             }
         }
     }
+
 
     private void validateInputParameterType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
         if (isFileUploadParameter(typeSymbol)) {
