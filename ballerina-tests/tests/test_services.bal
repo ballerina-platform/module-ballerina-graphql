@@ -1386,7 +1386,7 @@ service /intercept_int on basicListener {
 }
 
 @graphql:ServiceConfig {
-    interceptors: new RecordInterceptor1()
+    interceptors: [new RecordInterceptor1(), new LogSubfields()]
 }
 service /intercept_records on basicListener {
     isolated resource function get profile() returns Person {
