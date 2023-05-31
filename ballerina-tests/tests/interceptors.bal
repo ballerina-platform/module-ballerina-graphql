@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/log;
 
 @graphql:InterceptorConfig {
     global: false
@@ -851,5 +852,19 @@ readonly service class ServiceLevelInterceptor {
             return true;
         }
         return false;
+    }
+}
+
+readonly service class LogSubfields {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        graphql:Field[]? subFields = 'field.getSubfields();
+        if subFields is graphql:Field[] {
+            foreach graphql:Field f in subFields {
+                log:printInfo("Subfield: " + f.getName());
+            }
+        }
+        return context.resolve('field);
     }
 }

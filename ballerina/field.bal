@@ -122,9 +122,8 @@ public class Field {
             if selection is parser:FieldNode {
                 foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
-                        result.push(new Field(selection, 'field.'type, (),
-                            [...currentPath, ...unwrappedPath, 'field.name], self.operationType, self.resourcePath
-                        ));
+                        result.push(new Field(selection, 'field.'type, (),[...currentPath, ...unwrappedPath, 'field.name],
+                            self.operationType.clone(), self.resourcePath.clone()));
                         break;
                     }
                 }
