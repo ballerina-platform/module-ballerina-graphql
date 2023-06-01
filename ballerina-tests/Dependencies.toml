@@ -41,7 +41,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -83,6 +83,7 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql"},
+	{org = "ballerina", packageName = "graphql", moduleName = "graphql.dataloader"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.parser"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.subgraph"}
 ]
@@ -99,7 +100,6 @@ dependencies = [
 	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "mime"},
-	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "websocket"}
@@ -142,7 +142,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.4.0"
+version = "1.4.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -298,7 +298,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "os"
-version = "1.6.0"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"}
@@ -306,21 +306,8 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "regex"
-version = "1.4.2"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.string"}
-]
-modules = [
-	{org = "ballerina", packageName = "regex", moduleName = "regex"}
-]
-
-[[package]]
-org = "ballerina"
 name = "task"
-version = "2.3.2"
+version = "2.3.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -341,7 +328,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.2.4"
+version = "2.2.5"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -349,7 +336,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "url"
-version = "2.2.3"
+version = "2.2.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
