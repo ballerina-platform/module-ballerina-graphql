@@ -505,3 +505,7 @@ isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
         return <string>argumentNode.getValue();
     }
 }
+
+public function __addError(Context context, ErrorDetail errorDetail) {
+    context.addError(errorDetail);
+}
