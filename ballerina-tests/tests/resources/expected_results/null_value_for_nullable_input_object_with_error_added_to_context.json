@@ -1,0 +1,11 @@
+{
+    "errors": [
+        {
+            "message": "Data not found",
+            "path": ["name"]
+        }
+    ],
+    "data" : {
+        "name" : null
+    }
+}

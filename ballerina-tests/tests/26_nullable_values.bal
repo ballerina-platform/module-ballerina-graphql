@@ -46,7 +46,8 @@ function dataProviderNullableValues() returns map<[string, string, json]> {
         "11": [url2, "null_value_in_input_object_field_with_variable_value", {author: {name: null, id: 1}}],
         "12": [url3, "null_value_in_list_type_input_with_variables", {words: ["Hello!", null, "GraphQL"]}],
         "13": [url2, "null_value_for_nullable_input_object_with_variable_value", {author: null}],
-        "14": [url3, "null_value_for_nullable_list_type_input_with_variables", {words: null}]
+        "14": [url3, "null_value_for_nullable_list_type_input_with_variables", {words: null}],
+        "15": [url2, "null_value_for_nullable_input_object_with_error_added_to_context"]
     };
     return dataSet;
 }
