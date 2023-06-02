@@ -116,7 +116,7 @@ public class GeneratorUtils {
         }
         Optional<Path> completePath = getFilePathForSymbol(symbol, project);
         String filePath = completePath.isPresent() ? completePath.get().toAbsolutePath().toString() :
-                location.get().lineRange().filePath();
+                location.get().lineRange().fileName();
         return new Position(
                 filePath,
                 new LinePosition(location.get().lineRange().startLine().line(),
@@ -140,7 +140,7 @@ public class GeneratorUtils {
         Collection<ResolvedPackageDependency> dependencies =
                 project.currentPackage().getResolution().dependencyGraph().getNodes();
         // Symbol location has only the name of the file
-        String sourceFile = symbol.getLocation().get().lineRange().filePath();
+        String sourceFile = symbol.getLocation().get().lineRange().fileName();
         for (ResolvedPackageDependency depNode : dependencies) {
             // Check for matching dependency
             Package depPackage = depNode.packageInstance();

@@ -1,13 +1,14 @@
 {
     "data": {
-        "profile": {
+        "userProfile": {
             "name": "Rubeus Hagrid",
-            "address": {
+            "userName": "Rubeus Hagrid",
+            "homeAddress": {
                 "number": "103",
-                "street": "Mould-on-the-Wold"
+                "streetName": "Mould-on-the-Wold"
             }
         },
-        "contact": {
+        "contactDetails": {
             "number": "+87654321"
         }
     }

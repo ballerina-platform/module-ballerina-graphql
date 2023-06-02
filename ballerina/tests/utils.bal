@@ -34,3 +34,28 @@ isolated function getDocumentNode(string documentString) returns parser:Document
     parser:Parser parser = new (documentString);
     return parser.parse();
 }
+
+isolated function getSelectionNodesFromDocumentNode(parser:DocumentNode documentNode) returns parser:SelectionNode[] {
+    parser:SelectionNode[] selectionNodes = [];
+    foreach parser:OperationNode operationNode in documentNode.getOperations() {
+        parser:SelectionNode[] operationSelectionNodes = operationNode.getSelections();
+        selectionNodes.push(...operationSelectionNodes);
+    }
+    return selectionNodes;
+}
+
+isolated function getFieldNodesFromDocumentFile(string fileName) returns parser:FieldNode[]|error {
+    string documentString = check getGraphqlDocumentFromFile(fileName);
+    parser:DocumentNode documentNode = check getDocumentNode(documentString);
+    parser:FieldNode[] fieldNodes = [];
+    foreach parser:SelectionNode selectionNode in getSelectionNodesFromDocumentNode(documentNode) {
+        if selectionNode is parser:FieldNode {
+            fieldNodes.push(selectionNode);
+        }
+    }
+    return fieldNodes;
+}
+
+isolated function getField(parser:FieldNode fieldNode, __Type fieldType, string[] path) returns Field {
+    return new (fieldNode, fieldType, path = path);
+}

@@ -80,7 +80,7 @@ isolated class ExecutorVisitor {
                 isIntrospection = false;
             }
         }
-        function (parser:FieldNode, parser:RootOperationType) execute;
+        isolated function (parser:FieldNode, parser:RootOperationType) execute;
         lock {
             execute = self.execute;
         }

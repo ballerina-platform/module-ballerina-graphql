@@ -4,9 +4,9 @@ name = "snowtooth"
 
 [cloud.deployment]
 min_memory = "256Mi"
-max_memory = "512Mi"
+max_memory = "2048Mi"
 min_cpu = "200m"
-max_cpu = "1000m"
+max_cpu = "2000m"
 
 [cloud.deployment.autoscaling]
 min_replicas = 1
