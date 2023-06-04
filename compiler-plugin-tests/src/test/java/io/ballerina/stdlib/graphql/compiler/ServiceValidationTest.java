@@ -1123,6 +1123,13 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 78, 32);
     }
 
+    @Test(groups = "valid")
+    public void testValidAnnotationTypes() {
+        String packagePath = "63_valid_usages_of_id_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
