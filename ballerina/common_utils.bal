@@ -506,6 +506,6 @@ isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
     }
 }
 
-public function __addError(Context context, ErrorDetail errorDetail) {
+public isolated function __addError(Context context, ErrorDetail errorDetail) {
     context.addError(errorDetail);
 }
