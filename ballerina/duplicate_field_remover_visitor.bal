@@ -21,6 +21,7 @@ class DuplicateFieldRemoverVisitor {
 
     private final map<()> removedNodes;
     private final map<parser:SelectionNode> modifiedSelections;
+    private final ErrorDetail[] errors = [];
 
     isolated function init(map<()> removedNodes, map<parser:SelectionNode> modifiedSelections) {
         self.removedNodes = removedNodes;
@@ -74,11 +75,15 @@ class DuplicateFieldRemoverVisitor {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
+    public isolated function getErrors() returns ErrorDetail[]? {
+        return self.errors.length() > 0 ? self.errors : ();
+    }
+
     private isolated function removeDuplicateSelections(parser:SelectionNode[] selections) {
         map<parser:FieldNode> visitedFields = {};
         map<parser:FragmentNode> visitedFragments = {};
         int i = 0;
-        while i < selections.length() {
+        while i < selections.length() { //replace with foreach
             if self.isRemovedNode(selections[i]) {
                 i += 1;
                 continue;
@@ -93,8 +98,15 @@ class DuplicateFieldRemoverVisitor {
                 }
             } else if modifiedSelectionNode is parser:FieldNode {
                 if visitedFields.hasKey(modifiedSelectionNode.getAlias()) {
-                    self.appendDuplicates(modifiedSelectionNode, visitedFields.get(modifiedSelectionNode.getAlias()));
-                    self.removeNode(selections[i]);
+                    parser:FieldNode visitedField = visitedFields.get(modifiedSelectionNode.getAlias());
+                    if self.hasDuplicateArguments(visitedField, modifiedSelectionNode) {
+                        self.appendDuplicates(modifiedSelectionNode, visitedField);
+                        self.removeNode(selections[i]);
+                    } else {
+                        string message = string `Fields "${modifiedSelectionNode.getAlias()}" conflict because they have differing arguments. ` +
+                                         string `Use different aliases on the fields to fetch both if this was intentional.`;
+                        self.errors.push(getErrorDetailRecord(message, modifiedSelectionNode.getLocation()));
+                    }
                 } else {
                     visitedFields[modifiedSelectionNode.getAlias()] = modifiedSelectionNode;
                 }
@@ -133,5 +145,77 @@ class DuplicateFieldRemoverVisitor {
     private isolated function getModifiedNode(parser:SelectionNode selectionNode) returns parser:SelectionNode {
         string hashCode = parser:getHashCode(selectionNode);
         return self.modifiedSelections.hasKey(hashCode) ? self.modifiedSelections.get(hashCode) : selectionNode;
+    }
+
+    private isolated function hasDuplicateArguments(parser:FieldNode fieldNode, parser:FieldNode duplicateNode) returns boolean {
+        if fieldNode.getArguments().length() != duplicateNode.getArguments().length() {
+            return false;
+        }
+
+        foreach parser:ArgumentNode argNode in fieldNode.getArguments() {
+            parser:ArgumentNode? duplicateArgNode = self.getArgNode(duplicateNode.getArguments(), argNode.getName());
+            if duplicateArgNode is parser:ArgumentNode {
+                if !self.isDuplicateArgValue(argNode, duplicateArgNode) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private isolated function isDuplicateArgValue(parser:ArgumentNode original, parser:ArgumentNode duplicate) returns boolean {
+        // if original.isVariableDefinition() || duplicate.isVariableDefinition()  {
+        //     return original.getVariableName() == duplicate.getVariableName();
+        // }
+        if original.getVariableName() is string || duplicate.getVariableName() is string  {
+            return original.getVariableName() == duplicate.getVariableName();
+        }
+        parser:ArgumentValue|parser:ArgumentValue[] originalValue = original.getValue();
+        parser:ArgumentValue|parser:ArgumentValue[] duplicateValue = duplicate.getValue();
+        if originalValue is parser:ArgumentValue && duplicateValue is parser:ArgumentValue {
+            if originalValue is parser:ArgumentNode && duplicateValue is parser:ArgumentNode {
+                return self.isDuplicateArgValue(originalValue, duplicateValue);
+            } else if originalValue is Scalar? && duplicateValue is Scalar? {
+                return originalValue == duplicateValue;
+            }
+        } else if originalValue is parser:ArgumentValue[] && duplicateValue is parser:ArgumentValue[] {
+            return self.isDuplicateArray(originalValue, duplicateValue);
+        }
+        return false;
+    }
+
+    private isolated function isDuplicateArray(parser:ArgumentValue[] originalValue, parser:ArgumentValue[] duplicateValue) returns boolean {
+        if originalValue.length() != duplicateValue.length() {
+            return false;
+        }
+        int i = 0;
+        while i < originalValue.length() {
+            parser:ArgumentValue originalArrayValue = originalValue[i];
+            parser:ArgumentValue duplicateArrayValue = duplicateValue[i];
+            if originalArrayValue is parser:ArgumentNode && duplicateArrayValue is parser:ArgumentNode {
+                if !self.isDuplicateArgValue(originalArrayValue, duplicateArrayValue) {
+                    return false;
+                }
+            } else if originalArrayValue is Scalar? && duplicateArrayValue is Scalar? {
+                if originalArrayValue != duplicateArrayValue {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            i += 1;
+        }
+        return true;
+    }
+
+    private isolated function getArgNode(parser:ArgumentNode[] arguments, string argName) returns parser:ArgumentNode? {
+        foreach parser:ArgumentNode argNode in arguments {
+            if argNode.getName() == argName {
+                return argNode;
+            }
+        }
+        return;
     }
 }

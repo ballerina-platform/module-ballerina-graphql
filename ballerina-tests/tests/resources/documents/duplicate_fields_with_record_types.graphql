@@ -1,5 +1,8 @@
-query getPerson {
+query getPerson{
     profile {
+        name {
+            first
+        }
         name {
             first
         }
