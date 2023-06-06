@@ -123,6 +123,7 @@ public class Engine {
                             .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
                                                            null, executionCallback, null, typeUnion, args);
                 }
+                return null;
             }
         }
         return null;
@@ -130,22 +131,23 @@ public class Engine {
 
     public static Object executeQueryResource(Environment environment, BObject context, BObject service,
                                               ResourceMethodType resourceMethod, BObject fieldObject) {
+        if (resourceMethod == null) {
+            return null;
+        }
         Future future = environment.markAsync();
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-        if (resourceMethod != null) {
-            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
-            Object[] arguments = argumentHandler.getArguments();
-            if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-                environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
-                                                                       null, returnType, arguments);
-            } else {
-                environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                                                       RESOURCE_EXECUTION_STRAND, executionCallback,
-                                                                       null, returnType, arguments);
-            }
+        ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject);
+        Object[] arguments = argumentHandler.getArguments();
+        if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+            environment.getRuntime()
+                    .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
+                                                   executionCallback, null, returnType, arguments);
+        } else {
+            environment.getRuntime()
+                    .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
+                                                   executionCallback, null, returnType, arguments);
         }
         return null;
     }
@@ -156,8 +158,8 @@ public class Engine {
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
+        String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
-            String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
             if (remoteMethod.getName().equals(fieldName)) {
                 ArgumentHandler argumentHandler = new ArgumentHandler(remoteMethod, context, fieldObject);
                 Object[] arguments = argumentHandler.getArguments();
@@ -170,6 +172,7 @@ public class Engine {
                                                                            REMOTE_EXECUTION_STRAND, executionCallback,
                                                                            null, returnType, arguments);
                 }
+                return null;
             }
         }
         return null;
@@ -177,21 +180,23 @@ public class Engine {
 
     public static Object executeInterceptor(Environment environment, BObject interceptor, BObject field,
                                             BObject context) {
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
         ServiceType serviceType = (ServiceType) TypeUtils.getType(interceptor);
         RemoteMethodType remoteMethod = getRemoteMethod(serviceType, INTERCEPTOR_EXECUTE);
+        if (remoteMethod == null) {
+            return null;
+        }
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-        if (remoteMethod != null) {
-            Object[] arguments = getInterceptorArguments(context, field);
-            if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
-                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null, returnType, arguments);
-            } else {
-                environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
-                        INTERCEPTOR_EXECUTION_STRAND, executionCallback, null,
-                        returnType, arguments);
-            }
+        Object[] arguments = getInterceptorArguments(context, field);
+        if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
+            environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
+                                                                   INTERCEPTOR_EXECUTION_STRAND, executionCallback,
+                                                                   null, returnType, arguments);
+        } else {
+            environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
+                                                                   INTERCEPTOR_EXECUTION_STRAND, executionCallback,
+                                                                   null, returnType, arguments);
         }
         return null;
     }
