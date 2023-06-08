@@ -88,7 +88,7 @@ readonly service class ServiceInterceptor {
         return result;
     }
 }
-// Temporary removed due to https://github.com/ballerina-platform/ballerina-standard-library/issues/4538
+// TODO: Temporary removed. Add after fixing: https://github.com/ballerina-platform/ballerina-standard-library/issues/4538
 // service graphql:Service on new graphql:Listener(4000) {
 //     resource function get foo() returns graphql:Interceptor {
 //         return new ServiceInterceptor();
