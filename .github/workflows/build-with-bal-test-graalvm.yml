@@ -30,7 +30,7 @@ jobs:
     call_stdlib_workflow:
         name: Run StdLib Workflow
         if: ${{ github.event_name != 'schedule' || (github.event_name == 'schedule' && github.repository_owner == 'ballerina-platform') }}
-        uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-with-bal-test-native-template.yml@main
+        uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-with-bal-test-graalvm-template.yml@main
         with:
             lang_tag: ${{ inputs.lang_tag }}
             lang_version: ${{ inputs.lang_version }}
