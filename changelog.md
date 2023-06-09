@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#4176] Add Support for Input Constraint Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/4176)
+
+## [1.8.0] - 2023-06-01
+
+### Added
 - [[#3234] Add Support for Field Interceptors](https://github.com/ballerina-platform/ballerina-standard-library/issues/3234)
 - [[#4254] Introduce GraphQL Interceptor Configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/4254)
 - [[#4376] Introduce an API to get Subfields of a `graphql:Field` Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/4376)
