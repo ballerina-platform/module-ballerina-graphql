@@ -107,7 +107,6 @@ public class Engine {
                                                      boolean validation) {
         BString fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD);
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-        UnionType typeUnion = TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
@@ -122,6 +121,8 @@ public class Engine {
                 ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
                 Object[] args = argumentHandler.getArguments();
                 ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
+                UnionType typeUnion =
+                        TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
                 if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
                     environment.getRuntime()
                             .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
@@ -170,8 +171,8 @@ public class Engine {
     public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
                                                BObject fieldObject, BObject responseGenerator, boolean validation) {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+        String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
-            String fieldName = fieldObject.getObjectValue(INTERNAL_NODE).getStringValue(NAME_FIELD).getValue();
             if (remoteMethod.getName().equals(fieldName)) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
