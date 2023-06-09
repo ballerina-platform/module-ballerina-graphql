@@ -64,7 +64,7 @@ class ResponseFormatter {
                 } else if selection is parser:FieldNode {
                     __Type fieldType = self.getFieldType(selection.getName(), parentType, onType);
                     anydata|anydata[] fieldResult = ();
-                    if data.hasKey(selection.getAlias()) {
+                    if data.hasKey(selection.getAlias()) || data.hasKey(selection.getName()) {
                         fieldResult = self.coerceObjectField(data, selection, parentType, onType);
                     }
                     if fieldType.kind == NON_NULL && fieldResult == () {
@@ -86,7 +86,7 @@ class ResponseFormatter {
             if selection is parser:FragmentNode {
                 self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
             } else if selection is parser:FieldNode {
-                if data.hasKey(selection.getAlias()) {
+                if data.hasKey(selection.getAlias()) || data.hasKey(selection.getName()) {
                     result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType, onType);
                 }
             } else {
@@ -125,7 +125,7 @@ class ResponseFormatter {
     isolated function coerceObjectField(Data data, parser:FieldNode fieldNode, __Type parentType, string? onType)
     returns anydata|anydata[] {
         __Type objectType = unwrapNonNullype(parentType);
-        anydata|anydata[] fieldValue = data.get(fieldNode.getAlias());
+        anydata|anydata[] fieldValue = self.getFieldValue(data, fieldNode);
         if fieldValue == () {
             return fieldValue;
         } else if fieldValue is anydata[] {
@@ -133,6 +133,12 @@ class ResponseFormatter {
             return self.coerceArray(fieldValue, fieldNode, fieldType, onType);
         } else if fieldValue is Data {
             __Type fieldType = self.getFieldType(fieldNode.getName(), parentType, onType);
+            if isMap(fieldValue) && getKeyArgument(fieldNode) is string {
+                Data updatedData = {};
+                fieldValue = fieldValue[<string>getKeyArgument(fieldNode)];
+                updatedData[fieldNode.getAlias()] = fieldValue;
+                return self.coerceObjectField(updatedData, fieldNode, parentType, onType);
+            }
             return self.coerceObject(fieldValue, fieldNode, fieldType, onType);
         } else {
             return fieldValue;
@@ -177,6 +183,13 @@ class ResponseFormatter {
             __Field[] fields = <__Field[]>parentType?.fields;
             return <__Field>getFieldFromFieldArray(fields, fieldName);
         }
+    }
+
+    isolated function getFieldValue(Data data, parser:FieldNode fieldNode) returns anydata|anydata[] {
+        if data.hasKey(fieldNode.getAlias()) {
+            return data[fieldNode.getAlias()];
+        }
+        return data[fieldNode.getName()];
     }
 }
 

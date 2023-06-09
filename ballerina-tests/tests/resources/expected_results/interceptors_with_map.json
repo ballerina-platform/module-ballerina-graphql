@@ -1,16 +1,16 @@
 {
-    "data":{
-        "languages":{
+    "data": {
+        "languages": {
             "backend": "Java",
-            "frontend": "Flutter",
+            "name": "Flutter",
             "data": "Ballerina",
             "native": "C#"
         },
-        "updatedLanguages":{
-            "backend":"PHP",
-            "frontend":"JavaScript",
-            "data":"Python",
-            "native":"C#"
+        "updatedLanguages": {
+            "backend": "PHP",
+            "frontend": "JavaScript",
+            "data": "Python",
+            "native": "C#"
         }
     }
 }

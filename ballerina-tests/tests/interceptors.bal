@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/log;
 
 @graphql:InterceptorConfig {
     global: false
@@ -345,7 +346,7 @@ readonly service class InterceptMutation2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         Person p = {name: "Albert", age: 53, address: {number: "103", street: "Mould-on-the-Wold", city: "London"}};
         return p;
     }
@@ -450,7 +451,7 @@ readonly service class InvalidInterceptor8 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         return {id: 5, name: "Jessie"};
     }
 }
@@ -459,7 +460,7 @@ readonly service class InvalidInterceptor9 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         return "Ballerina";
     }
 }
@@ -663,13 +664,16 @@ readonly service class MapInterceptor2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        return {
-            backend: "PHP",
-            frontend: "JavaScript",
-            data: "Python",
-            native: "C#"
+        Languages ls = {
+            name: {
+                backend: "PHP",
+                frontend: "JavaScript",
+                data: "Python",
+                native: "C#"
+            }
         };
+        _ = context.resolve('field);
+        return ls;
     }
 }
 
@@ -691,7 +695,7 @@ readonly service class TableInterceptor2 {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         return [
             {id: 4, name: "John", salary: 5000.00},
             {id: 5, name: "Jane", salary: 7000.00},
@@ -740,7 +744,7 @@ readonly service class InterceptBook {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
+        _ = context.resolve('field);
         Book b = {name: "A Game of Thrones", author: "George R.R. Martin"};
         return b;
     }
@@ -848,5 +852,19 @@ readonly service class ServiceLevelInterceptor {
             return true;
         }
         return false;
+    }
+}
+
+readonly service class LogSubfields {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        graphql:Field[]? subFields = 'field.getSubfields();
+        if subFields is graphql:Field[] {
+            foreach graphql:Field f in subFields {
+                log:printInfo("Subfield: " + f.getName());
+            }
+        }
+        return context.resolve('field);
     }
 }

@@ -1,12 +1,13 @@
 {
-    profile {
+    userProfile: profile {
         name,
-        address {
+        userName: name,
+        homeAddress: address {
             number,
-            street
+            streetName: street
         }
     },
-    contact {
+    contactDetails:contact {
         number
     }
 }

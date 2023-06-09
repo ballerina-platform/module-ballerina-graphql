@@ -75,7 +75,7 @@ public class ArgumentHandler {
     private final BObject context;
     private final BObject field;
     private final BObject responseGenerator;
-    private final Boolean validation;
+    private final boolean validation;
 
     private static final String REPRESENTATION_TYPENAME = "Representation";
     private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
@@ -90,7 +90,7 @@ public class ArgumentHandler {
     private static final int T_LIST = 23;
 
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
-                           Boolean validation) {
+                           boolean validation) {
         this.method = method;
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
@@ -116,7 +116,7 @@ public class ArgumentHandler {
                 BString argumentName = argumentNode.getStringValue(NAME_FIELD);
                 Parameter parameter = Objects.requireNonNull(getParameterForArgumentNode(argumentName));
                 Object argumentValue = this.argumentsMap.get(argumentName);
-                BTypedesc bTypedesc = this.getTypeDescFromParameter(parameter);
+                BTypedesc bTypedesc = getTypeDescFromParameter(parameter);
                 Object validationResult = Constraints.validate(argumentValue, bTypedesc);
                 if (validationResult instanceof BError) {
                     errors.append(validationResult);
