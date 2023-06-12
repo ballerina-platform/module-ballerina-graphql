@@ -27,9 +27,11 @@ import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.syntax.tree.ChildNodeList;
 import io.ballerina.compiler.syntax.tree.RequiredParameterNode;
 import io.ballerina.compiler.syntax.tree.ReturnTypeDescriptorNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.UnionTypeDescriptorNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
@@ -77,7 +79,32 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
                             updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
                                     annotationNode.location());
                         }
-                    } else {
+                    } else if (returnTypeDescriptorNode.type().kind() == SyntaxKind.UNION_TYPE_DESC) {
+                        UnionTypeDescriptorNode unionTypeDescNode = (UnionTypeDescriptorNode)
+                                returnTypeDescriptorNode.type();
+                        ChildNodeList childNodeList = unionTypeDescNode.children();
+                        for (int i = 0; i < childNodeList.size(); i++) {
+                            if (childNodeList.get(i).kind() != SyntaxKind.ERROR_TYPE_DESC
+                            && childNodeList.get(i).kind() != SyntaxKind.NIL_TYPE_DESC
+                            && childNodeList.get(i).kind() != SyntaxKind.PIPE_TOKEN) {
+                                if (semanticModel.symbol(childNodeList.get(i)).isPresent()) {
+                                    TypeSymbol typeSymbol =
+                                            (TypeSymbol) semanticModel.symbol(childNodeList.get(i)).get();
+                                    if (!checkTypeForValidation(typeSymbol)) {
+                                        updateContext(syntaxNodeAnalysisContext,
+                                                CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                                annotationNode.location());
+                                    }
+                                } else {
+                                    updateContext(syntaxNodeAnalysisContext,
+                                            CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                            annotationNode.location());
+                                }
+                            }
+                        }
+                    }
+
+                    else {
                         updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
                                 annotationNode.location());
                     }
