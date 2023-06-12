@@ -245,7 +245,7 @@ public class ServiceValidationTest {
     public void testInvalidReturnTypes() {
         String packagePath = "27_invalid_return_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 14);
+        Assert.assertEquals(diagnosticResult.errorCount(), 18);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -292,23 +292,21 @@ public class ServiceValidationTest {
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "service object {}", "Query.foo");
         assertErrorMessage(diagnostic, message, 74, 5);
 
-        // TODO: Temporary removed.
-        // Add after fixing: https://github.com/ballerina-platform/ballerina-standard-library/issues/4538
-        // diagnostic = diagnosticIterator.next();
-        // message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE, "Interceptor");
-        // assertErrorMessage(diagnostic, message, 93, 5);
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE, "Interceptor");
+        assertErrorMessage(diagnostic, message, 93, 5);
 
-        // diagnostic = diagnosticIterator.next();
-        // message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
-        // assertErrorMessage(diagnostic, message, 75, 5);
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
+        assertErrorMessage(diagnostic, message, 75, 5);
 
-        // diagnostic = diagnosticIterator.next();
-        // message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
-        // assertErrorMessage(diagnostic, message, 93, 5);
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
+        assertErrorMessage(diagnostic, message, 93, 5);
 
-        // diagnostic = diagnosticIterator.next();
-        // message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "ServiceInterceptor");
-        // assertErrorMessage(diagnostic, message, 83, 24);
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "ServiceInterceptor");
+        assertErrorMessage(diagnostic, message, 83, 24);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, "int", "foo");
