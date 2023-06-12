@@ -27,7 +27,9 @@ import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.syntax.tree.ArrayTypeDescriptorNode;
 import io.ballerina.compiler.syntax.tree.ChildNodeList;
+import io.ballerina.compiler.syntax.tree.OptionalTypeDescriptorNode;
 import io.ballerina.compiler.syntax.tree.RequiredParameterNode;
 import io.ballerina.compiler.syntax.tree.ReturnTypeDescriptorNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
@@ -83,28 +85,27 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
                         UnionTypeDescriptorNode unionTypeDescNode = (UnionTypeDescriptorNode)
                                 returnTypeDescriptorNode.type();
                         ChildNodeList childNodeList = unionTypeDescNode.children();
-                        for (int i = 0; i < childNodeList.size(); i++) {
-                            if (childNodeList.get(i).kind() != SyntaxKind.ERROR_TYPE_DESC
-                            && childNodeList.get(i).kind() != SyntaxKind.NIL_TYPE_DESC
-                            && childNodeList.get(i).kind() != SyntaxKind.PIPE_TOKEN) {
-                                if (semanticModel.symbol(childNodeList.get(i)).isPresent()) {
-                                    TypeSymbol typeSymbol =
-                                            (TypeSymbol) semanticModel.symbol(childNodeList.get(i)).get();
-                                    if (!checkTypeForValidation(typeSymbol)) {
-                                        updateContext(syntaxNodeAnalysisContext,
-                                                CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                                                annotationNode.location());
-                                    }
-                                } else {
-                                    updateContext(syntaxNodeAnalysisContext,
-                                            CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                                            annotationNode.location());
-                                }
-                            }
+                        if (!validateChildNodes(childNodeList, semanticModel)) {
+                            updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                    annotationNode.location());
                         }
-                    }
-
-                    else {
+                    } else if (returnTypeDescriptorNode.type().kind() == SyntaxKind.OPTIONAL_TYPE_DESC) {
+                        OptionalTypeDescriptorNode optionalTypeDescriptorNode = (OptionalTypeDescriptorNode)
+                                returnTypeDescriptorNode.type();
+                        ChildNodeList childNodeList = optionalTypeDescriptorNode.children();
+                        if (!validateChildNodes(childNodeList, semanticModel)) {
+                            updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                    annotationNode.location());
+                        }
+                    } else if (returnTypeDescriptorNode.type().kind() == SyntaxKind.ARRAY_TYPE_DESC) {
+                        ArrayTypeDescriptorNode arrayTypeDescriptorNode =
+                                (ArrayTypeDescriptorNode) returnTypeDescriptorNode.type();
+                        ChildNodeList childNodeList = arrayTypeDescriptorNode.children();
+                        if (!validateChildNodes(childNodeList, semanticModel)) {
+                            updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                    annotationNode.location());
+                        }
+                    } else {
                         updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
                                 annotationNode.location());
                     }
@@ -116,6 +117,34 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
         }
     }
 
+    private boolean validateChildNodes(ChildNodeList childNodeList, SemanticModel semanticModel) {
+        boolean isValid = true;
+        for (int i = 0; i < childNodeList.size(); i++) {
+            if (childNodeList.get(i).kind() != SyntaxKind.ERROR_TYPE_DESC
+                    && childNodeList.get(i).kind() != SyntaxKind.NIL_TYPE_DESC
+                    && childNodeList.get(i).kind() != SyntaxKind.PIPE_TOKEN
+                    && childNodeList.get(i).kind() != SyntaxKind.ARRAY_DIMENSION
+                    && childNodeList.get(i).kind() != SyntaxKind.QUESTION_MARK_TOKEN) {
+                if (semanticModel.symbol(childNodeList.get(i)).isPresent()) {
+                    TypeSymbol typeSymbol =
+                            (TypeSymbol) semanticModel.symbol(childNodeList.get(i)).get();
+                    if (!checkTypeForValidation(typeSymbol)) {
+                        isValid = false;
+                    }
+                } else if (childNodeList.get(i).kind() == SyntaxKind.OPTIONAL_TYPE_DESC) {
+                    OptionalTypeDescriptorNode optionalTypeDescriptorNode =
+                            (OptionalTypeDescriptorNode) childNodeList.get(i);
+                    isValid = validateChildNodes(optionalTypeDescriptorNode.children(), semanticModel);
+                } else if (childNodeList.get(i).kind() == SyntaxKind.ARRAY_TYPE_DESC) {
+                    ArrayTypeDescriptorNode arrayTypeDescriptorNode =
+                            (ArrayTypeDescriptorNode) childNodeList.get(i);
+                    isValid = validateChildNodes(arrayTypeDescriptorNode.children(), semanticModel);
+                }
+            }
+        }
+        return isValid;
+    }
+
     private boolean isValidIdTypeRefType(TypeReferenceTypeSymbol typeDescriptor) {
         return typeDescriptor.definition().getModule().isPresent()
                 && Utils.isValidUuidModule(typeDescriptor.definition().getModule().get())
@@ -125,7 +154,7 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
 
     private boolean isValidIdUnionType(UnionTypeSymbol typeDescriptor) {
         boolean isValid = true;
-        List<TypeSymbol> memberTypes =  typeDescriptor.memberTypeDescriptors();
+        List<TypeSymbol> memberTypes = typeDescriptor.memberTypeDescriptors();
         for (TypeSymbol memberType : memberTypes) {
             if (!(memberType.typeKind() == TypeDescKind.NIL) && !(memberType.typeKind() == TypeDescKind.ERROR)) {
                 isValid = checkTypeForValidation(memberType);

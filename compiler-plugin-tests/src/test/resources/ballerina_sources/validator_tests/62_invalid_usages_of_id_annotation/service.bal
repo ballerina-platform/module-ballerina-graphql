@@ -44,12 +44,6 @@ service graphql:Service on new graphql:Listener(4000) {
     }
 }
 
-service graphql:Service on new graphql:Listener(4000) {
-    resource function get name(@graphql:ID string[] id) returns Student4 {
-        return new Student4(["hello", "world"]);
-    }
-}
-
 public distinct service class Student4 {
     final string[] id;
 
@@ -58,24 +52,6 @@ public distinct service class Student4 {
     }
 
     resource function get id() returns @graphql:ID string[] {
-        return self.id;
-    }
-}
-
-service graphql:Service on new graphql:Listener(4000) {
-    resource function get name(@graphql:ID int[] id) returns Student5 {
-        return new Student5([1, 2, 3]);
-    }
-}
-
-public distinct service class Student5 {
-    final int[] id;
-
-    function init(int[] id) {
-        self.id = id;
-    }
-
-    resource function get id() returns @graphql:ID int[] {
         return self.id;
     }
 }

@@ -1105,22 +1105,10 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 20, 32);
 
         diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 32, 32);
+        assertErrorMessage(diagnostic, message, 32, 40);
 
         diagnostic = diagnosticIterator.next();
         assertErrorMessage(diagnostic, message, 42, 32);
-
-        diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 48, 32);
-
-        diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 60, 32);
-
-        diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 66, 32);
-
-        diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 78, 32);
     }
 
     @Test(groups = "valid")
