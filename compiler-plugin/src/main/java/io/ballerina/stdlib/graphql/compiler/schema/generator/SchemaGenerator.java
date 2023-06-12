@@ -291,16 +291,11 @@ public class SchemaGenerator {
     }
 
     private Type getTypeForID(TypeSymbol typeSymbol) {
-        Type type;
         if (this.schema.containsType(ScalarType.ID.getName())) {
             return this.schema.getType(ScalarType.ID.getName());
-        } else {
-            type = addType(ScalarType.ID);
         }
-        if (isNilable(typeSymbol)) {
-            return type;
-        }
-        return getWrapperType(type, TypeKind.NON_NULL);
+        Type type = addType(ScalarType.ID);
+        return isNilable(typeSymbol) ? type : getWrapperType(type, TypeKind.NON_NULL);
     }
 
     private Type getType(TypeSymbol typeSymbol) {

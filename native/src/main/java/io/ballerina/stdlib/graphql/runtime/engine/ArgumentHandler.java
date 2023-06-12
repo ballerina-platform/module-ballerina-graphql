@@ -89,7 +89,7 @@ public class ArgumentHandler {
     private static final int T_BOOLEAN = 5;
     private static final int T_INPUT_OBJECT = 22;
     private static final int T_LIST = 23;
-    private static final ArrayList<String> idsList = new ArrayList<String>();
+    private static final ArrayList<String> idsList = new ArrayList<>();
 
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
                            boolean validation) {

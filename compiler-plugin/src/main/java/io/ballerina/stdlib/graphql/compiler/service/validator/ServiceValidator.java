@@ -568,7 +568,6 @@ public class ServiceValidator {
         }
     }
 
-
     private void validateInputParameterType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
         if (isFileUploadParameter(typeSymbol)) {
             String methodName = currentFieldPath.get(currentFieldPath.size() - 1);

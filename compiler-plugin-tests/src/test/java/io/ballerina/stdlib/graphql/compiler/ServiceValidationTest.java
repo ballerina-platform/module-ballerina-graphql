@@ -1094,7 +1094,7 @@ public class ServiceValidationTest {
     }
 
     @Test
-    public void testUnsupportedUsagesOfIdAnnotation() {
+    public void testInvalidUsagesOfIdAnnotation() {
         String packagePath = "62_invalid_usages_of_id_annotation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 7);
