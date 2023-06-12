@@ -83,7 +83,7 @@ public enum DiagnosticMessage {
     ERROR_138("failed to add _service service to the subgraph service"),
     ERROR_139("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported"),
     ERROR_140("invalid usage of @graphql:ID annotation. @graphql:ID annotation can only be used with string, "
-                      + "int, float, decimal and uuid:UUID types");
+                      + "int, float, decimal and uuid:Uuid types");
 
     private final String message;
 

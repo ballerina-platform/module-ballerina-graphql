@@ -23,6 +23,7 @@ import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
@@ -70,8 +71,20 @@ public final class Utils {
     public static final String FILE_UPLOAD_IDENTIFIER = "Upload";
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
     public static final String SUBGRAPH_ANNOTATION_NAME = "Subgraph";
+    public static final String UUID_RECORD_NAME = "Uuid";
+    private static final String ORG_NAME = "ballerina";
+    private static final String GRAPHQL_MODULE_NAME = "graphql";
+    private static final String UUID_MODULE_NAME = "uuid";
 
     private Utils() {
+    }
+
+    public static boolean isValidGraphQlModule(ModuleSymbol module) {
+        return module.id().orgName().equals(ORG_NAME) && module.id().moduleName().equals(GRAPHQL_MODULE_NAME);
+    }
+
+    public static boolean isValidUuidModule(ModuleSymbol module) {
+        return module.id().orgName().equals(ORG_NAME) && module.id().moduleName().equals(UUID_MODULE_NAME);
     }
 
     public static boolean isRemoteMethod(MethodSymbol methodSymbol) {

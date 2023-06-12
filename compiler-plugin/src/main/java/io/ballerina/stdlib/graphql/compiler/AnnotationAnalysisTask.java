@@ -18,6 +18,14 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
+import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
+import io.ballerina.compiler.api.symbols.ParameterSymbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.RequiredParameterNode;
 import io.ballerina.compiler.syntax.tree.ReturnTypeDescriptorNode;
@@ -26,7 +34,7 @@ import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
@@ -34,26 +42,90 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  * Validates the usages of the annotation, @graphql:ID.
  */
 public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisContext> {
-    private static final String ID_ANNOTATION = "graphql:ID ";
-    private static final String[] allowedTypes = {"int ", "string ", "float ", "decimal ", "uuid:UUID "};
+    private static final String ID_ANNOTATION = "ID";
 
     @Override
     public void perform(SyntaxNodeAnalysisContext syntaxNodeAnalysisContext) {
         AnnotationNode annotationNode = (AnnotationNode) syntaxNodeAnalysisContext.node();
-        if (annotationNode.annotReference().toString().equals(ID_ANNOTATION)) {
-            if (annotationNode.parent().kind() == SyntaxKind.REQUIRED_PARAM) {
-                RequiredParameterNode requiredParameterNode = (RequiredParameterNode) annotationNode.parent();
-                if (!Arrays.asList(allowedTypes).contains(requiredParameterNode.typeName().toString())) {
+        SemanticModel semanticModel = syntaxNodeAnalysisContext.semanticModel();
+        if (semanticModel.symbol(annotationNode).isPresent()) {
+            AnnotationSymbol annotationSymbol = (AnnotationSymbol) semanticModel.symbol(annotationNode).get();
+            if (annotationSymbol.getModule().isPresent()
+                    && Utils.isValidGraphQlModule(annotationSymbol.getModule().get())
+                    && annotationSymbol.getName().isPresent()
+                    && annotationSymbol.getName().get().equals(ID_ANNOTATION)) {
+                if (annotationNode.parent().kind() == SyntaxKind.REQUIRED_PARAM) {
+                    RequiredParameterNode requiredParameterNode = (RequiredParameterNode) annotationNode.parent();
+                    if (semanticModel.symbol(requiredParameterNode).isPresent()) {
+                        ParameterSymbol parameterSymbol =
+                                (ParameterSymbol) semanticModel.symbol(requiredParameterNode).get();
+                        if (!checkTypeForValidation(parameterSymbol.typeDescriptor())) {
+                            updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                    annotationNode.location());
+                        }
+                    } else {
+                        updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                annotationNode.location());
+                    }
+                } else if (annotationNode.parent().kind() == SyntaxKind.RETURN_TYPE_DESCRIPTOR) {
+                    ReturnTypeDescriptorNode returnTypeDescriptorNode =
+                            (ReturnTypeDescriptorNode) annotationNode.parent();
+                    if (semanticModel.symbol(returnTypeDescriptorNode.type()).isPresent()) {
+                        TypeSymbol typeSymbol =
+                                (TypeSymbol) semanticModel.symbol(returnTypeDescriptorNode.type()).get();
+                        if (!checkTypeForValidation(typeSymbol)) {
+                            updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                    annotationNode.location());
+                        }
+                    } else {
+                        updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                annotationNode.location());
+                    }
+                } else {
                     updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                            requiredParameterNode.location());
-                }
-            } else if (annotationNode.parent().kind() == SyntaxKind.RETURN_TYPE_DESCRIPTOR) {
-                ReturnTypeDescriptorNode returnTypeDescriptorNode = (ReturnTypeDescriptorNode) annotationNode.parent();
-                if (!Arrays.asList(allowedTypes).contains(returnTypeDescriptorNode.type().toString())) {
-                    updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                            returnTypeDescriptorNode.location());
+                            annotationNode.location());
                 }
             }
+        }
+    }
+
+    private boolean isValidIdTypeRefType(TypeReferenceTypeSymbol typeDescriptor) {
+        return typeDescriptor.definition().getModule().isPresent()
+                && Utils.isValidUuidModule(typeDescriptor.definition().getModule().get())
+                && typeDescriptor.definition().getName().isPresent()
+                && typeDescriptor.definition().getName().get().equals(Utils.UUID_RECORD_NAME);
+    }
+
+    private boolean isValidIdUnionType(UnionTypeSymbol typeDescriptor) {
+        boolean isValid = true;
+        List<TypeSymbol> memberTypes =  typeDescriptor.memberTypeDescriptors();
+        for (TypeSymbol memberType : memberTypes) {
+            if (!(memberType.typeKind() == TypeDescKind.NIL) && !(memberType.typeKind() == TypeDescKind.ERROR)) {
+                isValid = checkTypeForValidation(memberType);
+                if (!isValid) {
+                    break;
+                }
+            }
+        }
+        return isValid;
+    }
+
+    private boolean isValidIdType(TypeSymbol memberTypeDescriptor) {
+        return memberTypeDescriptor.typeKind() == TypeDescKind.STRING
+                || memberTypeDescriptor.typeKind() == TypeDescKind.INT
+                || memberTypeDescriptor.typeKind() == TypeDescKind.FLOAT
+                || memberTypeDescriptor.typeKind() == TypeDescKind.DECIMAL;
+    }
+
+    private boolean checkTypeForValidation(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.ARRAY) {
+            return checkTypeForValidation(((ArrayTypeSymbol) typeSymbol).memberTypeDescriptor());
+        } else if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+            return isValidIdUnionType((UnionTypeSymbol) typeSymbol);
+        } else if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            return isValidIdTypeRefType((TypeReferenceTypeSymbol) typeSymbol);
+        } else {
+            return isValidIdType(typeSymbol);
         }
     }
 }

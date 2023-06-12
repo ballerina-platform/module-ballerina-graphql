@@ -51,6 +51,7 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.tools.diagnostics.Location;
@@ -454,6 +455,11 @@ public class ServiceValidator {
             addDiagnostic(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS,
                           getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
                           typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
+        } else if (typeDefinitionSymbol.getModule().isPresent()
+                && Utils.isValidUuidModule(typeDefinitionSymbol.getModule().get())
+                && typeDefinitionSymbol.getName().isPresent()
+                && typeDefinitionSymbol.getName().get().equals(Utils.UUID_RECORD_NAME)) {
+            return;
         } else {
             validateReturnType(typeReferenceTypeSymbol.typeDescriptor(), location);
         }
