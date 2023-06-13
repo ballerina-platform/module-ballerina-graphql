@@ -40,6 +40,7 @@ import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
 
 /**
@@ -55,7 +56,7 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
         if (semanticModel.symbol(annotationNode).isPresent()) {
             AnnotationSymbol annotationSymbol = (AnnotationSymbol) semanticModel.symbol(annotationNode).get();
             if (annotationSymbol.getModule().isPresent()
-                    && Utils.isValidGraphQlModule(annotationSymbol.getModule().get())
+                    && isGraphqlModuleSymbol(annotationSymbol.getModule().get())
                     && annotationSymbol.getName().isPresent()
                     && annotationSymbol.getName().get().equals(ID_ANNOTATION)) {
                 if (annotationNode.parent().kind() == SyntaxKind.REQUIRED_PARAM) {

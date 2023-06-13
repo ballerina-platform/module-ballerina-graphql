@@ -79,10 +79,6 @@ public final class Utils {
     private Utils() {
     }
 
-    public static boolean isValidGraphQlModule(ModuleSymbol module) {
-        return module.id().orgName().equals(ORG_NAME) && module.id().moduleName().equals(GRAPHQL_MODULE_NAME);
-    }
-
     public static boolean isValidUuidModule(ModuleSymbol module) {
         return module.id().orgName().equals(ORG_NAME) && module.id().moduleName().equals(UUID_MODULE_NAME);
     }
