@@ -2240,4 +2240,43 @@ service /id_annotation_2 on basicListener  {
     resource function get decimalId(@graphql:ID decimal decimalId) returns string {
         return "Hello, World";
     }
+
+        resource function get stringId1(@graphql:ID string? stringId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get intId1(@graphql:ID int? intId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get floatId1(@graphql:ID float? floatId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get decimalId1(@graphql:ID decimal? decimalId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get intIdReturnRecord(int intId) returns Student5 {
+        return new Student5(2, "Jennifer Flackett");
+    }
+
+}
+
+public distinct service class Student5 {
+    final int id;
+    final string name;
+
+    function init(int id, string name) {
+        self.id = id;
+        self.name = name;
+    }
+
+    resource function get id() returns @graphql:ID int {
+        return self.id;
+    }
+
+    resource function get name() returns string {
+        return self.name;
+    }
 }

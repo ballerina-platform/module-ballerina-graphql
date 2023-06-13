@@ -79,3 +79,90 @@ isolated function idInputTypeValidationTestForDecimal() returns error? {
         };
     assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
 }
+
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForStringOrNil() returns error? {
+    string document = string `query { stringId1(stringId: "hello") }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "stringId": "Hello, World"
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForIntOrNil() returns error? {
+    string document = string `query { intId1(intId: 56) }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "intId": "Hello, World"
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForFloatOrNil() returns error? {
+    string document = string `query { floatId1(floatId: "6.0") }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "floatId": "Hello, World"
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForDecimalOrNil() returns error? {
+    string document = string `query { decimalId1(decimalId: "45.0") }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "decimalId": "Hello, World"
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForInt1() returns error? {
+    string document = string `query {
+                                intIdReturnRecord(intId: 67) {
+                                    __typename
+                                    id
+                                    name
+                                }
+                            }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "intIdReturnRecord": {
+                "__typename": "Student5",
+                "id": 2,
+                "name": "Jennifer Flackett"
+                }
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+

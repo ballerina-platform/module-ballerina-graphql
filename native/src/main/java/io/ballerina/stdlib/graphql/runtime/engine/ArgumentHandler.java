@@ -113,7 +113,8 @@ public class ArgumentHandler {
         for (Object annotation: annotations.values().toArray()) {
             BMap annotationMap = (BMap) annotation;
             for (Object annotationKey: annotationMap.getKeys()) {
-                  if (((BString) annotationKey).getValue().endsWith(ID_ANNOTATION)) {
+                  if (((BString) annotationKey).getValue().endsWith(ID_ANNOTATION)
+                        && !annotations.getKeys()[i].getValue().equals("$returns$")) {
                       idsList.add(annotations.getKeys()[i].getValue().split("\\.")[1]);
                       i++;
                   }
