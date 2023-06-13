@@ -60,6 +60,7 @@ The conforming implementation of the specification is released and included in t
         * 4.1.2 [Float](#412-float)
         * 4.1.3 [String](#413-string)
         * 4.1.4 [Boolean](#414-boolean)
+        * 4.1.5 [ID](#415-id)
     * 4.2 [Objects](#42-objects)
         * 4.2.1 [Record Type as Object](#421-record-type-as-object)
         * 4.2.2 [Service Type as Object](#422-service-type-as-object)
@@ -650,6 +651,9 @@ The `String` type is represented using the `string` type in Ballerina. It can re
 
 #### 4.1.4 Boolean
 The `Boolean` type is represented using the `boolean` type in Ballerina.
+
+#### 4.1.5 ID
+The `ID` type is represented using the `@graphql:ID` annotation in Ballerina.
 
 Apart from the above types, the `decimal` type can also be used inside a GraphQL service, which will create the `Decimal` scalar type in the corresponding GraphQL schema.
 
