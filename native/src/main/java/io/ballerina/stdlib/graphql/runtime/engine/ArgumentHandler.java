@@ -90,6 +90,7 @@ public class ArgumentHandler {
     private static final int T_INPUT_OBJECT = 22;
     private static final int T_LIST = 23;
     private static final ArrayList<String> idsList = new ArrayList<>();
+    private static final String ID_ANNOTATION = "ID";
 
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
                            boolean validation) {
@@ -97,7 +98,7 @@ public class ArgumentHandler {
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
         this.field = field;
-        getIDTypeArguments(method.getAnnotations());
+        getIdTypeArguments(method.getAnnotations());
         this.argumentsMap = ValueCreator.createMapValue();
         this.responseGenerator = responseGenerator;
         this.validation = validation;
@@ -105,12 +106,12 @@ public class ArgumentHandler {
         this.populateArgumentsMap(fieldNode);
     }
 
-    private void getIDTypeArguments(BMap<BString, Object> annotations) {
+    private void getIdTypeArguments(BMap<BString, Object> annotations) {
         int i = 0;
         for (Object annotation: annotations.values().toArray()) {
             BMap annotationMap = (BMap) annotation;
             for (Object annotationKey: annotationMap.getKeys()) {
-                  if (((BString) annotationKey).getValue().endsWith("ID")) {
+                  if (((BString) annotationKey).getValue().endsWith(ID_ANNOTATION)) {
                       idsList.add(annotations.getKeys()[i].getValue().split("\\.")[1]);
                       i++;
                   }
@@ -172,7 +173,7 @@ public class ArgumentHandler {
             return this.getUnionTypeArgument(argumentNode, (UnionType) parameterType);
         } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
             return this.getArgumentValue(argumentNode, TypeUtils.getReferredType(parameterType));
-        } else if (idsList.contains(argumentNode.getStringValue(StringUtils.fromString("name")).getValue())) {
+        } else if (idsList.contains(argumentNode.getStringValue(NAME_FIELD).getValue())) {
             return this.getIDArgumentValue(argumentNode, parameterType);
         } else {
             return this.getScalarArgumentValue(argumentNode);
