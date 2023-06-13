@@ -46,8 +46,10 @@ import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
@@ -158,6 +160,9 @@ public class ArgumentHandler {
     }
 
     private Object getArgumentValue(BObject argumentNode, Type parameterType) {
+        if (idsList.contains(argumentNode.getStringValue(NAME_FIELD).getValue())) {
+            return this.getIDArgumentValue(argumentNode, parameterType);
+        }
         if (isFileUpload(parameterType)) {
             return this.getFileUploadParameter(argumentNode, parameterType);
         } else if (isRepresentationArgument(parameterType)) {
@@ -173,8 +178,6 @@ public class ArgumentHandler {
             return this.getUnionTypeArgument(argumentNode, (UnionType) parameterType);
         } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
             return this.getArgumentValue(argumentNode, TypeUtils.getReferredType(parameterType));
-        } else if (idsList.contains(argumentNode.getStringValue(NAME_FIELD).getValue())) {
-            return this.getIDArgumentValue(argumentNode, parameterType);
         } else {
             return this.getScalarArgumentValue(argumentNode);
         }
@@ -184,13 +187,27 @@ public class ArgumentHandler {
         if (argumentNode.get(VALUE_FIELD) instanceof BString) {
             String obj = ((BString) argumentNode.get(VALUE_FIELD)).getValue();
             if (parameterType.getTag() == TypeTags.STRING_TAG) {
-                return obj;
+                return StringUtils.fromString(obj);
             } else if (parameterType.getTag() == TypeTags.INT_TAG) {
                 return Integer.parseInt(obj);
             } else if (parameterType.getTag() == TypeTags.FLOAT_TAG) {
                 return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
             } else if (parameterType.getTag() == TypeTags.DECIMAL_TAG) {
                 return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
+            } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG){
+                // not validating if this is uuid:Uuid since compiler plugin does that
+                BMap<BString, ?> map = JsonUtils.convertJSONToMap(obj, PredefinedTypes.TYPE_MAP);
+                return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
+                        (BMap<BString, Object>) map);
+            } else if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
+                return ValueCreator.createArrayValue(obj.getBytes(StandardCharsets.UTF_8));
+            } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
+                List<Type> members = ((UnionType) parameterType).getMemberTypes();
+                for (Type member : members) {
+                    if (member.getTag() != TypeTags.NULL_TAG && member.getTag() != TypeTags.ERROR_TAG) {
+                        return getIDArgumentValue(argumentNode, member);
+                    }
+                }
             }
         }
         return argumentNode.get(VALUE_FIELD);

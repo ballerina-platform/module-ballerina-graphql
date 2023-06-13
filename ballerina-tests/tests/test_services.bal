@@ -2223,3 +2223,21 @@ public distinct service class Student4 {
         return self.id;
     }
 }
+
+service /id_annotation_2 on basicListener  {
+    resource function get stringId(@graphql:ID string stringId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get intId(@graphql:ID int intId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get floatId(@graphql:ID float floatId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get decimalId(@graphql:ID decimal decimalId) returns string {
+        return "Hello, World";
+    }
+}
