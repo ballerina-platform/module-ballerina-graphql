@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["duplicate", "a"],
+    groups: ["duplicate"],
     dataProvider: dataProviderDuplicateFields
 }
 isolated function testDuplicateFields(string url, string resourceFileName, string jsonFileName, json variables = (), string? operationName = ()) returns error? {
@@ -61,9 +61,9 @@ function dataProviderDuplicateFields() returns map<[string, string, string, json
         "11": [url4, "duplicate_fields_with_arguments", "duplicate_fields_with_input_object_args_2", (), "duplicateFieldsWithInputObjectArgs2"],
         "12": [url4, "duplicate_fields_with_arguments", "duplicate_fields_with_input_object_args_3", var3, "duplicateFieldsWithInputObjectArgs3"],
         "13": [url4, "duplicate_fields_with_arguments", "duplicate_fields_with_input_object_args_4", (), "duplicateFieldsWithInputObjectArgs4"],
-        "14": [url5, "duplicate_fields_with_arguments", "duplicate_fields_with_list_arguments_1", (), "duplicateFieldsWithListArgs1"],
-        "15": [url5, "duplicate_fields_with_arguments", "duplicate_fields_with_list_arguments_2", (), "duplicateFieldsWithListArgs2"],
-        "16": [url5, "duplicate_fields_with_arguments", "duplicate_fields_with_list_arguments_3", (), "duplicateFieldsWithListArgs3"]
+        "14": [url5, "duplicate_fields_with_arguments", "duplicate_fields_with_list_args_1", (), "duplicateFieldsWithListArgs1"],
+        "15": [url5, "duplicate_fields_with_arguments", "duplicate_fields_with_list_args_2", (), "duplicateFieldsWithListArgs2"],
+        "16": [url5, "duplicate_fields_with_arguments", "duplicate_fields_with_list_args_3", (), "duplicateFieldsWithListArgs3"]
     };
     return dataSet;
 }

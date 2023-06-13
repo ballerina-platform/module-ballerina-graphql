@@ -4,16 +4,16 @@
             "message": "Fields \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
             "locations": [
                 {
-                    "line": 92,
+                    "line": 85,
                     "column": 5
                 }
             ]
         },
         {
-            "message": "Fields \"getTotal\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+            "message": "Fields \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
             "locations": [
                 {
-                    "line": 94,
+                    "line": 86,
                     "column": 5
                 }
             ]

@@ -83,7 +83,7 @@ class DuplicateFieldRemoverVisitor {
         map<parser:FieldNode> visitedFields = {};
         map<parser:FragmentNode> visitedFragments = {};
         int i = 0;
-        while i < selections.length() { //replace with foreach
+        while i < selections.length() {
             if self.isRemovedNode(selections[i]) {
                 i += 1;
                 continue;
@@ -151,7 +151,6 @@ class DuplicateFieldRemoverVisitor {
         if fieldNode.getArguments().length() != duplicateNode.getArguments().length() {
             return false;
         }
-
         foreach parser:ArgumentNode argNode in fieldNode.getArguments() {
             parser:ArgumentNode? duplicateArgNode = self.getArgNode(duplicateNode.getArguments(), argNode.getName());
             if duplicateArgNode is parser:ArgumentNode {
@@ -166,9 +165,6 @@ class DuplicateFieldRemoverVisitor {
     }
 
     private isolated function isDuplicateArgValue(parser:ArgumentNode original, parser:ArgumentNode duplicate) returns boolean {
-        // if original.isVariableDefinition() || duplicate.isVariableDefinition()  {
-        //     return original.getVariableName() == duplicate.getVariableName();
-        // }
         if original.getVariableName() is string || duplicate.getVariableName() is string  {
             return original.getVariableName() == duplicate.getVariableName();
         }

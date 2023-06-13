@@ -31,7 +31,6 @@ query duplicateFieldsWithEnumArgs3($day: Weekday!, $weekday: Weekday!) {
     isHoliday(weekday: $weekday)
 }
 
-
 query duplicateFieldsWithInputObjectArgs1 {
     book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur"}}) {
         name

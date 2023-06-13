@@ -37,6 +37,9 @@ version = "1.2.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "constraint", moduleName = "constraint"}
+]
 
 [[package]]
 org = "ballerina"
@@ -64,7 +67,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.8.0"
+version = "1.8.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
@@ -90,8 +93,9 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_tests"
-version = "1.8.0"
+version = "1.8.1"
 dependencies = [
+	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "http"},

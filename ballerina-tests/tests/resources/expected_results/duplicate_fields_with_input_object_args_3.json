@@ -4,7 +4,7 @@
             "message": "Fields \"book\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
             "locations": [
                 {
-                    "line": 66,
+                    "line": 65,
                     "column": 5
                 }
             ]

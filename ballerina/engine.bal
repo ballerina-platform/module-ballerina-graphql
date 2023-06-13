@@ -23,9 +23,11 @@ isolated class Engine {
     private final int? maxQueryDepth;
     private final readonly & (readonly & Interceptor)[] interceptors;
     private final readonly & boolean introspection;
+    private final readonly & boolean validation;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
-                           readonly & (readonly & Interceptor)[] interceptors, boolean introspection)
+                           readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
+                           boolean validation)
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -34,6 +36,7 @@ isolated class Engine {
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors;
         self.introspection = introspection;
+        self.validation = validation;
         self.addService(s);
     }
 
@@ -43,6 +46,10 @@ isolated class Engine {
 
     isolated function getInterceptors() returns (readonly & Interceptor)[] {
         return self.interceptors;
+    }
+
+    isolated function getValidation() returns readonly & boolean {
+        return self.validation;
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -240,10 +247,11 @@ isolated class Engine {
         parser:RootOperationType operationType = 'field.getOperationType();
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
         any|error fieldValue;
         if operationType == parser:OPERATION_QUERY {
             if interceptor is () {
-                fieldValue = self.resolveResourceMethod(context, 'field);
+                fieldValue = self.resolveResourceMethod(context, 'field, responseGenerator);
             } else {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
                 anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
@@ -256,7 +264,7 @@ isolated class Engine {
             }
         } else if operationType == parser:OPERATION_MUTATION {
             if interceptor is () {
-                fieldValue = self.resolveRemoteMethod(context, 'field);
+                fieldValue = self.resolveRemoteMethod(context, 'field, responseGenerator);
             } else {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
                 anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
@@ -281,26 +289,25 @@ isolated class Engine {
                 }
             }
         }
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
         return responseGenerator.getResult(fieldValue, fieldNode);
     }
 
-    isolated function resolveResourceMethod(Context context, Field 'field) returns any|error {
+    isolated function resolveResourceMethod(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
             handle? resourceMethod = self.getResourceMethod(serviceObject, 'field.getResourcePath());
             if resourceMethod == () {
                 return self.resolveHierarchicalResource(context, 'field);
             }
-            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field);
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field, responseGenerator, self.validation);
         }
         return 'field.getFieldValue();
     }
 
-    isolated function resolveRemoteMethod(Context context, Field 'field) returns any|error {
+    isolated function resolveRemoteMethod(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
-           return self.executeMutationMethod(context, serviceObject, 'field);
+           return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.validation);
         }
         return 'field.getFieldValue();
     }
@@ -357,18 +364,18 @@ isolated class Engine {
     } external;
 
     isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
-                                           Field 'field)
+                                           Field 'field, ResponseGenerator responseGenerator, boolean validation)
     returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeMutationMethod(Context context, service object {} serviceObject,
-                                            Field 'field) returns any|error = @java:Method {
+                                            Field 'field, ResponseGenerator responseGenerator, boolean validation) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeSubscriptionResource(Context context, service object {} serviceObject,
-                                                  Field 'field) returns any|error = @java:Method {
+                                                  Field 'field, ResponseGenerator responseGenerator, boolean validation) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
