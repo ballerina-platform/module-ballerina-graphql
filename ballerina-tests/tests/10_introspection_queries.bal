@@ -36,6 +36,7 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
     string url6 = "http://localhost:9091/inputs";
     string url7 = "http://localhost:9091/documentation";
     string url8 = "http://localhost:9090/deprecation";
+    string url9 = "http://localhost:9091/id_annotation_1";
 
     map<[string, string, json]> dataSet = {
         "1": [url1, "complex_introspection_query"],
@@ -70,7 +71,8 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
         "30": [url2, "type_introspection_with_alias", {includeDeprecated: true}],
         "31": [url2, "typename_introspection_on_type_record"],
         "32": [url2, "typename_introspection_on_schema_introspection"],
-        "33": [url2, "typename_introspection_on_field"]
+        "33": [url2, "typename_introspection_on_field"],
+        "34": [url9, "id_introspection_query"]
     };
     return dataSet;
 }

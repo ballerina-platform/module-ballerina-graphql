@@ -16,6 +16,7 @@
 
 import ballerina/graphql;
 import ballerina/http;
+import ballerina/uuid;
 import ballerina/lang.runtime;
 
 graphql:Service graphiqlDefaultPathConfigService =
@@ -2154,5 +2155,71 @@ service /constraints on basicListener {
 
     isolated resource function subscribe movie(MovieDetails movie) returns stream<Reviews?, error?> {
         return movie.reviews.toStream();
+    }
+}
+
+service /id_annotation_1 on basicListener {
+    resource function get student1(@graphql:ID int id1) returns Student1 {
+        return new Student1(8);
+    }
+
+    resource function get student2(@graphql:ID float[] id2) returns Student2 {
+        return new Student2([1.0, 2.0]);
+    }
+
+    resource function get student3(@graphql:ID uuid:Uuid?[] id3) returns Student3|error {
+        return new Student3([check uuid:createType1AsRecord()]);
+    }
+
+    resource function get student4(@graphql:ID int?[]? id4) returns Student4 {
+        return new Student4([1, 2, (), 4]);
+    }
+}
+
+public distinct service class Student1 {
+    final int id;
+
+    function init(int id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID int {
+        return self.id;
+    }
+}
+
+public distinct service class Student2 {
+    final float[] id;
+
+    function init(float[] id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID float[] {
+        return self.id;
+    }
+}
+
+public distinct service class Student3 {
+    final uuid:Uuid?[] id;
+
+    function init(uuid:Uuid?[] id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID uuid:Uuid?[] {
+        return self.id;
+    }
+}
+
+public distinct service class Student4 {
+    final int?[]? id;
+
+    function init(int?[]? id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID int?[]? {
+        return self.id;
     }
 }
