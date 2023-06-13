@@ -194,7 +194,7 @@ public class ArgumentHandler {
                 return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
             } else if (parameterType.getTag() == TypeTags.DECIMAL_TAG) {
                 return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
-            } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG){
+            } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
                 // not validating if this is uuid:Uuid since compiler plugin does that
                 BMap<BString, ?> map = JsonUtils.convertJSONToMap(obj, PredefinedTypes.TYPE_MAP);
                 return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
