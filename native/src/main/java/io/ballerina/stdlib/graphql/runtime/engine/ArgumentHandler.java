@@ -46,6 +46,7 @@ import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,7 +202,57 @@ public class ArgumentHandler {
                 return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
                         (BMap<BString, Object>) map);
             } else if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
-                return ValueCreator.createArrayValue(obj.getBytes(StandardCharsets.UTF_8));
+                Type memberType = ((ArrayType) parameterType).getElementType();
+                if (memberType.getTag() == TypeTags.INT_TAG) {
+                    String[] string = obj.replaceAll("\\[", "")
+                            .replaceAll("]", "").replaceAll(" ", "")
+                            .split(",");
+                    long[] arr = new long[string.length];
+                    for (int i = 0; i < string.length; i++) {
+                        if (!string[i].equals("")) {
+                            arr[i] = Integer.parseInt(string[i]);
+                        }
+                    }
+                    return ValueCreator.createArrayValue(arr);
+                } else if (memberType.getTag() == TypeTags.FLOAT_TAG) {
+                    String[] string = obj.replaceAll("\\[", "")
+                            .replaceAll("]", "").replaceAll(" ", "")
+                            .split(",");
+                    float[] arr = new float[string.length];
+                    for (int i = 0; i < string.length; i++) {
+                        arr[i] = Float.parseFloat(string[i]);
+                    }
+                    return ValueCreator.createArrayValue(Arrays.toString(arr).getBytes(StandardCharsets.UTF_8));
+                } else if (memberType.getTag() == TypeTags.DECIMAL_TAG) {
+                    String[] string = obj.replaceAll("\\[", "")
+                            .replaceAll("]", "").replaceAll(" ", "")
+                            .split(",");
+                    BigDecimal[] arr = new BigDecimal[string.length];
+                    for (int i = 0; i < string.length; i++) {
+                        arr[i] = new BigDecimal(string[i]);
+                    }
+                    return ValueCreator.createArrayValue(Arrays.toString(arr).getBytes(StandardCharsets.UTF_8));
+                } else if (memberType.getTag() == TypeTags.STRING_TAG) {
+                    String[] string = obj.replaceAll("\\[", "")
+                            .replaceAll("]", "")
+                            .split(",");
+                    BString[] arr = new BString[string.length];
+                    for (int i = 0; i < string.length; i++) {
+                        arr[i] = StringUtils.fromString(string[i]);
+                    }
+                    return ValueCreator.createArrayValue(arr);
+                } else if (memberType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+                    String[] string = obj.replaceAll("\\[", "")
+                            .replaceAll("]", "")
+                            .split(",");
+                    BMap<BString, Object>[] arr = new BMap[string.length];
+                    for (int i = 0; i < string.length; i++) {
+                        BMap<BString, ?> map = JsonUtils.convertJSONToMap(string[i], PredefinedTypes.TYPE_MAP);
+                        arr[i] =  ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
+                                (BMap<BString, Object>) map);
+                    }
+                    return ValueCreator.createArrayValue(Arrays.toString(arr).getBytes(StandardCharsets.UTF_8));
+                }
             } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
                 List<Type> members = ((UnionType) parameterType).getMemberTypes();
                 for (Type member : members) {
