@@ -655,6 +655,48 @@ The `Boolean` type is represented using the `boolean` type in Ballerina.
 #### 4.1.5 ID
 The `ID` type is represented using the `@graphql:ID` annotation in Ballerina.
 
+###### Example: Scalar type ID 
+```ballerina
+service on new graphql:Listener(9090) {
+
+    resource function get profileById(@graphql:ID int id) returns Profile {
+        // ...
+    }
+    
+    resource function get studentByStringId(@graphql:ID string id) returns Student {
+        // ...
+    }
+    
+    resource function get studentByUuidId(@graphql:ID uuid:Uuid id) returns Student {
+        // ...
+    }
+}
+
+public type Profile record {|
+    @graphql:ID int id;
+    string name;
+    int age;
+|};
+
+public distinct service class Student {
+    final string id;
+    final string name;
+
+    function init(@graphql:ID string id, string name) {
+        self.id = id;
+        self.name = name;
+    }
+
+    resource function get id() returns @graphql:ID string {
+        return self.id;
+    }
+
+    resource function get name() returns string {
+        return self.name;
+    }
+}
+```
+
 Apart from the above types, the `decimal` type can also be used inside a GraphQL service, which will create the `Decimal` scalar type in the corresponding GraphQL schema.
 
 ### 4.2 Objects
