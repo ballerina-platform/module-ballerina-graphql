@@ -55,10 +55,7 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
         SemanticModel semanticModel = syntaxNodeAnalysisContext.semanticModel();
         if (semanticModel.symbol(annotationNode).isPresent()) {
             AnnotationSymbol annotationSymbol = (AnnotationSymbol) semanticModel.symbol(annotationNode).get();
-            if (annotationSymbol.getModule().isPresent()
-                    && isGraphqlModuleSymbol(annotationSymbol.getModule().get())
-                    && annotationSymbol.getName().isPresent()
-                    && annotationSymbol.getName().get().equals(ID_ANNOTATION)) {
+            if (isIdAnnotation(annotationSymbol)) {
                 if (annotationNode.parent().kind() == SyntaxKind.REQUIRED_PARAM) {
                     if (!validateRequiredParameterNode(annotationNode, semanticModel)) {
                         updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
@@ -75,6 +72,13 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
                 }
             }
         }
+    }
+
+    private boolean isIdAnnotation(AnnotationSymbol annotationSymbol) {
+        return annotationSymbol.getModule().isPresent()
+                && isGraphqlModuleSymbol(annotationSymbol.getModule().get())
+                && annotationSymbol.getName().isPresent()
+                && annotationSymbol.getName().get().equals(ID_ANNOTATION);
     }
 
     private boolean validateReturnTypeDescriptorNode(AnnotationNode annotationNode, SemanticModel semanticModel) {
@@ -162,7 +166,7 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
         boolean isValid = true;
         List<TypeSymbol> memberTypes = typeDescriptor.memberTypeDescriptors();
         for (TypeSymbol memberType : memberTypes) {
-            if (!(memberType.typeKind() == TypeDescKind.NIL) && !(memberType.typeKind() == TypeDescKind.ERROR)) {
+            if (memberType.typeKind() != TypeDescKind.NIL && memberType.typeKind() != TypeDescKind.ERROR) {
                 isValid = checkTypeForValidation(memberType);
                 if (!isValid) {
                     break;

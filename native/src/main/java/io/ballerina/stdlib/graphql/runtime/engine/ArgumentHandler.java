@@ -174,7 +174,7 @@ public class ArgumentHandler {
 
     private Object getArgumentValue(BObject argumentNode, Type parameterType) {
         if (idsList.contains(argumentNode.getStringValue(NAME_FIELD).getValue())) {
-            return this.getIDArgumentValue(argumentNode, parameterType);
+            return this.getIdArgumentValue(argumentNode, parameterType);
         }
         if (isFileUpload(parameterType)) {
             return this.getFileUploadParameter(argumentNode, parameterType);
@@ -196,7 +196,7 @@ public class ArgumentHandler {
         }
     }
 
-    private Object getIDArgumentValue(BObject argumentNode, Type parameterType) {
+    private Object getIdArgumentValue(BObject argumentNode, Type parameterType) {
         if (argumentNode.get(VALUE_FIELD) instanceof BString) {
             String obj = ((BString) argumentNode.get(VALUE_FIELD)).getValue();
             if (parameterType.getTag() == TypeTags.STRING_TAG) {
@@ -212,68 +212,93 @@ public class ArgumentHandler {
                 return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
                         (BMap<BString, Object>) JsonUtils.parse(obj.replaceAll("\\\\", "")));
             } else if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
-                Type memberType = ((ArrayType) parameterType).getElementType();
-                if (memberType.getTag() == TypeTags.INT_TAG) {
-                    String[] string = obj.replaceAll("\\[", "")
-                            .replaceAll("]", "").replaceAll(" ", "")
-                            .split(",");
-                    long[] arr = new long[string.length];
-                    for (int i = 0; i < string.length; i++) {
-                        if (!string[i].equals("")) {
-                            arr[i] = Integer.parseInt(string[i]);
-                        }
-                    }
-                    return ValueCreator.createArrayValue(arr);
-                } else if (memberType.getTag() == TypeTags.FLOAT_TAG) {
-                    String[] string = obj.replaceAll("\\[", "")
-                            .replaceAll("]", "").replaceAll(" ", "")
-                            .split(",");
-                    float[] arr = new float[string.length];
-                    for (int i = 0; i < string.length; i++) {
-                        arr[i] = Float.parseFloat(string[i]);
-                    }
-                    return ValueCreator.createArrayValue(Arrays.toString(arr).getBytes(StandardCharsets.UTF_8));
-                } else if (memberType.getTag() == TypeTags.DECIMAL_TAG) {
-                    String[] string = obj.replaceAll("\\[", "")
-                            .replaceAll("]", "").replaceAll(" ", "")
-                            .split(",");
-                    BigDecimal[] arr = new BigDecimal[string.length];
-                    for (int i = 0; i < string.length; i++) {
-                        arr[i] = new BigDecimal(string[i]);
-                    }
-                    return ValueCreator.createArrayValue(Arrays.toString(arr).getBytes(StandardCharsets.UTF_8));
-                } else if (memberType.getTag() == TypeTags.STRING_TAG) {
-                    String[] string = obj.replaceAll("\\[", "")
-                            .replaceAll("]", "")
-                            .split(",");
-                    BString[] arr = new BString[string.length];
-                    for (int i = 0; i < string.length; i++) {
-                        arr[i] = StringUtils.fromString(string[i]);
-                    }
-                    return ValueCreator.createArrayValue(arr);
-                } else if (memberType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
-                    String[] string = obj.replaceAll("\\[", "")
-                            .replaceAll("]", "").replaceAll("\\\\", "")
-                            .split("},");
-                    BMap<BString, Object>[] arr = new BMap[string.length];
-                    for (int i = 0; i < string.length; i++) {
-                        arr[i] = ValueCreator.createRecordValue(
-                                ((ArrayType) parameterType).getElementType().getPackage(),
-                                ((ArrayType) parameterType).getElementType().getName(),
-                                (BMap<BString, Object>) JsonUtils.parse(string[i]));
-                    }
-                    return ValueCreator.createArrayValue(arr, (ArrayType) parameterType);
-                }
+                return getArrayTypeIdValue(parameterType, obj);
             } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
-                List<Type> members = ((UnionType) parameterType).getMemberTypes();
-                for (Type member : members) {
-                    if (member.getTag() != TypeTags.NULL_TAG && member.getTag() != TypeTags.ERROR_TAG) {
-                        return getIDArgumentValue(argumentNode, member);
-                    }
-                }
+                return getUnionTypeIdValue(parameterType, argumentNode);
             }
         }
         return argumentNode.get(VALUE_FIELD);
+    }
+
+    private Object getUnionTypeIdValue(Type parameterType, BObject argumentNode) {
+        List<Type> members = ((UnionType) parameterType).getMemberTypes();
+        for (Type member : members) {
+            if (member.getTag() != TypeTags.NULL_TAG && member.getTag() != TypeTags.ERROR_TAG) {
+                return getIdArgumentValue(argumentNode, member);
+            }
+        }
+        return null;
+    }
+
+    private Object getArrayTypeIdValue(Type parameterType, String obj) {
+        Type memberType = ((ArrayType) parameterType).getElementType();
+        String[] stringArray = obj.replaceAll("\\[", "")
+                .replace("]", "").replace(" ", "")
+                .split(",");
+        if (memberType.getTag() == TypeTags.INT_TAG) {
+            return ValueCreator.createArrayValue(getIntArrayTypeIdValue(stringArray));
+        } else if (memberType.getTag() == TypeTags.FLOAT_TAG) {
+            return ValueCreator.createArrayValue(Arrays.toString(getFloatArrayTypeIdValue(stringArray))
+                    .getBytes(StandardCharsets.UTF_8));
+        } else if (memberType.getTag() == TypeTags.DECIMAL_TAG) {
+            return ValueCreator.createArrayValue(Arrays.toString(getDecimalArrayTypeIdValue(stringArray))
+                    .getBytes(StandardCharsets.UTF_8));
+        } else if (memberType.getTag() == TypeTags.STRING_TAG) {
+            return ValueCreator.createArrayValue(getStringArrayTypeIdValue(obj));
+        } else if (memberType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            return ValueCreator.createArrayValue(getTypeRefArrayTypeIdValue(obj, parameterType),
+                    (ArrayType) parameterType);
+        }
+        return null;
+    }
+
+    private BMap<BString, Object>[] getTypeRefArrayTypeIdValue(String obj, Type parameterType) {
+        String[] stringValues = obj.replaceAll("\\[", "").replace("]", "")
+                .replaceAll("\\\\", "").split("},");
+        BMap<BString, Object>[] uuidArray = new BMap[stringValues.length];
+        for (int i = 0; i < stringValues.length; i++) {
+            uuidArray[i] = ValueCreator.createRecordValue(
+                    ((ArrayType) parameterType).getElementType().getPackage(),
+                    ((ArrayType) parameterType).getElementType().getName(),
+                    (BMap<BString, Object>) JsonUtils.parse(stringValues[i]));
+        }
+        return uuidArray;
+    }
+
+    private BString[] getStringArrayTypeIdValue(String obj) {
+        String[] stringValues = obj.replaceAll("\\[", "").replace("]", "")
+                .split(",");
+        BString[] bStringArray = new BString[stringValues.length];
+        for (int i = 0; i < stringValues.length; i++) {
+            bStringArray[i] = StringUtils.fromString(stringValues[i]);
+        }
+        return bStringArray;
+    }
+
+    private BigDecimal[] getDecimalArrayTypeIdValue(String[] stringArray) {
+        BigDecimal[] values = new BigDecimal[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            values[i] = new BigDecimal(stringArray[i]);
+        }
+        return values;
+    }
+
+    private float[] getFloatArrayTypeIdValue(String[] stringArray) {
+        float[] values = new float[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            values[i] = Float.parseFloat(stringArray[i]);
+        }
+        return values;
+    }
+
+    private long[] getIntArrayTypeIdValue(String[] stringArray) {
+        long[] values = new long[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            if (!stringArray[i].equals("")) {
+                values[i] = Integer.parseInt(stringArray[i]);
+            }
+        }
+        return values;
     }
 
     private BMap<BString, Object> getRepresentationArgument(Object jsonRepresentation, Type parameterType) {
