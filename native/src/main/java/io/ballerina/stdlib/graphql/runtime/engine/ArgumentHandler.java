@@ -101,7 +101,7 @@ public class ArgumentHandler {
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
         this.field = field;
-        getIdTypeArguments(method.getAnnotations());
+        populateIdTypeArguments(method.getAnnotations());
         this.argumentsMap = ValueCreator.createMapValue();
         this.responseGenerator = responseGenerator;
         this.validation = validation;
@@ -109,7 +109,7 @@ public class ArgumentHandler {
         this.populateArgumentsMap(fieldNode);
     }
 
-    private void getIdTypeArguments(BMap<BString, Object> annotations) {
+    private void populateIdTypeArguments(BMap<BString, Object> annotations) {
         int i = 0;
         for (Object annotation: annotations.values().toArray()) {
             BMap annotationMap = (BMap) annotation;

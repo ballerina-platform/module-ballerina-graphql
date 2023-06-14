@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.Annotatable;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
@@ -63,6 +64,7 @@ import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.Type;
 import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.commons.utils.Utils;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 
 import java.util.ArrayList;
@@ -283,11 +285,23 @@ public class SchemaGenerator {
             return null;
         }
         TypeSymbol typeSymbol = methodSymbol.typeDescriptor().returnTypeDescriptor().get();
-        if (methodSymbol.typeDescriptor().returnTypeAnnotations().isEmpty()) {
-            return getFieldType(typeSymbol);
-        } else {
+        if (methodSymbol.typeDescriptor().returnTypeAnnotations().isPresent() &&
+                isIdAnnotation(methodSymbol.typeDescriptor().returnTypeAnnotations().get())) {
             return getTypeForID(methodSymbol.typeDescriptor().returnTypeDescriptor().get());
         }
+        return getFieldType(typeSymbol);
+    }
+
+    private boolean isIdAnnotation(Annotatable annotatable) {
+        List<AnnotationSymbol> annotationSymbols = annotatable.annotations();
+        for (AnnotationSymbol annotationSymbol : annotationSymbols) {
+            if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)
+            && annotationSymbol.getModule().isPresent()
+            && Utils.isGraphqlModuleSymbol(annotationSymbol.getModule().get())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Type getTypeForID(TypeSymbol typeSymbol) {
@@ -517,7 +531,9 @@ public class SchemaGenerator {
             field.addArg(new InputValue(MAP_KEY_ARGUMENT_NAME, argType, MAP_KEY_ARGUMENT_DESCRIPTION, null));
         } else if (!recordFieldSymbol.annotations().isEmpty()) {
             for (AnnotationSymbol annotationSymbol : recordFieldSymbol.annotations()) {
-                if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)) {
+                if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)
+                        && annotationSymbol.getModule().isPresent()
+                        && Utils.isGraphqlModuleSymbol(annotationSymbol.getModule().get())) {
                     type = getTypeForID(recordFieldSymbol.typeDescriptor());
                     break;
                 }
@@ -682,7 +698,9 @@ public class SchemaGenerator {
         String description = getDescription(recordFieldSymbol);
         Type type = null;
         for (AnnotationSymbol annotationSymbol : recordFieldSymbol.annotations()) {
-            if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)) {
+            if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)
+                    && annotationSymbol.getModule().isPresent()
+                    && Utils.isGraphqlModuleSymbol(annotationSymbol.getModule().get())) {
                 type = addType(ScalarType.ID);
                 break;
             }
