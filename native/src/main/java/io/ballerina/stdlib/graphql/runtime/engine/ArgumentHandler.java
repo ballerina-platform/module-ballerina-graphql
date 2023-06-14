@@ -94,6 +94,9 @@ public class ArgumentHandler {
     private static final int T_LIST = 23;
     private static final ArrayList<String> idsList = new ArrayList<>();
     private static final String ID_ANNOTATION = "ID";
+    private static final String PACKAGE_NAME = "ballerina/graphql";
+    private static final String RETURN_TYPE_PARAM = "$returns$";
+    private static final String ARGUMENT_TYPE_PARAM = "$param$";
 
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
                            boolean validation) {
@@ -111,16 +114,24 @@ public class ArgumentHandler {
 
     private void populateIdTypeArguments(BMap<BString, Object> annotations) {
         int i = 0;
-        for (Object annotation: annotations.values().toArray()) {
+        for (Object annotation : annotations.values().toArray()) {
             BMap annotationMap = (BMap) annotation;
-            for (Object annotationKey: annotationMap.getKeys()) {
-                  if (((BString) annotationKey).getValue().endsWith(ID_ANNOTATION)
-                        && !annotations.getKeys()[i].getValue().equals("$returns$")) {
-                      idsList.add(annotations.getKeys()[i].getValue().split("\\.")[1]);
-                      i++;
-                  }
+            for (Object annotationKey : annotationMap.getKeys()) {
+                if (isIdAnnotation(annotationKey)
+                        && !annotations.getKeys()[i].getValue().equals(RETURN_TYPE_PARAM)) {
+                    String[] annotationValue = annotations.getKeys()[i].getValue().split("\\.");
+                    if (annotationValue.length == 2 && annotationValue[0].equals(ARGUMENT_TYPE_PARAM)) {
+                        idsList.add(annotationValue[1]);
+                    }
+                    i++;
+                }
             }
         }
+    }
+
+    private boolean isIdAnnotation(Object annotationKey) {
+        String[] fullTypeName = annotationKey.toString().replaceAll("\\d", "").split("::");
+        return fullTypeName[0].equals(PACKAGE_NAME) && fullTypeName[1].equals(ID_ANNOTATION);
     }
 
     public Object[] getArguments() {
