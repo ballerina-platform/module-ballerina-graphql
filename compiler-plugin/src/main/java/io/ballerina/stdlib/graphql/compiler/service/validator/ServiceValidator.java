@@ -453,7 +453,7 @@ public class ServiceValidator {
                           getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
                           typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
         } else {
-            validateReturnType(typeDefinitionSymbol.typeDescriptor(), location);
+            validateReturnType(typeReferenceTypeSymbol.typeDescriptor(), location);
         }
     }
 
