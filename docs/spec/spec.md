@@ -590,18 +590,18 @@ service on new graphql:Listener(9090) {
     resource function get profile(int id) returns Profile {
         // ...
     }
-
-    # Represents a profile.
-    #
-    # + id - The ID of the profile
-    # + name - The name of the profile
-    # + age - The age of the profile
-    public type Profile record {|
-        int id;
-        string name;
-        int age;
-    |};
 }
+
+# Represents a profile.
+#
+# + id - The ID of the profile
+# + name - The name of the profile
+# + age - The age of the profile
+public type Profile record {|
+    int id;
+    string name;
+    int age;
+|};
 ```
 
 This will generate the documentation for all the fields of the `Query` type including the field descriptions of the `Profile` type.
