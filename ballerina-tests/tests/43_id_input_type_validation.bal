@@ -1,4 +1,4 @@
-// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.com).
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -183,8 +183,8 @@ isolated function idInputTypeValidationTestForIntArray1() returns error? {
             "data": {
                 "intArrayReturnRecord": {
                 "__typename": "Student5",
-                "id": 2,
-                "name": "Jennifer Flackett"
+                "id": 333,
+                "name": "Antoni Porowski"
                 }
             }
         };
@@ -208,8 +208,8 @@ isolated function idInputTypeValidationTestForStringArray1() returns error? {
             "data": {
                 "stringArrayReturnRecord": {
                 "__typename": "Student5",
-                "id": 2,
-                "name": "Jennifer Flackett"
+                "id": 212,
+                "name": "Andrew Glouberman"
                 }
             }
         };
@@ -233,8 +233,8 @@ isolated function idInputTypeValidationTestForFloatArray1() returns error? {
             "data": {
                 "floatArrayReturnRecord": {
                 "__typename": "Student5",
-                "id": 2,
-                "name": "Jennifer Flackett"
+                "id": 422,
+                "name": "Elliot Birch"
                 }
             }
         };
@@ -258,11 +258,86 @@ isolated function idInputTypeValidationTestForDecimalArray1() returns error? {
             "data": {
                 "decimalArrayReturnRecord": {
                 "__typename": "Student5",
-                "id": 2,
-                "name": "Jennifer Flackett"
+                "id": 452,
+                "name": "Edward MacDell"
                 }
             }
         };
     assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
 }
 
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForUuid() returns error? {
+    string document = string `query {
+                                    uuidReturnRecord(uuidId: "{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}") {
+                                        __typename
+                                        id
+                                        name
+                                    }
+                                }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "uuidReturnRecord": {
+                "__typename": "Student5",
+                "id": 2678,
+                "name": "Abuela Alvarez"
+                }
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForUuid1() returns error? {
+    string document = string `query {
+                                    uuidArrayReturnRecord(uuidId: "[{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}]") {
+                                        __typename
+                                        id
+                                        name
+                                    }
+                                }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "uuidArrayReturnRecord": {
+                "__typename": "Student5",
+                "id": 678,
+                "name": "Andy Garcia"
+                }
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}
+
+@test:Config {
+    groups: ["id_validation"]
+}
+isolated function idInputTypeValidationTestForUuid2() returns error? {
+    string document = string `query {
+                                    uuidArrayReturnRecord1(uuidId: "[{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}]") {
+                                        __typename
+                                        id
+                                        name
+                                    }
+                                }`;
+    json actualPayload = check graphqlClient->executeWithType(document);
+    json expectedPayload = 
+        {
+            "data": {
+                "uuidArrayReturnRecord1": {
+                "__typename": "Student5",
+                "id": 563,
+                "name": "Aretha Franklin"
+                }
+            }
+        };
+    assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload.toJson());
+}

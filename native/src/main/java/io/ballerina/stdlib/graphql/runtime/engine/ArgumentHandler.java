@@ -198,9 +198,8 @@ public class ArgumentHandler {
                 return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
             } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
                 // not validating if this is uuid:Uuid since compiler plugin does that
-                BMap<BString, ?> map = JsonUtils.convertJSONToMap(obj, PredefinedTypes.TYPE_MAP);
                 return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
-                        (BMap<BString, Object>) map);
+                        (BMap<BString, Object>) JsonUtils.parse(obj.replaceAll("\\\\", "")));
             } else if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
                 Type memberType = ((ArrayType) parameterType).getElementType();
                 if (memberType.getTag() == TypeTags.INT_TAG) {
@@ -243,15 +242,16 @@ public class ArgumentHandler {
                     return ValueCreator.createArrayValue(arr);
                 } else if (memberType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
                     String[] string = obj.replaceAll("\\[", "")
-                            .replaceAll("]", "")
-                            .split(",");
+                            .replaceAll("]", "").replaceAll("\\\\", "")
+                            .split("},");
                     BMap<BString, Object>[] arr = new BMap[string.length];
                     for (int i = 0; i < string.length; i++) {
-                        BMap<BString, ?> map = JsonUtils.convertJSONToMap(string[i], PredefinedTypes.TYPE_MAP);
-                        arr[i] =  ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
-                                (BMap<BString, Object>) map);
+                        arr[i] = ValueCreator.createRecordValue(
+                                ((ArrayType) parameterType).getElementType().getPackage(),
+                                ((ArrayType) parameterType).getElementType().getName(),
+                                (BMap<BString, Object>) JsonUtils.parse(string[i]));
                     }
-                    return ValueCreator.createArrayValue(Arrays.toString(arr).getBytes(StandardCharsets.UTF_8));
+                    return ValueCreator.createArrayValue(arr, (ArrayType) parameterType);
                 }
             } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
                 List<Type> members = ((UnionType) parameterType).getMemberTypes();

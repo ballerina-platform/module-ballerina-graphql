@@ -2262,19 +2262,31 @@ service /id_annotation_2 on basicListener  {
     }
 
     resource function get intArrayReturnRecord(@graphql:ID int[] intId) returns Student5 {
-        return new Student5(2, "Jennifer Flackett");
+        return new Student5(333, "Antoni Porowski");
     }
 
     resource function get stringArrayReturnRecord(@graphql:ID string[] stringId) returns Student5 {
-        return new Student5(2, "Jennifer Flackett");
+        return new Student5(212, "Andrew Glouberman");
     }
 
     resource function get floatArrayReturnRecord(@graphql:ID float[] floatId) returns Student5 {
-        return new Student5(2, "Jennifer Flackett");
+        return new Student5(422, "Elliot Birch");
     }
 
     resource function get decimalArrayReturnRecord(@graphql:ID decimal[] decimalId) returns Student5 {
-        return new Student5(2, "Jennifer Flackett");
+        return new Student5(452, "Edward MacDell");
+    }
+
+    resource function get uuidReturnRecord(@graphql:ID uuid:Uuid uuidId) returns Student5 {
+        return new Student5(2678, "Abuela Alvarez");
+    }
+
+    resource function get uuidArrayReturnRecord(@graphql:ID uuid:Uuid[] uuidId) returns Student5 {
+        return new Student5(678, "Andy Garcia");
+    }
+
+    resource function get uuidArrayReturnRecord1(@graphql:ID uuid:Uuid[]? uuidId) returns Student5 {
+        return new Student5(563, "Aretha Franklin");
     }
 }
 
