@@ -1055,6 +1055,17 @@ service /null_values on basicListener {
         }
         return;
     }
+
+    resource function get name(graphql:Context context, int? id) returns string? {
+        if id == () {
+            graphql:__addError(context, {
+                message: "Data not found",
+                path: ["name"]
+            });
+            return;
+        }
+        return "Walter White";
+    }
 }
 
 @graphql:ServiceConfig {
@@ -1065,6 +1076,7 @@ service /null_values on basicListener {
         return context;
     }
 }
+
 service /context on serviceTypeListener {
     isolated resource function get profile(graphql:Context context) returns Person|error {
         var scope = check context.get("scope");
@@ -1565,7 +1577,7 @@ service /intercept_map on basicListener {
     }
     isolated resource function get updatedLanguages() returns Languages {
         return {
-            name :{
+            name: {
                 backend: "Ruby",
                 frontend: "Java",
                 data: "Ballerina",
