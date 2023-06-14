@@ -45,7 +45,9 @@ function dataProviderIdAnnotation() returns map<[string, string]> {
         "13": [url, "id_input_type_validation_decimal_array"],
         "14": [url, "id_input_type_validation_uuid"],
         "15": [url, "id_input_type_validation_uuid_array"],
-        "16": [url, "id_input_type_validation_uuid_array_or_nil"]
+        "16": [url, "id_input_type_validation_uuid_array_or_nil"],
+        "17": [url, "id_input_type_validation_return_record_array"],
+        "18": [url, "id_input_type_validation_return_record"]
     };
     return dataSet;
 }

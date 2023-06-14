@@ -1,0 +1,7 @@
+query {
+    stringIdReturnRecord(stringId: "String ID") {
+        __typename
+        id
+        name
+    }
+}

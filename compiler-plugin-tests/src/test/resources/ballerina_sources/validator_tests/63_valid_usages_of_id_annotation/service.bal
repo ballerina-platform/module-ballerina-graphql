@@ -202,3 +202,26 @@ public distinct service class Student12 {
         return self.id;
     }
 }
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get stringArrayReturnRecordArray(@graphql:ID string[] stringIds) returns Person[] {
+        return [
+            {id: 789, name: "Beth Match", age: 15},
+            {id: 678, name: "Jo March", age: 16},
+            {id: 543, name: "Amy March", age: 12}
+        ];
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get stringArrayReturnRecordArray(@graphql:ID string[] stringIds) returns Person {
+        return {id: 789, name: "Beth Match", age: 15};
+    }
+}
+
+public type Person record {|
+    @graphql:ID
+    int id;
+    string name;
+    int age;
+|};

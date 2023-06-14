@@ -2288,7 +2288,27 @@ service /id_annotation_2 on basicListener  {
     resource function get uuidArrayReturnRecord1(@graphql:ID uuid:Uuid[]? uuidId) returns Student5 {
         return new Student5(563, "Aretha Franklin");
     }
+
+    resource function get stringIdReturnRecord(@graphql:ID string stringId) returns PersonId {
+        return {id: 543, name: "Marmee March", age: 12};
+    }
+
+    resource function get stringArrayReturnRecordArray(@graphql:ID string[] stringIds) returns PersonId[] {
+        return [
+            {id: 789, name: "Beth Match", age: 15},
+            {id: 678, name: "Jo March", age: 16},
+            {id: 543, name: "Amy March", age: 12}
+        ];
+    }
 }
+
+public type PersonId record {|
+    @graphql:ID
+    int id;
+    string name;
+    int age;
+|};
+
 
 public distinct service class Student5 {
     final int id;

@@ -22,6 +22,7 @@ import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
+import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
@@ -29,7 +30,9 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.ArrayTypeDescriptorNode;
 import io.ballerina.compiler.syntax.tree.ChildNodeList;
+import io.ballerina.compiler.syntax.tree.MetadataNode;
 import io.ballerina.compiler.syntax.tree.OptionalTypeDescriptorNode;
+import io.ballerina.compiler.syntax.tree.RecordFieldNode;
 import io.ballerina.compiler.syntax.tree.RequiredParameterNode;
 import io.ballerina.compiler.syntax.tree.ReturnTypeDescriptorNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
@@ -66,12 +69,29 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
                         updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
                                 annotationNode.location());
                     }
+                } else if (annotationNode.parent().kind() == SyntaxKind.METADATA) {
+                    if (!validateMetadataNode(annotationNode, semanticModel)) {
+                        updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                                annotationNode.location());
+                    }
                 } else {
                     updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
                             annotationNode.location());
                 }
             }
         }
+    }
+
+    private boolean validateMetadataNode(AnnotationNode annotationNode, SemanticModel semanticModel) {
+        MetadataNode metadataNode = (MetadataNode) annotationNode.parent();
+        if (metadataNode.parent().kind() == SyntaxKind.RECORD_FIELD) {
+            RecordFieldNode recordFieldNode = (RecordFieldNode) metadataNode.parent();
+            if (semanticModel.symbol(recordFieldNode).isPresent()) {
+                RecordFieldSymbol recordFieldSymbol = (RecordFieldSymbol) semanticModel.symbol(recordFieldNode).get();
+                return checkTypeForValidation(recordFieldSymbol.typeDescriptor());
+            }
+        }
+        return true;
     }
 
     private boolean isIdAnnotation(AnnotationSymbol annotationSymbol) {
