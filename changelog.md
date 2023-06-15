@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#4489] Fix Removing Duplicate Fields with Different Arguments without Returning an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/4489)
+- [[#4566] Fix Compiler Plugin Failure when Returning an Invalid Intersection Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4566)
 
 ## [1.8.0] - 2023-06-01
 
@@ -21,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#4376] Introduce an API to get Subfields of a `graphql:Field` Object](https://github.com/ballerina-platform/ballerina-standard-library/issues/4376)
 
 ### Fixed
-- [[#4364]Fix Compilation Error when GraphQL Package Import has a Prefix](https://github.com/ballerina-platform/ballerina-standard-library/issues/4364)
+- [[#4364] Fix Compilation Error when GraphQL Package Import has a Prefix](https://github.com/ballerina-platform/ballerina-standard-library/issues/4364)
 - [[#4379] Fix Schema Generation Failure when Import is Missing](https://github.com/ballerina-platform/ballerina-standard-library/issues/4379)
 - [[#4447] Fix non-isolated Function Pointers in Function Calls Within Isolated Functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/4447)
 - [[#4255] Fix Interceptors Returning Invalid Response for Maps](https://github.com/ballerina-platform/ballerina-standard-library/issues/4255)

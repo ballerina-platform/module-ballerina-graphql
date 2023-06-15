@@ -245,56 +245,56 @@ public class ServiceValidationTest {
     public void testInvalidReturnTypes() {
         String packagePath = "27_invalid_return_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 18);
+        Assert.assertEquals(diagnosticResult.errorCount(), 20);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "map", "Query.greeting");
-        assertErrorMessage(diagnostic, message, 28, 5);
+        assertErrorMessage(diagnostic, message, 29, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "json", "Query.greeting");
-        assertErrorMessage(diagnostic, message, 34, 5);
+        assertErrorMessage(diagnostic, message, 35, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte", "Query.greeting");
-        assertErrorMessage(diagnostic, message, 41, 5);
+        assertErrorMessage(diagnostic, message, 42, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte", "Query.greeting");
-        assertErrorMessage(diagnostic, message, 48, 5);
+        assertErrorMessage(diagnostic, message, 49, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, "float");
-        assertErrorMessage(diagnostic, message, 55, 5);
+        assertErrorMessage(diagnostic, message, 56, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, "decimal");
-        assertErrorMessage(diagnostic, message, 55, 5);
+        assertErrorMessage(diagnostic, message, 56, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, "Person");
-        assertErrorMessage(diagnostic, message, 61, 5);
+        assertErrorMessage(diagnostic, message, 62, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, "string");
-        assertErrorMessage(diagnostic, message, 61, 5);
+        assertErrorMessage(diagnostic, message, 62, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, "Person");
-        assertErrorMessage(diagnostic, message, 67, 5);
+        assertErrorMessage(diagnostic, message, 68, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_UNION_MEMBER_TYPE, "Student");
-        assertErrorMessage(diagnostic, message, 67, 5);
+        assertErrorMessage(diagnostic, message, 68, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "service object {}", "Query.foo");
-        assertErrorMessage(diagnostic, message, 74, 5);
+        assertErrorMessage(diagnostic, message, 75, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE, "Interceptor");
-        assertErrorMessage(diagnostic, message, 93, 5);
+        assertErrorMessage(diagnostic, message, 94, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
@@ -302,23 +302,31 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
-        assertErrorMessage(diagnostic, message, 93, 5);
+        assertErrorMessage(diagnostic, message, 94, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, "ServiceInterceptor");
-        assertErrorMessage(diagnostic, message, 83, 24);
+        assertErrorMessage(diagnostic, message, 84, 24);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, "int", "foo");
-        assertErrorMessage(diagnostic, message, 99, 5);
+        assertErrorMessage(diagnostic, message, 100, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, "int|string", "bar");
-        assertErrorMessage(diagnostic, message, 103, 5);
+        assertErrorMessage(diagnostic, message, 104, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE_CLASS, "Foo", "Query.foo");
-        assertErrorMessage(diagnostic, message, 112, 7);
+        assertErrorMessage(diagnostic, message, 113, 7);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "tuple", "Query.foo");
+        assertErrorMessage(diagnostic, message, 129, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "tuple", "Query.time.time");
+        assertErrorMessage(diagnostic, message, 133, 5);
     }
 
     @Test(groups = "invalid")
