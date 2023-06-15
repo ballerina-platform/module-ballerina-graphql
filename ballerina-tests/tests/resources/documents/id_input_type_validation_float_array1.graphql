@@ -1,4 +1,4 @@
-query($ids: ID) {
+query($ids: [ID!]!) {
         floatArrayReturnRecordArray(floatIds: $ids) {
         name
         id

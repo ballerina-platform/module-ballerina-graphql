@@ -91,9 +91,12 @@
                                 {
                                     "name": "id1",
                                     "type": {
-                                        "kind": "SCALAR",
-                                        "name": "ID",
-                                        "ofType": null
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "SCALAR",
+                                            "name": "ID"
+                                        }
                                     },
                                     "defaultValue": null
                                 }
@@ -113,9 +116,12 @@
                                 {
                                     "name": "id2",
                                     "type": {
-                                        "kind": "SCALAR",
-                                        "name": "ID",
-                                        "ofType": null
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "LIST",
+                                            "name": null
+                                        }
                                     },
                                     "defaultValue": null
                                 }
@@ -135,9 +141,12 @@
                                 {
                                     "name": "id3",
                                     "type": {
-                                        "kind": "SCALAR",
-                                        "name": "ID",
-                                        "ofType": null
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "LIST",
+                                            "name": null
+                                        }
                                     },
                                     "defaultValue": null
                                 }
@@ -157,9 +166,12 @@
                                 {
                                     "name": "id4",
                                     "type": {
-                                        "kind": "SCALAR",
-                                        "name": "ID",
-                                        "ofType": null
+                                        "kind": "LIST",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "SCALAR",
+                                            "name": "ID"
+                                        }
                                     },
                                     "defaultValue": null
                                 }
@@ -441,9 +453,12 @@
                             "name": "id",
                             "args": [],
                             "type": {
-                                "kind": "SCALAR",
-                                "name": "ID",
-                                "ofType": null
+                                "kind": "NON_NULL",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "LIST",
+                                    "name": null
+                                }
                             }
                         }
                     ],
@@ -457,9 +472,12 @@
                             "name": "id",
                             "args": [],
                             "type": {
-                                "kind": "SCALAR",
-                                "name": "ID",
-                                "ofType": null
+                                "kind": "LIST",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "SCALAR",
+                                    "name": "ID"
+                                }
                             }
                         }
                     ],
@@ -498,9 +516,12 @@
                             "name": "id",
                             "args": [],
                             "type": {
-                                "kind": "SCALAR",
-                                "name": "ID",
-                                "ofType": null
+                                "kind": "NON_NULL",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "LIST",
+                                    "name": null
+                                }
                             }
                         }
                     ],

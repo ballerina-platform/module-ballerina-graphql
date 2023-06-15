@@ -1,5 +1,5 @@
 query {
-    intArrayReturnRecord(intId: "[2,3]") {
+    intArrayReturnRecord(intId: [2, 3]) {
         __typename
         id
         name

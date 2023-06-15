@@ -1,5 +1,5 @@
 query {
-    uuidArrayReturnRecord(uuidId: "[{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}]") {
+    uuidArrayReturnRecord(uuidId: ["{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}"]) {
         __typename
         id
         name

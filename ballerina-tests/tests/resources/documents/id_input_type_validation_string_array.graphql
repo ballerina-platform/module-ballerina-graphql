@@ -1,5 +1,5 @@
 query {
-    stringArrayReturnRecord(stringId: "[\"Hello\", \"World\"]") {
+    stringArrayReturnRecord(stringId: ["Hello", "World"]) {
         __typename
         id
         name

@@ -30,8 +30,8 @@ isolated function testIdTypeAnnotation(string resourceFileName, json variables =
 
 function dataProviderIdAnnotation() returns map<[string, json]> {
     json values = {
-                    "ids" : "[2.9, 3.3, 4.5]"
-                  };
+                  	"ids" : ["2.9", "3.3", "4.5"]
+                  }
     map<[string, json]> dataSet = {
         "1": ["id_input_type_validation_string"],
         "2": ["id_input_type_validation_int"],
