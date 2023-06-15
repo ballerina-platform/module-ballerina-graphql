@@ -1,17 +1,16 @@
 {
     "errors": [
         {
-            "message": "Fields \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+            "message": "Field(s) \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
             "locations": [
+                {
+                    "line": 83,
+                    "column": 5
+                },
                 {
                     "line": 85,
                     "column": 5
-                }
-            ]
-        },
-        {
-            "message": "Fields \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
-            "locations": [
+                },
                 {
                     "line": 86,
                     "column": 5

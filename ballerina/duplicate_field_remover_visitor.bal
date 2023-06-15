@@ -82,17 +82,16 @@ class DuplicateFieldRemoverVisitor {
     private isolated function removeDuplicateSelections(parser:SelectionNode[] selections) {
         map<parser:FieldNode> visitedFields = {};
         map<parser:FragmentNode> visitedFragments = {};
-        int i = 0;
-        while i < selections.length() {
-            if self.isRemovedNode(selections[i]) {
-                i += 1;
+        map<Location[]> duplicateFieldLocations = {};
+        foreach parser:SelectionNode selection in selections {
+            if self.isRemovedNode(selection) {
                 continue;
             }
-            parser:SelectionNode modifiedSelectionNode = self.getModifiedNode(selections[i]);
+            parser:SelectionNode modifiedSelectionNode = self.getModifiedNode(selection);
             if modifiedSelectionNode is parser:FragmentNode {
                 if visitedFragments.hasKey(modifiedSelectionNode.getOnType()) {
                     self.appendDuplicates(modifiedSelectionNode, visitedFragments.get(modifiedSelectionNode.getOnType()));
-                    self.removeNode(selections[i]);
+                    self.removeNode(selection);
                 } else {
                     visitedFragments[modifiedSelectionNode.getOnType()] = modifiedSelectionNode;
                 }
@@ -101,11 +100,13 @@ class DuplicateFieldRemoverVisitor {
                     parser:FieldNode visitedField = visitedFields.get(modifiedSelectionNode.getAlias());
                     if self.hasDuplicateArguments(visitedField, modifiedSelectionNode) {
                         self.appendDuplicates(modifiedSelectionNode, visitedField);
-                        self.removeNode(selections[i]);
+                        self.removeNode(selection);
                     } else {
-                        string message = string `Fields "${modifiedSelectionNode.getAlias()}" conflict because they have differing arguments. ` +
-                                         string `Use different aliases on the fields to fetch both if this was intentional.`;
-                        self.errors.push(getErrorDetailRecord(message, modifiedSelectionNode.getLocation()));
+                        if duplicateFieldLocations.hasKey(visitedField.getAlias()) {
+                            duplicateFieldLocations.get(visitedField.getAlias()).push(modifiedSelectionNode.getLocation());
+                        } else {
+                            duplicateFieldLocations[visitedField.getAlias()] = [visitedField.getLocation(), modifiedSelectionNode.getLocation()];
+                        }
                     }
                 } else {
                     visitedFields[modifiedSelectionNode.getAlias()] = modifiedSelectionNode;
@@ -113,8 +114,8 @@ class DuplicateFieldRemoverVisitor {
             } else {
                 panic error("Invalid selection node passed.");
             }
-            i += 1;
         }
+        self.addDuplicateFieldErrors(duplicateFieldLocations);
     }
 
     private isolated function appendDuplicates(parser:SelectionParentNode duplicate, parser:SelectionParentNode original) {
@@ -213,5 +214,13 @@ class DuplicateFieldRemoverVisitor {
             }
         }
         return;
+    }
+
+    private isolated function addDuplicateFieldErrors(map<Location[]> duplicates) {
+        foreach string key in duplicates.keys() {
+            string message = string `Field(s) "${key}" conflict because they have differing arguments. ` +
+                             string `Use different aliases on the fields to fetch both if this was intentional.`;
+            self.errors.push(getErrorDetailRecord(message, <Location[]>duplicates[key]));
+        }
     }
 }

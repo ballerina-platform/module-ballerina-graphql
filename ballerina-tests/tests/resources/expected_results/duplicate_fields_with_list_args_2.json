@@ -1,8 +1,12 @@
 {
     "errors": [
         {
-            "message": "Fields \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+            "message": "Field(s) \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
             "locations": [
+                {
+                    "line": 90,
+                    "column": 5
+                },
                 {
                     "line": 91,
                     "column": 5
@@ -10,8 +14,12 @@
             ]
         },
         {
-            "message": "Fields \"getTotal\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+            "message": "Field(s) \"getTotal\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
             "locations": [
+                {
+                    "line": 92,
+                    "column": 5
+                },
                 {
                     "line": 93,
                     "column": 5
