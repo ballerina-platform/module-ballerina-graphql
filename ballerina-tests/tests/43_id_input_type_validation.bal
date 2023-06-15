@@ -20,34 +20,34 @@ import ballerina/test;
     groups: ["id_validation"],
     dataProvider: dataProviderIdAnnotation
 }
-isolated function testIdTypeAnnotation(string url, string resourceFileName) returns error? {
+isolated function testIdTypeAnnotation(string resourceFileName) returns error? {
+    string url = "http://localhost:9091/id_annotation_2";
     string document = check getGraphqlDocumentFromFile(resourceFileName);
     json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-function dataProviderIdAnnotation() returns map<[string, string]> {
-    string url = "http://localhost:9091/id_annotation_2";
-    map<[string, string]> dataSet = {
-        "1": [url, "id_input_type_validation_string"],
-        "2": [url, "id_input_type_validation_int"],
-        "3": [url, "id_input_type_validation_float"],
-        "4": [url, "id_input_type_validation_decimal"],
-        "5": [url, "id_input_type_validation_string_or_nil"],
-        "6": [url, "id_input_type_validation_int_or_nil"],
-        "7": [url, "id_input_type_validation_float_or_nil"],
-        "8": [url, "id_input_type_validation_decimal_or_nil"],
-        "9": [url, "id_input_type_validation_int1"],
-        "10": [url, "id_input_type_validation_int_array"],
-        "11": [url, "id_input_type_validation_string_array"],
-        "12": [url, "id_input_type_validation_float_array"],
-        "13": [url, "id_input_type_validation_decimal_array"],
-        "14": [url, "id_input_type_validation_uuid"],
-        "15": [url, "id_input_type_validation_uuid_array"],
-        "16": [url, "id_input_type_validation_uuid_array_or_nil"],
-        "17": [url, "id_input_type_validation_return_record_array"],
-        "18": [url, "id_input_type_validation_return_record"]
+function dataProviderIdAnnotation() returns map<[string]> {
+    map<[string]> dataSet = {
+        "1": ["id_input_type_validation_string"],
+        "2": ["id_input_type_validation_int"],
+        "3": ["id_input_type_validation_float"],
+        "4": ["id_input_type_validation_decimal"],
+        "5": ["id_input_type_validation_string_or_nil"],
+        "6": ["id_input_type_validation_int_or_nil"],
+        "7": ["id_input_type_validation_float_or_nil"],
+        "8": ["id_input_type_validation_decimal_or_nil"],
+        "9": ["id_input_type_validation_int1"],
+        "10": ["id_input_type_validation_int_array"],
+        "11": ["id_input_type_validation_string_array"],
+        "12": ["id_input_type_validation_float_array"],
+        "13": ["id_input_type_validation_decimal_array"],
+        "14": ["id_input_type_validation_uuid"],
+        "15": ["id_input_type_validation_uuid_array"],
+        "16": ["id_input_type_validation_uuid_array_or_nil"],
+        "17": ["id_input_type_validation_return_record_array"],
+        "18": ["id_input_type_validation_return_record"]
     };
     return dataSet;
 }
