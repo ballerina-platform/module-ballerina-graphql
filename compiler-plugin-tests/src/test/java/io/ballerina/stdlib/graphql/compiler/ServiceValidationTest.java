@@ -1093,7 +1093,7 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 19, 6);
     }
 
-    @Test
+    @Test(groups = "invalid")
     public void testInvalidUsagesOfIdAnnotation() {
         String packagePath = "62_invalid_usages_of_id_annotation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -1112,7 +1112,7 @@ public class ServiceValidationTest {
     }
 
     @Test(groups = "valid")
-    public void testValidAnnotationTypes() {
+    public void testValidUsageOfIdAnnotation() {
         String packagePath = "63_valid_usages_of_id_annotation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
