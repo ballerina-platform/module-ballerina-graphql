@@ -1,23 +1,26 @@
 [package]
 org = "ballerina"
 name = "graphql"
-version = "1.8.1"
+version = "1.9.0"
 authors = ["Ballerina"]
 export=["graphql", "graphql.subgraph"]
 keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.5.0"
+distribution = "2201.7.0"
+
+[platform.java11]
+graalvmCompatible = true
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-native"
-version = "1.8.1"
-path = "../native/build/libs/graphql-native-1.8.1-SNAPSHOT.jar"
+version = "1.9.0"
+path = "../native/build/libs/graphql-native-1.9.0-SNAPSHOT.jar"
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-compiler-plugin"
-version = "1.8.1"
-path = "../commons/build/libs/graphql-commons-1.8.1-SNAPSHOT.jar"
+version = "1.9.0"
+path = "../commons/build/libs/graphql-commons-1.9.0-SNAPSHOT.jar"
