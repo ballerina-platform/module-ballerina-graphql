@@ -85,6 +85,11 @@ isolated class Engine {
             operationNode.accept(visitor);
         }
 
+        ErrorDetail[]? errors = duplicateFieldRemover.getErrors();
+        if errors is ErrorDetail[] {
+            return getOutputObjectFromErrorDetail(errors);
+        }
+
         OperationNodeModifierVisitor operationNodeModifier = new (modifiedSelections, removedNodes);
         operationNode.accept(operationNodeModifier);
         parser:OperationNode modifiedOperationNode = operationNodeModifier.getOperationNode();
