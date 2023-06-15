@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+
 - [[#4566] Fix Compiler Plugin Failure when Returning an Invalid Intersection Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4566)
 
 ## [1.7.1] - 2023-04-25
