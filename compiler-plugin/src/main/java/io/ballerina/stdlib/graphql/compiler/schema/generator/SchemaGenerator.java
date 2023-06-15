@@ -518,6 +518,7 @@ public class SchemaGenerator {
     }
 
     private Field getField(RecordFieldSymbol recordFieldSymbol, String description) {
+        boolean isId = false;
         if (recordFieldSymbol.getName().isEmpty()) {
             return null;
         }
@@ -535,6 +536,7 @@ public class SchemaGenerator {
                         && annotationSymbol.getModule().isPresent()
                         && Utils.isGraphqlModuleSymbol(annotationSymbol.getModule().get())) {
                     type = getTypeForID(recordFieldSymbol.typeDescriptor());
+                    isId = true;
                     break;
                 }
             }
@@ -544,7 +546,7 @@ public class SchemaGenerator {
         } else {
             type = getType(typeSymbol);
         }
-        if (!isNilable(typeSymbol) && !recordFieldSymbol.isOptional()) {
+        if (!isNilable(typeSymbol) && !recordFieldSymbol.isOptional() && !isId) {
             type = getWrapperType(type, TypeKind.NON_NULL);
         }
         field.setType(type);

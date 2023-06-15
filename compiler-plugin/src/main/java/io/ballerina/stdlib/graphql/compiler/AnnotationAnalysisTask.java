@@ -59,22 +59,16 @@ public class AnnotationAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisCo
         if (semanticModel.symbol(annotationNode).isPresent()) {
             AnnotationSymbol annotationSymbol = (AnnotationSymbol) semanticModel.symbol(annotationNode).get();
             if (isIdAnnotation(annotationSymbol)) {
-                if (annotationNode.parent().kind() == SyntaxKind.REQUIRED_PARAM) {
-                    if (!validateRequiredParameterNode(annotationNode, semanticModel)) {
-                        updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                                annotationNode.location());
-                    }
-                } else if (annotationNode.parent().kind() == SyntaxKind.RETURN_TYPE_DESCRIPTOR) {
-                    if (!validateReturnTypeDescriptorNode(annotationNode, semanticModel)) {
-                        updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                                annotationNode.location());
-                    }
-                } else if (annotationNode.parent().kind() == SyntaxKind.METADATA) {
-                    if (!validateMetadataNode(annotationNode, semanticModel)) {
-                        updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
-                                annotationNode.location());
-                    }
-                } else {
+                if (annotationNode.parent().kind() == SyntaxKind.REQUIRED_PARAM
+                        && !validateRequiredParameterNode(annotationNode, semanticModel)) {
+                    updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                            annotationNode.location());
+                } else if (annotationNode.parent().kind() == SyntaxKind.RETURN_TYPE_DESCRIPTOR
+                        && !validateReturnTypeDescriptorNode(annotationNode, semanticModel)) {
+                    updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
+                            annotationNode.location());
+                } else if (annotationNode.parent().kind() == SyntaxKind.METADATA
+                        && !validateMetadataNode(annotationNode, semanticModel)) {
                     updateContext(syntaxNodeAnalysisContext, CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION,
                             annotationNode.location());
                 }
