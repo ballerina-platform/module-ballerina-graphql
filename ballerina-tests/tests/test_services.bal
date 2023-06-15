@@ -2300,6 +2300,14 @@ service /id_annotation_2 on basicListener  {
             {id: 543, name: "Amy March", age: 12}
         ];
     }
+
+    resource function get floatArrayReturnRecordArray(@graphql:ID float[] floatIds) returns PersonId[] {
+        return [
+            {id: 789, name: "Beth Match", age: 15},
+            {id: 678, name: "Jo March", age: 16},
+            {id: 543, name: "Amy March", age: 12}
+        ];
+    }
 }
 
 public type PersonId record {|

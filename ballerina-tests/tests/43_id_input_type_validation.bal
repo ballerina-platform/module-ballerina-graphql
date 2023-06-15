@@ -20,16 +20,19 @@ import ballerina/test;
     groups: ["id_validation"],
     dataProvider: dataProviderIdAnnotation
 }
-isolated function testIdTypeAnnotation(string resourceFileName) returns error? {
+isolated function testIdTypeAnnotation(string resourceFileName, json variables = ()) returns error? {
     string url = "http://localhost:9091/id_annotation_2";
     string document = check getGraphqlDocumentFromFile(resourceFileName);
-    json actualPayload = check getJsonPayloadFromService(url, document);
+    json actualPayload = check getJsonPayloadFromService(url, document, variables);
     json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-function dataProviderIdAnnotation() returns map<[string]> {
-    map<[string]> dataSet = {
+function dataProviderIdAnnotation() returns map<[string, json]> {
+    json values = {
+                    "ids" : "[2.9, 3.3, 4.5]"
+                  };
+    map<[string, json]> dataSet = {
         "1": ["id_input_type_validation_string"],
         "2": ["id_input_type_validation_int"],
         "3": ["id_input_type_validation_float"],
@@ -47,7 +50,8 @@ function dataProviderIdAnnotation() returns map<[string]> {
         "15": ["id_input_type_validation_uuid_array"],
         "16": ["id_input_type_validation_uuid_array_or_nil"],
         "17": ["id_input_type_validation_return_record_array"],
-        "18": ["id_input_type_validation_return_record"]
+        "18": ["id_input_type_validation_return_record"],
+        "19": ["id_input_type_validation_float_array1", values]
     };
     return dataSet;
 }
