@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/time;
 
 type Person record {
     string name;
@@ -116,5 +117,20 @@ class Foo {
 service graphql:Service on new graphql:Listener(4000) {
     resource function get foo() returns Foo {
         return new;
+    }
+}
+
+type Time record {|
+    readonly & [int, decimal] time;
+|};
+
+service graphql:Service on new graphql:Listener(4000) {
+
+    resource function get foo() returns time:Utc {
+        return [1, 2.3];
+    }
+
+    resource function get time() returns Time {
+        return {time: [1, 2.3]};
     }
 }
