@@ -106,6 +106,7 @@ dependencies = [
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
+	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
@@ -360,6 +361,21 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "url", moduleName = "url"}
+]
+
+[[package]]
+org = "ballerina"
+name = "uuid"
+version = "1.6.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
 ]
 
 [[package]]

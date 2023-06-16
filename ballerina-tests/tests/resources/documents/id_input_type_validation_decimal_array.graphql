@@ -1,0 +1,7 @@
+query {
+    decimalArrayReturnRecord(decimalId: ["0.8", "5.0", "6.9"]) {
+        __typename
+        id
+        name
+    }
+}

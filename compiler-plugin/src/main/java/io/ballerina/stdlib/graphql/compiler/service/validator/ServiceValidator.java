@@ -51,6 +51,7 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.tools.diagnostics.Location;
@@ -85,6 +86,8 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  */
 public class ServiceValidator {
     private static final String FIELD_PATH_SEPARATOR = ".";
+    private static final String ID_ANNOT_NAME = "ID";
+    private static final String[] allowedIDTypes = {"int", "string", "float", "decimal", "uuid:UUID"};
     private final Set<Symbol> visitedClassesAndObjectTypeDefinitions = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
@@ -452,6 +455,11 @@ public class ServiceValidator {
             addDiagnostic(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS,
                           getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
                           typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
+        } else if (typeDefinitionSymbol.getModule().isPresent()
+                && Utils.isValidUuidModule(typeDefinitionSymbol.getModule().get())
+                && typeDefinitionSymbol.getName().isPresent()
+                && typeDefinitionSymbol.getName().get().equals(Utils.UUID_RECORD_NAME)) {
+            return;
         } else {
             validateReturnType(typeReferenceTypeSymbol.typeDescriptor(), location);
         }
@@ -552,7 +560,10 @@ public class ServiceValidator {
                 if (isValidGraphqlParameter(parameter.typeDescriptor())) {
                     continue;
                 }
-                validateInputParameterType(parameter.typeDescriptor(), inputLocation, isResourceMethod(methodSymbol));
+                if (parameter.annotations().isEmpty()) {
+                    validateInputParameterType(parameter.typeDescriptor(), inputLocation,
+                            isResourceMethod(methodSymbol));
+                }
             }
         }
     }

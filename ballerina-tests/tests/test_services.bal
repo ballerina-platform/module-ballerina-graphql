@@ -16,6 +16,7 @@
 
 import ballerina/graphql;
 import ballerina/http;
+import ballerina/uuid;
 import ballerina/lang.runtime;
 
 graphql:Service graphiqlDefaultPathConfigService =
@@ -2154,5 +2155,183 @@ service /constraints on basicListener {
 
     isolated resource function subscribe movie(MovieDetails movie) returns stream<Reviews?, error?> {
         return movie.reviews.toStream();
+    }
+}
+
+service /id_annotation_1 on basicListener {
+    resource function get student1(@graphql:ID int id1) returns Student1 {
+        return new Student1(8);
+    }
+
+    resource function get student2(@graphql:ID float[] id2) returns Student2 {
+        return new Student2([1.0, 2.0]);
+    }
+
+    resource function get student3(@graphql:ID uuid:Uuid?[] id3) returns Student3|error {
+        return new Student3([check uuid:createType1AsRecord()]);
+    }
+
+    resource function get student4(@graphql:ID int?[]? id4) returns Student4 {
+        return new Student4([1, 2, (), 4]);
+    }
+}
+
+public distinct service class Student1 {
+    final int id;
+
+    function init(int id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID int {
+        return self.id;
+    }
+}
+
+public distinct service class Student2 {
+    final float[] id;
+
+    function init(float[] id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID float[] {
+        return self.id;
+    }
+}
+
+public distinct service class Student3 {
+    final uuid:Uuid?[] id;
+
+    function init(uuid:Uuid?[] id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID uuid:Uuid?[] {
+        return self.id;
+    }
+}
+
+public distinct service class Student4 {
+    final int?[]? id;
+
+    function init(int?[]? id) {
+        self.id = id;
+    }
+
+    resource function get id() returns @graphql:ID int?[]? {
+        return self.id;
+    }
+}
+
+service /id_annotation_2 on basicListener  {
+    resource function get stringId(@graphql:ID string stringId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get intId(@graphql:ID int intId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get floatId(@graphql:ID float floatId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get decimalId(@graphql:ID decimal decimalId) returns string {
+        return "Hello, World";
+    }
+
+        resource function get stringId1(@graphql:ID string? stringId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get intId1(@graphql:ID int? intId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get floatId1(@graphql:ID float? floatId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get decimalId1(@graphql:ID decimal? decimalId) returns string {
+        return "Hello, World";
+    }
+
+    resource function get intIdReturnRecord(@graphql:ID int intId) returns Student5 {
+        return new Student5(2, "Jennifer Flackett");
+    }
+
+    resource function get intArrayReturnRecord(@graphql:ID int[] intId) returns Student5 {
+        return new Student5(333, "Antoni Porowski");
+    }
+
+    resource function get stringArrayReturnRecord(@graphql:ID string[] stringId) returns Student5 {
+        return new Student5(212, "Andrew Glouberman");
+    }
+
+    resource function get floatArrayReturnRecord(@graphql:ID float[] floatId) returns Student5 {
+        return new Student5(422, "Elliot Birch");
+    }
+
+    resource function get decimalArrayReturnRecord(@graphql:ID decimal[] decimalId) returns Student5 {
+        return new Student5(452, "Edward MacDell");
+    }
+
+    resource function get uuidReturnRecord(@graphql:ID uuid:Uuid uuidId) returns Student5 {
+        return new Student5(2678, "Abuela Alvarez");
+    }
+
+    resource function get uuidArrayReturnRecord(@graphql:ID uuid:Uuid[] uuidId) returns Student5 {
+        return new Student5(678, "Andy Garcia");
+    }
+
+    resource function get uuidArrayReturnRecord1(@graphql:ID uuid:Uuid[]? uuidId) returns Student5 {
+        return new Student5(563, "Aretha Franklin");
+    }
+
+    resource function get stringIdReturnRecord(@graphql:ID string stringId) returns PersonId {
+        return {id: 543, name: "Marmee March", age: 12};
+    }
+
+    resource function get stringArrayReturnRecordArray(@graphql:ID string[] stringIds) returns PersonId[] {
+        return [
+            {id: 789, name: "Beth Match", age: 15},
+            {id: 678, name: "Jo March", age: 16},
+            {id: 543, name: "Amy March", age: 12}
+        ];
+    }
+
+    resource function get floatArrayReturnRecordArray(@graphql:ID float[] floatIds) returns PersonId[] {
+        return [
+            {id: 789, name: "Beth Match", age: 15},
+            {id: 678, name: "Jo March", age: 16},
+            {id: 543, name: "Amy March", age: 12}
+        ];
+    }
+}
+
+public type PersonId record {|
+    @graphql:ID
+    int id;
+    string name;
+    int age;
+|};
+
+
+public distinct service class Student5 {
+    final int id;
+    final string name;
+
+    function init(int id, string name) {
+        self.id = id;
+        self.name = name;
+    }
+
+    resource function get id() returns @graphql:ID int {
+        return self.id;
+    }
+
+    resource function get name() returns string {
+        return self.name;
     }
 }

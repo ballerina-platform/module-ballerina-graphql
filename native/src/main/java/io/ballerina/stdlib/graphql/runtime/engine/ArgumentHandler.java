@@ -36,6 +36,7 @@ import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
+import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -45,8 +46,11 @@ import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
@@ -88,6 +92,11 @@ public class ArgumentHandler {
     private static final int T_BOOLEAN = 5;
     private static final int T_INPUT_OBJECT = 22;
     private static final int T_LIST = 23;
+    private static final ArrayList<String> idsList = new ArrayList<>();
+    private static final String ID_ANNOTATION = "ID";
+    private static final String PACKAGE_NAME = "ballerina/graphql";
+    private static final String RETURN_TYPE_PARAM = "$returns$";
+    private static final String ARGUMENT_TYPE_PARAM = "$param$";
 
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
                            boolean validation) {
@@ -95,11 +104,34 @@ public class ArgumentHandler {
         this.fileInfo = (BMap<BString, Object>) context.getNativeData(FILE_INFO_FIELD);
         this.context = context;
         this.field = field;
+        populateIdTypeArguments(method.getAnnotations());
         this.argumentsMap = ValueCreator.createMapValue();
         this.responseGenerator = responseGenerator;
         this.validation = validation;
         BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
         this.populateArgumentsMap(fieldNode);
+    }
+
+    private void populateIdTypeArguments(BMap<BString, Object> annotations) {
+        int i = 0;
+        for (Object annotation : annotations.values().toArray()) {
+            BMap annotationMap = (BMap) annotation;
+            for (Object annotationKey : annotationMap.getKeys()) {
+                if (isIdAnnotation(annotationKey)
+                        && !annotations.getKeys()[i].getValue().equals(RETURN_TYPE_PARAM)) {
+                    String[] annotationValue = annotations.getKeys()[i].getValue().split("\\.");
+                    if (annotationValue.length == 2 && annotationValue[0].equals(ARGUMENT_TYPE_PARAM)) {
+                        idsList.add(annotationValue[1]);
+                    }
+                    i++;
+                }
+            }
+        }
+    }
+
+    private boolean isIdAnnotation(Object annotationKey) {
+        String[] fullTypeName = annotationKey.toString().replaceAll("\\d", "").split("::");
+        return fullTypeName[0].equals(PACKAGE_NAME) && fullTypeName[1].equals(ID_ANNOTATION);
     }
 
     public Object[] getArguments() {
@@ -141,6 +173,9 @@ public class ArgumentHandler {
     }
 
     private Object getArgumentValue(BObject argumentNode, Type parameterType) {
+        if (idsList.contains(argumentNode.getStringValue(NAME_FIELD).getValue())) {
+            return this.getIdArgumentValue(argumentNode, parameterType);
+        }
         if (isFileUpload(parameterType)) {
             return this.getFileUploadParameter(argumentNode, parameterType);
         } else if (isRepresentationArgument(parameterType)) {
@@ -159,6 +194,145 @@ public class ArgumentHandler {
         } else {
             return this.getScalarArgumentValue(argumentNode);
         }
+    }
+
+    private Object getIdArgumentValue(BObject argumentNode, Type parameterType) {
+        if (argumentNode.get(VALUE_FIELD) instanceof BString) {
+            String obj = ((BString) argumentNode.get(VALUE_FIELD)).getValue();
+            return getIdValueFromString(obj, parameterType, argumentNode);
+        } else if (argumentNode.get(VALUE_FIELD) instanceof BArray) {
+            return getIdValueFromBArray(argumentNode, parameterType, (BArray) argumentNode.get(VALUE_FIELD));
+        } else if (argumentNode.get(StringUtils.fromString("variableValue")) instanceof BArray) {
+            return getIdValueFromBArray(argumentNode, parameterType,
+                    ((BArray) argumentNode.get(StringUtils.fromString("variableValue"))));
+        }
+        return argumentNode.get(VALUE_FIELD);
+    }
+
+    private Object getIdValueFromBArray(BObject argumentNode, Type parameterType, BArray bArray) {
+        if (parameterType.getTag() == TypeTags.UNION_TAG) {
+            for (Type memberType: ((UnionType) parameterType).getMemberTypes()) {
+                if (memberType.getTag() == TypeTags.ARRAY_TAG) {
+                    return getIdValueFromBArray(argumentNode, memberType, bArray);
+                }
+            }
+        }
+        if (((ArrayType) parameterType).getElementType().getTag() == TypeTags.INT_TAG) {
+            int i = 0;
+            long[] longArray = new long[bArray.size()];
+            for (Object obj: bArray.getValues()) {
+                BObject bObject = (BObject) obj;
+                longArray[i] = bObject.getIntValue(VALUE_FIELD);
+                i++;
+            }
+            return ValueCreator.createArrayValue(longArray);
+        } else {
+            String[] stringArray = new String[bArray.size()];
+            int i = 0;
+            for (Object obj: bArray.getValues()) {
+                if (obj instanceof BString) {
+                    stringArray[i] = ((BString) obj).getValue();
+                } else {
+                    BObject bObject = (BObject) obj;
+                    stringArray[i] = bObject.getStringValue(VALUE_FIELD).getValue();
+                }
+                i++;
+            }
+            return getArrayTypeIdValue(parameterType, stringArray);
+        }
+    }
+
+    private Object getIdValueFromString(String obj, Type parameterType, BObject argumentNode) {
+        if (parameterType.getTag() == TypeTags.STRING_TAG) {
+            return StringUtils.fromString(obj);
+        } else if (parameterType.getTag() == TypeTags.INT_TAG) {
+            return Integer.parseInt(obj);
+        } else if (parameterType.getTag() == TypeTags.FLOAT_TAG) {
+            return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
+        } else if (parameterType.getTag() == TypeTags.DECIMAL_TAG) {
+            return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
+        } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            // not validating if this is uuid:Uuid since compiler plugin does that
+            return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
+                    (BMap<BString, Object>) JsonUtils.parse(obj.replaceAll("\\\\", "")));
+        } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
+            return getUnionTypeIdValue(parameterType, argumentNode);
+        }
+        return argumentNode.get(VALUE_FIELD);
+    }
+
+    private Object getUnionTypeIdValue(Type parameterType, BObject argumentNode) {
+        List<Type> members = ((UnionType) parameterType).getMemberTypes();
+        for (Type member : members) {
+            if (member.getTag() != TypeTags.NULL_TAG && member.getTag() != TypeTags.ERROR_TAG) {
+                return getIdArgumentValue(argumentNode, member);
+            }
+        }
+        return null;
+    }
+
+    private Object getArrayTypeIdValue(Type parameterType, String[] stringArray) {
+        Type memberType = ((ArrayType) parameterType).getElementType();
+        if (memberType.getTag() == TypeTags.INT_TAG) {
+            return ValueCreator.createArrayValue(getIntArrayTypeIdValue(stringArray));
+        } else if (memberType.getTag() == TypeTags.FLOAT_TAG) {
+            return ValueCreator.createArrayValue(Arrays.toString(getFloatArrayTypeIdValue(stringArray))
+                    .getBytes(StandardCharsets.UTF_8));
+        } else if (memberType.getTag() == TypeTags.DECIMAL_TAG) {
+            return ValueCreator.createArrayValue(Arrays.toString(getDecimalArrayTypeIdValue(stringArray))
+                    .getBytes(StandardCharsets.UTF_8));
+        } else if (memberType.getTag() == TypeTags.STRING_TAG) {
+            return ValueCreator.createArrayValue(getStringArrayTypeIdValue(stringArray));
+        } else if (memberType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            return ValueCreator.createArrayValue(getTypeRefArrayTypeIdValue(stringArray, parameterType),
+                    (ArrayType) parameterType);
+        }
+        return null;
+    }
+
+    private BMap<BString, Object>[] getTypeRefArrayTypeIdValue(String[] stringValues, Type parameterType) {
+        BMap<BString, Object>[] uuidArray = new BMap[stringValues.length];
+        for (int i = 0; i < stringValues.length; i++) {
+            uuidArray[i] = ValueCreator.createRecordValue(
+                    ((ArrayType) parameterType).getElementType().getPackage(),
+                    ((ArrayType) parameterType).getElementType().getName(),
+                    (BMap<BString, Object>) JsonUtils.parse(stringValues[i].replaceAll("\\\\", "")));
+        }
+        return uuidArray;
+    }
+
+    private BString[] getStringArrayTypeIdValue(String[] stringValues) {
+        BString[] bStringArray = new BString[stringValues.length];
+        for (int i = 0; i < stringValues.length; i++) {
+            bStringArray[i] = StringUtils.fromString(stringValues[i]);
+        }
+        return bStringArray;
+    }
+
+    private BigDecimal[] getDecimalArrayTypeIdValue(String[] stringArray) {
+        BigDecimal[] values = new BigDecimal[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            values[i] = new BigDecimal(stringArray[i]);
+        }
+        return values;
+    }
+
+    private float[] getFloatArrayTypeIdValue(String[] stringArray) {
+        float[] values = new float[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            values[i] = Float.parseFloat(stringArray[i]);
+        }
+        return values;
+    }
+
+    private long[] getIntArrayTypeIdValue(String[] stringArray) {
+        long[] values = new long[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            if (!stringArray[i].equals("")) {
+                values[i] = Integer.parseInt(stringArray[i]);
+            }
+        }
+        return values;
     }
 
     private BMap<BString, Object> getRepresentationArgument(Object jsonRepresentation, Type parameterType) {

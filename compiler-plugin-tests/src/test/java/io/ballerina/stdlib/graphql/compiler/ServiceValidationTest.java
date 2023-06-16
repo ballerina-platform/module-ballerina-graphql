@@ -298,7 +298,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
-        assertErrorMessage(diagnostic, message, 75, 5);
+        assertErrorMessage(diagnostic, message, 78, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
@@ -1091,6 +1091,31 @@ public class ServiceValidationTest {
         diagnostic = diagnosticIterator.next();
         // a duplicate error message is expected for input type with primitive type alias
         assertErrorMessage(diagnostic, message, 19, 6);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfIdAnnotation() {
+        String packagePath = "62_invalid_usages_of_id_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_ID_ANNOTATION);
+        assertErrorMessage(diagnostic, message, 20, 32);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 32, 40);
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 42, 32);
+    }
+
+    @Test(groups = "valid")
+    public void testValidUsageOfIdAnnotation() {
+        String packagePath = "63_valid_usages_of_id_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

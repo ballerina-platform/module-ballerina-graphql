@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - [[#4176] Add Support for Input Constraint Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/4176)
 - [[#4479] Introduce `graphql:__addError()` Function to Add an ErrorDetail into the `errors` Field of a GraphQL Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/4479)
+- [[#4202] Add Support for GraphQL Scalar Type ID](https://github.com/ballerina-platform/ballerina-standard-library/issues/4202)
 
 ### Fixed
 - [[#4489] Fix Removing Duplicate Fields with Different Arguments without Returning an Error](https://github.com/ballerina-platform/ballerina-standard-library/issues/4489)
