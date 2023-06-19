@@ -19,7 +19,6 @@
 # + name - User name  
 # + login - Logged in user
 # + id - User id  
-# + bio - User bio  
 # + url - Prfile url 
 # + createdAt - Created date of Profile  
 # + updatedAt - Last update date
@@ -30,7 +29,6 @@ type User record {
     string? name;
     string login;
     int id;
-    string bio;
     string url;
     string createdAt;
     string updatedAt;
@@ -188,7 +186,6 @@ type GitHubUser record {
     string? name;
     string login;
     int id;
-    string bio;
     string url;
     string created_at;
     string updated_at;

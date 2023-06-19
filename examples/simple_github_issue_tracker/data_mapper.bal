@@ -18,7 +18,6 @@ function transformGitHubUser(GitHubUser gitHubUser) returns User => {
     name: gitHubUser?.name,
     login: gitHubUser.login,
     id: gitHubUser.id,
-    bio: gitHubUser.bio,
     url: gitHubUser.url,
     createdAt: gitHubUser.created_at,
     updatedAt: gitHubUser.updated_at,
@@ -35,7 +34,6 @@ function transformGitHubRepository(GitHubRepository gitHubRepository) returns Re
     createdAt: gitHubRepository.created_at,
     updatedAt: gitHubRepository.updated_at,
     language: gitHubRepository.language,
-
     hasIssues: gitHubRepository.has_issues,
     forksCount: gitHubRepository.forks_count,
     openIssuesCount: gitHubRepository.open_issues_count,
@@ -48,4 +46,22 @@ function transformGitHubRepository(GitHubRepository gitHubRepository) returns Re
 };
 
 function transformGitHubRepositories(GitHubRepository[] gitHubRepositories) returns Repository[] =>
-    gitHubRepositories.map(transformGitHubRepository);
+    from var gitHubRepositoriesItem in gitHubRepositories
+select {
+    id: gitHubRepositoriesItem.id,
+    name: gitHubRepositoriesItem.name,
+    description: gitHubRepositoriesItem.description,
+    'fork: gitHubRepositoriesItem.'fork,
+    createdAt: gitHubRepositoriesItem.created_at,
+    updatedAt: gitHubRepositoriesItem.updated_at,
+    language: gitHubRepositoriesItem.language,
+    hasIssues: gitHubRepositoriesItem.has_issues,
+    forksCount: gitHubRepositoriesItem.forks_count,
+    openIssuesCount: gitHubRepositoriesItem.open_issues_count,
+    lisense: gitHubRepositoriesItem.lisense,
+    visibility: gitHubRepositoriesItem.visibility,
+    forks: gitHubRepositoriesItem.forks,
+    openIssues: gitHubRepositoriesItem.open_issues,
+    watchers: gitHubRepositoriesItem.watchers,
+    defaultBranch: gitHubRepositoriesItem.default_branch
+};
