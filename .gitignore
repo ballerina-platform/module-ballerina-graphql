@@ -48,3 +48,4 @@ velocity.log*
 graphql-ballerina/modules/graphql/
 examples/**/Dependencies.toml
 load-tests/**/Dependencies.toml
+examples/**/Config.toml
