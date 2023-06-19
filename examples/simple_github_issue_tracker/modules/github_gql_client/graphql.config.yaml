@@ -1,0 +1,9 @@
+## The GraphQL schema. E.g., https://countries.trevorblades.com or ./schemas/country.graphql
+schema: ./schemas/github.graphql
+## The GraphQL documents that have queries/mutations
+documents:
+   - ./queries/query-github.graphql
+extensions:
+   endpoints:
+      default:
+         headers: { "Authorization": "Bearer token" }

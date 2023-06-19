@@ -17,6 +17,7 @@
 import ballerina/graphql;
 import ballerina/http;
 import ballerina/io;
+import simple_github_issue_tracker.github_gql_client;
 
 configurable string authToken = ?;
 configurable string owner = ?;
@@ -32,11 +33,13 @@ configurable string owner = ?;
 service /graphql on new graphql:Listener(9090) {
 
     final http:Client githubRestClient;
+    final github_gql_client:GraphqlClient githubClient;
 
     function init() returns error? {
         self.githubRestClient = check new ("https://api.github.com", {auth: {token: authToken}});
-        io:println(string `💃 Server ready at http://localhost:9090/graphql`);
-        io:println(string `Access the GraphiQL UI at http://localhost:9090/graphiql`);
+        self.githubClient = check new ({auth: {token: authToken}}, "https://api.github.com");
+        io:println(string `💃 Server ready at http://localhost:${port}/graphql`);
+        io:println(string `Access the GraphiQL UI at http://localhost:${port}/graphiql`);
     }
 
     # Get GitHub User Details
@@ -62,6 +65,19 @@ service /graphql on new graphql:Listener(9090) {
     resource function get repository(string repositoryName) returns Repository|error {
         GitHubRepository repository = check self.githubRestClient->/repos/[owner]/[repositoryName];
         return transformGitHubRepository(repository);
+    }
+
+    # Get Branches
+    #
+    # + perPageCount - Number of branches per page
+    # + repositoryName - Repository name
+    # + username - GitHub username
+    # + return - Repository branches
+    resource function get branches(int perPageCount, string repositoryName, string username) 
+            returns github_gql_client:GetBranchesResponse|error {
+        github_gql_client:GetBranchesResponse branches = 
+            check self.githubClient->getBranches(perPageCount, repositoryName, username);
+        return branches;
     }
 
     # Create Repository
