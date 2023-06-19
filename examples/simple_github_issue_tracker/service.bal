@@ -35,8 +35,8 @@ service /graphql on new graphql:Listener(9090) {
 
     function init() returns error? {
         self.githubRestClient = check new ("https://api.github.com", {auth: {token: authToken}});
-        io:println("💃 Server ready at http://localhost:9090/graphql");
-        io:println("Access the GraphiQL UI at http://localhost:9090/graphiql");
+        io:println(string `💃 Server ready at http://localhost:9090/graphql`);
+        io:println(string `Access the GraphiQL UI at http://localhost:9090/graphiql`);
     }
 
     # Get GitHub User Details

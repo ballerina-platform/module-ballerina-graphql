@@ -17,7 +17,7 @@
 # The GitHub User
 #
 # + login - Logged in user
-# + id - User id  
+# + id - User id
 # + url - Prfile url 
 # + createdAt - Created date of Profile  
 # + updatedAt - Last update date
