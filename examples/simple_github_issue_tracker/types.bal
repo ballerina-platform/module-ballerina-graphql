@@ -16,61 +16,32 @@
 
 # The GitHub User
 #
-# + name - User name  
 # + login - Logged in user
 # + id - User id  
 # + url - Prfile url 
 # + createdAt - Created date of Profile  
 # + updatedAt - Last update date
-# + avatarUrl - Avatar url  
-# + email - User email 
-# + publicRepos - number if public repos  
 type User record {
-    string? name;
     string login;
-    int id;
     string url;
     string createdAt;
     string updatedAt;
-    string avatarUrl;
-    string? email?;
-    int publicRepos?;
 };
 
 # The GitHub Repository
 #
 # + id - Repository id  
 # + name - The name of the repository.  
-# + description - The description of the repository.  
-# + 'fork - Field Description  
 # + createdAt - Identifies the date and time when the object was created.  
 # + updatedAt - Identifies the date and time when the object was last updated.  
-# + language - The language composition of the repository.  
 # + hasIssues - State whether there are issues or not  
-# + forksCount - Fork count  
-# + openIssuesCount - Open issues count  
-# + lisense - License type  
-# + visibility - Visibility of the repository  
-# + forks - Number of forks  
-# + openIssues - Number of open issues  
-# + watchers - Number of watchers  
 # + defaultBranch - Name of the default branch
 public type Repository record {
     int id;
     string name;
-    string? description;
-    boolean 'fork;
-    string createdAt;
-    string updatedAt;
-    string? language;
+    string? createdAt;
+    string? updatedAt;
     boolean hasIssues;
-    int forksCount;
-    int openIssuesCount;
-    License lisense?;
-    string visibility;
-    int forks;
-    int openIssues;
-    int watchers;
     string defaultBranch;
 };
 
@@ -124,28 +95,18 @@ public type CreateIssueInput record {
 # + author - The actor who authored the comment.
 # + body - Identifies the body of the issue.
 # + bodyHTML - The body rendered to HTML.
-# + bodyResourcePath - The http path for this issue body
 # + bodyText - Identifies the body of the issue rendered to text.
-# + bodyUrl - The http URL for this issue body
 # + createdAt - Identifies the date and time when the object was created.
-# + id - ID
-# + isPinned - Indicates whether or not this issue is currently pinned to the repository issues list
 # + number - Identifies the issue number.
-# + publishedAt - Identifies when the comment was published at.
 # + resourcePath - The HTTP path for this issue
 # + title - Identifies the issue title.
 public type Issue record {
     Actor? author?;
     string? body?;
     string bodyHTML?;
-    string bodyResourcePath?;
     string bodyText?;
-    string bodyUrl?;
     string createdAt?;
-    int id;
-    boolean? isPinned?;
     int number;
-    string? publishedAt?;
     string resourcePath?;
     string title?;
 };
@@ -166,36 +127,15 @@ public type Actor record {
 type GitHubRepository record {
     int id;
     string name;
-    string? description;
-    boolean 'fork;
     string created_at;
     string updated_at;
-    string? language;
     boolean has_issues;
-    int forks_count;
-    int open_issues_count;
-    License lisense?;
-    string visibility;
-    int forks;
-    int open_issues;
-    int watchers;
     string default_branch;
 };
 
 type GitHubUser record {
-    string? name;
     string login;
-    int id;
     string url;
     string created_at;
     string updated_at;
-    string avatar_url;
-    string 'type;
-    string? company;
-    string blog;
-    string? location;
-    string? email?;
-    int public_repos?;
-    int followers?;
-    int following?;
 };
