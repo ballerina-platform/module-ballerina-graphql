@@ -76,17 +76,6 @@ public type Repository record {
     string defaultBranch;
 };
 
-# The Repository Branch
-#
-# + id - Branch id  
-# + name - Branch name
-# + prefix - Branch prefix
-public type Branch record {
-    string id;
-    string name;
-    string prefix;
-};
-
 # The GitHub Repository Lisence
 #
 # + key - Lisence key  
