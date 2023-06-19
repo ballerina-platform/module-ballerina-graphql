@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import simple_github_issue_tracker.github_gql_client;
+
 # The GitHub User
 #
 # + login - Logged in user
@@ -158,3 +160,30 @@ type GitHubUser record {
     int followers?;
     int following?;
 };
+
+type GetBranchesResponse record {|
+    *github_gql_client:GetBranchesResponse;
+|};
+
+type Ref record {|
+    Branch?[]? nodes;
+|};
+
+type Repo record {|
+    Ref refs;
+|};
+
+type BranchesResponse record {|
+    Repo repository;
+|};
+
+# Represents a Repository Branch.
+# 
+# + name - Name of the branch.
+# + id - Unique branch identifier.
+# + prefix - The ref's prefix, such as `refs/heads/` or `refs/tags/`.
+public type Branch record {|
+    string name;
+    string id;
+    string prefix;      
+|};

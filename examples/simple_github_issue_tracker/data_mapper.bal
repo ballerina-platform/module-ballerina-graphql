@@ -40,3 +40,11 @@ select {
     hasIssues: gitHubRepositoriesItem.has_issues,
     defaultBranch: gitHubRepositoriesItem.default_branch
 };
+
+function transformGetBranchesResponse(GetBranchesResponse getBranchesResponse) returns BranchesResponse => {
+    repository: {
+        refs: {
+            nodes: getBranchesResponse.repository?.refs?.nodes
+        }
+    }
+};
