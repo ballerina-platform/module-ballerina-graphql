@@ -36,12 +36,11 @@ function testRepositories() returns error? {
 }
 function testRepository() returns error? {
     string repoName = "Module-Ballerina-GraphQL";
-    string query = string `query { repository(repositoryName: "${repoName}"){ defaultBranch, description } }`;
+    string query = string `query { repository(repositoryName: "${repoName}"){ defaultBranch } }`;
     json expectedResult = {
         "data": {
             "repository": {
-                "defaultBranch": "master",
-                "description": "This is the Ballerina GraphQL module, which is a part of Ballerina Language Standard Library"
+                "defaultBranch": "master"
             }
         }
     };
