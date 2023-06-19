@@ -1,4 +1,4 @@
-# Git Tracker
+# Simple GitHub Issue Tracker
 
 Git Tracker is a GraphQL service written in Ballerina that connects with the GitHub REST API. It enables tracking and monitoring of Git repositories.
 
@@ -31,11 +31,16 @@ Git Tracker is a GraphQL service written in Ballerina that connects with the Git
     authToken = "<YOUR_GITHUB_AUTH_TOKEN>"
     owner = "<GITHUB_USERNAME>"
 
-3. Start the Git Tracker service:
+4. Start the kafka server:
+    ```bash
+    docker-compose -f docker-compose-kafka.yml up
+    ```
+
+4. Start the Git Tracker service:
     ```bash
     bal run
 
-4. Access the Git Tracker service at http://localhost:9090/graphql.
+5. Access the Git Tracker service at http://localhost:9090/graphql.
 
 ### Usage
 
@@ -44,20 +49,18 @@ Make GraphQL requests to interact with the Git Tracker service. Here's an exampl
 # Get repository details
     query MyQuery {
         repositories {
-            created_at
-            description
-            forks_count
-            language
+            id
             name
-            visibility
-            default_branch
-            license {
+            description
+            fork
+            createdAt
+            updatedAt
+            language
+            hasIssues
+            forksCount
+            openIssuesCount
+            lisense {
                 name
-            }
-            owner {
-                login
-                id
-                url
             }
         }
     }
