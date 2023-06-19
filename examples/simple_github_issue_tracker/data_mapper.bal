@@ -18,7 +18,6 @@ function transformGitHubUser(GitHubUser gitHubUser) returns User => {
     name: gitHubUser?.name,
     login: gitHubUser.login,
     id: gitHubUser.id,
-    bio: gitHubUser.bio,
     url: gitHubUser.url,
     createdAt: gitHubUser.created_at,
     updatedAt: gitHubUser.updated_at,

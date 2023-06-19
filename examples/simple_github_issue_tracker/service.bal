@@ -20,7 +20,6 @@ import ballerina/io;
 
 configurable string authToken = ?;
 configurable string owner = ?;
-configurable int port = 9090;
 
 @graphql:ServiceConfig {
     cors: {
@@ -30,14 +29,14 @@ configurable int port = 9090;
         enabled: true
     }
 }
-service /graphql on new graphql:Listener(port) {
+service /graphql on new graphql:Listener(9090) {
 
     final http:Client githubRestClient;
 
     function init() returns error? {
         self.githubRestClient = check new ("https://api.github.com", {auth: {token: authToken}});
-        io:println(string `💃 Server ready at http://localhost:${port}/graphql`);
-        io:println(string `Access the GraphiQL UI at http://localhost:${port}/graphiql`);
+        io:println(string `💃 Server ready at http://localhost:9090/graphql`);
+        io:println(string `Access the GraphiQL UI at http://localhost:9090/graphiql`);
     }
 
     # Get GitHub User Details
