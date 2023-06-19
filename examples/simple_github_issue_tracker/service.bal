@@ -52,7 +52,7 @@ service /graphql on new graphql:Listener(port) {
     # 
     # + return - GitHub repository list
     resource function get repositories() returns Repository[]|error {
-        GitHubRepository[] repositories = check self.githubRestClient->get(string `/users/${owner}/repos`);
+        GitHubRepository[] repositories = check self.githubRestClient->/users/[owner]/repos;
         return transformGitHubRepositories(repositories);
     }
 
@@ -61,7 +61,7 @@ service /graphql on new graphql:Listener(port) {
     # + repositoryName - Repository name
     # + return - GitHub repository
     resource function get repository(string repositoryName) returns Repository|error {
-        GitHubRepository repository = check self.githubRestClient->get(string `/repos/${owner}/${repositoryName}`);
+        GitHubRepository repository = check self.githubRestClient->/repos/[owner]/[repositoryName];
         return transformGitHubRepository(repository);
     }
 
@@ -80,7 +80,7 @@ service /graphql on new graphql:Listener(port) {
     # + repositoryName - Repository name
     # + return - GitHub issue
     remote function createIssue(CreateIssueInput createIssueInput, string repositoryName) returns Issue|error {
-        Issue issue = check self.githubRestClient->post(string `/repos/${owner}/${repositoryName}/issues`, createIssueInput);
+        Issue issue = check self.githubRestClient->/repos/[owner]/[repositoryName]/issues.post(createIssueInput);
         check produceIssue(issue, repositoryName);
         return issue;
     }
