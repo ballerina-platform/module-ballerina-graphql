@@ -37,9 +37,9 @@ service /graphql on new graphql:Listener(9090) {
 
     function init() returns error? {
         self.githubRestClient = check new ("https://api.github.com", {auth: {token: authToken}});
-        self.githubClient = check new ({auth: {token: authToken}}, "https://api.github.com");
-        io:println(string `💃 Server ready at http://localhost:${port}/graphql`);
-        io:println(string `Access the GraphiQL UI at http://localhost:${port}/graphiql`);
+        self.githubClient = check new ({auth: {token: authToken}}, "https://api.github.com/graphql");
+        io:println(string `💃 Server ready at http://localhost:9090/graphql`);
+        io:println(string `Access the GraphiQL UI at http://localhost:9090/graphiql`);
     }
 
     # Get GitHub User Details
@@ -73,11 +73,11 @@ service /graphql on new graphql:Listener(9090) {
     # + repositoryName - Repository name
     # + username - GitHub username
     # + return - Repository branches
-    resource function get branches(int perPageCount, string repositoryName, string username) 
-            returns github_gql_client:GetBranchesResponse|error {
-        github_gql_client:GetBranchesResponse branches = 
-            check self.githubClient->getBranches(perPageCount, repositoryName, username);
-        return branches;
+    resource function get branches(int perPageCount, string repositoryName, string username)
+            returns Branch?[]?|error {
+        github_gql_client:GetBranchesResponse branches = check self.githubClient->getBranches(perPageCount,
+            repositoryName, username);
+        return transformGetBranchesResponse(branches).repository.refs.nodes;
     }
 
     # Create Repository
