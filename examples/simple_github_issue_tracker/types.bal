@@ -17,11 +17,10 @@
 # The GitHub User
 #
 # + login - Logged in user
-# + id - User id  
-# + url - Prfile url 
+# + url - Prfile url
 # + createdAt - Created date of Profile  
 # + updatedAt - Last update date
-type User record {
+public type User record {
     string login;
     string url;
     string createdAt;
@@ -127,15 +126,35 @@ public type Actor record {
 type GitHubRepository record {
     int id;
     string name;
+    boolean 'fork;
     string created_at;
     string updated_at;
+    string? language;
     boolean has_issues;
+    int forks_count;
+    int open_issues_count;
+    License lisense?;
+    string visibility;
+    int forks;
+    int open_issues;
+    int watchers;
     string default_branch;
 };
 
 type GitHubUser record {
+    string? name;
     string login;
+    int id;
     string url;
     string created_at;
     string updated_at;
+    string avatar_url;
+    string 'type;
+    string? company;
+    string blog;
+    string? location;
+    string? email?;
+    int public_repos?;
+    int followers?;
+    int following?;
 };
