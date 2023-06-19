@@ -50,11 +50,12 @@ function testRepository() returns error? {
 
 @test:Config {
     groups: ["query"],
-    enable: false
+    enable: true
 }
 function testBranches() returns error? {
-    string repoName = "Moduel-Ballerina-GraphQL";
-    string query = string `query { branches(repositoryName: "${repoName}"){ name } }`;
+    string repoName = "Module-Ballerina-GraphQL";
+    string username = "gqlUser";
+    string query = string `query { branches(repositoryName: "${repoName}", perPageCount: 10, username: "${username}"){ name } }`;
     json expectedResult = {
         "data": {
             "branches": [
@@ -88,7 +89,7 @@ function createRepository() returns error? {
             "path":["createRepository"]
             }
         ],
-        "data":null
+        "data": null
     };
     json actualResult = check testClient->execute(query);
     test:assertEquals(expectedResult, actualResult);
