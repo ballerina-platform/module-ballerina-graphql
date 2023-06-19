@@ -113,7 +113,7 @@ public type CreateRepositoryInput record {
 public type CreateIssueInput record {
     string title;
     string body?;
-    string[] assigneeNames;
+    string[] assigneeNames?;
     string milestoneId?;
     string[] labelNames?;
     string[] projectIds?;
