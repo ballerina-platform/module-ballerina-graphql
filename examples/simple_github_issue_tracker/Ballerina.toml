@@ -1,0 +1,8 @@
+[package]
+org = "ballerina"
+name = "simple_github_issue_tracker"
+version = "0.1.0"
+distribution = "2201.6.0"
+
+[build-options]
+observabilityIncluded = true

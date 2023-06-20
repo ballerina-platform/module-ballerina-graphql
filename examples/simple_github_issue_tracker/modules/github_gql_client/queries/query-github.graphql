@@ -1,0 +1,11 @@
+query getBranches($username: String!, $repositoryName: String!, $perPageCount: Int!, $lastPageCursor: String) {
+    repository(owner: $username, name: $repositoryName) {
+        refs(first:$perPageCount, after: $lastPageCursor, refPrefix: "refs/heads/") {
+            nodes{
+                name
+                id
+                prefix
+            }
+        }
+    }
+}
