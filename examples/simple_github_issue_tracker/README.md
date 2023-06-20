@@ -39,6 +39,7 @@ Git Tracker is a GraphQL service written in Ballerina that connects with the Git
 4. Start the Git Tracker service:
     ```bash
     bal run
+    ```
 
 5. Access the Git Tracker service at http://localhost:9090/graphql.
 
