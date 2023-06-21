@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import simple_github_issue_tracker.github_gql_client;
+import simple_github_issue_tracker.github.gqlclient as gqlClient;
 
 # The GitHub User
 #
@@ -162,7 +162,7 @@ type GitHubUser record {
 };
 
 type GetBranchesResponse record {|
-    *github_gql_client:GetBranchesResponse;
+    *gqlClient:GetBranchesResponse;
 |};
 
 type Ref record {|

@@ -17,7 +17,7 @@
 import ballerina/graphql;
 import ballerina/http;
 import ballerina/io;
-import simple_github_issue_tracker.github_gql_client;
+import simple_github_issue_tracker.github.gqlclient as gqlClient;
 
 configurable string authToken = ?;
 configurable string owner = ?;
@@ -33,7 +33,7 @@ configurable string owner = ?;
 service /graphql on new graphql:Listener(9090) {
 
     final http:Client githubRestClient;
-    final github_gql_client:GraphqlClient githubClient;
+    final gqlClient:GraphqlClient githubClient;
 
     function init() returns error? {
         self.githubRestClient = check new ("https://api.github.com", {auth: {token: authToken}});
@@ -75,7 +75,7 @@ service /graphql on new graphql:Listener(9090) {
     # + return - Repository branches
     resource function get branches(int perPageCount, string repositoryName, string username)
             returns Branch?[]?|error {
-        github_gql_client:GetBranchesResponse branches = check self.githubClient->getBranches(perPageCount,
+        gqlClient:GetBranchesResponse branches = check self.githubClient->getBranches(perPageCount,
             repositoryName, username);
         return transformGetBranchesResponse(branches).repository.refs.nodes;
     }
