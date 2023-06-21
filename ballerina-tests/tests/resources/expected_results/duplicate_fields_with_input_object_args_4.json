@@ -1,0 +1,30 @@
+{
+    "errors": [
+        {
+            "message": "Field(s) \"book\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+            "locations": [
+                {
+                    "line": 71,
+                    "column": 5
+                },
+                {
+                    "line": 74,
+                    "column": 5
+                }
+            ]
+        },
+        {
+            "message": "Field(s) \"name\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+            "locations": [
+                {
+                    "line": 77,
+                    "column": 5
+                },
+                {
+                    "line": 79,
+                    "column": 5
+                }
+            ]
+        }
+    ]
+}

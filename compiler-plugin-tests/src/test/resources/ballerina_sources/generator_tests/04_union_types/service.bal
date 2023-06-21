@@ -55,7 +55,7 @@ public isolated distinct service class Student {
         return self.name;
     }
 
-    isolated resource function get id() returns int {
+    isolated resource function get id() returns @graphql:ID int {
         return self.id;
     }
 }

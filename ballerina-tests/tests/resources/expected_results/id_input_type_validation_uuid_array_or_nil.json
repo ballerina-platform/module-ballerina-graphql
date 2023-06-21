@@ -1,0 +1,9 @@
+{
+    "data": {
+        "uuidArrayReturnRecord1": {
+            "__typename": "Student5",
+            "id": 563,
+            "name": "Aretha Franklin"
+        }
+    }
+}

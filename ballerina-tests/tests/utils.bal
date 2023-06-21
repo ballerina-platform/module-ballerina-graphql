@@ -23,6 +23,7 @@ import ballerina/websocket;
 
 const CONTENT_TYPE_TEXT_HTML = "text/html";
 const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
+const CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
 isolated function getJsonPayloadUsingHttpClient(string url, string document, json? variables = {}, string? operationName = (),
                                                 http:HttpVersion httpVersion = http:HTTP_1_1) returns json|error {
@@ -174,5 +175,5 @@ isolated function validateConnectionClousureWithError(websocket:Client wsClient,
         test:assertEquals(response.message(), expectedErrorMsg);
         return;
     }
-    test:assertFail(string `Expected Error found : ${response.toString()}`);
+    test:assertFail(string `Unexpected Error found : ${response.toString()}`);
 }

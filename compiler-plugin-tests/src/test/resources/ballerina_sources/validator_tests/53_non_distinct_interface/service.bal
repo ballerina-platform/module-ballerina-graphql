@@ -17,7 +17,7 @@
 import ballerina/graphql;
 
 service /graphql on new graphql:Listener(4000) {
-    isolated resource function get name(int id) returns Person {
+    isolated resource function get name(@graphql:ID int id) returns Person {
         if id < 10 {
             return new Student("Jesse Pinkman", 25, "student-1");
         }
@@ -51,7 +51,7 @@ public isolated distinct service class Student {
         return self.age;
     }
 
-    isolated resource function get id() returns string {
+    isolated resource function get id() returns @graphql:ID string {
         return self.id;
     }
 }
@@ -79,7 +79,7 @@ public isolated service class Teacher {
         return self.age;
     }
 
-    isolated resource function get id() returns string {
+    isolated resource function get id() returns @graphql:ID string {
         return self.id;
     }
 

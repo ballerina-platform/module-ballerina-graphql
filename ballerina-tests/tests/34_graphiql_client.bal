@@ -46,7 +46,7 @@ function dataProviderGraphiqlClient() returns string[][] {
     string url2 = "http://localhost:9092";
 
     return [
-        [url1, "/ballerina graphql", CONTENT_TYPE_TEXT_PLAIN],
+        [url1, "/ballerina graphql", CONTENT_TYPE_APPLICATION_JSON],
         [url1, "/graphiql", CONTENT_TYPE_TEXT_HTML],
         [url1, "/ballerina/graphiql", CONTENT_TYPE_TEXT_HTML],
         [url2, "/graphiql", CONTENT_TYPE_TEXT_HTML],

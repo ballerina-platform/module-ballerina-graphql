@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "Input validation failed in the field \"reviewStars\": Validation failed for '$[0].stars:maxValueExclusive','$[1].comments:maxLength','$[1].stars:maxValueExclusive' constraint(s).",
+            "locations": [
+                {
+                    "line": 33,
+                    "column": 5
+                }
+            ],
+            "path": [
+                "reviewStars"
+            ]
+        }
+    ],
+    "data": null
+}

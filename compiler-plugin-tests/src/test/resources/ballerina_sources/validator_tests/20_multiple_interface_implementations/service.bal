@@ -17,7 +17,7 @@
 import ballerina/graphql;
 
 service /graphql on new graphql:Listener(4000) {
-    isolated resource function get name(int id) returns Animal {
+    isolated resource function get name(@graphql:ID int id) returns Animal {
         return new Dog("Lassie", "Sam");
     }
 }

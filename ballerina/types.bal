@@ -18,6 +18,9 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/websocket;
 
+# Represents the annotation of the ID type.
+public annotation ID on record field, parameter, return;
+
 # Represents the Scalar types supported by the Ballerina GraphQL module.
 public type Scalar boolean|int|float|string|decimal;
 

@@ -1,0 +1,21 @@
+{
+    "data": {
+        "floatArrayReturnRecordArray": [
+            {
+                "name": "Beth Match",
+                "id": 789,
+                "age": 15
+            },
+            {
+                "name": "Jo March",
+                "id": 678,
+                "age": 16
+            },
+            {
+                "name": "Amy March",
+                "id": 543,
+                "age": 12
+            }
+        ]
+    }
+}

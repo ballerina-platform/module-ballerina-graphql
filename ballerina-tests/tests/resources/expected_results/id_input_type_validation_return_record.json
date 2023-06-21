@@ -1,0 +1,9 @@
+{
+    "data": {
+        "stringIdReturnRecord": {
+            "__typename": "PersonId",
+            "id": 543,
+            "name": "Marmee March"
+        }
+    }
+}

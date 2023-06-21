@@ -4,6 +4,9 @@ query getPerson {
             first
         }
         name {
+            first
+        }
+        name {
             last
         }
         address {

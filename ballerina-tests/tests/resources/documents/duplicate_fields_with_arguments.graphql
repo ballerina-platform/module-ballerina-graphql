@@ -1,0 +1,105 @@
+query duplicateFieldsWithScalarArgs1 {
+    greet(name: "Ballerina")
+    greet(name: "GraphQL")
+    name
+    name(name: "GraphQL")
+}
+
+query duplicateFieldsWithScalarArgs2($Name: String!) {
+    name(name: "Ballerina")
+    name(name: $Name)
+}
+
+query duplicateFieldsWithScalarArgs3($Name: String! = "Ballerina") {
+    name(name: "Ballerina")
+    name(name: $Name)
+}
+
+query duplicateFieldsWithEnumArgs1 {
+    isHoliday(weekday: FRIDAY)
+    isHoliday(weekday: SATURDAY)
+}
+
+query duplicateFieldsWithEnumArgs2 {
+    isHoliday(weekday: null)
+    isHoliday(weekday: null)
+    isHoliday
+}
+
+query duplicateFieldsWithEnumArgs3($day: Weekday!, $weekday: Weekday!) {
+    isHoliday(weekday: $day)
+    isHoliday(weekday: $weekday)
+}
+
+query duplicateFieldsWithInputObjectArgs1 {
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur"}}) {
+        name
+    },
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur"}}) {
+        name
+    },
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur", age: 45}}) {
+        name
+    }
+}
+
+query duplicateFieldsWithInputObjectArgs2($name: String! = "Arthur") {
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur"}}) {
+        name
+    },
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur"}}) {
+        name
+    },
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: $name}}) {
+        name
+    }
+}
+
+query duplicateFieldsWithInputObjectArgs3($bName:String = "Avengers", $bAuthor:ProfileDetail!) {
+    book(info: {bookName: $bName, edition: 6, author: $bAuthor, movie:{movieName: "End Game"}}) {
+        name
+    },
+    book(info: {bookName: $bName, edition: 6, author: $bAuthor, movie:{movieName: "End Game"}}) {
+        name
+    }
+    book(info: {bookName: "Avengers", edition: 6, author: $bAuthor, movie:{movieName: "End Game"}}) {
+        name
+    }
+}
+
+query duplicateFieldsWithInputObjectArgs4 {
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur", age: 45}, movie: {movieName: "Sherlock Holmes"}}) {
+        name
+    },
+    book(info:{bookName: "Sherlock", edition: 4, author: {name: "Arthur", age: 45}, movie: {movieName: "Sherlock Holmes", director: "Ritchie"}}) {
+        name
+    },
+    name(person: {}),
+    name(person: {}),
+    name(person: {name: "Sam", addresses: []})
+}
+
+query duplicateFieldsWithListArgs1 {
+    concat(words: null)
+    concat(words: null)
+    concat(words: [null, "gql"])
+    concat(words: [null, null])
+}
+
+query duplicateFieldsWithListArgs2 {
+    concat(words: ["Ballerina", "GraphQL"])
+    concat(words: ["GraphQL", "Ballerina"])
+    getTotal(prices: [[4, 5, 6, 7], [2,3,4], [3,5,6,4,2,7]])
+    getTotal(prices: [[4, 5, 6, 7], [2,3,4], [3,5,6,4,7,2]])
+}
+
+query duplicateFieldsWithListArgs3 {
+    getTotal(prices: [[2,3,4], [4, 5, 6, 7], [3,5,6,4,2,7]])
+    getTotal(prices: [[2,3,4], [4, 5, 6, 7], [3,5,6,4,2,7]])
+    getTotal(prices: [[4, 5, 6, 7], [2,3,4], [3,5,6,4,2,7]])
+    getTotal(prices: [[4, 5, 6, 7], [2,4,3], [3,5,6,4,2,7]])
+    getTotal(prices: [[4, 5, 6, 7], [2,3], [3,5,6,4,2,7]])
+    total:getTotal(prices: [[4, 5, 7, 8], [2,3,4], [3,5,6,4,2,7]])
+    total:getTotal(prices: [[4, 5, 6, 7], [3,5,6,4,2,7]])
+    total:getTotal(prices: [[4, 5, 7], [2,4,3], [3,5,6,4,2,7]])
+}
