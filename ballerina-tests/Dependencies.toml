@@ -82,6 +82,7 @@ dependencies = [
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "time"},
+	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
@@ -368,7 +369,6 @@ modules = [
 org = "ballerina"
 name = "uuid"
 version = "1.6.0"
-scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},
