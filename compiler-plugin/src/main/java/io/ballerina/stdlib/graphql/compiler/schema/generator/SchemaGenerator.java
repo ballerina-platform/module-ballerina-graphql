@@ -78,6 +78,7 @@ import static io.ballerina.stdlib.graphql.commons.utils.TypeUtils.removeEscapeCh
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.hasLoaderAnnotation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFunctionDefinition;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
@@ -150,6 +151,9 @@ public class SchemaGenerator {
     private void findRootTypes(Node serviceNode) {
         Type queryType = addType(TypeName.QUERY);
         for (MethodSymbol methodSymbol : getMethods(serviceNode)) {
+            if (hasLoaderAnnotation(methodSymbol)) {
+                continue;
+            }
             if (isResourceMethod(methodSymbol)) {
                 ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) methodSymbol;
                 String accessor = getAccessor(resourceMethodSymbol);
@@ -465,7 +469,7 @@ public class SchemaGenerator {
         Type objectType = addType(name, TypeKind.OBJECT, description, position, ObjectKind.CLASS);
 
         for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
-            if (isResourceMethod(methodSymbol)) {
+            if (isResourceMethod(methodSymbol) && !hasLoaderAnnotation(methodSymbol)) {
                 objectType.addField(getField((ResourceMethodSymbol) methodSymbol));
             }
         }

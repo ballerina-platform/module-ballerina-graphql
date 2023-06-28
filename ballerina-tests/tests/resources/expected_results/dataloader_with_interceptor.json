@@ -1,0 +1,24 @@
+{
+  "data": {
+    "one": [
+      {
+        "name": "Author 1",
+        "books": [
+          {
+            "title": "Book 1"
+          }
+        ]
+      }
+    ],
+    "four": [
+      {
+        "name": "Author 4",
+        "books": [
+          {
+            "title": "Book 8"
+          }
+        ]
+      }
+    ]
+  }
+}

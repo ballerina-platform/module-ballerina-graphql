@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/graphql.dataloader;
 import ballerina/lang.runtime;
 
 public type PeopleService StudentService|TeacherService;
@@ -391,5 +392,80 @@ public distinct isolated service class CustomerAddress {
     }
     isolated resource function get city() returns string {
         return self.city;
+    }
+}
+
+const BOOK_LOADER = "bookLoader";
+
+public isolated distinct service class AuthorData {
+    private final readonly & AuthorRow author;
+
+    isolated function init(AuthorRow author) {
+        self.author = author.cloneReadOnly();
+    }
+
+    isolated resource function get name() returns string {
+        return self.author.name;
+    }
+
+    isolated resource function get books(map<dataloader:DataLoader> loaders) returns BookData[]|error {
+        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
+        BookRow[] bookrows = check bookLoader.get(self.author.id);
+        return from BookRow bookRow in bookrows
+            select new BookData(bookRow);
+    }
+
+    @dataloader:Loader {
+        batchFunctions: {[BOOK_LOADER] : bookLoaderFunction}
+    }
+    isolated resource function get loadBooks(map<dataloader:DataLoader> loaders) {
+        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
+        bookLoader.load(self.author.id);
+    }
+}
+
+public isolated distinct service class AuthorDetail {
+    private final readonly & AuthorRow author;
+
+    isolated function init(AuthorRow author) {
+        self.author = author.cloneReadOnly();
+    }
+
+    isolated resource function get name() returns string {
+        return self.author.name;
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: new BookInterceptor()
+    }
+    isolated resource function get books(map<dataloader:DataLoader> loaders) returns BookData[]|error {
+        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
+        BookRow[] bookrows = check bookLoader.get(self.author.id);
+        return from BookRow bookRow in bookrows
+            select new BookData(bookRow);
+    }
+
+    @dataloader:Loader {
+        batchFunctions: {[BOOK_LOADER] : bookLoaderFunction}
+    }
+    isolated resource function get loadBooks(map<dataloader:DataLoader> loaders) {
+        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
+        bookLoader.load(self.author.id);
+    }
+}
+
+public isolated distinct service class BookData {
+    private final readonly & BookRow book;
+
+    isolated function init(BookRow book) {
+        self.book = book.cloneReadOnly();
+    }
+
+    isolated resource function get id() returns int {
+        return self.book.id;
+    }
+
+    isolated resource function get title() returns string {
+        return self.book.title;
     }
 }

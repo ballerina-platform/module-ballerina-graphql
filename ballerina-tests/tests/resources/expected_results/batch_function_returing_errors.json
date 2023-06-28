@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "message": "Invalid keys found for authors",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": ["authors"]
+    }
+  ],
+  "data": null
+}

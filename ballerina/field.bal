@@ -154,4 +154,8 @@ public class Field {
     isolated function getFieldInterceptors() returns readonly & Interceptor[] {
         return self.fieldInterceptors;
     }
+
+    isolated function isRootField() returns boolean {
+        return self.path.length() == 1;
+    }
 }

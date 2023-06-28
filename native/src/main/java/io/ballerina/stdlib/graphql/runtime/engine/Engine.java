@@ -34,6 +34,8 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BFunctionPointer;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
@@ -44,8 +46,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
@@ -68,6 +72,12 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
+
+    private static final String SUB_MODULE_NAME_SEPARATOR = ".";
+    private static final String DATA_LOADER_SUB_MODULE_NAME = "dataloader";
+    private static final String LOADER_ANNOTATION_NAME = "Loader";
+    private static final BString BATCH_FUNCTIONS_FIELD = StringUtils.fromString("batchFunctions");
+
     private Engine() {
     }
 
@@ -247,6 +257,11 @@ public class Engine {
         return result;
     }
 
+    public static Object getRemoteMethod(BObject service, BString methodName) {
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+        return getRemoteMethod(serviceType, methodName.getValue());
+    }
+
     private static RemoteMethodType getRemoteMethod(ServiceType serviceType, String methodName) {
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(methodName)) {
@@ -286,5 +301,61 @@ public class Engine {
             return methodType.getAnnotation(identifier);
         }
         return null;
+    }
+
+    public static boolean hasLoadMethod(BObject serviceObject, BString resourceMethodName, boolean isRemoteMethod) {
+        ServiceType serviceType = (ServiceType) serviceObject.getOriginalType();
+        if (isRemoteMethod) {
+            return Arrays.stream(serviceType.getRemoteMethods()).anyMatch(
+                    methodType -> methodType.getName().equals(resourceMethodName.getValue())
+                            && getLoadAnnotation(methodType) != null);
+        }
+        return Arrays.stream(serviceType.getResourceMethods()).anyMatch(
+                methodType -> methodType.getResourcePath()[0].equals(resourceMethodName.getValue())
+                        && getLoadAnnotation(methodType) != null);
+    }
+
+    private static BMap<BString, Object> getLoadAnnotation(MethodType methodType) {
+        String dataLoaderModuleName = getDataLoaderSubModuleName();
+        String loaderAnnotationTypeName = dataLoaderModuleName + COLON + LOADER_ANNOTATION_NAME;
+        return (BMap<BString, Object>) methodType.getAnnotation(StringUtils.fromString(loaderAnnotationTypeName));
+    }
+
+    private static String getDataLoaderSubModuleName() {
+        String graphqlModuleName = getModule().toString();
+        String[] tokens = graphqlModuleName.split(COLON);
+        String dataLoaderModuleName = tokens[0] + SUB_MODULE_NAME_SEPARATOR + DATA_LOADER_SUB_MODULE_NAME + COLON;
+        if (tokens.length == 2) {
+            dataLoaderModuleName += tokens[1];
+        }
+        return dataLoaderModuleName;
+    }
+
+    public static BMap<BString, BFunctionPointer> getBatchFunctionsMap(BObject serviceObject, BString loadMethodName,
+                                                                       boolean loadMethodIsRemote) {
+        ServiceType serviceType = (ServiceType) serviceObject.getOriginalType();
+        MethodType loadMethodType = loadMethodIsRemote ? getRemoteMethod(serviceType, loadMethodName.getValue()) :
+                getResourceMethod(serviceType, List.of(loadMethodName.getValue()), GET_ACCESSOR);
+        // loadMethodType will never be null since we have validated it with the compiler plugin.
+        BMap<BString, Object> loadAnnotation = getLoadAnnotation(Objects.requireNonNull(loadMethodType));
+        return (BMap<BString, BFunctionPointer>) loadAnnotation.get(BATCH_FUNCTIONS_FIELD);
+    }
+
+    public static void executeLoadMethod(Environment environment, BObject context, BObject service,
+                                         MethodType resourceMethod, BObject fieldObject) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+        ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
+        Object[] arguments = argumentHandler.getArguments();
+        if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+            environment.getRuntime()
+                    .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
+                                                   executionCallback, null, null, arguments);
+        } else {
+            environment.getRuntime()
+                    .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
+                                                   executionCallback, null, null, arguments);
+        }
     }
 }

@@ -43,8 +43,9 @@ public enum DiagnosticMessage {
                       + "\", which is reserved by GraphQL introspection"),
     ERROR_112("invalid type found in the GraphQL field ''{0}''. A GraphQL field cannot have \"any\" or \"anydata\" as "
                       + "the type, instead use specific types"),
-    ERROR_113("a GraphQL service must have at least one resource method with a '''" + RESOURCE_FUNCTION_GET + "''' "
-                      + "accessor"),
+    ERROR_113("a GraphQL service must include at least one resource method with the accessor '''"
+                      + RESOURCE_FUNCTION_GET + "''' that does not have the @dataloader:Loader annotation attached"
+                      + " to it"),
     ERROR_114("the GraphQL field ''{0}'' use input type ''{1}'' as an output type. A GraphQL field cannot use an input "
                       + "type as an output type"),
     ERROR_115("the GraphQL field ''{0}'' use output type ''{1}'' as an input type. A GraphQL field cannot use an output"
@@ -83,7 +84,21 @@ public enum DiagnosticMessage {
     ERROR_138("failed to add _service service to the subgraph service"),
     ERROR_139("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported"),
     ERROR_140("invalid usage of @graphql:ID annotation. @graphql:ID annotation can only be used with string, "
-                      + "int, float, decimal and uuid:Uuid types");
+                      + "int, float, decimal and uuid:Uuid types"),
+    ERROR_141("no corresponding remote method with name ''{0}'' found for data loader remote method ''{1}''"),
+    ERROR_142("invalid method signature found in resource method ''{0}''. The method requires a parameter of type "
+                      + "''map<dataloader:DataLoader>''"),
+    ERROR_143("invalid parameter ''{0}'' found in data loader resource method ''{1}''. No matching parameter found in"
+                      + " the GraphQL field ''{2}''"),
+    ERROR_144("invalid return type ''{0}'' found in data loader resource method ''{1}''. The data loader resource "
+                      + "method must not return any value"),
+    ERROR_145("no matching {0} method ''{1}'' found for the GraphQL field ''{2}''. A data loader {0} "
+                      + "method with the name ''{1}'' must be present in the service to use the data loader"),
+    ERROR_146("invalid usage of map<dataloader:DataLoader> in subscribe resource ''{0}''"),
+    ERROR_147("no corresponding get resource method with name ''{0}'' found for data loader resource method ''{1}''"),
+    ERROR_148("invalid usage of @dataloader:Loader annotation in subscribe resource method ''{0}''"),
+    ERROR_149("invalid name ''{0}'' found for data loader method. A data loader method name must be in the format of "
+                      + "''{1}'' followed by the GraphQL field name where the data loader is used");
 
     private final String message;
 

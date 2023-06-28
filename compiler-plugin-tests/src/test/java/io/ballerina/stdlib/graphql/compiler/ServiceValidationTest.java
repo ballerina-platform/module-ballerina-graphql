@@ -1077,6 +1077,7 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 63, 51);
     }
     
+    @Test(groups = "invalid")
     public void testUnsupportedPrimitiveTypeAlias() {
         String packagePath = "61_unsupported_primitive_type_alias";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
@@ -1116,6 +1117,135 @@ public class ServiceValidationTest {
         String packagePath = "63_valid_usages_of_id_annotation";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test(groups = "invalid")
+    public void testLoaderMethodWithoutDataLoaderParameter() {
+        String packagePath = "64_loader_method_without_data_loader_parameter";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_DATA_LOADER_PARAMETER, "loadBooks");
+        assertErrorMessage(diagnostic, message, 34, 32);
+    }
+
+    @Test(groups = "invalid")
+    public void testLoaderMethodWithInvalidParameters() {
+        String packagePath = "65_loader_method_with_invalid_parameters";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_PARAMETER_IN_LOAD_METHOD, "int id", "loadBooks",
+                                         "books");
+        assertErrorMessage(diagnostic, message, 34, 32);
+    }
+
+    @Test(groups = "invalid")
+    public void testLoaderMethodWithInvalidReturnType() {
+        String packagePath = "66_loader_method_with_invalid_return_type";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_LOADER_METHOD, "int",
+                                         "loadBooks");
+        assertErrorMessage(diagnostic, message, 34, 32);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsageOfDataLoaderWithoutLoaderMethod() {
+        String packagePath = "67_invalid_usage_of_data_loader_without_loader_method";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.NO_MATCHING_LOAD_FUNCTION_FOUND, "get", "loadBooks",
+                                         "books");
+        assertErrorMessage(diagnostic, message, 31, 32);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.NO_MATCHING_LOAD_FUNCTION_FOUND, "remote", "loadUpdateAuthor",
+                                  "updateAuthor");
+        assertErrorMessage(diagnostic, message, 25, 21);
+    }
+
+    @Test(groups = "valid")
+    public void testServiceWithValidDataLoaderConfiguration() {
+        String packagePath = "68_service_with_valid_data_loader_configuration";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidDataLoaderUsageInSubscription() {
+        String packagePath = "69_invalid_usage_of_data_loader_in_subscription";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_DATA_LOADER_USAGE_IN_SUBSCRIPTION, "data");
+        assertErrorMessage(diagnostic, message, 25, 65);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidLoaderAnnotationInSubscribeResource() {
+        String packagePath = "70_invalid_loader_annotation_in_subscribe_resource";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USAGE_OF_LOADER_ANNOTATION_IN_SUBSCRIBE_RESOURCE,
+                                         "data");
+        assertErrorMessage(diagnostic, message, 28, 23);
+    }
+
+
+    @Test(groups = "invalid")
+    public void testLoaderMethodWithInvalidName() {
+        String packagePath = "71_loader_method_with_invalid_name";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_NAME_FOR_DATA_LOADER, "books",
+                                         "load");
+        assertErrorMessage(diagnostic, message, 40, 32);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_NAME_FOR_DATA_LOADER, "author",
+                                  "load");
+        assertErrorMessage(diagnostic, message, 28, 32);
+    }
+
+    @Test(groups = "invalid")
+    public void testLoaderMethodWithoutGraphqlFieldMapping() {
+        String packagePath = "72_loader_method_without_graphql_field_mapping";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 3);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.NO_MATCHING_RESOURCE_METHOD_FOUND_FOR_LOAD_METHOD,
+                                         "books", "loadBooks");
+        assertErrorMessage(diagnostic, message, 46, 32);
+
+        diagnostic = diagnosticIterator.next();
+        String message2 = getErrorMessage(CompilationDiagnostic.NO_MATCHING_REMOTE_METHOD_FOUND_FOR_LOAD_METHOD,
+                                          "authors", "loadAuthors");
+        assertErrorMessage(diagnostic, message2, 28, 21);
+
+
+        diagnostic = diagnosticIterator.next();
+        assertErrorMessage(diagnostic, message, 34, 32);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

@@ -269,3 +269,16 @@ type ParseResult record {|
     parser:DocumentNode document;
     ErrorDetail[] validationErrors;
 |};
+
+type Result record {|
+    readonly anydata key;
+    anydata|error value;
+|};
+
+type Key record {|
+    readonly anydata key;
+|};
+
+type PlaceHolderNode record {|
+    string __uuid;
+|};

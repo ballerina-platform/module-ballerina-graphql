@@ -43,6 +43,7 @@ public class Utils {
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
     public static final String PACKAGE_ORG = "ballerina";
     public static final String SERVICE_NAME = "Service";
+    private static final String DATA_LOADER_SUB_MODULE_NAME = "graphql.dataloader";
 
     public static boolean isGraphqlService(SyntaxNodeAnalysisContext context) {
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
@@ -85,6 +86,10 @@ public class Utils {
 
     public static boolean isSubgraphModuleSymbol(Symbol symbol) {
         return hasExpectedModuleName(symbol, SUBGRAPH_SUB_MODULE_NAME, PACKAGE_ORG);
+    }
+
+    public static boolean isDataLoaderModuleSymbol(Symbol symbol) {
+        return hasExpectedModuleName(symbol, DATA_LOADER_SUB_MODULE_NAME, PACKAGE_ORG);
     }
 
     private static boolean hasExpectedModuleName(Symbol symbol, String expectedModuleName, String expectedOrgName) {

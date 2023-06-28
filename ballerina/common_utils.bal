@@ -14,8 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import graphql.parser;
+
+import ballerina/http;
+import ballerina/jballerina.java;
 
 // Error messages
 const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";
@@ -509,3 +511,7 @@ isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
 public isolated function __addError(Context context, ErrorDetail errorDetail) {
     context.addError(errorDetail);
 }
+
+isolated function getHashCode(object {} obj) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
+} external;

@@ -1,0 +1,16 @@
+mutation {
+  sabthar: updateAuthorName(id: 1, name: "Sabthar") {
+    name
+    books {
+      id
+      title
+    }
+  }
+  mahroof: updateAuthorName(id: 2, name: "Mahroof") {
+    name
+    books {
+      id
+      title
+    }
+  }
+}

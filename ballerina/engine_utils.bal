@@ -111,3 +111,11 @@ public isolated function getSdlString(string encodedSchemaString, map<subgraph:F
 returns string|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;
+
+isolated function getLoadMethodName(string fieldName) returns string {
+    string loadMethodName = "load" + string:toUpperAscii(fieldName.substring(0, 1));
+    if fieldName.length() > 1 {
+        loadMethodName += fieldName.substring(1);
+    }
+    return loadMethodName;
+}
