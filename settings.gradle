@@ -49,7 +49,7 @@ project(':graphql-compiler-plugin').projectDir = file("compiler-plugin")
 project(':graphql-ballerina').projectDir = file("ballerina")
 project(':graphql-compiler-plugin-tests').projectDir = file("compiler-plugin-tests")
 project(':graphql-ballerina-tests').projectDir = file("ballerina-tests")
-project(':graphql-examples').projectDir = file("examples")
+// project(':graphql-examples').projectDir = file("examples")
 project(':graphql-commons').projectDir = file("commons")
 
 gradleEnterprise {
