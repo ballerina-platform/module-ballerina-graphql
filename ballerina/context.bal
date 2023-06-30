@@ -27,12 +27,13 @@ public isolated class Context {
     private Engine? engine;
     private int nextInterceptor;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
-    private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and data loaders
+    private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
     private map<PlaceHolder> uuidPlaceHolderMap = {};
     private map<()> nonDispatchedDataLoaderIds = {};
     private PlaceHolder[] unResolvedPlaceHolders = [];
     private boolean containPlaceHolders = false;
-    private int unResolvedPlaceHolderCount = 0;
+    private int unResolvedPlaceHolderCount = 0; // Tracks the number of PlaceHolders needs to be resolved
+    private int unResolvedPlaceHolderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
 
     public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (), 
                                   int nextInterceptor = 0) {
@@ -211,6 +212,7 @@ public isolated class Context {
             self.uuidPlaceHolderMap[uuid] = placeHolder;
             self.unResolvedPlaceHolders.push(placeHolder);
             self.unResolvedPlaceHolderCount += 1;
+            self.unResolvedPlaceHolderNodeCount += 1;
         }
     }
 
@@ -253,6 +255,18 @@ public isolated class Context {
     isolated function getUnresolvedPlaceHolderCount() returns int {
         lock {
             return self.unResolvedPlaceHolderCount;
+        }
+    }
+
+    isolated function getUnresolvedPlaceHolderNodeCount() returns int {
+        lock {
+            return self.unResolvedPlaceHolderNodeCount;
+        }
+    }
+
+    isolated function decrementUnresolvedPlaceHolderNodeCount() {
+        lock {
+            self.unResolvedPlaceHolderNodeCount-=1;
         }
     }
 

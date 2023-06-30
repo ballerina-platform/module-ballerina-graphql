@@ -30,6 +30,9 @@ isolated class ValueTreeBuilder {
     }
 
     isolated function buildValueTree(Context context, anydata partialValue) returns anydata {
+        if context.getUnresolvedPlaceHolderNodeCount() == 0 {
+            return partialValue;
+        }
         while context.getUnresolvedPlaceHolderCount() > 0 {
             context.resolvePlaceHolders();
         }
@@ -38,6 +41,7 @@ isolated class ValueTreeBuilder {
         }
         if partialValue is PlaceHolderNode {
             anydata value = context.getPlaceHolderValue(partialValue.__uuid);
+            context.decrementUnresolvedPlaceHolderNodeCount();
             return self.buildValueTree(context, value);
         }
         if partialValue is map<anydata> && isMap(partialValue) {
