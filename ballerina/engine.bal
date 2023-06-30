@@ -257,52 +257,27 @@ isolated class Engine {
             }
         }
 
-        parser:RootOperationType operationType = 'field.getOperationType();
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
-        any|error fieldValue;
-        if operationType == parser:OPERATION_QUERY {
-            if interceptor is () {
-                fieldValue = self.resolveResourceMethod(context, 'field, responseGenerator);
-            } else {
+        do {
+            if interceptor is readonly & Interceptor {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
-                                                                              self.getInterceptorName(interceptor));
-                if interceptValue is error {
-                    fieldValue = interceptValue;
-                } else {
-                    return interceptValue;
-                }
+                string interceptorName = self.getInterceptorName(interceptor);
+                return check validateInterceptorReturnValue(fieldType, result, interceptorName);
             }
-        } else if operationType == parser:OPERATION_MUTATION {
-            if interceptor is () {
-                fieldValue = self.resolveRemoteMethod(context, 'field, responseGenerator);
+            any fieldValue;
+            if 'field.getOperationType() == parser:OPERATION_QUERY {
+                fieldValue = check self.resolveResourceMethod(context, 'field, responseGenerator);
+            } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
+                fieldValue = check self.resolveRemoteMethod(context, 'field, responseGenerator);
             } else {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
-                                                                              self.getInterceptorName(interceptor));
-                if interceptValue is error {
-                    fieldValue = interceptValue;
-                } else {
-                    return interceptValue;
-                }
+                fieldValue = check 'field.getFieldValue();
             }
-        } else {
-            if interceptor is () {
-                fieldValue = 'field.getFieldValue();
-            } else {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
-                                                                              self.getInterceptorName(interceptor));
-                if interceptValue is error {
-                    fieldValue = interceptValue;
-                } else {
-                    return interceptValue;
-                }
-            }
+            return responseGenerator.getResult(fieldValue, fieldNode);
+        } on fail error errorValue {
+            return responseGenerator.getResult(errorValue, fieldNode);
         }
-        return responseGenerator.getResult(fieldValue, fieldNode);
     }
 
     private isolated function getResultFromLoadMethodExecution(Context context, Field 'field,
