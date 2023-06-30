@@ -108,7 +108,7 @@ task build {
     dependsOn(':graphql-ballerina:build')
     dependsOn(':graphql-compiler-plugin-tests:test')
     dependsOn(':graphql-ballerina-tests:test')
-    dependsOn(':graphql-examples:build')
+//    dependsOn(':graphql-examples:build')
 }
 
 release {
