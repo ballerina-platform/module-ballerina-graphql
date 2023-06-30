@@ -40,7 +40,7 @@ include ':graphql-compiler-plugin'
 include ':graphql-ballerina'
 include ':graphql-compiler-plugin-tests'
 include ':graphql-ballerina-tests'
-include ':graphql-examples'
+//include ':graphql-examples'
 include ':graphql-commons'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
