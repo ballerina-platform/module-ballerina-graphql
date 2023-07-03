@@ -17,7 +17,7 @@
 # Provides a set of configurations for the GraphQL service.
 #
 # + maxQueryDepth - The maximum depth allowed for a query
-# + auth - Listener authenticaton configurations
+# + auth - Listener authentication configurations
 # + contextInit - Function to initialize the context. If not provided, an empty context will be created
 # + cors - The cross origin resource sharing configurations for the service
 # + graphiql - GraphiQL client configurations
