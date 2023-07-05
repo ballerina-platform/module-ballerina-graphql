@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar  
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal  
 _Created_: 2022/01/06  
-_Updated_: 2023/05/18  
+_Updated_: 2023/07/05  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -166,6 +166,17 @@ The conforming implementation of the specification is released and included in t
         * 13.1.3 [The `subgraph:ReferenceResolver`](#1311-the-referenceresolver)
 14. [Tools](#14-tools)
     * 14.1 [GraphiQL Client](#141-graphiql-client)
+15. [Experimental Features](#15-experimental-features)
+    * 15.1. [DataLoader](#151-dataloader)
+        * 15.1.1. [DataLoader API](#1511-dataloader-api)
+            * 15.1.1.1. [The `load` method](#15111-the-load-method)
+            * 15.1.1.1. [The `load` method](#15111-the-load-method)
+            * 15.1.1.2. [The `dispatch` method](#15113-the-dispatch-method)
+        * 15.1.2. [Engaging DataLoaders](#1512-engaging-dataloaders)
+            * 15.1.2.1. [`loadXxx` Method Mapping](#15121-loadxxx-method-mapping)
+            * 15.1.2.2. [The `@dataloader:Loader` Annotation](#15122-the-dataloaderloader-annotation)
+            * 15.1.2.3. [The Batch Load Function](#15123-the-batch-load-function)
+            * 15.1.2.4. [The `map<dataloader:DataLoader>` Parameter](#15124-the-mapdataloaderdataloader-parameter)
 
 ## 1. Overview
 
@@ -3186,3 +3197,130 @@ service on new graphql:Listener(9090) {
 }
 ````
 >**Note:** The GraphiQL client is used as a tool to help developers when writing a GraphQL service, and It is recommended not to enable it in production environments.
+
+## 15. Experimental Features
+
+### 15.1. DataLoader
+
+The Ballerina GraphQL module provides the capability to batch queries to datasources and efficiently cache the retrieved data through the `graphql.dataloader` submodule.
+
+#### 15.1.1. DataLoader API
+
+The `graphql.dataloader` submodule provides the `DataLoader` object, which is used to batch and cache data requests from a data source. The `DataLoader` object type has the following public methods/APIs.
+
+##### 15.1.1.1. The `load` method
+
+This method takes an `anydata` parameter called `key`, which is used to identify the data to be loaded. This method collects and stores the `key` to dispatch a batch operation at a later time. It does not return any values. The following is the method definition of this method.
+
+```ballerina
+public isolated function load(anydata key);
+```
+
+##### 15.1.1.2. The `get` method
+
+This method takes a `key` parameter and retrieves the result for the provided `key`. It performs data binding by examining the type of the assigned variable. In case of failure to retrieve the result or perform data binding, the method returns an error. The following is the method definition of this method.
+
+```ballerina
+public isolated function get(anydata key, typedesc<anydata> 'type = <>) returns 'type|error;
+```
+
+##### 15.1.1.3. The `dispatch` method
+
+This method does not take any parameters and does not return any values. This method is invoked by the GraphQL Engine to dispatch a user-defined batch load function for all the collected keys. For more information about the batch load function, refer to the [Batch Load Function](#15123-the-batch-load-function) section. The following is the method definition of the `dispatch` method.
+
+```ballerina
+public isolated function dispatch();
+```
+
+### 15.1.2. Engaging DataLoaders
+
+To engage a DataLoader with a GraphQL service, the user needs to follow the steps below:
+
+1. Import the `graphql.dataloader` submodule.
+2. Identify the `resource`/`remote` method `xxx` (GraphQL field) that requires the use of the `DataLoader`. Add a new parameter `map<dataloader:DataLoader>` to its parameter list.
+3. Define a corresponding `loadXxx` method, where `Xxx` represents the Pascal-cased name of the GraphQL field identified in the previous step. This method may include all or some of the input parameters of the identified GraphQL field `xxx` and the `map<dataloader:DataLoader>` parameter. The corresponding `loadXxx` method and the `xxx` method should have the same resource accessor or should be remote methods.
+4. Annotate the `loadXxx` method written in step two with the `@dataloader:Loader` annotation and pass the required configuration.
+
+The following sections provide further explanation for each of the above steps.
+
+#### 15.1.2.1. `loadXxx` Method Mapping
+
+To engage the DataLoader with a GraphQL field (let's assume the field name is `xxx`), the user must define a corresponding `loadXxx` method, where `Xxx` represents the Pascal-cased name of the GraphQL field. The `loadXxx` method and the `xxx` method should have the same resource accessor or should be remote methods. The `loadXxx` method can include some or all of the parameters from the GraphQL field, as well as the `map<dataloader:DataLoader>` parameter. Adding the parameters of the GraphQL field to the `loadXxx` method is optional. However, if these
+
+ parameters are added, the GraphQL Engine will make the same parameter values of the GraphQL field available to the `loadXxx` method.
+
+The user is responsible for implementing the logic to collect the keys of the data to be loaded into the `DataLoader` in the `loadXxx` method. The GraphQL Engine guarantees the execution of the `loadXxx` method prior to the `xxx` method. Subsequently, the user can implement the logic to retrieve the data from the `DataLoader` within the `xxx` method.
+
+#### 15.1.2.2. The `@dataloader:Loader` Annotation
+
+The `@dataloader:Loader` annotation is used to configure the `loadXxx` method. It serves the purpose of avoiding the addition of `loadXxx` as a field in the GraphQL schema. This annotation accepts a map of batch load functions to be used by the `DataLoader`.
+
+The map consists of unique identifiers as keys and user-written batch load functions as values. Each unique key represents a separate `DataLoader` object. When the GraphQL Engine encounters the `@dataloader:Loader` annotation, it uses the provided configuration to create `DataLoader` objects for each unique key.
+
+Using the same unique key across multiple `@dataloader:Loader` annotations will result in the same `DataLoader` object being shared by multiple GraphQL fields. This enables efficient batching and caching of data loading operations. The following is the type definition of this annotation.
+
+```ballerina
+# Provides configurations for the DataLoaders.
+# + batchFunctions - The map of batch function to be used in the DataLoader
+public type LoaderConfig record {|
+    map<(isolated function (readonly & anydata[] keys) returns anydata[]|error)> batchFunctions;
+|};
+
+# The annotation to configure the load method with batch functions.
+public annotation LoaderConfig Loader on object function;
+```
+
+#### 15.1.2.3. The Batch Load Function
+
+In the context of the `@dataloader:Loader` annotation, the `batchFunctions` map consists of batch load functions associated with the unique key of the DataLoader. These batch load functions are responsible for retrieving data based on an array of keys and returning an array of corresponding results or an `error` if the operation fails.
+
+>**Note:** It is important to ensure that the batch load function returns an array of results that matches the length of the keys array provided as input. If the lengths do not match, the DataLoader will return an error when the `get` method is called.
+
+#### 15.1.2.4. The `map<dataloader:DataLoader>` Parameter
+
+The `map<dataloader:DataLoader>` parameter allows the GraphQL field `xxx` and its corresponding mapped `loadXxx` method to access the `DataLoader` objects created by the GraphQL Engine. It enables accessing the specific `DataLoader` object associated with a unique identifier. 
+
+
+Bringing everything together, the subsequent example demonstrates how to engage a DataLoader with a GraphQL service.
+
+###### Example: Utilizing a DataLoader in a GraphQL Service
+```ballerina
+service on new graphql:Listener(9090) {
+    resource function get authors() returns Author[] {
+        return getAllAuthors(); 
+    }
+}
+
+distinct service class Author {
+    private final int authorId;
+
+    function init(int authorId) {
+       self.authorId = authorId;
+    }
+
+    @dataloader:Loader {
+        batchFunctions: {"bookLoader": batchBooksForAuthors}
+    }
+    resource function get loadBooks(map<dataloader:DataLoader> loaders) {
+        dataloader:DataLoader bookLoader = loaders.get("bookLoader");
+        // Load author id to the DataLoader
+        bookLoader.load(self.authorId);
+    }
+
+    resource function get books(map<dataloader:DataLoader> loaders) returns Book[] {
+        dataloader:DataLoader bookLoader = loaders.get("bookLoader");
+        // Obtain the books from the DataLoader by passing the author id
+        Book[] books = bookLoader.get(self.authorId);
+        return books;
+    }
+}
+
+isolated function batchBooksForAuthors(readonly & anydata[] ids) returns Book[][]|error {
+    final readonly & int[] authorIds = <readonly & int[]>ids;
+    // Logic to retrieve books from the data source for the given author ids
+    // Book[][] books = ...
+    return books;
+};
+```
+
+In the given example, both the `books` resource function and the `loadBooks` resource function receive the `map<dataloader:DataLoader>` parameter, which grants access to the `DataLoader` object created by the GraphQL Engine. By using the `loaders.get("bookLoader")` syntax, the specific `DataLoader` object associated with the unique identifier "bookLoader" can be obtained and assigned to the `bookLoader` variable.
