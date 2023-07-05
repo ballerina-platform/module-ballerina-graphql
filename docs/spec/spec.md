@@ -3195,7 +3195,7 @@ service on new graphql:Listener(9090) {
         return "Hello, World!";
     }
 }
-````
+```
 >**Note:** The GraphiQL client is used as a tool to help developers when writing a GraphQL service, and It is recommended not to enable it in production environments.
 
 ## 15. Experimental Features
