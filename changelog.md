@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#4627] Fix Schema Generation Failure when Service has Type Alias](https://github.com/ballerina-platform/ballerina-standard-library/issues/4627)
+
+## [1.9.0] - 2023-06-30
+
 ### Added
 - [[#4176] Add Support for Input Constraint Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/4176)
 - [[#4479] Introduce `graphql:__addError()` Function to Add an ErrorDetail into the `errors` Field of a GraphQL Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/4479)
