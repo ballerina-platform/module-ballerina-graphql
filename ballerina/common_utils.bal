@@ -69,7 +69,7 @@ isolated function getInvalidFieldOnInterfaceError(string fieldName, string typeN
     return string`Cannot query field "${fieldName}" on type "${typeName}". Did you mean to use a fragment on a subtype?`;
 }
 
-isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
+isolated function getFragmentCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
 returns string {
     string fragmentOnTypeName = fragmentNode.getOnType();
     if fragmentNode.isInlineFragment() {

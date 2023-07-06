@@ -74,7 +74,7 @@ public enum CompilationDiagnostic {
                                                DiagnosticSeverity.ERROR),
     FAILED_TO_ADD_ENTITY_RESOLVER(DiagnosticMessage.ERROR_137, DiagnosticCode.GRAPHQL_137, DiagnosticSeverity.ERROR),
     FAILED_TO_ADD_SERVICE_RESOLVER(DiagnosticMessage.ERROR_138, DiagnosticCode.GRAPHQL_138, DiagnosticSeverity.ERROR),
-    UNSUPPORTED_PRIMITIVE_TYPE_ALIAS(DiagnosticMessage.ERROR_139, DiagnosticCode.GRAPHQL_139, DiagnosticSeverity.ERROR),
+    UNSUPPORTED_TYPE_ALIAS(DiagnosticMessage.ERROR_139, DiagnosticCode.GRAPHQL_139, DiagnosticSeverity.ERROR),
     INVALID_USE_OF_ID_ANNOTATION(DiagnosticMessage.ERROR_140, DiagnosticCode.GRAPHQL_140, DiagnosticSeverity.ERROR),
     NO_MATCHING_REMOTE_METHOD_FOUND_FOR_LOAD_METHOD(DiagnosticMessage.ERROR_141, DiagnosticCode.GRAPHQL_141,
                                                     DiagnosticSeverity.ERROR),
