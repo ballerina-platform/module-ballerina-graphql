@@ -20,10 +20,10 @@ type Token record {|
     Location location;
 |};
 
-# Stores a location for an error in a GraphQL operation.
+# Represents a location in a GraphQL document.
 #
-# + line - The line of the document where error occured
-# + column - The column of the document where error occurred
+# + line - The line of the document
+# + column - The column of the document
 public type Location record {|
     int line;
     int column;
@@ -31,10 +31,10 @@ public type Location record {|
 
 # Represents the details of an error occurred during parsing, validating, or executing a GraphQL document.
 #
-# + message - The details of the error
+# + message - The error message describing the error
 # + locations - The locations in the GraphQL document related to the error
-# + path - The GraphQL resource path of the error
-# + extensions - Additional information to errors
+# + path - The path of the field in the GraphQL document related to the error
+# + extensions - Additional information to error
 public type ErrorDetail record {|
     string message;
     Location[] locations?;
