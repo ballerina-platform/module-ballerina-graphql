@@ -22,7 +22,7 @@ service on new graphql:Listener(9090) {
         return [];
     }
 
-    remote function updateAuthor(int id, string name, map<dataloader:DataLoader> loaders) returns Author|error {
+    remote function updateAuthor(map<dataloader:DataLoader> loaders, int id, string name) returns Author|error {
         return error("No implementation provided for updateAuthor");
     }
 

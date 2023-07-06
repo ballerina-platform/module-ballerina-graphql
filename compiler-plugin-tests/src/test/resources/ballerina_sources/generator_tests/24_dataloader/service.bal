@@ -18,24 +18,24 @@ import ballerina/graphql;
 import ballerina/graphql.dataloader;
 
 service on new graphql:Listener(9090) {
-    resource function get authors(int[] ids, map<dataloader:DataLoader> loaders) returns Author[]|error {
+    resource function get authors(map<dataloader:DataLoader> loaders, int[] ids) returns Author[]|error {
         return error("No implementation provided for authors");
     }
 
     @dataloader:Loader {
         batchFunctions: {"authorLoader": authorLoaderFunction}
     }
-    resource function get loadAuthors(int[] ids, map<dataloader:DataLoader> loaders) {
+    resource function get loadAuthors(map<dataloader:DataLoader> loaders, int[] ids) {
     }
 
-    remote function updateAuthorName(int id, string name, map<dataloader:DataLoader> loaders) returns Author|error {
+    remote function updateAuthorName(map<dataloader:DataLoader> loaders, int id, string name) returns Author|error {
         return error("No implementation provided for updateAuthorName");
     }
 
     @dataloader:Loader {
         batchFunctions: {"authorUpdateLoader": authorUpdateLoaderFunction}
     }
-    remote function loadUpdateAuthorName(int id, string name, map<dataloader:DataLoader> loaders) {
+    remote function loadUpdateAuthorName(map<dataloader:DataLoader> loaders, int id, string name) {
     }
 }
 
