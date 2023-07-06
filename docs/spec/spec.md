@@ -672,7 +672,7 @@ In Ballerina, the `ID` type is represented using the [`@graphql:ID` annotation](
 
 When the `@graphql:ID` annotation is used, the generated schema will show the field type as `ID`, regardless of the actual type of the field.
 
-> **Note:** If the `@graphql:ID` annotation is used for a field, the values of those fields will always be serialized as strings.
+>**Note:** If the `@graphql:ID` annotation is used for a field, the values of those fields will always be serialized as strings.
 
 ###### Example: Scalar type ID
 ```ballerina
@@ -1347,13 +1347,13 @@ The `graphql:__addError` function can be used to add a custom error to the respo
 1. [`graphql:Context`](#101-context-object) - The context of the GraphQL request.
 2. [`graphql:ErrorDetail`](#61-error-detail-record) - The details of the error.
 
-> **Note:** Using the `graphql:__addError` function is not recommended until it is absolutely necessary. It is recommended to return an error from the `resource`/`remote` method instead.
+>**Note:** Using the `graphql:__addError` function is not recommended until it is absolutely necessary. It is recommended to return an error from the `resource`/`remote` method instead.
 
 ###### Example: Using the `graphql:__addError` Function
 
 ```ballerina
 service on new graphql:Listener(9090) {
-    resource function get greeting(graphql:Context context, graphql:Field 'field, string name) returns string {
+    resource function get greeting(graphql:Context context, graphql:Field 'field, string name) returns string? {
         if name == "" {
             graphql:ErrorDetail errorDetail = {
                 message: "Invalid name provided",
@@ -1363,7 +1363,10 @@ service on new graphql:Listener(9090) {
                     code: "INVALID_NAME"
                 }
             };
+            graphql:__addError(context, errorDetail);
+            return;
         }
+        return string `Hello, ${name}!`;
     }
 }
 ```
@@ -1492,10 +1495,6 @@ function handleErrors(graphql:ClientError clientError) {
     }
 }
 ```
-
-
-
-
 
 ## 7. Annotations
 
@@ -2751,6 +2750,20 @@ service on new graphql:Listener(9090) {
 }
 ```
 
+##### 10.2.1.7 Get Field Location
+
+This method returns the location of the field in the GraphQL document as a `graphql:Location` record. It includes the line and the column number of the field in the GraphQL document.
+
+###### Example: Get Field Location
+
+```ballerina
+service on new graphql:Listener(9090) {
+    resource function get profile(graphql:Field 'field) returns Profile {
+        graphql:Location location = 'field.getLocation();
+    }
+}
+```
+
 #### 10.2.2 Accessing the Field Object
 
 The `graphql:Field` can be accessed inside any resolver. When needed, the `graphql:Field` should be added as a parameter of the `resource` or `remote` method representing a GraphQL field.
@@ -3043,7 +3056,7 @@ The Ballerina GraphQL module provides the capability to expose a `graphql:Servic
 import ballerina/graphql.subgraph;
 ```
 
-> **Note:** The current implementation of the subgraph only supports dynamic schema composition through introspection.
+>**Note:** The current implementation of the subgraph only supports dynamic schema composition through introspection.
 
 ##### 10.5.1.1 The `@subgraph:Subgraph` Annotation
 
