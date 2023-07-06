@@ -82,7 +82,10 @@ The conforming implementation of the specification is released and included in t
         * 6.1.2 [Locations](#612-locations)
         * 6.1.3 [Path](#613-path)
     * 6.2 [Service Error Handling](#62-service-error-handling)
-        * 6.2.1 [Returning Errors and Nil Values](#621-returning-errors-and-nil-values)
+        * 6.2.1 [Returning Errors](#621-returning-errors)
+        * 6.2.2 [Returning Errors and Nil Values](#622-returning-errors-and-nil-values)
+        * 6.2.3 [The `graphql:__addError` Function](#623-the-graphqladderror-function)
+            * 6.2.3.1 []()
     * 6.3 [Client Error Handling](#63-client-error-handling)
         * 6.3.1 [Request Error](#631-request-error)
             * 6.3.1.1 [HTTP Error](#6311-http-error)
@@ -669,7 +672,7 @@ In Ballerina, the `ID` type is represented using the [`@graphql:ID` annotation](
 
 When the `@graphql:ID` annotation is used, the generated schema will show the field type as `ID`, regardless of the actual type of the field.
 
-**Note:** If the `@graphql:ID` annotation is used for a field, the values of those fields will always be serialized as strings.
+> **Note:** If the `@graphql:ID` annotation is used for a field, the values of those fields will always be serialized as strings.
 
 ###### Example: Scalar type ID
 ```ballerina
@@ -1201,11 +1204,15 @@ The `extensions` field is an optional field containing a map with `string` keys.
 
 ### 6.2 Service Error Handling
 
+A GraphQL service can return errors so that the client can handle them. The Ballerina errors types are used to return errors to the GraphQL client. The Ballerina GraphQL service will convert the Ballerina errors to GraphQL errors and send them to the client.
+
+#### 6.2.1 Returning Errors
+
 A Ballerina `resource` or `remote` method representing a GraphQL object field can return an error. When an error is returned, it will be added to the `errors` field in the GraphQL response. The shape of the error object is described in the [Error Detail Record](#61-error-detail-record) section.
 
 When an error is returned from a GraphQL resolver, the error message is added as the message of the error, and the location of the document that caused the error will be added to the `locations` field. The path of the error (from the root of the document) will be added as the path in the error response. Currently, the Ballerina GraphQL service __will not add__ any metadata in the `extensions` field.
 
-If a resolver execution results in an error, the stacktrace of the error will be logged to the stderr of the server.
+If a resolver execution results in an error, the stacktrace of the error will be logged to the `stderr` of the server.
 
 ###### Example: Returning Errors
 ```ballerina
@@ -1251,7 +1258,7 @@ The result of the above document is the following.
 }
 ```
 
-#### 6.2.1 Returning Errors and Nil Values
+#### 6.2.2 Returning Errors and Nil Values
 
 If a `resource` or `remote` method representing a field of a GraphQL object returns an `error`, the corresponding field value under the `data` field will be `null` in the response, in addition to adding an entry in the `errors` field. In this case, if the [field type is `NON_NULL`](#321-nonnull-type), the `null` value will be propagated to the upper levels until the `null` value is allowed. This might cause the whole `data` field to become `null`.
 
@@ -1324,6 +1331,34 @@ Similarly, the `age` field of the `Profile` object can return an `error` too. Bu
         "profile": {
             "name":"Walter White",
             "age":null
+        }
+    }
+}
+```
+
+#### 6.2.3 The `graphql:__addError` Function
+
+The `graphql:__addError` function can be used to add a custom error to the response. This function accepts two parameters.
+
+1. [`graphql:Context`](#101-context-object) - The context of the GraphQL request.
+2. [`graphql:ErrorDetail`](#61-error-detail-record) - The details of the error.
+
+> **Note:** Using the `graphql:__addError` function is not recommended until it is absolutely necessary. It is recommended to return an error from the `resource`/`remote` method instead.
+
+###### Example: Using the `graphql:__addError` Function
+
+```ballerina
+service on new graphql:Listener(9090) {
+    resource function get greeting(graphql:Context context, string name) returns string {
+        if name == "" {
+            graphql:ErrorDetail errorDetail = {
+                message: "Invalid name provided",
+                locations: [{line: 2, column: 4}],
+                path: ["greeting"],
+                extensions: {
+                    code: "INVALID_NAME"
+                }
+            };
         }
     }
 }
