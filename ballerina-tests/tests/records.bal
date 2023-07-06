@@ -319,13 +319,13 @@ public type Reviews readonly & record {|
     int stars;
 |};
 
-type BookRow record {
+type BookRow record {|
     readonly int id;
     string title;
     int author;
-};
+|};
 
-type AuthorRow record {
+type AuthorRow record {|
     readonly int id;
     string name;
-};
+|};

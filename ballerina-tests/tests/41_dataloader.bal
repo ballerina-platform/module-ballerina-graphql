@@ -113,9 +113,9 @@ isolated function testBatchFunctionReturningErrors() returns error? {
 }
 isolated function testBatchFunctionReturingNonMatchingNumberOfResults() returns error? {
     graphql:Client graphqlClient = check new ("localhost:9090/dataloader_with_faulty_batch_function");
-    string document = check getGraphqlDocumentFromFile("batch_function_returing_non_matcing_number_of_results");
+    string document = check getGraphqlDocumentFromFile("batch_function_returning_non_matcing_number_of_results");
     json response = check graphqlClient->execute(document);
-    json expectedPayload = check getJsonContentFromFile("batch_function_returing_non_matcing_number_of_results");
+    json expectedPayload = check getJsonContentFromFile("batch_function_returning_non_matcing_number_of_results");
     assertJsonValuesWithOrder(response, expectedPayload);
 }
 

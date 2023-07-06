@@ -3245,9 +3245,7 @@ The following sections provide further explanation for each of the above steps.
 
 #### 15.1.2.1. `loadXxx` Method Mapping
 
-To engage the DataLoader with a GraphQL field (let's assume the field name is `xxx`), the user must define a corresponding `loadXxx` method, where `Xxx` represents the Pascal-cased name of the GraphQL field. The `loadXxx` method and the `xxx` method should have the same resource accessor or should be remote methods. The `loadXxx` method can include some or all of the parameters from the GraphQL field, as well as the `map<dataloader:DataLoader>` parameter. Adding the parameters of the GraphQL field to the `loadXxx` method is optional. However, if these
-
- parameters are added, the GraphQL Engine will make the same parameter values of the GraphQL field available to the `loadXxx` method.
+To engage the DataLoader with a GraphQL field (let's assume the field name is `xxx`), the user must define a corresponding `loadXxx` method, where `Xxx` represents the Pascal-cased name of the GraphQL field. The `loadXxx` method and the `xxx` method should have the same resource accessor or should be remote methods. The `loadXxx` method can include some or all of the parameters from the GraphQL field, as well as the `map<dataloader:DataLoader>` parameter. Adding the parameters of the GraphQL field to the `loadXxx` method is optional. However, if these parameters are added, the GraphQL Engine will make the same parameter values of the GraphQL field available to the `loadXxx` method.
 
 The user is responsible for implementing the logic to collect the keys of the data to be loaded into the `DataLoader` in the `loadXxx` method. The GraphQL Engine guarantees the execution of the `loadXxx` method prior to the `xxx` method. Subsequently, the user can implement the logic to retrieve the data from the `DataLoader` within the `xxx` method.
 
@@ -3279,7 +3277,6 @@ In the context of the `@dataloader:Loader` annotation, the `batchFunctions` map 
 #### 15.1.2.4. The `map<dataloader:DataLoader>` Parameter
 
 The `map<dataloader:DataLoader>` parameter allows the GraphQL field `xxx` and its corresponding mapped `loadXxx` method to access the `DataLoader` objects created by the GraphQL Engine. It enables accessing the specific `DataLoader` object associated with a unique identifier. 
-
 
 Bringing everything together, the subsequent example demonstrates how to engage a DataLoader with a GraphQL service.
 
