@@ -660,7 +660,7 @@ The `Boolean` type is represented using the `boolean` type in Ballerina.
 
 #### 4.1.5 ID
 
-The `ID` scalar type represents a unique identifier, often used to refetch an object or as the key for a cache. The `ID` type is serialized in the same way as a `String`; however, it is not intended to be human-readable.
+The `ID` scalar type represents a unique identifier, often used to re-fetch an object or as the key for a cache. The `ID` type is serialized in the same way as a `String`; however, it is not intended to be human-readable.
 
 In Ballerina, the `ID` type is represented using the [`@graphql:ID` annotation](#74-id-annotation). The following Ballerina types are supported as `ID` types.
 
@@ -1751,7 +1751,7 @@ The configurations stated in the `graphql:InterceptorConfig`, are used to change
 
 #### 7.3.1 Scope Configuration
 
-The field `global` is used to configure the scope of the interceptor. If the `global` field is set as `true`, the interceptor will be applied to each field and subfield of the service. If the flag is set as `false`, the interceptor will be applied only to the fields of the type, but not to the subfields of the type. By default, the `global` flag is set as `true`.
+The field `global` is used to configure the scope of the interceptor. If the `global` field is set as `true`, the interceptor will be applied to each field and subfield of the service. If the flag is set as `false`, the interceptor will be applied top level fields of the Query, Mutation and Subscription types, but not to the subfields of them. By default, the `global` flag is set as `true`.
 
 >**Note:** The scope configuration is applied only to the GraphQL [service interceptors](#10331-service-interceptors).
 
@@ -1950,8 +1950,7 @@ A file user store can be used to validate the `Authorization` header in the HTTP
 ###### Example: Imperative Basic Authentication with File User Store
 
 ```ballerina
-graphql:FileUserStoreConfig config = {};
-final http:ListenerFileUserStoreBasicAuthHandler handler = new (config);
+final http:ListenerFileUserStoreBasicAuthHandler handler = new;
 
 isolated function contextInit(http:RequestContext reqCtx, http:Request request) returns graphql:Context|error {
     string authorization = check request.getHeader("Authorization");
