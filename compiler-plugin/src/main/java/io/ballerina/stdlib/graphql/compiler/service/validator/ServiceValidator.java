@@ -719,6 +719,11 @@ public class ServiceValidator {
                               recordTypeName);
             }
             for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
+                boolean isDeprecated = recordFieldSymbol.deprecated();
+                if (isDeprecated) {
+                    addDiagnostic(CompilationDiagnostic.UNSUPPORTED_INPUT_FIELD_DEPRECATION,
+                            getLocation(recordFieldSymbol, location), recordTypeName);
+                }
                 validateInputType(recordFieldSymbol.typeDescriptor(), location, isResourceMethod);
             }
         }
