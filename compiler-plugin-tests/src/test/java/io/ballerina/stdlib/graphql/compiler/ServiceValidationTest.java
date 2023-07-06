@@ -1076,21 +1076,32 @@ public class ServiceValidationTest {
         message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, "link__Purpose");
         assertErrorMessage(diagnostic, message, 63, 51);
     }
-    
-    public void testUnsupportedPrimitiveTypeAlias() {
-        String packagePath = "61_unsupported_primitive_type_alias";
+
+    @Test(groups = "invalid")
+    public void testUnsupportedTypeAlias() {
+        String packagePath = "61_unsupported_type_alias";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS, "Id", "int");
-        // error message for return type with primitive type alias
+        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "Id", "int");
         assertErrorMessage(diagnostic, message, 19, 6);
 
         diagnostic = diagnosticIterator.next();
-        // a duplicate error message is expected for input type with primitive type alias
         assertErrorMessage(diagnostic, message, 19, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "PersonInput", "Input");
+        assertErrorMessage(diagnostic, message, 37, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "PersonInput2", "PersonInput");
+        assertErrorMessage(diagnostic, message, 39, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "PersonAddress", "Address");
+        assertErrorMessage(diagnostic, message, 41, 6);
     }
 
     @Test(groups = "invalid")
