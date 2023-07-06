@@ -1353,12 +1353,12 @@ The `graphql:__addError` function can be used to add a custom error to the respo
 
 ```ballerina
 service on new graphql:Listener(9090) {
-    resource function get greeting(graphql:Context context, string name) returns string {
+    resource function get greeting(graphql:Context context, graphql:Field 'field, string name) returns string {
         if name == "" {
             graphql:ErrorDetail errorDetail = {
                 message: "Invalid name provided",
-                locations: [{line: 2, column: 4}],
-                path: ["greeting"],
+                locations: ['field.getLocation()],
+                path: 'field.getPath(),
                 extensions: {
                     code: "INVALID_NAME"
                 }
