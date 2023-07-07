@@ -8,7 +8,7 @@ _Edition_: Swan Lake
 
 ## Introduction
 
-This is the specification for the GraphQL standard library of the [Ballerina](https://ballerina.io)[ language](https://ballerina.io), which provides GraphQL server functionalities to produce GraphQL APIs and GraphQL client functionalities to communicate with GraphQL APIs.
+This is the specification for the GraphQL standard library of the [Ballerina language](https://ballerina.io), which provides GraphQL server functionalities to produce GraphQL APIs and GraphQL client functionalities to communicate with GraphQL APIs.
 
 The GraphQL library specification has evolved and may continue to evolve in the future. The released versions of the specification can be found under the relevant GitHub tag.
 
@@ -1802,7 +1802,7 @@ When configured, it validates the `Authorization` header in the HTTP request tha
     auth: [
         {
             fileUserStoreConfig: {},
-            scopes: ["admin"]
+            scopes: "admin"
         }
     ]
 }
@@ -1861,7 +1861,7 @@ When configured, it validates the `Authorization` header in the HTTP request tha
                 connectionTimeout: 5,
                 readTimeout: 60
             },
-            scopes: ["admin"]
+            scopes: "admin"
         }
     ]
 }
@@ -1892,7 +1892,7 @@ When configured, it validates the JWT sent in the `Authorization` header in the 
                 },
                 scopeKey: "scp"
             },
-            scopes: ["admin"]
+            scopes: "admin"
         }
     ]
 }
@@ -1926,7 +1926,7 @@ When configured, it validates the OAuth2 token sent in the `Authorization` heade
                     }
                 }
             },
-            scopes: ["admin"]
+            scopes: "admin"
         }
     ]
 }
@@ -2243,7 +2243,7 @@ public function main() returns error? {
             audience: ["ballerina", "ballerina.org", "ballerina.io"],
             keyId: "5a0b754-895f-4279-8843-b745e11a57e9",
             jwtId: "JlbmMiOiJBMTI4Q0JDLUhTMjU2In",
-            customClaims: {scp : "admin"},
+            customClaims: {scp: "admin"},
             expTime: 3600,
             signatureConfig: {
                 config: {
@@ -2270,7 +2270,7 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
         tokenUrl: "localhost:9445/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["admin"],
+        scopes: "admin",
         clientConfig: {
             secureSocket: {
                 cert: "path/to/public.crt"
@@ -2290,10 +2290,10 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
         password: "admin",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["admin"],
+        scopes: "admin",
         refreshConfig: {
             refreshUrl: "https://localhost:9445/oauth2/token",
-            scopes: ["hello"],
+            scopes: "hello",
             clientConfig: {
                 secureSocket: {
                     cert: "path/to/public.crt"
@@ -2336,7 +2336,7 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
         assertion: "eyJhbGciOiJFUzI1NiIsImtpZCI6Ij[...omitted for brevity...]",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["admin"],
+        scopes: "admin",
         clientConfig: {
             secureSocket: {
                 cert: "path/to/public.crt"
