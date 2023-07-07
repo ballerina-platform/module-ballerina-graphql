@@ -451,9 +451,13 @@ public class ServiceValidator {
             validateReturnType(recordTypeSymbol, typeReferenceTypeSymbol.typeDescriptor(), location, recordName);
         } else if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.OBJECT) {
             validateReturnTypeObject(typeDefinitionSymbol, location);
+        } else if (typeReferenceTypeSymbol.typeDescriptor().typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS,
+                    getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
+                    typeReferenceTypeSymbol.typeDescriptor().getName().get());
         } else if (isPrimitiveTypeSymbol(typeReferenceTypeSymbol.typeDescriptor())) {
             // noinspection OptionalGetWithoutIsPresent
-            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS,
+            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS,
                           getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
                           typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
         } else if (typeDefinitionSymbol.getModule().isPresent()
@@ -656,19 +660,19 @@ public class ServiceValidator {
             if (isReservedFederatedTypeName(typeName)) {
                 addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, location, typeName);
             }
-            return;
-        }
-        if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION && typeDescriptor.typeKind() == TypeDescKind.RECORD) {
+        } else if (typeDefinition.kind() == SymbolKind.TYPE_DEFINITION &&
+                typeDescriptor.typeKind() == TypeDescKind.RECORD) {
             validateInputParameterType((RecordTypeSymbol) typeDescriptor, location, typeName, isResourceMethod);
-            return;
-        }
-        if (isPrimitiveTypeSymbol(typeDescriptor)) {
+        } else if (typeDescriptor.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, getLocation(typeSymbol, location),
+                    typeSymbol.getName().get(), typeDescriptor.getName().get());
+        } else if (isPrimitiveTypeSymbol(typeDescriptor)) {
             // noinspection OptionalGetWithoutIsPresent
-            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS, getLocation(typeSymbol, location),
+            addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, getLocation(typeSymbol, location),
                           typeSymbol.getName().get(), typeDescriptor.typeKind().getName());
-            return;
+        } else {
+            validateInputParameterType(typeDescriptor, location, isResourceMethod);
         }
-        validateInputParameterType(typeDescriptor, location, isResourceMethod);
     }
 
     private void validateInputParameterType(UnionTypeSymbol unionTypeSymbol, Location location,
@@ -807,7 +811,7 @@ public class ServiceValidator {
     }
 
     private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location, Object... args) {
-        this.errorOccurred = compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR;;
+        this.errorOccurred = compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR;
         updateContext(this.context, compilationDiagnostic, location, args);
     }
 

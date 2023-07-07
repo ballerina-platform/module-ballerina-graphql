@@ -17,10 +17,10 @@ graalvmCompatible = true
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-native"
 version = "1.9.0"
-path = "../native/build/libs/graphql-native-1.9.0-SNAPSHOT.jar"
+path = "../native/build/libs/graphql-native-1.9.0.jar"
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-compiler-plugin"
 version = "1.9.0"
-path = "../commons/build/libs/graphql-commons-1.9.0-SNAPSHOT.jar"
+path = "../commons/build/libs/graphql-commons-1.9.0.jar"
