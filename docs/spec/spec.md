@@ -45,7 +45,7 @@ The conforming implementation of the specification is released and included in t
         * 3.1.2 [The `Mutation` Type](#312-the-mutation-type)
         * 3.1.3 [The `Subscription` Type](#313-the-subscription-type)
     * 3.2 [Wrapping Types](#32-wrapping-types)
-        * 3.2.1 [`NON_NULL` Type](#321-nonnull-type)
+        * 3.2.1 [`NON_NULL` Type](#321-non_null-type)
         * 3.2.2 [`LIST` Type](#322-list-type)
     * 3.3 [Resource Methods](#33-resource-methods)
         * 3.3.1 [Resource Accessor](#331-resource-accessor)
@@ -84,7 +84,7 @@ The conforming implementation of the specification is released and included in t
     * 6.2 [Service Error Handling](#62-service-error-handling)
         * 6.2.1 [Returning Errors](#621-returning-errors)
         * 6.2.2 [Returning Errors and Nil Values](#622-returning-errors-and-nil-values)
-        * 6.2.3 [The `graphql:__addError` Function](#623-the-graphqladderror-function)
+        * 6.2.3 [The `graphql:__addError` Function](#623-the-graphql__adderror-function)
     * 6.3 [Client Error Handling](#63-client-error-handling)
         * 6.3.1 [Request Error](#631-request-error)
             * 6.3.1.1 [HTTP Error](#6311-http-error)
@@ -159,7 +159,7 @@ The conforming implementation of the specification is released and included in t
             * 10.3.3.1 [Service Interceptors](#10331-service-interceptors)
             * 10.3.3.2 [Field Interceptors](#10332-field-interceptors)
     * 10.4 [File Upload](#104-file-upload)
-        * 10.4.1 [File Upload Protocol](#1041-file-upload-protocol) 
+        * 10.4.1 [File Upload Protocol](#1041-file-upload-protocol)
         * 10.4.2 [`graphql:Upload` Type](#1042-the-graphqlupload-type)
             * 10.4.2.1 [`fileName` Field](#10421-the-filename-field)
             * 10.4.2.2 [`mimeType` Field](#10422-the-mimetype-field)
@@ -2545,7 +2545,7 @@ Attributes can be stored in the `graphql:Context` object using key-value pairs a
 
 #### 10.1.1 Context Methods
 
-The `graphql:Context` object provides a set of methods for handling attributes. 
+The `graphql:Context` object provides a set of methods for handling attributes.
 
 ##### 10.1.1.1 Set Attribute in Context
 
