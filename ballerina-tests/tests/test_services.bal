@@ -1327,10 +1327,22 @@ service /deprecation on wrappedListener {
         return string `Hello ${name}`;
     }
 
+    # Retrieve information about the person.
+    # + return - The person object
+    isolated resource function get profile() returns DeprecatedProfile {
+        return {name: "Alice", age: 30, address: {number: 1, street: "main", city: "NYC"}};
+    }
+
     # Retrieve information about music school.
     # + return - The school object
     isolated resource function get school() returns School {
         return new ("The Juilliard School");
+    }
+
+    # Add a new person.
+    # + return - The person object
+    remote function addProfile(string name, int age) returns DeprecatedProfile {
+        return {name: name, age: age, address: {number: 1, street: "main", city: "NYC"}};
     }
 
     # Creates a new instrument.

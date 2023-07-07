@@ -84,9 +84,8 @@ public enum DiagnosticMessage {
     ERROR_139("failed to generate schema for type ''{0}''. Type alias for primitive type ''{1}'' is not supported"),
     ERROR_140("invalid usage of @graphql:ID annotation. @graphql:ID annotation can only be used with string, "
                       + "int, float, decimal and uuid:Uuid types"),
-    ERROR_201("unsupported field deprecation found in input object ''{0}''. The GraphQL spec does not support "
-                      + "for use `@deprecated` directive with input object field(s).");
-
+    ERROR_201("invalid usage of `@deprecated` directive found in ''{0}''. Input object field(s) deprecation "
+                    + "is not supported by the GraphQL spec.");
     private final String message;
 
     DiagnosticMessage(String message) {

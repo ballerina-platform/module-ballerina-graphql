@@ -543,7 +543,9 @@ public class SchemaGenerator {
             return null;
         }
         String name = recordFieldSymbol.getName().get();
-        Field field = new Field(name, description);
+        boolean isDeprecated = recordFieldSymbol.deprecated();
+        String deprecationReason = getDeprecationReason(recordFieldSymbol);
+        Field field = new Field(name, description, isDeprecated, deprecationReason);
         TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
         Type type = null;
         if (typeSymbol.typeKind() == TypeDescKind.MAP) {
@@ -561,7 +563,7 @@ public class SchemaGenerator {
                 }
             }
             if (type == null) {
-                type = getInputType(recordFieldSymbol.typeDescriptor());
+                type = getType(typeSymbol);
             }
         } else {
             type = getType(typeSymbol);

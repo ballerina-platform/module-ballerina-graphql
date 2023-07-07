@@ -54,6 +54,7 @@ import io.ballerina.stdlib.graphql.commons.types.TypeName;
 import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
@@ -801,12 +802,12 @@ public class ServiceValidator {
     }
 
     private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location) {
-        this.errorOccurred = true;
+        this.errorOccurred = compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR;
         updateContext(this.context, compilationDiagnostic, location);
     }
 
     private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location, Object... args) {
-        this.errorOccurred = true;
+        this.errorOccurred = compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR;;
         updateContext(this.context, compilationDiagnostic, location, args);
     }
 
