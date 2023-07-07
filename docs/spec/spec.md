@@ -2243,7 +2243,7 @@ public function main() returns error? {
             audience: ["ballerina", "ballerina.org", "ballerina.io"],
             keyId: "5a0b754-895f-4279-8843-b745e11a57e9",
             jwtId: "JlbmMiOiJBMTI4Q0JDLUhTMjU2In",
-            customClaims: {"scp": "admin"},
+            customClaims: {scp : "admin"},
             expTime: 3600,
             signatureConfig: {
                 config: {
@@ -2317,7 +2317,7 @@ graphql:Client graphqlClient = check new ("localhost:9090/graphql",
         refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["admin"],
+        scopes: "admin",
         clientConfig: {
             secureSocket: {
                 cert: "path/to/public.crt"
