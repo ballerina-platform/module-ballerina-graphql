@@ -49,7 +49,7 @@ public isolated client class Client {
     #                `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data;`
     # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
     # # Deprecated
-    # This method is now deprecated use `execute()` API instead
+    # This method is now deprecated. Use the `execute()` API instead
     @deprecated
     remote isolated function executeWithType(string document, map<anydata>? variables = (), string? operationName = (),
                                              map<string|string[]>? headers = (),
