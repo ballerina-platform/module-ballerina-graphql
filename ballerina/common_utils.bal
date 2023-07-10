@@ -506,6 +506,10 @@ isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
     }
 }
 
+# Adds an error to the GraphQL response. Using this to add an error is not recommended.
+#
+# + context - The context of the GraphQL request.
+# + errorDetail - The error to be added to the response.
 public isolated function __addError(Context context, ErrorDetail errorDetail) {
     context.addError(errorDetail);
 }

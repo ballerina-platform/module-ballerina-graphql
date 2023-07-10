@@ -128,10 +128,12 @@ type Data record {
     // Intentionally kept empty
 };
 
-type Location record {|
+# Represents a location in a GraphQL document.
+public type Location record {|
     *parser:Location;
 |};
 
+# Represents an error in GraphQL.
 public type ErrorDetail record {|
     *parser:ErrorDetail;
 |};

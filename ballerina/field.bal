@@ -83,6 +83,12 @@ public class Field {
         return self.fieldType;
     }
 
+    # Returns the location of the field in the GraphQL document.
+    # + return - The location of the field
+    public isolated function getLocation() returns Location {
+        return self.internalNode.getLocation();
+    }
+
     isolated function getInternalNode() returns parser:FieldNode {
         return self.internalNode;
     }
