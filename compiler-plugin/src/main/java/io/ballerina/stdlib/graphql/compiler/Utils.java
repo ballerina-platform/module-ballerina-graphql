@@ -60,7 +60,6 @@ import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSym
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isSubgraphModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.ModuleLevelVariableDeclarationAnalysisTask.getDescription;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
-import static java.util.Locale.ENGLISH;
 
 /**
  * Util class for the compiler plugin.
@@ -346,10 +345,12 @@ public final class Utils {
     }
 
     public static String lowerCaseFirstChar(String string) {
-        if (string.isEmpty() || string.length() == 1) {
-            return string.toLowerCase(ENGLISH);
+        if (string.isEmpty()) {
+            return string;
         }
-        return string.substring(0, 1).toLowerCase(ENGLISH) + string.substring(1);
+        char[] characters = string.toCharArray();
+        characters[0] = Character.toLowerCase(characters[0]);
+        return new String(characters);
     }
 
     public static boolean hasLoaderAnnotation(MethodSymbol resourceMethodSymbol) {
