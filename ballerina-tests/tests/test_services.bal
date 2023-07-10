@@ -1058,11 +1058,12 @@ service /null_values on basicListener {
         return;
     }
 
-    resource function get name(graphql:Context context, int? id) returns string? {
+    resource function get name(graphql:Context context, graphql:Field 'field, int? id) returns string? {
         if id == () {
             graphql:__addError(context, {
                 message: "Data not found",
-                path: ["name"]
+                locations: ['field.getLocation()],
+                path: 'field.getPath()
             });
             return;
         }
