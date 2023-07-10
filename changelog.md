@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- [[#4569] Introduce DataLoader for Ballerina GraphQL](https://github.com/ballerina-platform/ballerina-standard-library/issues/4569)
+
 ### Fixed
 - [[#4627] Fix Schema Generation Failure when Service has Type Alias](https://github.com/ballerina-platform/ballerina-standard-library/issues/4627)
 
