@@ -104,6 +104,7 @@ The conforming implementation of the specification is released and included in t
         * 7.2.1 [Field Interceptors](#721-field-interceptors)
     * 7.3 [Interceptor Configuration](#73-interceptor-configuration)
         * 7.3.1 [Scope Configuration](#731-scope-configuration)
+    * 7.4 [ID Annotation](#74-id-annotation)
 8. [Security](#8-security)
     * 8.1 [Service Authentication and Authorization](#81-service-authentication-and-authorization)
         * 8.1.1 [Declarative Approach](#811-declarative-approach)
