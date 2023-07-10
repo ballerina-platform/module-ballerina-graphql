@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#4627] Fix Schema Generation Failure when Service has Type Alias](https://github.com/ballerina-platform/ballerina-standard-library/issues/4627)
+- [[#4650] Fix Incorrect Schema Generation when an Annotation Present in a Record Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/4650)
 
 ### Changed
 - [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)

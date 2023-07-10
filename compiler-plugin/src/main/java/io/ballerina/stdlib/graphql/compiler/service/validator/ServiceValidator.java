@@ -806,12 +806,14 @@ public class ServiceValidator {
     }
 
     private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location) {
-        this.errorOccurred = compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR;
+        this.errorOccurred =
+                compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR || this.errorOccurred;
         updateContext(this.context, compilationDiagnostic, location);
     }
 
     private void addDiagnostic(CompilationDiagnostic compilationDiagnostic, Location location, Object... args) {
-        this.errorOccurred = compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR;
+        this.errorOccurred =
+                compilationDiagnostic.getDiagnosticSeverity() == DiagnosticSeverity.ERROR || this.errorOccurred;
         updateContext(this.context, compilationDiagnostic, location, args);
     }
 
