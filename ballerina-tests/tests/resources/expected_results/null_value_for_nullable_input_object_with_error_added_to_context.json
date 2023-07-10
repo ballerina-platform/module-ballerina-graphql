@@ -2,6 +2,12 @@
     "errors": [
         {
             "message": "Data not found",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
             "path": ["name"]
         }
     ],
