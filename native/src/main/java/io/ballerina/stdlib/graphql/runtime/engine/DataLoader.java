@@ -58,11 +58,6 @@ public class DataLoader {
     }
 
     private static Object[] getProcessGetMethodParams(Object key, BTypedesc typedesc) {
-        Object[] paramFeed = new Object[4];
-        paramFeed[0] = key;
-        paramFeed[1] = true;
-        paramFeed[2] = typedesc;
-        paramFeed[3] = true;
-        return paramFeed;
+        return new Object[]{key, true, typedesc, true};
     }
 }

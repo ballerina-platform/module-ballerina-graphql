@@ -526,10 +526,7 @@ public class ArgumentHandler {
     }
 
     private BMap<BString, Object> getDataLoaderMap() {
-        BMap<BString, Object> idDataLoaderMap = this.context.getMapValue(ID_DATA_LOADER_MAP);
-        BMap<BString, Object> dataLoaderMap = ValueCreator.createMapValue();
-        Arrays.stream(idDataLoaderMap.getKeys()).forEach(id -> dataLoaderMap.put(id, idDataLoaderMap.get(id)));
-        return dataLoaderMap;
+        return this.context.getMapValue(ID_DATA_LOADER_MAP);
     }
 
     private static boolean isDataLoaderMap(Type type) {
