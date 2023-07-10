@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.dataloader;
 import graphql.parser;
 
 import ballerina/jballerina.java;
@@ -282,7 +283,7 @@ isolated class Engine {
 
     private isolated function getResultFromLoadMethodExecution(Context context, Field 'field,
         service object {} serviceObject, string loadMethodName, boolean isRemoteMethod) returns PlaceHolderNode? {
-        var batchFunctionMap = self.getBatchFunctionsMap(serviceObject, loadMethodName, isRemoteMethod);
+        map<dataloader:BatchLoadFunction> batchFunctionMap = self.getBatchFunctionsMap(serviceObject, loadMethodName, isRemoteMethod);
         foreach var [batchFunctionId, batchFunction] in batchFunctionMap.entries() {
             context.addDataLoader(batchFunctionId, batchFunction);
         }
@@ -405,7 +406,7 @@ isolated class Engine {
     } external;
 
     isolated function getBatchFunctionsMap(service object {} serviceObject, string loadMethodName, boolean isRemoteMethod)
-    returns map<(isolated function (readonly & anydata[] keys) returns anydata[]|error)> = @java:Method {
+    returns map<dataloader:BatchLoadFunction> = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 

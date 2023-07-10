@@ -17,7 +17,7 @@
 # Provides configurations for the DataLoaders.
 # + batchFunctions - The map of batch function to be used in the DataLoader
 public type LoaderConfig record {|
-    map<(isolated function (readonly & anydata[] keys) returns anydata[]|error)> batchFunctions;
+    map<BatchLoadFunction> batchFunctions;
 |};
 
 # The annotation to configure the load method with batch functions.

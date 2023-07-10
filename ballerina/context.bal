@@ -194,8 +194,7 @@ public isolated class Context {
         }
     }
 
-    isolated function addDataLoader(string id,
-            (isolated function (readonly & anydata[] keys) returns anydata[]|error) batchFunction) {
+    isolated function addDataLoader(string id, dataloader:BatchLoadFunction batchFunction) {
         lock {
             if self.idDataLoaderMap.hasKey(id) {
                 return;

@@ -14,9 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/jballerina.java;
 import graphql.parser;
 import graphql.subgraph;
+
+import ballerina/jballerina.java;
+import ballerina/lang.regexp;
 
 isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] errorDetail) returns OutputObject {
     if errorDetail is ErrorDetail {
@@ -113,9 +115,7 @@ returns string|error = @java:Method {
 } external;
 
 isolated function getLoadMethodName(string fieldName) returns string {
-    string loadMethodName = "load" + string:toUpperAscii(fieldName.substring(0, 1));
-    if fieldName.length() > 1 {
-        loadMethodName += fieldName.substring(1);
-    }
-    return loadMethodName;
+    return re `^[a-z]`.replace(fieldName, isolated function(regexp:Groups groups) returns string {
+        return string `load${groups[0].substring().toUpperAscii()}`;
+    });
 }

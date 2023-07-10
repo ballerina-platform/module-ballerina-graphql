@@ -14,6 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
+# Represents the type of the batch function to be used in the DataLoader.
+public type BatchLoadFunction isolated function (readonly & anydata[] keys) returns anydata[]|error;
+
 # Represents a DataLoader object that can be used to load data from a data source.
 public type DataLoader isolated object {
 

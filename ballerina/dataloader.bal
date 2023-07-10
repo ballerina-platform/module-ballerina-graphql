@@ -22,9 +22,9 @@ isolated class DefaultDataLoader {
     *dataloader:DataLoader;
     private final table<Key> key(key) keyTable = table [];
     private final table<Result> key(key) resultTable = table [];
-    private final (isolated function (readonly & anydata[] keys) returns anydata[]|error) batchFunction;
+    private final dataloader:BatchLoadFunction batchFunction;
 
-    public isolated function init(isolated function (readonly & anydata[] keys) returns anydata[]|error loadFunction) {
+    public isolated function init(dataloader:BatchLoadFunction loadFunction) {
         self.batchFunction = loadFunction;
     }
 
