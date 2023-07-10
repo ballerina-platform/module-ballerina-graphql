@@ -234,7 +234,7 @@
                 {
                     "name": "city",
                     "isDeprecated": false,
-                    "deprecationReason": "City field is deprecated",
+                    "deprecationReason": null,
                     "type": {
                         "ofType": {
                             "name": "String",

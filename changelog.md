@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#4627] Fix Schema Generation Failure when Service has Type Alias](https://github.com/ballerina-platform/ballerina-standard-library/issues/4627)
 
+### Changed
+- [[#4648] Removed Returning Deprecation Reasons for Non-Deprecated Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/4648)
+
 ## [1.9.0] - 2023-06-30
 
 ### Added

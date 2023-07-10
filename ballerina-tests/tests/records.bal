@@ -347,7 +347,5 @@ public type DeprecatedAddress record {|
     @deprecated
     string street;
 
-    # # Deprecated
-    # City field is deprecated
     string city;
 |};

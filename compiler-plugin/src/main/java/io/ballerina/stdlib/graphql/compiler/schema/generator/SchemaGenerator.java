@@ -209,7 +209,7 @@ public class SchemaGenerator {
     private Field getField(ResourceMethodSymbol methodSymbol, List<PathSegment> list) {
         if (list.size() == 1) {
             boolean isDeprecated = methodSymbol.deprecated();
-            String deprecationReason = getDeprecationReason(methodSymbol);
+            String deprecationReason = getDeprecationReason(methodSymbol, isDeprecated);
             Type fieldType = getType(methodSymbol);
             Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
@@ -232,7 +232,7 @@ public class SchemaGenerator {
 
     private Field getField(MethodSymbol methodSymbol) {
         boolean isDeprecated = methodSymbol.deprecated();
-        String deprecationReason = getDeprecationReason(methodSymbol);
+        String deprecationReason = getDeprecationReason(methodSymbol, isDeprecated);
         if (methodSymbol.getName().isEmpty()) {
             return null;
         }
@@ -544,7 +544,7 @@ public class SchemaGenerator {
         }
         String name = recordFieldSymbol.getName().get();
         boolean isDeprecated = recordFieldSymbol.deprecated();
-        String deprecationReason = getDeprecationReason(recordFieldSymbol);
+        String deprecationReason = getDeprecationReason(recordFieldSymbol, isDeprecated);
         Field field = new Field(name, description, isDeprecated, deprecationReason);
         TypeSymbol typeSymbol = recordFieldSymbol.typeDescriptor();
         Type type = null;
@@ -748,7 +748,7 @@ public class SchemaGenerator {
         String memberDescription = getDescription(enumMember);
         String name = enumMember.getName().get();
         boolean isDeprecated = enumMember.deprecated();
-        String deprecationReason = getDeprecationReason(enumMember);
+        String deprecationReason = getDeprecationReason(enumMember, isDeprecated);
         EnumValue enumValue = new EnumValue(name, memberDescription, isDeprecated, deprecationReason);
         type.addEnumValue(enumValue);
     }
