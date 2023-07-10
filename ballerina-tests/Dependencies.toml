@@ -76,6 +76,7 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.array"},
+	{org = "ballerina", name = "lang.regexp"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
