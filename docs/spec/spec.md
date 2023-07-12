@@ -3267,6 +3267,8 @@ type Product record {
 
 ## 11. Experimental Features
 
+This section includes the experimental features in the Ballerina GraphQL package. There _might be_ backward-incompatible changes to these features in future releases. Once a feature is stabilized, it will be graduated as a standard feature.
+
 ### 11.1. DataLoader
 
 The Ballerina GraphQL module provides the capability to batch queries to datasources and efficiently cache the retrieved data through the `graphql.dataloader` submodule.
