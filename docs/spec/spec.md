@@ -3,8 +3,9 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar \
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal \
 _Created_: 2022/01/06 \
-_Updated_: 2023/07/05 \
-_Edition_: Swan Lake
+_Updated_: 2023/07/12 \
+_Edition_: Swan Lake \
+_GraphQL Specification_: [October 2021](https://spec.graphql.org/October2021/) 
 
 ## Introduction
 
@@ -1641,14 +1642,15 @@ The `graphiql` field is used to provide the GraphiQL client configuration to ena
 @graphql:ServiceConfig {
     graphiql: {
         enabled: true,
-        path: "/ballerina/graphiql"
+        path: "/ballerina/graphiql",
+        printUrl: false
     }
 }
 service on new graphql:Listener(9090) {
     // ...
 }
 ```
->**Note:** The field enabled accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+>**Note:** The field `enabled` accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path. The optional field `printUrl` accepts a boolean that denotes whether the GraphiQL url is printed to stdout or not. By default, it has been set to `true`.
 
 #### 7.1.6 Service Interceptors
 

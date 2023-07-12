@@ -16,11 +16,14 @@
 
 import ballerina/http;
 import ballerina/websocket;
+import ballerina/io;
 
 # Represents a Graphql listener endpoint.
 public class Listener {
     private http:Listener httpListener;
     private websocket:Listener? wsListener;
+    private string host;
+    private int port;
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listener` or a port number must be
     # provided to initialize the listener.
@@ -40,6 +43,8 @@ public class Listener {
         } else {
             self.httpListener = listenTo;
         }
+        self.host = configuration.host;
+        self.port = self.httpListener.getPort();
         self.wsListener = ();
     }
 
@@ -71,6 +76,11 @@ public class Listener {
             error? result = self.httpListener.attach(graphiqlService, graphiql.path);
             if result is error {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
+            }
+            if graphiql.printUrl {
+                string sanitizedPath = getSanitizedPath(graphiql.path);
+                string graphiqlUrl = string `http://${self.host}:${self.port}/${sanitizedPath}`;
+                io:println(string `GraphiQL client ready at ${graphiqlUrl}`);
             }
         } else {
             engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation);
