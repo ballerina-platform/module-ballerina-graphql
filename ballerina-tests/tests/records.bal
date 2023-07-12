@@ -318,3 +318,36 @@ public type Reviews readonly & record {|
     }
     int stars;
 |};
+
+public type DeprecatedProfile record {|
+    # # Deprecated
+    # Name field is deprecated
+    @deprecated
+    string name;
+
+    # # Deprecated
+    # Age field is deprecated
+    @deprecated
+    int age;
+
+    # # Deprecated
+    # Address field is deprecated
+    @deprecated
+    DeprecatedAddress address;
+|};
+
+public type DeprecatedAddress record {|
+    # # Deprecated
+    # Number field is deprecated
+    @deprecated
+    int number;
+
+    # # Deprecated
+    # Street field is deprecated
+    @deprecated
+    string street;
+
+    # # Deprecated
+    # City field is deprecated
+    string city;
+|};

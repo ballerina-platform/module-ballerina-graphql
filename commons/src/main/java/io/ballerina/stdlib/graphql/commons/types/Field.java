@@ -49,6 +49,10 @@ public class Field implements Serializable {
         this(name, description, type, false, null, null);
     }
 
+    public Field(String name, String description, boolean isDeprecated, String deprecationReason) {
+        this(name, description, null, isDeprecated, deprecationReason, null);
+    }
+
     public Field(String name, String description, Type type, boolean isDeprecated, String deprecationReason,
                  Position position) {
         this.name = removeEscapeCharacter(name);

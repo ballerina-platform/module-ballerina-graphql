@@ -1128,9 +1128,9 @@ The `@deprecated` directive is used to indicate a deprecated field on a type or 
 
 The `@deprecated` directive has one argument, `reason`, which is of type `String`.
 
-The Ballerina GraphQL package uses the Ballerina's in-built `@deprecated` annotation to deprecate a field (`resource`/`remote` methods) or an `enum` value. The deprecation reason can be provided as a part of the doc comment of the particular schema member.
+The Ballerina GraphQL package uses the Ballerina's in-built `@deprecated` annotation to deprecate a field (`resource`/`remote` methods or `record` fields) or an `enum` value. The deprecation reason can be provided as a part of the doc comment of the particular schema member.
 
-###### Example: @deprecated
+###### Example: Using the `@deprecated` Annotation
 
 The following code shows how to mark a field and an enum value as deprecated with the deprecation reason.
 
@@ -1149,11 +1149,10 @@ service on new graphql:Listener(9090) {
         return "Hello, " + name;
     }
 
-    # Greets back with a customized greeting with the provided name.
-    # + name - The name of the person to greet
-    # + return - The customized greeting message
-    resource function get greeting(string name = "Stranger") returns string {
-        return "Hello, " + name;
+    # Return the name of the member
+    # + return - The full name of the member
+    resource function get name() returns Name {
+        return {first: "John", last: ""};
     }
 
     # Returns the current admission status of the pub.
@@ -1179,9 +1178,20 @@ public enum Status {
     @deprecated
     PRIVATE_PARTY
 }
+
+# Represents the name of the member.
+type Name record {|
+    # The first name
+    string first;
+    # The last name
+    # # Deprecated
+    # This field is deprecated
+    @deprecated
+    string last;
+|};
 ```
 
-In the above service, the generated schema will indicate that the `hello` field of the `Query` type and the `PRIVATE_PARTY` value of the `Status` enum type are deprecated, with the reasons provided in the doc comments. (The reason will be the line after the `# # Deprecated` line.)
+In the above service, the generated schema will indicate that the `hello` field of the `Query` type, the `PRIVATE_PARTY` value of the `Status` enum type and the `last` field of the `Name` type are deprecated, with the reasons provided in the doc comments. (The reason will be the line after the `# # Deprecated` line.)
 
 
 
