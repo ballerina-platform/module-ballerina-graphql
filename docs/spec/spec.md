@@ -3307,7 +3307,9 @@ To engage a DataLoader with a GraphQL service, the user needs to follow the step
 
 1. Import the `graphql.dataloader` submodule.
 2. Identify the `resource`/`remote` method `foo` (GraphQL field) that requires the use of the `DataLoader`. Add a new parameter `map<dataloader:DataLoader>` to its parameter list.
-3. Define a corresponding `loadXxx` method, where `Xxx` represents the Pascal-cased name of the GraphQL field identified in the previous step. This method may include all or some of the input parameters of the identified GraphQL field `xxx` and the `map<dataloader:DataLoader>` parameter. The corresponding `loadXxx` method and the `xxx` method should have the same resource accessor or should be remote methods.
+3. Define a corresponding `loadFoo` method, where `Foo` represents the Pascal-cased name of the GraphQL field identified in the previous step. This method may include all or some of the input parameters of the identified GraphQL field `foo` and the `map<dataloader:DataLoader>` parameter. 
+    - If `foo` is a `resource` method, both `foo` and `loadFoo` must be a `resource` method with the same resource accessor.
+    - If `foo` is a `remote` method, `loadFoo` too must be a `remote` method.
 4. Annotate the `loadXxx` method written in step two with the `@dataloader:Loader` annotation and pass the required configuration.
 
 The following sections provide further explanation for each of the above steps.
