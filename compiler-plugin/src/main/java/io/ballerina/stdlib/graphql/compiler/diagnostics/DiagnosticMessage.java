@@ -85,7 +85,7 @@ public enum DiagnosticMessage {
     ERROR_140("invalid usage of @graphql:ID annotation. @graphql:ID annotation can only be used with string, "
                       + "int, float, decimal and uuid:Uuid types"),
     WARNING_201("invalid usage of @deprecated directive found in ''{0}''. Input object field(s) deprecation "
-                    + "is not supported by the GraphQL spec.");
+                    + "is not supported by the current GraphQL spec.");
     private final String message;
 
     DiagnosticMessage(String message) {

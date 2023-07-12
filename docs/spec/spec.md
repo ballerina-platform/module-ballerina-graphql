@@ -3,8 +3,9 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar \
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal \
 _Created_: 2022/01/06 \
-_Updated_: 2023/07/05 \
-_Edition_: Swan Lake
+_Updated_: 2023/07/12 \
+_Edition_: Swan Lake \
+_GraphQL Specification_: [October 2021](https://spec.graphql.org/October2021/)
 
 ## Introduction
 
@@ -1129,7 +1130,7 @@ The `@deprecated` directive has one argument, `reason`, which is of type `String
 
 The Ballerina GraphQL package uses the Ballerina's in-built `@deprecated` annotation to deprecate a field (`resource`/`remote` methods or `record` fields) or an `enum` value. The deprecation reason can be provided as a part of the doc comment of the particular schema member.
 
-###### Example: @deprecated
+###### Example: Using the `@deprecated` Annotation
 
 The following code shows how to mark a field and an enum value as deprecated with the deprecation reason.
 
