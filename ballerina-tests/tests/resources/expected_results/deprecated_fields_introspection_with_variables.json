@@ -26,6 +26,33 @@
                         }
                     },
                     {
+                        "name": "profile",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "DeprecatedProfile",
+                                "fields": [
+                                    {
+                                        "name": "name",
+                                        "isDeprecated": true,
+                                        "deprecationReason": "Name field is deprecated"
+                                    },
+                                    {
+                                        "name": "age",
+                                        "isDeprecated": true,
+                                        "deprecationReason": "Age field is deprecated"
+                                    },
+                                    {
+                                        "name": "address",
+                                        "isDeprecated": true,
+                                        "deprecationReason": "Address field is deprecated"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
                         "name": "school",
                         "isDeprecated": false,
                         "deprecationReason": null,
@@ -51,6 +78,33 @@
             },
             "mutationType": {
                 "fields": [
+                    {
+                        "name": "addProfile",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "DeprecatedProfile",
+                                "fields": [
+                                    {
+                                        "name": "name",
+                                        "isDeprecated": true,
+                                        "deprecationReason": "Name field is deprecated"
+                                    },
+                                    {
+                                        "name": "age",
+                                        "isDeprecated": true,
+                                        "deprecationReason": "Age field is deprecated"
+                                    },
+                                    {
+                                        "name": "address",
+                                        "isDeprecated": true,
+                                        "deprecationReason": "Address field is deprecated"
+                                    }
+                                ]
+                            }
+                        }
+                    },
                     {
                         "name": "newInstrument",
                         "isDeprecated": true,

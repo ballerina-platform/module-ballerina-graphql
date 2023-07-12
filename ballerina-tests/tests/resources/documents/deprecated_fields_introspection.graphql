@@ -13,12 +13,15 @@
 
         }
     }
-    __type(name: "InstrumentType") {
+    t1: __type(name: "InstrumentType") {
         enumValues(includeDeprecated: true) {
             name
             isDeprecated
             deprecationReason
         }
+    }
+    t2: __type(name: "DeprecatedAddress") {
+        ...TypeFragment
     }
 }
 

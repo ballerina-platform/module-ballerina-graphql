@@ -58,7 +58,7 @@ public type CorsConfig record {|
 #
 # + enabled - Status of the client
 # + path - Path for the client
-# + printUrl - Status of the GraphiQL URL printing
+# + printUrl - Whether to enable or disable the GraphiQL URL print
 public type Graphiql record {|
     boolean enabled = false;
     string path = "graphiql";

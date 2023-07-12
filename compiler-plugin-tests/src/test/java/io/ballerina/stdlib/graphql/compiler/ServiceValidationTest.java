@@ -298,7 +298,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
-        assertErrorMessage(diagnostic, message, 78, 5);
+        assertErrorMessage(diagnostic, message, 80, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
@@ -1129,6 +1129,21 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test(groups = "invalid")
+    public void testInvalidUsageDeprecatedDirective() {
+        String packagePath = "64_invalid_usages_of_deprecated_directive";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_INPUT_FIELD_DEPRECATION, "Profile");
+        assertWarningMessage(diagnostic, message, 21, 12);
+
+        diagnostic = diagnosticIterator.next();
+        assertWarningMessage(diagnostic, message, 23, 9);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -1150,6 +1165,12 @@ public class ServiceValidationTest {
 
     private void assertErrorMessage(Diagnostic diagnostic, String message, int line, int column) {
         Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.message(), message);
+        assertErrorLocation(diagnostic.location(), line, column);
+    }
+
+    private void assertWarningMessage(Diagnostic diagnostic, String message, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.WARNING);
         Assert.assertEquals(diagnostic.message(), message);
         assertErrorLocation(diagnostic.location(), line, column);
     }
