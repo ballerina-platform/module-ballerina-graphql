@@ -90,7 +90,11 @@ public enum CompilationDiagnostic {
     INVALID_USAGE_OF_LOADER_ANNOTATION_IN_SUBSCRIBE_RESOURCE(DiagnosticMessage.ERROR_148, DiagnosticCode.GRAPHQL_148,
                                                              DiagnosticSeverity.ERROR),
     INVALID_RESOURCE_FUNCTION_NAME_FOR_DATA_LOADER(DiagnosticMessage.ERROR_149, DiagnosticCode.GRAPHQL_149,
-                                                   DiagnosticSeverity.ERROR);
+                                                   DiagnosticSeverity.ERROR),
+
+    // Warnings
+    UNSUPPORTED_INPUT_FIELD_DEPRECATION(DiagnosticMessage.WARNING_201, DiagnosticCode.GRAPHQL_201,
+            DiagnosticSeverity.WARNING);
 
     private final String diagnostic;
     private final String diagnosticCode;

@@ -98,8 +98,10 @@ public enum DiagnosticMessage {
     ERROR_147("no corresponding get resource method with name ''{0}'' found for data loader resource method ''{1}''"),
     ERROR_148("invalid usage of @dataloader:Loader annotation in subscribe resource method ''{0}''"),
     ERROR_149("invalid name ''{0}'' found for data loader method. A data loader method name must be in the format of "
-                      + "''{1}'' followed by the GraphQL field name where the data loader is used");
+                      + "''{1}'' followed by the GraphQL field name where the data loader is used"),
 
+    WARNING_201("invalid usage of @deprecated directive found in ''{0}''. Input object field(s) deprecation "
+                    + "is not supported by the current GraphQL spec.");
     private final String message;
 
     DiagnosticMessage(String message) {
