@@ -115,7 +115,7 @@ isolated class ExecutorVisitor {
         context.resetInterceptorCount();
         readonly & anydata resolvedResult = engine.resolve(context, 'field);
         lock {
-            self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.clone();
+            self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
         }
     }
 
