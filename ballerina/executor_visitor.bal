@@ -94,7 +94,7 @@ isolated class ExecutorVisitor {
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         if operationType != parser:OPERATION_MUTATION {
-            return self.visitSelectionsParallelly(fragmentNode, data);
+            return self.visitSelectionsParallelly(fragmentNode, data.cloneReadOnly());
         }
         string[] path = self.getSelectionPathFromData(data);
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
@@ -161,11 +161,11 @@ isolated class ExecutorVisitor {
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
         context.resetInterceptorCount();
         Context clonedContext = context.cloneWithoutErrors();
-        readonly & anydata resolvedResult = engine.resolve(clonedContext, 'field);
+        anydata resolvedResult = engine.resolve(clonedContext, 'field);
         context.addErrors(clonedContext.getErrors());
         lock {
             self.errors = self.context.getErrors();
-            self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult;
+            self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
         }
     }
 
