@@ -23,11 +23,13 @@ import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -184,13 +186,19 @@ public class EngineUtils {
     }
 
     public static boolean isMap(BMap<BString, Object> value) {
-        return value.getType().getTag() == TypeTags.MAP_TAG;
+        Type type =  TypeUtils.getReferredType(value.getType());
+        type = type.getTag() == TypeTags.INTERSECTION_TAG ? ((IntersectionType) type).getEffectiveType() : type;
+        return type.getTag() == TypeTags.MAP_TAG;
     }
 
     public static BString getTypeNameFromValue(BValue bValue) {
-        if (bValue.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
+        if (bValue.getType().getTag() == TypeTags.INTERSECTION_TAG) {
+            return StringUtils.fromString(getTypeNameFromIntersection((IntersectionType) bValue.getType()));
+        } else if (bValue.getType().getTag() == TypeTags.RECORD_TYPE_TAG) {
             return StringUtils.fromString(getTypeNameFromRecordValue((RecordType) bValue.getType()));
         } else if (bValue.getType().getTag() == SERVICE_TAG) {
+            return StringUtils.fromString(bValue.getType().getName());
+        } else if (bValue.getType().getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
             return StringUtils.fromString(bValue.getType().getName());
         }
         return StringUtils.fromString("");
@@ -205,6 +213,15 @@ public class EngineUtils {
             }
         }
         return recordType.getName();
+    }
+
+    static String getTypeNameFromIntersection(IntersectionType intersectionType) {
+        for (Type constituentType : intersectionType.getConstituentTypes()) {
+            if (constituentType.getTag() != TypeTags.READONLY_TAG) {
+                return constituentType.getName();
+            }
+        }
+        return intersectionType.getEffectiveType().getName();
     }
 
     public static void setField(BObject context, BObject field) {
