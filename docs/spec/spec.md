@@ -3381,7 +3381,7 @@ In the context of the `@dataloader:Loader` annotation, the `batchFunctions` map 
 
 It is important to ensure that the batch load function returns an array of results that matches the length of the keys array provided as input. If the lengths do not match, the DataLoader will return an error when the `get` method is called.
 
-Bringing everything together, the subsequent example demonstrates how to engage a DataLoader with a GraphQL service.
+Bringing everything together, the subsequent examples demonstrates how to engage a DataLoader with a GraphQL service.
 
 ###### Example: Utilizing a DataLoader in a GraphQL Service
 
@@ -3425,3 +3425,81 @@ isolated function batchBooksForAuthors(readonly & anydata[] ids) returns Book[][
 ```
 
 In the given example, both the `books` resource function and the `loadBooks` resource function receive the `map<dataloader:DataLoader>` parameter, which grants access to the `DataLoader` objects created by the GraphQL Engine. By using the `loaders.get("bookLoader")` syntax, the specific `DataLoader` object associated with the unique identifier "bookLoader" can be obtained and assigned to the `bookLoader` variable.
+
+###### Example: Utilizing Multiple DataLoaders in a GraphQL Service
+
+```ballerina
+import ballerina/graphql;
+import ballerina/graphql.dataloader;
+
+service on new graphql:Listener(9090) {
+    resource function get users() returns User[] {
+        return getAllUsers();
+    }
+}
+
+isolated distinct service class User {
+    private final int userId;
+
+    isolated function init(int userId) {
+        self.userId = userId;
+    }
+
+    @dataloader:Loader {
+        batchFunctions: {"postsLoader": postsLoaderFunction, "rePostsLoader": rePostsLoaderFunction}
+    }
+    isolated resource function get loadPosts(map<dataloader:DataLoader> loaders) {
+        dataloader:DataLoader postsLoader = loaders.get("postsLoader");
+        postsLoader.load(self.userId);
+
+        dataloader:DataLoader rePostsLoader = loaders.get("rePostsLoader");
+        rePostsLoader.load(self.userId);
+    }
+
+    isolated resource function get posts(map<dataloader:DataLoader> loaders) returns Post[]|error {
+        dataloader:DataLoader postsLoader = loaders.get("postsLoader");
+        Post[] posts = check postsLoader.get(self.userId);
+
+        dataloader:DataLoader rePostsLoader = loaders.get("rePostsLoader");
+        Post[] rePosts = check rePostsLoader.get(self.userId);
+        
+        return [...posts, ...rePosts];
+    }
+
+    @dataloader:Loader {
+        batchFunctions: {"followersLoader": followersLoaderFunction}
+    }
+    isolated resource function get loadFollowers(map<dataloader:DataLoader> loaders) {
+        dataloader:DataLoader followersLoader = loaders.get("followersLoader");
+        followersLoader.load(self.userId);
+    }
+
+    isolated resource function get followers(map<dataloader:DataLoader> loaders) returns Follower[]|error {
+        dataloader:DataLoader followersLoader = loaders.get("followersLoader");
+        return check followersLoader.get(self.userId);
+    }
+}
+
+isolated function postsLoaderFunction(readonly & anydata[] ids) returns Post[][]|error {
+    final readonly & int[] keys = <readonly & int[]>ids;
+    // Logic to retrieve posts from the data source for the given user ids
+    // Post[][] posts = ...
+    return posts;
+};
+
+isolated function rePostsLoaderFunction(readonly & anydata[] ids) returns Post[][]|error {
+    final readonly & int[] keys = <readonly & int[]>ids;
+    // Logic to retrieve re posted items from the data source for the given user ids
+    // Post[][] rePosts = ...
+    return rePosts;
+};
+
+isolated function followersLoaderFunction(readonly & anydata[] ids) returns Follower[][]|error {
+    final readonly & int[] keys = <readonly & int[]>ids;
+    // Logic to retrieve followers from the data source for the given user ids
+    // Follower[][] followers = ...
+    return followers;
+};
+```
+
+The above example utilizes three DataLoader instances: `postsLoader`, `rePostsLoader`, and `followersLoader`. These DataLoaders are associated with the batch load functions `postsLoaderFunction`, `rePostsLoaderFunction`, and `followersLoaderFunction`. The 'post' field in the example utilizes the `postsLoader` and `rePostsLoader` DataLoaders, while the 'followers' field utilizes the `followersLoader` DataLoader. This demonstrates how different fields can utilize specific DataLoaders to efficiently load and retrieve related data in GraphQL resolvers.
