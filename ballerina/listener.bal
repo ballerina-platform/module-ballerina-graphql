@@ -22,8 +22,9 @@ import ballerina/io;
 public class Listener {
     private http:Listener httpListener;
     private websocket:Listener? wsListener;
-    private string host;
-    private int port;
+    private Graphiql graphiql;
+    private string httpEndpoint;
+    private string websocketEndpoint;
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listener` or a port number must be
     # provided to initialize the listener.
@@ -43,9 +44,17 @@ public class Listener {
         } else {
             self.httpListener = listenTo;
         }
-        self.host = configuration.host;
-        self.port = self.httpListener.getPort();
         self.wsListener = ();
+        self.graphiql = {};
+        string host = configuration.host;
+        int port = self.httpListener.getPort();
+        if configuration.secureSocket is () {
+            self.httpEndpoint = string `http://${host}:${port}`;
+            self.websocketEndpoint = string `ws://${host}:${port}`;
+        } else {
+            self.httpEndpoint = string `https://${host}:${port}`;
+            self.websocketEndpoint = string `wss://${host}:${port}`;
+        }
     }
 
     # Attaches the provided service to the Listener.
@@ -56,31 +65,28 @@ public class Listener {
     #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        Graphiql graphiql = getGraphiqlConfig(serviceConfig);
+        self.graphiql = getGraphiqlConfig(serviceConfig);
         string schemaString = getSchemaString(serviceConfig);
         int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
         readonly & (readonly & Interceptor)[] interceptors = getServiceInterceptors(serviceConfig);
         boolean introspection = getIntrospection(serviceConfig);
         boolean validation = getValidation(serviceConfig);
         Engine engine;
-        if graphiql.enabled {
-            check validateGraphiqlPath(graphiql.path);
+        if self.graphiql.enabled {
+            check validateGraphiqlPath(self.graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
             engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation);
             __Schema & readonly schema = engine.getSchema();
             __Type? subscriptionType = schema.subscriptionType;
+            string graphqlUrl = string `${self.httpEndpoint}/${gqlServiceBasePath}`;
+            string subscriptionUrl = string `${self.websocketEndpoint}/${gqlServiceBasePath}`;
             HttpService graphiqlService = subscriptionType is __Type
-                                        ? getGraphiqlService(serviceConfig, gqlServiceBasePath, true)
+                                        ? getGraphiqlService(serviceConfig, graphqlUrl, subscriptionUrl)
                                         : getGraphiqlService(serviceConfig, gqlServiceBasePath);
             attachGraphiqlServiceToGraphqlService(s, graphiqlService);
-            error? result = self.httpListener.attach(graphiqlService, graphiql.path);
+            error? result = self.httpListener.attach(graphiqlService, self.graphiql.path);
             if result is error {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
-            }
-            if graphiql.printUrl {
-                string sanitizedPath = getSanitizedPath(graphiql.path);
-                string graphiqlUrl = string `http://${self.host}:${self.port}/${sanitizedPath}`;
-                io:println(string `GraphiQL client ready at ${graphiqlUrl}`);
             }
         } else {
             engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation);
@@ -168,6 +174,11 @@ public class Listener {
             if result is error {
                 return error Error("Error occurred while starting the websocket service", result);
             }
+        }
+        if self.graphiql.enabled && self.graphiql.printUrl {
+            string sanitizedPath = re `^/*`.replace(self.graphiql.path, "");
+            string graphiqlUrl = string `${self.httpEndpoint}/${sanitizedPath}`;
+            io:println(string `GraphiQL client ready at ${graphiqlUrl}`);
         }
     }
 
