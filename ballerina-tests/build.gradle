@@ -32,7 +32,7 @@ def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/res
 def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def distributionBinPath =  "${ballerinaDist}/bin"
-def testCoverageParam = "--coverage-format=xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
+def testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
