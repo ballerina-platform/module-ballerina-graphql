@@ -1001,7 +1001,7 @@ This repository only contains the source code for the module.
 
 1. Download and install Java SE Development Kit (JDK) version 17 (from one of the following locations).
 
-   * [Oracle](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)
+   * [Oracle](https://www.oracle.com/java/technologies/downloads/)
    * [OpenJDK](https://adoptium.net/)
 
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
