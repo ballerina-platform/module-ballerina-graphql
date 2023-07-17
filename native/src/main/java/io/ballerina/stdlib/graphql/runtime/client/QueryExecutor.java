@@ -37,15 +37,6 @@ public class QueryExecutor {
      */
     public static Object execute(Environment env, BObject client, BString document, Object variables,
                                  Object operationName, Object headers, BTypedesc targetType) {
-        return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
-                "processExecute");
-    }
-
-    /**
-     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
-     */
-    public static Object executeWithType(Environment env, BObject client, BString document, Object variables,
-                                         Object operationName, Object headers, BTypedesc targetType) {
         if (targetType.getDescribingType().getTag() == PredefinedTypes.TYPE_STREAM.getTag()) {
             @SuppressWarnings("UnckeckedCast")
             Object[] objects = new Object[10];
@@ -61,6 +52,15 @@ public class QueryExecutor {
             objects[9] = true;
             return invokeClientMethod(env, client, "executeSubscription", objects);
         }
+        return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
+                "processExecute");
+    }
+
+    /**
+     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
+     */
+    public static Object executeWithType(Environment env, BObject client, BString document, Object variables,
+                                         Object operationName, Object headers, BTypedesc targetType) {
         return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
                 "processExecuteWithType");
     }
