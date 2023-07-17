@@ -411,13 +411,6 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
     return graphiqlService;
 }
 
-isolated function getSanitizedPath(string path) returns string {
-    if path.startsWith("/") {
-        return path.substring(1);
-    }
-    return path;
-}
-
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
