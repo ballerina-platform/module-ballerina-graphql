@@ -21,6 +21,6 @@ path = "../native/build/libs/graphql-native-@project.version@.jar"
 
 [[platform.java17.dependency]]
 groupId = "io.ballerina.stdlib"
-artifactId = "graphql-compiler-plugin"
+artifactId = "graphql-commons"
 version = "@toml.version@"
 path = "../commons/build/libs/graphql-commons-@project.version@.jar"

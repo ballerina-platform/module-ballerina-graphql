@@ -1057,11 +1057,12 @@ service /null_values on basicListener {
         return;
     }
 
-    resource function get name(graphql:Context context, int? id) returns string? {
+    resource function get name(graphql:Context context, graphql:Field 'field, int? id) returns string? {
         if id == () {
             graphql:__addError(context, {
                 message: "Data not found",
-                path: ["name"]
+                locations: ['field.getLocation()],
+                path: 'field.getPath()
             });
             return;
         }
@@ -1327,10 +1328,22 @@ service /deprecation on wrappedListener {
         return string `Hello ${name}`;
     }
 
+    # Retrieve information about the person.
+    # + return - The person object
+    isolated resource function get profile() returns DeprecatedProfile {
+        return {name: "Alice", age: 30, address: {number: 1, street: "main", city: "NYC"}};
+    }
+
     # Retrieve information about music school.
     # + return - The school object
     isolated resource function get school() returns School {
         return new ("The Juilliard School");
+    }
+
+    # Add a new person.
+    # + return - The person object
+    remote function addProfile(string name, int age) returns DeprecatedProfile {
+        return {name: name, age: age, address: {number: 1, street: "main", city: "NYC"}};
     }
 
     # Creates a new instrument.

@@ -22,7 +22,7 @@ public class Listener {
     private http:Listener httpListener;
     private websocket:Listener? wsListener;
 
-    # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listner` or a port number must be
+    # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listener` or a port number must be
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen to the GraphQL service endpoint

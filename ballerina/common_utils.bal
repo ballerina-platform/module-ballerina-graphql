@@ -67,7 +67,7 @@ isolated function getInvalidFieldOnInterfaceError(string fieldName, string typeN
     return string`Cannot query field "${fieldName}" on type "${typeName}". Did you mean to use a fragment on a subtype?`;
 }
 
-isolated function getFragmetCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
+isolated function getFragmentCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
 returns string {
     string fragmentOnTypeName = fragmentNode.getOnType();
     if fragmentNode.isInlineFragment() {
@@ -506,6 +506,10 @@ isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
     }
 }
 
+# Adds an error to the GraphQL response. Using this to add an error is not recommended.
+#
+# + context - The context of the GraphQL request.
+# + errorDetail - The error to be added to the response.
 public isolated function __addError(Context context, ErrorDetail errorDetail) {
     context.addError(errorDetail);
 }

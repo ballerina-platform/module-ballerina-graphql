@@ -1076,21 +1076,32 @@ public class ServiceValidationTest {
         message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, "link__Purpose");
         assertErrorMessage(diagnostic, message, 63, 51);
     }
-    
-    public void testUnsupportedPrimitiveTypeAlias() {
-        String packagePath = "61_unsupported_primitive_type_alias";
+
+    @Test(groups = "invalid")
+    public void testUnsupportedTypeAlias() {
+        String packagePath = "61_unsupported_type_alias";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_PRIMITIVE_TYPE_ALIAS, "Id", "int");
-        // error message for return type with primitive type alias
+        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "Id", "int");
         assertErrorMessage(diagnostic, message, 19, 6);
 
         diagnostic = diagnosticIterator.next();
-        // a duplicate error message is expected for input type with primitive type alias
         assertErrorMessage(diagnostic, message, 19, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "PersonInput", "Input");
+        assertErrorMessage(diagnostic, message, 37, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "PersonInput2", "PersonInput");
+        assertErrorMessage(diagnostic, message, 39, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, "PersonAddress", "Address");
+        assertErrorMessage(diagnostic, message, 41, 6);
     }
 
     @Test(groups = "invalid")
@@ -1118,6 +1129,21 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test(groups = "invalid")
+    public void testInvalidUsageDeprecatedDirective() {
+        String packagePath = "64_invalid_usages_of_deprecated_directive";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNSUPPORTED_INPUT_FIELD_DEPRECATION, "Profile");
+        assertWarningMessage(diagnostic, message, 21, 12);
+
+        diagnostic = diagnosticIterator.next();
+        assertWarningMessage(diagnostic, message, 23, 9);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
@@ -1139,6 +1165,12 @@ public class ServiceValidationTest {
 
     private void assertErrorMessage(Diagnostic diagnostic, String message, int line, int column) {
         Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.message(), message);
+        assertErrorLocation(diagnostic.location(), line, column);
+    }
+
+    private void assertWarningMessage(Diagnostic diagnostic, String message, int line, int column) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.WARNING);
         Assert.assertEquals(diagnostic.message(), message);
         assertErrorLocation(diagnostic.location(), line, column);
     }
