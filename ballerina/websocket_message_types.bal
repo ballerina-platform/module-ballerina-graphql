@@ -64,5 +64,6 @@ type CompleteMessage record {|
 
 type InboundMessage ConnectionInitMessage|PingMessage|PongMessage|SubscribeMessage|CompleteMessage;
 type OutboundMessage ConnectionAckMessage|PingMessage|PongMessage|NextMessage|ErrorMessage|CompleteMessage;
+
 type ClientInboundMessage OutboundMessage;
 type SubscriberMessage NextMessage|CompleteMessage|ErrorMessage;

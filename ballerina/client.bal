@@ -18,30 +18,35 @@ import ballerina/jballerina.java;
 import ballerina/uuid;
 import ballerina/http;
 import ballerina/websocket;
-import ballerina/io;
+
+const HTTP = "http://";
+const HTTPS = "https://";
+const WS = "ws://";
+const WSS = "wss://";
 
 # The Ballerina GraphQL client that can be used to communicate with GraphQL APIs.
 public isolated client class Client {
     private final http:Client httpClient;
     private final string wsServiceUrl;
-    private websocket:ClientConfiguration wsConfig;
-    private final map<Subscriber> subscribers = {};
     private websocket:Client? wsClient = ();
-    private boolean startedListeningToSubscription = false;
-    private boolean graphqlWsConnectionInitiated = false;
-    private boolean wsClosed = false;
+    private websocket:ClientConfiguration wsConfig;
+
+    private final map<Subscriber> subscribersMap = {};
+    private boolean subscriptionStarted = false;
+    private boolean wsConnectionInit = false;
+    private boolean wsConnectionClosed = false;
 
     # Gets invoked to initialize the `connector`.
     #
     # + serviceUrl - URL of the target service
     # + clientConfig - The configurations to be used when initializing the `connector`
     # + return - An error at the failure of client initialization
-    public isolated function init(string serviceUrl, *ClientConfiguration clientConfig)  returns ClientError? {
+    public isolated function init(string serviceUrl, *ClientConfiguration clientConfig) returns ClientError? {
         http:ClientConfiguration httpClientConfig = {...clientConfig.httpConfig};
         httpClientConfig.httpVersion = http:HTTP_1_1;
         http:Client|http:ClientError httpClient = new (serviceUrl, httpClientConfig);
         if httpClient is http:ClientError {
-             return error HttpError("GraphQL Client Error", httpClient, body = ());
+            return error HttpError("GraphQL Client Error", httpClient, body = ());
         }
         self.httpClient = httpClient;
         self.wsServiceUrl = getServiceUrlWithWsScheme(serviceUrl, clientConfig.websocketConfig);
@@ -72,6 +77,52 @@ public isolated client class Client {
         name: "executeWithType"
     } external;
 
+    # Executes a GraphQL document and data binds the GraphQL response to a record with data, extensions and errors
+    # which is a subtype of GenericResponseWithErrors.
+    #
+    # + document - The GraphQL document. It can include queries & mutations.
+    #              For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
+    # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`.
+    # + operationName - The GraphQL operation name. If a request has two or more operations, then each operation must have a name.
+    #                   A request can only execute one operation, so you must also include the operation name to execute.
+    # + headers - The GraphQL API headers to execute each query
+    # + targetType - The payload (`GenericResponseWithErrors`), which is expected to be returned after data binding. For example
+    #               `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data; ErrorDetail[] errors?; |};`
+    # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
+    remote isolated function execute(string document, map<anydata>? variables = (), string? operationName = (),
+                                     map<string|string[]>? headers = (),
+                                     typedesc<GenericResponseWithErrors|record {}|json|stream<GenericResponseWithErrors|record{}|json>> targetType = <>)
+                                     returns targetType|ClientError = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.client.QueryExecutor",
+        name: "execute"
+    } external;
+
+    # Closes the underlying WebSocket connection of all the subscriptions.
+    # 
+    # + return - A `graphql:ClientError` if an error occurred while closing the connection
+    remote isolated function closeSubscriptions() returns ClientError? {
+        do {
+            lock {
+                if self.wsConnectionClosed {
+                    return;
+                }
+            }
+            lock {
+                foreach Subscriber subscriber in self.subscribersMap {
+                    check subscriber->unsubscribe();
+                    
+                }
+            }
+            websocket:Client wsClient = check self.getWebSocketClient();
+            check wsClient->close();
+            lock {
+                self.wsConnectionClosed = true;
+            }
+        } on fail error err {
+            return error ClientError(string `Failed to close WebSocket connection: ${err.message()}`, err.cause());
+        }
+    }
+
     private isolated function processExecuteWithType(typedesc<GenericResponse|record{}|json> targetType,
                                                      string document, map<anydata>? variables, string? operationName,
                                                      map<string|string[]>? headers)
@@ -95,26 +146,6 @@ public isolated client class Client {
         }
     }
 
-    # Executes a GraphQL document and data binds the GraphQL response to a record with data, extensions and errors
-    # which is a subtype of GenericResponseWithErrors.
-    #
-    # + document - The GraphQL document. It can include queries & mutations.
-    #              For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
-    # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`.
-    # + operationName - The GraphQL operation name. If a request has two or more operations, then each operation must have a name.
-    #                   A request can only execute one operation, so you must also include the operation name to execute.
-    # + headers - The GraphQL API headers to execute each query
-    # + targetType - The payload (`GenericResponseWithErrors`), which is expected to be returned after data binding. For example
-    #               `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data; ErrorDetail[] errors?; |};`
-    # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
-    remote isolated function execute(string document, map<anydata>? variables = (), string? operationName = (),
-                                     map<string|string[]>? headers = (),
-                                     typedesc<GenericResponseWithErrors|record {}|json|stream<GenericResponseWithErrors|record{}|json>> targetType = <>)
-                                     returns targetType|ClientError = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.client.QueryExecutor",
-        name: "execute"
-    } external;
-
     private isolated function processExecute(typedesc<GenericResponseWithErrors|record{}|json> targetType,
                                              string document, map<anydata>? variables, string? operationName,
                                              map<string|string[]>? headers)
@@ -130,119 +161,93 @@ public isolated client class Client {
         return check performDataBindingWithErrors(targetType, httpResponse);
     }
 
-
     private isolated function getWebSocketClient() returns websocket:Client|websocket:Error {
         lock {
             if self.wsClient is () {
                 self.wsConfig.subProtocols = [GRAPHQL_TRANSPORT_WS];
                 self.wsClient = check new (self.wsServiceUrl, self.wsConfig);
-                self.wsClosed = false;
+                self.wsConnectionClosed = false;
             }
             return <websocket:Client> self.wsClient;
         }
     }
 
-    private isolated function initateGrqphqlWsConnection() returns websocket:Error? {
+    private isolated function initWsConnection() returns websocket:Error? {
         lock {
-            if self.graphqlWsConnectionInitiated {
+            if self.wsConnectionInit {
                 return;
             }
             websocket:Client wsClient = check self.getWebSocketClient();
             ConnectionInitMessage message = {'type: WS_INIT};
             check wsClient->writeMessage(message);
             ConnectionAckMessage _ = check wsClient->readMessage();
-            self.graphqlWsConnectionInitiated = true;
+            self.wsConnectionInit = true;
         }
     }
 
-
-    private isolated function executeSubscription(string document, map<anydata>? variables, string? operationName, map<string|string[]>? headers,
-    typedesc<stream<GenericResponseWithErrors|record{}|json>> targetType) returns stream<GenericResponseWithErrors|record{}|json>|ClientError {
+    private isolated function executeSubscription(string document, map<anydata>? variables, string? operationName,
+                                                  map<string|string[]>? headers, typedesc<stream<GenericResponseWithErrors|record {}|json>> targetType)
+                                                  returns stream<GenericResponseWithErrors|record {}|json>|ClientError {
         do {
             websocket:Client wsClient = check self.getWebSocketClient();
-            check self.initateGrqphqlWsConnection();
-
+            check self.initWsConnection();
             string id = uuid:createType1AsString();
-            Subscriber subscriber = new(id, wsClient, targetType);
+            Subscriber subscriber = new (id, wsClient);
             lock {
-                self.subscribers[id] = subscriber;
+                self.subscribersMap[id] = subscriber;
             }
             json payload = getGraphqlPayload(document, variables, operationName);
             json graphqlPayload = {'type: WS_SUBSCRIBE, id, payload};
             check wsClient->writeMessage(graphqlPayload);
-            _ = check start self.hanldeMultiplexing(wsClient);
+            _ = check start self.readFromSubscriptions(wsClient);
             return subscriber.getStream();
         } on fail error err {
-            return error ClientError("Failed to execute subscription: "+  err.message(), err);
+            return error ClientError("Error occurred while trying to subscribe. " + err.message(), err);
         }
     }
 
-    private isolated function addMessagToSubscriber(SubscriberMessage message) {
+    private isolated function readFromSubscriptions(websocket:Client wsClient) returns websocket:Error? {
+        lock {
+            if self.subscriptionStarted {
+                return;
+            }
+            self.subscriptionStarted = true;
+        }
+        var handleMultipleSubscriptions = self.handleMultipleSubscriptions;
+        var isWsConnectionClosed = self.isWsConnectionClosed;
+        while true {
+            lock {
+                if isWsConnectionClosed() || !wsClient.isOpen() {
+                    return;
+                }
+            }
+            ClientInboundMessage message = check wsClient->readMessage();
+            if message is SubscriberMessage {
+                handleMultipleSubscriptions(message);
+            }
+
+            if message is PingMessage {
+                PongMessage pong = {'type: WS_PONG};
+                check wsClient->writeMessage(pong);
+                continue;
+            }
+        }
+    }
+
+    private isolated function handleMultipleSubscriptions(SubscriberMessage message) {
         string id = message.id;
         lock {
-            if self.subscribers.hasKey(id) {
-                Subscriber subscriber = message is CompleteMessage ? self.subscribers.remove(message.id)
-                                                                   : self.subscribers.get(id);
+            if self.subscribersMap.hasKey(id) {
+                Subscriber subscriber = message is CompleteMessage ? self.subscribersMap.remove(message.id)
+                    : self.subscribersMap.get(id);
                 subscriber.addMessage(message.clone());
             }
         }
     }
 
-    private isolated function isClosed() returns boolean {
+    private isolated function isWsConnectionClosed() returns boolean {
         lock {
-            return self.wsClosed;
-        }
-    }
-
-    private isolated function hanldeMultiplexing(websocket:Client wsClient) returns websocket:Error? {
-        lock {
-            if self.startedListeningToSubscription {
-                return;
-            }
-            self.startedListeningToSubscription = true;
-        }
-        var addMessagToSubscriber = self.addMessagToSubscriber;
-        var isClosed = self.isClosed;
-            while true {
-                lock {
-                    if isClosed() || !wsClient.isOpen() {
-                        return;
-                    }
-                }
-                do {
-                    ClientInboundMessage message = check wsClient->readMessage();
-                    if message is PingMessage {
-                        PongMessage pong = {'type: WS_PONG};
-                        check wsClient->writeMessage(pong);
-                        continue;
-                    }
-
-                    if message is SubscriberMessage {
-                        addMessagToSubscriber(message);
-                    }
-                    io:println(message.toString());
-                } on fail {
-
-                }
-            }
-    }
-
-    # Closes the underlying WebSocket connection of all the subscrpitions.
-    # + return - A `graphql:ClientError` if an error occurred while closing the connection
-    remote isolated function closeSubscriptions() returns ClientError? {
-        do {
-            lock {
-                if self.wsClosed {
-                    return;
-                }
-            }
-            websocket:Client wsClient = check self.getWebSocketClient();
-            check wsClient->close();
-            lock {
-                self.wsClosed = true;
-            }
-        } on fail websocket:Error err {
-            return error ClientError(string `Failed to close WebSocket connection: ${err.message()}`, err.cause());
+            return self.wsConnectionClosed;
         }
     }
 }

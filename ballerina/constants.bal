@@ -20,12 +20,6 @@ const CONTENT_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 const CONTENT_TYPE_TEXT_HTML = "text/html";
 const HTTP_HOST_HEADER = "Host";
 
-// Protocol scheme constants
-const HTTP = "http://";
-const HTTPS = "https://";
-const WS = "ws://";
-const WSS = "wss://";
-
 const PARAM_QUERY = "query";
 const PARAM_OPERATION_NAME = "operationName";
 const PARAM_VARIABLES = "variables";

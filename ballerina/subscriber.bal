@@ -17,31 +17,38 @@
 import ballerina/lang.runtime;
 import ballerina/websocket;
 
-# The Subscriber class serves as a client for handling a specific subscription operation.
-# It stores the stream associated with the subscription and offers methods for accessing
-# the subscription stream and unsubscribing from the subscription.
 public distinct isolated client class Subscriber {
     private final string id;
     private final websocket:Client wsClient;
     private final SubscriberMessage[] messages = [];
-    private typedesc<stream<GenericResponseWithErrors|record{}|json>> databindType;
     private boolean unsubscribed = false;
-    private boolean streamConsumed = false;
 
-    isolated function init(string id, websocket:Client wsClient, typedesc<stream<GenericResponseWithErrors|record{}|json>> targetType) {
+    // TODO: databinding
+    isolated function init(string id, websocket:Client wsClient) {
         self.id = id;
         self.wsClient = wsClient;
-        self.databindType = targetType;
     }
 
-    private isolated function blockUntilMessagesNotEmptyOrUnsubscribed() {
-        while true {
-            runtime:sleep(1);
-            lock {
-                if self.messages.length() > 0 || self.unsubscribed || !self.wsClient.isOpen() {
-                    break;
-                }
+    isolated function getStream() returns stream<GenericResponseWithErrors|record{}|json> {
+        stream<GenericResponseWithErrors|record{}|json> subscription = new (self);
+        return subscription;
+    }
+
+    public isolated function next() returns record{|json value;|}? {
+        lock {
+            if self.unsubscribed || !self.wsClient.isOpen() {
+                return ();
             }
+            while self.messages.length() == 0 {
+                runtime:sleep(1);
+            }
+            SubscriberMessage message = self.messages.shift();
+            if message is CompleteMessage {
+                self.unsubscribed = true;
+                return ();
+            }
+            json payload = message.payload;
+            return {value: payload.clone()};
         }
     }
 
@@ -53,9 +60,7 @@ public distinct isolated client class Subscriber {
             self.messages.push(message.clone());
         }
     }
-
-    # Unsubscribes from the subscription operation by sending a complete message via the graphql-transport-ws protocol.
-    # + return - `graphql:ClientError` on failure, nil otherwise;
+    
     isolated remote function unsubscribe() returns ClientError? {
         lock {
             if self.unsubscribed {
@@ -64,30 +69,9 @@ public distinct isolated client class Subscriber {
             CompleteMessage message = {'type: WS_COMPLETE, id: self.id};
             websocket:Error? response = self.wsClient->writeMessage(message);
             if response is websocket:Error {
-                return error ClientError(string `Failed to unsubscribe: ${response.message()}`, response.cause());
+                return error ClientError(string `Error ocurred while unsubscribing. ${response.message()}`, response.cause());
             }
             self.unsubscribed = true;
-        }
-    }
-
-    isolated function getStream() returns stream<GenericResponseWithErrors|record{}|json> {
-        stream<GenericResponseWithErrors|record{}|json> subscription = new (self);
-        return subscription;
-    }
-
-    public isolated function next() returns record{|json value;|}? {
-        self.blockUntilMessagesNotEmptyOrUnsubscribed();
-        lock {
-            if self.unsubscribed || !self.wsClient.isOpen() {
-                return ();
-            }
-            SubscriberMessage message = self.messages.shift();
-            if message is CompleteMessage {
-                self.unsubscribed = true;
-                return ();
-            }
-            json payload = message.payload;
-            return {value: payload.clone()};
         }
     }
 }
