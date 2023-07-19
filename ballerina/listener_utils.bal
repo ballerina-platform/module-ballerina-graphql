@@ -384,8 +384,8 @@ isolated function initContext(Engine engine, ContextInit contextInit, http:Reque
 }
 
 
-isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string basePath,
-                                     boolean includedSubscription = false) returns HttpService {
+isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string graphqlUrl,
+                                     string? subscriptionUrl = ()) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
@@ -394,11 +394,8 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
     } isolated service object {
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
 
-        isolated resource function get .(@http:Header {name: HTTP_HOST_HEADER} string host)
-            returns http:Response|http:InternalServerError {
-            string graphqlUrl = string `http://${host}/${basePath}`;
-            string subscriptionUrl = string `ws://${host}/${basePath}`;
-            string|error htmlAsString = includedSubscription
+        isolated resource function get .() returns http:Response|http:InternalServerError {
+            string|error htmlAsString = subscriptionUrl is string
                                         ? getHtmlContentFromResources(graphqlUrl, subscriptionUrl)
                                         : getHtmlContentFromResources(graphqlUrl);
             if htmlAsString is error {
