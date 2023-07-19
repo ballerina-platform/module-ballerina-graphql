@@ -830,7 +830,10 @@ service /noAuth on secureListener {
             fileUserStoreConfig: {},
             scopes: ["write", "update"]
         }
-    ]
+    ],
+    graphiql: {
+        enabled: true
+    }
 }
 service /basicAuth on secureListener {
     isolated resource function get greeting() returns string {
