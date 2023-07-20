@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.7.0-20230620-082800-c0018aae"
+distribution-version = "2201.7.0"
 
 [[package]]
 org = "ballerina"
@@ -53,7 +53,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.8.0"
+version = "1.8.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
