@@ -6,7 +6,7 @@ on:
             lang_tag:
                 description: Branch/Release Tag of the Ballerina Lang
                 required: true
-                default: master
+                default: java_17_migration
             lang_version:
                 description: Ballerina Lang Version (If given ballerina lang build will be skipped)
                 required: false
@@ -30,7 +30,7 @@ jobs:
     call_stdlib_workflow:
         name: Run StdLib Workflow
         if: ${{ github.event_name != 'schedule' || (github.event_name == 'schedule' && github.repository_owner == 'ballerina-platform') }}
-        uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-with-bal-test-graalvm-template.yml@main
+        uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-with-bal-test-graalvm-template.yml@java_17_migration
         with:
             lang_tag: ${{ inputs.lang_tag }}
             lang_version: ${{ inputs.lang_version }}
