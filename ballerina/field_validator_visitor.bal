@@ -565,7 +565,7 @@ class FieldValidatorVisitor {
                         return;
                     }
                 }
-                string message = getFragmetCannotSpreadError(fragmentNode, fragmentNode.getName(), ofType);
+                string message = getFragmentCannotSpreadError(fragmentNode, fragmentNode.getName(), ofType);
                 ErrorDetail errorDetail = getErrorDetailRecord(message, <Location>fragmentNode.getSpreadLocation());
                 self.errors.push(errorDetail);
             } else {

@@ -74,8 +74,12 @@ public enum CompilationDiagnostic {
                                       DiagnosticSeverity.ERROR),
     FAILED_TO_ADD_ENTITY_RESOLVER(DiagnosticMessage.ERROR_137, DiagnosticCode.GRAPHQL_137, DiagnosticSeverity.ERROR),
     FAILED_TO_ADD_SERVICE_RESOLVER(DiagnosticMessage.ERROR_138, DiagnosticCode.GRAPHQL_138, DiagnosticSeverity.ERROR),
-    UNSUPPORTED_PRIMITIVE_TYPE_ALIAS(DiagnosticMessage.ERROR_139, DiagnosticCode.GRAPHQL_139, DiagnosticSeverity.ERROR),
-    INVALID_USE_OF_ID_ANNOTATION(DiagnosticMessage.ERROR_140, DiagnosticCode.GRAPHQL_140, DiagnosticSeverity.ERROR);
+    UNSUPPORTED_TYPE_ALIAS(DiagnosticMessage.ERROR_139, DiagnosticCode.GRAPHQL_139, DiagnosticSeverity.ERROR),
+    INVALID_USE_OF_ID_ANNOTATION(DiagnosticMessage.ERROR_140, DiagnosticCode.GRAPHQL_140, DiagnosticSeverity.ERROR),
+
+    // Warnings
+    UNSUPPORTED_INPUT_FIELD_DEPRECATION(DiagnosticMessage.WARNING_201, DiagnosticCode.GRAPHQL_201,
+            DiagnosticSeverity.WARNING);
 
     private final String diagnostic;
     private final String diagnosticCode;

@@ -18,8 +18,45 @@ import ballerina/graphql;
 
 type Id int;
 
+type User record {|
+    int id;
+    string name;
+|};
+
+type Input record {|
+    int id;
+|};
+
+type Address record {|
+    string street;
+    string city;
+|};
+
+type Person User;
+
+type PersonInput Input;
+
+type PersonInput2 PersonInput;
+
+type PersonAddress Address;
+
 service on new graphql:Listener(4000) {
     resource function get id(Id id) returns Id {
         return id;
+    }
+
+    resource function get person1(PersonInput input) returns int {
+      return input.id;
+    }
+
+    resource function get person2(PersonInput2 input) returns int {
+        return input.id;
+    }
+
+    resource function get address() returns PersonAddress {
+        return {
+            street: "Baker Street",
+            city: "London"
+        };
     }
 }

@@ -105,7 +105,7 @@ public type ProxyConfig record {|
 # + responseLimits - Configurations associated with inbound response size limits
 # + secureSocket - SSL/TLS-related options
 # + proxy - Proxy server related options
-# + validation - Enables the inbound payload validation functionalty which provided by the constraint package. Enabled by default
+# + validation - Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default
 public type ClientConfiguration record {|
     ClientHttp1Settings http1Settings = {};
     decimal timeout = 60;
@@ -128,10 +128,12 @@ type Data record {
     // Intentionally kept empty
 };
 
-type Location record {|
+# Represents a location in a GraphQL document.
+public type Location record {|
     *parser:Location;
 |};
 
+# Represents an error in GraphQL.
 public type ErrorDetail record {|
     *parser:ErrorDetail;
 |};

@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [[#2998] Add '@deprecated' Directive Support for Output Object Defined using Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2998)
+- [[#4586] Add Support for Printing GraphiQL Url to Stdout](https://github.com/ballerina-platform/ballerina-standard-library/issues/4586)
+
+### Fixed
+- [[#4627] Fix Schema Generation Failure when Service has Type Alias](https://github.com/ballerina-platform/ballerina-standard-library/issues/4627)
+- [[#4650] Fix Incorrect Schema Generation when an Annotation Present in a Record Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/4650)
+- [[#4660] Fix GraphiQL Client Endpoint for Secured Listeners](https://github.com/ballerina-platform/ballerina-standard-library/issues/4660)
+
+### Changed
+- [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)
+- [[#4648] Removed Returning Deprecation Reasons for Non-Deprecated Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/4648)
+
+## [1.9.0] - 2023-06-30
+
+### Added
 - [[#4176] Add Support for Input Constraint Validation](https://github.com/ballerina-platform/ballerina-standard-library/issues/4176)
 - [[#4479] Introduce `graphql:__addError()` Function to Add an ErrorDetail into the `errors` Field of a GraphQL Response](https://github.com/ballerina-platform/ballerina-standard-library/issues/4479)
 - [[#4202] Add Support for GraphQL Scalar Type ID](https://github.com/ballerina-platform/ballerina-standard-library/issues/4202)

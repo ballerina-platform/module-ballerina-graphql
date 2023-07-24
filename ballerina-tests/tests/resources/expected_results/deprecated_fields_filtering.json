@@ -15,6 +15,17 @@
                         }
                     },
                     {
+                        "name": "profile",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "DeprecatedProfile",
+                                "fields": []
+                            }
+                        }
+                    },
+                    {
                         "name": "school",
                         "isDeprecated": false,
                         "deprecationReason": null,
@@ -35,6 +46,17 @@
             },
             "mutationType": {
                 "fields": [
+                    {
+                        "name": "addProfile",
+                        "isDeprecated": false,
+                        "deprecationReason": null,
+                        "type": {
+                            "ofType": {
+                                "name": "DeprecatedProfile",
+                                "fields": []
+                            }
+                        }
+                    },
                     {
                         "name": "addInstrument",
                         "isDeprecated": false,

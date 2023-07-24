@@ -96,7 +96,10 @@ public class GeneratorUtils {
         return documentable.documentation().get().description().get();
     }
 
-    public static String getDeprecationReason(Documentable documentable) {
+    public static String getDeprecationReason(Documentable documentable, boolean isDeprecated) {
+        if (!isDeprecated) {
+            return null;
+        }
         if (documentable.documentation().isEmpty()) {
             return null;
         }
