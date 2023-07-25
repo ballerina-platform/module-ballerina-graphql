@@ -2,9 +2,9 @@
 
 [![Star on Github](https://img.shields.io/badge/-Star%20on%20Github-blue?style=social&logo=github)](https://github.com/ballerina-platform/module-ballerina-graphql)
 
-_Authors_: @ThisaruGuruge  
-_Reviewers_: @shafreenAnfar  
-_Created_: 2023/02/06  
+_Authors_: @ThisaruGuruge \
+_Reviewers_: @shafreenAnfar \
+_Created_: 2023/02/06 \
 _Updated_: 2023/02/06
 
 ## Introduction
