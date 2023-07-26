@@ -20,17 +20,9 @@ package io.ballerina.stdlib.graphql.commons.types;
 
 import java.util.List;
 
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.ARGUMENT_DEFINITION;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.ENUM;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.ENUM_VALUE;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.FIELD_DEFINITION;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.INPUT_FIELD_DEFINITION;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.INPUT_OBJECT;
 import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.INTERFACE;
 import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.OBJECT;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.SCALAR;
 import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.SCHEMA;
-import static io.ballerina.stdlib.graphql.commons.types.DirectiveLocation.UNION;
 import static io.ballerina.stdlib.graphql.commons.types.FederatedEnumValue.LINK_PURPOSE;
 
 /**
@@ -38,26 +30,13 @@ import static io.ballerina.stdlib.graphql.commons.types.FederatedEnumValue.LINK_
  */
 public enum FederatedDirective {
 
-    EXTERNAL("external", List.of(), List.of(FIELD_DEFINITION, OBJECT)),
-    REQUIRES("requires", List.of(getFieldsInput()), List.of(FIELD_DEFINITION)),
-    PROVIDES("provides", List.of(getFieldsInput()), List.of(FIELD_DEFINITION)),
     KEY("key", List.of(getFieldsInput(), getResolvableInput()), true, List.of(OBJECT, INTERFACE)),
-    LINK("link", List.of(getUrlInput(), getAsInput(), getForInput(), getImportInput()), true, List.of(SCHEMA)),
-    SHAREABLE("shareable", List.of(), List.of(OBJECT, FIELD_DEFINITION)),
-    INACCESSIBLE("inaccessible", List.of(), getInAccessibleOrTagDirectiveLocations()),
-    TAG("tag", List.of(getNameInput()), true, getInAccessibleOrTagDirectiveLocations()),
-    OVERRIDE("override", List.of(getFromInput()), List.of(FIELD_DEFINITION)),
-    COMPOSE_DIRECTIVE("composeDirective", List.of(getNameInput()), true, List.of(SCHEMA)),
-    EXTENDS("extends", List.of(), List.of(OBJECT, INTERFACE));
+    LINK("link", List.of(getUrlInput(), getAsInput(), getForInput(), getImportInput()), true, List.of(SCHEMA));
 
     private final String name;
     private final List<InputValue> arguments;
     private final boolean repeatable;
     private final List<DirectiveLocation> locations;
-
-    FederatedDirective(String name, List<InputValue> arguments, List<DirectiveLocation> locations) {
-        this(name, arguments, false, locations);
-    }
 
     FederatedDirective(String name, List<InputValue> arguments, boolean repeatable, List<DirectiveLocation> locations) {
         this.name = name;
@@ -67,7 +46,7 @@ public enum FederatedDirective {
     }
 
     public static boolean canImportInLinkDirective(String directiveName) {
-        return directiveName.equals(LINK.getName()) || directiveName.equals(COMPOSE_DIRECTIVE.getName());
+        return directiveName.equals(LINK.getName());
     }
 
     public String getName() {
@@ -80,11 +59,6 @@ public enum FederatedDirective {
 
     public List<DirectiveLocation> getLocations() {
         return this.locations;
-    }
-
-    private static List<DirectiveLocation> getInAccessibleOrTagDirectiveLocations() {
-        return List.of(FIELD_DEFINITION, OBJECT, INTERFACE, UNION, ARGUMENT_DEFINITION, SCALAR, ENUM, ENUM_VALUE,
-                       INPUT_OBJECT, INPUT_FIELD_DEFINITION);
     }
 
     private static InputValue getFieldsInput() {
@@ -109,14 +83,6 @@ public enum FederatedDirective {
 
     private static InputValue getImportInput() {
         return new InputValue("import", new Type(TypeKind.LIST, getScalar(ScalarType.LINK_IMPORT)), null, null);
-    }
-
-    private static InputValue getNameInput() {
-        return new InputValue("name", new Type(TypeKind.NON_NULL, getScalar(ScalarType.STRING)), null, null);
-    }
-
-    private static InputValue getFromInput() {
-        return new InputValue("from", new Type(TypeKind.NON_NULL, getScalar(ScalarType.STRING)), null, null);
     }
 
     private static Type getScalar(ScalarType scalar) {

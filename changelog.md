@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 - [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)
 - [[#4648] Removed Returning Deprecation Reasons for Non-Deprecated Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/4648)
+- [[#4681] Removed Adding All Possible Federated Directives to SDL String in GraphQL Subgraph](https://github.com/ballerina-platform/ballerina-standard-library/issues/4681)
 
 ## [1.9.0] - 2023-06-30
 
