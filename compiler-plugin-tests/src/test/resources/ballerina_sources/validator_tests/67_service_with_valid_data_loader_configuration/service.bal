@@ -16,41 +16,47 @@
 
 import ballerina/graphql;
 import ballerina/graphql.dataloader;
+import ballerina/http;
 
+@graphql:ServiceConfig {
+    contextInit: isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context ctx = new;
+        ctx.registerDataLoader("authorLoader", new dataloader:DefaultDataLoader(authorLoaderFunction));
+        ctx.registerDataLoader("bookLoader", new dataloader:DefaultDataLoader(bookLoaderFunction));
+        return ctx;
+    }
+}
 service on new graphql:Listener(9090) {
     resource function get authors(int[] ids) returns Author[] {
         return [];
     }
 
-    remote function updateAuthor(map<dataloader:DataLoader> loaders, int id, string name) returns Author|error {
+    remote function updateAuthor(graphql:Context ctx, int id, string name) returns Author|error {
         return error("No implementation provided for updateAuthor");
     }
 
-    @dataloader:Loader {
-        batchFunctions: {"authorLoader": authorLoaderFunction}
-    }
-    remote function loadUpdateAuthor(map<dataloader:DataLoader> loaders) {
-
+    function preUpdateAuthor(graphql:Context ctx, int id) {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader("authorLoader");
+        authorLoader.add(id);
     }
 }
 
 isolated distinct service class Author {
-    isolated resource function get books(map<dataloader:DataLoader> loaders) returns Book[] {
+    isolated resource function get books(graphql:Context ctx) returns Book[] {
         return [];
     }
 
-    @dataloader:Loader {
-        batchFunctions: {"bookLoader": bookLoaderFunction}
-    }
-    isolated resource function get loadBooks(map<dataloader:DataLoader> loaders) {
+    isolated function preBooks(graphql:Context ctx) {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader("bookLoader");
+        bookLoader.add(1);
     }
 }
 
-isolated function bookLoaderFunction(readonly & anydata[] ids) returns Book[][]|error {
+isolated function bookLoaderFunction(readonly & anydata[] ids) returns Book[][] {
     return [];
 };
 
-isolated function authorLoaderFunction(readonly & anydata[] ids) returns AuthorData[]|error {
+isolated function authorLoaderFunction(readonly & anydata[] ids) returns AuthorData[] {
     return [];
 };
 

@@ -395,8 +395,6 @@ public distinct isolated service class CustomerAddress {
     }
 }
 
-const BOOK_LOADER = "bookLoader";
-
 public isolated distinct service class AuthorData {
     private final readonly & AuthorRow author;
 
@@ -408,19 +406,16 @@ public isolated distinct service class AuthorData {
         return self.author.name;
     }
 
-    isolated resource function get books(map<dataloader:DataLoader> loaders) returns BookData[]|error {
-        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
+    isolated resource function get books(graphql:Context ctx) returns BookData[]|error {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
         BookRow[] bookrows = check bookLoader.get(self.author.id);
         return from BookRow bookRow in bookrows
             select new BookData(bookRow);
     }
 
-    @dataloader:Loader {
-        batchFunctions: {[BOOK_LOADER] : bookLoaderFunction}
-    }
-    isolated resource function get loadBooks(map<dataloader:DataLoader> loaders) {
-        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
-        bookLoader.load(self.author.id);
+    isolated function preBooks(graphql:Context ctx) {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
+        bookLoader.add(self.author.id);
     }
 }
 
@@ -436,21 +431,19 @@ public isolated distinct service class AuthorDetail {
     }
 
     @graphql:ResourceConfig {
-        interceptors: new BookInterceptor()
+        interceptors: new BookInterceptor(),
+        prefetchMethodName: "prefetchBooks"
     }
-    isolated resource function get books(map<dataloader:DataLoader> loaders) returns BookData[]|error {
-        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
+    isolated resource function get books(graphql:Context ctx) returns BookData[]|error {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
         BookRow[] bookrows = check bookLoader.get(self.author.id);
         return from BookRow bookRow in bookrows
             select new BookData(bookRow);
     }
 
-    @dataloader:Loader {
-        batchFunctions: {[BOOK_LOADER] : bookLoaderFunction}
-    }
-    isolated resource function get loadBooks(map<dataloader:DataLoader> loaders) {
-        dataloader:DataLoader bookLoader = loaders.get(BOOK_LOADER);
-        bookLoader.load(self.author.id);
+    isolated function prefetchBooks(graphql:Context ctx) {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
+        bookLoader.add(self.author.id);
     }
 }
 

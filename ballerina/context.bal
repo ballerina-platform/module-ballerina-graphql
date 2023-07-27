@@ -29,7 +29,6 @@ public isolated class Context {
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
     private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
     private map<PlaceHolder> uuidPlaceHolderMap = {};
-    private map<()> nonDispatchedDataLoaderIds = {};
     private PlaceHolder[] unResolvedPlaceHolders = [];
     private boolean containPlaceHolders = false;
     private int unResolvedPlaceHolderCount = 0; // Tracks the number of PlaceHolders needs to be resolved
@@ -96,6 +95,26 @@ public isolated class Context {
                 }
             }
             return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        }
+    }
+
+    # Register a given DataLoader instance for a given key in the GraphQL context.
+    # 
+    # + key - The key for the DataLoader to be registered
+    # + dataloader - The DataLoader instance to be registered
+    public isolated function registerDataLoader(string key, dataloader:DataLoader dataloader) {
+        lock {
+            self.idDataLoaderMap[key] = dataloader;
+        }
+    }
+
+    # Retrieves a DataLoader instance using the given key from the GraphQL context.
+    # 
+    # + key - The key corresponding to the required DataLoader instance
+    # + return - The DataLoader instance if the key is present in the context otherwise panics
+    public isolated function getDataLoader(string key) returns dataloader:DataLoader {
+        lock {
+            return self.idDataLoaderMap.get(key);
         }
     }
 
@@ -194,17 +213,6 @@ public isolated class Context {
         }
     }
 
-    isolated function addDataLoader(string id, dataloader:BatchLoadFunction batchFunction) {
-        lock {
-            if self.idDataLoaderMap.hasKey(id) {
-                return;
-            }
-            DefaultDataLoader dataloader = new (batchFunction);
-            self.idDataLoaderMap[id] = dataloader;
-            return;
-        }
-    }
-
     isolated function addUnResolvedPlaceHolder(string uuid, PlaceHolder placeHolder) {
         lock {
             self.containPlaceHolders = true;
@@ -215,19 +223,9 @@ public isolated class Context {
         }
     }
 
-     isolated function addNonDispatchedDataLoaderIds(string[] dataLoaderIds) {
-        final readonly & string[] loaderIds = dataLoaderIds.cloneReadOnly();
-        lock {
-            foreach string id in loaderIds {
-                self.nonDispatchedDataLoaderIds[id] = ();
-            }
-        }
-    }
-
     isolated function resolvePlaceHolders() {
         lock {
-            string[] nonDispatchedDataLoaderIds = self.nonDispatchedDataLoaderIds.keys();
-            self.nonDispatchedDataLoaderIds = {};
+            string[] nonDispatchedDataLoaderIds = self.idDataLoaderMap.keys();
             PlaceHolder[] unResolvedPlaceHolders = self.unResolvedPlaceHolders;
             self.unResolvedPlaceHolders = [];
             foreach string dataLoaderId in nonDispatchedDataLoaderIds {
@@ -275,14 +273,15 @@ public isolated class Context {
         }
     }
 
-    isolated function clearDataLoadersAndPlaceHolders() {
-        // This function is called at the end of each subscription loop execution.
-        // This avoid using the same data loader in the next loop itteration and avoid filling up the idPlaceHolderMap.
+    isolated function clearDataLoadersCachesAndPlaceHolders() {
+        // This function is called at the end of each subscription loop execution to prevent using old values 
+        // from DataLoader caches in the next iteration and to avoid filling up the idPlaceHolderMap.
         lock {
-            self.idDataLoaderMap.removeAll();
+            self.idDataLoaderMap.forEach(isolated function(dataloader:DataLoader dataloader) {
+                dataloader.clearAll();
+            });
             self.unResolvedPlaceHolders.removeAll();
             self.uuidPlaceHolderMap.removeAll();
-            self.nonDispatchedDataLoaderIds.removeAll();
             self.containPlaceHolders = false;
         }
     }

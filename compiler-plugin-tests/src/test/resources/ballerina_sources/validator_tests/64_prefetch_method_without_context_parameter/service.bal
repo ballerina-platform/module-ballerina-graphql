@@ -15,36 +15,26 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/graphql.dataloader;
 
 service on new graphql:Listener(9090) {
-    resource function get authors(int[] ids) returns Author[]|error {
+    resource function get authors(int[] ids) returns Author[] {
         return [];
-    }
-
-    @dataloader:Loader {
-        batchFunctions: {"authorLoader": authorLoaderFunction}
-    }
-    isolated resource function get author(map<dataloader:DataLoader> loaders) {
     }
 }
 
 isolated distinct service class Author {
-    isolated resource function get name() returns string {
-        return "author";
+    isolated resource function get books() returns Book[] {
+        return [];
     }
 
-    @dataloader:Loader {
-        batchFunctions: {"bookLoader": bookLoaderFunction}
-    }
-    isolated resource function get books(map<dataloader:DataLoader> loaders) {
+    isolated function preBooks() {
     }
 }
 
-isolated function bookLoaderFunction(readonly & anydata[] ids) returns anydata[]|error {
+isolated function bookLoaderFunction(readonly & anydata[] ids) returns anydata[] {
     return [];
 };
 
-isolated function authorLoaderFunction(readonly & anydata[] ids) returns anydata[]|error {
-    return [];
-};
+public type Book record {|
+    string title;
+|};

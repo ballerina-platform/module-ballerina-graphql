@@ -1130,137 +1130,96 @@ public class ServiceValidationTest {
     }
 
     @Test(groups = "invalid")
-    public void testLoaderMethodWithoutDataLoaderParameter() {
-        String packagePath = "64_loader_method_without_data_loader_parameter";
+    public void testPrefetchMethodWithoutContextParameter() {
+        String packagePath = "64_prefetch_method_without_context_parameter";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.MISSING_DATA_LOADER_PARAMETER, "loadBooks");
-        assertErrorMessage(diagnostic, message, 34, 32);
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_GRAPHQL_CONTEXT_PARAMETER, "preBooks");
+        assertErrorMessage(diagnostic, message, 30, 23);
     }
 
     @Test(groups = "invalid")
-    public void testLoaderMethodWithInvalidParameters() {
-        String packagePath = "65_loader_method_with_invalid_parameters";
+    public void testPrefetchMethodWithInvalidParameters() {
+        String packagePath = "65_prefetch_method_with_invalid_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_PARAMETER_IN_LOAD_METHOD, "int id", "loadBooks",
-                                         "books");
-        assertErrorMessage(diagnostic, message, 34, 32);
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, "int id",
+                                         "preBooks", "books");
+        assertErrorMessage(diagnostic, message, 30, 23);
     }
 
     @Test(groups = "invalid")
-    public void testLoaderMethodWithInvalidReturnType() {
-        String packagePath = "66_loader_method_with_invalid_return_type";
+    public void testPrefetchMethodWithInvalidReturnType() {
+        String packagePath = "66_prefetch_method_with_invalid_return_type";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 1);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_LOADER_METHOD, "int",
-                                         "loadBooks");
-        assertErrorMessage(diagnostic, message, 34, 32);
-    }
-
-    @Test(groups = "invalid")
-    public void testInvalidUsageOfDataLoaderWithoutLoaderMethod() {
-        String packagePath = "67_invalid_usage_of_data_loader_without_loader_method";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 2);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.NO_MATCHING_LOAD_FUNCTION_FOUND, "get", "loadBooks",
-                                         "books");
-        assertErrorMessage(diagnostic, message, 31, 32);
-
-        diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.NO_MATCHING_LOAD_FUNCTION_FOUND, "remote", "loadUpdateAuthor",
-                                  "updateAuthor");
-        assertErrorMessage(diagnostic, message, 25, 21);
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD, "int",
+                                         "preBooks");
+        assertErrorMessage(diagnostic, message, 30, 23);
     }
 
     @Test(groups = "valid")
     public void testServiceWithValidDataLoaderConfiguration() {
-        String packagePath = "68_service_with_valid_data_loader_configuration";
+        String packagePath = "67_service_with_valid_data_loader_configuration";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test(groups = "invalid")
-    public void testInvalidDataLoaderUsageInSubscription() {
-        String packagePath = "69_invalid_usage_of_data_loader_in_subscription";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_DATA_LOADER_USAGE_IN_SUBSCRIPTION, "data");
-        assertErrorMessage(diagnostic, message, 25, 65);
-    }
-
-    @Test(groups = "invalid")
-    public void testInvalidLoaderAnnotationInSubscribeResource() {
-        String packagePath = "70_invalid_loader_annotation_in_subscribe_resource";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 1);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_USAGE_OF_LOADER_ANNOTATION_IN_SUBSCRIBE_RESOURCE,
-                                         "data");
-        assertErrorMessage(diagnostic, message, 28, 23);
-    }
-
-
-    @Test(groups = "invalid")
-    public void testLoaderMethodWithInvalidName() {
-        String packagePath = "71_loader_method_with_invalid_name";
+    public void testServiceWithInvalidPrefetchMethodNameConfig() {
+        String packagePath = "68_service_with_invalid_prefetch_method_name_config";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_NAME_FOR_DATA_LOADER, "books",
-                                         "load");
-        assertErrorMessage(diagnostic, message, 40, 32);
-
-        diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_NAME_FOR_DATA_LOADER, "author",
-                                  "load");
-        assertErrorMessage(diagnostic, message, 28, 32);
-    }
-
-    @Test(groups = "invalid")
-    public void testLoaderMethodWithoutGraphqlFieldMapping() {
-        String packagePath = "72_loader_method_without_graphql_field_mapping";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 3);
-        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
-
-        Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.NO_MATCHING_RESOURCE_METHOD_FOUND_FOR_LOAD_METHOD,
-                                         "books", "loadBooks");
+        String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, "loadBooks", "books");
         assertErrorMessage(diagnostic, message, 46, 32);
 
         diagnostic = diagnosticIterator.next();
-        String message2 = getErrorMessage(CompilationDiagnostic.NO_MATCHING_REMOTE_METHOD_FOUND_FOR_LOAD_METHOD,
-                                          "authors", "loadAuthors");
-        assertErrorMessage(diagnostic, message2, 28, 21);
+        message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, "prefetchUpdateAuthor",
+                                  "updateAuthor");
+        assertErrorMessage(diagnostic, message, 37, 21);
+    }
 
+    @Test(groups = "invalid")
+    public void testSubscriptionWithInvalidPrefetchMethodNameConfig() {
+        String packagePath = "69_subscription_with_invalid_prefetch_method_name_config";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
-        diagnostic = diagnosticIterator.next();
-        assertErrorMessage(diagnostic, message, 34, 32);
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG,
+                                         "prefetchMethodName", "authors");
+        assertErrorMessage(diagnostic, message, 24, 5);
+    }
+
+    @Test(groups = "invalid")
+    public void testPrefetchMethodConfigurationUsingVariableValue() {
+        String packagePath = "70_prefetch_method_configuration_using_variable_value";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_VALIDATE_PREFETCH_METHOD, "prefetchMethodName",
+                                         "updateAuthor");
+        assertWarningMessage(diagnostic, message, 36, 5);
     }
 
     @Test(groups = "invalid")
     public void testInvalidUsageDeprecatedDirective() {
-        String packagePath = "73_invalid_usages_of_deprecated_directive";
+        String packagePath = "71_invalid_usages_of_deprecated_directive";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.warningCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();

@@ -22,7 +22,6 @@ import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
-import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
@@ -54,7 +53,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.hasGraphqlListener;
-import static io.ballerina.stdlib.graphql.commons.utils.Utils.isDataLoaderModuleSymbol;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isSubgraphModuleSymbol;
@@ -74,10 +72,9 @@ public final class Utils {
     public static final String SERVICE_CONFIG_IDENTIFIER = "ServiceConfig";
     public static final String SUBGRAPH_ANNOTATION_NAME = "Subgraph";
     public static final String UUID_RECORD_NAME = "Uuid";
-    public static final String DATA_LOADER_IDENTIFIER = "DataLoader";
     private static final String ORG_NAME = "ballerina";
     private static final String UUID_MODULE_NAME = "uuid";
-    private static final String DATA_LOADER_ANNOTATION = "Loader";
+    private static final String RESOURCE_CONFIG_ANNOTATION = "ResourceConfig";
 
     private Utils() {
     }
@@ -224,9 +221,6 @@ public final class Utils {
     }
 
     public static boolean isValidGraphqlParameter(TypeSymbol typeSymbol) {
-        if (isDataLoaderMap(typeSymbol)) {
-            return true;
-        }
         if (typeSymbol.getName().isEmpty()) {
             return false;
         }
@@ -237,14 +231,14 @@ public final class Utils {
         return FIELD_IDENTIFIER.equals(typeName) || CONTEXT_IDENTIFIER.equals(typeName);
     }
 
-    public static boolean isDataLoaderMap(TypeSymbol typeSymbol) {
-        if (typeSymbol.typeKind() == TypeDescKind.MAP) {
-            MapTypeSymbol mapTypeSymbol = (MapTypeSymbol) typeSymbol;
-            TypeSymbol mapTypeParam = mapTypeSymbol.typeParam();
-            return isDataLoaderModuleSymbol(mapTypeParam) && mapTypeParam.getName().isPresent()
-                    && mapTypeParam.getName().get().equals(DATA_LOADER_IDENTIFIER);
+    public static boolean isContextParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
         }
-        return false;
+        if (!isGraphqlModuleSymbol(typeSymbol)) {
+            return false;
+        }
+        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
@@ -344,18 +338,9 @@ public final class Utils {
         return false;
     }
 
-    public static String lowerCaseFirstChar(String string) {
-        if (string.isEmpty()) {
-            return string;
-        }
-        char[] characters = string.toCharArray();
-        characters[0] = Character.toLowerCase(characters[0]);
-        return new String(characters);
-    }
-
-    public static boolean hasLoaderAnnotation(MethodSymbol resourceMethodSymbol) {
+    public static boolean hasResourceConfigAnnotation(MethodSymbol resourceMethodSymbol) {
         return resourceMethodSymbol.annotations().stream().anyMatch(
-                annotationSymbol -> isDataLoaderModuleSymbol(annotationSymbol) && annotationSymbol.getName().isPresent()
-                        && annotationSymbol.getName().get().equals(DATA_LOADER_ANNOTATION));
+                annotationSymbol -> isGraphqlModuleSymbol(annotationSymbol) && annotationSymbol.getName().isPresent()
+                        && annotationSymbol.getName().get().equals(RESOURCE_CONFIG_ANNOTATION));
     }
 }

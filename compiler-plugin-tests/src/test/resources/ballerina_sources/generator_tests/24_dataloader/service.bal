@@ -16,26 +16,30 @@
 
 import ballerina/graphql;
 import ballerina/graphql.dataloader;
+import ballerina/http;
 
+@graphql:ServiceConfig {
+    contextInit: isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context ctx = new;
+        ctx.registerDataLoader("authorLoader", new dataloader:DefaultDataLoader(authorLoaderFunction));
+        ctx.registerDataLoader("authorUpdateLoader", new dataloader:DefaultDataLoader(authorUpdateLoaderFunction));
+        ctx.registerDataLoader("bookLoader", new dataloader:DefaultDataLoader(bookLoaderFunction));
+        return ctx;
+    }
+}
 service on new graphql:Listener(9090) {
-    resource function get authors(map<dataloader:DataLoader> loaders, int[] ids) returns Author[]|error {
+    resource function get authors(graphql:Context ctx, int[] ids) returns Author[]|error {
         return error("No implementation provided for authors");
     }
 
-    @dataloader:Loader {
-        batchFunctions: {"authorLoader": authorLoaderFunction}
-    }
-    resource function get loadAuthors(map<dataloader:DataLoader> loaders, int[] ids) {
+    function preAuthors(graphql:Context ctx, int[] ids) {
     }
 
-    remote function updateAuthorName(map<dataloader:DataLoader> loaders, int id, string name) returns Author|error {
+    remote function updateAuthorName(graphql:Context ctx, int id, string name) returns Author|error {
         return error("No implementation provided for updateAuthorName");
     }
 
-    @dataloader:Loader {
-        batchFunctions: {"authorUpdateLoader": authorUpdateLoaderFunction}
-    }
-    remote function loadUpdateAuthorName(map<dataloader:DataLoader> loaders, int id, string name) {
+    function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
     }
 }
 
@@ -50,14 +54,11 @@ isolated distinct service class Author {
         return self.author.name;
     }
 
-    isolated resource function get books(map<dataloader:DataLoader> loaders) returns Book[]|error {
+    isolated resource function get books(graphql:Context ctx) returns Book[]|error {
         return error("No implementation provided for books");
     }
 
-    @dataloader:Loader {
-        batchFunctions: {"bookLoader": bookLoaderFunction}
-    }
-    isolated resource function get loadBooks(map<dataloader:DataLoader> loaders) {
+    isolated function preBooks(graphql:Context ctx) {
     }
 }
 

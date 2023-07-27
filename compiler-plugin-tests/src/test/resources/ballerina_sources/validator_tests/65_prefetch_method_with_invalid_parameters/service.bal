@@ -15,23 +15,25 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/graphql.dataloader;
 
 service on new graphql:Listener(9090) {
-    resource function get authors(int[] ids) returns Author[]|error {
+    resource function get authors(int[] ids) returns Author[] {
         return [];
-    }
-
-    remote function updateAuthor(map<dataloader:DataLoader> loaders, int id, string name) returns Author|error {
-        return error("No implementation found for updateAuthor");
     }
 }
 
 isolated distinct service class Author {
-    isolated resource function get books(map<dataloader:DataLoader> loaders) returns Book[] {
+    isolated resource function get books(graphql:Context ctx) returns Book[] {
         return [];
     }
+
+    isolated function preBooks(graphql:Context ctx, int id) {
+    }
 }
+
+isolated function bookLoaderFunction(readonly & anydata[] ids) returns anydata[] {
+    return [];
+};
 
 public type Book record {|
     string title;

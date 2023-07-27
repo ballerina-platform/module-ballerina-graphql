@@ -15,14 +15,27 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/graphql.dataloader;
 
 service on new graphql:Listener(9090) {
-    resource function get greet(int[] ids) returns string {
-        return "Hello World!";
-    }
-
-    resource function subscribe data(map<dataloader:DataLoader> loaders) returns stream<string> {
-        return ["Hello", "World!"].toStream();
+    resource function get authors(int[] ids) returns Author[] {
+        return [];
     }
 }
+
+isolated distinct service class Author {
+    isolated resource function get books(graphql:Context ctx) returns Book[] {
+        return [];
+    }
+
+    isolated function preBooks(graphql:Context ctx) returns int {
+        return 1;
+    }
+}
+
+isolated function bookLoaderFunction(readonly & anydata[] ids) returns anydata[] {
+    return [];
+};
+
+public type Book record {|
+    string title;
+|};

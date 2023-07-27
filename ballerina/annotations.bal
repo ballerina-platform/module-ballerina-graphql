@@ -43,8 +43,10 @@ public annotation GraphqlServiceConfig ServiceConfig on service;
 # Provides a set of configurations for the GraphQL resolvers.
 #
 # + interceptors - GraphQL field level interceptors
+# + prefetchMethodName - The name of the instance method to be used for prefetching
 public type GraphqlResourceConfig record {|
     readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
+    string prefetchMethodName?;
 |};
 
 # The annotation to configure a GraphQL resolver.

@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.dataloader;
 import graphql.parser;
 
 import ballerina/jballerina.java;
@@ -244,16 +243,16 @@ isolated class Engine {
         }
     }
 
-    isolated function resolve(Context context, Field 'field, boolean executeLoadMethod = true) returns anydata {
+    isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
 
-        if executeLoadMethod {
-            string loadMethodName = getLoadMethodName(fieldNode.getName());
+        if executePrefetchMethod {
             service object {}? serviceObject = 'field.getServiceObject();
             if serviceObject is service object {} { 
-                boolean isRemoteMethod = 'field.getOperationType() == parser:OPERATION_MUTATION && 'field.isRootField();
-                if self.hasLoadMethod(serviceObject, loadMethodName, isRemoteMethod) {
-                    return self.getResultFromLoadMethodExecution(context, 'field, serviceObject, loadMethodName, isRemoteMethod);
+                string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field) 
+                    ?: getDefaultPrefetchMethodName(fieldNode.getName());
+                if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
+                    return self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
                 }
             }
         }
@@ -281,23 +280,13 @@ isolated class Engine {
         }
     }
 
-    private isolated function getResultFromLoadMethodExecution(Context context, Field 'field,
-        service object {} serviceObject, string loadMethodName, boolean isRemoteMethod) returns PlaceHolderNode? {
-        map<dataloader:BatchLoadFunction> batchFunctionMap = self.getBatchFunctionsMap(serviceObject, loadMethodName, isRemoteMethod);
-        foreach var [batchFunctionId, batchFunction] in batchFunctionMap.entries() {
-            context.addDataLoader(batchFunctionId, batchFunction);
-        }
-        handle? loadMethodHandle = ();
-        if isRemoteMethod {
-            loadMethodHandle = self.getRemoteMethod(serviceObject, loadMethodName);
-        } else {
-            loadMethodHandle = self.getResourceMethod(serviceObject, [loadMethodName]);
-        }
-        if loadMethodHandle is () {
+    private isolated function getResultFromPrefetchMethodExecution(Context context, Field 'field,
+        service object {} serviceObject, string prefetchMethodName) returns PlaceHolderNode? {
+        handle? prefetchMethodHandle = self.getMethod(serviceObject, prefetchMethodName);
+        if prefetchMethodHandle is () {
             return ();
         }
-        self.executeLoadMethod(context, serviceObject, loadMethodHandle, 'field);
-        context.addNonDispatchedDataLoaderIds(batchFunctionMap.keys());
+        self.executePrefetchMethod(context, serviceObject, prefetchMethodHandle, 'field);
         string uuid = uuid:createType1AsString();
         PlaceHolder placeHolder = new ('field);
         context.addUnResolvedPlaceHolder(uuid, placeHolder);
@@ -375,7 +364,7 @@ isolated class Engine {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
-    isolated function getRemoteMethod(service object {} serviceObject, string methodName)
+    isolated function getMethod(service object {} serviceObject, string methodName)
     returns handle? = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
@@ -405,18 +394,13 @@ isolated class Engine {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
-    isolated function getBatchFunctionsMap(service object {} serviceObject, string loadMethodName, boolean isRemoteMethod)
-    returns map<dataloader:BatchLoadFunction> = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
-    } external;
-
-    isolated function hasLoadMethod(service object {} serviceObject, string loadMethodName, boolean isRemoteMethod)
+    isolated function hasPrefetchMethod(service object {} serviceObject, string prefetchMethodName)
     returns boolean = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
-    isolated function executeLoadMethod(Context context, service object {} serviceObject, handle loadMethodHandle,
-            Field 'field) = @java:Method {
+    isolated function executePrefetchMethod(Context context, service object {} serviceObject,
+        handle prefetchMethodHandle, Field 'field) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 }
