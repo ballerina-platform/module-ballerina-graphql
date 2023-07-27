@@ -96,7 +96,6 @@ publishing {
 
 updateTomlFiles.dependsOn copyStdlibs
 
-build.doNotTrackState("build needs to re-run every time")
 build.dependsOn "generatePomFileForMavenPublication"
 build.dependsOn ":${packageName}-native:build"
 build.dependsOn ":${packageName}-compiler-plugin:build"
