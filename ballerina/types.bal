@@ -58,9 +58,11 @@ public type CorsConfig record {|
 #
 # + enabled - Status of the client
 # + path - Path for the client
+# + printUrl - Enable/disable printing the GraphiQL client URL to the stdout
 public type Graphiql record {|
     boolean enabled = false;
     string path = "graphiql";
+    boolean printUrl = true;
 |};
 
 # Internal HTTP service class for GraphQL services

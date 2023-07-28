@@ -26,17 +26,17 @@ public isolated class Context {
     private int nextInterceptor;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
 
-    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (), 
+    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (),
                                   int nextInterceptor = 0) {
         self.attributes = {};
         self.engine = engine;
         self.errors = [];
         self.nextInterceptor = nextInterceptor;
-        
-        foreach var item in attributes.entries() {
-            string key = item[0];
-            value:Cloneable|isolated object {} value = item[1];
-            self.attributes[key] = value;
+
+        foreach var [key, value] in attributes.entries() {
+            lock {
+                self.attributes[key] = value is value:Cloneable ? value.cloneReadOnly() : value;
+            }
         }
     }
 
