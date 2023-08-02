@@ -28,7 +28,6 @@ import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.IntersectionType;
-import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.RecordType;
@@ -63,10 +62,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isIgnoreType;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.DATA_LOADER_OBJECT;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isDataLoaderModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isField;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isSubgraphModule;
@@ -89,7 +86,6 @@ public class ArgumentHandler {
 
     private static final BString NAME_FIELD = StringUtils.fromString("name");
     private static final BString KIND_FIELD = StringUtils.fromString("kind");
-    private static final BString ID_DATA_LOADER_MAP = StringUtils.fromString("idDataLoaderMap");
 
     // graphql.parser types
     private static final int T_STRING = 2;
@@ -509,11 +505,6 @@ public class ArgumentHandler {
                 result[j + 1] = true;
                 continue;
             }
-            if (isDataLoaderMap(parameters[i].type)) {
-                result[j] = getDataLoaderMap();
-                result[j + 1] = true;
-                continue;
-            }
             if (this.argumentsMap.get(StringUtils.fromString(parameters[i].name)) == null) {
                 result[j] = parameters[i].type.getZeroValue();
                 result[j + 1] = false;
@@ -523,19 +514,6 @@ public class ArgumentHandler {
             }
         }
         return result;
-    }
-
-    private BMap<BString, Object> getDataLoaderMap() {
-        return this.context.getMapValue(ID_DATA_LOADER_MAP);
-    }
-
-    private static boolean isDataLoaderMap(Type type) {
-        if (type.getTag() != TypeTags.MAP_TAG) {
-            return false;
-        }
-        MapType mapType = (MapType) type;
-        Type constrainedType = mapType.getConstrainedType();
-        return isDataLoaderModule(constrainedType) && constrainedType.getName().equals(DATA_LOADER_OBJECT);
     }
 
     private static Type getEffectiveType(IntersectionType intersectionType) {

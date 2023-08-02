@@ -88,10 +88,6 @@ public class Utils {
         return hasExpectedModuleName(symbol, SUBGRAPH_SUB_MODULE_NAME, PACKAGE_ORG);
     }
 
-    public static boolean isDataLoaderModuleSymbol(Symbol symbol) {
-        return hasExpectedModuleName(symbol, DATA_LOADER_SUB_MODULE_NAME, PACKAGE_ORG);
-    }
-
     private static boolean hasExpectedModuleName(Symbol symbol, String expectedModuleName, String expectedOrgName) {
         if (symbol.getModule().isEmpty()) {
             return false;
