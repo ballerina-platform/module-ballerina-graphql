@@ -194,24 +194,21 @@ public class ServiceValidator {
                 this.currentFieldPath.add(TypeName.MUTATION.getName());
                 validateRemoteMethod(methodSymbol, methodLocation);
                 this.currentFieldPath.remove(TypeName.MUTATION.getName());
+                validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
             } else if (isResourceMethod(methodSymbol)) {
-                validateRootServiceResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation, methodSymbols);
+                validateRootServiceResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
+                validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
             }
-            validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
         }
     }
 
     private void validatePrefetchMethodMapping(MethodSymbol methodSymbol, List<MethodSymbol> serviceMethods,
                                                Location location) {
-        if (!isGraphqlField(methodSymbol)) {
-            return;
-        }
         String graphqlFieldName = getGraphqlFieldName(methodSymbol);
-        boolean isSubscription = isResourceMethod(methodSymbol) && getAccessor(
-                (ResourceMethodSymbol) methodSymbol).equals(RESOURCE_FUNCTION_SUBSCRIBE);
-        boolean hasPrefetchMethodConfig = false;
-        String prefetchMethodName = null;
+        String prefetchMethodName = getDefaultPrefetchMethodName(graphqlFieldName);
         Location methodLocation = getLocation(methodSymbol, location);
+        boolean hasPrefetchMethodConfig = false;
+
         if (hasResourceConfigAnnotation(methodSymbol)) {
             ResourceConfigAnnotationFinder resourceConfigAnnotationFinder = new ResourceConfigAnnotationFinder(
                     this.context, methodSymbol);
@@ -224,17 +221,15 @@ public class ServiceValidator {
                                   PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
                     return;
                 }
-                if (isSubscription) {
+                if (isSubscription(methodSymbol)) {
                     addDiagnostic(CompilationDiagnostic.INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG,
                                   annotation.get().location(), PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
+                    return;
                 }
             }
         }
-        if (isSubscription) {
+        if (isSubscription(methodSymbol)) {
             return;
-        }
-        if (prefetchMethodName == null) {
-            prefetchMethodName = getDefaultPrefetchMethodName(graphqlFieldName);
         }
         MethodSymbol prefetchMethod = findPrefetchMethod(prefetchMethodName, serviceMethods);
         if (prefetchMethod == null) {
@@ -245,6 +240,11 @@ public class ServiceValidator {
             return;
         }
         validatePrefetchMethodSignature(prefetchMethod, methodSymbol, location);
+    }
+
+    private boolean isSubscription(MethodSymbol methodSymbol) {
+        return isResourceMethod(methodSymbol) && getAccessor((ResourceMethodSymbol) methodSymbol).equals(
+                RESOURCE_FUNCTION_SUBSCRIBE);
     }
 
     private String getGraphqlFieldName(MethodSymbol methodSymbol) {
@@ -263,21 +263,23 @@ public class ServiceValidator {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
                     String identifierName = identifierToken.text().trim();
                     if (identifierName.equals(PREFETCH_METHOD_NAME_CONFIG)) {
-                        if (specificFieldNode.valueExpr().isEmpty()) {
-                            return null;
-                        } else {
-                            ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
-                            if (valueExpression.kind() == SyntaxKind.STRING_LITERAL) {
-                                BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
-                                String stringLiteral = stringLiteralNode.toSourceCode();
-                                return stringLiteral.substring(1, stringLiteral.length() - 2);
-                            } else {
-                                return null;
-                            }
-                        }
+                        return getStringValue(specificFieldNode);
                     }
                 }
             }
+        }
+        return null;
+    }
+
+    private String getStringValue(SpecificFieldNode specificFieldNode) {
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            return null;
+        }
+        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+        if (valueExpression.kind() == SyntaxKind.STRING_LITERAL) {
+            BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
+            String stringLiteral = stringLiteralNode.toSourceCode();
+            return stringLiteral.substring(1, stringLiteral.length() - 2);
         }
         return null;
     }
@@ -299,10 +301,6 @@ public class ServiceValidator {
             }
         }
         return false;
-    }
-
-    private boolean isGraphqlField(MethodSymbol methodSymbol) {
-        return isRemoteMethod(methodSymbol) || isResourceMethod(methodSymbol);
     }
 
     private MethodSymbol findPrefetchMethod(String prefetchMethodName, List<MethodSymbol> serviceMethods) {
@@ -335,8 +333,7 @@ public class ServiceValidator {
         this.currentFieldPath.remove(TypeName.QUERY.getName());
     }
 
-    private void validateRootServiceResourceMethod(ResourceMethodSymbol methodSymbol, Location location,
-                                                   List<MethodSymbol> serviceMethodSymbols) {
+    private void validateRootServiceResourceMethod(ResourceMethodSymbol methodSymbol, Location location) {
         String resourceMethodName = getFieldPath(methodSymbol);
         Location accessorLocation = getLocation(methodSymbol, location);
         if (isReservedFederatedResolverName(resourceMethodName)) {

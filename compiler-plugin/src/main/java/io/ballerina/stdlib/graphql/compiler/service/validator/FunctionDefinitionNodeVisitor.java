@@ -29,8 +29,8 @@ public class FunctionDefinitionNodeVisitor extends NodeVisitor {
         if (this.annotationNode != null) {
             return;
         }
-        Optional<Symbol> methodSymbol = this.semanticModel.symbol(functionDefinitionNode);
-        if (methodSymbol.isEmpty() || methodSymbol.get().hashCode() != this.methodSymbol.hashCode()) {
+        Optional<Symbol> functionSymbol = this.semanticModel.symbol(functionDefinitionNode);
+        if (functionSymbol.isEmpty() || functionSymbol.get().hashCode() != this.methodSymbol.hashCode()) {
             return;
         }
         if (functionDefinitionNode.metadata().isEmpty()) {
