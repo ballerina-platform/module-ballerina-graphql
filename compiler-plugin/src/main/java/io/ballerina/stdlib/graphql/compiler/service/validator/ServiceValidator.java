@@ -278,8 +278,8 @@ public class ServiceValidator {
         ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
         if (valueExpression.kind() == SyntaxKind.STRING_LITERAL) {
             BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
-            String stringLiteral = stringLiteralNode.toSourceCode();
-            return stringLiteral.substring(1, stringLiteral.length() - 2);
+            String stringLiteral = stringLiteralNode.toSourceCode().trim();
+            return stringLiteral.substring(1, stringLiteral.length() - 1);
         }
         return null;
     }
@@ -435,16 +435,15 @@ public class ServiceValidator {
     }
 
     private void validatePrefetchMethodReturnType(MethodSymbol prefetchMethodSymbol, Location prefetchMethodLocation) {
-        if (prefetchMethodSymbol.typeDescriptor().returnTypeDescriptor().isEmpty()) {
-            return;
+        if (prefetchMethodSymbol.typeDescriptor().returnTypeDescriptor().isPresent()) {
+            TypeSymbol returnType = prefetchMethodSymbol.typeDescriptor().returnTypeDescriptor().get();
+            if (returnType.typeKind() == TypeDescKind.NIL) {
+                return;
+            }
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD,
+                          getLocation(returnType, prefetchMethodLocation), returnType.signature(),
+                          prefetchMethodSymbol.getName().orElse(""));
         }
-        TypeSymbol returnType = prefetchMethodSymbol.typeDescriptor().returnTypeDescriptor().get();
-        if (returnType.typeKind() == TypeDescKind.NIL) {
-            return;
-        }
-        addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD,
-                      getLocation(returnType, prefetchMethodLocation), returnType.signature(),
-                      prefetchMethodSymbol.getName().orElse(""));
     }
 
     private void validateSubscriptionMethod(ResourceMethodSymbol methodSymbol, Location location) {
