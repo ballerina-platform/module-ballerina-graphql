@@ -33,15 +33,14 @@ public class FunctionDefinitionNodeVisitor extends NodeVisitor {
         if (functionSymbol.isEmpty() || functionSymbol.get().hashCode() != this.methodSymbol.hashCode()) {
             return;
         }
-        if (functionDefinitionNode.metadata().isEmpty()) {
-            return;
-        }
-        NodeList<AnnotationNode> annotations = functionDefinitionNode.metadata().get().annotations();
-        for (AnnotationNode annotation : annotations) {
-            Optional<Symbol> annotationSymbol = this.semanticModel.symbol(annotation);
-            if (annotationSymbol.isPresent() && annotationSymbol.get().getName().orElse("")
-                    .equals(RESOURCE_CONFIG_ANNOTATION)) {
-                this.annotationNode = annotation;
+        if (functionDefinitionNode.metadata().isPresent()) {
+            NodeList<AnnotationNode> annotations = functionDefinitionNode.metadata().get().annotations();
+            for (AnnotationNode annotation : annotations) {
+                Optional<Symbol> annotationSymbol = this.semanticModel.symbol(annotation);
+                if (annotationSymbol.isPresent() && annotationSymbol.get().getName().orElse("")
+                        .equals(RESOURCE_CONFIG_ANNOTATION)) {
+                    this.annotationNode = annotation;
+                }
             }
         }
     }

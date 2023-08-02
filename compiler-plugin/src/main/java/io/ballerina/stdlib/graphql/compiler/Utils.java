@@ -235,10 +235,7 @@ public final class Utils {
         if (typeSymbol.getName().isEmpty()) {
             return false;
         }
-        if (!isGraphqlModuleSymbol(typeSymbol)) {
-            return false;
-        }
-        return CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
+        return isGraphqlModuleSymbol(typeSymbol) && CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
