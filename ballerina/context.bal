@@ -34,17 +34,17 @@ public isolated class Context {
     private int unResolvedPlaceHolderCount = 0; // Tracks the number of PlaceHolders needs to be resolved
     private int unResolvedPlaceHolderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
 
-    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (), 
+    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (),
                                   int nextInterceptor = 0) {
         self.attributes = {};
         self.engine = engine;
         self.errors = [];
         self.nextInterceptor = nextInterceptor;
-        
-        foreach var item in attributes.entries() {
-            string key = item[0];
-            value:Cloneable|isolated object {} value = item[1];
-            self.attributes[key] = value;
+
+        foreach var [key, value] in attributes.entries() {
+            lock {
+                self.attributes[key] = value is value:Cloneable ? value.cloneReadOnly() : value;
+            }
         }
     }
 

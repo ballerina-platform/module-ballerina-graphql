@@ -98,6 +98,9 @@ The conforming implementation of the specification is released and included in t
         * 7.1.3 [Context Initializer Function](#713-context-initializer-function)
         * 7.1.4 [CORS Configurations](#714-cors-configurations)
         * 7.1.5 [GraphiQL Configurations](#715-graphiql-configurations)
+            * 7.1.5.1 [The `enabled` Field](#7151-the-enabled-field)
+            * 7.1.5.2 [The `path` Field](#7152-the-path-field)
+            * 7.1.5.3 [The `printUrl` Field](#7153-the-printurl-field)
         * 7.1.6 [Service Interceptors](#716-service-interceptors)
         * 7.1.7 [Introspection Configurations](#717-introspection-configurations)
         * 7.1.8 [Constraint Configurations](#718-constraint-configurations)
@@ -1670,14 +1673,22 @@ The `graphiql` field is used to provide the GraphiQL client configuration to ena
 @graphql:ServiceConfig {
     graphiql: {
         enabled: true,
-        path: "/ballerina/graphiql"
+        path: "/ballerina/graphiql",
+        printUrl: false
     }
 }
 service on new graphql:Listener(9090) {
     // ...
 }
 ```
->**Note:** The field enabled accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`. The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+##### 7.1.5.1 The `enabled` Field
+The field `enabled` accepts a `boolean` that denotes whether the client is enabled or not. By default, it has been set to `false`.
+
+##### 7.1.5.2 The `path` Field
+The optional field `path` accepts a valid `string` for the GraphiQL service. If the path is not given in the configuration, `/graphiql` is set as the default path.
+
+##### 7.1.5.3 The `printUrl` Field
+The optional field `printUrl` accepts a boolean that denotes whether the GraphiQL url is printed to stdout or not. By default, it has been set to `true`.
 
 #### 7.1.6 Service Interceptors
 

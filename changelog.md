@@ -8,11 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#2998] Add '@deprecated' Directive Support for Output Object Defined using Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2998)
+- [[#4586] Add Support for Printing GraphiQL Url to Stdout](https://github.com/ballerina-platform/ballerina-standard-library/issues/4586)
 - [[#4569] Introduce DataLoader for Ballerina GraphQL](https://github.com/ballerina-platform/ballerina-standard-library/issues/4569)
 
 ### Fixed
 - [[#4627] Fix Schema Generation Failure when Service has Type Alias](https://github.com/ballerina-platform/ballerina-standard-library/issues/4627)
 - [[#4650] Fix Incorrect Schema Generation when an Annotation Present in a Record Field](https://github.com/ballerina-platform/ballerina-standard-library/issues/4650)
+- [[#4660] Fix GraphiQL Client Endpoint for Secured Listeners](https://github.com/ballerina-platform/ballerina-standard-library/issues/4660)
 
 ### Changed
 - [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)
