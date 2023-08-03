@@ -28,11 +28,11 @@ import ballerina/http;
     }
 }
 service on new graphql:Listener(9090) {
-    resource function get authors(graphql:Context ctx, int[] ids) returns Author[]|error {
-        return error("No implementation provided for authors");
+    function preAuthors(graphql:Context ctx, int[] ids) {
     }
 
-    function preAuthors(graphql:Context ctx, int[] ids) {
+    resource function get authors(graphql:Context ctx, int[] ids) returns Author[]|error {
+        return error("No implementation provided for authors");
     }
 
     remote function updateAuthorName(graphql:Context ctx, int id, string name) returns Author|error {
@@ -54,11 +54,11 @@ isolated distinct service class Author {
         return self.author.name;
     }
 
-    isolated resource function get books(graphql:Context ctx) returns Book[]|error {
-        return error("No implementation provided for books");
+    isolated function preBooks(graphql:Context ctx) {
     }
 
-    isolated function preBooks(graphql:Context ctx) {
+    isolated resource function get books(graphql:Context ctx) returns Book[]|error {
+        return error("No implementation provided for books");
     }
 }
 

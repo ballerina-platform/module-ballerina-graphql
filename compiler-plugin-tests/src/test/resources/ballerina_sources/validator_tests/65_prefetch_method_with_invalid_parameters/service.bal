@@ -23,11 +23,11 @@ service on new graphql:Listener(9090) {
 }
 
 isolated distinct service class Author {
-    isolated resource function get books(graphql:Context ctx) returns Book[] {
-        return [];
+    isolated function preBooks(graphql:Context ctx, int id) {
     }
 
-    isolated function preBooks(graphql:Context ctx, int id) {
+    isolated resource function get books(graphql:Context ctx) returns Book[] {
+        return [];
     }
 }
 

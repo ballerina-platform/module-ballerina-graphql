@@ -42,13 +42,13 @@ service on new graphql:Listener(9090) {
 }
 
 isolated distinct service class Author {
-    isolated resource function get books(graphql:Context ctx) returns Book[] {
-        return [];
-    }
-
     isolated function preBooks(graphql:Context ctx) {
         dataloader:DataLoader bookLoader = ctx.getDataLoader("bookLoader");
         bookLoader.add(1);
+    }
+
+    isolated resource function get books(graphql:Context ctx) returns Book[] {
+        return [];
     }
 }
 

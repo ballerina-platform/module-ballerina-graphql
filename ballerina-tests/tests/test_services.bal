@@ -2356,6 +2356,10 @@ isolated function initContext(http:RequestContext requestContext, http:Request r
     contextInit: initContext
 }
 service /dataloader on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader(ctx, ids);
+    }
+
     resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData[]|error {
         dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
         AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
@@ -2363,8 +2367,10 @@ service /dataloader on wrappedListener {
             select new (authorRow);
     }
 
-    function preAuthors(graphql:Context ctx, int[] ids) {
-        addAuthorIdsToAuthorLoader(ctx, ids);
+    function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
+        [int, string] key = [id, name];
+        dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
+        authorUpdateLoader.add(key);
     }
 
     remote function updateAuthorName(graphql:Context ctx, int id, string name) returns AuthorData|error {
@@ -2372,12 +2378,6 @@ service /dataloader on wrappedListener {
         dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
         AuthorRow authorRow = check authorUpdateLoader.get(key);
         return new (authorRow);
-    }
-
-    function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
-        [int, string] key = [id, name];
-        dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
-        authorUpdateLoader.add(key);
     }
 
     resource function subscribe authors() returns stream<AuthorData> {
@@ -2393,15 +2393,15 @@ service /dataloader on wrappedListener {
     contextInit: initContext
 }
 service /dataloader_with_interceptor on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader(ctx, ids);
+    }
+
     resource function get authors(graphql:Context ctx, int[] ids) returns AuthorDetail[]|error {
         dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
         AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
         return from AuthorRow authorRow in authorRows
             select new (authorRow);
-    }
-
-    function preAuthors(graphql:Context ctx, int[] ids) {
-        addAuthorIdsToAuthorLoader(ctx, ids);
     }
 }
 
@@ -2416,15 +2416,15 @@ service /dataloader_with_interceptor on wrappedListener {
     }
 }
 service /dataloader_with_faulty_batch_function on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader(ctx, ids);
+    }
+
     resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData[]|error {
         dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
         AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
         return from AuthorRow authorRow in authorRows
             select new (authorRow);
-    }
-
-    function preAuthors(graphql:Context ctx, int[] ids) {
-        addAuthorIdsToAuthorLoader(ctx, ids);
     }
 }
 

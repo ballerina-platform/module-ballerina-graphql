@@ -406,16 +406,16 @@ public isolated distinct service class AuthorData {
         return self.author.name;
     }
 
+    isolated function preBooks(graphql:Context ctx) {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
+        bookLoader.add(self.author.id);
+    }
+
     isolated resource function get books(graphql:Context ctx) returns BookData[]|error {
         dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
         BookRow[] bookrows = check bookLoader.get(self.author.id);
         return from BookRow bookRow in bookrows
             select new BookData(bookRow);
-    }
-
-    isolated function preBooks(graphql:Context ctx) {
-        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
-        bookLoader.add(self.author.id);
     }
 }
 
@@ -430,6 +430,11 @@ public isolated distinct service class AuthorDetail {
         return self.author.name;
     }
 
+    isolated function prefetchBooks(graphql:Context ctx) {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
+        bookLoader.add(self.author.id);
+    }
+
     @graphql:ResourceConfig {
         interceptors: new BookInterceptor(),
         prefetchMethodName: "prefetchBooks"
@@ -439,11 +444,6 @@ public isolated distinct service class AuthorDetail {
         BookRow[] bookrows = check bookLoader.get(self.author.id);
         return from BookRow bookRow in bookrows
             select new BookData(bookRow);
-    }
-
-    isolated function prefetchBooks(graphql:Context ctx) {
-        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER);
-        bookLoader.add(self.author.id);
     }
 }
 

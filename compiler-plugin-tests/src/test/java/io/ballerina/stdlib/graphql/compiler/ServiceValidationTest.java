@@ -1151,7 +1151,7 @@ public class ServiceValidationTest {
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, "int id",
                                          "preBooks", "books");
-        assertErrorMessage(diagnostic, message, 30, 23);
+        assertErrorMessage(diagnostic, message, 26, 23);
     }
 
     @Test(groups = "invalid")
