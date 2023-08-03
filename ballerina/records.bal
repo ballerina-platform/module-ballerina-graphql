@@ -272,6 +272,6 @@ type ParseResult record {|
     ErrorDetail[] validationErrors;
 |};
 
-type PlaceHolderNode record {|
+type PlaceholderNode record {|
     string __uuid;
 |};

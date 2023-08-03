@@ -35,11 +35,11 @@ service on new graphql:Listener(9090) {
         return error("No implementation provided for authors");
     }
 
-    remote function updateAuthorName(graphql:Context ctx, int id, string name) returns Author|error {
-        return error("No implementation provided for updateAuthorName");
+    function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
     }
 
-    function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
+    remote function updateAuthorName(graphql:Context ctx, int id, string name) returns Author|error {
+        return error("No implementation provided for updateAuthorName");
     }
 }
 

@@ -281,15 +281,15 @@ isolated class Engine {
     }
 
     private isolated function getResultFromPrefetchMethodExecution(Context context, Field 'field,
-        service object {} serviceObject, string prefetchMethodName) returns PlaceHolderNode? {
+        service object {} serviceObject, string prefetchMethodName) returns PlaceholderNode? {
         handle? prefetchMethodHandle = self.getMethod(serviceObject, prefetchMethodName);
         if prefetchMethodHandle is () {
             return ();
         }
         self.executePrefetchMethod(context, serviceObject, prefetchMethodHandle, 'field);
         string uuid = uuid:createType1AsString();
-        PlaceHolder placeHolder = new ('field);
-        context.addUnResolvedPlaceHolder(uuid, placeHolder);
+        Placeholder placeholder = new ('field);
+        context.addUnresolvedPlaceholder(uuid, placeholder);
         return {__uuid: uuid};
     }
 

@@ -16,7 +16,7 @@
 
 import ballerina/jballerina.java;
 
-isolated class PlaceHolder {
+isolated class Placeholder {
     private Field? 'field = ();
     private anydata value = ();
 
@@ -38,11 +38,11 @@ isolated class PlaceHolder {
 
     isolated function setField(Field 'field) = @java:Method {
         name: "setFieldValue",
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.PlaceHolder"
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Placeholder"
     } external;
 
     isolated function getField() returns Field = @java:Method {
         name: "getFieldValue",
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.PlaceHolder"
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Placeholder"
     } external;
 };

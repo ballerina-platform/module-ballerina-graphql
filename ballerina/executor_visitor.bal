@@ -121,7 +121,7 @@ isolated class ExecutorVisitor {
 
     isolated function getOutput() returns OutputObject {
         lock {
-            if !self.context.hasPlaceHolders() {
+            if !self.context.hasPlaceholders() {
                 // Avoid rebuilding the value tree if there are no place holders
                 return getOutputObject(self.data.clone(), self.context.getErrors().clone());
             }

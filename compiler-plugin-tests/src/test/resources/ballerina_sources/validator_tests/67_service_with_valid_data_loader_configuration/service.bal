@@ -31,13 +31,13 @@ service on new graphql:Listener(9090) {
         return [];
     }
 
-    remote function updateAuthor(graphql:Context ctx, int id, string name) returns Author|error {
-        return error("No implementation provided for updateAuthor");
-    }
-
     function preUpdateAuthor(graphql:Context ctx, int id) {
         dataloader:DataLoader authorLoader = ctx.getDataLoader("authorLoader");
         authorLoader.add(id);
+    }
+    
+    remote function updateAuthor(graphql:Context ctx, int id, string name) returns Author|error {
+        return error("No implementation provided for updateAuthor");
     }
 }
 

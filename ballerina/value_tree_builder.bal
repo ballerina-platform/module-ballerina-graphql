@@ -16,32 +16,32 @@
 
 isolated class ValueTreeBuilder {
     private final Context context;
-    private final Data placeHolderTree;
+    private final Data placeholderTree;
 
-    isolated function init(Context context, Data placeHolderTree) {
+    isolated function init(Context context, Data placeholderTree) {
         self.context = context;
-        self.placeHolderTree = placeHolderTree.clone();
+        self.placeholderTree = placeholderTree.clone();
     }
 
     isolated function build() returns Data {
         lock {
-            return <Data>self.buildValueTree(self.context, self.placeHolderTree).clone();
+            return <Data>self.buildValueTree(self.context, self.placeholderTree).clone();
         }
     }
 
     isolated function buildValueTree(Context context, anydata partialValue) returns anydata {
-        if context.getUnresolvedPlaceHolderNodeCount() == 0 {
+        if context.getUnresolvedPlaceholderNodeCount() == 0 {
             return partialValue;
         }
-        while context.getUnresolvedPlaceHolderCount() > 0 {
-            context.resolvePlaceHolders();
+        while context.getUnresolvedPlaceholderCount() > 0 {
+            context.resolvePlaceholders();
         }
         if partialValue is ErrorDetail {
             return partialValue;
         }
-        if partialValue is PlaceHolderNode {
-            anydata value = context.getPlaceHolderValue(partialValue.__uuid);
-            context.decrementUnresolvedPlaceHolderNodeCount();
+        if partialValue is PlaceholderNode {
+            anydata value = context.getPlaceholderValue(partialValue.__uuid);
+            context.decrementUnresolvedPlaceholderNodeCount();
             return self.buildValueTree(context, value);
         }
         if partialValue is map<anydata> && isMap(partialValue) {

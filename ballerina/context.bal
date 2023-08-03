@@ -28,11 +28,11 @@ public isolated class Context {
     private int nextInterceptor;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
     private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
-    private map<PlaceHolder> uuidPlaceHolderMap = {};
-    private PlaceHolder[] unResolvedPlaceHolders = [];
-    private boolean containPlaceHolders = false;
-    private int unResolvedPlaceHolderCount = 0; // Tracks the number of PlaceHolders needs to be resolved
-    private int unResolvedPlaceHolderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
+    private map<Placeholder> uuidPlaceholderMap = {};
+    private Placeholder[] unResolvedPlaceholders = [];
+    private boolean containPlaceholders = false;
+    private int unResolvedPlaceholderCount = 0; // Tracks the number of Placeholders needs to be resolved
+    private int unResolvedPlaceholderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
 
     public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (),
                                   int nextInterceptor = 0) {
@@ -213,74 +213,74 @@ public isolated class Context {
         }
     }
 
-    isolated function addUnResolvedPlaceHolder(string uuid, PlaceHolder placeHolder) {
+    isolated function addUnresolvedPlaceholder(string uuid, Placeholder placeholder) {
         lock {
-            self.containPlaceHolders = true;
-            self.uuidPlaceHolderMap[uuid] = placeHolder;
-            self.unResolvedPlaceHolders.push(placeHolder);
-            self.unResolvedPlaceHolderCount += 1;
-            self.unResolvedPlaceHolderNodeCount += 1;
+            self.containPlaceholders = true;
+            self.uuidPlaceholderMap[uuid] = placeholder;
+            self.unResolvedPlaceholders.push(placeholder);
+            self.unResolvedPlaceholderCount += 1;
+            self.unResolvedPlaceholderNodeCount += 1;
         }
     }
 
-    isolated function resolvePlaceHolders() {
+    isolated function resolvePlaceholders() {
         lock {
             string[] nonDispatchedDataLoaderIds = self.idDataLoaderMap.keys();
-            PlaceHolder[] unResolvedPlaceHolders = self.unResolvedPlaceHolders;
-            self.unResolvedPlaceHolders = [];
+            Placeholder[] unResolvedPlaceholders = self.unResolvedPlaceholders;
+            self.unResolvedPlaceholders = [];
             foreach string dataLoaderId in nonDispatchedDataLoaderIds {
                 self.idDataLoaderMap.get(dataLoaderId).dispatch();
             }
-            foreach PlaceHolder placeHolder in unResolvedPlaceHolders {
+            foreach Placeholder placeholder in unResolvedPlaceholders {
                 Engine? engine = self.getEngine();
                 if engine is () {
                     continue;
                 }
-                anydata resolvedValue = engine.resolve(self, 'placeHolder.getField(), false);
-                placeHolder.setValue(resolvedValue);
-                self.unResolvedPlaceHolderCount -= 1;
+                anydata resolvedValue = engine.resolve(self, 'placeholder.getField(), false);
+                placeholder.setValue(resolvedValue);
+                self.unResolvedPlaceholderCount -= 1;
             }
         }
     }
 
-    isolated function getPlaceHolderValue(string uuid) returns anydata {
+    isolated function getPlaceholderValue(string uuid) returns anydata {
         lock {
-            return self.uuidPlaceHolderMap.remove(uuid).getValue();
+            return self.uuidPlaceholderMap.remove(uuid).getValue();
         }
     }
 
-    isolated function getUnresolvedPlaceHolderCount() returns int {
+    isolated function getUnresolvedPlaceholderCount() returns int {
         lock {
-            return self.unResolvedPlaceHolderCount;
+            return self.unResolvedPlaceholderCount;
         }
     }
 
-    isolated function getUnresolvedPlaceHolderNodeCount() returns int {
+    isolated function getUnresolvedPlaceholderNodeCount() returns int {
         lock {
-            return self.unResolvedPlaceHolderNodeCount;
+            return self.unResolvedPlaceholderNodeCount;
         }
     }
 
-    isolated function decrementUnresolvedPlaceHolderNodeCount() {
+    isolated function decrementUnresolvedPlaceholderNodeCount() {
         lock {
-            self.unResolvedPlaceHolderNodeCount-=1;
+            self.unResolvedPlaceholderNodeCount-=1;
         }
     }
 
-    isolated function hasPlaceHolders() returns boolean {
+    isolated function hasPlaceholders() returns boolean {
         lock {
-            return self.containPlaceHolders;
+            return self.containPlaceholders;
         }
     }
 
-    isolated function clearDataLoadersCachesAndPlaceHolders() {
+    isolated function clearDataLoadersCachesAndPlaceholders() {
         // This function is called at the end of each subscription loop execution to prevent using old values 
-        // from DataLoader caches in the next iteration and to avoid filling up the idPlaceHolderMap.
+        // from DataLoader caches in the next iteration and to avoid filling up the idPlaceholderMap.
         lock {
             self.idDataLoaderMap.forEach(dataloader => dataloader.clearAll());
-            self.unResolvedPlaceHolders.removeAll();
-            self.uuidPlaceHolderMap.removeAll();
-            self.containPlaceHolders = false;
+            self.unResolvedPlaceholders.removeAll();
+            self.uuidPlaceholderMap.removeAll();
+            self.containPlaceholders = false;
         }
     }
 }
