@@ -116,6 +116,6 @@ returns string|error = @java:Method {
 
 isolated function getDefaultPrefetchMethodName(string fieldName) returns string {
     return re `^[a-z]`.replace(fieldName, isolated function(regexp:Groups groups) returns string {
-        return string `pre${groups[0].substring().toUpperAscii()}`;
+        return string `${DEFAULT_PREFETCH_METHOD_NAME_PREFIX}${groups[0].substring().toUpperAscii()}`;
     });
 }

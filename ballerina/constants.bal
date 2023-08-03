@@ -78,3 +78,6 @@ const decimal PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL = 15;
 // Constants used in the executor visitor
 const OPERATION_TYPE = "operationType";
 const PATH = "path";
+
+// Constants related to the DataLoader
+const DEFAULT_PREFETCH_METHOD_NAME_PREFIX = "pre";

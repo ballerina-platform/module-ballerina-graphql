@@ -227,8 +227,10 @@ public final class Utils {
         if (!isGraphqlModuleSymbol(typeSymbol)) {
             return false;
         }
-        String typeName = typeSymbol.getName().get();
-        return FIELD_IDENTIFIER.equals(typeName) || CONTEXT_IDENTIFIER.equals(typeName);
+        if (isContextParameter(typeSymbol)) {
+            return true;
+        }
+        return FIELD_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     public static boolean isContextParameter(TypeSymbol typeSymbol) {

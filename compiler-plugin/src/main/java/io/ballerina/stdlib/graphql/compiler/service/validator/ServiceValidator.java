@@ -243,8 +243,8 @@ public class ServiceValidator {
     }
 
     private boolean isSubscription(MethodSymbol methodSymbol) {
-        return isResourceMethod(methodSymbol) && getAccessor((ResourceMethodSymbol) methodSymbol).equals(
-                RESOURCE_FUNCTION_SUBSCRIBE);
+        return isResourceMethod(methodSymbol) && RESOURCE_FUNCTION_SUBSCRIBE.equals(
+                getAccessor((ResourceMethodSymbol) methodSymbol));
     }
 
     private String getGraphqlFieldName(MethodSymbol methodSymbol) {
@@ -261,8 +261,8 @@ public class ServiceValidator {
                 Node fieldName = specificFieldNode.fieldName();
                 if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
-                    String identifierName = identifierToken.text().trim();
-                    if (identifierName.equals(PREFETCH_METHOD_NAME_CONFIG)) {
+                    String identifierName = identifierToken.text();
+                    if (PREFETCH_METHOD_NAME_CONFIG.equals(identifierName)) {
                         return getStringValue(specificFieldNode);
                     }
                 }
@@ -295,8 +295,8 @@ public class ServiceValidator {
                 Node fieldName = specificFieldNode.fieldName();
                 if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
-                    String identifierName = identifierToken.text().trim();
-                    return identifierName.equals(PREFETCH_METHOD_NAME_CONFIG);
+                    String identifierName = identifierToken.text();
+                    return PREFETCH_METHOD_NAME_CONFIG.equals(identifierName);
                 }
             }
         }
@@ -400,21 +400,21 @@ public class ServiceValidator {
         validateInputParameters(methodSymbol, location);
     }
 
-    private void validatePrefetchMethodSignature(MethodSymbol prefetchMethodSymbol, MethodSymbol fieldMethod,
+    private void validatePrefetchMethodSignature(MethodSymbol prefetchMethod, MethodSymbol resolverMethod,
                                                  Location location) {
-        Location prefetchMethodLocation = getLocation(prefetchMethodSymbol, location);
-        validatePrefetchMethodParams(prefetchMethodSymbol, prefetchMethodLocation, fieldMethod);
-        validatePrefetchMethodReturnType(prefetchMethodSymbol, prefetchMethodLocation);
+        Location prefetchMethodLocation = getLocation(prefetchMethod, location);
+        validatePrefetchMethodParams(prefetchMethod, prefetchMethodLocation, resolverMethod);
+        validatePrefetchMethodReturnType(prefetchMethod, prefetchMethodLocation);
     }
 
-    private void validatePrefetchMethodParams(MethodSymbol prefetchMethodSymbol, Location prefetchMethodLocation,
-                                              MethodSymbol correspondingGraphqlFieldMethod) {
-        String prefetchMethodName = prefetchMethodSymbol.getName().orElse("");
-        Set<String> fieldMethodParamSignatures = correspondingGraphqlFieldMethod.typeDescriptor().params().isPresent() ?
-                correspondingGraphqlFieldMethod.typeDescriptor().params().get().stream().map(ParameterSymbol::signature)
+    private void validatePrefetchMethodParams(MethodSymbol prefetchMethod, Location prefetchMethodLocation,
+                                              MethodSymbol resolverMethod) {
+        String prefetchMethodName = prefetchMethod.getName().orElse("");
+        Set<String> fieldMethodParamSignatures = resolverMethod.typeDescriptor().params().isPresent() ?
+                resolverMethod.typeDescriptor().params().get().stream().map(ParameterSymbol::signature)
                         .map(String::trim).collect(Collectors.toSet()) : new HashSet<>();
-        List<ParameterSymbol> parameterSymbols = prefetchMethodSymbol.typeDescriptor().params().isPresent() ?
-                prefetchMethodSymbol.typeDescriptor().params().get() : new ArrayList<>();
+        List<ParameterSymbol> parameterSymbols = prefetchMethod.typeDescriptor().params().isPresent() ?
+                prefetchMethod.typeDescriptor().params().get() : new ArrayList<>();
         boolean hasContextParam = false;
         for (ParameterSymbol symbol : parameterSymbols) {
             if (isContextParameter(symbol.typeDescriptor())) {
@@ -422,27 +422,25 @@ public class ServiceValidator {
             } else if (!fieldMethodParamSignatures.contains(symbol.signature().trim())) {
                 addDiagnostic(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, prefetchMethodLocation,
                               symbol.signature(), prefetchMethodName,
-                              isResourceMethod(correspondingGraphqlFieldMethod) ?
-                                      getFieldPath((ResourceMethodSymbol) correspondingGraphqlFieldMethod) :
-                                      correspondingGraphqlFieldMethod.getName()
-                                              .orElse(correspondingGraphqlFieldMethod.signature()));
+                              isResourceMethod(resolverMethod) ? getFieldPath((ResourceMethodSymbol) resolverMethod) :
+                                      resolverMethod.getName().orElse(resolverMethod.signature()));
             }
         }
         if (!hasContextParam) {
             addDiagnostic(CompilationDiagnostic.MISSING_GRAPHQL_CONTEXT_PARAMETER, prefetchMethodLocation,
-                          prefetchMethodSymbol.getName().orElse(prefetchMethodSymbol.signature()));
+                          prefetchMethod.getName().orElse(prefetchMethod.signature()));
         }
     }
 
-    private void validatePrefetchMethodReturnType(MethodSymbol prefetchMethodSymbol, Location prefetchMethodLocation) {
-        if (prefetchMethodSymbol.typeDescriptor().returnTypeDescriptor().isPresent()) {
-            TypeSymbol returnType = prefetchMethodSymbol.typeDescriptor().returnTypeDescriptor().get();
+    private void validatePrefetchMethodReturnType(MethodSymbol prefetchMethod, Location prefetchMethodLocation) {
+        if (prefetchMethod.typeDescriptor().returnTypeDescriptor().isPresent()) {
+            TypeSymbol returnType = prefetchMethod.typeDescriptor().returnTypeDescriptor().get();
             if (returnType.typeKind() == TypeDescKind.NIL) {
                 return;
             }
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD,
                           getLocation(returnType, prefetchMethodLocation), returnType.signature(),
-                          prefetchMethodSymbol.getName().orElse(""));
+                          prefetchMethod.getName().orElse(""));
         }
     }
 

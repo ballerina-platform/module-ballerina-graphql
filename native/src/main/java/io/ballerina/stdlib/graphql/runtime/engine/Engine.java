@@ -255,9 +255,9 @@ public class Engine {
     }
 
     private static MethodType getMethod(ServiceType serviceType, String methodName) {
-        for (MethodType remoteMethod : serviceType.getMethods()) {
-            if (remoteMethod.getName().equals(methodName)) {
-                return remoteMethod;
+        for (MethodType serviceMethod : serviceType.getMethods()) {
+            if (methodName.equals(serviceMethod.getName())) {
+                return serviceMethod;
             }
         }
         return null;

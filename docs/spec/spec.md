@@ -3352,7 +3352,7 @@ This section includes the experimental features in the Ballerina GraphQL package
 
 ### 11.1 DataLoader
 
-The Ballerina GraphQL module provides the capability to batch queries to datasources and efficiently cache the retrieved data through the `graphql.dataloader` submodule.
+The Ballerina GraphQL module allows efficient batching of data retrieval from datasources and enables caching of fetched data using the `graphql.dataloader` submodule.
 
 #### 11.1.1 DataLoader API
 
@@ -3402,6 +3402,12 @@ The `init` method of the `DefaultDataLoader` object takes a function pointer of 
 public isolated function init(BatchLoadFunction loadFunction);
 ```
 
+###### Example: Initializing a DefaultDataLoader
+
+```ballerina
+dataloader:DefaultDataLoader bookLoader = new (batchBooksForAuthors);
+```
+
 ##### 11.1.2.1.1 The BatchLoadFunction
 
 The batch load function is responsible for retrieving data based on an array of keys and returning an array of corresponding results or an `error` if the operation fails. The following is the type definition of the batch load function.
@@ -3410,7 +3416,18 @@ The batch load function is responsible for retrieving data based on an array of 
 public type BatchLoadFunction isolated function (readonly anydata[] keys) returns anydata[]|error;
 ```
 
-When implementing a batch load function, it is important to ensure that the function returns an array of results that match the length of the keys array provided as input. If the lengths do not match, the DataLoader will return an error when the `get` method is called.
+When implementing a batch load function, it is important to ensure that the function returns an array of results that match the length of the keys array provided as input. **If the lengths do not match, the DataLoader will return an error when the `get` method is called**.
+
+###### Example: Writing a Batch Load Function
+
+```ballerina
+isolated function batchBooksForAuthors(readonly & anydata[] ids) returns Book[][]|error {
+    final readonly & int[] authorIds = <readonly & int[]>ids;
+    // Logic to retrieve books from the data source for the given author ids
+    // Book[][] books = ...
+    return books;
+};
+```
 
 #### 11.1.3 Engaging DataLoaders
 
@@ -3447,11 +3464,11 @@ service on new graphql:Listener(9090) {
 
 ##### 11.1.3.3 Define the Corresponding `prefetch` Method
 
-To engage the DataLoader with a GraphQL field (let's assume the field name is `foo`), define a corresponding `prefetch` method named `preFoo` in the service, where `Foo` represents the Pascal-cased name of the GraphQL field. The `preFoo` method can include some or all of the parameters from the GraphQL field and must include the `graphql:Context` parameter. Adding the parameters of the GraphQL `foo` field to the `preFoo` method is optional. However, if these parameters are added, the GraphQL Engine will make the same parameter values of the GraphQL field available to the `preFoo` method.
+To engage the DataLoader with a GraphQL field (let's assume the field name is `foo`), define a corresponding _prefetch_ method named `preFoo` in the service, where `Foo` represents the Pascal-cased name of the GraphQL field. The `preFoo` method can include some or all of the parameters from the GraphQL field and must include the `graphql:Context` parameter. Adding the parameters of the GraphQL `foo` field to the `preFoo` method is optional. However, if these parameters are added, the GraphQL Engine will make the same parameter values of the GraphQL field available to the `preFoo` method.
 
 The GraphQL Engine guarantees the execution of the `preFoo` method prior to the `foo` method. By default, the GraphQL engine searches for a method named `preFoo` in the service class before executing the `foo` method. If the method name is different, the user can override the prefetch method name using the [`prefetchMethodName`](#722-prefetch-method-name-configuration) configuration of the `@graphql:ResourceConfig` annotation.
 
-The user is responsible for implementing the logic to collect the keys of the data to be loaded into the `DataLoader` in the `preFoo` method. The GraphQL Engine guarantees the execution of the `preFoo` method prior to the `foo` method. Subsequently, the user can implement the logic to retrieve the data from the `DataLoader` within the `foo` method.
+The user is responsible for implementing the logic to collect the keys of the data to be loaded into the `DataLoader` in the `preFoo` method. Subsequently, the user can implement the logic to retrieve the data from the `DataLoader` within the `foo` method.
 
 ###### Example: Defining the Corresponding `prefetch` Method
 

@@ -56,6 +56,7 @@ import java.util.Objects;
 import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
+import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_DEFINITION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NAME_FIELD;
@@ -84,7 +85,6 @@ public class ArgumentHandler {
     private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
     private static final String CONSTRAINT_ERROR_MESSAGE = "Constraint validation errors found.";
 
-    private static final BString NAME_FIELD = StringUtils.fromString("name");
     private static final BString KIND_FIELD = StringUtils.fromString("kind");
 
     // graphql.parser types

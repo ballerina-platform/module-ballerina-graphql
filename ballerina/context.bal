@@ -277,9 +277,7 @@ public isolated class Context {
         // This function is called at the end of each subscription loop execution to prevent using old values 
         // from DataLoader caches in the next iteration and to avoid filling up the idPlaceHolderMap.
         lock {
-            self.idDataLoaderMap.forEach(isolated function(dataloader:DataLoader dataloader) {
-                dataloader.clearAll();
-            });
+            self.idDataLoaderMap.forEach(dataloader => dataloader.clearAll());
             self.unResolvedPlaceHolders.removeAll();
             self.uuidPlaceHolderMap.removeAll();
             self.containPlaceHolders = false;
