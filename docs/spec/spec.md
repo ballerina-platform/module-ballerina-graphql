@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar \
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal \
 _Created_: 2022/01/06 \
-_Updated_: 2023/07/28 \
+_Updated_: 2023/08/03 \
 _Edition_: Swan Lake \
 _GraphQL Specification_: [October 2021](https://spec.graphql.org/October2021/)  
 
@@ -2682,8 +2682,6 @@ If the specified key does not exist in the context, the `getDataLoader()` method
 ###### Example: Get DataLoader from Context
 
 ```ballerina
-graphql:Context context = new;
-
 dataloader:DataLoader authorLoader = context.getDataLoader("authorLoader");
 ```
 
