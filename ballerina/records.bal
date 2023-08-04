@@ -271,3 +271,7 @@ type ParseResult record {|
     parser:DocumentNode document;
     ErrorDetail[] validationErrors;
 |};
+
+type PlaceholderNode record {|
+    string __uuid;
+|};

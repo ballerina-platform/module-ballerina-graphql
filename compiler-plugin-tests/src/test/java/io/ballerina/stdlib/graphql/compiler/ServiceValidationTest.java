@@ -1130,8 +1130,96 @@ public class ServiceValidationTest {
     }
 
     @Test(groups = "invalid")
+    public void testPrefetchMethodWithoutContextParameter() {
+        String packagePath = "64_prefetch_method_without_context_parameter";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.MISSING_GRAPHQL_CONTEXT_PARAMETER, "preBooks");
+        assertErrorMessage(diagnostic, message, 30, 23);
+    }
+
+    @Test(groups = "invalid")
+    public void testPrefetchMethodWithInvalidParameters() {
+        String packagePath = "65_prefetch_method_with_invalid_parameters";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, "int id",
+                                         "preBooks", "books");
+        assertErrorMessage(diagnostic, message, 26, 23);
+    }
+
+    @Test(groups = "invalid")
+    public void testPrefetchMethodWithInvalidReturnType() {
+        String packagePath = "66_prefetch_method_with_invalid_return_type";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD, "int",
+                                         "preBooks");
+        assertErrorMessage(diagnostic, message, 30, 23);
+    }
+
+    @Test(groups = "valid")
+    public void testServiceWithValidDataLoaderConfiguration() {
+        String packagePath = "67_service_with_valid_data_loader_configuration";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test(groups = "invalid")
+    public void testServiceWithInvalidPrefetchMethodNameConfig() {
+        String packagePath = "68_service_with_invalid_prefetch_method_name_config";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, "loadBooks", "books");
+        assertErrorMessage(diagnostic, message, 46, 32);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, "prefetchUpdateAuthor",
+                                  "updateAuthor");
+        assertErrorMessage(diagnostic, message, 37, 21);
+    }
+
+    @Test(groups = "invalid")
+    public void testSubscriptionWithInvalidPrefetchMethodNameConfig() {
+        String packagePath = "69_subscription_with_invalid_prefetch_method_name_config";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG,
+                                         "prefetchMethodName", "authors");
+        assertErrorMessage(diagnostic, message, 24, 5);
+    }
+
+    @Test(groups = "invalid")
+    public void testPrefetchMethodConfigurationUsingVariableValue() {
+        String packagePath = "70_prefetch_method_configuration_using_variable_value";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_VALIDATE_PREFETCH_METHOD, "prefetchMethodName",
+                                         "updateAuthor");
+        assertWarningMessage(diagnostic, message, 36, 5);
+    }
+
+    @Test(groups = "invalid")
     public void testInvalidUsageDeprecatedDirective() {
-        String packagePath = "64_invalid_usages_of_deprecated_directive";
+        String packagePath = "71_invalid_usages_of_deprecated_directive";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.warningCount(), 2);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();

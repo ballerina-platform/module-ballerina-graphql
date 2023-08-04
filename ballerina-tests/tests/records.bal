@@ -351,3 +351,14 @@ public type DeprecatedAddress record {|
     # City field is deprecated
     string city;
 |};
+
+type BookRow record {|
+    readonly int id;
+    string title;
+    int author;
+|};
+
+type AuthorRow record {|
+    readonly int id;
+    string name;
+|};

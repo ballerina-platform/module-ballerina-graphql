@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
@@ -37,12 +38,14 @@ public class Utils {
     }
 
     // Inter-op function names
-    static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
-    static final String EXECUTE_INTERCEPTOR_FUNCTION = "executeInterceptor";
+    private static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
+    private static final String EXECUTE_INTERCEPTOR_FUNCTION = "executeInterceptor";
+
     // Internal type names
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
     public static final String FIELD_OBJECT = "Field";
+    public static final String DATA_LOADER_OBJECT = "DataLoader";
     public static final String UPLOAD = "Upload";
     public static final BString INTERNAL_NODE = StringUtils.fromString("internalNode");
 
@@ -103,5 +106,9 @@ public class Utils {
         }
         return type.getPackage().getOrg().equals(expectedOrgName) && type.getPackage().getName()
                 .equals(expectedModuleName);
+    }
+
+    public static BString getHashCode(BObject object) {
+        return StringUtils.fromString(Integer.toString(object.hashCode()));
     }
 }

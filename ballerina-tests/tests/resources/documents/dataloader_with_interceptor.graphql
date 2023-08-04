@@ -1,0 +1,14 @@
+query {
+  one: authors(ids: [1, 2, 3]) {
+    name
+    books {
+      title
+    }
+  }
+  four: authors(ids: [4, 5]) {
+    name
+    books {
+      title
+    }
+  }
+}

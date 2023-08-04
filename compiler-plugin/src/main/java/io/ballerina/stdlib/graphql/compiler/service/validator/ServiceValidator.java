@@ -44,9 +44,17 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
+import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
+import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
@@ -61,11 +69,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.hasResourceConfigAnnotation;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
@@ -86,9 +98,6 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  * Validate functions in Ballerina GraphQL services.
  */
 public class ServiceValidator {
-    private static final String FIELD_PATH_SEPARATOR = ".";
-    private static final String ID_ANNOT_NAME = "ID";
-    private static final String[] allowedIDTypes = {"int", "string", "float", "decimal", "uuid:UUID"};
     private final Set<Symbol> visitedClassesAndObjectTypeDefinitions = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
@@ -100,8 +109,11 @@ public class ServiceValidator {
     private boolean hasQueryType;
     private final boolean isSubgraph;
     private TypeSymbol rootInputParameterTypeSymbol;
-
     private final List<String> currentFieldPath;
+
+    private static final String FIELD_PATH_SEPARATOR = ".";
+    private static final String PREFETCH_METHOD_PREFIX = "pre";
+    private static final String PREFETCH_METHOD_NAME_CONFIG = "prefetchMethodName";
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
                             InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
@@ -123,12 +135,11 @@ public class ServiceValidator {
     }
 
     private void validateServiceObject() {
-        ObjectConstructorExpressionNode objectConstructorExpressionNode = (ObjectConstructorExpressionNode) serviceNode;
-        for (Node node : objectConstructorExpressionNode.members()) {
-            validateServiceMember(node);
-        }
+        ObjectConstructorExpressionNode objectConstructorExpNode = (ObjectConstructorExpressionNode) serviceNode;
+        List<Node> serviceMethodNodes = getServiceMethodNodes(objectConstructorExpNode.members());
+        validateRootServiceMethods(serviceMethodNodes, objectConstructorExpNode.location());
         if (!this.hasQueryType) {
-            addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpressionNode.location());
+            addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpNode.location());
         }
         validateEntitiesResolverReturnTypes();
     }
@@ -151,32 +162,151 @@ public class ServiceValidator {
 
     private void validateService() {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
-        for (Node node : serviceDeclarationNode.members()) {
-            validateServiceMember(node);
-        }
+        List<Node> serviceMethodNodes = getServiceMethodNodes(serviceDeclarationNode.members());
+        validateRootServiceMethods(serviceMethodNodes, serviceDeclarationNode.location());
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
         validateEntitiesResolverReturnTypes();
     }
 
-    private void validateServiceMember(Node node) {
+    private List<Node> getServiceMethodNodes(NodeList<Node> serviceMembers) {
+        return serviceMembers.stream().filter(this::isServiceMethod).collect(Collectors.toList());
+    }
+
+    private boolean isServiceMethod(Node node) {
         if (this.context.semanticModel().symbol(node).isEmpty()) {
-            return;
+            return false;
         }
         Symbol symbol = this.context.semanticModel().symbol(node).get();
-        Location location = node.location();
-        if (symbol.kind() == SymbolKind.METHOD) {
-            MethodSymbol methodSymbol = (MethodSymbol) symbol;
+        return symbol.kind() == SymbolKind.RESOURCE_METHOD || symbol.kind() == SymbolKind.METHOD;
+    }
+
+    private void validateRootServiceMethods(List<Node> serviceMethods, Location location) {
+        List<MethodSymbol> methodSymbols = getMethodSymbols(serviceMethods);
+        for (Node methodNode : serviceMethods) {
+            // No need to check fo isEmpty(), already validated in getRemoteOrResourceMethodSymbols
+            // noinspection OptionalGetWithoutIsPresent
+            MethodSymbol methodSymbol = (MethodSymbol) this.context.semanticModel().symbol(methodNode).get();
+            Location methodLocation = methodNode.location();
+
             if (isRemoteMethod(methodSymbol)) {
                 this.currentFieldPath.add(TypeName.MUTATION.getName());
-                validateRemoteMethod(methodSymbol, location);
+                validateRemoteMethod(methodSymbol, methodLocation);
                 this.currentFieldPath.remove(TypeName.MUTATION.getName());
+                validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
+            } else if (isResourceMethod(methodSymbol)) {
+                validateRootServiceResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
+                validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
             }
-        } else if (symbol.kind() == SymbolKind.RESOURCE_METHOD) {
-            ResourceMethodSymbol resourceMethodSymbol = (ResourceMethodSymbol) symbol;
-            validateRootServiceResourceMethod(resourceMethodSymbol, location);
         }
+    }
+
+    private void validatePrefetchMethodMapping(MethodSymbol methodSymbol, List<MethodSymbol> serviceMethods,
+                                               Location location) {
+        String graphqlFieldName = getGraphqlFieldName(methodSymbol);
+        String prefetchMethodName = getDefaultPrefetchMethodName(graphqlFieldName);
+        Location methodLocation = getLocation(methodSymbol, location);
+        boolean hasPrefetchMethodConfig = false;
+
+        if (hasResourceConfigAnnotation(methodSymbol)) {
+            ResourceConfigAnnotationFinder resourceConfigAnnotationFinder = new ResourceConfigAnnotationFinder(
+                    this.context, methodSymbol);
+            Optional<AnnotationNode> annotation = resourceConfigAnnotationFinder.find();
+            hasPrefetchMethodConfig = annotation.isPresent() && hasPrefetchMethodNameConfig(annotation.get());
+            if (hasPrefetchMethodConfig) {
+                prefetchMethodName = getPrefetchMethodName(annotation.get());
+                if (prefetchMethodName == null) {
+                    addDiagnostic(CompilationDiagnostic.UNABLE_TO_VALIDATE_PREFETCH_METHOD, annotation.get().location(),
+                                  PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
+                    return;
+                }
+                if (isSubscription(methodSymbol)) {
+                    addDiagnostic(CompilationDiagnostic.INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG,
+                                  annotation.get().location(), PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
+                    return;
+                }
+            }
+        }
+        if (isSubscription(methodSymbol)) {
+            return;
+        }
+        MethodSymbol prefetchMethod = findPrefetchMethod(prefetchMethodName, serviceMethods);
+        if (prefetchMethod == null) {
+            if (hasPrefetchMethodConfig) {
+                addDiagnostic(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, methodLocation, prefetchMethodName,
+                              graphqlFieldName);
+            }
+            return;
+        }
+        validatePrefetchMethodSignature(prefetchMethod, methodSymbol, location);
+    }
+
+    private boolean isSubscription(MethodSymbol methodSymbol) {
+        return isResourceMethod(methodSymbol) && RESOURCE_FUNCTION_SUBSCRIBE.equals(
+                getAccessor((ResourceMethodSymbol) methodSymbol));
+    }
+
+    private String getGraphqlFieldName(MethodSymbol methodSymbol) {
+        return isResourceMethod(methodSymbol) ? getFieldPath((ResourceMethodSymbol) methodSymbol) :
+                methodSymbol.getName().orElse("");
+    }
+
+    private String getPrefetchMethodName(AnnotationNode annotation) {
+        // noinspection OptionalGetWithoutIsPresent
+        MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
+        for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
+            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (PREFETCH_METHOD_NAME_CONFIG.equals(identifierName)) {
+                        return getStringValue(specificFieldNode);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getStringValue(SpecificFieldNode specificFieldNode) {
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            return null;
+        }
+        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+        if (valueExpression.kind() == SyntaxKind.STRING_LITERAL) {
+            BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
+            String stringLiteral = stringLiteralNode.toSourceCode().trim();
+            return stringLiteral.substring(1, stringLiteral.length() - 1);
+        }
+        return null;
+    }
+
+    private boolean hasPrefetchMethodNameConfig(AnnotationNode annotation) {
+        if (annotation.annotValue().isEmpty()) {
+            return false;
+        }
+        MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
+        for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
+            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    return PREFETCH_METHOD_NAME_CONFIG.equals(identifierName);
+                }
+            }
+        }
+        return false;
+    }
+
+    private MethodSymbol findPrefetchMethod(String prefetchMethodName, List<MethodSymbol> serviceMethods) {
+        return serviceMethods.stream()
+                .filter(method -> method.kind() == SymbolKind.METHOD && !isRemoteMethod(method) && method.getName()
+                        .orElse("").equals(prefetchMethodName)).findFirst().orElse(null);
     }
 
     private void validateEntitiesResolverReturnTypes() {
@@ -226,6 +356,12 @@ public class ServiceValidator {
         }
     }
 
+    private List<MethodSymbol> getMethodSymbols(List<Node> serviceMembers) {
+        return serviceMembers.stream().filter(this::isServiceMethod)
+                .map(methodNode -> (MethodSymbol) this.context.semanticModel().symbol(methodNode).get())
+                .collect(Collectors.toList());
+    }
+
     private void validateResourceMethod(ResourceMethodSymbol methodSymbol, Location location) {
         String accessor = getAccessor(methodSymbol);
         if (!RESOURCE_FUNCTION_GET.equals(accessor)) {
@@ -233,7 +369,7 @@ public class ServiceValidator {
             addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation, accessor,
                           getFieldPath(methodSymbol));
         }
-        validateGetResource(methodSymbol, location);
+        validateGetResource(methodSymbol, getLocation(methodSymbol, location));
     }
 
     private void validateGetResource(ResourceMethodSymbol methodSymbol, Location location) {
@@ -262,6 +398,50 @@ public class ServiceValidator {
         }
         validateSubscriptionMethod(methodSymbol, location);
         validateInputParameters(methodSymbol, location);
+    }
+
+    private void validatePrefetchMethodSignature(MethodSymbol prefetchMethod, MethodSymbol resolverMethod,
+                                                 Location location) {
+        Location prefetchMethodLocation = getLocation(prefetchMethod, location);
+        validatePrefetchMethodParams(prefetchMethod, prefetchMethodLocation, resolverMethod);
+        validatePrefetchMethodReturnType(prefetchMethod, prefetchMethodLocation);
+    }
+
+    private void validatePrefetchMethodParams(MethodSymbol prefetchMethod, Location prefetchMethodLocation,
+                                              MethodSymbol resolverMethod) {
+        String prefetchMethodName = prefetchMethod.getName().orElse("");
+        Set<String> fieldMethodParamSignatures = resolverMethod.typeDescriptor().params().isPresent() ?
+                resolverMethod.typeDescriptor().params().get().stream().map(ParameterSymbol::signature)
+                        .map(String::trim).collect(Collectors.toSet()) : new HashSet<>();
+        List<ParameterSymbol> parameterSymbols = prefetchMethod.typeDescriptor().params().isPresent() ?
+                prefetchMethod.typeDescriptor().params().get() : new ArrayList<>();
+        boolean hasContextParam = false;
+        for (ParameterSymbol symbol : parameterSymbols) {
+            if (isContextParameter(symbol.typeDescriptor())) {
+                hasContextParam = true;
+            } else if (!fieldMethodParamSignatures.contains(symbol.signature().trim())) {
+                addDiagnostic(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, prefetchMethodLocation,
+                              symbol.signature(), prefetchMethodName,
+                              isResourceMethod(resolverMethod) ? getFieldPath((ResourceMethodSymbol) resolverMethod) :
+                                      resolverMethod.getName().orElse(resolverMethod.signature()));
+            }
+        }
+        if (!hasContextParam) {
+            addDiagnostic(CompilationDiagnostic.MISSING_GRAPHQL_CONTEXT_PARAMETER, prefetchMethodLocation,
+                          prefetchMethod.getName().orElse(prefetchMethod.signature()));
+        }
+    }
+
+    private void validatePrefetchMethodReturnType(MethodSymbol prefetchMethod, Location prefetchMethodLocation) {
+        if (prefetchMethod.typeDescriptor().returnTypeDescriptor().isPresent()) {
+            TypeSymbol returnType = prefetchMethod.typeDescriptor().returnTypeDescriptor().get();
+            if (returnType.typeKind() == TypeDescKind.NIL) {
+                return;
+            }
+            addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD,
+                          getLocation(returnType, prefetchMethodLocation), returnType.signature(),
+                          prefetchMethod.getName().orElse(""));
+        }
     }
 
     private void validateSubscriptionMethod(ResourceMethodSymbol methodSymbol, Location location) {
@@ -502,17 +682,19 @@ public class ServiceValidator {
             String typeName = typeDefinitionSymbol.getName().orElse("$anonymous");
             addDiagnostic(CompilationDiagnostic.NON_DISTINCT_INTERFACE, location, typeName);
         }
-        for (MethodSymbol methodSymbol : objectTypeSymbol.methods().values()) {
-            Location methodLocation = getLocation(methodSymbol, location);
+        List<MethodSymbol> methodSymbols = new ArrayList<>(objectTypeSymbol.methods().values());
+        for (MethodSymbol methodSymbol : methodSymbols) {
             if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
                 resourceMethodFound = true;
-                validateResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
+                validateResourceMethod((ResourceMethodSymbol) methodSymbol, location);
             } else if (isRemoteMethod(methodSymbol)) {
                 // noinspection OptionalGetWithoutIsPresent
                 String interfaceName = typeDefinitionSymbol.getName().get();
                 String remoteMethodName = methodSymbol.getName().orElse(methodSymbol.signature());
-                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, methodLocation, interfaceName, remoteMethodName);
+                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, getLocation(methodSymbol, location),
+                              interfaceName, remoteMethodName);
             }
+            validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
         }
         if (!resourceMethodFound) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, location);
@@ -567,10 +749,23 @@ public class ServiceValidator {
                 }
                 if (parameter.annotations().isEmpty()) {
                     validateInputParameterType(parameter.typeDescriptor(), inputLocation,
-                            isResourceMethod(methodSymbol));
+                                               isResourceMethod(methodSymbol));
                 }
             }
         }
+    }
+
+    private String getDefaultPrefetchMethodName(String graphqlFieldName) {
+        return PREFETCH_METHOD_PREFIX + uppercaseFirstChar(graphqlFieldName);
+    }
+
+    private String uppercaseFirstChar(String string) {
+        if (string == null || string.length() == 0) {
+            return string;
+        }
+        char[] chars = string.toCharArray();
+        chars[0] = Character.toUpperCase(chars[0]);
+        return new String(chars);
     }
 
     private void validateInputParameterType(TypeSymbol typeSymbol, Location location, boolean isResourceMethod) {
@@ -746,16 +941,17 @@ public class ServiceValidator {
                           getCurrentFieldPath(), className);
         }
         boolean resourceMethodFound = false;
-        for (MethodSymbol methodSymbol : classSymbol.methods().values()) {
-            Location methodLocation = getLocation(methodSymbol, location);
+        List<MethodSymbol> methodSymbols = new ArrayList<>(classSymbol.methods().values());
+        for (MethodSymbol methodSymbol : methodSymbols) {
             if (methodSymbol.kind() == SymbolKind.RESOURCE_METHOD) {
                 resourceMethodFound = true;
-                validateResourceMethod((ResourceMethodSymbol) methodSymbol, methodLocation);
+                validateResourceMethod((ResourceMethodSymbol) methodSymbol, location);
             } else if (isRemoteMethod(methodSymbol)) {
                 // noinspection OptionalGetWithoutIsPresent
-                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, methodLocation, className,
+                addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, getLocation(methodSymbol, location), className,
                               methodSymbol.getName().get());
             }
+            validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
         }
         if (!resourceMethodFound) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, location);

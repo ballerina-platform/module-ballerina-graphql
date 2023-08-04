@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -68,6 +69,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
+
     private Engine() {
     }
 
@@ -247,6 +249,20 @@ public class Engine {
         return result;
     }
 
+    public static Object getMethod(BObject service, BString methodName) {
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+        return getMethod(serviceType, methodName.getValue());
+    }
+
+    private static MethodType getMethod(ServiceType serviceType, String methodName) {
+        for (MethodType serviceMethod : serviceType.getMethods()) {
+            if (methodName.equals(serviceMethod.getName())) {
+                return serviceMethod;
+            }
+        }
+        return null;
+    }
+
     private static RemoteMethodType getRemoteMethod(ServiceType serviceType, String methodName) {
         for (RemoteMethodType remoteMethod : serviceType.getRemoteMethods()) {
             if (remoteMethod.getName().equals(methodName)) {
@@ -273,7 +289,7 @@ public class Engine {
     public static Object getResourceAnnotation(BObject service, BString operationType, BArray path,
                                                BString methodName) {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-        MethodType methodType = null;
+        MethodType methodType;
         if (OPERATION_QUERY.equals(operationType.getValue())) {
             methodType = getResourceMethod(serviceType, getPathList(path), GET_ACCESSOR);
         } else if (OPERATION_SUBSCRIPTION.equals(operationType.getValue())) {
@@ -286,5 +302,29 @@ public class Engine {
             return methodType.getAnnotation(identifier);
         }
         return null;
+    }
+
+    public static boolean hasPrefetchMethod(BObject serviceObject, BString prefetchMethodName) {
+        ServiceType serviceType = (ServiceType) serviceObject.getOriginalType();
+        return Arrays.stream(serviceType.getMethods())
+                .anyMatch(methodType -> methodType.getName().equals(prefetchMethodName.getValue()));
+    }
+
+    public static void executePrefetchMethod(Environment environment, BObject context, BObject service,
+                                             MethodType resourceMethod, BObject fieldObject) {
+        Future future = environment.markAsync();
+        ExecutionCallback executionCallback = new ExecutionCallback(future);
+        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
+        ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
+        Object[] arguments = argumentHandler.getArguments();
+        if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
+            environment.getRuntime()
+                    .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
+                                                   executionCallback, null, null, arguments);
+        } else {
+            environment.getRuntime()
+                    .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
+                                                   executionCallback, null, null, arguments);
+        }
     }
 }

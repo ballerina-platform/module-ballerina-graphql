@@ -105,6 +105,15 @@ isolated function getFieldInterceptors(service object {} serviceObj, parser:Root
     return [];
 }
 
+isolated function getPrefetchMethodName(service object {} serviceObj, Field 'field) returns string? {
+    GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj,
+        'field.getOperationType(), 'field.getResourcePath(), 'field.getName());
+    if resourceConfig is GraphqlResourceConfig {
+        return resourceConfig.prefetchMethodName;
+    }
+    return;
+}
+
 isolated function isGlobalInterceptor(readonly & Interceptor interceptor) returns boolean {
     GraphqlInterceptorConfig? interceptorConfig = getInterceptorConfig(interceptor);
     if interceptorConfig is GraphqlInterceptorConfig {

@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.dataloader;
+
 import ballerina/http;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
@@ -25,6 +27,12 @@ public isolated class Context {
     private Engine? engine;
     private int nextInterceptor;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
+    private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
+    private map<Placeholder> uuidPlaceholderMap = {};
+    private Placeholder[] unResolvedPlaceholders = [];
+    private boolean containPlaceholders = false;
+    private int unResolvedPlaceholderCount = 0; // Tracks the number of Placeholders needs to be resolved
+    private int unResolvedPlaceholderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
 
     public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (),
                                   int nextInterceptor = 0) {
@@ -90,6 +98,26 @@ public isolated class Context {
         }
     }
 
+    # Register a given DataLoader instance for a given key in the GraphQL context.
+    # 
+    # + key - The key for the DataLoader to be registered
+    # + dataloader - The DataLoader instance to be registered
+    public isolated function registerDataLoader(string key, dataloader:DataLoader dataloader) {
+        lock {
+            self.idDataLoaderMap[key] = dataloader;
+        }
+    }
+
+    # Retrieves a DataLoader instance using the given key from the GraphQL context.
+    # 
+    # + key - The key corresponding to the required DataLoader instance
+    # + return - The DataLoader instance if the key is present in the context otherwise panics
+    public isolated function getDataLoader(string key) returns dataloader:DataLoader {
+        lock {
+            return self.idDataLoaderMap.get(key);
+        }
+    }
+
     isolated function addError(ErrorDetail err) {
         lock {
             self.errors.push(err.clone());
@@ -120,7 +148,7 @@ public isolated class Context {
     public isolated function resolve(Field 'field) returns anydata {
         Engine? engine = self.getEngine();
         if engine is Engine {
-            return engine.resolve(self, 'field);
+            return engine.resolve(self, 'field, false);
         }
         return;
     }
@@ -185,13 +213,74 @@ public isolated class Context {
         }
     }
 
-    isolated function cloneWithoutErrors() returns Context {
+    isolated function addUnresolvedPlaceholder(string uuid, Placeholder placeholder) {
         lock {
-            Context clonedContext = new(self.attributes, self.engine, self.nextInterceptor);
-            if self.hasFileInfo {
-                clonedContext.setFileInfo(self.getFileInfo());
+            self.containPlaceholders = true;
+            self.uuidPlaceholderMap[uuid] = placeholder;
+            self.unResolvedPlaceholders.push(placeholder);
+            self.unResolvedPlaceholderCount += 1;
+            self.unResolvedPlaceholderNodeCount += 1;
+        }
+    }
+
+    isolated function resolvePlaceholders() {
+        lock {
+            string[] nonDispatchedDataLoaderIds = self.idDataLoaderMap.keys();
+            Placeholder[] unResolvedPlaceholders = self.unResolvedPlaceholders;
+            self.unResolvedPlaceholders = [];
+            foreach string dataLoaderId in nonDispatchedDataLoaderIds {
+                self.idDataLoaderMap.get(dataLoaderId).dispatch();
             }
-            return clonedContext;
+            foreach Placeholder placeholder in unResolvedPlaceholders {
+                Engine? engine = self.getEngine();
+                if engine is () {
+                    continue;
+                }
+                anydata resolvedValue = engine.resolve(self, 'placeholder.getField(), false);
+                placeholder.setValue(resolvedValue);
+                self.unResolvedPlaceholderCount -= 1;
+            }
+        }
+    }
+
+    isolated function getPlaceholderValue(string uuid) returns anydata {
+        lock {
+            return self.uuidPlaceholderMap.remove(uuid).getValue();
+        }
+    }
+
+    isolated function getUnresolvedPlaceholderCount() returns int {
+        lock {
+            return self.unResolvedPlaceholderCount;
+        }
+    }
+
+    isolated function getUnresolvedPlaceholderNodeCount() returns int {
+        lock {
+            return self.unResolvedPlaceholderNodeCount;
+        }
+    }
+
+    isolated function decrementUnresolvedPlaceholderNodeCount() {
+        lock {
+            self.unResolvedPlaceholderNodeCount-=1;
+        }
+    }
+
+    isolated function hasPlaceholders() returns boolean {
+        lock {
+            return self.containPlaceholders;
+        }
+    }
+
+    isolated function clearDataLoadersCachesAndPlaceholders() {
+        // This function is called at the end of each subscription loop execution to prevent using old values 
+        // from DataLoader caches in the next iteration and to avoid filling up the idPlaceholderMap.
+        lock {
+            self.idDataLoaderMap.forEach(dataloader => dataloader.clearAll());
+            self.unResolvedPlaceholders.removeAll();
+            self.uuidPlaceholderMap.removeAll();
+            self.containPlaceholders = false;
         }
     }
 }

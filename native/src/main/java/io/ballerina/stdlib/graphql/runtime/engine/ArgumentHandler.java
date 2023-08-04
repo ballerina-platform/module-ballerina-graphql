@@ -85,6 +85,8 @@ public class ArgumentHandler {
     private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
     private static final String CONSTRAINT_ERROR_MESSAGE = "Constraint validation errors found.";
 
+    private static final BString KIND_FIELD = StringUtils.fromString("kind");
+
     // graphql.parser types
     private static final int T_STRING = 2;
     private static final int T_INT = 3;
@@ -368,7 +370,7 @@ public class ArgumentHandler {
     }
 
     private Object getJsonArgument(BObject argumentNode) {
-        int kind = (int) argumentNode.getIntValue(StringUtils.fromString("kind"));
+        int kind = (int) argumentNode.getIntValue(KIND_FIELD);
         Object valueField = argumentNode.get(VALUE_FIELD);
         switch (kind) {
             case T_STRING:

@@ -76,16 +76,19 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.array"},
+	{org = "ballerina", name = "lang.regexp"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "time"},
+	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql"},
+	{org = "ballerina", packageName = "graphql", moduleName = "graphql.dataloader"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.parser"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.subgraph"}
 ]
@@ -367,7 +370,6 @@ modules = [
 org = "ballerina"
 name = "uuid"
 version = "1.6.0"
-scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},

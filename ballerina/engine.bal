@@ -14,9 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/jballerina.java;
-
 import graphql.parser;
+
+import ballerina/jballerina.java;
+import ballerina/uuid;
 
 isolated class Engine {
     private final readonly & __Schema schema;
@@ -242,54 +243,54 @@ isolated class Engine {
         }
     }
 
-    isolated function resolve(Context context, Field 'field) returns anydata {
+    isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        parser:RootOperationType operationType = 'field.getOperationType();
-        (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
-        __Type fieldType = 'field.getFieldType();
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
-        any|error fieldValue;
-        if operationType == parser:OPERATION_QUERY {
-            if interceptor is () {
-                fieldValue = self.resolveResourceMethod(context, 'field, responseGenerator);
-            } else {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
-                                                                              self.getInterceptorName(interceptor));
-                if interceptValue is error {
-                    fieldValue = interceptValue;
-                } else {
-                    return interceptValue;
-                }
-            }
-        } else if operationType == parser:OPERATION_MUTATION {
-            if interceptor is () {
-                fieldValue = self.resolveRemoteMethod(context, 'field, responseGenerator);
-            } else {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
-                                                                              self.getInterceptorName(interceptor));
-                if interceptValue is error {
-                    fieldValue = interceptValue;
-                } else {
-                    return interceptValue;
-                }
-            }
-        } else {
-            if interceptor is () {
-                fieldValue = 'field.getFieldValue();
-            } else {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
-                anydata|error interceptValue = validateInterceptorReturnValue(fieldType, result,
-                                                                              self.getInterceptorName(interceptor));
-                if interceptValue is error {
-                    fieldValue = interceptValue;
-                } else {
-                    return interceptValue;
+
+        if executePrefetchMethod {
+            service object {}? serviceObject = 'field.getServiceObject();
+            if serviceObject is service object {} { 
+                string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field) 
+                    ?: getDefaultPrefetchMethodName(fieldNode.getName());
+                if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
+                    return self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
                 }
             }
         }
-        return responseGenerator.getResult(fieldValue, fieldNode);
+
+        (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
+        __Type fieldType = 'field.getFieldType();
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
+        do {
+            if interceptor is readonly & Interceptor {
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                string interceptorName = self.getInterceptorName(interceptor);
+                return check validateInterceptorReturnValue(fieldType, result, interceptorName);
+            }
+            any fieldValue;
+            if 'field.getOperationType() == parser:OPERATION_QUERY {
+                fieldValue = check self.resolveResourceMethod(context, 'field, responseGenerator);
+            } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
+                fieldValue = check self.resolveRemoteMethod(context, 'field, responseGenerator);
+            } else {
+                fieldValue = check 'field.getFieldValue();
+            }
+            return responseGenerator.getResult(fieldValue, fieldNode);
+        } on fail error errorValue {
+            return responseGenerator.getResult(errorValue, fieldNode);
+        }
+    }
+
+    private isolated function getResultFromPrefetchMethodExecution(Context context, Field 'field,
+        service object {} serviceObject, string prefetchMethodName) returns PlaceholderNode? {
+        handle? prefetchMethodHandle = self.getMethod(serviceObject, prefetchMethodName);
+        if prefetchMethodHandle is () {
+            return ();
+        }
+        self.executePrefetchMethod(context, serviceObject, prefetchMethodHandle, 'field);
+        string uuid = uuid:createType1AsString();
+        Placeholder placeholder = new ('field);
+        context.addUnresolvedPlaceholder(uuid, placeholder);
+        return {__uuid: uuid};
     }
 
     isolated function resolveResourceMethod(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
@@ -363,6 +364,11 @@ isolated class Engine {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
+    isolated function getMethod(service object {} serviceObject, string methodName)
+    returns handle? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
     isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
                                            Field 'field, ResponseGenerator responseGenerator, boolean validation)
     returns any|error = @java:Method {
@@ -385,6 +391,16 @@ isolated class Engine {
     } external;
 
     isolated function getInterceptorName(readonly & Interceptor interceptor) returns string = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function hasPrefetchMethod(service object {} serviceObject, string prefetchMethodName)
+    returns boolean = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+    } external;
+
+    isolated function executePrefetchMethod(Context context, service object {} serviceObject,
+        handle prefetchMethodHandle, Field 'field) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 }

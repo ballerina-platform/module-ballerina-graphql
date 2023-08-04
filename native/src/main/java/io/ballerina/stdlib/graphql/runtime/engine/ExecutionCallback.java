@@ -23,7 +23,7 @@ import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.values.BError;
 
 /**
- * Callback class for executing GraphQL fields.
+ * Callback class for executing Ballerina dependently type methods.
  */
 public class ExecutionCallback implements Callback {
     private final Future future;
