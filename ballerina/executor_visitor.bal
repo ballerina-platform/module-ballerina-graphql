@@ -113,7 +113,7 @@ isolated class ExecutorVisitor {
         }
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
         context.resetInterceptorCount();
-        readonly & anydata resolvedResult = engine.resolve(context, 'field);
+        anydata resolvedResult = engine.resolve(context, 'field);
         lock {
             self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
         }
