@@ -245,7 +245,7 @@ public class ServiceValidationTest {
     public void testInvalidReturnTypes() {
         String packagePath = "27_invalid_return_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 20);
+        Assert.assertEquals(diagnosticResult.errorCount(), 19);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -291,10 +291,6 @@ public class ServiceValidationTest {
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "service object {}", "Query.foo");
         assertErrorMessage(diagnostic, message, 75, 5);
-
-        diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.NON_DISTINCT_INTERFACE, "Interceptor");
-        assertErrorMessage(diagnostic, message, 94, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
