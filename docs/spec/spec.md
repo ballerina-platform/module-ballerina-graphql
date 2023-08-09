@@ -3463,7 +3463,7 @@ The GraphQL Engine guarantees the execution of the `preFoo` method prior to the 
 
 The user is responsible for implementing the logic to collect the keys of the data to be loaded into the `DataLoader` in the `preFoo` method. Subsequently, the user can implement the logic to retrieve the data from the `DataLoader` within the `foo` method.
 
->**Note:** If there is a remote method and a resource method with the same name, such as `bar`, and there exists a prefetch method named `preBar`, the GraphQL Engine will execute the `preBar` method prior to executing each `bar` method. Users can modify this behavior by utilizing the `prefetchMethodName` configuration within the `@graphql:ResourceConfig` annotation.
+>**Note:** If there are multiple `resource`/`remote` methods with the same name in a GraphQL service, such as `bar`, and there exists a prefetch method named `preBar`, the GraphQL Engine will execute the `preBar` method prior to executing each `bar` method. Users can modify this behavior by utilizing the `prefetchMethodName` configuration within the `@graphql:ResourceConfig` annotation.
 
 ###### Example: Defining the Corresponding `prefetch` Method
 
