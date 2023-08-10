@@ -1,0 +1,16 @@
+query {
+  firstThree: authors(ids: [1, 2, 3]) {
+    name
+    books {
+      id
+      title
+    }
+  }
+  lastTwo: authors(ids: [4, 5]) {
+    name
+    books {
+      id
+      title
+    }
+  }
+}

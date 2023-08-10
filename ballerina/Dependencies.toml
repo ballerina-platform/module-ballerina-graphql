@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.7.0"
+distribution-version = "2201.8.0-20230808-143200-eed8897e"
 
 [[package]]
 org = "ballerina"
@@ -67,7 +67,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.9.1"
+version = "1.10.0"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "file"},
@@ -76,6 +76,7 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.array"},
+	{org = "ballerina", name = "lang.regexp"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
@@ -83,10 +84,12 @@ dependencies = [
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "time"},
+	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql"},
+	{org = "ballerina", packageName = "graphql", moduleName = "graphql.dataloader"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.parser"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.subgraph"}
 ]
@@ -94,7 +97,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.9.0"
+version = "2.9.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -219,6 +222,9 @@ name = "lang.regexp"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "lang.regexp", moduleName = "lang.regexp"}
 ]
 
 [[package]]
@@ -355,8 +361,22 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "uuid"
+version = "1.6.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
+]
+
+[[package]]
+org = "ballerina"
 name = "websocket"
-version = "2.9.0"
+version = "2.9.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},

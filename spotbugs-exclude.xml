@@ -27,4 +27,30 @@
             <Bug pattern="DM_EXIT" />
         </And>
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP, EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.graphql.runtime.engine.Engine" />
+        <Method name = "createSchema" />
+        <Bug pattern="DCN_NULLPOINTER_EXCEPTION" />
+    </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.graphql.commons.types.Directive" />
+        <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+    </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.graphql.commons.types.Directive" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlSourceModifier" />
+        <Method name = "getEntityResolver" />
+        <Bug pattern="DCN_NULLPOINTER_EXCEPTION" />
+    </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlSourceModifier" />
+        <Method name = "getServiceResolver" />
+        <Bug pattern="DCN_NULLPOINTER_EXCEPTION" />
+    </Match>
 </FindBugsFilter>

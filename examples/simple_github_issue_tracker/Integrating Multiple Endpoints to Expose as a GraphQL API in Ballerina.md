@@ -1,5 +1,12 @@
 # Simple GitHub Issue Tracker
 
+[![Star on Github](https://img.shields.io/badge/-Star%20on%20Github-blue?style=social&logo=github)](https://github.com/ballerina-platform/module-ballerina-graphql)
+
+_Authors_: @DimuthuMadushan \
+_Reviewers_: @ThisaruGuruge @shafreenAnfar \
+_Created_: 2023/02/06 \
+_Updated_: 2023/02/06
+
 Git Tracker is a GraphQL service written in Ballerina that connects with the GitHub REST API. It enables tracking and monitoring of Git repositories.
 
 ## Features

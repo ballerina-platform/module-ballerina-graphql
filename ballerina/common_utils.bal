@@ -14,8 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import graphql.parser;
+
+import ballerina/http;
 
 // Error messages
 const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";

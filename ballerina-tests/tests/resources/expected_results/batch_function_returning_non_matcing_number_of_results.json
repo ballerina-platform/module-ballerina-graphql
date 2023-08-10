@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "The batch function should return a number of results equal to the number of keys",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["authors"]
+    }
+  ],
+  "data": null
+}

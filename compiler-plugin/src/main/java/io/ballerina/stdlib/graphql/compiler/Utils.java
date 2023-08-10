@@ -73,8 +73,8 @@ public final class Utils {
     public static final String SUBGRAPH_ANNOTATION_NAME = "Subgraph";
     public static final String UUID_RECORD_NAME = "Uuid";
     private static final String ORG_NAME = "ballerina";
-    private static final String GRAPHQL_MODULE_NAME = "graphql";
     private static final String UUID_MODULE_NAME = "uuid";
+    private static final String RESOURCE_CONFIG_ANNOTATION = "ResourceConfig";
 
     private Utils() {
     }
@@ -227,8 +227,17 @@ public final class Utils {
         if (!isGraphqlModuleSymbol(typeSymbol)) {
             return false;
         }
-        String typeName = typeSymbol.getName().get();
-        return FIELD_IDENTIFIER.equals(typeName) || CONTEXT_IDENTIFIER.equals(typeName);
+        if (isContextParameter(typeSymbol)) {
+            return true;
+        }
+        return FIELD_IDENTIFIER.equals(typeSymbol.getName().get());
+    }
+
+    public static boolean isContextParameter(TypeSymbol typeSymbol) {
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        return isGraphqlModuleSymbol(typeSymbol) && CONTEXT_IDENTIFIER.equals(typeSymbol.getName().get());
     }
 
     public static String getAccessor(ResourceMethodSymbol resourceMethodSymbol) {
@@ -326,5 +335,11 @@ public final class Utils {
                 return true;
         }
         return false;
+    }
+
+    public static boolean hasResourceConfigAnnotation(MethodSymbol resourceMethodSymbol) {
+        return resourceMethodSymbol.annotations().stream().anyMatch(
+                annotationSymbol -> isGraphqlModuleSymbol(annotationSymbol) && annotationSymbol.getName().isPresent()
+                        && annotationSymbol.getName().get().equals(RESOURCE_CONFIG_ANNOTATION));
     }
 }

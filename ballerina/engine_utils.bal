@@ -14,9 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/jballerina.java;
 import graphql.parser;
 import graphql.subgraph;
+
+import ballerina/jballerina.java;
+import ballerina/lang.regexp;
 
 isolated function getOutputObjectFromErrorDetail(ErrorDetail|ErrorDetail[] errorDetail) returns OutputObject {
     if errorDetail is ErrorDetail {
@@ -111,3 +113,9 @@ public isolated function getSdlString(string encodedSchemaString, map<subgraph:F
 returns string|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;
+
+isolated function getDefaultPrefetchMethodName(string fieldName) returns string {
+    return re `^[a-z]`.replace(fieldName, isolated function(regexp:Groups groups) returns string {
+        return string `${DEFAULT_PREFETCH_METHOD_NAME_PREFIX}${groups[0].substring().toUpperAscii()}`;
+    });
+}

@@ -96,5 +96,5 @@ isolated function isAsciiDigit(int codePoint) returns boolean {
 }
 
 public isolated function getHashCode(object {} obj) returns string = @java:Method {
-    'class: "io.ballerina.stdlib.graphql.runtime.parser.ParserUtils"
+    'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
 } external;

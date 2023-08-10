@@ -43,8 +43,9 @@ public enum DiagnosticMessage {
                       + "\", which is reserved by GraphQL introspection"),
     ERROR_112("invalid type found in the GraphQL field ''{0}''. A GraphQL field cannot have \"any\" or \"anydata\" as "
                       + "the type, instead use specific types"),
-    ERROR_113("a GraphQL service must have at least one resource method with a '''" + RESOURCE_FUNCTION_GET + "''' "
-                      + "accessor"),
+    ERROR_113("a GraphQL service must include at least one resource method with the accessor '''"
+                      + RESOURCE_FUNCTION_GET + "''' that does not have the @dataloader:Loader annotation attached"
+                      + " to it"),
     ERROR_114("the GraphQL field ''{0}'' use input type ''{1}'' as an output type. A GraphQL field cannot use an input "
                       + "type as an output type"),
     ERROR_115("the GraphQL field ''{0}'' use output type ''{1}'' as an input type. A GraphQL field cannot use an output"
@@ -84,8 +85,21 @@ public enum DiagnosticMessage {
     ERROR_139("failed to generate schema for type ''{0}''. Type alias for type ''{1}'' is not supported"),
     ERROR_140("invalid usage of @graphql:ID annotation. @graphql:ID annotation can only be used with string, "
                       + "int, float, decimal and uuid:Uuid types"),
+    ERROR_141("invalid method signature found in ''{0}'' prefetch method. The method requires a parameter of type "
+                      + "''graphql:Context''"),
+    ERROR_142("invalid parameter ''{0}'' found in prefetch method ''{1}''. No matching parameter found in"
+                      + " the GraphQL field ''{2}''"),
+    ERROR_143("invalid return type ''{0}'' found in prefetch method ''{1}''. The data loader "
+                      + "method must not return any value"),
+    ERROR_144("no prefetch method found with name ''{0}'' for the GraphQL field ''{1}''"),
+    ERROR_145("invalid usage of ''{0}'' configuration found in subscription resource ''{1}''. ''{0}'' configuration is"
+                      + " only supported for 'remote' methods and 'get' resource methods"),
+
     WARNING_201("invalid usage of @deprecated directive found in ''{0}''. Input object field(s) deprecation "
-                    + "is not supported by the current GraphQL spec.");
+                    + "is not supported by the current GraphQL spec."),
+    WARNING_202("unable to validate ''{0}'' configuration of the GraphQL field ''{1}''. Pass a string literal to "
+                    + "the ''{0}'' configuration to resolve this warning");
+
     private final String message;
 
     DiagnosticMessage(String message) {

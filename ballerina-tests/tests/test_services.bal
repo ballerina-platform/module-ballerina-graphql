@@ -15,9 +15,10 @@
 // under the License.
 
 import ballerina/graphql;
+import ballerina/graphql.dataloader;
 import ballerina/http;
-import ballerina/uuid;
 import ballerina/lang.runtime;
+import ballerina/uuid;
 
 graphql:Service graphiqlDefaultPathConfigService =
 @graphql:ServiceConfig {
@@ -829,7 +830,10 @@ service /noAuth on secureListener {
             fileUserStoreConfig: {},
             scopes: ["write", "update"]
         }
-    ]
+    ],
+    graphiql: {
+        enabled: true
+    }
 }
 service /basicAuth on secureListener {
     isolated resource function get greeting() returns string {
@@ -2118,19 +2122,6 @@ service /annotations on wrappedListener {
     }
 }
 
-service /parallel on wrappedListener {
-    private string data = "Hello";
-    resource function get a() returns string {
-        runtime:sleep(1);
-        self.data += "!";
-        return self.data;
-    }
-    resource function get b() returns string {
-        self.data += " World";
-        return self.data;
-    }
-}
-
 @graphql:ServiceConfig {
     validation: false
 }
@@ -2347,4 +2338,99 @@ public distinct service class Student5 {
     resource function get name() returns string {
         return self.name;
     }
+}
+
+const AUTHOR_LOADER = "authorLoader";
+const AUTHOR_UPDATE_LOADER = "authorUpdateLoader";
+const BOOK_LOADER = "bookLoader";
+
+isolated function initContext(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+    graphql:Context ctx = new;
+    ctx.registerDataLoader(AUTHOR_LOADER, new dataloader:DefaultDataLoader(authorLoaderFunction));
+    ctx.registerDataLoader(AUTHOR_UPDATE_LOADER, new dataloader:DefaultDataLoader(authorUpdateLoaderFunction));
+    ctx.registerDataLoader(BOOK_LOADER, new dataloader:DefaultDataLoader(bookLoaderFunction));
+    return ctx;
+}
+
+@graphql:ServiceConfig {
+    contextInit: initContext
+}
+service /dataloader on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader(ctx, ids);
+    }
+
+    resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData[]|error {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
+        AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
+        return from AuthorRow authorRow in authorRows
+            select new (authorRow);
+    }
+
+    function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
+        [int, string] key = [id, name];
+        dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
+        authorUpdateLoader.add(key);
+    }
+
+    remote function updateAuthorName(graphql:Context ctx, int id, string name) returns AuthorData|error {
+        [int, string] key = [id, name];
+        dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
+        AuthorRow authorRow = check authorUpdateLoader.get(key);
+        return new (authorRow);
+    }
+
+    resource function subscribe authors() returns stream<AuthorData> {
+        lock {
+            readonly & AuthorRow[] authorRows = authorTable.toArray().cloneReadOnly();
+            return authorRows.'map(authorRow => new AuthorData(authorRow)).toStream();
+        }
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: new AuthorInterceptor(),
+    contextInit: initContext
+}
+service /dataloader_with_interceptor on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader(ctx, ids);
+    }
+
+    resource function get authors(graphql:Context ctx, int[] ids) returns AuthorDetail[]|error {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
+        AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
+        return from AuthorRow authorRow in authorRows
+            select new (authorRow);
+    }
+}
+
+@graphql:ServiceConfig {
+    interceptors: new AuthorInterceptor(),
+    contextInit: isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context {
+        graphql:Context ctx = new;
+        ctx.registerDataLoader(AUTHOR_LOADER, new dataloader:DefaultDataLoader(faultyAuthorLoaderFunction));
+        ctx.registerDataLoader(AUTHOR_UPDATE_LOADER, new dataloader:DefaultDataLoader(authorUpdateLoaderFunction));
+        ctx.registerDataLoader(BOOK_LOADER, new dataloader:DefaultDataLoader(bookLoaderFunction));
+        return ctx;
+    }
+}
+service /dataloader_with_faulty_batch_function on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader(ctx, ids);
+    }
+
+    resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData[]|error {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
+        AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
+        return from AuthorRow authorRow in authorRows
+            select new (authorRow);
+    }
+}
+
+function addAuthorIdsToAuthorLoader(graphql:Context ctx, int[] ids) {
+    dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
+    ids.forEach(function(int id) {
+        authorLoader.add(id);
+    });
 }
