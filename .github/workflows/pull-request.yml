@@ -18,7 +18,7 @@ jobs:
                 uses: actions/setup-java@v3
                 with:
                     distribution: 'temurin'
-                    java-version: 17
+                    java-version: 17.0.7
 
             -   name: Build the Package
                 env:
@@ -47,7 +47,7 @@ jobs:
                 uses: actions/setup-java@v3
                 with:
                     distribution: 'temurin'
-                    java-version: 17
+                    java-version: 17.0.7
 
             -   name: Build the Project
                 env:
