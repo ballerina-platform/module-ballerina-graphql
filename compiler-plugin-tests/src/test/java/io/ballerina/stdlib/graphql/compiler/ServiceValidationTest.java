@@ -1228,6 +1228,57 @@ public class ServiceValidationTest {
         assertWarningMessage(diagnostic, message, 23, 9);
     }
 
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfSpreadFieldInEntityAnnotation() {
+        String packagePath = "72_invalid_usages_of_spread_field_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION);
+        assertWarningMessage(diagnostic, message, 25, 5);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfShortHandFieldNotationInEntityAnnotation() {
+        String packagePath = "73_invalid_usages_of_short_hand_field_notation_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD, "key");
+        assertWarningMessage(diagnostic, message, 23, 5);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfVariableInEntityAnnotation() {
+        String packagePath = "74_invalid_usages_of_variable_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD, "key");
+        assertWarningMessage(diagnostic, message, 23, 10);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfVariableInListConstructorInEntityAnnotation() {
+        String packagePath = "75_invalid_usages_of_variable_in_list_constructor_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.PROVIDE_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
+                                         "key");
+        assertWarningMessage(diagnostic, message, 23, 11);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
