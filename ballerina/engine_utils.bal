@@ -15,7 +15,6 @@
 // under the License.
 
 import graphql.parser;
-import graphql.subgraph;
 
 import ballerina/jballerina.java;
 import ballerina/lang.regexp;
@@ -107,9 +106,8 @@ isolated function getTypeNameFromValue(any value) returns string = @java:Method 
 
 # Obtains the schema representation of a federated subgraph, expressed in the SDL format.
 # + encodedSchemaString - Compile time auto generated schema
-# + keyDirectives - Map of `graphql:Entity` annotation values of all potential federated entities
 # + return - Subgraph schema in SDL format as a string on success, or an error otherwise
-public isolated function getSdlString(string encodedSchemaString, map<subgraph:FederatedEntity> keyDirectives)
+public isolated function getSdlString(string encodedSchemaString) 
 returns string|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;

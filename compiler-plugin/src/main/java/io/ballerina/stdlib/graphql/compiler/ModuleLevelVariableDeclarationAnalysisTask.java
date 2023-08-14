@@ -66,7 +66,7 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
             return;
         }
         ObjectConstructorExpressionNode graphqlServiceObjectNode = (ObjectConstructorExpressionNode) expressionNode;
-        InterfaceEntityFinder interfaceEntityFinder = getInterfaceFinder(context.semanticModel());
+        InterfaceEntityFinder interfaceEntityFinder = getInterfaceEntityFinder(context.semanticModel());
         ServiceValidator serviceObjectValidator = getServiceValidator(context, graphqlServiceObjectNode,
                                                                       interfaceEntityFinder);
         if (serviceObjectValidator.isErrorOccurred()) {
