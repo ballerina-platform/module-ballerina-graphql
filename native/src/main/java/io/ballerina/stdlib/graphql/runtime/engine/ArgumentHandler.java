@@ -377,7 +377,7 @@ public class ArgumentHandler {
             case T_INT:
             case T_FLOAT:
             case T_BOOLEAN:
-                return JsonUtils.convertToJson(valueField, new ArrayList<>());
+                return JsonUtils.convertToJson(valueField);
             case T_INPUT_OBJECT:
                 return getJsonObject(argumentNode);
             case T_LIST:
@@ -394,7 +394,7 @@ public class ArgumentHandler {
             Object elementValue = getJsonArgument(argumentElementNode);
             valueArray.append(elementValue);
         }
-        return JsonUtils.convertToJson(valueArray, new ArrayList<>());
+        return JsonUtils.convertToJson(valueArray);
     }
 
     private Object getJsonObject(BObject argumentNode) {
@@ -406,7 +406,7 @@ public class ArgumentHandler {
             Object fieldValue = getJsonArgument(inputObjectField);
             mapValue.put(inputObjectFieldName, fieldValue);
         }
-        return JsonUtils.convertToJson(mapValue, new ArrayList<>());
+        return JsonUtils.convertToJson(mapValue);
     }
 
     private Object getIntersectionTypeArgument(BObject argumentNode, IntersectionType intersectionType) {
