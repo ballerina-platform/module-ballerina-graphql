@@ -369,7 +369,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "uuid"
-version = "1.6.0"
+version = "1.7.0"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -383,7 +383,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.9.0"
+version = "2.10.0"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
