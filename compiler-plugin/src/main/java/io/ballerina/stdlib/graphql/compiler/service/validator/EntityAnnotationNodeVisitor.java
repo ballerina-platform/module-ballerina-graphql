@@ -29,6 +29,9 @@ public class EntityAnnotationNodeVisitor extends NodeVisitor {
 
     @Override
     public void visit(AnnotationNode annotationNode) {
+        if (this.annotationNode != null) {
+            return;
+        }
         Optional<Symbol> annotationSymbol = this.semanticModel.symbol(annotationNode);
         if (annotationSymbol.isPresent() && annotationSymbol.get().equals(this.annotationSymbol)) {
             if (annotationNode.parent().parent().kind() == SyntaxKind.TYPE_DEFINITION) {

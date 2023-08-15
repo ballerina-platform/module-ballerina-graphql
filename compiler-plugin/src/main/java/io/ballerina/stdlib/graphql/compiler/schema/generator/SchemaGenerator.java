@@ -174,7 +174,6 @@ public class SchemaGenerator {
         boolean isResolvable = false;
         ArrayList<String> keys = new ArrayList<>();
         for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
-
             if (fieldNode.kind() != SyntaxKind.SPECIFIC_FIELD) {
                 continue;
             }
