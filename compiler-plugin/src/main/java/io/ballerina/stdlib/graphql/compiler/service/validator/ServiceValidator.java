@@ -195,14 +195,14 @@ public class ServiceValidator {
         ExpressionNode keyFieldExpression = specificFieldNode.valueExpr().get();
         if (keyFieldExpression.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
             for (Node expression : ((ListConstructorExpressionNode) keyFieldExpression).expressions()) {
-                validateKeyFieldValues(expression);
+                validateKeyFieldValue(expression);
             }
             return;
         }
-        validateKeyFieldValues(keyFieldExpression);
+        validateKeyFieldValue(keyFieldExpression);
     }
 
-    public void validateKeyFieldValues(Node expression) {
+    public void validateKeyFieldValue(Node expression) {
         if (expression.kind() != SyntaxKind.STRING_LITERAL) {
             addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
                           expression.location(), KEY);
