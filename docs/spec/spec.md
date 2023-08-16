@@ -966,7 +966,7 @@ In Ballerina, `distinct` `service` objects can be used to define GraphQL interfa
 
 Non-distinct `service` objects and `service` classes can not be used to define or implement GraphQL interfaces.
 
->**Note**: Recognition of `service` `object`s and `service` `class`es as GraphQL interfaces and implementations relies on their definition within the same module as the GraphQL service.
+>**Note**: In order to be recognized as GraphQL objects or interfaces, the Ballerina `service` `object`s and `service` `class`es should be defined within the same module as the GraphQL service.
 
 ###### Example: Interfaces
 ```ballerina
@@ -3185,7 +3185,7 @@ To fully define an entity within a Ballerina GraphQL subgraph, you must:
 2. Define the `key` field of the annotation to be the fields and subfields that contribute to the entity's primary key/keys.
 3. Define the `resolveReference` field of the annotation to be a function pointer to resolve the entity. If this field is set to `nil`, it indicates to the graph router that this subgraph does not define a reference resolver for this entity. For more details, see [ReferenceResolver](#10513-the-subgraphreferenceresolver-function-type).
 
->**Note:** To ensure recognition as subgraph entities by the GraphQL module, GraphQL object types marked with `@subgraph:Entity` must be defined within the same Ballerina module as the GraphQL service; failure to comply results in non-recognition.
+>**Note:** In order to be recognized as subgraph entities, GraphQL object types marked with `@subgraph:Entity` must be defined within the same Ballerina module as the GraphQL service.
 
 ###### Example: Federated Entity Definition and Corresponding GraphQL Schema
 
