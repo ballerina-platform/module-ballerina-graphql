@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.Annotatable;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
@@ -35,10 +36,12 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
@@ -75,6 +78,7 @@ public final class Utils {
     private static final String ORG_NAME = "ballerina";
     private static final String UUID_MODULE_NAME = "uuid";
     private static final String RESOURCE_CONFIG_ANNOTATION = "ResourceConfig";
+    private static final String ENTITY_ANNOTATION = "Entity";
 
     private Utils() {
     }
@@ -311,10 +315,10 @@ public final class Utils {
         }
 
         InterfaceEntityFinder interfaceFinder = new InterfaceEntityFinder();
-        interfaceFinder.populateInterfaces(semanticModel);
+        interfaceFinder.populateInterfacesAndEntities(semanticModel);
         SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel, project,
+                                                              project.currentPackage().getDefaultModule().moduleId(),
                                                               description, isSubgraph);
-
         return schemaGenerator.generate();
     }
     
@@ -341,5 +345,37 @@ public final class Utils {
         return resourceMethodSymbol.annotations().stream().anyMatch(
                 annotationSymbol -> isGraphqlModuleSymbol(annotationSymbol) && annotationSymbol.getName().isPresent()
                         && annotationSymbol.getName().get().equals(RESOURCE_CONFIG_ANNOTATION));
+    }
+
+    public static AnnotationSymbol getEntityAnnotationSymbol(Symbol symbol) {
+        Annotatable annotatable;
+        if (symbol.kind() == SymbolKind.TYPE_DEFINITION) {
+            annotatable = (TypeDefinitionSymbol) symbol;
+        } else if (symbol.kind() == SymbolKind.CLASS) {
+            annotatable = (ClassSymbol) symbol;
+        } else {
+            return null;
+        }
+        return annotatable.annotations().stream()
+                .filter(annotationSymbol -> annotationSymbol.getName().orElse("").equals(ENTITY_ANNOTATION)).findFirst()
+                .orElse(null);
+    }
+
+    public static String getStringValue(SpecificFieldNode specificFieldNode) {
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            return null;
+        }
+        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+        if (valueExpression.kind() == SyntaxKind.STRING_LITERAL) {
+            BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
+            String stringLiteral = stringLiteralNode.toSourceCode().trim();
+            return stringLiteral.substring(1, stringLiteral.length() - 1);
+        }
+        return null;
+    }
+
+    public static String getStringValue(BasicLiteralNode expression) {
+        String literalToken = expression.literalToken().text().trim();
+        return literalToken.substring(1, literalToken.length() - 1);
     }
 }
