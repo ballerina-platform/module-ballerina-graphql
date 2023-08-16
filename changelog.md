@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#4660] Fix GraphiQL Client Endpoint for Secured Listeners](https://github.com/ballerina-platform/ballerina-standard-library/issues/4660)
 - [[#4681] Removed Adding All Possible Federated Directives to SDL String in GraphQL Subgraph](https://github.com/ballerina-platform/ballerina-standard-library/issues/4681)
 - [[#4685] Fix `ID` Scalar Type Treated as a Non Built-in Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4685)
+- [[#4724] Fix Allowing Empty Records as GraphQL Object Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/4724)
 
 ### Changed
 - [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)

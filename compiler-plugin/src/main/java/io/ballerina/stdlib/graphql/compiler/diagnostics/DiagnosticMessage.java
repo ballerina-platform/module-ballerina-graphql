@@ -94,6 +94,8 @@ public enum DiagnosticMessage {
     ERROR_144("no prefetch method found with name ''{0}'' for the GraphQL field ''{1}''"),
     ERROR_145("invalid usage of ''{0}'' configuration found in subscription resource ''{1}''. ''{0}'' configuration is"
                       + " only supported for 'remote' methods and 'get' resource methods"),
+    ERROR_146("invalid empty record type ''{0}'' found for GraphQL object type at field ''{1}''"),
+    ERROR_147("invalid empty record type ''{0}'' found for GraphQL input object type at field ''{1}''"),
 
     WARNING_201("invalid usage of @deprecated directive found in ''{0}''. Input object field(s) deprecation "
                     + "is not supported by the current GraphQL spec."),

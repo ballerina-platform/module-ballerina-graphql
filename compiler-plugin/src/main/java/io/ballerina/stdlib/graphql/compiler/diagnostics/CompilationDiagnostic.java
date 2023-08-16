@@ -90,7 +90,9 @@ public enum CompilationDiagnostic {
     UNSUPPORTED_INPUT_FIELD_DEPRECATION(DiagnosticMessage.WARNING_201, DiagnosticCode.GRAPHQL_201,
                                         DiagnosticSeverity.WARNING),
     UNABLE_TO_VALIDATE_PREFETCH_METHOD(DiagnosticMessage.WARNING_202, DiagnosticCode.GRAPHQL_202,
-                                       DiagnosticSeverity.WARNING);
+                                       DiagnosticSeverity.WARNING),
+    INVALID_EMPTY_RECORD_OBJECT_TYPE(DiagnosticMessage.ERROR_146, DiagnosticCode.GRAPHQL_146, DiagnosticSeverity.ERROR),
+    INVALID_EMPTY_RECORD_INPUT_TYPE(DiagnosticMessage.ERROR_147, DiagnosticCode.GRAPHQL_147, DiagnosticSeverity.ERROR),;
 
     private final String diagnostic;
     private final String diagnosticCode;
