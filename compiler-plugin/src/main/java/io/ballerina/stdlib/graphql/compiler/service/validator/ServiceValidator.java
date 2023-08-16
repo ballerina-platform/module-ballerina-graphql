@@ -180,33 +180,33 @@ public class ServiceValidator {
             }
             IdentifierToken fieldNameToken = (IdentifierToken) fieldNameNode;
             String fieldName = fieldNameToken.text().trim();
-            if (fieldName.equals(KEY)) {
-                validateKeyFieldValue(specificFieldNode);
+            if (KEY.equals(fieldName)) {
+                validateKeyField(specificFieldNode);
             }
         }
     }
 
-    private void validateKeyFieldValue(SpecificFieldNode specificFieldNode) {
+    private void validateKeyField(SpecificFieldNode specificFieldNode) {
         if (specificFieldNode.valueExpr().isEmpty()) {
             addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
                           specificFieldNode.location(), KEY);
             return;
         }
         ExpressionNode keyFieldExpression = specificFieldNode.valueExpr().get();
-        if (keyFieldExpression.kind() == SyntaxKind.STRING_LITERAL) {
-            return;
-        }
         if (keyFieldExpression.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
             for (Node expression : ((ListConstructorExpressionNode) keyFieldExpression).expressions()) {
-                if (expression.kind() != SyntaxKind.STRING_LITERAL) {
-                    addDiagnostic(CompilationDiagnostic.PROVIDE_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
-                                  expression.location(), KEY);
-                }
+                validateKeyFieldValues(expression);
             }
             return;
         }
-        addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
-                      keyFieldExpression.location(), KEY);
+        validateKeyFieldValues(keyFieldExpression);
+    }
+
+    public void validateKeyFieldValues(Node expression) {
+        if (expression.kind() != SyntaxKind.STRING_LITERAL) {
+            addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
+                          expression.location(), KEY);
+        }
     }
 
     private void validateServiceObject() {

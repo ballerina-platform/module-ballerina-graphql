@@ -1274,8 +1274,8 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.PROVIDE_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
-                                         "key");
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD, "key");
         assertWarningMessage(diagnostic, message, 23, 11);
     }
 

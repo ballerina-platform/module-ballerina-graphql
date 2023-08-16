@@ -93,10 +93,8 @@ public enum CompilationDiagnostic {
                                        DiagnosticSeverity.WARNING),
     PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION(DiagnosticMessage.WARNING_203, DiagnosticCode.GRAPHQL_203,
                                                  DiagnosticSeverity.WARNING),
-    PROVIDE_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD(DiagnosticMessage.WARNING_204, DiagnosticCode.GRAPHQL_204,
-                                                      DiagnosticSeverity.WARNING),
-    PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD(DiagnosticMessage.WARNING_205,
-                                                                          DiagnosticCode.GRAPHQL_205,
+    PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD(DiagnosticMessage.WARNING_204,
+                                                                          DiagnosticCode.GRAPHQL_204,
                                                                           DiagnosticSeverity.WARNING);
 
     private final String diagnostic;

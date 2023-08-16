@@ -102,10 +102,7 @@ public enum DiagnosticMessage {
     WARNING_203("unable to validate the @subgraph:Entity annotation. This could lead to an invalid generated subgraph"
                         + " schema. Pass key-value pairs in the @subgraph:Entity annotation to resolve this warning."),
     WARNING_204("unable to validate the @subgraph:Entity annotation. This could lead to an invalid generated subgraph"
-                        + " schema. Provide an array of string literal value for the ''{0}'' field in the"
-                        + " @subgraph:Entity annotation to resolve this warning."),
-    WARNING_205("unable to validate the @subgraph:Entity annotation. This could lead to an invalid generated subgraph"
-                        + " schema. Provide a string literal or an array of string literal value for the ''{0}'' field"
+                        + " schema. Provide a string literal or an array of string literal values for the ''{0}'' field"
                         + " in the @subgraph:Entity annotation to resolve this warning.");
 
     private final String message;

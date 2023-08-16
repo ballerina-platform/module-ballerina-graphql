@@ -966,7 +966,7 @@ In Ballerina, `distinct` `service` objects can be used to define GraphQL interfa
 
 Non-distinct `service` objects and `service` classes can not be used to define or implement GraphQL interfaces.
 
->**Note**: Recognition of `service` `object`s and `service` `class`xes as GraphQL interfaces and implementations relies on their definition within the same module as the GraphQL service.
+>**Note**: Recognition of `service` `object`s and `service` `class`es as GraphQL interfaces and implementations relies on their definition within the same module as the GraphQL service.
 
 ###### Example: Interfaces
 ```ballerina
