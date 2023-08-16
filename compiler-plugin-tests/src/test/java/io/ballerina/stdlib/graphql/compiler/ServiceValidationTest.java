@@ -41,7 +41,7 @@ import java.util.Iterator;
 public class ServiceValidationTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources",
-            "validator_tests").toAbsolutePath();
+                                                             "validator_tests").toAbsolutePath();
     private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime").toAbsolutePath();
     private static final String TEST_MODULE_PREFIX = "graphql_test/test_package:0.1.0:";
 
@@ -362,12 +362,12 @@ public class ServiceValidationTest {
         String subModulePrefix = "graphql_test/test_package.types:0.1.0:";
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, subModulePrefix + "Headers",
-                "Query.greet");
+                                  "Query.greet");
         assertErrorMessage(diagnostic, message, 68, 47);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, subModulePrefix + "Service",
-                "Query.greet");
+                                  "Query.greet");
         assertErrorMessage(diagnostic, message, 74, 47);
     }
 
@@ -485,7 +485,7 @@ public class ServiceValidationTest {
         // Same erroneous class is used in two different GraphQL services. Hence, the duplication of errors.
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_ACCESSOR, "post",
-                "generalGreeting");
+                                         "generalGreeting");
         assertErrorMessage(diagnostic, message, 44, 23);
 
         diagnostic = diagnosticIterator.next();
@@ -532,22 +532,22 @@ public class ServiceValidationTest {
         // Same erroneous class is used in two different GraphQL services. Hence, the duplication of errors.
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "json",
-                "Query.greet.generalGreeting");
+                                         "Query.greet.generalGreeting");
         assertErrorMessage(diagnostic, message, 44, 48);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "json",
-                "Query.greet.generalGreeting");
+                                  "Query.greet.generalGreeting");
         assertErrorMessage(diagnostic, message, 44, 48);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "map<string>",
-                "Query.greet.status");
+                                  "Query.greet.status");
         assertErrorMessage(diagnostic, message, 50, 46);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, "map<string>",
-                "Query.greet.status");
+                                  "Query.greet.status");
         assertErrorMessage(diagnostic, message, 50, 46);
     }
 
@@ -588,7 +588,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FIELD_NAME, "Query.lift.getStatus.__elevationgain",
-                "__elevationgain");
+                                  "__elevationgain");
         assertErrorMessage(diagnostic, message, 50, 5);
 
         diagnostic = diagnosticIterator.next();
@@ -676,7 +676,7 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, "Query.profile",
-                "Person");
+                                         "Person");
         assertErrorMessage(diagnostic, message, 39, 42);
 
         diagnostic = diagnosticIterator.next();
@@ -689,7 +689,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, "Query.locationArray",
-                "Location");
+                                  "Location");
         assertErrorMessage(diagnostic, message, 77, 50);
 
         diagnostic = diagnosticIterator.next();
@@ -725,12 +725,12 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE,
-                TEST_MODULE_PREFIX + "Context", "Query.profile");
+                                         TEST_MODULE_PREFIX + "Context", "Query.profile");
         assertErrorMessage(diagnostic, message, 21, 43);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, TEST_MODULE_PREFIX + "Context",
-                "Mutation.updateName");
+                                  "Mutation.updateName");
         assertErrorMessage(diagnostic, message, 25, 40);
     }
 
@@ -753,7 +753,7 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, "Query.profile",
-                "Person");
+                                         "Person");
         assertErrorMessage(diagnostic, message, 35, 44);
 
         diagnostic = diagnosticIterator.next();
@@ -769,7 +769,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, "Query.locationArray",
-                "Location");
+                                  "Location");
         assertErrorMessage(diagnostic, message, 88, 52);
     }
 
@@ -810,12 +810,12 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Query.getImage.byteStream");
+                                         "Query.getImage.byteStream");
         assertErrorMessage(diagnostic, message, 36, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Query.getImageIfExist.byteStream");
+                                  "Query.getImageIfExist.byteStream");
         assertErrorMessage(diagnostic, message, 43, 5);
 
         diagnostic = diagnosticIterator.next();
@@ -836,17 +836,17 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Mutation.uploadAndGet.byteStream");
+                                  "Mutation.uploadAndGet.byteStream");
         assertErrorMessage(diagnostic, message, 82, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Mutation.uploadAndGet.byteStream");
+                                  "Mutation.uploadAndGet.byteStream");
         assertErrorMessage(diagnostic, message, 93, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Mutation.uploadAndGetMultiple.byteStream");
+                                  "Mutation.uploadAndGetMultiple.byteStream");
         assertErrorMessage(diagnostic, message, 104, 5);
 
         diagnostic = diagnosticIterator.next();
@@ -855,22 +855,22 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, TEST_MODULE_PREFIX + "File",
-                "Query.uploadFile");
+                                  "Query.uploadFile");
         assertErrorMessage(diagnostic, message, 122, 52);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, TEST_MODULE_PREFIX + "File",
-                "Mutation.upload");
+                                  "Mutation.upload");
         assertErrorMessage(diagnostic, message, 133, 33);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Query.uploadFile.file.byteStream");
+                                  "Query.uploadFile.file.byteStream");
         assertErrorMessage(diagnostic, message, 140, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "stream",
-                "Mutation.upload.file.byteStream");
+                                  "Mutation.upload.file.byteStream");
         assertErrorMessage(diagnostic, message, 154, 5);
     }
 
@@ -941,7 +941,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE, "byte",
-                "Subscription.profiles.bytes");
+                                  "Subscription.profiles.bytes");
         assertErrorMessage(diagnostic, message, 31, 5);
 
         diagnostic = diagnosticIterator.next();
@@ -958,12 +958,12 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.RESOURCE_METHOD_INSIDE_INTERCEPTOR,
-                "isolated resource function get name (int id) returns string");
+                                         "isolated resource function get name (int id) returns string");
         assertErrorMessage(diagnostic, message, 27, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_REMOTE_METHOD_INSIDE_INTERCEPTOR,
-                "isolated remote function updateName(string name) returns string");
+                                  "isolated remote function updateName(string name) returns string");
         assertErrorMessage(diagnostic, message, 34, 5);
     }
 
@@ -976,44 +976,44 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                "record {|int number; string street; string city;|}", "Query.profile.address");
+                                         "record {|int number; string street; string city;|}", "Query.profile.address");
         assertErrorMessage(diagnostic, message, 26, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                "record {|int number; string street; string city;|}", "Query.address");
+                                  "record {|int number; string street; string city;|}", "Query.address");
         assertErrorMessage(diagnostic, message, 38, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                "record {|string name; int age;|}", "Query.class.profile");
+                                  "record {|string name; int age;|}", "Query.class.profile");
         assertErrorMessage(diagnostic, message, 52, 23);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_INPUT_TYPE,
-                "record {|string name; int age;|}", "Query.name");
+                                  "record {|string name; int age;|}", "Query.name");
         assertErrorMessage(diagnostic, message, 58, 67);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_INPUT_TYPE,
-                "record {|string name; int age;|}", "Query.school.name");
+                                  "record {|string name; int age;|}", "Query.school.name");
         assertErrorMessage(diagnostic, message, 68, 67);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                "record {|int number; string street; string city;|}", "Mutation.updateName.address");
+                                  "record {|int number; string street; string city;|}", "Mutation.updateName.address");
         assertErrorMessage(diagnostic, message, 78, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                "record {|int number; string street; string city;|}",
-                "Subscription.profiles.address");
+                                  "record {|int number; string street; string city;|}",
+                                  "Subscription.profiles.address");
         assertErrorMessage(diagnostic, message, 96, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                "record {|int number; string street; string city;|}",
-                "Query.company.profile.address");
+                                  "record {|int number; string street; string city;|}",
+                                  "Query.company.profile.address");
         assertErrorMessage(diagnostic, message, 112, 5);
     }
 
@@ -1046,12 +1046,12 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, "Query.any",
-                "_Any");
+                                         "_Any");
         assertErrorMessage(diagnostic, message, 43, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE,
-                "Mutation.services", "_Service");
+                                  "Mutation.services", "_Service");
         assertErrorMessage(diagnostic, message, 36, 15);
 
         diagnostic = diagnosticIterator.next();
@@ -1060,12 +1060,12 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, "Query.linkImport",
-                "link__Import");
+                                  "link__Import");
         assertErrorMessage(diagnostic, message, 55, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE,
-                "Query.linkPurpose", "link__Purpose");
+                                  "Query.linkPurpose", "link__Purpose");
         assertErrorMessage(diagnostic, message, 27, 6);
 
         diagnostic = diagnosticIterator.next();
@@ -1146,7 +1146,7 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, "int id",
-                "preBooks", "books");
+                                         "preBooks", "books");
         assertErrorMessage(diagnostic, message, 26, 23);
     }
 
@@ -1159,7 +1159,7 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD, "int",
-                "preBooks");
+                                         "preBooks");
         assertErrorMessage(diagnostic, message, 30, 23);
     }
 
@@ -1183,7 +1183,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, "prefetchUpdateAuthor",
-                "updateAuthor");
+                                  "updateAuthor");
         assertErrorMessage(diagnostic, message, 37, 21);
     }
 
@@ -1196,7 +1196,7 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG,
-                "prefetchMethodName", "authors");
+                                         "prefetchMethodName", "authors");
         assertErrorMessage(diagnostic, message, 24, 5);
     }
 
@@ -1209,7 +1209,7 @@ public class ServiceValidationTest {
 
         Diagnostic diagnostic = diagnosticIterator.next();
         String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_VALIDATE_PREFETCH_METHOD, "prefetchMethodName",
-                "updateAuthor");
+                                         "updateAuthor");
         assertWarningMessage(diagnostic, message, 36, 5);
     }
 
@@ -1226,6 +1226,57 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         assertWarningMessage(diagnostic, message, 23, 9);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfSpreadFieldInEntityAnnotation() {
+        String packagePath = "72_invalid_usages_of_spread_field_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION);
+        assertWarningMessage(diagnostic, message, 25, 5);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfShortHandFieldNotationInEntityAnnotation() {
+        String packagePath = "73_invalid_usages_of_short_hand_field_notation_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD, "key");
+        assertWarningMessage(diagnostic, message, 23, 5);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfVariableInEntityAnnotation() {
+        String packagePath = "74_invalid_usages_of_variable_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD, "key");
+        assertWarningMessage(diagnostic, message, 23, 10);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidUsagesOfVariableInListConstructorInEntityAnnotation() {
+        String packagePath = "75_invalid_usages_of_variable_in_list_constructor_in_entity_annotation";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD, "key");
+        assertWarningMessage(diagnostic, message, 23, 11);
     }
 
     @Test(groups = "invalid")

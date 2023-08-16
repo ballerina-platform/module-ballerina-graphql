@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.EnumSymbol;
@@ -45,9 +46,9 @@ import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
-import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.ListConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.Node;
@@ -56,6 +57,7 @@ import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
@@ -73,9 +75,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPECIFIC_FIELD;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getStringValue;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasResourceConfigAnnotation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
@@ -114,6 +119,7 @@ public class ServiceValidator {
     private static final String FIELD_PATH_SEPARATOR = ".";
     private static final String PREFETCH_METHOD_PREFIX = "pre";
     private static final String PREFETCH_METHOD_NAME_CONFIG = "prefetchMethodName";
+    private static final String KEY = "key";
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
                             InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
@@ -131,6 +137,75 @@ public class ServiceValidator {
             validateServiceDeclaration();
         } else if (serviceNode.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
             validateServiceObject();
+        }
+        validateEntities();
+    }
+
+    private void validateEntities() {
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            AnnotationSymbol entityAnnotationSymbol = getEntityAnnotationSymbol(entry.getValue());
+            if (entityAnnotationSymbol == null) {
+                continue;
+            }
+            AnnotationNode annotationNode = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey());
+            if (annotationNode == null) {
+                continue;
+            }
+            validateEntityAnnotation(annotationNode);
+        }
+    }
+
+    private AnnotationNode getEntityAnnotationNode(AnnotationSymbol annotationSymbol, String entityName) {
+        Project currentProject = this.context.currentPackage().project();
+        EntityAnnotationFinder entityAnnotationFinder = new EntityAnnotationFinder(this.context.semanticModel(),
+                                                                                   currentProject,
+                                                                                   this.context.moduleId(),
+                                                                                   annotationSymbol, entityName);
+        return entityAnnotationFinder.find().orElse(null);
+    }
+
+    private void validateEntityAnnotation(AnnotationNode entityAnnotation) {
+        if (entityAnnotation.annotValue().isEmpty()) {
+            return;
+        }
+        for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
+            if (fieldNode.kind() != SPECIFIC_FIELD) {
+                addDiagnostic(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION, fieldNode.location());
+                continue;
+            }
+            SpecificFieldNode specificFieldNode = (SpecificFieldNode) fieldNode;
+            Node fieldNameNode = specificFieldNode.fieldName();
+            if (fieldNameNode.kind() != SyntaxKind.IDENTIFIER_TOKEN) {
+                continue;
+            }
+            IdentifierToken fieldNameToken = (IdentifierToken) fieldNameNode;
+            String fieldName = fieldNameToken.text().trim();
+            if (KEY.equals(fieldName)) {
+                validateKeyField(specificFieldNode);
+            }
+        }
+    }
+
+    private void validateKeyField(SpecificFieldNode specificFieldNode) {
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
+                          specificFieldNode.location(), KEY);
+            return;
+        }
+        ExpressionNode keyFieldExpression = specificFieldNode.valueExpr().get();
+        if (keyFieldExpression.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
+            for (Node expression : ((ListConstructorExpressionNode) keyFieldExpression).expressions()) {
+                validateKeyFieldValue(expression);
+            }
+            return;
+        }
+        validateKeyFieldValue(keyFieldExpression);
+    }
+
+    public void validateKeyFieldValue(Node expression) {
+        if (expression.kind() != SyntaxKind.STRING_LITERAL) {
+            addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
+                          expression.location(), KEY);
         }
     }
 
@@ -218,12 +293,12 @@ public class ServiceValidator {
                 prefetchMethodName = getPrefetchMethodName(annotation.get());
                 if (prefetchMethodName == null) {
                     addDiagnostic(CompilationDiagnostic.UNABLE_TO_VALIDATE_PREFETCH_METHOD, annotation.get().location(),
-                            PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
+                                  PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
                     return;
                 }
                 if (isSubscription(methodSymbol)) {
                     addDiagnostic(CompilationDiagnostic.INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG,
-                            annotation.get().location(), PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
+                                  annotation.get().location(), PREFETCH_METHOD_NAME_CONFIG, graphqlFieldName);
                     return;
                 }
             }
@@ -235,7 +310,7 @@ public class ServiceValidator {
         if (prefetchMethod == null) {
             if (hasPrefetchMethodConfig) {
                 addDiagnostic(CompilationDiagnostic.UNABLE_TO_FIND_PREFETCH_METHOD, methodLocation, prefetchMethodName,
-                        graphqlFieldName);
+                              graphqlFieldName);
             }
             return;
         }
@@ -256,7 +331,7 @@ public class ServiceValidator {
         // noinspection OptionalGetWithoutIsPresent
         MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
         for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
-            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+            if (field.kind() == SPECIFIC_FIELD) {
                 SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
                 Node fieldName = specificFieldNode.fieldName();
                 if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
@@ -271,26 +346,13 @@ public class ServiceValidator {
         return null;
     }
 
-    private String getStringValue(SpecificFieldNode specificFieldNode) {
-        if (specificFieldNode.valueExpr().isEmpty()) {
-            return null;
-        }
-        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
-        if (valueExpression.kind() == SyntaxKind.STRING_LITERAL) {
-            BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
-            String stringLiteral = stringLiteralNode.toSourceCode().trim();
-            return stringLiteral.substring(1, stringLiteral.length() - 1);
-        }
-        return null;
-    }
-
     private boolean hasPrefetchMethodNameConfig(AnnotationNode annotation) {
         if (annotation.annotValue().isEmpty()) {
             return false;
         }
         MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
         for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
-            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+            if (field.kind() == SPECIFIC_FIELD) {
                 SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
                 Node fieldName = specificFieldNode.fieldName();
                 if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
@@ -338,7 +400,7 @@ public class ServiceValidator {
         Location accessorLocation = getLocation(methodSymbol, location);
         if (isReservedFederatedResolverName(resourceMethodName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_RESOURCE_PATH, accessorLocation,
-                    resourceMethodName);
+                          resourceMethodName);
         }
         String accessor = getAccessor(methodSymbol);
         if (RESOURCE_FUNCTION_SUBSCRIBE.equals(accessor)) {
@@ -352,7 +414,7 @@ public class ServiceValidator {
             this.currentFieldPath.remove(TypeName.QUERY.getName());
         } else {
             addDiagnostic(CompilationDiagnostic.INVALID_ROOT_RESOURCE_ACCESSOR, accessorLocation, accessor,
-                    resourceMethodName);
+                          resourceMethodName);
         }
     }
 
@@ -367,7 +429,7 @@ public class ServiceValidator {
         if (!RESOURCE_FUNCTION_GET.equals(accessor)) {
             Location accessorLocation = getLocation(methodSymbol, location);
             addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_FUNCTION_ACCESSOR, accessorLocation, accessor,
-                    getFieldPath(methodSymbol));
+                          getFieldPath(methodSymbol));
         }
         validateGetResource(methodSymbol, getLocation(methodSymbol, location));
     }
@@ -387,7 +449,7 @@ public class ServiceValidator {
             PathSegmentList pathSegmentList = (PathSegmentList) resourcePath;
             if (pathSegmentList.list().size() > 1) {
                 addDiagnostic(CompilationDiagnostic.INVALID_HIERARCHICAL_RESOURCE_PATH, location,
-                        resourcePathSignature);
+                              resourcePathSignature);
             } else {
                 validateResourcePathSegment(location, pathSegmentList.list().get(0));
             }
@@ -421,14 +483,14 @@ public class ServiceValidator {
                 hasContextParam = true;
             } else if (!fieldMethodParamSignatures.contains(symbol.signature().trim())) {
                 addDiagnostic(CompilationDiagnostic.INVALID_PARAMETER_IN_PREFETCH_METHOD, prefetchMethodLocation,
-                        symbol.signature(), prefetchMethodName,
-                        isResourceMethod(resolverMethod) ? getFieldPath((ResourceMethodSymbol) resolverMethod) :
-                                resolverMethod.getName().orElse(resolverMethod.signature()));
+                              symbol.signature(), prefetchMethodName,
+                              isResourceMethod(resolverMethod) ? getFieldPath((ResourceMethodSymbol) resolverMethod) :
+                                      resolverMethod.getName().orElse(resolverMethod.signature()));
             }
         }
         if (!hasContextParam) {
             addDiagnostic(CompilationDiagnostic.MISSING_GRAPHQL_CONTEXT_PARAMETER, prefetchMethodLocation,
-                    prefetchMethod.getName().orElse(prefetchMethod.signature()));
+                          prefetchMethod.getName().orElse(prefetchMethod.signature()));
         }
     }
 
@@ -439,8 +501,8 @@ public class ServiceValidator {
                 return;
             }
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_IN_PREFETCH_METHOD,
-                    getLocation(returnType, prefetchMethodLocation), returnType.signature(),
-                    prefetchMethod.getName().orElse(""));
+                          getLocation(returnType, prefetchMethodLocation), returnType.signature(),
+                          prefetchMethod.getName().orElse(""));
         }
     }
 
@@ -455,7 +517,7 @@ public class ServiceValidator {
             List<TypeSymbol> effectiveTypes = getEffectiveTypes((UnionTypeSymbol) returnTypeSymbol);
             if (effectiveTypes.size() != 1) {
                 addDiagnostic(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location, returnTypeName,
-                        resourceMethodName);
+                              resourceMethodName);
                 return;
             } else {
                 returnTypeSymbol = effectiveTypes.get(0);
@@ -464,7 +526,7 @@ public class ServiceValidator {
 
         if (returnTypeSymbol.typeKind() != TypeDescKind.STREAM) {
             addDiagnostic(CompilationDiagnostic.INVALID_SUBSCRIBE_RESOURCE_RETURN_TYPE, location, returnTypeName,
-                    resourceMethodName);
+                          resourceMethodName);
         } else {
             String path = getFieldPath(methodSymbol);
             this.currentFieldPath.add(path);
@@ -567,15 +629,15 @@ public class ServiceValidator {
                 break;
             case RECORD:
                 addDiagnostic(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE, location, typeSymbol.signature(),
-                        getCurrentFieldPath());
+                              getCurrentFieldPath());
                 break;
             case OBJECT:
                 addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, typeSymbol.signature(),
-                        getCurrentFieldPath());
+                              getCurrentFieldPath());
                 break;
             default:
                 addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location,
-                        typeSymbol.getName().orElse(typeSymbol.typeKind().getName()), getCurrentFieldPath());
+                              typeSymbol.getName().orElse(typeSymbol.typeKind().getName()), getCurrentFieldPath());
         }
     }
 
@@ -597,7 +659,7 @@ public class ServiceValidator {
         Location enumLocation = getLocation(enumSymbol, location);
         if (isReservedFederatedTypeName(enumName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, enumLocation,
-                    getCurrentFieldPath(), enumName);
+                          getCurrentFieldPath(), enumName);
         }
     }
 
@@ -619,7 +681,7 @@ public class ServiceValidator {
             validateServiceClassDefinition(classSymbol, classSymbolLocation);
         } else {
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_CLASS, classSymbolLocation,
-                    classSymbol.getName().get(), getCurrentFieldPath());
+                          classSymbol.getName().get(), getCurrentFieldPath());
         }
     }
 
@@ -638,8 +700,8 @@ public class ServiceValidator {
         } else if (isPrimitiveTypeSymbol(typeReferenceTypeSymbol.typeDescriptor())) {
             // noinspection OptionalGetWithoutIsPresent
             addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS,
-                    getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
-                    typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
+                          getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
+                                      typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
         } else if (typeDefinitionSymbol.getModule().isPresent()
                 && Utils.isValidUuidModule(typeDefinitionSymbol.getModule().get())
                 && typeDefinitionSymbol.getName().isPresent()
@@ -654,14 +716,14 @@ public class ServiceValidator {
         if (typeDefinitionSymbol.getName().isEmpty()) {
             ObjectTypeSymbol objectTypeSymbol = (ObjectTypeSymbol) typeDefinitionSymbol.typeDescriptor();
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, objectTypeSymbol.signature(),
-                    getCurrentFieldPath());
+                          getCurrentFieldPath());
             return;
         }
 
         String objectTypeName = typeDefinitionSymbol.getName().get();
         if (isReservedFederatedTypeName(objectTypeName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
-                    getCurrentFieldPath(), objectTypeName);
+                          getCurrentFieldPath(), objectTypeName);
         }
         if (!this.interfaceEntityFinder.isPossibleInterface(objectTypeName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE, location, objectTypeName, getCurrentFieldPath());
@@ -692,7 +754,7 @@ public class ServiceValidator {
                 String interfaceName = typeDefinitionSymbol.getName().get();
                 String remoteMethodName = methodSymbol.getName().orElse(methodSymbol.signature());
                 addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, getLocation(methodSymbol, location),
-                        interfaceName, remoteMethodName);
+                              interfaceName, remoteMethodName);
             }
             validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
         }
@@ -711,7 +773,7 @@ public class ServiceValidator {
                     String implementationName = implementation.getName().get();
                     Location implementationLocation = getLocation(implementation, location);
                     addDiagnostic(CompilationDiagnostic.NON_DISTINCT_INTERFACE_IMPLEMENTATION, implementationLocation,
-                            implementationName);
+                                  implementationName);
                     continue;
                 }
                 validateReturnTypeClass((ClassSymbol) implementation, location);
@@ -728,17 +790,17 @@ public class ServiceValidator {
         }
         if (isReservedFederatedTypeName(recordTypeName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
-                    getCurrentFieldPath(), recordTypeName);
+                          getCurrentFieldPath(), recordTypeName);
             return;
         }
         if (this.existingInputObjectTypes.contains(descriptor)) {
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_INPUT_OBJECT, location, getCurrentFieldPath(),
-                    recordTypeName);
+                          recordTypeName);
             return;
         }
         if (recordTypeSymbol.fieldDescriptors().isEmpty()) {
             addDiagnostic(CompilationDiagnostic.INVALID_EMPTY_RECORD_OBJECT_TYPE, location, recordTypeName,
-                    getCurrentFieldPath());
+                          getCurrentFieldPath());
             return;
         }
         this.existingReturnTypes.add(descriptor);
@@ -756,7 +818,7 @@ public class ServiceValidator {
                 }
                 if (parameter.annotations().isEmpty()) {
                     validateInputParameterType(parameter.typeDescriptor(), inputLocation,
-                            isResourceMethod(methodSymbol));
+                                               isResourceMethod(methodSymbol));
                 }
             }
         }
@@ -819,11 +881,11 @@ public class ServiceValidator {
                 break;
             case RECORD:
                 addDiagnostic(CompilationDiagnostic.INVALID_ANONYMOUS_INPUT_TYPE, location, typeSymbol.signature(),
-                        getCurrentFieldPath());
+                              getCurrentFieldPath());
                 break;
             default:
                 addDiagnostic(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, location,
-                        rootInputParameterTypeSymbol.signature(), getCurrentFieldPath());
+                              rootInputParameterTypeSymbol.signature(), getCurrentFieldPath());
         }
         if (isRootInputParameterTypeSymbol(typeSymbol)) {
             resetRootInputParameterTypeSymbol();
@@ -871,7 +933,7 @@ public class ServiceValidator {
         } else if (isPrimitiveTypeSymbol(typeDescriptor)) {
             // noinspection OptionalGetWithoutIsPresent
             addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS, getLocation(typeSymbol, location),
-                    typeSymbol.getName().get(), typeDescriptor.typeKind().getName());
+                          typeSymbol.getName().get(), typeDescriptor.typeKind().getName());
         } else {
             validateInputParameterType(typeDescriptor, location, isResourceMethod);
         }
@@ -884,7 +946,7 @@ public class ServiceValidator {
         for (TypeSymbol memberType : unionTypeSymbol.userSpecifiedMemberTypes()) {
             if (memberType.typeKind() == TypeDescKind.ERROR) {
                 addDiagnostic(CompilationDiagnostic.INVALID_INPUT_PARAMETER_TYPE, location,
-                        TypeDescKind.ERROR.getName(), this.getCurrentFieldPath());
+                              TypeDescKind.ERROR.getName(), this.getCurrentFieldPath());
             } else if (memberType.typeKind() != TypeDescKind.NIL) {
                 foundDataType = true;
                 dataTypeCount++;
@@ -915,7 +977,7 @@ public class ServiceValidator {
                                             boolean isResourceMethod) {
         if (this.existingReturnTypes.contains(recordTypeSymbol)) {
             addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location, getCurrentFieldPath(),
-                    recordTypeName);
+                          recordTypeName);
         } else {
             if (recordTypeSymbol.fieldDescriptors().isEmpty()) {
                 addDiagnostic(CompilationDiagnostic.INVALID_EMPTY_RECORD_INPUT_TYPE, location, recordTypeName,
@@ -927,7 +989,7 @@ public class ServiceValidator {
             this.existingInputObjectTypes.add(recordTypeSymbol);
             if (isReservedFederatedTypeName(recordTypeName)) {
                 addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_INPUT_TYPE, location,
-                        recordTypeName);
+                              recordTypeName);
             }
             for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
                 boolean isDeprecated = recordFieldSymbol.deprecated();
@@ -949,7 +1011,7 @@ public class ServiceValidator {
         String className = classSymbol.getName().get();
         if (isReservedFederatedTypeName(className)) {
             addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
-                    getCurrentFieldPath(), className);
+                          getCurrentFieldPath(), className);
         }
         boolean resourceMethodFound = false;
         List<MethodSymbol> methodSymbols = new ArrayList<>(classSymbol.methods().values());
@@ -960,7 +1022,7 @@ public class ServiceValidator {
             } else if (isRemoteMethod(methodSymbol)) {
                 // noinspection OptionalGetWithoutIsPresent
                 addDiagnostic(CompilationDiagnostic.INVALID_FUNCTION, getLocation(methodSymbol, location), className,
-                        methodSymbol.getName().get());
+                              methodSymbol.getName().get());
             }
             validatePrefetchMethodMapping(methodSymbol, methodSymbols, location);
         }

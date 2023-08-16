@@ -46,10 +46,18 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
+import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
+import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.ListConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.projects.ModuleId;
 import io.ballerina.projects.Project;
 import io.ballerina.stdlib.graphql.commons.types.DefaultDirective;
 import io.ballerina.stdlib.graphql.commons.types.Description;
@@ -64,8 +72,10 @@ import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.Type;
 import io.ballerina.stdlib.graphql.commons.types.TypeKind;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.commons.utils.KeyDirectivesArgumentHolder;
 import io.ballerina.stdlib.graphql.commons.utils.Utils;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
+import io.ballerina.stdlib.graphql.compiler.service.validator.EntityAnnotationFinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,6 +88,8 @@ import static io.ballerina.stdlib.graphql.commons.utils.TypeUtils.removeEscapeCh
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getStringValue;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFunctionDefinition;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
@@ -101,6 +113,8 @@ public class SchemaGenerator {
     private static final String ID_ANNOT_NAME = "ID";
     private static final String REASON_ARG_NAME = "reason";
     private static final String DEFAULT_VALUE = "\"\"";
+    private static final String RESOLVE_REFERENCE = "resolveReference";
+    private static final String KEY = "key";
 
     private final Node serviceNode;
     private final InterfaceEntityFinder interfaceEntityFinder;
@@ -108,22 +122,98 @@ public class SchemaGenerator {
     private final SemanticModel semanticModel;
     private final Project project;
     private final List<Type> visitedInterfaces;
+    private final ModuleId moduleId;
 
     public SchemaGenerator(Node serviceNode, InterfaceEntityFinder interfaceEntityFinder, SemanticModel semanticModel,
-                           Project project, String description, boolean isSubgraph) {
+                           Project project, ModuleId moduleId, String description, boolean isSubgraph) {
         this.serviceNode = serviceNode;
         this.interfaceEntityFinder = interfaceEntityFinder;
         this.schema = new Schema(description, isSubgraph);
         this.semanticModel = semanticModel;
         this.project = project;
         this.visitedInterfaces = new ArrayList<>();
+        this.moduleId = moduleId;
     }
 
     public Schema generate() {
         findRootTypes(this.serviceNode);
         findIntrospectionTypes();
+        addEntityKeyDirectives();
         addEntityTypes();
         return this.schema;
+    }
+
+    private void addEntityKeyDirectives() {
+        if (!this.schema.isSubgraph()) {
+            return;
+        }
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            AnnotationSymbol entityAnnotationSymbol = getEntityAnnotationSymbol(entry.getValue());
+            if (entityAnnotationSymbol == null) {
+                continue;
+            }
+            AnnotationNode entityAnnotation = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey());
+            if (entityAnnotation == null) {
+                continue;
+            }
+            addKeyDirectiveArguments(entityAnnotation, entry.getKey());
+        }
+    }
+
+    private AnnotationNode getEntityAnnotationNode(AnnotationSymbol annotationSymbol, String entityName) {
+        EntityAnnotationFinder entityAnnotationFinder = new EntityAnnotationFinder(this.semanticModel, this.project,
+                                                                                   this.moduleId, annotationSymbol,
+                                                                                   entityName);
+        return entityAnnotationFinder.find().orElse(null);
+    }
+
+    private void addKeyDirectiveArguments(AnnotationNode entityAnnotation, String entityName) {
+        if (entityAnnotation.annotValue().isEmpty()) {
+            return;
+        }
+        boolean isResolvable = false;
+        ArrayList<String> keys = new ArrayList<>();
+        for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
+            if (fieldNode.kind() != SyntaxKind.SPECIFIC_FIELD) {
+                continue;
+            }
+            SpecificFieldNode specificFieldNode = (SpecificFieldNode) fieldNode;
+            Node fieldNameNode = specificFieldNode.fieldName();
+            if (fieldNameNode.kind() != SyntaxKind.IDENTIFIER_TOKEN) {
+                continue;
+            }
+            IdentifierToken fieldNameToken = (IdentifierToken) fieldNameNode;
+            String fieldName = fieldNameToken.text().trim();
+            if (fieldName.equals(KEY)) {
+                keys = getEntityKeys(specificFieldNode);
+            } else if (fieldName.equals(RESOLVE_REFERENCE)) {
+                // noinspection OptionalGetWithoutIsPresent
+                ExpressionNode expressionNode = specificFieldNode.valueExpr().get();
+                isResolvable = expressionNode.kind() != SyntaxKind.NIL_LITERAL;
+            }
+        }
+        KeyDirectivesArgumentHolder arguments = new KeyDirectivesArgumentHolder(keys, isResolvable);
+        this.schema.addEntityKeyDirectiveArguments(entityName, arguments);
+    }
+
+    private ArrayList<String> getEntityKeys(SpecificFieldNode specificFieldNode) {
+        ArrayList<String> keys = new ArrayList<>();
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            return keys;
+        }
+        ExpressionNode keyFieldExpression = specificFieldNode.valueExpr().get();
+        if (keyFieldExpression.kind() == SyntaxKind.STRING_LITERAL) {
+            keys.add(getStringValue((BasicLiteralNode) keyFieldExpression));
+            return keys;
+        }
+        if (keyFieldExpression.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
+            for (Node expression : ((ListConstructorExpressionNode) keyFieldExpression).expressions()) {
+                if (expression.kind() == SyntaxKind.STRING_LITERAL) {
+                    keys.add(getStringValue((BasicLiteralNode) expression));
+                }
+            }
+        }
+        return keys;
     }
 
     private void addEntityTypes() {

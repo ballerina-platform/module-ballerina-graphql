@@ -65,9 +65,9 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         return serviceValidator;
     }
 
-    public InterfaceEntityFinder getInterfaceFinder(SemanticModel semanticModel) {
+    public InterfaceEntityFinder getInterfaceEntityFinder(SemanticModel semanticModel) {
         InterfaceEntityFinder interfaceEntityFinder = new InterfaceEntityFinder();
-        interfaceEntityFinder.populateInterfaces(semanticModel);
+        interfaceEntityFinder.populateInterfacesAndEntities(semanticModel);
         return interfaceEntityFinder;
     }
 
@@ -77,7 +77,7 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         SemanticModel semanticModel = context.semanticModel();
         Project project = context.currentPackage().project();
         SchemaGenerator schemaGenerator = new SchemaGenerator(node, interfaceEntityFinder, semanticModel, project,
-                                                              description, isSubgraph);
+                                                              context.moduleId(), description, isSubgraph);
         return schemaGenerator.generate();
     }
 

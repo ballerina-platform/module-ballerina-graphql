@@ -34,7 +34,6 @@ import io.ballerina.stdlib.graphql.commons.types.TypeName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,23 +94,19 @@ public class SdlSchemaStringGenerator {
     private static final String DOUBLE_QUOTE = "\"";
 
     private final boolean isSubgraph;
-    private final Map<String, KeyDirectivesArgumentHolder> entityKeyDirectives;
+    private final Map<String, KeyDirectivesArgumentHolder> entityKeyDirectiveArgumentHolders;
     private final Schema schema;
 
     public static String generate(Schema schema) {
-        return generate(schema, new HashMap<>());
-    }
-
-    public static String generate(Schema schema, Map<String, KeyDirectivesArgumentHolder> entityKeyDirectives) {
         schema.addSubgraphSchemaAdditions();
-        SdlSchemaStringGenerator sdlGenerator = new SdlSchemaStringGenerator(schema, entityKeyDirectives);
+        SdlSchemaStringGenerator sdlGenerator = new SdlSchemaStringGenerator(schema);
         return sdlGenerator.getSDLSchemaString();
     }
 
-    private SdlSchemaStringGenerator(Schema schema, Map<String, KeyDirectivesArgumentHolder> entityKeyDirectives) {
+    private SdlSchemaStringGenerator(Schema schema) {
         this.schema = schema;
         this.isSubgraph = schema.isSubgraph();
-        this.entityKeyDirectives = entityKeyDirectives;
+        this.entityKeyDirectiveArgumentHolders = schema.getEntityKeyDirectiveArgumentHolders();
     }
 
 
@@ -211,7 +206,7 @@ public class SdlSchemaStringGenerator {
 
     private String createObjectType(Type type) {
         String typeName = type.getName();
-        if (this.isSubgraph && this.entityKeyDirectives.containsKey(typeName)) {
+        if (this.isSubgraph && this.entityKeyDirectiveArgumentHolders.containsKey(typeName)) {
             return getFormattedString(ENTITY_TYPE_FORMAT, createTypeDescription(type.getDescription()), typeName,
                                       createInterfaceImplements(type), createEntityKeyDirectives(typeName),
                                       createFields(type));
@@ -221,7 +216,7 @@ public class SdlSchemaStringGenerator {
     }
 
     private String createEntityKeyDirectives(String entityName) {
-        KeyDirectivesArgumentHolder arguments = this.entityKeyDirectives.get(entityName);
+        KeyDirectivesArgumentHolder arguments = this.entityKeyDirectiveArgumentHolders.get(entityName);
         // If there are more than one field name in the list, then key directive is repeated for each fieldName
         List<String> keyDirectiveFields = arguments.getFieldNames();
         List<String> keyDirectives = keyDirectiveFields.stream()

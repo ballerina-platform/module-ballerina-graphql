@@ -85,14 +85,19 @@ public enum CompilationDiagnostic {
     UNABLE_TO_FIND_PREFETCH_METHOD(DiagnosticMessage.ERROR_144, DiagnosticCode.GRAPHQL_144, DiagnosticSeverity.ERROR),
     INVALID_USAGE_OF_PREFETCH_METHOD_NAME_CONFIG(DiagnosticMessage.ERROR_145, DiagnosticCode.GRAPHQL_145,
                                                  DiagnosticSeverity.ERROR),
+    INVALID_EMPTY_RECORD_OBJECT_TYPE(DiagnosticMessage.ERROR_146, DiagnosticCode.GRAPHQL_146, DiagnosticSeverity.ERROR),
+    INVALID_EMPTY_RECORD_INPUT_TYPE(DiagnosticMessage.ERROR_147, DiagnosticCode.GRAPHQL_147, DiagnosticSeverity.ERROR),
 
     // Warnings
     UNSUPPORTED_INPUT_FIELD_DEPRECATION(DiagnosticMessage.WARNING_201, DiagnosticCode.GRAPHQL_201,
                                         DiagnosticSeverity.WARNING),
     UNABLE_TO_VALIDATE_PREFETCH_METHOD(DiagnosticMessage.WARNING_202, DiagnosticCode.GRAPHQL_202,
                                        DiagnosticSeverity.WARNING),
-    INVALID_EMPTY_RECORD_OBJECT_TYPE(DiagnosticMessage.ERROR_146, DiagnosticCode.GRAPHQL_146, DiagnosticSeverity.ERROR),
-    INVALID_EMPTY_RECORD_INPUT_TYPE(DiagnosticMessage.ERROR_147, DiagnosticCode.GRAPHQL_147, DiagnosticSeverity.ERROR),;
+    PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION(DiagnosticMessage.WARNING_203, DiagnosticCode.GRAPHQL_203,
+                                                 DiagnosticSeverity.WARNING),
+    PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD(DiagnosticMessage.WARNING_204,
+                                                                          DiagnosticCode.GRAPHQL_204,
+                                                                          DiagnosticSeverity.WARNING);
 
     private final String diagnostic;
     private final String diagnosticCode;

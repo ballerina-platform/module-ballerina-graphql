@@ -54,7 +54,7 @@ public class InterfaceEntityFinder {
         this.entities = new HashMap<>();
     }
 
-    public void populateInterfaces(SemanticModel semanticModel) {
+    public void populateInterfacesAndEntities(SemanticModel semanticModel) {
         for (Symbol symbol : semanticModel.moduleSymbols()) {
             if (symbol.getName().isEmpty()) {
                 continue;

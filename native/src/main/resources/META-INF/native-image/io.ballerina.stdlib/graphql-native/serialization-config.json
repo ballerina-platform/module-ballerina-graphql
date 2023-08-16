@@ -47,6 +47,9 @@
     },
     {
       "name": "java.util.LinkedHashMap"
+    },
+    {
+      "name": "io.ballerina.stdlib.graphql.commons.utils.KeyDirectivesArgumentHolder"
     }
   ],
   "lambdaCapturingTypes": []

@@ -19,50 +19,57 @@
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleId;
 import io.ballerina.projects.Project;
-import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 
 import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Find ResourceConfig AnnotationNode node from the syntax tree.
+ * Find EntityAnnotationNode node from the syntax tree.
  */
-public class ResourceConfigAnnotationFinder {
-    private final MethodSymbol methodSymbol;
+public class EntityAnnotationFinder {
+
+    private final AnnotationSymbol annotationSymbol;
     private final SemanticModel semanticModel;
     private final Project project;
     private final ModuleId moduleId;
+    private final String entityName;
 
-    public ResourceConfigAnnotationFinder(SyntaxNodeAnalysisContext context, MethodSymbol methodSymbol) {
-        this.semanticModel = context.semanticModel();
-        this.methodSymbol = methodSymbol;
-        this.project = context.currentPackage().project();
-        this.moduleId = context.moduleId();
+    public EntityAnnotationFinder(SemanticModel semanticModel, Project currentProject, ModuleId currentModuleId,
+                                  AnnotationSymbol annotationSymbol, String entityName) {
+        this.semanticModel = semanticModel;
+        this.annotationSymbol = annotationSymbol;
+        this.project = currentProject;
+        this.moduleId = currentModuleId;
+        this.entityName = entityName;
     }
 
     public Optional<AnnotationNode> find() {
+        if (this.annotationSymbol.getName().isEmpty()) {
+            return Optional.empty();
+        }
         return getAnnotationNodeFromModule();
     }
 
     private Optional<AnnotationNode> getAnnotationNodeFromModule() {
         Module currentModule = this.project.currentPackage().module(this.moduleId);
         Collection<DocumentId> documentIds = currentModule.documentIds();
-        FunctionDefinitionNodeVisitor functionDefinitionNodeVisitor = new FunctionDefinitionNodeVisitor(
-                this.semanticModel, this.methodSymbol);
+        EntityAnnotationNodeVisitor directiveVisitor = new EntityAnnotationNodeVisitor(this.semanticModel,
+                                                                                       this.annotationSymbol,
+                                                                                       this.entityName);
         for (DocumentId documentId : documentIds) {
             Node rootNode = currentModule.document(documentId).syntaxTree().rootNode();
-            rootNode.accept(functionDefinitionNodeVisitor);
-            if (functionDefinitionNodeVisitor.getAnnotationNode().isPresent()) {
+            rootNode.accept(directiveVisitor);
+            if (directiveVisitor.getNode().isPresent()) {
                 break;
             }
         }
-        return functionDefinitionNodeVisitor.getAnnotationNode();
+        return directiveVisitor.getNode();
     }
 }

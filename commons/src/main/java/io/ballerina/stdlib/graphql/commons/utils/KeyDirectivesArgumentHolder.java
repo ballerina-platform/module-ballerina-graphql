@@ -18,15 +18,17 @@
 
 package io.ballerina.stdlib.graphql.commons.utils;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Hold the necessary arguments of GraphQL federation @key directive.
  */
-public class KeyDirectivesArgumentHolder {
+public class KeyDirectivesArgumentHolder implements Serializable {
     // If the fieldName has more than one element then key directive needs to be repeated for each element
     private final List<String> fieldNames;
     private final boolean resolvable;
+    private static final long serialVersionUID = 1L;
 
     public KeyDirectivesArgumentHolder(List<String> fieldNames, boolean resolvable) {
         this.fieldNames = fieldNames;
