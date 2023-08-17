@@ -1279,11 +1279,39 @@ public class ServiceValidationTest {
         assertWarningMessage(diagnostic, message, 23, 11);
     }
 
+    @Test(groups = "invalid")
+    public void testInvalidEmptyRecordTypes() {
+        String packagePath = "76_invalid_empty_record_types";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_EMPTY_RECORD_OBJECT_TYPE, "Profile",
+                "Query.profile");
+        assertErrorMessage(diagnostic, message, 27, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_EMPTY_RECORD_INPUT_TYPE, "Profile", "Query.name");
+        assertErrorMessage(diagnostic, message, 33, 40);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_EMPTY_RECORD_OBJECT_TYPE, "Profile",
+                "Query.name.profile");
+        assertErrorMessage(diagnostic, message, 39, 5);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(CompilationDiagnostic.INVALID_EMPTY_RECORD_INPUT_TYPE, "Profile",
+                "Query.name");
+        assertErrorMessage(diagnostic, message, 45, 44);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
         DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                "Package compilation encountered errors before running compiler plugin");
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 

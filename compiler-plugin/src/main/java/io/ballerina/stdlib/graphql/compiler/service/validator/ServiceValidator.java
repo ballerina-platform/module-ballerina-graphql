@@ -701,7 +701,7 @@ public class ServiceValidator {
             // noinspection OptionalGetWithoutIsPresent
             addDiagnostic(CompilationDiagnostic.UNSUPPORTED_TYPE_ALIAS,
                           getLocation(typeReferenceTypeSymbol, location), typeReferenceTypeSymbol.getName().get(),
-                          typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
+                                      typeReferenceTypeSymbol.typeDescriptor().typeKind().getName());
         } else if (typeDefinitionSymbol.getModule().isPresent()
                 && Utils.isValidUuidModule(typeDefinitionSymbol.getModule().get())
                 && typeDefinitionSymbol.getName().isPresent()
@@ -785,19 +785,26 @@ public class ServiceValidator {
 
     private void validateReturnType(RecordTypeSymbol recordTypeSymbol, TypeSymbol descriptor, Location location,
                                     String recordTypeName) {
+        if (this.existingReturnTypes.contains(descriptor)) {
+            return;
+        }
         if (isReservedFederatedTypeName(recordTypeName)) {
             addDiagnostic(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, location,
                           getCurrentFieldPath(), recordTypeName);
-        } else if (this.existingInputObjectTypes.contains(descriptor)) {
+            return;
+        }
+        if (this.existingInputObjectTypes.contains(descriptor)) {
             addDiagnostic(CompilationDiagnostic.INVALID_RETURN_TYPE_INPUT_OBJECT, location, getCurrentFieldPath(),
                           recordTypeName);
-        } else {
-            if (this.existingReturnTypes.contains(descriptor)) {
-                return;
-            }
-            this.existingReturnTypes.add(descriptor);
-            validateRecordFields(recordTypeSymbol, location);
+            return;
         }
+        if (recordTypeSymbol.fieldDescriptors().isEmpty()) {
+            addDiagnostic(CompilationDiagnostic.INVALID_EMPTY_RECORD_OBJECT_TYPE, location, recordTypeName,
+                          getCurrentFieldPath());
+            return;
+        }
+        this.existingReturnTypes.add(descriptor);
+        validateRecordFields(recordTypeSymbol, location);
     }
 
     private void validateInputParameters(MethodSymbol methodSymbol, Location location) {
@@ -972,6 +979,10 @@ public class ServiceValidator {
             addDiagnostic(CompilationDiagnostic.INVALID_RESOURCE_INPUT_OBJECT_PARAM, location, getCurrentFieldPath(),
                           recordTypeName);
         } else {
+            if (recordTypeSymbol.fieldDescriptors().isEmpty()) {
+                addDiagnostic(CompilationDiagnostic.INVALID_EMPTY_RECORD_INPUT_TYPE, location, recordTypeName,
+                        getCurrentFieldPath());
+            }
             if (this.existingInputObjectTypes.contains(recordTypeSymbol)) {
                 return;
             }
