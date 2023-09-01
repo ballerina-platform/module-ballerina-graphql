@@ -1,20 +1,38 @@
-query {
-    __schema {
-        queryType {
-            fields {
-                name
-                args {
-                    defaultValue
-                    type {
-                        kind
-                        name
-                        ofType {
-                            kind
-                            name
-                        }
-                    }
-                }
-            }
-        }
+{
+  query: __type(name: "Query") {
+    fields {
+      name
+      args {
+        name
+        defaultValue
+      }
     }
+  }
+  mutation: __type(name: "Mutation") {
+    fields {
+      name
+      args {
+        name
+        defaultValue
+      }
+    }
+  }
+  subscription: __type(name: "Subscription") {
+    fields {
+      name
+      args {
+        name
+        defaultValue
+      }
+    }
+  }
+  nestedFieldsWithDefaultParam: __type(name: "NestedField") {
+    fields {
+      name
+      args {
+        name
+        defaultValue
+      }
+    }
+  }
 }

@@ -886,8 +886,6 @@ public class ServiceValidationTest {
 
     @Test(groups = "invalid")
     public void testNonDistinctInterface() {
-        // TODO: check for non distinct object
-        // https://github.com/ballerina-platform/ballerina-standard-library/issues/3337
         String packagePath = "53_non_distinct_interface";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 2);
@@ -1301,9 +1299,121 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 39, 5);
 
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_EMPTY_RECORD_INPUT_TYPE, "Profile",
-                "Query.name");
+        message = getErrorMessage(CompilationDiagnostic.INVALID_EMPTY_RECORD_INPUT_TYPE, "Profile", "Query.name");
         assertErrorMessage(diagnostic, message, 45, 44);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidVariableUsageInDefaultParam() {
+        String packagePath = "77_invalid_variable_usage_in_default_param";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_LITERAL_OR_CONSTRUCTOR_EXPRESSION_FOR_DEFAULT_PARAM, "parameter", "a");
+        assertWarningMessage(diagnostic, message, 22, 40);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidFunctionCallExpressionAsDefaultParam() {
+        String packagePath = "78_invalid_function_call_expression_as_default_param";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_LITERAL_OR_CONSTRUCTOR_EXPRESSION_FOR_DEFAULT_PARAM, "parameter", "a");
+        assertWarningMessage(diagnostic, message, 24, 40);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidShortHandFieldUsageInDefaultParam() {
+        String packagePath = "79_invalid_short_hand_field_usage_in_default_param";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_PROVIDE_KEY_VALUE_PAIR,
+                                         "parameter", "obj");
+        assertWarningMessage(diagnostic, message, 26, 45);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidSpreadFieldUsageInDefaultParam() {
+        String packagePath = "80_invalid_spread_field_usage_in_default_param";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_PROVIDE_KEY_VALUE_PAIR,
+                                         "parameter", "obj");
+        assertWarningMessage(diagnostic, message, 26, 45);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidSpreadMemberUsageInDefaultParam() {
+        String packagePath = "81_invalid_spread_member_usage_in_default_param";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_AVOID_USING_SPREAD_OPERATION, "parameter", "arr");
+        assertWarningMessage(diagnostic, message, 22, 45);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidComplexExpressionUsageDefaultParam() {
+        String packagePath = "82_invalid_complex_expression_usage_default_param";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_AVOID_USING_SPREAD_OPERATION, "parameter",
+                "profile");
+        assertWarningMessage(diagnostic, message, 35, 61);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidDefaultExpressionInInputObjectField() {
+        String packagePath = "83_invalid_default_expression_in_input_object_field";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 1);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.PROVIDE_LITERAL_OR_CONSTRUCTOR_EXPRESSION_FOR_DEFAULT_PARAM, "input object field",
+                "val");
+        assertWarningMessage(diagnostic, message, 22, 15);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidExternalRecordsWithDefaultValuesAsInputObject() {
+        String packagePath = "84_invalid_external_records_with_default_values_as_input_object";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.warningCount(), 2);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.warnings().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message = getErrorMessage(
+                CompilationDiagnostic.UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_FIELD_AT_COMPILE_TIME, "val3",
+                "InputObject");
+        assertWarningMessage(diagnostic, message, 28, 6);
+
+        diagnostic = diagnosticIterator.next();
+        message = getErrorMessage(
+                CompilationDiagnostic.UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_OBJECT_AT_COMPILE_TIME,
+                "InputObject3");
+        assertWarningMessage(diagnostic, message, 36, 45);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

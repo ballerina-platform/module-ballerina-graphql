@@ -27,6 +27,7 @@ import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
+import io.ballerina.compiler.api.symbols.ParameterKind;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
@@ -46,6 +47,7 @@ import io.ballerina.compiler.api.symbols.resourcepath.PathSegmentList;
 import io.ballerina.compiler.api.symbols.resourcepath.ResourcePath;
 import io.ballerina.compiler.api.symbols.resourcepath.util.PathSegment;
 import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
 import io.ballerina.compiler.syntax.tree.ListConstructorExpressionNode;
@@ -54,13 +56,17 @@ import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.RecordFieldWithDefaultValueNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.compiler.FinderContext;
 import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
@@ -76,11 +82,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPECIFIC_FIELD;
+import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPREAD_MEMBER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getDefaultableParameterNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordFieldWithDefaultValueNode;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordTypeDefinitionNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getStringValue;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getTypeInclusions;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasResourceConfigAnnotation;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
@@ -104,6 +115,7 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  */
 public class ServiceValidator {
     private final Set<Symbol> visitedClassesAndObjectTypeDefinitions = new HashSet<>();
+    private final Set<String> validatedInputTypesHavingDefaultFields = new HashSet<>();
     private final List<TypeSymbol> existingInputObjectTypes = new ArrayList<>();
     private final List<TypeSymbol> existingReturnTypes = new ArrayList<>();
     private final InterfaceEntityFinder interfaceEntityFinder;
@@ -120,6 +132,8 @@ public class ServiceValidator {
     private static final String PREFETCH_METHOD_PREFIX = "pre";
     private static final String PREFETCH_METHOD_NAME_CONFIG = "prefetchMethodName";
     private static final String KEY = "key";
+    private static final String INPUT_OBJECT_FIELD = "input object field";
+    private static final String PARAMETER = "parameter";
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
                             InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
@@ -285,8 +299,9 @@ public class ServiceValidator {
         boolean hasPrefetchMethodConfig = false;
 
         if (hasResourceConfigAnnotation(methodSymbol)) {
+            FinderContext finderContext = new FinderContext(this.context);
             ResourceConfigAnnotationFinder resourceConfigAnnotationFinder = new ResourceConfigAnnotationFinder(
-                    this.context, methodSymbol);
+                    finderContext, methodSymbol);
             Optional<AnnotationNode> annotation = resourceConfigAnnotationFinder.find();
             hasPrefetchMethodConfig = annotation.isPresent() && hasPrefetchMethodNameConfig(annotation.get());
             if (hasPrefetchMethodConfig) {
@@ -820,7 +835,101 @@ public class ServiceValidator {
                     validateInputParameterType(parameter.typeDescriptor(), inputLocation,
                                                isResourceMethod(methodSymbol));
                 }
+                if (parameter.paramKind() == ParameterKind.DEFAULTABLE) {
+                    validateDefaultParameter(parameter, methodSymbol, inputLocation);
+                }
             }
+        }
+    }
+
+    private void validateDefaultParameter(ParameterSymbol parameter, MethodSymbol methodSymbol,
+                                          Location parameterLocation) {
+        // noinspection OptionalGetWithoutIsPresent
+        String parameterName = parameter.getName().get();
+        FinderContext finderContext = new FinderContext(this.context);
+        DefaultableParameterNode parameterNode = getDefaultableParameterNode(methodSymbol, parameter, finderContext);
+        if (parameterNode == null) {
+            addDiagnostic(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_AT_COMPILE_TIME, parameterLocation,
+                          getFieldOrParamString(false), parameterName);
+            return;
+        }
+        validateDefaultValueExpression(parameterNode.expression(), parameterName, false);
+    }
+
+    private String getFieldOrParamString(boolean isObjectField) {
+        return isObjectField ? INPUT_OBJECT_FIELD : PARAMETER;
+    }
+
+    private void validateDefaultValueExpression(Node valueExpression, String fieldOrParamName, boolean isObjectField) {
+        switch (valueExpression.kind()) {
+            case NIL_LITERAL:
+            case NUMERIC_LITERAL:
+            case STRING_LITERAL:
+            case BOOLEAN_LITERAL:
+                return;
+            case SIMPLE_NAME_REFERENCE: {
+                validateDefaultValueExpression((SimpleNameReferenceNode) valueExpression, fieldOrParamName,
+                                               isObjectField);
+                return;
+            }
+
+            case MAPPING_CONSTRUCTOR: {
+                validateDefaultValueExpression((MappingConstructorExpressionNode) valueExpression, fieldOrParamName,
+                                               isObjectField);
+                return;
+            }
+            case LIST_CONSTRUCTOR: {
+                validateDefaultValueExpression((ListConstructorExpressionNode) valueExpression, fieldOrParamName,
+                                               isObjectField);
+                return;
+            }
+            default:
+                addDiagnostic(CompilationDiagnostic.PROVIDE_LITERAL_OR_CONSTRUCTOR_EXPRESSION_FOR_DEFAULT_PARAM,
+                              valueExpression.location(), getFieldOrParamString(isObjectField), fieldOrParamName);
+        }
+    }
+
+    private void validateDefaultValueExpression(SimpleNameReferenceNode nameReferenceNode, String parameterOrFieldName,
+                                                boolean isObjectField) {
+        Optional<Symbol> symbol = this.context.semanticModel().symbol(nameReferenceNode);
+        if (symbol.isEmpty()) {
+            addDiagnostic(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_AT_COMPILE_TIME,
+                          nameReferenceNode.location(), getFieldOrParamString(isObjectField), parameterOrFieldName);
+            return;
+        }
+        if (symbol.get().kind() != SymbolKind.CONSTANT && symbol.get().kind() != SymbolKind.ENUM_MEMBER) {
+            addDiagnostic(CompilationDiagnostic.PROVIDE_LITERAL_OR_CONSTRUCTOR_EXPRESSION_FOR_DEFAULT_PARAM,
+                          nameReferenceNode.location(), getFieldOrParamString(isObjectField), parameterOrFieldName);
+        }
+    }
+
+    private void validateDefaultValueExpression(MappingConstructorExpressionNode mappingConstructor,
+                                                String parameterOrFieldName, boolean isObjectField) {
+        for (MappingFieldNode field : mappingConstructor.fields()) {
+            if (field.kind() != SyntaxKind.SPECIFIC_FIELD) {
+                addDiagnostic(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_PROVIDE_KEY_VALUE_PAIR,
+                              field.location(), getFieldOrParamString(isObjectField), parameterOrFieldName);
+                continue;
+            }
+            SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+            if (specificFieldNode.valueExpr().isEmpty()) {
+                addDiagnostic(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_PROVIDE_KEY_VALUE_PAIR,
+                              field.location(), getFieldOrParamString(isObjectField), parameterOrFieldName);
+                continue;
+            }
+            validateDefaultValueExpression(specificFieldNode.valueExpr().get(), parameterOrFieldName, isObjectField);
+        }
+    }
+
+    private void validateDefaultValueExpression(ListConstructorExpressionNode listConstructor,
+                                                String parameterOrFieldName, boolean isObjectField) {
+        for (Node member : listConstructor.expressions()) {
+            if (member.kind() == SPREAD_MEMBER) {
+                addDiagnostic(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_AVOID_USING_SPREAD_OPERATION,
+                              member.location(), getFieldOrParamString(isObjectField), parameterOrFieldName);
+                continue;
+            }
+            validateDefaultValueExpression(member, parameterOrFieldName, isObjectField);
         }
     }
 
@@ -999,7 +1108,85 @@ public class ServiceValidator {
                 }
                 validateInputType(recordFieldSymbol.typeDescriptor(), location, isResourceMethod);
             }
+            if (hasDefaultValues(recordTypeSymbol)) {
+                validateInputObjectDefaultValues(recordTypeSymbol, recordTypeName, location);
+            }
         }
+    }
+
+    private boolean hasDefaultValues(RecordTypeSymbol recordTypeSymbol) {
+        return recordTypeSymbol.fieldDescriptors().values().stream().anyMatch(RecordFieldSymbol::hasDefaultValue);
+    }
+
+    private void validateInputObjectDefaultValues(RecordTypeSymbol recordTypeSymbol, String inputObjectTypeName,
+                                                  Location location) {
+        if (this.validatedInputTypesHavingDefaultFields.contains(inputObjectTypeName)) {
+            return;
+        }
+        FinderContext finderContext = new FinderContext(this.context);
+        TypeDefinitionNode typeDefinitionNode = getRecordTypeDefinitionNode(recordTypeSymbol, inputObjectTypeName,
+                                                                            finderContext);
+        if (typeDefinitionNode == null) {
+            addDiagnostic(CompilationDiagnostic.UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_OBJECT_AT_COMPILE_TIME,
+                          getLocation(recordTypeSymbol, location), inputObjectTypeName);
+            return;
+        }
+        for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
+            if (recordFieldSymbol.hasDefaultValue()) {
+                validateInputObjectDefaultFields(typeDefinitionNode, recordTypeSymbol, recordFieldSymbol,
+                                                 getLocation(recordFieldSymbol, location), inputObjectTypeName);
+            }
+        }
+        this.validatedInputTypesHavingDefaultFields.add(inputObjectTypeName);
+    }
+
+    private void validateInputObjectDefaultFields(TypeDefinitionNode typeDefNode, RecordTypeSymbol recordTypeSymbol,
+                                                  RecordFieldSymbol recordFieldSymbol, Location location,
+                                                  String inputObjectName) {
+        if (recordFieldSymbol.getName().isEmpty()) {
+            return;
+        }
+        RecordFieldWithDefaultValueNode defaultField = getRecordFieldWithDefaultValueNode(
+                recordFieldSymbol.getName().get(), typeDefNode, this.context.semanticModel());
+        if (defaultField == null) {
+            ArrayList<TypeSymbol> typeInclusions = new ArrayList<>(getTypeInclusions(recordTypeSymbol));
+            while (!typeInclusions.isEmpty()) {
+                TypeSymbol includedTypeSymbol = typeInclusions.remove(0);
+                defaultField = getRecordFieldFromIncludedRecordType(recordFieldSymbol, includedTypeSymbol);
+                if (defaultField != null) {
+                    break;
+                }
+                typeInclusions.addAll(getTypeInclusions(includedTypeSymbol));
+            }
+        }
+        if (defaultField == null) {
+            addDiagnostic(CompilationDiagnostic.UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_FIELD_AT_COMPILE_TIME,
+                          getLocation(recordFieldSymbol, location), recordFieldSymbol.getName().get(), inputObjectName);
+            return;
+        }
+        validateDefaultValueExpression(defaultField.expression(), defaultField.fieldName().text(), true);
+    }
+
+    private RecordFieldWithDefaultValueNode getRecordFieldFromIncludedRecordType(RecordFieldSymbol recordFieldSymbol,
+                                                                                 TypeSymbol includedTypeSymbol) {
+        if (recordFieldSymbol.getName().isEmpty() || includedTypeSymbol.getName().isEmpty()) {
+            return null;
+        }
+        if (includedTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            TypeSymbol typeDescriptor = ((TypeReferenceTypeSymbol) includedTypeSymbol).typeDescriptor();
+            if (typeDescriptor.typeKind() == TypeDescKind.RECORD) {
+                FinderContext finderContext = new FinderContext(this.context);
+                TypeDefinitionNode recordTypeDefNode = getRecordTypeDefinitionNode((RecordTypeSymbol) typeDescriptor,
+                                                                                   includedTypeSymbol.getName().get(),
+                                                                                   finderContext);
+                if (recordTypeDefNode == null) {
+                    return null;
+                }
+                return getRecordFieldWithDefaultValueNode(recordFieldSymbol.getName().get(), recordTypeDefNode,
+                                                          this.context.semanticModel());
+            }
+        }
+        return null;
     }
 
     private void validateServiceClassDefinition(ClassSymbol classSymbol, Location location) {
