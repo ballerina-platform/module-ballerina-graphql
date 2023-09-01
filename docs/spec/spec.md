@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar \
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal \
 _Created_: 2022/01/06 \
-_Updated_: 2023/08/17 \
+_Updated_: 2023/09/01 \
 _Edition_: Swan Lake \
 _GraphQL Specification_: [October 2021](https://spec.graphql.org/October2021/)  
 
@@ -889,6 +889,8 @@ enum Direction {
     WEST
 }
 ```
+
+>**Note:** While it is possible to assign a `string` value to an `enum` member in the Ballerina language, the GraphQL specification does not support this behaviour. Therefore, it's not recommended to use `string` values for `enum` members when defining an `enum` type for use in a `graphql:Service`. Using `string` values for `enum` members may result in an invalid generated schema.
 
 ### 4.5 Input Types
 
