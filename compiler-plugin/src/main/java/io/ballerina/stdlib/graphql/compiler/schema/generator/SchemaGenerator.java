@@ -80,7 +80,6 @@ import io.ballerina.stdlib.graphql.commons.utils.KeyDirectivesArgumentHolder;
 import io.ballerina.stdlib.graphql.commons.utils.Utils;
 import io.ballerina.stdlib.graphql.compiler.FinderContext;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
-import io.ballerina.stdlib.graphql.compiler.service.validator.EntityAnnotationFinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,6 +94,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getDefaultableParameterNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordFieldWithDefaultValueNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordTypeDefinitionNode;
@@ -168,19 +168,13 @@ public class SchemaGenerator {
             if (entityAnnotationSymbol == null) {
                 continue;
             }
-            AnnotationNode entityAnnotation = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey());
+            AnnotationNode entityAnnotation = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey(),
+                                                                      this.context);
             if (entityAnnotation == null) {
                 continue;
             }
             addKeyDirectiveArguments(entityAnnotation, entry.getKey());
         }
-    }
-
-    private AnnotationNode getEntityAnnotationNode(AnnotationSymbol annotationSymbol, String entityName) {
-        EntityAnnotationFinder entityAnnotationFinder = new EntityAnnotationFinder(this.semanticModel, this.project,
-                                                                                   this.context.moduleId(),
-                                                                                   annotationSymbol, entityName);
-        return entityAnnotationFinder.find().orElse(null);
     }
 
     private void addKeyDirectiveArguments(AnnotationNode entityAnnotation, String entityName) {

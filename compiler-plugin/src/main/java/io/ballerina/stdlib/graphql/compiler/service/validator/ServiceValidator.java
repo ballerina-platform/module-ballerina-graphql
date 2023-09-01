@@ -62,7 +62,6 @@ import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
-import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
@@ -87,6 +86,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getDefaultableParameterNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordFieldWithDefaultValueNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordTypeDefinitionNode;
@@ -161,21 +161,14 @@ public class ServiceValidator {
             if (entityAnnotationSymbol == null) {
                 continue;
             }
-            AnnotationNode annotationNode = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey());
+            FinderContext finderContext = new FinderContext(this.context);
+            AnnotationNode annotationNode = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey(),
+                                                                    finderContext);
             if (annotationNode == null) {
                 continue;
             }
             validateEntityAnnotation(annotationNode);
         }
-    }
-
-    private AnnotationNode getEntityAnnotationNode(AnnotationSymbol annotationSymbol, String entityName) {
-        Project currentProject = this.context.currentPackage().project();
-        EntityAnnotationFinder entityAnnotationFinder = new EntityAnnotationFinder(this.context.semanticModel(),
-                                                                                   currentProject,
-                                                                                   this.context.moduleId(),
-                                                                                   annotationSymbol, entityName);
-        return entityAnnotationFinder.find().orElse(null);
     }
 
     private void validateEntityAnnotation(AnnotationNode entityAnnotation) {

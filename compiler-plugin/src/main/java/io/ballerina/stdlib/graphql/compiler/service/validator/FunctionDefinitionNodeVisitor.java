@@ -64,9 +64,6 @@ public class FunctionDefinitionNodeVisitor extends NodeVisitor {
     }
 
     public Optional<AnnotationNode> getAnnotationNode() {
-        if (this.annotationNode == null) {
-            return Optional.empty();
-        }
-        return Optional.of(this.annotationNode);
+        return Optional.ofNullable(this.annotationNode);
     }
 }

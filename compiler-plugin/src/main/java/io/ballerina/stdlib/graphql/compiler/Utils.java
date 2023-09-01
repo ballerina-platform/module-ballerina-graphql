@@ -38,6 +38,7 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
@@ -54,6 +55,7 @@ import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.DefaultableParameterNodeFinder;
+import io.ballerina.stdlib.graphql.compiler.service.validator.EntityAnnotationFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.RecordFieldWithDefaultValueVisitor;
 import io.ballerina.stdlib.graphql.compiler.service.validator.RecordTypeDefinitionNodeFinder;
 import io.ballerina.tools.diagnostics.Diagnostic;
@@ -402,6 +404,13 @@ public final class Utils {
                                                                                                 recordTypeSymbol,
                                                                                                 recordTypeName);
         return recordTypeDefFinder.find().orElse(null);
+    }
+
+    public static AnnotationNode getEntityAnnotationNode(AnnotationSymbol annotationSymbol, String entityName,
+                                                         FinderContext context) {
+        EntityAnnotationFinder entityAnnotationFinder = new EntityAnnotationFinder(context, annotationSymbol,
+                                                                                   entityName);
+        return entityAnnotationFinder.find().orElse(null);
     }
 
     public static RecordFieldWithDefaultValueNode getRecordFieldWithDefaultValueNode(String recordFieldName,
