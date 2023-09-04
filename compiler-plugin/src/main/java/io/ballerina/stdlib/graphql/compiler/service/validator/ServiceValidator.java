@@ -905,12 +905,13 @@ public class ServiceValidator {
                 continue;
             }
             SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
-            if (specificFieldNode.valueExpr().isEmpty()) {
+            if (specificFieldNode.valueExpr().isPresent()) {
+                validateDefaultValueExpression(specificFieldNode.valueExpr().get(), parameterOrFieldName,
+                                               isObjectField);
+            } else {
                 addDiagnostic(CompilationDiagnostic.UNABLE_TO_INFER_DEFAULT_VALUE_PROVIDE_KEY_VALUE_PAIR,
                               field.location(), getFieldOrParamString(isObjectField), parameterOrFieldName);
-                continue;
             }
-            validateDefaultValueExpression(specificFieldNode.valueExpr().get(), parameterOrFieldName, isObjectField);
         }
     }
 

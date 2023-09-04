@@ -54,13 +54,13 @@ public class MethodDefinitionNodeVisitor extends NodeVisitor {
         if (functionSymbol.isEmpty() || functionSymbol.get().hashCode() != this.methodSymbol.hashCode()) {
             return;
         }
-        for (ParameterNode parameterNode : functionDefinitionNode.functionSignature().parameters()) {
-            if (this.semanticModel.symbol(parameterNode).isEmpty()) {
+        for (ParameterNode paramNode : functionDefinitionNode.functionSignature().parameters()) {
+            if (this.semanticModel.symbol(paramNode).isEmpty()) {
                 continue;
             }
-            Symbol symbol = this.semanticModel.symbol(parameterNode).get();
+            Symbol symbol = this.semanticModel.symbol(paramNode).get();
             if (symbol.kind() == SymbolKind.PARAMETER && symbol.hashCode() == this.parameterSymbol.hashCode()) {
-                this.parameterNode = parameterNode;
+                this.parameterNode = paramNode;
             }
         }
     }
