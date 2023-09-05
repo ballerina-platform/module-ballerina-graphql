@@ -82,7 +82,7 @@ public class Listener {
             string subscriptionUrl = string `${self.websocketEndpoint}/${gqlServiceBasePath}`;
             HttpService graphiqlService = subscriptionType is __Type
                                         ? getGraphiqlService(serviceConfig, graphqlUrl, subscriptionUrl)
-                                        : getGraphiqlService(serviceConfig, gqlServiceBasePath);
+                                        : getGraphiqlService(serviceConfig, graphqlUrl);
             attachGraphiqlServiceToGraphqlService(s, graphiqlService);
             error? result = self.httpListener.attach(graphiqlService, self.graphiql.path);
             if result is error {
