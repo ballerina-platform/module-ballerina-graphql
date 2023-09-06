@@ -111,7 +111,7 @@ public enum DiagnosticMessage {
     WARNING_206(WARNING_205.getMessage() + ". Provide key-value pairs to resolve this warning"),
     WARNING_207(WARNING_205.getMessage() + ". Provide only literal, list, or a mapping "
                         + "constructor expression as the default value to resolve this warning"),
-    WARNING_208(WARNING_205.getMessage() + ". Avoid using spread operation to resolve this " + "warning"),
+    WARNING_208(WARNING_205.getMessage() + ". Avoid using spread operation to resolve this warning"),
     WARNING_209("unable to validate the default value of field ''{0}'' of input type ''{1}''. Try defining the "
                         + "included types of this type in the same module where the graphql:Service is defined to "
                         + "resolve this warning"),

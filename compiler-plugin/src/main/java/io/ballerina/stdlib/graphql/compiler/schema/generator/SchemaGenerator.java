@@ -931,6 +931,9 @@ public class SchemaGenerator {
 
     private RecordFieldWithDefaultValueNode getRecordFieldFromIncludedType(RecordFieldSymbol recordFieldSymbol,
                                                                            TypeSymbol includedTypeSymbol) {
+        if (recordFieldSymbol.getName().isEmpty()) {
+            return null;
+        }
         if (includedTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             TypeSymbol descriptor = ((TypeReferenceTypeSymbol) includedTypeSymbol).typeDescriptor();
             if (descriptor.typeKind() == TypeDescKind.RECORD) {
@@ -938,7 +941,7 @@ public class SchemaGenerator {
                 TypeDefinitionNode recordTypeDefNode = getRecordTypeDefinitionNode((RecordTypeSymbol) descriptor,
                                                                                    includedTypeSymbol.getName().get(),
                                                                                    this.context);
-                if (recordTypeDefNode != null && recordFieldSymbol.getName().isPresent()) {
+                if (recordTypeDefNode != null) {
                     return getRecordFieldWithDefaultValueNode(recordFieldSymbol.getName().get(), recordTypeDefNode,
                                                               this.semanticModel);
                 }

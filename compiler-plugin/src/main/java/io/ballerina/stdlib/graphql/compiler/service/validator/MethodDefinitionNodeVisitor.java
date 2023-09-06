@@ -51,7 +51,7 @@ public class MethodDefinitionNodeVisitor extends NodeVisitor {
             return;
         }
         Optional<Symbol> functionSymbol = this.semanticModel.symbol(functionDefinitionNode);
-        if (functionSymbol.isEmpty() || functionSymbol.get().hashCode() != this.methodSymbol.hashCode()) {
+        if (functionSymbol.isEmpty() || !functionSymbol.get().equals(this.methodSymbol)) {
             return;
         }
         for (ParameterNode paramNode : functionDefinitionNode.functionSignature().parameters()) {
@@ -59,7 +59,7 @@ public class MethodDefinitionNodeVisitor extends NodeVisitor {
                 continue;
             }
             Symbol symbol = this.semanticModel.symbol(paramNode).get();
-            if (symbol.kind() == SymbolKind.PARAMETER && symbol.hashCode() == this.parameterSymbol.hashCode()) {
+            if (symbol.kind() == SymbolKind.PARAMETER && symbol.equals(this.parameterSymbol)) {
                 this.parameterNode = paramNode;
             }
         }

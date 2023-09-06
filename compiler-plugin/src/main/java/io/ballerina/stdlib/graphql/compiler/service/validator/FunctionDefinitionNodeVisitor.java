@@ -48,7 +48,7 @@ public class FunctionDefinitionNodeVisitor extends NodeVisitor {
             return;
         }
         Optional<Symbol> functionSymbol = this.semanticModel.symbol(functionDefinitionNode);
-        if (functionSymbol.isEmpty() || functionSymbol.get().hashCode() != this.methodSymbol.hashCode()) {
+        if (functionSymbol.isEmpty() || !functionSymbol.get().equals(this.methodSymbol)) {
             return;
         }
         if (functionDefinitionNode.metadata().isPresent()) {
