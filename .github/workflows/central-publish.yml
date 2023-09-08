@@ -8,76 +8,13 @@ on:
                 description: Select Environment
                 required: true
                 options:
-                    - CENTRAL
                     - DEV CENTRAL
                     - STAGE CENTRAL
 
 jobs:
-    publish-release:
-        runs-on: ubuntu-latest
-        if: github.repository_owner == 'ballerina-platform'
-        steps:
-            -   name: Checkout Repository
-                uses: actions/checkout@v3
-
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v3
-                with:
-                    distribution: 'temurin'
-                    java-version: 17.0.7
-
-            -   name: Build with Gradle
-                env:
-                    packageUser: ${{ github.actor }}
-                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
-                run: ./gradlew build -x check -x test
-
-            -   name: Create lib directory if not exists
-                run: mkdir -p ballerina/lib
-
-            -   name: Run Trivy vulnerability scanner
-                uses: aquasecurity/trivy-action@master
-                with:
-                    scan-type: 'rootfs'
-                    scan-ref: '/github/workspace/ballerina/lib'
-                    format: 'table'
-                    timeout: '10m0s'
-                    exit-code: '1'
-
-            -   name: Ballerina Central Push
-                if: ${{ github.event.inputs.environment == 'CENTRAL' }}
-                env:
-                    BALLERINA_DEV_CENTRAL: false
-                    BALLERINA_STAGE_CENTRAL: false
-                    BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
-                    packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
-                    packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                run: |
-                    ./gradlew clean build -PpublishToCentral=true
-
-            -   name: Ballerina Central Dev Push
-                if: ${{ github.event.inputs.environment == 'DEV CENTRAL' }}
-                env:
-                    BALLERINA_DEV_CENTRAL: true
-                    BALLERINA_STAGE_CENTRAL: false
-                    BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_DEV_ACCESS_TOKEN }}
-                    packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
-                    packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                run: |
-                    sed -i 's/version=\(.*\)-SNAPSHOT/version=\1/g' gradle.properties
-                    ./gradlew clean build -PpublishToCentral=true
-
-            -   name: Ballerina Central Stage Push
-                if: ${{ github.event.inputs.environment == 'STAGE CENTRAL' }}
-                env:
-                    BALLERINA_DEV_CENTRAL: false
-                    BALLERINA_STAGE_CENTRAL: true
-                    BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_STAGE_ACCESS_TOKEN }}
-                    packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
-                    packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                    GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-                run: |
-                    sed -i 's/version=\(.*\)-SNAPSHOT/version=\1/g' gradle.properties
-                    ./gradlew clean build -PpublishToCentral=true
+    call_workflow:
+        name: Run Central Publish Workflow
+        if: ${{ github.repository_owner == 'ballerina-platform' }}
+        uses: ballerina-platform/ballerina-standard-library/.github/workflows/central-publish-template.yml@main
+        with:
+            environment: ${{ github.event.inputs.environment }}
