@@ -7,7 +7,7 @@ concurrency:
 on: pull_request
 
 jobs:
-    call_stdlib_workflow:
-        name: Run StdLib Workflow
+    call_workflow:
+        name: Run PR Build Workflow
         if: ${{ github.repository_owner == 'ballerina-platform' }}
         uses: ballerina-platform/ballerina-standard-library/.github/workflows/pull-request-build-template.yml@main
