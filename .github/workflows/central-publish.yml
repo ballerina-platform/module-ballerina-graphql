@@ -13,8 +13,22 @@ on:
 
 jobs:
     call_workflow:
+        runs-on: ubuntu-latest
         name: Run Central Publish Workflow
         if: ${{ github.repository_owner == 'ballerina-platform' }}
-        uses: ballerina-platform/ballerina-standard-library/.github/workflows/central-publish-template.yml@main
-        with:
-            environment: ${{ github.event.inputs.environment }}
+        steps:
+            - if: ${{ inputs.environment == 'DEV CENTRAL' }}
+              uses: ballerina-platform/ballerina-standard-library/.github/workflows/central-publish-template.yml@main
+              with:
+                  environment: ${{ github.event.inputs.environment }}
+                  ballerina-bot-username: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                  ballerina-bot-email: ${{ secrets.BALLERINA_BOT_EMAIL }}
+                  ballerina-central-dev-access-token: ${{ secrets.BALLERINA_CENTRAL_DEV_ACCESS_TOKEN }}
+            
+            - if: ${{ inputs.environment == 'STAGE CENTRAL' }}
+              uses: ballerina-platform/ballerina-standard-library/.github/workflows/central-publish-template.yml@main
+              with:
+                  environment: ${{ github.event.inputs.environment }}
+                  ballerina-bot-username: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                  ballerina-bot-email: ${{ secrets.BALLERINA_BOT_EMAIL }}
+                  ballerina-central-stage-access-token: ${{ secrets.BALLERINA_CENTRAL_STAGE_ACCESS_TOKEN }}
