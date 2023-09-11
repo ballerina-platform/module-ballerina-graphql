@@ -15,6 +15,6 @@ jobs:
             package-org: ballerina
             additional-build-flags: '-x :graphql-examples:build'
             ballerina-bot-username: ${{ secrets.BALLERINA_BOT_USERNAME }}
-            ballerina-bot-token: ${{ secrets.BALLERINA_BOT_TOKEN }}
             ballerina-bot-email: ${{ secrets.BALLERINA_BOT_EMAIL }}
+            ballerina-bot-token: ${{ secrets.BALLERINA_BOT_TOKEN }}
             ballerina-central-access-token: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
