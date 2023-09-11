@@ -14,3 +14,4 @@ jobs:
             package-name: graphql
             package-org: ballerina
             additional-build-flags: '-x :graphql-examples:build'
+            secrets: inherit
