@@ -231,7 +231,7 @@ public class EngineUtils {
 
     public static Object getSdlString(BString schemaString) {
         Schema schema = getDecodedSchema(schemaString);
-        String sdl = SdlSchemaStringGenerator.generate(schema);
+        String sdl = SdlSchemaStringGenerator.generate(schema, true);
         return StringUtils.fromString(sdl);
     }
 
