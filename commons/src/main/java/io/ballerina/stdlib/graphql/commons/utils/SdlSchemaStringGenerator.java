@@ -101,7 +101,6 @@ public class SdlSchemaStringGenerator {
     private final Map<String, KeyDirectivesArgumentHolder> entityKeyDirectiveArgumentHolders;
     private final Schema schema;
 
-
     public static String generate(Schema schema) {
         return generate(schema, false);
     }
