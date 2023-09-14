@@ -122,7 +122,7 @@ function testAttachingSubgraphServiceToDynamicListener() returns error? {
     groups: ["federation", "subgraph"]
 }
 function testReferenceResolverReturningRecordWithObjectFields() returns error? {
-    string url = "http://localhost:9098/product";
+    string url = "http://localhost:9098/reviews";
     graphql:Client graphqlClient = check new (url);
     string document = check getGraphqlDocumentFromFile("test_reference_resolver_returning_record_with_object_fields");
     json response = check graphqlClient->execute(document);
