@@ -1,4 +1,4 @@
-resource function get _entities(subgraph:Representation[] representations) returns (__Entity|error?)[] {
+isolated resource function get _entities(subgraph:Representation[] representations) returns (__Entity|error?)[] {
     map<typedesc<__Entity>> typedescs = mapDef;
     (__Entity|error?)[] entities = [];
     foreach subgraph:Representation rep in representations {

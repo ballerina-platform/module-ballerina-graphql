@@ -3332,14 +3332,15 @@ type Product @key(fields: "id", resolvable: false) {
 Reference resolver is a function that resolves an entity of a specific type using its primary key. When the router requires a particular entity to be resolved, it invokes the corresponding entity's reference resolver. Following is the type definition of a reference resolver defined in `graphql.subgraph` module.
 
 ```ballerina
-public type ReferenceResolver function (subgraph:Representation representation) returns map<any>|service object {}|error?;
+public type ReferenceResolver isolated function (subgraph:Representation representation)
+returns map<any>|service object {}|error?;
 ```
 Here, `subgraph:Representation` is a type definition of the entity representation outlined in the federation specification, which includes the GraphQL `__typename` field of the entity being resolved and its primary key.
 
 ###### Example: A Product Entity Defined with Its Resolver
 
 ```ballerina
-function resolveProduct(subgraph:Representation representation) returns Product|error? {
+isolated function resolveProduct(subgraph:Representation representation) returns Product|error? {
     string id = check representation["id"].ensureType(); // obtain the primary key of the entity
     return findProduct(id);
 }
