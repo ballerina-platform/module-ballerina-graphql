@@ -1,0 +1,11 @@
+{
+  _entities(representations: [{ __typename: "ProductData", id: "1" }]) {
+    __typename
+    ... on ProductData {
+      id
+      reviews {
+        id
+      }
+    }
+  }
+}

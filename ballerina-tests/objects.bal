@@ -256,3 +256,7 @@ Animalia[] animals = [
     new Dog(10, FEMAELE, "DAISY"),
     new Mule(11, FEMAELE, "LARA")
 ];
+
+public isolated service class ReviewData {
+    isolated resource function get id() returns string => "123";
+}

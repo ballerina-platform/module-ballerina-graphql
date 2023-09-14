@@ -108,3 +108,15 @@ public type Satellite record {
     string name;
     int MissionDuration;
 };
+
+@subgraph:Entity {
+    key: "id",
+    resolveReference: function(subgraph:Representation representation) returns ProductData|error? {
+        // Dummy logic to resolve product
+        return {id: check representation["id"].ensureType(), reviews: [new]};
+    }
+}
+public type ProductData record {
+    readonly string id;
+    ReviewData[] reviews;
+};

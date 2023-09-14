@@ -17,7 +17,7 @@ resource function get _entities(subgraph:Representation[] representations) retur
             entities.push(error(string `No resolvers defined for '${rep.__typename}' entity`));
             continue;
         }
-        record {}|service object {}|error? entity = resolve(rep);
+        map<any>|service object {}|error? entity = resolve(rep);
         if entity is error? {
             entities.push(entity);
             continue;

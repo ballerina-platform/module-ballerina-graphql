@@ -20,4 +20,4 @@ public type Representation record {
 };
 
 # Represents the type of entity resolver
-public type ReferenceResolver function (Representation representation) returns record {}|service object {}|error?;
+public type ReferenceResolver function (Representation representation) returns map<any>|service object {}|error?;
