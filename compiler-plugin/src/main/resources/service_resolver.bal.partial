@@ -1,4 +1,4 @@
-resource function get _service() returns record {string sdl;}|error {
+isolated resource function get _service() returns record {string sdl;}|error {
     graphql:GraphqlServiceConfig config = check (typeof self).@graphql:ServiceConfig.ensureType();
     string sdl = check graphql:getSdlString(config.schemaString);
     return {sdl};
