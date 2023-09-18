@@ -16,6 +16,6 @@ jobs:
         name: Run Central Publish Workflow
         if: ${{ github.repository_owner == 'ballerina-platform' }}
         uses: ballerina-platform/ballerina-standard-library/.github/workflows/central-publish-template.yml@main
+        secrets: inherit
         with:
             environment: ${{ github.event.inputs.environment }}
-            secrets: inherit
