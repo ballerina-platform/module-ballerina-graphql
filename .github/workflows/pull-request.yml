@@ -1,57 +1,13 @@
 name: Pull Request
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+    cancel-in-progress: true
+
 on: pull_request
 
 jobs:
-    ubuntu-build:
-        name: Build on Ubuntu
-        runs-on: ubuntu-latest
-        timeout-minutes: 60
-        concurrency:
-            group: ${{ github.head_ref }}-ubuntu
-            cancel-in-progress: true
-        steps:
-            -   name: Checkout Repository
-                uses: actions/checkout@v1
-
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v3
-                with:
-                    distribution: 'temurin'
-                    java-version: 17.0.7
-
-            -   name: Build the Package
-                env:
-                    packageUser: ${{ github.actor }}
-                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
-                run: ./gradlew build --no-daemon --scan
-
-            -   name: Generate CodeCov Report
-                if: github.event_name == 'pull_request'
-                uses: codecov/codecov-action@v3
-                with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
-
-    windows-build:
-        name: Build on Windows
-        runs-on: windows-latest
-        timeout-minutes: 60
-        concurrency:
-            group: ${{ github.head_ref }}-windows
-            cancel-in-progress: true
-        steps:
-            -   name: Checkout Repository
-                uses: actions/checkout@v1
-
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v3
-                with:
-                    distribution: 'temurin'
-                    java-version: 17.0.7
-
-            -   name: Build the Project
-                env:
-                    packageUser: ${{ github.actor }}
-                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
-                    JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
-                run: ./gradlew.bat build --no-daemon --scan
+    call_workflow:
+        name: Run PR Build Workflow
+        if: ${{ github.repository_owner == 'ballerina-platform' }}
+        uses: ballerina-platform/ballerina-standard-library/.github/workflows/pull-request-build-template.yml@main

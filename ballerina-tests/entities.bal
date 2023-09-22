@@ -18,51 +18,55 @@ import ballerina/graphql.subgraph;
 
 @subgraph:Entity {
     key: "name",
-    resolveReference: function(subgraph:Representation representation) returns Star|error {
+    resolveReference: isolated function(subgraph:Representation representation) returns Star|error {
         string name = check representation["name"].ensureType();
         return findStarByName(name);
     }
 }
 distinct service class Star {
-    private string name;
-    private string constellation;
-    private string designation;
+    private StarInfo starInfo;
 
-    function init(string name, string constellation, string designation) {
-        self.name = name;
-        self.constellation = constellation;
-        self.designation = designation;
+    isolated function init(StarInfo starInfo) {
+        self.starInfo = starInfo;
     }
+
     resource function get name() returns string {
-        return self.name;
+        return self.starInfo.name;
     }
 
     resource function get constellation() returns string {
-        return self.name;
+        return self.starInfo.name;
     }
 
     resource function get designation() returns string {
-        return self.designation;
+        return self.starInfo.designation;
     }
 
     public function getName() returns string {
-        return self.name;
+        return self.starInfo.name;
     }
 }
 
-Star[] stars = [
-    new Star("Absolutno*", "Lynx", "XO-5"),
-    new Star("Acamar", "Eridanus", "θ1 Eridani A"),
-    new Star("Achernar", "Eridanus", "α Eridani A")
+type StarInfo record {
+    string name;
+    string constellation;
+    string designation;
+};
+
+final readonly & StarInfo[] stars = [
+    {name: "Absolutno*", constellation: "Lynx", designation: "XO-5"},
+    {name: "Acamar", constellation: "Eridanus", designation: "θ1 Eridani A"},
+    {name: "Achernar", constellation: "Eridanus", designation: "α Eridani A"}
 ];
 
-function findStarByName(string name) returns Star|error {
-    return trap stars.filter(star => star.getName() == name).shift();
+isolated function findStarByName(string name) returns Star|error {
+    StarInfo startInfo = check trap stars.filter(star => star.name == name).shift();  
+    return new (startInfo); 
 }
 
 @subgraph:Entity {
     key: ["name", "id"],
-    resolveReference: function(subgraph:Representation representation) returns Planet? {
+    resolveReference: isolated function(subgraph:Representation representation) returns Planet? {
         do {
             string name = check representation["name"].ensureType();
             return check findPlanetByName(name);
@@ -79,13 +83,13 @@ public type Planet record {
     Moon moon?;
 };
 
-Planet[] planets = [
+final readonly & Planet[] planets = [
     {id: 1, name: "Mercury", mass: 0.383, numberOfMoons: 0},
     {id: 2, name: "Venus", mass: 0.949, numberOfMoons: 0},
     {id: 3, name: "Earth", mass: 1, numberOfMoons: 1, moon: {name: "moon"}}
 ];
 
-function findPlanetByName(string name) returns Planet|error {
+isolated function findPlanetByName(string name) returns Planet|error {
     return trap planets.filter(planet => planet.name == name).shift();
 }
 
@@ -100,11 +104,23 @@ public type Moon record {
 // This entity has invalid resolveReference return type - (ie. doesn't return Satellite)
 @subgraph:Entity {
     key: "name",
-    resolveReference: function(subgraph:Representation representation) returns record {} {
+    resolveReference: isolated function(subgraph:Representation representation) returns record {} {
         return {};
     }
 }
 public type Satellite record {
     string name;
     int MissionDuration;
+};
+
+@subgraph:Entity {
+    key: "id",
+    resolveReference: isolated function(subgraph:Representation representation) returns ProductData|error? {
+        // Dummy logic to resolve product
+        return {id: check representation["id"].ensureType(), reviews: [new]};
+    }
+}
+public type ProductData record {
+    readonly string id;
+    ReviewData[] reviews;
 };

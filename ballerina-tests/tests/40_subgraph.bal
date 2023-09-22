@@ -117,3 +117,15 @@ function testAttachingSubgraphServiceToDynamicListener() returns error? {
     check specialTypesTestListener.detach(subgraphServivce);
     assertJsonValuesWithOrder(response, expectedPayload);
 }
+
+@test:Config {
+    groups: ["federation", "subgraph"]
+}
+function testReferenceResolverReturningRecordWithObjectFields() returns error? {
+    string url = "http://localhost:9098/reviews";
+    graphql:Client graphqlClient = check new (url);
+    string document = check getGraphqlDocumentFromFile("test_reference_resolver_returning_record_with_object_fields");
+    json response = check graphqlClient->execute(document);
+    json expectedPayload = check getJsonContentFromFile("test_reference_resolver_returning_record_with_object_fields");
+    assertJsonValuesWithOrder(response, expectedPayload);
+}
