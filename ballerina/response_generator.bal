@@ -75,7 +75,7 @@ class ResponseGenerator {
             }
         } else if parentValue is service object {} {
             (string|int)[] clonedPath = self.path.clone();
-            clonedPath.push(fieldNode.getName());
+            clonedPath.push(fieldNode.getAlias());
             __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
             Field 'field = new (fieldNode, fieldType, parentValue, clonedPath);
             self.context.resetInterceptorCount();
@@ -146,7 +146,7 @@ class ResponseGenerator {
         any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
         __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
         (string|int)[] clonedPath = self.path.clone();
-        clonedPath.push(fieldNode.getName());
+        clonedPath.push(fieldNode.getAlias());
         Field 'field = new (fieldNode, fieldType, path = clonedPath, fieldValue = fieldValue);
         self.context.resetInterceptorCount();
         return self.engine.resolve(self.context, 'field);

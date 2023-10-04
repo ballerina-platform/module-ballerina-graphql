@@ -85,7 +85,7 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
 
 isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType, __Schema schema,
                                  Engine engine, any|error fieldValue = ()) returns Field {
-    (string|int)[] path = [fieldNode.getName()];
+    (string|int)[] path = [fieldNode.getAlias()];
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);

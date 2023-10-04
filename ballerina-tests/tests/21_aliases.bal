@@ -31,6 +31,7 @@ function dataProviderAliases() returns string[][] {
     string url1 = "http://localhost:9094/profiles";
     string url2 = "http://localhost:9091/records";
     string url3 = "http://localhost:9092/unions";
+    string url4 = "http://localhost:9092/service_types";
 
     return [
         [url1, "alias"],
@@ -38,6 +39,7 @@ function dataProviderAliases() returns string[][] {
         [url2, "same_field_with_multiple_alias_different_subfields"],
         [url2, "alias_with_invalid_field_name"],
         [url3, "alias_on_service_objects_union"],
-        [url1, "alias_on_hierarchical_resources"]
+        [url1, "alias_on_hierarchical_resources"],
+        [url4, "alias_on_error_path"]
     ];
 }
