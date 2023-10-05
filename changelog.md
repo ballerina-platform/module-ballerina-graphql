@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)
 - [[#4648] Removed Returning Deprecation Reasons for Non-Deprecated Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/4648)
 - [[#4801] Make `_service` and `_entities` Resources Isolated](https://github.com/ballerina-platform/ballerina-standard-library/issues/4801)
+- [[#4634] Use Aliases in GraphQL Error Path](https://github.com/ballerina-platform/ballerina-standard-library/issues/4634)
 
 ## [1.9.0] - 2023-06-30
 
