@@ -30,6 +30,10 @@ public isolated service class Name {
     isolated resource function get last() returns string {
         return "Holmes";
     }
+
+    isolated resource function get surname() returns string|error {
+        return error("No surname found");
+    }
 }
 
 public isolated service class Profile {

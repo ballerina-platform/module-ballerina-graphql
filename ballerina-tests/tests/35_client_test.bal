@@ -694,7 +694,7 @@ isolated function testClientExecuteForDataBindingError() returns error? {
         {
             message: "{ballerina/lang.array}IndexOutOfRange",
             locations: [{line: 1, column: 3}],
-            path: ["profile"]
+            path: ["one"]
         }
     ];
 

@@ -1,0 +1,15 @@
+{
+    "errors": [{
+        "message": "No surname found",
+        "locations": [{
+            "line": 4,
+            "column": 13
+        }],
+        "path": [
+            "user",
+            "name_fields",
+            "username"
+        ]
+    }],
+    "data": null
+}
