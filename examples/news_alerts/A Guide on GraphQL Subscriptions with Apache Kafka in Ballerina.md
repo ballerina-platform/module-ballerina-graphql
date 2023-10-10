@@ -274,7 +274,7 @@ isolated table<Publisher> key(id) publisherTable = table [];
 
 ### Implementing Kafka Connectivity
 
-Ballerina has a `ballerinax/kafka` package, which is a part of the Ballerina extended library, that is used to communicate with a Kafka broker. It is used in this example.
+Ballerina has a `ballerinax/kafka` package, which is a part of the Ballerina library, that is used to communicate with a Kafka broker. It is used in this example.
 
 > **Note:** To use `ballerinax/kafka` package, it should be pulled from the Ballerina central. To pull the package, execute the following command in a terminal.
 > ```shell
