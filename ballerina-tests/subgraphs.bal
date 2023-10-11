@@ -24,3 +24,10 @@ service /subgraph on new graphql:Listener(9088) {
 public graphql:Service subgraphServivce = @subgraph:Subgraph service object {
     resource function get greeting() returns string => "welcome";
 };
+
+@subgraph:Subgraph
+service /reviews on graphqlListener {
+    resource function get reviews() returns ReviewData[] {
+        return [];
+    }
+}

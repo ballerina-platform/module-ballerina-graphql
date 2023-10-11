@@ -7,23 +7,11 @@
           "kind": "ENUM"
         },
         {
-          "name": "_Any",
-          "kind": "SCALAR"
-        },
-        {
-          "name": "__Field",
-          "kind": "OBJECT"
-        },
-        {
           "name": "__TypeKind",
           "kind": "ENUM"
         },
         {
           "name": "Query",
-          "kind": "OBJECT"
-        },
-        {
-          "name": "__Schema",
           "kind": "OBJECT"
         },
         {
@@ -35,11 +23,11 @@
           "kind": "OBJECT"
         },
         {
-          "name": "__DirectiveLocation",
-          "kind": "ENUM"
+          "name": "Moon",
+          "kind": "OBJECT"
         },
         {
-          "name": "Moon",
+          "name": "ReviewData",
           "kind": "OBJECT"
         },
         {
@@ -59,10 +47,6 @@
           "kind": "UNION"
         },
         {
-          "name": "link__Import",
-          "kind": "SCALAR"
-        },
-        {
           "name": "FieldSet",
           "kind": "SCALAR"
         },
@@ -79,16 +63,40 @@
           "kind": "OBJECT"
         },
         {
-          "name": "__InputValue",
-          "kind": "OBJECT"
-        },
-        {
           "name": "Planet",
           "kind": "OBJECT"
         },
         {
           "name": "Boolean",
           "kind": "SCALAR"
+        },
+        {
+          "name": "ProductData",
+          "kind": "OBJECT"
+        },
+        {
+          "name": "_Any",
+          "kind": "SCALAR"
+        },
+        {
+          "name": "__Field",
+          "kind": "OBJECT"
+        },
+        {
+          "name": "__Schema",
+          "kind": "OBJECT"
+        },
+        {
+          "name": "__DirectiveLocation",
+          "kind": "ENUM"
+        },
+        {
+          "name": "link__Import",
+          "kind": "SCALAR"
+        },
+        {
+          "name": "__InputValue",
+          "kind": "OBJECT"
         },
         {
           "name": "__Directive",
@@ -134,6 +142,9 @@
     "_Entity": {
       "name": "_Entity",
       "possibleTypes": [
+        {
+          "name": "ProductData"
+        },
         {
           "name": "Moon"
         },

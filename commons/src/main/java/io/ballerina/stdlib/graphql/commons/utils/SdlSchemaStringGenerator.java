@@ -23,6 +23,7 @@ import io.ballerina.stdlib.graphql.commons.types.Directive;
 import io.ballerina.stdlib.graphql.commons.types.DirectiveLocation;
 import io.ballerina.stdlib.graphql.commons.types.EnumValue;
 import io.ballerina.stdlib.graphql.commons.types.FederatedDirective;
+import io.ballerina.stdlib.graphql.commons.types.FederatedEnumValue;
 import io.ballerina.stdlib.graphql.commons.types.Field;
 import io.ballerina.stdlib.graphql.commons.types.InputValue;
 import io.ballerina.stdlib.graphql.commons.types.IntrospectionType;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -58,7 +60,7 @@ public class SdlSchemaStringGenerator {
     private static final String ENTITY_TYPE_FORMAT = "%stype %s%s%s %s";
     private static final String ENTITY_KEY_DIRECTIVE = " @key(fields: \"%s\"%s)";
     private static final String RESOLVABLE_ARGUMENT = ", resolvable: %s";
-    private static final String LINK_DIRECTIVE = "@link(url: \"%s\", import: [%s], as: \"%s\")";
+    private static final String LINK_DIRECTIVE = "@link(url: \"%s\", import: [%s])";
     private static final String ENUM_TYPE_FORMAT = "%senum %s %s";
     private static final String INPUT_TYPE_FORMAT = "%sinput %s %s";
     private static final String FIELD_FORMAT = "%s  %s%s: %s%s";
@@ -92,12 +94,19 @@ public class SdlSchemaStringGenerator {
     private static final String SPACE = " ";
     private static final String AT_SYMBOL = "@";
     private static final String DOUBLE_QUOTE = "\"";
+    private static final String[] SUBGRAPH_QUERY_FIELDS = {"_entities", "_service"};
+    private static boolean isSubgraphSdlIntrospection;
 
     private final boolean isSubgraph;
     private final Map<String, KeyDirectivesArgumentHolder> entityKeyDirectiveArgumentHolders;
     private final Schema schema;
 
     public static String generate(Schema schema) {
+        return generate(schema, false);
+    }
+
+    public static String generate(Schema schema, boolean isSubgraphSdlIntrospection) {
+        SdlSchemaStringGenerator.isSubgraphSdlIntrospection = isSubgraphSdlIntrospection;
         schema.addSubgraphSchemaAdditions();
         SdlSchemaStringGenerator sdlGenerator = new SdlSchemaStringGenerator(schema);
         return sdlGenerator.getSDLSchemaString();
@@ -128,14 +137,7 @@ public class SdlSchemaStringGenerator {
 
     private String getLinkDirective() {
         String imports = getImportsArgumentValueOfLinkDirective();
-        String as = getAsArgumentValueOfLinkDirective();
-        return getFormattedString(LINK_DIRECTIVE, FEDERATION_SPEC_LINK, imports, as);
-    }
-
-    private String getAsArgumentValueOfLinkDirective() {
-        // This function need to return the as field of link directive
-        // Since link directive is not supported by ballerina graphql return empty string
-        return EMPTY_STRING;
+        return getFormattedString(LINK_DIRECTIVE, FEDERATION_SPEC_LINK, imports);
     }
 
     private String getImportsArgumentValueOfLinkDirective() {
@@ -143,7 +145,9 @@ public class SdlSchemaStringGenerator {
                 .filter(directive -> !canImportInLinkDirective(directive.getName()))
                 .map(directive -> DOUBLE_QUOTE + AT_SYMBOL + directive.getName() + DOUBLE_QUOTE)
                 .collect(Collectors.toList());
-        imports.add(DOUBLE_QUOTE + TypeName.FIELD_SET.getName() + DOUBLE_QUOTE);
+        if (isSubgraphSdlIntrospection) {
+            imports.add(DOUBLE_QUOTE + TypeName.FIELD_SET.getName() + DOUBLE_QUOTE);
+        }
         return String.join(SPACE + COMMA_SIGN, imports);
     }
 
@@ -151,6 +155,9 @@ public class SdlSchemaStringGenerator {
         List<String> directives = new ArrayList<>();
         for (Directive directive : this.schema.getDirectives()) {
             if (!isDefaultDirective(directive)) {
+                if (!isSubgraphSdlIntrospection && isFederatedDirective(directive)) {
+                    continue;
+                }
                 directives.add(createDirective(directive));
             }
         }
@@ -161,14 +168,60 @@ public class SdlSchemaStringGenerator {
         return formattedDirectives + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
+    private boolean isFederatedDirective(Directive directive) {
+        return isSubgraph && Arrays.stream(values())
+                .anyMatch(federatedDirective -> Objects.equals(directive.getName(), federatedDirective.getName()));
+    }
+
     private String getTypes() {
         List<String> types = new ArrayList<>();
         for (Map.Entry<String, Type> entry : this.schema.getTypes().entrySet()) {
             if (!isIntrospectionType(entry.getValue()) && !isBuiltInScalarType(entry.getValue())) {
+                if (!isSubgraphSdlIntrospection && isDefaultFederatedType(entry.getValue())) {
+                    continue;
+                }
                 types.add(createType(entry.getValue()));
             }
         }
         return String.join(LINE_SEPARATOR + LINE_SEPARATOR, types);
+    }
+
+    private boolean isDefaultFederatedType(Type type) {
+        if (!isSubgraph) {
+            return false;
+        }
+        if (type.getKind() == TypeKind.SCALAR) {
+            return isDefaultFederatedScalarType(type);
+        }
+        if (type.getKind() == TypeKind.ENUM) {
+            return isDefaultFederatedEnumType(type);
+        }
+        if (type.getKind() == TypeKind.OBJECT) {
+            return isDefaultFederatedObjectType(type);
+        }
+        if (type.getKind() == TypeKind.UNION) {
+            return isFederatedEntityUnionType(type);
+        }
+        return false;
+    }
+
+    private boolean isDefaultFederatedScalarType(Type type) {
+        return Objects.equals(type.getName(), TypeName.ANY.getName())
+                || Objects.equals(type.getName(), TypeName.FIELD_SET.getName())
+                || type.getName().equals(TypeName.LINK_IMPORT.getName());
+    }
+
+    private boolean isDefaultFederatedEnumType(Type type) {
+        return Arrays.stream(FederatedEnumValue.values())
+                .anyMatch(federatedEnum -> type.getName().equals(federatedEnum.getName()));
+    }
+
+    private boolean isDefaultFederatedObjectType(Type type) {
+        return type.getName().equals(TypeName.SERVICE.getName());
+    }
+
+    private boolean isFederatedEntityUnionType(Type type) {
+        return type.getName().equals(TypeName.ENTITY.getName());
     }
 
     private String createDirective(Directive directive) {
@@ -268,8 +321,13 @@ public class SdlSchemaStringGenerator {
     private String createFields(Type type) {
         List<String> fields = new ArrayList<>();
         for (Field field : type.getFields()) {
+            if (isSubgraph && !isSubgraphSdlIntrospection && Arrays.asList(SUBGRAPH_QUERY_FIELDS)
+                    .contains(field.getName())) {
+                continue;
+            }
             fields.add(getFormattedString(FIELD_FORMAT, createFieldDescription(field.getDescription()), field.getName(),
-                    createArgs(field.getArgs()), createFieldType(field.getType()), createDeprecate(field)));
+                                          createArgs(field.getArgs()), createFieldType(field.getType()),
+                                          createDeprecate(field)));
         }
         return getFormattedString(FIELD_BLOCK_FORMAT, String.join(LINE_SEPARATOR, fields));
     }

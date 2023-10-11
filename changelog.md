@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+- [[#4634] Use Aliases in GraphQL Error Path](https://github.com/ballerina-platform/ballerina-standard-library/issues/4634)
+
+## [1.10.0] - 2023-09-18
+
 ### Added
 - [[#2998] Add `@deprecated` Directive Support for Output Object Defined using Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2998)
 - [[#4586] Add Support for Printing GraphiQL Url to Stdout](https://github.com/ballerina-platform/ballerina-standard-library/issues/4586)
@@ -19,10 +24,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#4681] Removed Adding All Possible Federated Directives to SDL String in GraphQL Subgraph](https://github.com/ballerina-platform/ballerina-standard-library/issues/4681)
 - [[#4685] Fix `ID` Scalar Type Treated as a Non Built-in Type](https://github.com/ballerina-platform/ballerina-standard-library/issues/4685)
 - [[#4724] Fix Allowing Empty Records as GraphQL Object Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/4724)
+- [[#4799] Fix Not Allowing `map<any>` as Return Type in ReferenceResolver](https://github.com/ballerina-platform/ballerina-standard-library/issues/4799)
 
 ### Changed
 - [[#4630] Deprecate executeWithType() method from graphql:Client](https://github.com/ballerina-platform/ballerina-standard-library/issues/4630)
 - [[#4648] Removed Returning Deprecation Reasons for Non-Deprecated Fields](https://github.com/ballerina-platform/ballerina-standard-library/issues/4648)
+- [[#4801] Make `_service` and `_entities` Resources Isolated](https://github.com/ballerina-platform/ballerina-standard-library/issues/4801)
 
 ## [1.9.0] - 2023-06-30
 

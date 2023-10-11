@@ -1,0 +1,15 @@
+{
+  "data": {
+    "_entities": [
+      {
+        "__typename": "ProductData",
+        "id": "1",
+        "reviews": [
+          {
+            "id": "123"
+          }
+        ]
+      }
+    ]
+  }
+}

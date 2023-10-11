@@ -319,7 +319,7 @@ isolated function getAgency(string publisherId) returns Agency|error {
 }
 ```
 
->**Note:** The `ballerina/uuid` package is used to generate unique IDs. Since it is a Ballerina standard library package, no additional work is needed for using it.
+>**Note:** The `ballerina/uuid` package is used to generate unique IDs. Since it is a Ballerina library package, no additional work is needed for using it.
 
 #### Consuming News
 
@@ -372,7 +372,7 @@ isolated class NewsStream {
 
 ### Implementing the GraphQL API
 
-Now the GraphQL API can be implemented since all the other types/methods are defined. To define a GraphQL service, the `ballerina/graphql` package is used. It is a part of the Ballerina standard library. Therefore, no additional work is needed.
+Now the GraphQL API can be implemented since all the other types/methods are defined. To define a GraphQL service, the `ballerina/graphql` package is used. It is a part of the Ballerina library. Therefore, no additional work is needed.
 
 Following code snippet shows how to define a GraphQL service in Ballerina. Remove the code in the `service.bal` and use this code to implement the GraphQL service.
 

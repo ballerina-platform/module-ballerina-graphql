@@ -983,7 +983,7 @@ type name {
 > **Note:** The field name and the type names are equal.
 
 ## Report Issues
-To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina standard library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
+To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
 
 ## Useful Links
 - Chat live with us via our [Discord server](https://discord.gg/ballerinalang).
