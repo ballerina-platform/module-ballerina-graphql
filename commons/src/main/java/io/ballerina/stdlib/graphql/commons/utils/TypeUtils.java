@@ -24,7 +24,9 @@ import java.util.regex.Pattern;
 /**
  * Utility class for Ballerina GraphQL schema types.
  */
-public class TypeUtils {
+public final class TypeUtils {
+
+    private TypeUtils() {}
 
     private static final String UNICODE_REGEX = "\\\\(\\\\*)u\\{([a-fA-F0-9]+)\\}";
     private static final Pattern UNICODE_PATTERN = Pattern.compile(UNICODE_REGEX);
