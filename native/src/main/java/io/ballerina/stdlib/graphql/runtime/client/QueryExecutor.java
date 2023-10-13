@@ -30,7 +30,9 @@ import io.ballerina.runtime.api.values.BTypedesc;
 /**
  * This class is used to execute a GraphQL document using the Ballerina GraphQL client.
  */
-public class QueryExecutor {
+public final class QueryExecutor {
+
+    private QueryExecutor () {}
 
     /**
      * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
