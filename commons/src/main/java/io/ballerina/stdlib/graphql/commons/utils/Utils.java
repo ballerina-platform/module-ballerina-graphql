@@ -37,7 +37,9 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 /**
  * Utility class to validate GraphQL package services and symbols.
  */
-public class Utils {
+public final class Utils {
+
+    private Utils () {}
 
     public static final String PACKAGE_NAME = "graphql";
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
