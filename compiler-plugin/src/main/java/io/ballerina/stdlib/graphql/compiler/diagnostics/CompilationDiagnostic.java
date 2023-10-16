@@ -97,7 +97,21 @@ public enum CompilationDiagnostic {
                                                  DiagnosticSeverity.WARNING),
     PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD(DiagnosticMessage.WARNING_204,
                                                                           DiagnosticCode.GRAPHQL_204,
-                                                                          DiagnosticSeverity.WARNING);
+                                                                          DiagnosticSeverity.WARNING),
+    UNABLE_TO_INFER_DEFAULT_VALUE_AT_COMPILE_TIME(DiagnosticMessage.WARNING_205, DiagnosticCode.GRAPHQL_205,
+                                                  DiagnosticSeverity.WARNING),
+    UNABLE_TO_INFER_DEFAULT_VALUE_PROVIDE_KEY_VALUE_PAIR(DiagnosticMessage.WARNING_206, DiagnosticCode.GRAPHQL_206,
+                                                         DiagnosticSeverity.WARNING),
+    PROVIDE_LITERAL_OR_CONSTRUCTOR_EXPRESSION_FOR_DEFAULT_PARAM(DiagnosticMessage.WARNING_207,
+                                                                DiagnosticCode.GRAPHQL_207, DiagnosticSeverity.WARNING),
+    UNABLE_TO_INFER_DEFAULT_VALUE_AVOID_USING_SPREAD_OPERATION(DiagnosticMessage.WARNING_208,
+                                                               DiagnosticCode.GRAPHQL_208, DiagnosticSeverity.WARNING),
+    UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_FIELD_AT_COMPILE_TIME(DiagnosticMessage.WARNING_209,
+                                                                     DiagnosticCode.WARNING_209,
+                                                                     DiagnosticSeverity.WARNING),
+    UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_OBJECT_AT_COMPILE_TIME(DiagnosticMessage.WARNING_210,
+                                                                      DiagnosticCode.WARNING_210,
+                                                                      DiagnosticSeverity.WARNING);
 
     private final String diagnostic;
     private final String diagnosticCode;

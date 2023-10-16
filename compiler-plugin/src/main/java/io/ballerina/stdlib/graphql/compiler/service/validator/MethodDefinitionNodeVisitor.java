@@ -20,50 +20,52 @@ package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
+import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
-import io.ballerina.compiler.syntax.tree.AnnotationNode;
+import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
-import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.NodeVisitor;
+import io.ballerina.compiler.syntax.tree.ParameterNode;
 
 import java.util.Optional;
 
 /**
- * Obtains ResourceConfig AnnotationNode node from the syntax tree.
+ * Used to obtain ParameterNode from the syntax tree.
  */
-public class FunctionDefinitionNodeVisitor extends NodeVisitor {
-    private static final String RESOURCE_CONFIG_ANNOTATION = "ResourceConfig";
+public class MethodDefinitionNodeVisitor extends NodeVisitor {
     private final SemanticModel semanticModel;
     private final MethodSymbol methodSymbol;
-    private AnnotationNode annotationNode;
+    private final ParameterSymbol parameterSymbol;
+    private ParameterNode parameterNode;
 
-    public FunctionDefinitionNodeVisitor(SemanticModel semanticModel, MethodSymbol methodSymbol) {
+    public MethodDefinitionNodeVisitor(SemanticModel semanticModel, MethodSymbol methodSymbol,
+                                       ParameterSymbol parameterSymbol) {
         this.semanticModel = semanticModel;
         this.methodSymbol = methodSymbol;
+        this.parameterSymbol = parameterSymbol;
     }
 
     @Override
     public void visit(FunctionDefinitionNode functionDefinitionNode) {
-        if (this.annotationNode != null) {
+        if (this.parameterNode != null) {
             return;
         }
         Optional<Symbol> functionSymbol = this.semanticModel.symbol(functionDefinitionNode);
         if (functionSymbol.isEmpty() || !functionSymbol.get().equals(this.methodSymbol)) {
             return;
         }
-        if (functionDefinitionNode.metadata().isPresent()) {
-            NodeList<AnnotationNode> annotations = functionDefinitionNode.metadata().get().annotations();
-            for (AnnotationNode annotation : annotations) {
-                Optional<Symbol> annotationSymbol = this.semanticModel.symbol(annotation);
-                if (annotationSymbol.isPresent() && annotationSymbol.get().getName().orElse("")
-                        .equals(RESOURCE_CONFIG_ANNOTATION)) {
-                    this.annotationNode = annotation;
-                }
+        for (ParameterNode paramNode : functionDefinitionNode.functionSignature().parameters()) {
+            if (this.semanticModel.symbol(paramNode).isEmpty()) {
+                continue;
+            }
+            Symbol symbol = this.semanticModel.symbol(paramNode).get();
+            if (symbol.kind() == SymbolKind.PARAMETER && symbol.equals(this.parameterSymbol)) {
+                this.parameterNode = paramNode;
             }
         }
     }
 
-    public Optional<AnnotationNode> getAnnotationNode() {
-        return Optional.ofNullable(this.annotationNode);
+    public Optional<ParameterNode> getParameterNode() {
+        return Optional.ofNullable(this.parameterNode);
     }
 }

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+-[[#1586] Add Compile Time Schema Generation for Default Parameters](https://github.com/ballerina-platform/module-ballerina-graphql/pull/1586)
+
 ### Changed
 - [[#4634] Use Aliases in GraphQL Error Path](https://github.com/ballerina-platform/ballerina-standard-library/issues/4634)
 - [[#4911] Make some of the Java classes proper utility classes](https://github.com/ballerina-platform/ballerina-standard-library/issues/4911)

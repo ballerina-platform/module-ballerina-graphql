@@ -1,0 +1,13 @@
+{
+  "data": {
+    "__type": {
+      "name": "InputObject",
+      "inputFields": [
+        { "name": "name", "defaultValue": "\"name\"" },
+        { "name": "bmiHistory", "defaultValue": "[1.0, 3]" },
+        { "name": "sex", "defaultValue": "MALE" },
+        { "name": "age", "defaultValue": "30" }
+      ]
+    }
+  }
+}

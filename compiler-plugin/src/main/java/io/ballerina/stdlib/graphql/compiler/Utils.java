@@ -26,7 +26,9 @@ import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
+import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
+import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
 import io.ballerina.compiler.api.symbols.ResourceMethodSymbol;
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -36,18 +38,26 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
+import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
+import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.RecordFieldWithDefaultValueNode;
 import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaGenerator;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
+import io.ballerina.stdlib.graphql.compiler.service.validator.DefaultableParameterNodeFinder;
+import io.ballerina.stdlib.graphql.compiler.service.validator.EntityAnnotationFinder;
+import io.ballerina.stdlib.graphql.compiler.service.validator.RecordFieldWithDefaultValueVisitor;
+import io.ballerina.stdlib.graphql.compiler.service.validator.RecordTypeDefinitionNodeFinder;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
@@ -316,9 +326,10 @@ public final class Utils {
 
         InterfaceEntityFinder interfaceFinder = new InterfaceEntityFinder();
         interfaceFinder.populateInterfacesAndEntities(semanticModel);
-        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, semanticModel, project,
-                                                              project.currentPackage().getDefaultModule().moduleId(),
-                                                              description, isSubgraph);
+        FinderContext finderContext = new FinderContext(semanticModel, project,
+                                                        project.currentPackage().getDefaultModule().moduleId());
+        SchemaGenerator schemaGenerator = new SchemaGenerator(serviceNode, interfaceFinder, finderContext, description,
+                                                              isSubgraph);
         return schemaGenerator.generate();
     }
     
@@ -377,5 +388,50 @@ public final class Utils {
     public static String getStringValue(BasicLiteralNode expression) {
         String literalToken = expression.literalToken().text().trim();
         return literalToken.substring(1, literalToken.length() - 1);
+    }
+
+    public static DefaultableParameterNode getDefaultableParameterNode(MethodSymbol methodSymbol,
+                                                                       ParameterSymbol parameterSymbol,
+                                                                       FinderContext context) {
+        DefaultableParameterNodeFinder finder = new DefaultableParameterNodeFinder(context, methodSymbol,
+                                                                                   parameterSymbol);
+        return finder.getDeflatableParameterNode().orElse(null);
+    }
+
+    public static TypeDefinitionNode getRecordTypeDefinitionNode(RecordTypeSymbol recordTypeSymbol,
+                                                                 String recordTypeName, FinderContext context) {
+        RecordTypeDefinitionNodeFinder recordTypeDefFinder = new RecordTypeDefinitionNodeFinder(context,
+                                                                                                recordTypeSymbol,
+                                                                                                recordTypeName);
+        return recordTypeDefFinder.find().orElse(null);
+    }
+
+    public static AnnotationNode getEntityAnnotationNode(AnnotationSymbol annotationSymbol, String entityName,
+                                                         FinderContext context) {
+        EntityAnnotationFinder entityAnnotationFinder = new EntityAnnotationFinder(context, annotationSymbol,
+                                                                                   entityName);
+        return entityAnnotationFinder.find().orElse(null);
+    }
+
+    public static RecordFieldWithDefaultValueNode getRecordFieldWithDefaultValueNode(String recordFieldName,
+                                                                                     TypeDefinitionNode typeDefNode,
+                                                                                     SemanticModel semanticModel) {
+        RecordFieldWithDefaultValueVisitor visitor = new RecordFieldWithDefaultValueVisitor(semanticModel,
+                                                                                            recordFieldName);
+        typeDefNode.accept(visitor);
+        return visitor.getRecordFieldNode().orElse(null);
+    }
+
+    public static List<TypeSymbol> getTypeInclusions(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            TypeSymbol typeDescriptor = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+            if (typeDescriptor.typeKind() == TypeDescKind.RECORD) {
+                return ((RecordTypeSymbol) typeDescriptor).typeInclusions();
+            }
+        }
+        if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+            return ((RecordTypeSymbol) typeSymbol).typeInclusions();
+        }
+        return new ArrayList<>();
     }
 }

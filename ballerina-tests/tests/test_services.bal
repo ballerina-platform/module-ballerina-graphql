@@ -2228,7 +2228,7 @@ public distinct service class Student4 {
     }
 }
 
-service /id_annotation_2 on basicListener  {
+service /id_annotation_2 on basicListener {
     resource function get stringId(@graphql:ID string stringId) returns string {
         return "Hello, World";
     }
@@ -2245,7 +2245,7 @@ service /id_annotation_2 on basicListener  {
         return "Hello, World";
     }
 
-        resource function get stringId1(@graphql:ID string? stringId) returns string {
+    resource function get stringId1(@graphql:ID string? stringId) returns string {
         return "Hello, World";
     }
 
@@ -2320,7 +2320,6 @@ public type PersonId record {|
     string name;
     int age;
 |};
-
 
 public distinct service class Student5 {
     final int id;
@@ -2407,7 +2406,7 @@ service /dataloader_with_interceptor on wrappedListener {
 
 @graphql:ServiceConfig {
     interceptors: new AuthorInterceptor(),
-    contextInit: isolated function (http:RequestContext requestContext, http:Request request) returns graphql:Context {
+    contextInit: isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context {
         graphql:Context ctx = new;
         ctx.registerDataLoader(AUTHOR_LOADER, new dataloader:DefaultDataLoader(faultyAuthorLoaderFunction));
         ctx.registerDataLoader(AUTHOR_UPDATE_LOADER, new dataloader:DefaultDataLoader(authorUpdateLoaderFunction));
@@ -2433,4 +2432,46 @@ function addAuthorIdsToAuthorLoader(graphql:Context ctx, int[] ids) {
     ids.forEach(function(int id) {
         authorLoader.add(id);
     });
+}
+
+service /defaultParam on wrappedListener {
+    resource function get intParam(int a = 1) returns string? => ();
+
+    resource function get floatParam(float b = 2.0) returns string? => ();
+
+    resource function get decimalParam(decimal c = 1e-10) returns string? => ();
+
+    resource function get stringParam(string d = "value") returns string? => ();
+
+    resource function get booleanParam(boolean e = true) returns string? => ();
+
+    resource function get nullableParam(int? f = DEFAULT_INT_VALUE) returns string? => ();
+
+    remote function enumParam(Sex g = MALE) returns string? => ();
+
+    remote function inputObjectParam(InputObject h) returns string? => ();
+
+    remote function inputObjectArrayParam(InputObject[] i = [
+                {name: "name2", bmiHistory: [1.0, 2.0]},
+                {name: "name3", bmiHistory: [1e-7, 2.0]}
+            ]) returns string? => ();
+
+    resource function subscribe idArrayParam(@graphql:ID string[] j = ["id1"]) returns stream<string>? => ();
+
+    resource function get multipleParams(
+            int a = 1,
+            float b = 2.0,
+            decimal c = 1e-10,
+            string d = "value",
+            boolean e = true,
+            int? f = DEFAULT_INT_VALUE,
+            Sex g = MALE,
+            InputObject h = {name: "name2", bmiHistory: [30.0 , 29.0, 20.0d]},
+            InputObject[] i = [
+                {name: "name3", bmiHistory: [30.0 , 29.0]},
+                {name: "name4", bmiHistory: [2.9e1, 31.0]}
+            ],
+            @graphql:ID string[] j = ["id1"]) returns string? => ();
+
+    resource function get nestedField() returns NestedField => new;
 }

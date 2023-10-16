@@ -1,0 +1,9 @@
+{
+  __type(name: "InputObject") {
+    name
+    inputFields {
+      name
+      defaultValue
+    }
+  }
+}
