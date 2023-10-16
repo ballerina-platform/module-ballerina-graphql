@@ -1,215 +1,105 @@
 {
-    "data": {
-        "__schema": {
-            "queryType": {
-                "fields": [
-                    {
-                        "name": "greet",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "name",
-                        "args": [
-                            {
-                                "defaultValue": "\"\"",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "isLegal",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "Int"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "quoteById",
-                        "args": [
-                            {
-                                "defaultValue": "\"\"",
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "Int"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "weightInPounds",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "Float"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "isHoliday",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "ENUM",
-                                    "name": "Weekday",
-                                    "ofType": null
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "getDay",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "Boolean"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "sendEmail",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "type",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "version",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "convertDecimalToFloat",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "Decimal"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "getTotalInDecimal",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "LIST",
-                                        "name": null
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "getSubTotal",
-                        "args": [
-                            {
-                                "defaultValue": null,
-                                "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "LIST",
-                                        "name": null
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                ]
+  "data": {
+    "query": {
+      "fields": [
+        { "name": "intParam", "args": [{ "name": "a", "defaultValue": "1" }] },
+        {
+          "name": "floatParam",
+          "args": [{ "name": "b", "defaultValue": "2.0" }]
+        },
+        {
+          "name": "decimalParam",
+          "args": [{ "name": "c", "defaultValue": "1e-10" }]
+        },
+        {
+          "name": "stringParam",
+          "args": [{ "name": "d", "defaultValue": "\"value\"" }]
+        },
+        {
+          "name": "booleanParam",
+          "args": [{ "name": "e", "defaultValue": "true" }]
+        },
+        {
+          "name": "nullableParam",
+          "args": [{ "name": "f", "defaultValue": "20" }]
+        },
+        {
+          "name": "multipleParams",
+          "args": [
+            { "name": "a", "defaultValue": "1" },
+            { "name": "b", "defaultValue": "2.0" },
+            { "name": "c", "defaultValue": "1e-10" },
+            { "name": "d", "defaultValue": "\"value\"" },
+            { "name": "e", "defaultValue": "true" },
+            { "name": "f", "defaultValue": "20" },
+            { "name": "g", "defaultValue": "MALE" },
+            {
+              "name": "h",
+              "defaultValue": "{name : \"name2\", bmiHistory : [30.0, 29.0, 20.0d]}"
+            },
+            {
+              "name": "i",
+              "defaultValue": "[{name : \"name3\", bmiHistory : [30.0, 29.0]}, {name : \"name4\", bmiHistory : [2.9e1, 31.0]}]"
+            },
+            { "name": "j", "defaultValue": "[\"id1\"]" }
+          ]
+        },
+        { "name": "nestedField", "args": [] }
+      ]
+    },
+    "mutation": {
+      "fields": [
+        {
+          "name": "enumParam",
+          "args": [{ "name": "g", "defaultValue": "MALE" }]
+        },
+        {
+          "name": "inputObjectParam",
+          "args": [{ "name": "h", "defaultValue": null }]
+        },
+        {
+          "name": "inputObjectArrayParam",
+          "args": [
+            {
+              "name": "i",
+              "defaultValue": "[{name : \"name2\", bmiHistory : [1.0, 2.0]}, {name : \"name3\", bmiHistory : [1e-7, 2.0]}]"
             }
+          ]
         }
+      ]
+    },
+    "subscription": {
+      "fields": [
+        {
+          "name": "idArrayParam",
+          "args": [{ "name": "j", "defaultValue": "[\"id1\"]" }]
+        }
+      ]
+    },
+    "nestedFieldsWithDefaultParam": {
+      "fields": [
+        {
+          "name": "multipleParams",
+          "args": [
+            { "name": "a", "defaultValue": "1" },
+            { "name": "b", "defaultValue": "2.0" },
+            { "name": "c", "defaultValue": "1e-10" },
+            { "name": "d", "defaultValue": "\"value\"" },
+            { "name": "e", "defaultValue": "true" },
+            { "name": "f", "defaultValue": "20" },
+            { "name": "g", "defaultValue": "MALE" },
+            {
+              "name": "h",
+              "defaultValue": "{name : \"name2\", bmiHistory : [30.0, 29.0, 20.0d]}"
+            },
+            {
+              "name": "i",
+              "defaultValue": "[{name : \"name3\", bmiHistory : [30.0, 29.0]}, {name : \"name4\", bmiHistory : [2.9e1, 31.0]}]"
+            },
+            { "name": "j", "defaultValue": "[\"id1\"]" }
+          ]
+        }
+      ]
     }
+  }
 }

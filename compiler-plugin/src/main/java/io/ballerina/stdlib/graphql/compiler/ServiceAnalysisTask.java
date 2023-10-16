@@ -76,8 +76,9 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         boolean isSubgraph = nodeSubgraphMap.get(node);
         SemanticModel semanticModel = context.semanticModel();
         Project project = context.currentPackage().project();
-        SchemaGenerator schemaGenerator = new SchemaGenerator(node, interfaceEntityFinder, semanticModel, project,
-                                                              context.moduleId(), description, isSubgraph);
+        FinderContext finderContext = new FinderContext(semanticModel, project, context.moduleId());
+        SchemaGenerator schemaGenerator = new SchemaGenerator(node, interfaceEntityFinder, finderContext, description,
+                                                              isSubgraph);
         return schemaGenerator.generate();
     }
 

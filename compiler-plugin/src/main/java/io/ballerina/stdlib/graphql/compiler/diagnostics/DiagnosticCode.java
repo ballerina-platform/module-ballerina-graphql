@@ -72,5 +72,11 @@ public enum DiagnosticCode {
     GRAPHQL_201,
     GRAPHQL_202,
     GRAPHQL_203,
-    GRAPHQL_204
+    GRAPHQL_204,
+    GRAPHQL_205,
+    GRAPHQL_206,
+    GRAPHQL_207,
+    GRAPHQL_208,
+    WARNING_209,
+    WARNING_210
 }

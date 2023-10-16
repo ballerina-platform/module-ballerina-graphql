@@ -88,7 +88,7 @@ public isolated distinct service class Starship {
 
 public enum Sex {
     MALE = "male",
-    FEMAELE = "female"
+    FEMALE = "female"
 }
 
 public type Animalia distinct service object {
@@ -244,17 +244,17 @@ public distinct service class Dog {
 }
 
 Animalia[] animals = [
-    new Horse(1, FEMAELE, "LUNA"),
+    new Horse(1, FEMALE, "LUNA"),
     new Horse(2, MALE, "WALTER"),
     new Donkey(3, MALE, "MAX"),
-    new Donkey(4, FEMAELE, "WINNIE"),
+    new Donkey(4, FEMALE, "WINNIE"),
     new Donkey(5, MALE, "RUDY"),
-    new Horse(6, FEMAELE, "SKYE"),
+    new Horse(6, FEMALE, "SKYE"),
     new Horse(7, MALE, "COOPER"),
     new Dog(8, MALE, "REX"),
-    new Dog(9, FEMAELE, "COOKIE"),
-    new Dog(10, FEMAELE, "DAISY"),
-    new Mule(11, FEMAELE, "LARA")
+    new Dog(9, FEMALE, "COOKIE"),
+    new Dog(10, FEMALE, "DAISY"),
+    new Mule(11, FEMALE, "LARA")
 ];
 
 public isolated service class ReviewData {

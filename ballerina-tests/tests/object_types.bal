@@ -466,3 +466,20 @@ public isolated distinct service class BookData {
         return self.book.title;
     }
 }
+
+distinct service class NestedField {
+    resource function get multipleParams(
+            int a = 1,
+            float b = 2.0,
+            decimal c = 1e-10,
+            string d = "value",
+            boolean e = true,
+            int? f = DEFAULT_INT_VALUE,
+            Sex g = MALE,
+            InputObject h = {name: "name2", bmiHistory: [30.0 , 29.0, 20.0d]},
+            InputObject[] i = [
+                {name: "name3", bmiHistory: [30.0 , 29.0]},
+                {name: "name4", bmiHistory: [2.9e1, 31.0]}
+            ],
+            @graphql:ID string[] j = ["id1"]) returns string? => ();
+}

@@ -362,3 +362,18 @@ type AuthorRow record {|
     readonly int id;
     string name;
 |};
+
+type InputObject record {|
+    string name = "name";
+    decimal[]? bmiHistory = [1.0, 3];
+    *InputObject2;
+|};
+
+type InputObject2 record {|
+    Sex sex = MALE;
+    *InputObject3;
+|};
+
+type InputObject3 record {|
+    int age = 30;
+|};

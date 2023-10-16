@@ -37,6 +37,7 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
     string url7 = "http://localhost:9091/documentation";
     string url8 = "http://localhost:9090/deprecation";
     string url9 = "http://localhost:9091/id_annotation_1";
+    string url10 = "http://localhost:9090/defaultParam";
 
     map<[string, string, json]> dataSet = {
         "1": [url1, "complex_introspection_query"],
@@ -61,7 +62,7 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
         "20": [url2, "type_introspection_on_non_existing_type"],
         "21": [url2, "type_introspection_without_fields"],
         "22": [url2, "type_introspection"],
-        "23": [url6, "introspection_on_inputs_with_default_values"],
+        "23": [url10, "introspection_on_inputs_with_default_values"],
         "24": [url2, "directive_locations"],
         "25": [url7, "documentation"],
         "26": [url8, "deprecated_fields_introspection"],
@@ -72,7 +73,8 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
         "31": [url2, "typename_introspection_on_type_record"],
         "32": [url2, "typename_introspection_on_schema_introspection"],
         "33": [url2, "typename_introspection_on_field"],
-        "34": [url9, "id_introspection_query"]
+        "34": [url9, "id_introspection_query"],
+        "35": [url10, "introspection_on_input_object_having_defaultable_fields"]
     };
     return dataSet;
 }
