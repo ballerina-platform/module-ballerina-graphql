@@ -248,8 +248,8 @@ isolated class Engine {
 
         if executePrefetchMethod {
             service object {}? serviceObject = 'field.getServiceObject();
-            if serviceObject is service object {} { 
-                string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field) 
+            if serviceObject is service object {} {
+                string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
                     return self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);

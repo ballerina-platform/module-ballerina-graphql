@@ -25,6 +25,7 @@
 # + interceptors - GraphQL service level interceptors
 # + introspection - Whether to enable or disable the introspection on the service
 # + validation - Whether to enable or disable the constraint validation
+# + cacheConfig - The cache configurations for the operations
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
@@ -35,6 +36,7 @@ public type GraphqlServiceConfig record {|
     readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
     boolean introspection = true;
     boolean validation = true;
+    ServerCacheConfig cacheConfig?;
 |};
 
 # The annotation to configure a GraphQL service.
@@ -44,9 +46,11 @@ public annotation GraphqlServiceConfig ServiceConfig on service;
 #
 # + interceptors - GraphQL field level interceptors
 # + prefetchMethodName - The name of the instance method to be used for prefetching
+# + cacheConfig - The cache configurations for the fields
 public type GraphqlResourceConfig record {|
     readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
     string prefetchMethodName?;
+    ServerCacheConfig cacheConfig?;
 |};
 
 # The annotation to configure a GraphQL resolver.
