@@ -16,8 +16,10 @@
 
 import graphql.parser;
 
+import ballerina/cache;
 import ballerina/jballerina.java;
 import ballerina/uuid;
+import ballerina/io;
 
 isolated class Engine {
     private final readonly & __Schema schema;
@@ -25,10 +27,11 @@ isolated class Engine {
     private final readonly & (readonly & Interceptor)[] interceptors;
     private final readonly & boolean introspection;
     private final readonly & boolean validation;
+    private final cache:Cache cache;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
                            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
-                           boolean validation)
+                           boolean validation, ServerCacheConfig? cacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -38,6 +41,7 @@ isolated class Engine {
         self.interceptors = interceptors;
         self.introspection = introspection;
         self.validation = validation;
+        self.cache = cacheConfig is ServerCacheConfig ? new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge}) : new ({capacity: 120, evictionFactor: 0.2, defaultMaxAge: 60});
         self.addService(s);
     }
 
@@ -51,6 +55,15 @@ isolated class Engine {
 
     isolated function getValidation() returns readonly & boolean {
         return self.validation;
+    }
+
+    isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
+        return self.cache.put(key, value, maxAge);
+    }
+
+    isolated function getFromCache(string key) returns any|error {
+        io:println(self.cache.keys());
+        return self.cache.get(key);
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -267,12 +280,20 @@ isolated class Engine {
                 return check validateInterceptorReturnValue(fieldType, result, interceptorName);
             }
             any fieldValue;
-            if 'field.getOperationType() == parser:OPERATION_QUERY {
-                fieldValue = check self.resolveResourceMethod(context, 'field, responseGenerator);
-            } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
-                fieldValue = check self.resolveRemoteMethod(context, 'field, responseGenerator);
+            if 'field.isCacheEnabled() {
+                any|error cachedValue = self.getFromCache('field.getCacheKey());
+                if cachedValue is any {
+                    fieldValue = cachedValue;
+                } else {
+                    fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
+                    decimal maxAge = 'field.getCacheMaxAge();
+                    if maxAge > 0d {
+                        // remove check and log the error msg
+                        _ = check self.addToCache('field.getCacheKey(), fieldValue, maxAge);
+                    }
+                }
             } else {
-                fieldValue = check 'field.getFieldValue();
+                fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
             return responseGenerator.getResult(fieldValue, fieldNode);
         } on fail error errorValue {
@@ -349,6 +370,29 @@ isolated class Engine {
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
         _ = resourcePath.pop();
+    }
+
+    private isolated function getFieldValue(Context context,Field 'field, ResponseGenerator responseGenerator) returns any|error {
+        if 'field.getOperationType() == parser:OPERATION_QUERY {
+            return self.resolveResourceMethod(context, 'field, responseGenerator);
+        } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
+            return self.resolveRemoteMethod(context, 'field, responseGenerator);
+        }
+        return 'field.getFieldValue();
+    }
+
+    isolated function evictCache(string path) returns error? {
+        string[] keys = self.cache.keys().filter(isolated function (string key) returns boolean {
+            return key.startsWith(path);
+        });
+        foreach string key in keys {
+            _ = check self.cache.invalidate(key);
+        }
+        return;
+    }
+
+    isolated function invalidateAll() returns error? {
+        return self.cache.invalidateAll();
     }
 
     isolated function addService(Service s) = @java:Method {

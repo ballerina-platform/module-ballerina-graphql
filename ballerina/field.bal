@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/crypto;
 import graphql.parser;
 
 # Represents the information about a particular field of a GraphQL document.
@@ -26,10 +27,11 @@ public class Field {
     private (string|int)[] path;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
+    private final ServerCacheConfig? cacheConfig;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
-                           string[] resourcePath = [], any|error fieldValue = ()) {
+                           string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = ()) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -40,6 +42,8 @@ public class Field {
         self.resourcePath.push(internalNode.getName());
         self.fieldInterceptors = serviceObject is service object {} ?
             getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
+        self.cacheConfig = serviceObject is service object {} ? getFieldCacheConfig(serviceObject, operationType,
+            internalNode.getName(), self.resourcePath) : cacheConfig;
     }
 
     # Returns the name of the field.
@@ -159,5 +163,38 @@ public class Field {
 
     isolated function getFieldInterceptors() returns readonly & Interceptor[] {
         return self.fieldInterceptors;
+    }
+
+    isolated function isCacheEnabled() returns boolean {
+        ServerCacheConfig? cacheConfig = self.getCacheConfig();
+        return cacheConfig is ServerCacheConfig && cacheConfig.enabled;
+    }
+
+    isolated function getCacheConfig() returns ServerCacheConfig? {
+        return self.cacheConfig;
+    }
+
+    isolated function getCacheKey() returns string {
+        return self.generateCacheKey();
+    }
+
+    isolated function getCacheMaxAge() returns decimal {
+        ServerCacheConfig? cacheConfig = self.getCacheConfig();
+        if cacheConfig is ServerCacheConfig {
+            return cacheConfig.maxAge;
+        }
+        return 0d;
+    }
+
+    private isolated function generateCacheKey() returns string {
+        parser:ArgumentNode[] arguments = self.internalNode.getArguments();
+        any[] argValues = [];
+        string resourcePath = "";
+        argValues.push(...arguments.'map((arg) => arg.getValue()));
+        foreach string path in self.resourcePath {
+            resourcePath += string `${path}.`;
+        }
+        byte[] hash = crypto:hashMd5(argValues.toString().toBytes());
+        return string `${resourcePath}${hash.toBase64()}`;
     }
 }

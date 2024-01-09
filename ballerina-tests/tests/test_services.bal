@@ -2475,3 +2475,46 @@ service /defaultParam on wrappedListener {
 
     resource function get nestedField() returns NestedField => new;
 }
+
+service /server_cache on basicListener {
+    private string name = "Walter White";
+    isolated resource function get greet() returns string {
+        return "Hello, " + self.name;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
+    isolated resource function get name(int id) returns string {
+        return self.name;
+    }
+
+    isolated remote function updateName(string name) returns string {
+        self.name = name;
+        return self.name;
+    }
+}
+
+service /evict_server_cache on basicListener {
+    private string name = "Walter White";
+    isolated resource function get greet() returns string {
+        return "Hello, " + self.name;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
+    isolated resource function get name(int id) returns string {
+        return self.name;
+    }
+
+    isolated remote function updateName(graphql:Context context, string name) returns string|error {
+        check context.evictCache("name");
+        self.name = name;
+        return self.name;
+    }
+}
