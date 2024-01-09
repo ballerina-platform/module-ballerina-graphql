@@ -34,6 +34,7 @@ import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeFactory;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.NodeParser;
+import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
@@ -43,6 +44,7 @@ import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.compiler.syntax.tree.Token;
+import io.ballerina.compiler.syntax.tree.VariableDeclarationNode;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.plugins.ModifierTask;
@@ -146,6 +148,23 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                     nodeMap.put(targetNode, updatedNode);
                     this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
                     this.entityUnionSuffix++;
+                } else if (targetNode.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
+                    ObjectConstructorExpressionNode graphqlServiceVariableDeclaration
+                            = (ObjectConstructorExpressionNode) targetNode;
+                    ObjectConstructorExpressionNode updatedGraphqlServiceObject = modifyServiceObjectNode(
+                            graphqlServiceVariableDeclaration, schemaString, prefix);
+                    VariableDeclarationNode parentNode
+                            = (VariableDeclarationNode) graphqlServiceVariableDeclaration.parent();
+                    VariableDeclarationNode updatedParentNode = parentNode.modify()
+                                                                          .withInitializer(updatedGraphqlServiceObject)
+                                                                          .apply();
+                    Node replacingNode = updatedParentNode;
+                    NonTerminalNode iNode = parentNode;
+                    while (iNode.parent() != null) {
+                        replacingNode = iNode.parent().replace(iNode, replacingNode);
+                        iNode = iNode.parent();
+                    }
+                    rootNode = rootNode.replace(iNode, replacingNode);
                 }
             } catch (IOException e) {
                 updateContext(context, entry.getKey().location(), CompilationDiagnostic.SCHEMA_GENERATION_FAILED,
