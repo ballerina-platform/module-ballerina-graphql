@@ -71,7 +71,7 @@ public class LocalLevelServiceObjectAnalysisTask extends ServiceAnalysisTask {
     }
 
     public boolean isGraphQLServiceObjectDeclaration(SemanticModel semanticModel,
-                                                            TypedBindingPatternNode typedBindingPatternNode) {
+                                                     TypedBindingPatternNode typedBindingPatternNode) {
         TypeDescriptorNode typeDescriptorNode = typedBindingPatternNode.typeDescriptor();
         if (typeDescriptorNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
             return false;
@@ -80,7 +80,7 @@ public class LocalLevelServiceObjectAnalysisTask extends ServiceAnalysisTask {
     }
 
     private boolean isGraphqlServiceQualifiedNameReference(SemanticModel semanticModel,
-                                                                  QualifiedNameReferenceNode nameReferenceNode) {
+                                                           QualifiedNameReferenceNode nameReferenceNode) {
         Optional<Symbol> symbol = semanticModel.symbol(nameReferenceNode);
         if (symbol.isEmpty()) {
             return false;
@@ -96,7 +96,7 @@ public class LocalLevelServiceObjectAnalysisTask extends ServiceAnalysisTask {
         return isPresentAndEquals(typeSymbol.getName(), SERVICE_NAME);
     }
 
-    private boolean isPresentAndEquals(Optional<String> value, String equals) {
-        return value.isPresent() && equals.equals(value.get());
+    private boolean isPresentAndEquals(Optional<String> actualValue, String expectedValue) {
+        return actualValue.isPresent() && expectedValue.equals(actualValue.get());
     }
 }
